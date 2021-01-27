@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="rRa-mJ-wGh">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-Regular.ttf">
+            <string>Rajdhani-Regular</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Indicator View Controller-->
+        <scene sceneID="Y1q-FW-yAS">
+            <objects>
+                <viewController storyboardIdentifier="HUDIndicator" useStoryboardIdentifierAsRestorationIdentifier="YES" id="rRa-mJ-wGh" customClass="HUDIndicatorViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4fv-j0-Njy">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bck-fC-lYJ">
+                                <rect key="frame" x="348" y="163" width="200" height="67"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="200" id="2Q0-3A-Q6a"/>
+                                    <constraint firstAttribute="height" constant="67" id="Z4Z-Te-h63"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="15"/>
+                                <state key="normal" title="Button">
+                                    <color key="titleColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="pairingButtonTouchedUpInside:" destination="rRa-mJ-wGh" eventType="touchUpInside" id="Fhg-Cs-Nb0"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="bck-fC-lYJ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="jka-kX-pKW" secondAttribute="leading" id="5NL-y8-Nfx"/>
+                            <constraint firstItem="bck-fC-lYJ" firstAttribute="centerY" secondItem="jka-kX-pKW" secondAttribute="centerY" id="W3x-nH-cMm"/>
+                            <constraint firstItem="jka-kX-pKW" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="bck-fC-lYJ" secondAttribute="trailing" id="bm4-yS-hpU"/>
+                            <constraint firstItem="bck-fC-lYJ" firstAttribute="centerX" secondItem="jka-kX-pKW" secondAttribute="centerX" id="eCS-1J-inu"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="jka-kX-pKW"/>
+                    </view>
+                    <connections>
+                        <outlet property="indicatorView" destination="4fv-j0-Njy" id="4JH-cf-D8e"/>
+                        <outlet property="pairingButton" destination="bck-fC-lYJ" id="Nnj-xm-tE1"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ahw-WX-v01" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-170.75892857142856" y="163.768115942029"/>
+        </scene>
+    </scenes>
+</document>

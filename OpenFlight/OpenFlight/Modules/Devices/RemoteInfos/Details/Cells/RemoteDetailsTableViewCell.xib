@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-Medium.ttf">
+            <string>Rajdhani-Medium</string>
+        </array>
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="RemoteDetailsTableViewCell" rowHeight="117" id="KGk-i7-Jjw" customClass="RemoteDetailsTableViewCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="440" height="117"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="440" height="117"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sBb-ZU-15F">
+                        <rect key="frame" x="0.0" y="0.0" width="440" height="117"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Label" lineBreakMode="wordWrap" numberOfLines="3" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="fGv-Og-4qs">
+                                <rect key="frame" x="0.0" y="0.0" width="220" height="117"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="15"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dvx-be-lpg">
+                                <rect key="frame" x="220" y="0.0" width="220" height="117"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" horizontalHuggingPriority="252" translatesAutoresizingMaskIntoConstraints="NO" id="cgQ-cO-IhI">
+                                        <rect key="frame" x="0.0" y="0.0" width="110" height="117"/>
+                                        <subviews>
+                                            <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KAU-hI-Nvi" customClass="UpdateCustomButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="4" y="46" width="102" height="25"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="25" id="XG7-Mp-a0a"/>
+                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="40" id="w0e-qd-GYU"/>
+                                                </constraints>
+                                            </view>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icValid" translatesAutoresizingMaskIntoConstraints="NO" id="kMa-2b-W7s">
+                                                <rect key="frame" x="61" y="46" width="10" height="25"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="10" id="v4K-Ch-UFq"/>
+                                                </constraints>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="4s4-dt-MHo">
+                                                <rect key="frame" x="77" y="46" width="29" height="25"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                <color key="textColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="4s4-dt-MHo" firstAttribute="top" secondItem="KAU-hI-Nvi" secondAttribute="top" id="5pY-2b-KtQ"/>
+                                            <constraint firstItem="KAU-hI-Nvi" firstAttribute="centerY" secondItem="cgQ-cO-IhI" secondAttribute="centerY" id="9BS-9e-1w7"/>
+                                            <constraint firstItem="kMa-2b-W7s" firstAttribute="top" secondItem="KAU-hI-Nvi" secondAttribute="top" id="Ami-mN-yLw"/>
+                                            <constraint firstItem="4s4-dt-MHo" firstAttribute="bottom" secondItem="KAU-hI-Nvi" secondAttribute="bottom" id="Cap-fI-UPn"/>
+                                            <constraint firstAttribute="trailing" secondItem="KAU-hI-Nvi" secondAttribute="trailing" constant="4" id="JrU-RO-2vd"/>
+                                            <constraint firstItem="4s4-dt-MHo" firstAttribute="leading" secondItem="kMa-2b-W7s" secondAttribute="trailing" constant="6" id="U4U-0a-Vb1"/>
+                                            <constraint firstItem="4s4-dt-MHo" firstAttribute="trailing" secondItem="KAU-hI-Nvi" secondAttribute="trailing" id="XzP-JH-3FZ"/>
+                                            <constraint firstItem="KAU-hI-Nvi" firstAttribute="leading" secondItem="cgQ-cO-IhI" secondAttribute="leading" constant="4" id="ugk-X2-m9Y"/>
+                                            <constraint firstItem="kMa-2b-W7s" firstAttribute="bottom" secondItem="KAU-hI-Nvi" secondAttribute="bottom" id="yip-K4-nTT"/>
+                                        </constraints>
+                                    </view>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="247" verticalHuggingPriority="251" horizontalCompressionResistancePriority="746" text="Label" textAlignment="right" lineBreakMode="wordWrap" numberOfLines="4" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="xB9-L0-ETn">
+                                        <rect key="frame" x="110" y="0.0" width="110" height="117"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="15"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="height" priority="900" constant="40" id="BZg-AM-6pM"/>
+                        </constraints>
+                    </stackView>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="sBb-ZU-15F" secondAttribute="trailing" id="3XF-bq-CBN"/>
+                    <constraint firstItem="sBb-ZU-15F" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="KhF-RS-TX7"/>
+                    <constraint firstItem="sBb-ZU-15F" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="LvI-RD-FhI"/>
+                    <constraint firstAttribute="bottom" secondItem="sBb-ZU-15F" secondAttribute="bottom" id="idL-00-hLY"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="checkImageView" destination="kMa-2b-W7s" id="4IB-8S-C9c"/>
+                <outlet property="sectionLabel" destination="fGv-Og-4qs" id="teQ-TG-cYb"/>
+                <outlet property="sectionValueLabel" destination="xB9-L0-ETn" id="QwK-yh-1QL"/>
+                <outlet property="updateButton" destination="KAU-hI-Nvi" id="5h0-Kc-pID"/>
+                <outlet property="updateButtonContainer" destination="cgQ-cO-IhI" id="ilE-7s-q6y"/>
+                <outlet property="updateStateLabel" destination="4s4-dt-MHo" id="mjx-ri-wtV"/>
+            </connections>
+            <point key="canvasLocation" x="233.59999999999999" y="187.55622188905548"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="icValid" width="20" height="20"/>
+    </resources>
+</document>

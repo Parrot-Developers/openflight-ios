@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-Medium.ttf">
+            <string>Rajdhani-Medium</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="SettingsSectionCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsSectionCell" rowHeight="66" id="KeR-JK-Sr7" customClass="SettingsSectionCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="277" height="50"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KeR-JK-Sr7" id="vdK-uZ-L9c">
+                <rect key="frame" x="0.0" y="0.0" width="277" height="50"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconSettingsBehaviour" translatesAutoresizingMaskIntoConstraints="NO" id="Y55-nZ-kUX">
+                        <rect key="frame" x="8" y="13" width="24" height="24"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="24" id="XK2-Vl-pLL"/>
+                            <constraint firstAttribute="height" constant="24" id="fm9-wp-gcb"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="473-S7-mvq">
+                        <rect key="frame" x="40" y="19.5" width="229" height="11"/>
+                        <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="11"/>
+                        <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <constraints>
+                    <constraint firstItem="473-S7-mvq" firstAttribute="leading" secondItem="Y55-nZ-kUX" secondAttribute="trailing" constant="8" id="FtA-go-f82"/>
+                    <constraint firstItem="Y55-nZ-kUX" firstAttribute="leading" secondItem="vdK-uZ-L9c" secondAttribute="leading" constant="8" id="Gue-Wa-y4W"/>
+                    <constraint firstAttribute="trailing" secondItem="473-S7-mvq" secondAttribute="trailing" constant="8" id="TB0-rl-yzr"/>
+                    <constraint firstItem="473-S7-mvq" firstAttribute="centerY" secondItem="vdK-uZ-L9c" secondAttribute="centerY" id="Zck-T2-EP7"/>
+                    <constraint firstItem="Y55-nZ-kUX" firstAttribute="centerY" secondItem="vdK-uZ-L9c" secondAttribute="centerY" id="qvn-rU-Suu"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="iconImageView" destination="Y55-nZ-kUX" id="EPC-ff-Cfm"/>
+                <outlet property="titleLabel" destination="473-S7-mvq" id="G6C-Ap-xkL"/>
+            </connections>
+            <point key="canvasLocation" x="-94.902548725637189" y="97.599999999999994"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="iconSettingsBehaviour" width="19" height="19"/>
+    </resources>
+</document>

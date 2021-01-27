@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="HelloWorldStartAndStopView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="containerView" destination="79y-85-ESH" id="Qxz-yk-8Rr"/>
+                <outlet property="startAndStopButton" destination="Ado-x5-N8X" id="bkn-wt-dWz"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="321" height="316"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="79y-85-ESH">
+                    <rect key="frame" x="0.0" y="0.0" width="321" height="316"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ado-x5-N8X">
+                            <rect key="frame" x="0.0" y="0.0" width="321" height="316"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="startAndStopButtonTouchedUpInside:" destination="-1" eventType="touchUpInside" id="XyV-8r-2bV"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    <constraints>
+                        <constraint firstItem="Ado-x5-N8X" firstAttribute="leading" secondItem="79y-85-ESH" secondAttribute="leading" id="3Si-X4-Pls"/>
+                        <constraint firstAttribute="trailing" secondItem="Ado-x5-N8X" secondAttribute="trailing" id="6TB-uO-9Xt"/>
+                        <constraint firstAttribute="bottom" secondItem="Ado-x5-N8X" secondAttribute="bottom" id="LXs-PQ-gKn"/>
+                        <constraint firstItem="Ado-x5-N8X" firstAttribute="top" secondItem="79y-85-ESH" secondAttribute="top" id="wEa-ry-8Nr"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="79y-85-ESH" secondAttribute="bottom" id="72Z-kX-xTL"/>
+                <constraint firstItem="79y-85-ESH" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="Kvh-lQ-Blk"/>
+                <constraint firstAttribute="trailing" secondItem="79y-85-ESH" secondAttribute="trailing" id="PKr-dJ-fcN"/>
+                <constraint firstItem="79y-85-ESH" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="dOQ-VY-TTo"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="70.28985507246378" y="-53.571428571428569"/>
+        </view>
+    </objects>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

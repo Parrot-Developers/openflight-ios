@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="RemoteCalibrationAxesView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="xAxeProgressView" destination="lfu-EP-Qcw" id="Rkq-sP-wqt"/>
+                <outlet property="yAxeProgressView" destination="MEs-28-Ige" id="Whk-P2-RJr"/>
+                <outlet property="zAxeProgressView" destination="r34-0f-Hlw" id="q4k-Gu-tVH"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QtZ-xO-pGG">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="300"/>
+            <subviews>
+                <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="40" translatesAutoresizingMaskIntoConstraints="NO" id="DOA-Nl-3UP">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="300"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="100" placeholderIntrinsicHeight="90" translatesAutoresizingMaskIntoConstraints="NO" id="lfu-EP-Qcw" customClass="RemoteCalibrationAxeProgressView" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="46.5"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="100" placeholderIntrinsicHeight="90" translatesAutoresizingMaskIntoConstraints="NO" id="MEs-28-Ige" customClass="RemoteCalibrationAxeProgressView" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="126.5" width="375" height="47"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="100" placeholderIntrinsicHeight="90" translatesAutoresizingMaskIntoConstraints="NO" id="r34-0f-Hlw" customClass="RemoteCalibrationAxeProgressView" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="253.5" width="375" height="46.5"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </view>
+                    </subviews>
+                    <variation key="heightClass=regular-widthClass=compact" axis="vertical" spacing="80"/>
+                </stackView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="DOA-Nl-3UP" secondAttribute="bottom" id="GCl-UW-RMy"/>
+                <constraint firstAttribute="trailing" secondItem="DOA-Nl-3UP" secondAttribute="trailing" id="aXK-OD-TGm"/>
+                <constraint firstItem="DOA-Nl-3UP" firstAttribute="top" secondItem="QtZ-xO-pGG" secondAttribute="top" id="dDW-e0-A5P"/>
+                <constraint firstItem="DOA-Nl-3UP" firstAttribute="leading" secondItem="QtZ-xO-pGG" secondAttribute="leading" id="uC2-sF-l4Y"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="mxh-gm-QFP"/>
+            <point key="canvasLocation" x="-51" y="-61"/>
+        </view>
+    </objects>
+</document>

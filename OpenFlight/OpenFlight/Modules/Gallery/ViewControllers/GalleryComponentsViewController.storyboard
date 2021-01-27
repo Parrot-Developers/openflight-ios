@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Gallery Filters View Controller-->
+        <scene sceneID="gAF-Wg-Bhz">
+            <objects>
+                <viewController storyboardIdentifier="GalleryFiltersViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="GalleryFiltersViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="C1A-cC-ySo"/>
+                        <viewControllerLayoutGuide type="bottom" id="zGs-At-gSm"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="Wf3-fd-o0X">
+                        <rect key="frame" x="0.0" y="0.0" width="400" height="40"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="yLm-f0-qvV">
+                                <rect key="frame" x="0.0" y="0.0" width="400" height="40"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="PzX-BC-BGh">
+                                    <size key="itemSize" width="70" height="37"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="10" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells/>
+                            </collectionView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="yLm-f0-qvV" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="0Mb-PE-Wlf"/>
+                            <constraint firstAttribute="trailing" secondItem="yLm-f0-qvV" secondAttribute="trailing" id="CL3-as-MLF"/>
+                            <constraint firstAttribute="bottom" secondItem="yLm-f0-qvV" secondAttribute="bottom" id="Hhg-0a-db1"/>
+                            <constraint firstItem="yLm-f0-qvV" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="dkz-3a-YW8"/>
+                        </constraints>
+                    </view>
+                    <size key="freeformSize" width="400" height="40"/>
+                    <connections>
+                        <outlet property="collection" destination="yLm-f0-qvV" id="paj-ps-1Po"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-516" y="110"/>
+        </scene>
+        <!--Gallery Sources View Controller-->
+        <scene sceneID="ihX-9D-W4v">
+            <objects>
+                <viewController storyboardIdentifier="GallerySourcesViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ibL-Hz-y8K" customClass="GallerySourcesViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="OTx-MV-rCS"/>
+                        <viewControllerLayoutGuide type="bottom" id="edZ-Qv-otA"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="hwi-2y-Z9R">
+                        <rect key="frame" x="0.0" y="0.0" width="200" height="400"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="5Zc-YD-WUV">
+                                <rect key="frame" x="0.0" y="0.0" width="200" height="400"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="FAp-aU-yuw">
+                                    <size key="itemSize" width="200" height="200"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells/>
+                            </collectionView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="5Zc-YD-WUV" secondAttribute="bottom" id="GTc-ZA-jVH"/>
+                            <constraint firstItem="5Zc-YD-WUV" firstAttribute="leading" secondItem="hwi-2y-Z9R" secondAttribute="leading" id="hSo-Ew-aFJ"/>
+                            <constraint firstItem="5Zc-YD-WUV" firstAttribute="top" secondItem="hwi-2y-Z9R" secondAttribute="top" id="qVF-w2-wep"/>
+                            <constraint firstAttribute="trailing" secondItem="5Zc-YD-WUV" secondAttribute="trailing" id="vhP-6G-Cxg"/>
+                        </constraints>
+                    </view>
+                    <size key="freeformSize" width="200" height="400"/>
+                    <connections>
+                        <outlet property="collection" destination="5Zc-YD-WUV" id="90J-kw-YsK"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="XUi-LK-0v8" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-807" y="397"/>
+        </scene>
+        <!--Gallery Media View Controller-->
+        <scene sceneID="3Tg-x9-LMw">
+            <objects>
+                <viewController storyboardIdentifier="GalleryMediaViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="QqZ-l5-2aB" customClass="GalleryMediaViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="jJ8-t1-zsm"/>
+                        <viewControllerLayoutGuide type="bottom" id="wZo-5T-oW8"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="c6Q-Bt-09j">
+                        <rect key="frame" x="0.0" y="0.0" width="400" height="300"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="H0f-g5-iEa">
+                                <rect key="frame" x="0.0" y="0.0" width="400" height="300"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="p9V-O9-BdE">
+                                    <size key="itemSize" width="200" height="58"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="10" minY="10" maxX="10" maxY="10"/>
+                                </collectionViewFlowLayout>
+                                <cells/>
+                            </collectionView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ftd-Iz-UYJ" customClass="GalleryLoadingView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="250" width="400" height="50"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="XxR-Js-bUd"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aZV-dx-5NI" customClass="GallerySelectionView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="250" width="400" height="50"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="GSS-3n-4f2"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="H0f-g5-iEa" firstAttribute="top" secondItem="c6Q-Bt-09j" secondAttribute="top" id="2cz-IX-c54"/>
+                            <constraint firstAttribute="bottom" secondItem="ftd-Iz-UYJ" secondAttribute="bottom" id="3E3-Sx-oZt"/>
+                            <constraint firstAttribute="trailing" secondItem="H0f-g5-iEa" secondAttribute="trailing" id="5L8-oZ-nLk"/>
+                            <constraint firstItem="ftd-Iz-UYJ" firstAttribute="leading" secondItem="c6Q-Bt-09j" secondAttribute="leading" id="8K3-BX-jkj"/>
+                            <constraint firstItem="H0f-g5-iEa" firstAttribute="leading" secondItem="c6Q-Bt-09j" secondAttribute="leading" id="KT4-C8-1lj"/>
+                            <constraint firstAttribute="trailing" secondItem="aZV-dx-5NI" secondAttribute="trailing" id="fZe-Xs-Ux8"/>
+                            <constraint firstAttribute="trailing" secondItem="ftd-Iz-UYJ" secondAttribute="trailing" id="j97-T9-E7A"/>
+                            <constraint firstItem="aZV-dx-5NI" firstAttribute="leading" secondItem="c6Q-Bt-09j" secondAttribute="leading" id="l2f-5a-J8J"/>
+                            <constraint firstAttribute="bottom" secondItem="aZV-dx-5NI" secondAttribute="bottom" id="sxw-oX-7vp"/>
+                            <constraint firstAttribute="bottom" secondItem="H0f-g5-iEa" secondAttribute="bottom" id="zlA-y3-YFd"/>
+                        </constraints>
+                    </view>
+                    <size key="freeformSize" width="400" height="300"/>
+                    <connections>
+                        <outlet property="collection" destination="H0f-g5-iEa" id="uQZ-NI-Ctw"/>
+                        <outlet property="loadingView" destination="ftd-Iz-UYJ" id="fnD-cw-3wY"/>
+                        <outlet property="selectionView" destination="aZV-dx-5NI" id="7TH-gM-Zg3"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Zvd-4K-Kgz" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-516" y="477"/>
+        </scene>
+    </scenes>
+</document>

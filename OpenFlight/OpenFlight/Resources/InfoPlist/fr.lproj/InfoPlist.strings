@@ -1,0 +1,6 @@
+NSLocationWhenInUseUsageDescription = "OpenFlight nécessite l'accès à votre position GPS pour vous localiser.";
+NSLocationAlwaysAndWhenInUseUsageDescription = "OpenFlight nécessite l'accès à votre position GPS pour vous localiser.";
+NSLocationAlwaysUsageDescription = "OpenFlight nécessite l'accès à votre position GPS pour vous localiser.";
+NSPhotoLibraryAddUsageDescription = "OpenFlight nécessite l'accès à votre galerie photo pour enregistrer les médias.";
+NSPhotoLibraryUsageDescription = "OpenFlight nécessite l'accès à votre galerie photo pour enregistrer les médias.";
+NSCameraUsageDescription = "OpenFlight nécessite l'accès à votre appareil photo pour le mode FPV.";

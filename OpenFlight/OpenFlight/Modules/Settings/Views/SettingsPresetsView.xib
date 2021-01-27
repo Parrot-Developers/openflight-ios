@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SettingsPresetsView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="presetStackView" destination="dyY-Y0-Z7t" id="GcQ-fz-yqM"/>
+                <outlet property="presetTitle" destination="uVa-jL-jCB" id="L9f-KL-ZVw"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="81"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uVa-jL-jCB">
+                    <rect key="frame" x="16" y="36.5" width="42" height="20.5"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dyY-Y0-Z7t">
+                    <rect key="frame" x="74" y="12" width="100" height="69"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="f7n-a3-zuC">
+                            <rect key="frame" x="0.0" y="0.0" width="100" height="69"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="100" id="fAI-1c-Nvr"/>
+                            </constraints>
+                            <state key="normal" title="Button"/>
+                        </button>
+                    </subviews>
+                </stackView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="dyY-Y0-Z7t" secondAttribute="bottom" id="55l-XJ-Goc"/>
+                <constraint firstItem="dyY-Y0-Z7t" firstAttribute="centerY" secondItem="uVa-jL-jCB" secondAttribute="centerY" id="6DX-nt-LLH"/>
+                <constraint firstItem="dyY-Y0-Z7t" firstAttribute="leading" secondItem="uVa-jL-jCB" secondAttribute="trailing" constant="16" id="6Mi-vn-wD7"/>
+                <constraint firstItem="uVa-jL-jCB" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="hBd-PB-1KG"/>
+                <constraint firstItem="dyY-Y0-Z7t" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="12" id="yyv-go-I0Q"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="132.80000000000001" y="163.26836581709148"/>
+        </view>
+    </objects>
+</document>

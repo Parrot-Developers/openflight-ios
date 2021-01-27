@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="rRa-mJ-wGh">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Top Banner View Controller-->
+        <scene sceneID="Y1q-FW-yAS">
+            <objects>
+                <viewController useStoryboardIdentifierAsRestorationIdentifier="YES" id="rRa-mJ-wGh" customClass="HUDTopBannerViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="4fv-j0-Njy">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="100"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="jfs-Hp-2wM">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="80"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3qc-uV-EcI">
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="20"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="204" placeholderIntrinsicHeight="20" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="WLm-7O-UjN">
+                                                <rect key="frame" x="85.5" y="0.0" width="204" height="20"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" placeholderIntrinsicWidth="100" placeholderIntrinsicHeight="20" translatesAutoresizingMaskIntoConstraints="NO" id="JqW-bD-qeN" customClass="HUDTopBannerInfoView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="100" height="20"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" placeholderIntrinsicWidth="100" placeholderIntrinsicHeight="20" translatesAutoresizingMaskIntoConstraints="NO" id="A9j-Js-7bG" customClass="HUDTopBannerInfoView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="104" y="0.0" width="100" height="20"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    </view>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" priority="750" constant="20" id="CtP-Pm-jJm"/>
+                                            <constraint firstItem="WLm-7O-UjN" firstAttribute="top" secondItem="3qc-uV-EcI" secondAttribute="top" id="itL-b9-8Cc"/>
+                                            <constraint firstAttribute="bottom" secondItem="WLm-7O-UjN" secondAttribute="bottom" id="mYd-9r-v2b"/>
+                                            <constraint firstItem="WLm-7O-UjN" firstAttribute="centerX" secondItem="3qc-uV-EcI" secondAttribute="centerX" id="muC-cZ-UCc"/>
+                                            <constraint firstItem="WLm-7O-UjN" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="3qc-uV-EcI" secondAttribute="leading" id="stJ-f7-5ef"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="WLm-7O-UjN" secondAttribute="trailing" id="vPs-xh-rP1"/>
+                                        </constraints>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dL3-Jh-fWW">
+                                        <rect key="frame" x="0.0" y="25" width="375" height="20"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="180" placeholderIntrinsicHeight="20" translatesAutoresizingMaskIntoConstraints="NO" id="iqU-Jl-zvR" customClass="HUDTopBannerInfoView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="97.5" y="0.0" width="180" height="20"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="bottom" secondItem="iqU-Jl-zvR" secondAttribute="bottom" id="4Mk-PV-uEQ"/>
+                                            <constraint firstItem="iqU-Jl-zvR" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="dL3-Jh-fWW" secondAttribute="leading" id="Ae6-UF-9fF"/>
+                                            <constraint firstItem="iqU-Jl-zvR" firstAttribute="centerX" secondItem="dL3-Jh-fWW" secondAttribute="centerX" id="BEn-6t-3In"/>
+                                            <constraint firstAttribute="height" priority="750" constant="20" id="dg2-tc-xNU"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="iqU-Jl-zvR" secondAttribute="trailing" id="fjz-Ip-2B8"/>
+                                            <constraint firstItem="iqU-Jl-zvR" firstAttribute="top" secondItem="dL3-Jh-fWW" secondAttribute="top" id="uIS-JL-2IS"/>
+                                        </constraints>
+                                    </view>
+                                    <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pr9-QE-rJu">
+                                        <rect key="frame" x="0.0" y="50" width="375" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" priority="750" constant="30" id="Scu-lV-bKA"/>
+                                        </constraints>
+                                        <connections>
+                                            <segue destination="jfC-cF-grE" kind="embed" id="ik1-EU-kNd"/>
+                                        </connections>
+                                    </containerView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="jfs-Hp-2wM" firstAttribute="leading" secondItem="4fv-j0-Njy" secondAttribute="leading" id="e10-Lo-NMh"/>
+                            <constraint firstAttribute="trailing" secondItem="jfs-Hp-2wM" secondAttribute="trailing" id="rak-nv-eer"/>
+                            <constraint firstItem="jfs-Hp-2wM" firstAttribute="top" secondItem="4fv-j0-Njy" secondAttribute="top" id="vht-lG-hLl"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="Uly-k2-TMQ"/>
+                    </view>
+                    <size key="freeformSize" width="375" height="100"/>
+                    <connections>
+                        <outlet property="cameraLabelsContainer" destination="3qc-uV-EcI" id="yrq-Im-2jv"/>
+                        <outlet property="hdrInfoView" destination="JqW-bD-qeN" id="B7e-hv-lDW"/>
+                        <outlet property="homeInfoView" destination="iqU-Jl-zvR" id="vPu-Pi-zxh"/>
+                        <outlet property="homeLabelsContainer" destination="dL3-Jh-fWW" id="eAz-Lm-ajy"/>
+                        <outlet property="lockAeInfoView" destination="A9j-Js-7bG" id="wMi-eT-kGa"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ahw-WX-v01" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-170" y="165"/>
+        </scene>
+        <!--HUDAlertBanner-->
+        <scene sceneID="GfU-nh-EjW">
+            <objects>
+                <viewControllerPlaceholder storyboardName="HUDAlertBanner" id="jfC-cF-grE" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iwg-XY-l2h" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="394" y="165"/>
+        </scene>
+    </scenes>
+</document>

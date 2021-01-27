@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="bK8-G3-5YY">
+    <device id="retina4_7" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17126"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Occupancy View Controller-->
+        <scene sceneID="71B-k5-MfV">
+            <objects>
+                <viewController storyboardIdentifier="OccupancyViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="bK8-G3-5YY" customClass="OccupancyViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="QJQ-JD-ypa"/>
+                        <viewControllerLayoutGuide type="bottom" id="gxa-sN-CNq"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" layoutMarginsFollowReadableWidth="YES" id="yCI-Lo-haw">
+                        <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <sceneKitView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="r1T-ng-h1e">
+                                <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </sceneKitView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="r1T-ng-h1e" firstAttribute="leading" secondItem="yCI-Lo-haw" secondAttribute="leading" id="9Dd-cp-xr7"/>
+                            <constraint firstAttribute="bottom" secondItem="r1T-ng-h1e" secondAttribute="bottom" id="UJ5-bV-Dqi"/>
+                            <constraint firstAttribute="trailing" secondItem="r1T-ng-h1e" secondAttribute="trailing" id="dEs-K8-9IJ"/>
+                            <constraint firstItem="r1T-ng-h1e" firstAttribute="top" secondItem="yCI-Lo-haw" secondAttribute="top" id="jHn-sf-Tbh"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="Vn1-ht-yI6"/>
+                    <connections>
+                        <outlet property="sceneKitView" destination="r1T-ng-h1e" id="Lmg-gs-Ekk"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Pzs-fJ-eWd" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1197.7511244377813" y="1288.8"/>
+        </scene>
+    </scenes>
+</document>

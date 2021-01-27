@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DeviceImageView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="circleProgressView" destination="fRa-lr-cYv" id="2iI-gF-dhG"/>
+                <outlet property="deviceImageView" destination="LDU-Jr-iN6" id="eqK-hq-jH7"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="nbL-IG-Ax3">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="fRa-lr-cYv" customClass="CircleProgressView" customModule="OpenFlight" customModuleProvider="target">
+                    <rect key="frame" x="192.5" y="182.5" width="215" height="195"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dPV-Uc-TJu">
+                    <rect key="frame" x="212.5" y="202.5" width="175" height="155"/>
+                    <subviews>
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRemoteUpdate" translatesAutoresizingMaskIntoConstraints="NO" id="LDU-Jr-iN6">
+                            <rect key="frame" x="0.0" y="0.0" width="175" height="155"/>
+                        </imageView>
+                    </subviews>
+                    <constraints>
+                        <constraint firstAttribute="bottom" secondItem="LDU-Jr-iN6" secondAttribute="bottom" id="2na-bZ-ZzQ"/>
+                        <constraint firstItem="LDU-Jr-iN6" firstAttribute="leading" secondItem="dPV-Uc-TJu" secondAttribute="leading" id="CBP-ik-1so"/>
+                        <constraint firstItem="LDU-Jr-iN6" firstAttribute="top" secondItem="dPV-Uc-TJu" secondAttribute="top" id="I3R-4w-62m"/>
+                        <constraint firstAttribute="trailing" secondItem="LDU-Jr-iN6" secondAttribute="trailing" id="Ixg-lt-cBp"/>
+                        <constraint firstAttribute="height" constant="155" id="LTc-Xc-TMx"/>
+                        <constraint firstAttribute="width" constant="175" id="eeB-Av-e0f"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="dPV-Uc-TJu" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="nbL-IG-Ax3" secondAttribute="leading" constant="20" id="24e-Dh-pHI"/>
+                <constraint firstItem="dPV-Uc-TJu" firstAttribute="top" relation="greaterThanOrEqual" secondItem="nbL-IG-Ax3" secondAttribute="top" constant="20" id="3cC-Di-hrz"/>
+                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="dPV-Uc-TJu" secondAttribute="trailing" constant="20" id="4nq-M2-hcK"/>
+                <constraint firstItem="fRa-lr-cYv" firstAttribute="leading" secondItem="dPV-Uc-TJu" secondAttribute="leading" constant="-20" id="7PQ-TA-oUr"/>
+                <constraint firstItem="dPV-Uc-TJu" firstAttribute="bottom" secondItem="fRa-lr-cYv" secondAttribute="bottom" constant="-20" id="UzG-4f-AXw"/>
+                <constraint firstItem="dPV-Uc-TJu" firstAttribute="centerX" secondItem="nbL-IG-Ax3" secondAttribute="centerX" id="W04-1R-a8p"/>
+                <constraint firstItem="fRa-lr-cYv" firstAttribute="top" secondItem="dPV-Uc-TJu" secondAttribute="top" constant="-20" id="bes-wi-5Y8"/>
+                <constraint firstItem="dPV-Uc-TJu" firstAttribute="trailing" secondItem="fRa-lr-cYv" secondAttribute="trailing" constant="-20" id="dGl-U6-m7B"/>
+                <constraint firstItem="dPV-Uc-TJu" firstAttribute="centerY" secondItem="nbL-IG-Ax3" secondAttribute="centerY" constant="-20" id="saU-N2-ZnC"/>
+                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="dPV-Uc-TJu" secondAttribute="bottom" constant="20" id="yfJ-GQ-j2E"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="-4557" y="-509"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icRemoteUpdate" width="194" height="124.5"/>
+    </resources>
+</document>

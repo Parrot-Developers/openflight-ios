@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="FlightDetailsDiagnosticView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="imageView" destination="aVd-aa-1ki" id="q0K-kc-sFo"/>
+                <outlet property="mainLabel" destination="HFB-Za-RcZ" id="7aK-fT-1Fa"/>
+                <outlet property="subLabel" destination="MA4-OJ-UUE" id="w0U-ir-cp1"/>
+                <outlet property="supportButton" destination="vMv-S9-heM" id="mZB-Pg-ovu"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="200"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="fPt-xZ-D2e">
+                    <rect key="frame" x="8" y="8" width="584" height="184"/>
+                    <subviews>
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icWarningRed" translatesAutoresizingMaskIntoConstraints="NO" id="aVd-aa-1ki">
+                            <rect key="frame" x="0.0" y="0.0" width="15" height="184"/>
+                        </imageView>
+                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="GXI-qr-egD">
+                            <rect key="frame" x="23" y="0.0" width="42" height="184"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="HFB-Za-RcZ">
+                                    <rect key="frame" x="0.0" y="0.0" width="42" height="90"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="MA4-OJ-UUE">
+                                    <rect key="frame" x="0.0" y="94" width="42" height="90"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                        </stackView>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="HZW-pM-KA0">
+                            <rect key="frame" x="73" y="0.0" width="383" height="184"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </view>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vMv-S9-heM">
+                            <rect key="frame" x="464" y="0.0" width="120" height="184"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="120" id="bKd-aB-28M"/>
+                            </constraints>
+                            <inset key="contentEdgeInsets" minX="24" minY="0.0" maxX="24" maxY="0.0"/>
+                            <state key="normal" title="Button"/>
+                            <connections>
+                                <action selector="supportButtonTouchedUpInside:" destination="-1" eventType="touchUpInside" id="IkS-J0-XoI"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <constraints>
+                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="35" id="GL0-aM-rkN"/>
+                    </constraints>
+                </stackView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="fPt-xZ-D2e" secondAttribute="trailing" constant="8" id="ETy-Yd-x4q"/>
+                <constraint firstItem="fPt-xZ-D2e" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="8" id="XcX-t4-0h7"/>
+                <constraint firstItem="fPt-xZ-D2e" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="f0W-Du-jcT"/>
+                <constraint firstAttribute="bottom" secondItem="fPt-xZ-D2e" secondAttribute="bottom" constant="8" id="ygT-3y-poG"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="139" y="154"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icWarningRed" width="15" height="12"/>
+    </resources>
+</document>

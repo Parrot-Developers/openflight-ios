@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "icRemotePhoneMediumPairing.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "icRemotePhoneMediumPairing@2x.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "icRemotePhoneMediumPairing@3x.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

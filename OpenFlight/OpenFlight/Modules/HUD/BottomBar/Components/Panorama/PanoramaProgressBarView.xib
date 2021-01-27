@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="PanoramaProgressBarView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="panoramaTypeImage" destination="V4S-aU-boE" id="yAq-It-NkU"/>
+                <outlet property="panoramaTypeLabel" destination="VUH-5s-OWg" id="IW9-3K-nl3"/>
+                <outlet property="progressBarBackView" destination="dzo-EH-o1u" id="fbQ-xL-IoP"/>
+                <outlet property="progressBarView" destination="kP7-2l-U92" id="RsS-hh-1TG"/>
+                <outlet property="progressBarWidthConstraint" destination="Hly-t3-k7V" id="ngG-rB-2KM"/>
+                <outlet property="progressLabel" destination="Gzz-ep-Eyi" id="E0y-OH-E9l"/>
+                <outlet property="stopView" destination="Ku2-rT-SKG" id="hha-D1-SGj"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="b63-mj-f9D">
+            <rect key="frame" x="0.0" y="0.0" width="614" height="126"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dzo-EH-o1u">
+                    <rect key="frame" x="0.0" y="0.0" width="478" height="126"/>
+                    <subviews>
+                        <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kP7-2l-U92">
+                            <rect key="frame" x="0.0" y="0.0" width="0.0" height="126"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="width" id="Hly-t3-k7V"/>
+                            </constraints>
+                        </view>
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="V4S-aU-boE">
+                            <rect key="frame" x="12" y="11" width="104" height="104"/>
+                            <constraints>
+                                <constraint firstAttribute="width" secondItem="V4S-aU-boE" secondAttribute="height" multiplier="1:1" id="9tf-Ug-Vt2"/>
+                            </constraints>
+                        </imageView>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VUH-5s-OWg">
+                            <rect key="frame" x="128" y="50" width="29" height="13"/>
+                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gzz-ep-Eyi">
+                            <rect key="frame" x="128" y="63" width="29" height="13"/>
+                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                            <color key="textColor" white="1" alpha="0.5" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="bottom" secondItem="kP7-2l-U92" secondAttribute="bottom" id="3Dt-yf-6m0"/>
+                        <constraint firstItem="Gzz-ep-Eyi" firstAttribute="top" secondItem="VUH-5s-OWg" secondAttribute="bottom" id="46h-vi-x6a"/>
+                        <constraint firstAttribute="bottom" secondItem="V4S-aU-boE" secondAttribute="bottom" constant="11" id="DCj-mZ-tMj"/>
+                        <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Gzz-ep-Eyi" secondAttribute="bottom" id="HRq-gi-pac"/>
+                        <constraint firstItem="Gzz-ep-Eyi" firstAttribute="leading" secondItem="VUH-5s-OWg" secondAttribute="leading" id="Ln8-Jy-LRF"/>
+                        <constraint firstItem="V4S-aU-boE" firstAttribute="top" secondItem="dzo-EH-o1u" secondAttribute="top" constant="11" id="PgZ-mc-jiH"/>
+                        <constraint firstItem="kP7-2l-U92" firstAttribute="top" secondItem="dzo-EH-o1u" secondAttribute="top" id="PrO-ru-nRG"/>
+                        <constraint firstItem="VUH-5s-OWg" firstAttribute="leading" secondItem="V4S-aU-boE" secondAttribute="trailing" constant="12" id="dOo-qH-hsP"/>
+                        <constraint firstItem="kP7-2l-U92" firstAttribute="leading" secondItem="dzo-EH-o1u" secondAttribute="leading" id="khm-E5-c2A"/>
+                        <constraint firstItem="V4S-aU-boE" firstAttribute="leading" secondItem="dzo-EH-o1u" secondAttribute="leading" constant="12" id="qOy-Eo-94O"/>
+                        <constraint firstAttribute="centerY" secondItem="VUH-5s-OWg" secondAttribute="bottom" id="tF8-I7-3Ar"/>
+                        <constraint firstItem="VUH-5s-OWg" firstAttribute="top" relation="greaterThanOrEqual" secondItem="dzo-EH-o1u" secondAttribute="top" id="wNY-Hb-xNz"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ku2-rT-SKG" customClass="StopView" customModule="OpenFlight" customModuleProvider="target">
+                    <rect key="frame" x="488" y="0.0" width="126" height="126"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="width" secondItem="Ku2-rT-SKG" secondAttribute="height" multiplier="1:1" id="uLd-fi-3eK"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="Ku2-rT-SKG" firstAttribute="top" secondItem="b63-mj-f9D" secondAttribute="top" id="GhS-if-ory"/>
+                <constraint firstItem="dzo-EH-o1u" firstAttribute="leading" secondItem="b63-mj-f9D" secondAttribute="leading" id="NWi-tc-7Au"/>
+                <constraint firstAttribute="trailing" secondItem="Ku2-rT-SKG" secondAttribute="trailing" id="XlN-O2-Jlz"/>
+                <constraint firstItem="dzo-EH-o1u" firstAttribute="top" secondItem="b63-mj-f9D" secondAttribute="top" id="bEw-lq-PKh"/>
+                <constraint firstAttribute="bottom" secondItem="Ku2-rT-SKG" secondAttribute="bottom" id="ioG-gd-81H"/>
+                <constraint firstAttribute="bottom" secondItem="dzo-EH-o1u" secondAttribute="bottom" id="xv9-be-dQf"/>
+                <constraint firstItem="Ku2-rT-SKG" firstAttribute="leading" secondItem="dzo-EH-o1u" secondAttribute="trailing" constant="10" id="yUE-7I-MAw"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="tlr-jL-j0s"/>
+            <point key="canvasLocation" x="5" y="35"/>
+        </view>
+    </objects>
+</document>

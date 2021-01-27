@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="FlightPlanPhotoCountView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="photoCountLabel" destination="rqa-LL-ys7" id="2Tx-ML-atd"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="186" height="56"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Aip-gK-S8W">
+                    <rect key="frame" x="54.5" y="0.0" width="77" height="56"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rqa-LL-ys7">
+                            <rect key="frame" x="0.0" y="0.0" width="50" height="56"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icPhotoMini" translatesAutoresizingMaskIntoConstraints="NO" id="9vB-dK-VbT">
+                            <rect key="frame" x="58" y="0.0" width="19" height="56"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="19" id="k6U-gy-pEU"/>
+                            </constraints>
+                        </imageView>
+                    </subviews>
+                </stackView>
+            </subviews>
+            <constraints>
+                <constraint firstItem="Aip-gK-S8W" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="0Nt-gJ-2Gh"/>
+                <constraint firstItem="Aip-gK-S8W" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="iN0-l3-epB" secondAttribute="leading" id="AE9-Co-3qY"/>
+                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Aip-gK-S8W" secondAttribute="trailing" id="Apq-SL-DW6"/>
+                <constraint firstAttribute="bottom" secondItem="Aip-gK-S8W" secondAttribute="bottom" id="xYW-Lo-Epn"/>
+                <constraint firstItem="Aip-gK-S8W" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="zlM-8M-wOX"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="-190.40000000000001" y="399.40029985007499"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icPhotoMini" width="11" height="9"/>
+    </resources>
+</document>

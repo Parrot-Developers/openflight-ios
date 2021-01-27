@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17709" systemVersion="20C69" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="FlightDataModel" representedClassName="FlightDataModel" syncable="YES">
+        <attribute name="checked" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="cloudStatus" optional="YES" attributeType="String"/>
+        <attribute name="date" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="distance" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="duration" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="gutmaFileKey" attributeType="String"/>
+        <attribute name="hasIssues" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="lastModified" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="latitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="longitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="numberOfPhotos" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="numberOfVideos" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="thumbnail" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <relationship name="gutma" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="GutmaDataModel" inverseName="flightData" inverseEntity="GutmaDataModel"/>
+    </entity>
+    <entity name="FlightPlanDataModel" representedClassName="FlightPlanDataModel" syncable="YES">
+        <attribute name="flightPlanData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <relationship name="flightPlan" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="FlightPlanModel" inverseName="flightPlanData" inverseEntity="FlightPlanModel"/>
+    </entity>
+    <entity name="FlightPlanExecutionDataModel" representedClassName="FlightPlanExecutionDataModel" syncable="YES">
+        <attribute name="endDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="executionId" optional="YES" attributeType="String"/>
+        <attribute name="flightId" optional="YES" attributeType="String"/>
+        <attribute name="flightPlanId" optional="YES" attributeType="String"/>
+        <attribute name="projectId" optional="YES" attributeType="Decimal" defaultValueString="0"/>
+        <attribute name="settings" optional="YES" attributeType="Binary"/>
+        <attribute name="startDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="state" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="FlightPlanModel" representedClassName="FlightPlanModel" syncable="YES">
+        <attribute name="cloudStatus" optional="YES" attributeType="String"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="isPhotogrametry" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="lastModified" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="latitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="longitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="thumbnail" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
+        <attribute name="uuid" optional="YES" attributeType="String"/>
+        <relationship name="flightPlanData" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="FlightPlanDataModel" inverseName="flightPlan" inverseEntity="FlightPlanDataModel"/>
+    </entity>
+    <entity name="GutmaDataModel" representedClassName="GutmaDataModel" syncable="YES">
+        <attribute name="gutmaFile" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <relationship name="flightData" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="FlightDataModel" inverseName="gutma" inverseEntity="FlightDataModel"/>
+    </entity>
+    <elements>
+        <element name="FlightDataModel" positionX="-99.3140869140625" positionY="27.74870300292969" width="128" height="254"/>
+        <element name="FlightPlanDataModel" positionX="83.3997802734375" positionY="24.73614501953125" width="128" height="73"/>
+        <element name="FlightPlanExecutionDataModel" positionX="108" positionY="117" width="128" height="149"/>
+        <element name="FlightPlanModel" positionX="232.726318359375" positionY="-29.82870483398438" width="128" height="208"/>
+        <element name="GutmaDataModel" positionX="386.43701171875" positionY="20.74520874023438" width="128" height="73"/>
+    </elements>
+</model>

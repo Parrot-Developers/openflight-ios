@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" translatesAutoresizingMaskIntoConstraints="NO" id="gTV-IL-0wX" customClass="DashboardFooterCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="500" height="80"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="500" height="80"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="B1J-xC-GGG">
+                        <rect key="frame" x="0.0" y="0.0" width="339" height="80"/>
+                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tS5-z8-NEr">
+                        <rect key="frame" x="343" y="0.0" width="32" height="80"/>
+                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                        <state key="normal" title="About">
+                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </state>
+                        <connections>
+                            <action selector="aboutButtonTouchedUpInside:" destination="gTV-IL-0wX" eventType="touchUpInside" id="Hu7-Xt-F86"/>
+                        </connections>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FSy-7P-qsp">
+                        <rect key="frame" x="395" y="0.0" width="105" height="80"/>
+                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                        <state key="normal" title="Data confidentiality">
+                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </state>
+                        <connections>
+                            <action selector="dataConfidentialityButtonTouchedUpInside:" destination="gTV-IL-0wX" eventType="touchUpInside" id="Ger-Vr-SXW"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="tS5-z8-NEr" secondAttribute="bottom" id="2Ss-th-FRE"/>
+                <constraint firstItem="B1J-xC-GGG" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="Bxs-D6-OpO"/>
+                <constraint firstItem="FSy-7P-qsp" firstAttribute="leading" secondItem="tS5-z8-NEr" secondAttribute="trailing" constant="20" id="FXz-2d-usn"/>
+                <constraint firstItem="tS5-z8-NEr" firstAttribute="leading" secondItem="B1J-xC-GGG" secondAttribute="trailing" constant="4" id="Qmf-6D-o3N"/>
+                <constraint firstItem="tS5-z8-NEr" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="UfX-iV-DCV"/>
+                <constraint firstAttribute="bottom" secondItem="B1J-xC-GGG" secondAttribute="bottom" id="iBa-ga-fC8"/>
+                <constraint firstAttribute="bottom" secondItem="FSy-7P-qsp" secondAttribute="bottom" id="ke1-0q-J2f"/>
+                <constraint firstItem="FSy-7P-qsp" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="qoS-2n-VXH"/>
+                <constraint firstAttribute="trailing" secondItem="FSy-7P-qsp" secondAttribute="trailing" id="rOo-QR-udA"/>
+                <constraint firstItem="B1J-xC-GGG" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="sND-VO-Ouv"/>
+            </constraints>
+            <connections>
+                <outlet property="aboutButton" destination="tS5-z8-NEr" id="JrP-xh-qD2"/>
+                <outlet property="dataConfidentialityButton" destination="FSy-7P-qsp" id="vET-LE-0MG"/>
+                <outlet property="versionLabel" destination="B1J-xC-GGG" id="YLz-W6-duD"/>
+            </connections>
+            <point key="canvasLocation" x="139" y="155"/>
+        </collectionViewCell>
+    </objects>
+</document>

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zxS-jz-EQH">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Camera Sliders View Controller-->
+        <scene sceneID="Wm3-do-xrW">
+            <objects>
+                <viewController id="zxS-jz-EQH" customClass="CameraSlidersViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="BQq-ZJ-0gu">
+                        <rect key="frame" x="0.0" y="0.0" width="31" height="150"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mNG-Lo-JAx">
+                                <rect key="frame" x="0.0" y="0.0" width="31" height="150"/>
+                                <subviews>
+                                    <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eJK-Rl-2sY" customClass="ZoomSliderView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="33" height="150"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="33" id="568-TB-2wm"/>
+                                        </constraints>
+                                    </view>
+                                    <view hidden="YES" alpha="0.0" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mbl-yM-FB7">
+                                        <rect key="frame" x="0.0" y="0.0" width="40" height="150"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="s61-IX-cxD" customClass="TiltSliderView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="40" height="150"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" priority="750" constant="150" id="sho-ZJ-cwg"/>
+                                                </constraints>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="s61-IX-cxD" secondAttribute="bottom" id="0KN-7m-L7g"/>
+                                            <constraint firstAttribute="width" constant="40" id="Ge6-KZ-xUM"/>
+                                            <constraint firstAttribute="trailing" secondItem="s61-IX-cxD" secondAttribute="trailing" id="ZDr-Tv-t2p"/>
+                                            <constraint firstItem="s61-IX-cxD" firstAttribute="centerY" secondItem="Mbl-yM-FB7" secondAttribute="centerY" id="a1j-05-AVC"/>
+                                            <constraint firstItem="s61-IX-cxD" firstAttribute="top" relation="greaterThanOrEqual" secondItem="Mbl-yM-FB7" secondAttribute="top" id="feb-VQ-6cB"/>
+                                            <constraint firstItem="s61-IX-cxD" firstAttribute="leading" secondItem="Mbl-yM-FB7" secondAttribute="leading" id="ocs-xk-hqT"/>
+                                        </constraints>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="isA-wO-5rC">
+                                        <rect key="frame" x="0.0" y="0.0" width="31" height="150"/>
+                                        <subviews>
+                                            <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Zoom max reached" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qKA-eY-Yh4" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="38" y="59.5" width="119.5" height="31"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="31" id="Ctw-z2-ZQH"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="bottomInset">
+                                                        <real key="value" value="0.0"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="leftInset">
+                                                        <real key="value" value="9"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="rightInset">
+                                                        <real key="value" value="9"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="topInset">
+                                                        <real key="value" value="0.0"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                </userDefinedRuntimeAttributes>
+                                            </label>
+                                            <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Max Tilt" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ydd-Y8-qtH" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="38" y="110.5" width="59.5" height="31"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="31" id="R73-a7-w7k"/>
+                                                    <constraint firstAttribute="height" constant="31" id="cPl-HZ-yg4"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="bottomInset">
+                                                        <real key="value" value="0.0"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="leftInset">
+                                                        <real key="value" value="9"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="rightInset">
+                                                        <real key="value" value="9"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="topInset">
+                                                        <real key="value" value="0.0"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                </userDefinedRuntimeAttributes>
+                                            </label>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="xwO-H2-OhT">
+                                                <rect key="frame" x="0.0" y="8.5" width="31" height="133"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="e40-LM-tfB">
+                                                        <rect key="frame" x="0.0" y="0.0" width="31" height="31"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="31" id="WYo-VC-oJV"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                        <state key="normal">
+                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="joysticksButtonTouchedUpInside:" destination="zxS-jz-EQH" eventType="touchUpInside" id="gXe-tu-yty"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cs1-aQ-xCZ">
+                                                        <rect key="frame" x="0.0" y="51" width="31" height="31"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="31" id="GhV-RV-3sZ"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                        <state key="normal" title="1×">
+                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="zoomButtonTouchedUpInside:" destination="zxS-jz-EQH" eventType="touchUpInside" id="iqV-s8-dSX"/>
+                                                        </connections>
+                                                    </button>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hIo-6M-owq" customClass="TiltButton" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="102" width="31" height="31"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="31" id="kHB-iB-ong"/>
+                                                        </constraints>
+                                                        <connections>
+                                                            <action selector="tiltButtonTouchedUpInside:" destination="zxS-jz-EQH" eventType="touchUpInside" id="rDL-NO-dpo"/>
+                                                        </connections>
+                                                    </view>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="hIo-6M-owq" firstAttribute="trailing" secondItem="Ydd-Y8-qtH" secondAttribute="leading" constant="-7" id="30T-E8-Rp6"/>
+                                            <constraint firstItem="xwO-H2-OhT" firstAttribute="centerY" secondItem="isA-wO-5rC" secondAttribute="centerY" id="5Ip-wL-bxE"/>
+                                            <constraint firstItem="xwO-H2-OhT" firstAttribute="top" relation="greaterThanOrEqual" secondItem="isA-wO-5rC" secondAttribute="top" id="626-Y3-AA0"/>
+                                            <constraint firstItem="cs1-aQ-xCZ" firstAttribute="trailing" secondItem="qKA-eY-Yh4" secondAttribute="leading" constant="-7" id="6vd-8I-Dt4"/>
+                                            <constraint firstItem="qKA-eY-Yh4" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" constant="9" id="9SN-hX-w34"/>
+                                            <constraint firstItem="qKA-eY-Yh4" firstAttribute="top" secondItem="isA-wO-5rC" secondAttribute="top" constant="2" id="9TG-1R-UY1"/>
+                                            <constraint firstAttribute="trailing" secondItem="xwO-H2-OhT" secondAttribute="trailing" id="P7q-Uj-tYa"/>
+                                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="xwO-H2-OhT" secondAttribute="bottom" id="VKP-SH-7an"/>
+                                            <constraint firstItem="Ydd-Y8-qtH" firstAttribute="top" secondItem="hIo-6M-owq" secondAttribute="top" id="dbP-dq-kmM"/>
+                                            <constraint firstAttribute="width" constant="31" id="hjP-K1-IYL"/>
+                                            <constraint firstItem="Ydd-Y8-qtH" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" id="icQ-k3-Oho"/>
+                                            <constraint firstItem="xwO-H2-OhT" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" id="k2k-P0-65u"/>
+                                            <constraint firstItem="hIo-6M-owq" firstAttribute="bottom" secondItem="Ydd-Y8-qtH" secondAttribute="top" priority="750" constant="-10" id="lvu-o9-bIZ"/>
+                                            <constraint firstItem="cs1-aQ-xCZ" firstAttribute="top" secondItem="qKA-eY-Yh4" secondAttribute="top" id="rZM-fm-qNJ"/>
+                                            <constraint firstItem="Ydd-Y8-qtH" firstAttribute="bottom" secondItem="hIo-6M-owq" secondAttribute="top" priority="750" constant="-10" id="uwZ-oZ-rIq"/>
+                                        </constraints>
+                                        <variation key="default">
+                                            <mask key="constraints">
+                                                <exclude reference="9SN-hX-w34"/>
+                                                <exclude reference="9TG-1R-UY1"/>
+                                                <exclude reference="lvu-o9-bIZ"/>
+                                                <exclude reference="icQ-k3-Oho"/>
+                                                <exclude reference="uwZ-oZ-rIq"/>
+                                            </mask>
+                                        </variation>
+                                    </view>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="mNG-Lo-JAx" firstAttribute="top" secondItem="BQq-ZJ-0gu" secondAttribute="top" id="UK6-3Y-Uwg"/>
+                            <constraint firstAttribute="trailing" secondItem="mNG-Lo-JAx" secondAttribute="trailing" id="fsc-OA-eem"/>
+                            <constraint firstItem="mNG-Lo-JAx" firstAttribute="leading" secondItem="BQq-ZJ-0gu" secondAttribute="leading" id="qKF-Fl-Yuj"/>
+                            <constraint firstAttribute="bottom" secondItem="mNG-Lo-JAx" secondAttribute="bottom" id="z2v-ph-ixn"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="1jJ-rj-rYb"/>
+                    </view>
+                    <size key="freeformSize" width="31" height="150"/>
+                    <connections>
+                        <outlet property="joysticksButton" destination="e40-LM-tfB" id="RnC-lf-jJF"/>
+                        <outlet property="maxTiltLabel" destination="Ydd-Y8-qtH" id="thn-4y-4KQ"/>
+                        <outlet property="maxTiltLabelOpenLeadingConstraint" destination="icQ-k3-Oho" id="0vE-ha-EmB"/>
+                        <outlet property="maxTiltLabelOpenNegativeVerticalConstraint" destination="lvu-o9-bIZ" id="JxF-hj-9Ft"/>
+                        <outlet property="maxTiltLabelOpenPositiveVerticalConstraint" destination="uwZ-oZ-rIq" id="W52-QA-ZMw"/>
+                        <outlet property="overzoomLabel" destination="qKA-eY-Yh4" id="SJp-Pg-VJ0"/>
+                        <outlet property="tiltButton" destination="hIo-6M-owq" id="smE-I4-wr2"/>
+                        <outlet property="tiltSliderContainerView" destination="Mbl-yM-FB7" id="w5f-c8-sjC"/>
+                        <outlet property="tiltSliderView" destination="s61-IX-cxD" id="BlF-Md-fnh"/>
+                        <outlet property="zoomButton" destination="cs1-aQ-xCZ" id="Ivx-bZ-NX2"/>
+                        <outlet property="zoomSliderView" destination="eJK-Rl-2sY" id="GNk-7T-crk"/>
+                        <outletCollection property="overzoomLabelOpenConstraints" destination="9SN-hX-w34" collectionClass="NSMutableArray" id="KwV-J3-3Mc"/>
+                        <outletCollection property="overzoomLabelOpenConstraints" destination="9TG-1R-UY1" collectionClass="NSMutableArray" id="WdQ-P3-mHb"/>
+                        <outletCollection property="overzoomLabelClosedConstraints" destination="6vd-8I-Dt4" collectionClass="NSMutableArray" id="kqg-Ae-759"/>
+                        <outletCollection property="overzoomLabelClosedConstraints" destination="rZM-fm-qNJ" collectionClass="NSMutableArray" id="9Pr-jH-YrQ"/>
+                        <outletCollection property="maxTiltLabelClosedConstraints" destination="30T-E8-Rp6" collectionClass="NSMutableArray" id="tJ3-Ih-aQj"/>
+                        <outletCollection property="maxTiltLabelClosedConstraints" destination="dbP-dq-kmM" collectionClass="NSMutableArray" id="kNK-Dk-6Pc"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="OUf-o0-KZb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="35" y="175"/>
+        </scene>
+    </scenes>
+</document>

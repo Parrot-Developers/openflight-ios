@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="GalleryMediaCollectionViewCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="SbH-Q4-Jqs">
+                        <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
+                        <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </imageView>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="IeF-wl-tXL">
+                        <rect key="frame" x="39" y="39" width="42" height="42"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="42" id="E62-eG-p5S"/>
+                            <constraint firstAttribute="width" secondItem="IeF-wl-tXL" secondAttribute="height" multiplier="1:1" id="isL-Zd-IXI"/>
+                        </constraints>
+                    </imageView>
+                    <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Tkt-uo-YeU">
+                        <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4UJ-jo-38g">
+                                <rect key="frame" x="95" y="5" width="20" height="20"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="mediaDownloaded" translatesAutoresizingMaskIntoConstraints="NO" id="w3o-pf-ecb">
+                                        <rect key="frame" x="5" y="5" width="10" height="10"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="10" id="Nqf-lK-1cO"/>
+                                            <constraint firstAttribute="height" constant="10" id="zHG-eF-ot1"/>
+                                        </constraints>
+                                    </imageView>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemGrayColor" red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="20" id="36k-SV-aCp"/>
+                                    <constraint firstItem="w3o-pf-ecb" firstAttribute="centerX" secondItem="4UJ-jo-38g" secondAttribute="centerX" id="3Gw-DN-blf"/>
+                                    <constraint firstItem="w3o-pf-ecb" firstAttribute="centerY" secondItem="4UJ-jo-38g" secondAttribute="centerY" id="7bz-bm-GtG"/>
+                                    <constraint firstAttribute="height" constant="20" id="Dxt-Kl-DCA"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.4003638698630137" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="4UJ-jo-38g" secondAttribute="trailing" constant="5" id="9YM-nw-g4I"/>
+                            <constraint firstItem="4UJ-jo-38g" firstAttribute="top" secondItem="Tkt-uo-YeU" secondAttribute="top" constant="5" id="jbg-mD-yPq"/>
+                        </constraints>
+                    </view>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nFP-i0-hR0" customClass="DownloadButton" customModule="OpenFlight" customModuleProvider="target">
+                        <rect key="frame" x="58" y="92" width="58" height="24"/>
+                        <color key="backgroundColor" systemColor="systemGreenColor" red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="24" id="q5K-A6-pNF"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                        <inset key="contentEdgeInsets" minX="12" minY="0.0" maxX="6" maxY="0.0"/>
+                        <inset key="imageEdgeInsets" minX="-8" minY="0.0" maxX="0.0" maxY="0.0"/>
+                        <state key="normal" title="Label" image="mediaDownload"/>
+                        <connections>
+                            <action selector="downloadTouchedUpInside:" destination="gTV-IL-0wX" eventType="touchUpInside" id="RzE-RW-Huy"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+            <constraints>
+                <constraint firstItem="Tkt-uo-YeU" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="2hE-Hi-3rG"/>
+                <constraint firstItem="IeF-wl-tXL" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="31m-FL-2cA"/>
+                <constraint firstAttribute="bottom" secondItem="SbH-Q4-Jqs" secondAttribute="bottom" id="EK6-6f-yOD"/>
+                <constraint firstAttribute="trailing" secondItem="nFP-i0-hR0" secondAttribute="trailing" constant="4" id="OmZ-3Z-zPn"/>
+                <constraint firstItem="SbH-Q4-Jqs" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="QZe-kC-npP"/>
+                <constraint firstAttribute="bottom" secondItem="Tkt-uo-YeU" secondAttribute="bottom" id="UxE-vT-ywz"/>
+                <constraint firstAttribute="trailing" secondItem="Tkt-uo-YeU" secondAttribute="trailing" id="bBV-9S-4gS"/>
+                <constraint firstItem="IeF-wl-tXL" firstAttribute="centerX" secondItem="gTV-IL-0wX" secondAttribute="centerX" id="flJ-lS-vF7"/>
+                <constraint firstAttribute="bottom" secondItem="nFP-i0-hR0" secondAttribute="bottom" constant="4" id="lOZ-NO-dtv"/>
+                <constraint firstItem="Tkt-uo-YeU" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="qBg-gN-dCs"/>
+                <constraint firstItem="SbH-Q4-Jqs" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="qfe-xz-fcu"/>
+                <constraint firstAttribute="trailing" secondItem="SbH-Q4-Jqs" secondAttribute="trailing" id="v4Y-hN-3cy"/>
+            </constraints>
+            <connections>
+                <outlet property="downloadButton" destination="nFP-i0-hR0" id="kek-Du-HSA"/>
+                <outlet property="selectionCheckmarkView" destination="4UJ-jo-38g" id="2OF-L7-LkY"/>
+                <outlet property="selectionView" destination="Tkt-uo-YeU" id="wqw-fC-fnz"/>
+                <outlet property="thumbnailImageView" destination="SbH-Q4-Jqs" id="YGv-63-o6J"/>
+                <outlet property="typeImage" destination="IeF-wl-tXL" id="2KH-a9-d3Z"/>
+            </connections>
+            <point key="canvasLocation" x="132.80000000000001" y="144.82758620689657"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <image name="mediaDownload" width="7" height="8"/>
+        <image name="mediaDownloaded" width="11" height="8"/>
+    </resources>
+</document>

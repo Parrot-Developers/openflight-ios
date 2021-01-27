@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-Medium.ttf">
+            <string>Rajdhani-Medium</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="SettingsSegmentedCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsSegmentedCell" rowHeight="80" id="RIC-UX-aqk" customClass="SettingsSegmentedCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="601" height="89"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="RIC-UX-aqk" id="Dsm-W2-s55">
+                <rect key="frame" x="0.0" y="0.0" width="601" height="89"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PFX-pe-4V0">
+                        <rect key="frame" x="0.0" y="8" width="585" height="73"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="NSB-10-X62">
+                                <rect key="frame" x="0.0" y="7" width="236.5" height="38"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tgt-Mh-30q">
+                                        <rect key="frame" x="0.0" y="0.0" width="236.5" height="22"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="15"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="R6g-95-YxT">
+                                        <rect key="frame" x="0.0" y="22" width="236.5" height="16"/>
+                                        <subviews>
+                                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Info" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="65N-KA-0di">
+                                                <rect key="frame" x="0.0" y="0.0" width="120" height="16"/>
+                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="16" id="9DR-Fe-9gH"/>
+                                                    <constraint firstAttribute="width" constant="120" id="ArD-QY-jz9"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="12"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="65N-KA-0di" firstAttribute="leading" secondItem="R6g-95-YxT" secondAttribute="leading" id="6l6-3g-jri"/>
+                                            <constraint firstItem="65N-KA-0di" firstAttribute="top" secondItem="R6g-95-YxT" secondAttribute="top" id="Fdh-uW-7Fz"/>
+                                            <constraint firstAttribute="bottom" secondItem="65N-KA-0di" secondAttribute="bottom" id="GMD-lP-Rkl"/>
+                                            <constraint firstAttribute="height" constant="16" id="WMq-NZ-gDM"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="38" id="3DB-M4-hJV"/>
+                                </constraints>
+                            </stackView>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="1QW-Pg-x9u">
+                                <rect key="frame" x="244.5" y="10" width="340.5" height="33"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="32" id="Bfh-iZ-1x5"/>
+                                </constraints>
+                                <segments>
+                                    <segment title="First"/>
+                                    <segment title="Second"/>
+                                </segments>
+                                <connections>
+                                    <action selector="segmentDidChange:" destination="RIC-UX-aqk" eventType="valueChanged" id="vcL-Fj-54n"/>
+                                </connections>
+                            </segmentedControl>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5qT-M2-AVF">
+                                <rect key="frame" x="244.5" y="42" width="340.5" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="HcB-Fk-kpQ"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="14"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="1QW-Pg-x9u" firstAttribute="leading" secondItem="NSB-10-X62" secondAttribute="trailing" constant="8" id="9u3-6g-4Ce"/>
+                            <constraint firstItem="1QW-Pg-x9u" firstAttribute="top" secondItem="PFX-pe-4V0" secondAttribute="top" constant="10" id="A47-NM-WJb"/>
+                            <constraint firstAttribute="bottom" secondItem="5qT-M2-AVF" secondAttribute="bottom" constant="10" id="BJz-Ao-3Pc"/>
+                            <constraint firstItem="5qT-M2-AVF" firstAttribute="leading" secondItem="NSB-10-X62" secondAttribute="trailing" constant="8" id="KYD-iP-gih"/>
+                            <constraint firstItem="NSB-10-X62" firstAttribute="leading" secondItem="PFX-pe-4V0" secondAttribute="leading" id="OAr-CA-1Kc"/>
+                            <constraint firstItem="NSB-10-X62" firstAttribute="centerY" secondItem="1QW-Pg-x9u" secondAttribute="centerY" id="Sq3-tg-Z8j"/>
+                            <constraint firstAttribute="trailing" secondItem="1QW-Pg-x9u" secondAttribute="trailing" id="WyF-52-nn9"/>
+                            <constraint firstItem="5qT-M2-AVF" firstAttribute="trailing" secondItem="1QW-Pg-x9u" secondAttribute="trailing" id="YgK-ab-e3H"/>
+                            <constraint firstItem="5qT-M2-AVF" firstAttribute="top" secondItem="1QW-Pg-x9u" secondAttribute="bottom" id="jBC-PT-Kos"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                <constraints>
+                    <constraint firstItem="PFX-pe-4V0" firstAttribute="leading" secondItem="Dsm-W2-s55" secondAttribute="leading" id="iEQ-tm-Fg2"/>
+                    <constraint firstAttribute="trailing" secondItem="PFX-pe-4V0" secondAttribute="trailing" constant="16" id="oVe-pN-sK0"/>
+                    <constraint firstItem="PFX-pe-4V0" firstAttribute="top" secondItem="Dsm-W2-s55" secondAttribute="top" constant="8" id="sKF-eI-PpZ"/>
+                    <constraint firstAttribute="bottom" secondItem="PFX-pe-4V0" secondAttribute="bottom" constant="8" id="yhI-2b-e5X"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <connections>
+                <outlet property="bgView" destination="PFX-pe-4V0" id="fui-by-5le"/>
+                <outlet property="bgViewLeadingConstraint" destination="iEQ-tm-Fg2" id="NOn-RD-e21"/>
+                <outlet property="infoLabel" destination="65N-KA-0di" id="1vf-gP-zKO"/>
+                <outlet property="segmentControl" destination="1QW-Pg-x9u" id="wtq-gv-Z5V"/>
+                <outlet property="segmentControlTrailingConstraint" destination="WyF-52-nn9" id="FZJ-Ug-AcT"/>
+                <outlet property="stackViewLeadingConstraint" destination="OAr-CA-1Kc" id="5Nz-gL-rmB"/>
+                <outlet property="subtitleLabel" destination="5qT-M2-AVF" id="lt5-WJ-ApJ"/>
+                <outlet property="subtitleLabelHeight" destination="HcB-Fk-kpQ" id="LQX-QN-XGw"/>
+                <outlet property="titleLabel" destination="Tgt-Mh-30q" id="0aW-FL-2uT"/>
+                <outlet property="viewContentInfos" destination="R6g-95-YxT" id="tHD-Zu-prd"/>
+            </connections>
+            <point key="canvasLocation" x="176.5" y="185"/>
+        </tableViewCell>
+    </objects>
+</document>

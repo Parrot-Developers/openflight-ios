@@ -1,0 +1,30 @@
+output_dir: OpenFlight/Constants/
+
+ib:
+  inputs: OpenFlight/
+  outputs:
+  - templateName: scenes-swift4
+    output: Storyboards.swift
+
+xcassets:
+  inputs: OpenFlight/Resources/Images.xcassets
+  outputs:
+  - templatePath: swiftgen/assets/template_openflight.stencil
+    params:
+      forceProvidesNamespaces: true
+      publicAccess: true
+    output: Images.swift
+
+strings:
+  inputs: OpenFlight/Resources/Translations/en.lproj/Localizable.strings
+  outputs:
+  - templateName: structured-swift4
+    output: Strings.swift
+
+colors:
+  inputs: OpenFlight/Constants/colors.xml
+  outputs:
+    templateName: swift4
+    params:
+      publicAccess: true
+    output: Colors.swift

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="itemImageView" destination="oJP-uc-fxy" id="dor-LD-KDH"/>
+                <outlet property="itemLabel" destination="V8Z-ue-1GB" id="ILJ-oH-K1Q"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view userInteractionEnabled="NO" contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="100" height="34"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="j3j-Yb-9p7">
+                    <rect key="frame" x="32.5" y="0.0" width="35.5" height="34"/>
+                    <subviews>
+                        <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="oJP-uc-fxy">
+                            <rect key="frame" x="0.0" y="0.0" width="15" height="34"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="15" id="cvo-5j-lK2"/>
+                            </constraints>
+                        </imageView>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="V8Z-ue-1GB">
+                            <rect key="frame" x="0.0" y="0.0" width="35.5" height="34"/>
+                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                </stackView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="j3j-Yb-9p7" secondAttribute="bottom" id="LOT-q1-iUb"/>
+                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="j3j-Yb-9p7" secondAttribute="trailing" constant="4" id="Pwg-YO-eSw"/>
+                <constraint firstItem="j3j-Yb-9p7" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="iN0-l3-epB" secondAttribute="leading" constant="4" id="ZtB-ct-9HP"/>
+                <constraint firstItem="j3j-Yb-9p7" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="hDf-86-Ury"/>
+                <constraint firstItem="j3j-Yb-9p7" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="ym8-1j-y7d"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="141" y="131"/>
+        </view>
+    </objects>
+</document>

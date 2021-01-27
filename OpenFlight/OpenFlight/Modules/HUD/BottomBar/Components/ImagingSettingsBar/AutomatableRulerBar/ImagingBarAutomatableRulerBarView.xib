@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ImagingBarAutomatableRulerBarView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="autoButton" destination="FK4-1k-tJN" id="nuv-W4-Rsr"/>
+                <outlet property="centeredRulerBarContainer" destination="wQT-km-nsp" id="0Ra-hx-OLR"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="100"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KOx-ed-t2c">
+                    <rect key="frame" x="77" y="0.0" width="1" height="100"/>
+                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.20000000000000001" colorSpace="calibratedRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="1" id="CJ9-RT-xE5"/>
+                    </constraints>
+                </view>
+                <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Im8-7u-soc">
+                    <rect key="frame" x="0.0" y="0.0" width="600" height="100"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FK4-1k-tJN">
+                            <rect key="frame" x="0.0" y="0.0" width="78" height="100"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="78" id="cxU-Hu-k0u"/>
+                            </constraints>
+                            <state key="normal" image="iconAutoLarge"/>
+                            <connections>
+                                <action selector="autoButtonTouchedUpInside:" destination="-1" eventType="touchUpInside" id="qrM-T4-DhV"/>
+                            </connections>
+                        </button>
+                        <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PTZ-KE-ebK">
+                            <rect key="frame" x="78" y="0.0" width="522" height="100"/>
+                            <subviews>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wQT-km-nsp">
+                                    <rect key="frame" x="-78" y="0.0" width="600" height="100"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </view>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstItem="wQT-km-nsp" firstAttribute="top" secondItem="PTZ-KE-ebK" secondAttribute="top" id="bFD-2v-cYC"/>
+                                <constraint firstAttribute="trailing" secondItem="wQT-km-nsp" secondAttribute="trailing" id="iSM-G8-XkP"/>
+                                <constraint firstAttribute="bottom" secondItem="wQT-km-nsp" secondAttribute="bottom" id="rVm-rz-vj0"/>
+                            </constraints>
+                        </view>
+                    </subviews>
+                </stackView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="wQT-km-nsp" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="0Nw-5T-BcS"/>
+                <constraint firstItem="KOx-ed-t2c" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="7oE-4C-kc2"/>
+                <constraint firstItem="Im8-7u-soc" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="DgZ-v2-YJa"/>
+                <constraint firstAttribute="bottom" secondItem="KOx-ed-t2c" secondAttribute="bottom" id="Jzm-VN-WM4"/>
+                <constraint firstAttribute="bottom" secondItem="Im8-7u-soc" secondAttribute="bottom" id="cEX-m1-cD0"/>
+                <constraint firstItem="Im8-7u-soc" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="evj-yq-jat"/>
+                <constraint firstItem="KOx-ed-t2c" firstAttribute="trailing" secondItem="FK4-1k-tJN" secondAttribute="trailing" id="fNX-Pn-vXW"/>
+                <constraint firstAttribute="trailing" secondItem="Im8-7u-soc" secondAttribute="trailing" id="wwp-dk-HLd"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="139" y="155"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="iconAutoLarge" width="35" height="18"/>
+    </resources>
+</document>

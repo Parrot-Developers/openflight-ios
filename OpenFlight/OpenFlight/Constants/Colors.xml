@@ -1,0 +1,34 @@
+<resources>
+    <color name="clear">#00000000</color>
+    <color name="green_spring">#00ff8a</color>
+    <color name="green_spring_20">#00ff8a33</color>
+    <color name="green_haze">#00a157</color>
+    <color name="green_pea">#1a513d</color>
+    <color name="green_pea_50">#1a513d80</color>
+    <color name="black">#000000</color>
+    <color name="black_80">#000000cc</color>
+    <color name="black_60">#00000099</color>
+    <color name="black_40">#00000066</color>
+    <color name="white">#ffffff</color>
+    <color name="white_80">#ffffffcc</color>
+    <color name="white_50">#ffffff80</color>
+    <color name="white_20">#ffffff33</color>
+    <color name="white_12">#ffffff1e</color>
+    <color name="white_10">#ffffff19</color>
+    <color name="grey_silver">#bebebe</color>
+    <color name="grey_shark">#1a1c1e</color>
+    <color name="grey_dark">#48494B</color>
+    <color name="grey_dark_60">#48494B99</color>
+    <color name="blue_dodger">#00b7ff</color>
+    <color name="blue_dodger_50">#00b7ff80</color>
+    <color name="red_torch">#ff1d45</color>
+    <color name="red_torch_50">#ff1d4580</color>
+    <color name="red_torch_25">#ff1d4540</color>
+    <color name="orange_peel">#ff9900</color>
+    <color name="yellow_school_bus">#ffdc02</color>
+    <color name="yellow_school_bus_20">#ffdc0233</color>
+    <color name="yellow_sea">#ffae00</color>
+    <color name="gold">#f8d000</color>
+    <color name="orange_peel_20">#ff9b0033</color>
+    <color name="orange_peel_50">#ff9b0080</color>
+</resources>

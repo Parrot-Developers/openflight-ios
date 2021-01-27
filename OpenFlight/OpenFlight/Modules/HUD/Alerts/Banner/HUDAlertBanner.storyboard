@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Alert Banner View Controller-->
+        <scene sceneID="gAF-Wg-Bhz">
+            <objects>
+                <viewController storyboardIdentifier="HUDAlertBannerViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="HUDAlertBannerViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Wf3-fd-o0X">
+                        <rect key="frame" x="0.0" y="0.0" width="400" height="30"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fSe-J4-Cbo">
+                                <rect key="frame" x="155.5" y="0.0" width="89" height="30"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="Qof-ab-aNW">
+                                        <rect key="frame" x="15" y="0.0" width="59" height="30"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icDroneSmall" translatesAutoresizingMaskIntoConstraints="NO" id="hLi-Y9-rjL">
+                                                <rect key="frame" x="0.0" y="0.0" width="12" height="30"/>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.59999999999999998" translatesAutoresizingMaskIntoConstraints="NO" id="9Ae-jn-hGW">
+                                                <rect key="frame" x="17" y="0.0" width="42" height="30"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="Qof-ab-aNW" secondAttribute="trailing" constant="15" id="3Q9-V7-ZbO"/>
+                                    <constraint firstItem="Qof-ab-aNW" firstAttribute="top" secondItem="fSe-J4-Cbo" secondAttribute="top" id="CxQ-Ow-8Un"/>
+                                    <constraint firstAttribute="bottom" secondItem="Qof-ab-aNW" secondAttribute="bottom" id="wr5-7N-Fu4"/>
+                                    <constraint firstItem="Qof-ab-aNW" firstAttribute="leading" secondItem="fSe-J4-Cbo" secondAttribute="leading" constant="15" id="xG7-sa-sLZ"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="nRg-xq-aop" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="fSe-J4-Cbo" secondAttribute="trailing" id="X7a-cf-etL"/>
+                            <constraint firstAttribute="bottom" secondItem="fSe-J4-Cbo" secondAttribute="bottom" id="YE5-6L-iGK"/>
+                            <constraint firstItem="fSe-J4-Cbo" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="nRg-xq-aop" secondAttribute="leading" id="adg-8o-hoH"/>
+                            <constraint firstItem="fSe-J4-Cbo" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="u21-L9-Med"/>
+                            <constraint firstItem="Qof-ab-aNW" firstAttribute="centerX" secondItem="Wf3-fd-o0X" secondAttribute="centerX" id="vcK-jF-cq3"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="nRg-xq-aop"/>
+                    </view>
+                    <size key="freeformSize" width="400" height="30"/>
+                    <connections>
+                        <outlet property="backgroundView" destination="fSe-J4-Cbo" id="Lgy-N8-jku"/>
+                        <outlet property="imageView" destination="hLi-Y9-rjL" id="o1n-fO-lda"/>
+                        <outlet property="mainLabel" destination="9Ae-jn-hGW" id="mut-mZ-clX"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-718" y="215"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="icDroneSmall" width="12" height="12"/>
+    </resources>
+</document>

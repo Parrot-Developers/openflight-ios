@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="AlH-kU-2ES">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Bottom Bar Container View Controller-->
+        <scene sceneID="O7F-eQ-vwc">
+            <objects>
+                <viewController id="AlH-kU-2ES" customClass="BottomBarContainerViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="tCH-hA-9A2">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="wKU-bT-8CJ">
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
+                                <subviews>
+                                    <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="osl-p9-VzU">
+                                        <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="Ixa-SJ-bpn"/>
+                                        </constraints>
+                                        <connections>
+                                            <segue destination="9Ua-ni-zRI" kind="embed" id="ezT-QY-ghb"/>
+                                        </connections>
+                                    </containerView>
+                                    <containerView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pw9-fP-TRP">
+                                        <rect key="frame" x="0.0" y="0.0" width="896" height="0.0"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" relation="lessThanOrEqual" constant="60" id="2NJ-BM-QC9"/>
+                                            <constraint firstAttribute="height" priority="999" constant="60" id="EbI-GV-GDX"/>
+                                        </constraints>
+                                        <connections>
+                                            <segue destination="Nvo-HF-97c" kind="embed" id="uC9-hJ-omd"/>
+                                        </connections>
+                                    </containerView>
+                                    <containerView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="v83-y1-tAc">
+                                        <rect key="frame" x="0.0" y="0.0" width="896" height="0.0"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" relation="lessThanOrEqual" constant="60" id="AHb-1D-mZi"/>
+                                            <constraint firstAttribute="height" priority="999" constant="60" id="PRc-fi-B8i"/>
+                                        </constraints>
+                                        <connections>
+                                            <segue destination="dlm-K1-fgi" kind="embed" id="IeY-b0-vSv"/>
+                                        </connections>
+                                    </containerView>
+                                    <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nMb-g3-P03" customClass="PanoramaProgressBarView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="wvb-m6-ftP"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="UwJ-se-bBk"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="wKU-bT-8CJ" secondAttribute="trailing" id="C66-Ab-eAs"/>
+                            <constraint firstItem="wKU-bT-8CJ" firstAttribute="top" secondItem="UwJ-se-bBk" secondAttribute="top" id="TP1-kp-KdA"/>
+                            <constraint firstAttribute="bottom" secondItem="wKU-bT-8CJ" secondAttribute="bottom" id="UrR-FD-yNg"/>
+                            <constraint firstItem="wKU-bT-8CJ" firstAttribute="leading" secondItem="tCH-hA-9A2" secondAttribute="leading" id="eJa-77-KHy"/>
+                        </constraints>
+                    </view>
+                    <size key="freeformSize" width="896" height="50"/>
+                    <connections>
+                        <outlet property="bottomBarContainerView" destination="osl-p9-VzU" id="Kfx-1U-oQn"/>
+                        <outlet property="levelOneContainerView" destination="Pw9-fP-TRP" id="Ifv-X6-qeU"/>
+                        <outlet property="levelTwoContainerView" destination="v83-y1-tAc" id="JR8-oU-3oC"/>
+                        <outlet property="panoramaProgressView" destination="nMb-g3-P03" id="Aai-QE-pUf"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Fvi-aB-L93" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="139" y="98"/>
+        </scene>
+        <!--Bottom Bar Level View Controller-->
+        <scene sceneID="aGA-kY-rK8">
+            <objects>
+                <viewController id="Nvo-HF-97c" customClass="BottomBarLevelViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="FK3-Wr-Kxw">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="kRj-vb-hQd"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
+                    <size key="freeformSize" width="896" height="50"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="LB1-gy-NLh" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-182" y="448"/>
+        </scene>
+        <!--Bottom Bar Level Two View Controller-->
+        <scene sceneID="m5T-pf-LPa">
+            <objects>
+                <viewController id="dlm-K1-fgi" customClass="BottomBarLevelTwoViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="hQc-f0-L02">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="wbQ-Hv-MTR"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
+                    <size key="freeformSize" width="896" height="50"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="8hj-Lv-iMw" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="458" y="448"/>
+        </scene>
+        <!--Bottom Bar View Controller-->
+        <scene sceneID="Clk-yV-XGR">
+            <objects>
+                <viewController id="9Ua-ni-zRI" customClass="BottomBarViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="hkh-iB-fhd">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3sY-Wu-zmw" customClass="MissionLauncherButton" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <action selector="missionLauncherButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="fd0-Te-RTi"/>
+                                </connections>
+                            </view>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="le1-h8-uYT">
+                                <rect key="frame" x="60" y="0.0" width="0.0" height="50"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wyZ-Ut-DGd">
+                                        <rect key="frame" x="0.0" y="0.0" width="0.0" height="50"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" id="cLZ-Pl-ygX"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="50" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="WqF-EQ-VbD">
+                                <rect key="frame" x="738" y="0.0" width="158" height="50"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="4uF-C9-wIe">
+                                        <rect key="frame" x="0.0" y="0.0" width="100" height="50"/>
+                                        <subviews>
+                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="95K-3O-dec">
+                                                <rect key="frame" x="-40" y="0.0" width="40" height="50"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="40" id="LvL-cw-01A"/>
+                                                </constraints>
+                                                <state key="normal" image="icCollapse"/>
+                                                <connections>
+                                                    <action selector="collapseButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="lUZ-0u-NBB"/>
+                                                </connections>
+                                            </button>
+                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ctZ-fO-zno">
+                                                <rect key="frame" x="-40" y="0.0" width="40" height="50"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="40" id="Wfl-T8-fsN"/>
+                                                </constraints>
+                                                <state key="normal" image="icExpand"/>
+                                                <connections>
+                                                    <action selector="expandButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="plA-U8-vAy"/>
+                                                </connections>
+                                            </button>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Whv-gc-ugc" customClass="BarButtonView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="100" id="vi7-4k-iTh"/>
+                                                </constraints>
+                                                <connections>
+                                                    <action selector="cameraModeTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="Cci-y7-jgV"/>
+                                                </connections>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mlh-JI-FAA" customClass="CameraWidgetView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="50" y="0.0" width="50" height="50"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="100" id="Svf-V9-DLS"/>
+                                                </constraints>
+                                                <connections>
+                                                    <action selector="cameraWidgetTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="swH-lg-Rcd"/>
+                                                </connections>
+                                            </view>
+                                        </subviews>
+                                    </stackView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qnh-0R-mgj">
+                                        <rect key="frame" x="100" y="0.0" width="58" height="50"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Moq-UE-Mq3" customClass="CameraShutterButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="8" y="0.0" width="50" height="50"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" secondItem="Moq-UE-Mq3" secondAttribute="height" multiplier="1:1" id="ke8-tI-ZFD"/>
+                                                </constraints>
+                                                <connections>
+                                                    <action selector="cameraShutterButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="LZs-XZ-g0o"/>
+                                                </connections>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="Moq-UE-Mq3" firstAttribute="leading" secondItem="qnh-0R-mgj" secondAttribute="leading" constant="8" id="8t9-JY-cL7"/>
+                                            <constraint firstAttribute="trailing" secondItem="Moq-UE-Mq3" secondAttribute="trailing" id="8tD-wB-f1h"/>
+                                            <constraint firstAttribute="bottom" secondItem="Moq-UE-Mq3" secondAttribute="bottom" id="L0S-KY-ztu"/>
+                                            <constraint firstItem="Moq-UE-Mq3" firstAttribute="top" secondItem="qnh-0R-mgj" secondAttribute="top" id="YqM-9z-5ON"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="i7z-D7-SMh"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="le1-h8-uYT" firstAttribute="top" secondItem="hkh-iB-fhd" secondAttribute="top" id="4yF-eV-dpd"/>
+                            <constraint firstItem="le1-h8-uYT" firstAttribute="leading" secondItem="3sY-Wu-zmw" secondAttribute="trailing" constant="10" id="5IT-9J-0cK"/>
+                            <constraint firstItem="3sY-Wu-zmw" firstAttribute="top" secondItem="i7z-D7-SMh" secondAttribute="top" id="JvU-NV-9kr"/>
+                            <constraint firstItem="3sY-Wu-zmw" firstAttribute="leading" secondItem="hkh-iB-fhd" secondAttribute="leading" id="V1F-rk-on2"/>
+                            <constraint firstItem="3sY-Wu-zmw" firstAttribute="width" secondItem="3sY-Wu-zmw" secondAttribute="height" multiplier="1:1" id="ZiD-ev-M4z"/>
+                            <constraint firstItem="le1-h8-uYT" firstAttribute="bottom" secondItem="hkh-iB-fhd" secondAttribute="bottom" id="b9R-Dn-dsn"/>
+                            <constraint firstItem="WqF-EQ-VbD" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="le1-h8-uYT" secondAttribute="trailing" constant="4" id="dWh-Hs-I77"/>
+                            <constraint firstItem="3sY-Wu-zmw" firstAttribute="bottom" secondItem="i7z-D7-SMh" secondAttribute="bottom" id="end-Td-Tt0"/>
+                            <constraint firstItem="WqF-EQ-VbD" firstAttribute="bottom" secondItem="hkh-iB-fhd" secondAttribute="bottom" id="kN2-NL-moV"/>
+                            <constraint firstAttribute="trailing" secondItem="WqF-EQ-VbD" secondAttribute="trailing" id="kf5-zE-yla"/>
+                            <constraint firstItem="WqF-EQ-VbD" firstAttribute="top" secondItem="hkh-iB-fhd" secondAttribute="top" id="rgF-FV-dT1"/>
+                        </constraints>
+                    </view>
+                    <size key="freeformSize" width="896" height="50"/>
+                    <connections>
+                        <outlet property="bottomBarView" destination="hkh-iB-fhd" id="7St-us-5W5"/>
+                        <outlet property="cameraModeView" destination="Whv-gc-ugc" id="dxs-uQ-yay"/>
+                        <outlet property="cameraShutterButton" destination="Moq-UE-Mq3" id="zz1-1V-N2U"/>
+                        <outlet property="cameraWidgetView" destination="Mlh-JI-FAA" id="WJt-3V-M8D"/>
+                        <outlet property="collapseButton" destination="95K-3O-dec" id="Bbt-Zw-Mbc"/>
+                        <outlet property="expandButton" destination="ctZ-fO-zno" id="LCL-Cg-heZ"/>
+                        <outlet property="leftStackView" destination="le1-h8-uYT" id="QgK-zJ-acW"/>
+                        <outlet property="missionLauncherButton" destination="3sY-Wu-zmw" id="KQY-O6-wGZ"/>
+                        <outlet property="rightStackView" destination="4uF-C9-wIe" id="Y3S-7E-2AH"/>
+                        <outlet property="shutterButtonView" destination="qnh-0R-mgj" id="ksa-NK-XU6"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="BUM-j6-kqg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="828" y="97"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="icCollapse" width="12" height="20"/>
+        <image name="icExpand" width="12" height="20"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DeviceButtonView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="backgroundView" destination="PX9-KX-vxw" id="wtw-cf-mYj"/>
+                <outlet property="iconView" destination="pb3-7Z-uHY" id="OyC-EU-lA0"/>
+                <outlet property="imageView" destination="f2C-rY-RYR" id="bdq-jk-ZiC"/>
+                <outlet property="label" destination="ptX-aX-Mt3" id="y9p-f2-HFB"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view userInteractionEnabled="NO" contentMode="scaleToFill" id="8ag-z8-6CO">
+            <rect key="frame" x="0.0" y="0.0" width="158" height="42"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PX9-KX-vxw">
+                    <rect key="frame" x="0.0" y="0.0" width="158" height="42"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IfQ-LF-FWO">
+                            <rect key="frame" x="0.0" y="0.0" width="158" height="42"/>
+                            <subviews>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pb3-7Z-uHY">
+                                    <rect key="frame" x="0.0" y="0.0" width="23" height="42"/>
+                                    <subviews>
+                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="752" image="icWifi" translatesAutoresizingMaskIntoConstraints="NO" id="f2C-rY-RYR">
+                                            <rect key="frame" x="5" y="14" width="18" height="14"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="18" id="ByQ-7T-dLK"/>
+                                                <constraint firstAttribute="height" constant="14" id="C4r-VH-tH7"/>
+                                            </constraints>
+                                        </imageView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="f2C-rY-RYR" secondAttribute="trailing" id="8HH-UA-aIo"/>
+                                        <constraint firstItem="f2C-rY-RYR" firstAttribute="centerY" secondItem="pb3-7Z-uHY" secondAttribute="centerY" id="Q0l-D9-qsT"/>
+                                        <constraint firstItem="f2C-rY-RYR" firstAttribute="leading" secondItem="pb3-7Z-uHY" secondAttribute="leading" constant="5" id="g5a-3z-Jm0"/>
+                                    </constraints>
+                                </view>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sz9-0Z-PRp">
+                                    <rect key="frame" x="23" y="0.0" width="135" height="42"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="ptX-aX-Mt3">
+                                            <rect key="frame" x="5" y="21" width="125" height="0.0"/>
+                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="10"/>
+                                            <color key="textColor" red="1" green="1" blue="1" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="ptX-aX-Mt3" firstAttribute="centerY" secondItem="sz9-0Z-PRp" secondAttribute="centerY" id="CBr-Rh-SkZ"/>
+                                        <constraint firstAttribute="trailing" secondItem="ptX-aX-Mt3" secondAttribute="trailing" constant="5" id="d5S-i9-JIM"/>
+                                        <constraint firstItem="ptX-aX-Mt3" firstAttribute="leading" secondItem="sz9-0Z-PRp" secondAttribute="leading" constant="5" id="tgJ-Gu-CTM"/>
+                                    </constraints>
+                                </view>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="trailing" secondItem="IfQ-LF-FWO" secondAttribute="trailing" id="6Ki-eB-deN"/>
+                        <constraint firstItem="IfQ-LF-FWO" firstAttribute="leading" secondItem="PX9-KX-vxw" secondAttribute="leading" id="E2e-XU-MJJ"/>
+                        <constraint firstItem="IfQ-LF-FWO" firstAttribute="top" secondItem="PX9-KX-vxw" secondAttribute="top" id="HRA-PT-lSY"/>
+                        <constraint firstAttribute="bottom" secondItem="IfQ-LF-FWO" secondAttribute="bottom" id="quF-2d-Ooa"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="PX9-KX-vxw" firstAttribute="leading" secondItem="8ag-z8-6CO" secondAttribute="leading" id="622-gZ-J5y"/>
+                <constraint firstItem="PX9-KX-vxw" firstAttribute="top" secondItem="8ag-z8-6CO" secondAttribute="top" id="LX6-5C-ds6"/>
+                <constraint firstAttribute="bottom" secondItem="PX9-KX-vxw" secondAttribute="bottom" id="RM4-6w-2do"/>
+                <constraint firstAttribute="trailing" secondItem="PX9-KX-vxw" secondAttribute="trailing" id="efg-GS-7MA"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="Pzs-Cn-4ob"/>
+            <point key="canvasLocation" x="150" y="185"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icWifi" width="17" height="13"/>
+    </resources>
+</document>

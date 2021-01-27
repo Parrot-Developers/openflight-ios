@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="PairingConnectDroneCell" rowHeight="60" id="KGk-i7-Jjw" customClass="PairingConnectDroneCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="452" height="100"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" translatesAutoresizingMaskIntoConstraints="NO" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="452" height="100"/>
+                <subviews>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="characterWrap" translatesAutoresizingMaskIntoConstraints="NO" id="eaX-Ha-vHX">
+                        <rect key="frame" x="392" y="11" width="56" height="59"/>
+                        <state key="normal" title="Button"/>
+                        <connections>
+                            <action selector="forgetButtonTouchedUpInside:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="PCw-Ty-Cu1"/>
+                        </connections>
+                    </button>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ngt-6h-SAc">
+                        <rect key="frame" x="68" y="10" width="316" height="60"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FVK-Gy-GUL">
+                                <rect key="frame" x="20" y="22.5" width="33.5" height="15"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="vGS-aV-aPZ">
+                                <rect key="frame" x="274" y="0.0" width="22" height="60"/>
+                                <subviews>
+                                    <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic4GConnectDrone" translatesAutoresizingMaskIntoConstraints="NO" id="akw-4j-ghX" userLabel="ic4G">
+                                        <rect key="frame" x="-22" y="0.0" width="22" height="60"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="22" id="RXy-hm-pwe"/>
+                                        </constraints>
+                                    </imageView>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icWifi34" translatesAutoresizingMaskIntoConstraints="NO" id="YVQ-Bf-LDf">
+                                        <rect key="frame" x="0.0" y="0.0" width="22" height="60"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="22" id="TjA-hC-Rsy"/>
+                                        </constraints>
+                                    </imageView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="FVK-Gy-GUL" firstAttribute="centerY" secondItem="Ngt-6h-SAc" secondAttribute="centerY" id="LM3-rb-DY5"/>
+                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="60" id="UeT-Dj-vNW"/>
+                            <constraint firstAttribute="height" constant="60" id="WQF-K5-3ye"/>
+                            <constraint firstAttribute="trailing" secondItem="vGS-aV-aPZ" secondAttribute="trailing" constant="20" id="a9X-qq-Opa"/>
+                            <constraint firstItem="vGS-aV-aPZ" firstAttribute="top" secondItem="Ngt-6h-SAc" secondAttribute="top" id="g6C-bx-Io0"/>
+                            <constraint firstAttribute="bottom" secondItem="vGS-aV-aPZ" secondAttribute="bottom" id="xfl-2C-N2w"/>
+                            <constraint firstItem="FVK-Gy-GUL" firstAttribute="leading" secondItem="Ngt-6h-SAc" secondAttribute="leading" constant="20" id="y8p-RF-GAO"/>
+                        </constraints>
+                    </view>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EhX-Dc-xZJ">
+                        <rect key="frame" x="0.0" y="70" width="452" height="30"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cYf-hn-DaD">
+                                <rect key="frame" x="0.0" y="5" width="452" height="15"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                <color key="textColor" systemColor="systemGreenColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="cYf-hn-DaD" firstAttribute="top" secondItem="EhX-Dc-xZJ" secondAttribute="top" constant="5" id="O3m-HK-5Rl"/>
+                            <constraint firstItem="cYf-hn-DaD" firstAttribute="leading" secondItem="EhX-Dc-xZJ" secondAttribute="leading" id="bAe-pX-Lnj"/>
+                            <constraint firstAttribute="trailing" secondItem="cYf-hn-DaD" secondAttribute="trailing" id="fXh-4N-Aqz"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="Ngt-6h-SAc" firstAttribute="width" secondItem="H2p-sc-9uM" secondAttribute="width" multiplier="0.7" id="4cr-Kn-nUt"/>
+                    <constraint firstItem="EhX-Dc-xZJ" firstAttribute="top" secondItem="eaX-Ha-vHX" secondAttribute="bottom" id="6YV-kk-n6D"/>
+                    <constraint firstItem="EhX-Dc-xZJ" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="Lya-7a-rkb"/>
+                    <constraint firstAttribute="trailing" secondItem="eaX-Ha-vHX" secondAttribute="trailing" constant="4" id="PkS-6W-ON8"/>
+                    <constraint firstItem="Ngt-6h-SAc" firstAttribute="centerX" secondItem="H2p-sc-9uM" secondAttribute="centerX" id="QVv-je-RjE"/>
+                    <constraint firstItem="eaX-Ha-vHX" firstAttribute="leading" secondItem="Ngt-6h-SAc" secondAttribute="trailing" constant="8" id="is2-S6-6Qa"/>
+                    <constraint firstItem="EhX-Dc-xZJ" firstAttribute="top" secondItem="Ngt-6h-SAc" secondAttribute="bottom" id="knO-e2-Wlx"/>
+                    <constraint firstAttribute="bottom" secondItem="EhX-Dc-xZJ" secondAttribute="bottom" id="lc8-uX-5bt"/>
+                    <constraint firstItem="Ngt-6h-SAc" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="10" id="mao-mb-Sf6"/>
+                    <constraint firstItem="eaX-Ha-vHX" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" id="no1-2v-3Hm"/>
+                    <constraint firstAttribute="trailing" secondItem="EhX-Dc-xZJ" secondAttribute="trailing" id="scV-TI-QtP"/>
+                </constraints>
+            </tableViewCellContentView>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailing" id="7cg-zX-brx"/>
+                <constraint firstItem="H2p-sc-9uM" firstAttribute="top" secondItem="KGk-i7-Jjw" secondAttribute="top" id="JTq-7S-gJ3"/>
+                <constraint firstItem="H2p-sc-9uM" firstAttribute="leading" secondItem="KGk-i7-Jjw" secondAttribute="leading" id="K7m-ut-2KH"/>
+                <constraint firstAttribute="bottom" secondItem="H2p-sc-9uM" secondAttribute="bottom" id="P45-Er-s96"/>
+            </constraints>
+            <connections>
+                <outlet property="cellularAvailableImageView" destination="akw-4j-ghX" id="Yz0-wh-k9S"/>
+                <outlet property="droneView" destination="Ngt-6h-SAc" id="914-Wr-ZHa"/>
+                <outlet property="errorLabel" destination="cYf-hn-DaD" id="LhR-WV-v51"/>
+                <outlet property="errorView" destination="EhX-Dc-xZJ" id="pTc-4e-dzl"/>
+                <outlet property="forgetButton" destination="eaX-Ha-vHX" id="lXW-kN-IgZ"/>
+                <outlet property="nameLabel" destination="FVK-Gy-GUL" id="Ljp-Zk-iWM"/>
+                <outlet property="wifiImageView" destination="YVQ-Bf-LDf" id="h2m-Z4-6zT"/>
+            </connections>
+            <point key="canvasLocation" x="243.19999999999999" y="208.69565217391306"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="ic4GConnectDrone" width="12" height="12"/>
+        <image name="icWifi34" width="17" height="13"/>
+        <systemColor name="systemGreenColor">
+            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

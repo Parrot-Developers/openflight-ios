@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="StopView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="backView" destination="I3b-E7-4Nm" id="6gg-In-sp4"/>
+                <outlet property="cancelImageView" destination="AYW-mc-x7M" id="14W-FX-8m4"/>
+                <outlet property="centerView" destination="zRJ-TL-uRz" id="87d-5Q-Fey"/>
+                <outlet property="redView" destination="gGV-nf-fIc" id="XKH-BR-Del"/>
+                <outlet property="redViewBottomConstraint" destination="FDC-EO-6i7" id="z8i-41-YkA"/>
+                <outlet property="redViewLeadingConstraint" destination="sRC-bj-a1Y" id="IJS-om-pTU"/>
+                <outlet property="redViewTopConstraint" destination="7Nz-pb-GA1" id="3VT-wx-7YQ"/>
+                <outlet property="redViewTrailingConstraint" destination="RZD-6F-SNw" id="9gf-Xn-C6Q"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WX2-SW-oKU">
+            <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+            <subviews>
+                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I3b-E7-4Nm">
+                    <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                </view>
+                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gGV-nf-fIc">
+                    <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                    <color key="backgroundColor" red="1" green="0.1137254902" blue="0.27058823529999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                </view>
+                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zRJ-TL-uRz">
+                    <rect key="frame" x="17.5" y="17.5" width="15" height="15"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                    <constraints>
+                        <constraint firstAttribute="width" secondItem="zRJ-TL-uRz" secondAttribute="height" multiplier="1:1" id="No0-ds-1Fa"/>
+                        <constraint firstAttribute="height" constant="15" id="obk-WW-zJz"/>
+                    </constraints>
+                </view>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ech-0U-qaF">
+                    <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                    <connections>
+                        <action selector="stopButtonTouchedUpInside" destination="-1" eventType="touchUpInside" id="Vkn-dk-5vY"/>
+                    </connections>
+                </button>
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icClose" translatesAutoresizingMaskIntoConstraints="NO" id="AYW-mc-x7M">
+                    <rect key="frame" x="17.5" y="17.5" width="15" height="15"/>
+                </imageView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="Ech-0U-qaF" firstAttribute="top" secondItem="WX2-SW-oKU" secondAttribute="top" id="4xV-Yw-cZm"/>
+                <constraint firstItem="AYW-mc-x7M" firstAttribute="centerX" secondItem="zRJ-TL-uRz" secondAttribute="centerX" id="5ev-Ny-Cpn"/>
+                <constraint firstItem="gGV-nf-fIc" firstAttribute="top" secondItem="WX2-SW-oKU" secondAttribute="top" id="7Nz-pb-GA1"/>
+                <constraint firstAttribute="width" constant="50" id="7Qu-OT-lVJ"/>
+                <constraint firstAttribute="width" secondItem="WX2-SW-oKU" secondAttribute="height" multiplier="1:1" id="EaF-JT-sMl"/>
+                <constraint firstAttribute="bottom" secondItem="gGV-nf-fIc" secondAttribute="bottom" id="FDC-EO-6i7"/>
+                <constraint firstAttribute="trailing" secondItem="I3b-E7-4Nm" secondAttribute="trailing" id="O2J-Ic-bN8"/>
+                <constraint firstItem="zRJ-TL-uRz" firstAttribute="centerY" secondItem="WX2-SW-oKU" secondAttribute="centerY" id="RCD-qP-Ku7"/>
+                <constraint firstAttribute="trailing" secondItem="gGV-nf-fIc" secondAttribute="trailing" id="RZD-6F-SNw"/>
+                <constraint firstAttribute="bottom" secondItem="I3b-E7-4Nm" secondAttribute="bottom" id="WV8-j6-6d0"/>
+                <constraint firstAttribute="bottom" secondItem="Ech-0U-qaF" secondAttribute="bottom" id="Ytg-HX-zYJ"/>
+                <constraint firstItem="AYW-mc-x7M" firstAttribute="centerY" secondItem="zRJ-TL-uRz" secondAttribute="centerY" id="dzi-aH-ici"/>
+                <constraint firstItem="I3b-E7-4Nm" firstAttribute="top" secondItem="WX2-SW-oKU" secondAttribute="top" id="eeT-fs-XVZ"/>
+                <constraint firstItem="AYW-mc-x7M" firstAttribute="height" secondItem="zRJ-TL-uRz" secondAttribute="height" id="gUZ-S0-L9h"/>
+                <constraint firstAttribute="trailing" secondItem="Ech-0U-qaF" secondAttribute="trailing" id="ghK-BU-QAk"/>
+                <constraint firstItem="AYW-mc-x7M" firstAttribute="width" secondItem="zRJ-TL-uRz" secondAttribute="width" id="i3v-NF-QiV"/>
+                <constraint firstItem="Ech-0U-qaF" firstAttribute="leading" secondItem="WX2-SW-oKU" secondAttribute="leading" id="ltE-Vs-wbW"/>
+                <constraint firstItem="zRJ-TL-uRz" firstAttribute="centerX" secondItem="WX2-SW-oKU" secondAttribute="centerX" id="o7Q-94-Fcr"/>
+                <constraint firstItem="gGV-nf-fIc" firstAttribute="leading" secondItem="WX2-SW-oKU" secondAttribute="leading" id="sRC-bj-a1Y"/>
+                <constraint firstItem="I3b-E7-4Nm" firstAttribute="leading" secondItem="WX2-SW-oKU" secondAttribute="leading" id="szO-jc-zEc"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="-250" y="167"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icClose" width="24" height="24"/>
+    </resources>
+</document>

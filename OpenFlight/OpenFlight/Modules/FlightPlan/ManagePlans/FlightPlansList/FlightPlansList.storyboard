@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina4_7" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-Bold.ttf">
+            <string>Rajdhani-Bold</string>
+        </array>
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Flight Plans List View Controller-->
+        <scene sceneID="gAF-Wg-Bhz">
+            <objects>
+                <viewController storyboardIdentifier="FlightPlansListViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="FlightPlansListViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Wf3-fd-o0X">
+                        <rect key="frame" x="0.0" y="0.0" width="400" height="400"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="KlY-1o-Gj9">
+                                <rect key="frame" x="0.0" y="0.0" width="400" height="400"/>
+                                <subviews>
+                                    <containerView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Lov-m7-gfW">
+                                        <rect key="frame" x="0.0" y="0.0" width="400" height="52"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="52" id="aBY-yO-5Tw"/>
+                                        </constraints>
+                                    </containerView>
+                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Gh1-u8-y1n">
+                                        <rect key="frame" x="0.0" y="0.0" width="400" height="400"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" sectionInsetReference="safeArea" id="dIO-p5-iDV">
+                                            <size key="itemSize" width="50" height="50"/>
+                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                            <inset key="sectionInset" minX="10" minY="10" maxX="10" maxY="10"/>
+                                        </collectionViewFlowLayout>
+                                        <cells/>
+                                    </collectionView>
+                                </subviews>
+                            </stackView>
+                            <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="9dZ-pR-Npm">
+                                <rect key="frame" x="181" y="180.5" width="38" height="39"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BO4-6T-R3u">
+                                        <rect key="frame" x="0.0" y="0.0" width="38" height="17"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="17"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X6A-3y-zp1">
+                                        <rect key="frame" x="0.0" y="22" width="38" height="17"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="RO9-h0-Xwd"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="KlY-1o-Gj9" firstAttribute="trailing" secondItem="RO9-h0-Xwd" secondAttribute="trailing" id="2DT-Z5-aMo"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="9dZ-pR-Npm" secondAttribute="trailing" id="68U-lY-Tp0"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="9dZ-pR-Npm" secondAttribute="bottom" id="8AB-tL-u7U"/>
+                            <constraint firstItem="9dZ-pR-Npm" firstAttribute="centerX" secondItem="Wf3-fd-o0X" secondAttribute="centerX" id="I1s-8w-3gQ"/>
+                            <constraint firstItem="9dZ-pR-Npm" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="b5O-vb-odW"/>
+                            <constraint firstItem="KlY-1o-Gj9" firstAttribute="leading" secondItem="RO9-h0-Xwd" secondAttribute="leading" id="d6I-CC-pZE"/>
+                            <constraint firstItem="KlY-1o-Gj9" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="gqR-ty-14R"/>
+                            <constraint firstItem="9dZ-pR-Npm" firstAttribute="centerY" secondItem="Wf3-fd-o0X" secondAttribute="centerY" id="gqT-CI-kYw"/>
+                            <constraint firstItem="9dZ-pR-Npm" firstAttribute="top" relation="greaterThanOrEqual" secondItem="Wf3-fd-o0X" secondAttribute="top" id="naO-4H-gMe"/>
+                            <constraint firstAttribute="bottom" secondItem="KlY-1o-Gj9" secondAttribute="bottom" id="pjB-5c-ZAp"/>
+                        </constraints>
+                    </view>
+                    <size key="freeformSize" width="400" height="400"/>
+                    <connections>
+                        <outlet property="collectionView" destination="Gh1-u8-y1n" id="nU8-bg-Ug6"/>
+                        <outlet property="emptyFlightPlansDescriptionLabel" destination="X6A-3y-zp1" id="igN-5y-Jdi"/>
+                        <outlet property="emptyFlightPlansTitleLabel" destination="BO4-6T-R3u" id="Aqe-vF-Vz2"/>
+                        <outlet property="emptyLabelStack" destination="9dZ-pR-Npm" id="Xd6-zi-hy1"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-936" y="122"/>
+        </scene>
+    </scenes>
+</document>

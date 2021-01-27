@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="HelloWorldBottomView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="startAndStopView" destination="5fV-H1-6AX" id="kcc-tu-HP3"/>
+                <outlet property="stateView" destination="2cZ-3v-ZRf" id="j9X-IT-Rlj"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="Ovv-hr-kCh">
+            <rect key="frame" x="0.0" y="0.0" width="283" height="50"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5cw-rJ-bLR">
+                    <rect key="frame" x="0.0" y="0.0" width="283" height="50"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="250" placeholderIntrinsicHeight="50" translatesAutoresizingMaskIntoConstraints="NO" id="SJ3-NN-pWH">
+                            <rect key="frame" x="0.0" y="0.0" width="283" height="50"/>
+                            <subviews>
+                                <view contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="2cZ-3v-ZRf" customClass="BarButtonView" customModule="OpenFlight" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="0.0" width="233" height="50"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" relation="lessThanOrEqual" constant="100" id="iBU-ze-hwF"/>
+                                    </constraints>
+                                </view>
+                                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5fV-H1-6AX" customClass="HelloWorldStartAndStopView" customModule="OpenFlight" customModuleProvider="target">
+                                    <rect key="frame" x="233" y="0.0" width="50" height="50"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" secondItem="5fV-H1-6AX" secondAttribute="height" multiplier="1:1" id="ViY-d1-kb7"/>
+                                    </constraints>
+                                </view>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="bottom" secondItem="SJ3-NN-pWH" secondAttribute="bottom" id="7lt-sb-KJq"/>
+                        <constraint firstAttribute="height" constant="50" id="HXp-TO-ueV"/>
+                        <constraint firstItem="SJ3-NN-pWH" firstAttribute="top" secondItem="5cw-rJ-bLR" secondAttribute="top" id="THc-MJ-RRq"/>
+                        <constraint firstItem="SJ3-NN-pWH" firstAttribute="leading" secondItem="5cw-rJ-bLR" secondAttribute="leading" id="UTF-gU-ycZ"/>
+                        <constraint firstAttribute="trailing" secondItem="SJ3-NN-pWH" secondAttribute="trailing" id="vDi-E6-nZR"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <viewLayoutGuide key="safeArea" id="M0h-KD-aE7"/>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="5cw-rJ-bLR" secondAttribute="trailing" id="Q3D-ZG-RPg"/>
+                <constraint firstAttribute="bottom" secondItem="5cw-rJ-bLR" secondAttribute="bottom" id="ddg-AN-zK8"/>
+                <constraint firstItem="5cw-rJ-bLR" firstAttribute="top" secondItem="Ovv-hr-kCh" secondAttribute="top" id="oE5-k8-KtP"/>
+                <constraint firstItem="5cw-rJ-bLR" firstAttribute="leading" secondItem="Ovv-hr-kCh" secondAttribute="leading" id="oZ9-aL-ho0"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="-124" y="169.11544227886057"/>
+        </view>
+    </objects>
+</document>

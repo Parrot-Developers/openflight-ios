@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="PilotingModeView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="arcadeButton" destination="v12-40-IUX" id="RUy-MD-Nsv"/>
+                <outlet property="backgroundView" destination="N6L-ra-3jj" id="F72-Fl-L1L"/>
+                <outlet property="classicButton" destination="2ea-tm-8ab" id="I8a-m8-omV"/>
+                <outlet property="pilotingStyleLabel" destination="cCq-ae-Oie" id="Vhx-e6-xL9"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="3hA-Qn-Ojw">
+            <rect key="frame" x="0.0" y="0.0" width="111" height="283"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="N6L-ra-3jj">
+                    <rect key="frame" x="0.0" y="81.5" width="111" height="120"/>
+                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                </view>
+                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="1IR-dL-uUo">
+                    <rect key="frame" x="0.0" y="81.5" width="111" height="120"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2ea-tm-8ab">
+                            <rect key="frame" x="0.0" y="0.0" width="111" height="60"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                            <state key="normal" title="Button"/>
+                            <connections>
+                                <action selector="classicButtonTouchedUpInside:" destination="-1" eventType="touchUpInside" id="chE-Pv-Nx7"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="v12-40-IUX">
+                            <rect key="frame" x="0.0" y="60" width="111" height="60"/>
+                            <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                            <state key="normal" title="Button"/>
+                            <connections>
+                                <action selector="arcadeButtonTouchedUpInside:" destination="-1" eventType="touchUpInside" id="TNv-ut-KGe"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="120" id="uCa-MJ-1hY"/>
+                    </constraints>
+                </stackView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cCq-ae-Oie">
+                    <rect key="frame" x="0.0" y="53.5" width="111" height="16"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="1IR-dL-uUo" secondAttribute="trailing" id="2m4-fJ-3YX"/>
+                <constraint firstItem="N6L-ra-3jj" firstAttribute="top" secondItem="1IR-dL-uUo" secondAttribute="top" id="GgX-AT-Cts"/>
+                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="1IR-dL-uUo" secondAttribute="bottom" constant="8" id="PYf-4r-TgX"/>
+                <constraint firstItem="1IR-dL-uUo" firstAttribute="top" secondItem="cCq-ae-Oie" secondAttribute="bottom" constant="12" id="V4l-Lz-IHB"/>
+                <constraint firstItem="N6L-ra-3jj" firstAttribute="leading" secondItem="3hA-Qn-Ojw" secondAttribute="leading" id="ZKH-kg-BZo"/>
+                <constraint firstItem="cCq-ae-Oie" firstAttribute="top" relation="greaterThanOrEqual" secondItem="3hA-Qn-Ojw" secondAttribute="top" constant="8" id="gzx-Ls-mK8"/>
+                <constraint firstAttribute="trailing" secondItem="cCq-ae-Oie" secondAttribute="trailing" id="hMK-7I-FSF"/>
+                <constraint firstItem="N6L-ra-3jj" firstAttribute="bottom" secondItem="1IR-dL-uUo" secondAttribute="bottom" id="noB-Vz-Tsl"/>
+                <constraint firstItem="1IR-dL-uUo" firstAttribute="leading" secondItem="3hA-Qn-Ojw" secondAttribute="leading" id="rLM-MQ-QbI"/>
+                <constraint firstItem="1IR-dL-uUo" firstAttribute="centerY" secondItem="3hA-Qn-Ojw" secondAttribute="centerY" id="t2P-KC-4IO"/>
+                <constraint firstItem="cCq-ae-Oie" firstAttribute="leading" secondItem="3hA-Qn-Ojw" secondAttribute="leading" id="ti0-SZ-2XH"/>
+                <constraint firstAttribute="trailing" secondItem="N6L-ra-3jj" secondAttribute="trailing" id="zeW-Si-dUZ"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="-317.60000000000002" y="-702.99850074962524"/>
+        </view>
+    </objects>
+</document>

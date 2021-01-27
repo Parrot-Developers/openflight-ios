@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="TelemetryItemView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="alertBackgroundView" destination="AEL-se-pMp" id="CPU-ek-74m"/>
+                <outlet property="itemImageView" destination="FPo-Sk-d9F" id="rEt-7e-2ua"/>
+                <outlet property="itemLabel" destination="ha0-io-ZJL" id="eji-Kx-ZQT"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view userInteractionEnabled="NO" contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="100" height="35"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AEL-se-pMp">
+                    <rect key="frame" x="9.5" y="-5" width="81" height="45"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                </view>
+                <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="yeR-aP-ekI">
+                    <rect key="frame" x="14.5" y="0.0" width="71" height="35"/>
+                    <subviews>
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icObstacleDetectionOff" translatesAutoresizingMaskIntoConstraints="NO" id="FPo-Sk-d9F">
+                            <rect key="frame" x="0.0" y="0.0" width="16" height="35"/>
+                        </imageView>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.59999999999999998" translatesAutoresizingMaskIntoConstraints="NO" id="ha0-io-ZJL">
+                            <rect key="frame" x="21" y="0.0" width="50" height="35"/>
+                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                </stackView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="yeR-aP-ekI" firstAttribute="top" relation="greaterThanOrEqual" secondItem="iN0-l3-epB" secondAttribute="top" id="4LA-bV-N3j"/>
+                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="yeR-aP-ekI" secondAttribute="trailing" constant="5" id="9N4-8n-j0U"/>
+                <constraint firstItem="AEL-se-pMp" firstAttribute="bottom" secondItem="FPo-Sk-d9F" secondAttribute="bottom" constant="5" id="C5D-N4-wcD"/>
+                <constraint firstItem="AEL-se-pMp" firstAttribute="trailing" secondItem="ha0-io-ZJL" secondAttribute="trailing" constant="5" id="FYV-Te-euV"/>
+                <constraint firstItem="FPo-Sk-d9F" firstAttribute="leading" secondItem="AEL-se-pMp" secondAttribute="leading" constant="5" id="XkD-GF-k8H"/>
+                <constraint firstItem="yeR-aP-ekI" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="rLN-iN-nTW"/>
+                <constraint firstItem="yeR-aP-ekI" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="swu-JW-jYW"/>
+                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="yeR-aP-ekI" secondAttribute="bottom" id="w8w-wq-PEJ"/>
+                <constraint firstItem="yeR-aP-ekI" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="iN0-l3-epB" secondAttribute="leading" constant="5" id="xWA-Q1-bgH"/>
+                <constraint firstItem="FPo-Sk-d9F" firstAttribute="top" secondItem="AEL-se-pMp" secondAttribute="top" constant="5" id="y4n-QZ-sNG"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="139" y="151"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icObstacleDetectionOff" width="16" height="18"/>
+    </resources>
+</document>

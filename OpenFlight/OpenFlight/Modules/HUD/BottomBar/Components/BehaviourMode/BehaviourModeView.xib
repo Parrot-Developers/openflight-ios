@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-Regular.ttf">
+            <string>Rajdhani-Regular</string>
+        </array>
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="BehaviourModeView" customModuleProvider="target">
+            <connections>
+                <outlet property="currentMode" destination="oh8-xp-Wct" id="88e-Ib-c1x"/>
+                <outlet property="imageView" destination="vOr-nd-K81" id="8VB-DX-5it"/>
+                <outlet property="modeView" destination="XQO-eX-ILx" id="a5j-Ef-YaQ"/>
+                <outlet property="subTitle" destination="0N1-zE-nmL" id="Y41-Cv-2V3"/>
+                <outlet property="title" destination="FWm-UR-Y7o" id="9ZM-ne-C2G"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view userInteractionEnabled="NO" contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="158" height="42"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zQf-L3-klZ">
+                    <rect key="frame" x="0.0" y="0.0" width="158" height="42"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="WJf-zo-wng">
+                            <rect key="frame" x="10" y="0.0" width="138" height="42"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="752" image="icCameraModeVideo" translatesAutoresizingMaskIntoConstraints="NO" id="vOr-nd-K81">
+                                    <rect key="frame" x="0.0" y="13" width="16" height="16"/>
+                                    <constraints>
+                                        <constraint firstAttribute="height" constant="16" id="0Uf-ae-hME"/>
+                                        <constraint firstAttribute="width" constant="16" id="5Ni-9h-vWq"/>
+                                    </constraints>
+                                </imageView>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XQO-eX-ILx">
+                                    <rect key="frame" x="26" y="0.0" width="112" height="42"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="FWm-UR-Y7o">
+                                            <rect key="frame" x="0.0" y="18" width="112" height="0.0"/>
+                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="10"/>
+                                            <color key="textColor" red="1" green="1" blue="1" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="oh8-xp-Wct">
+                                            <rect key="frame" x="0.0" y="21" width="107" height="0.0"/>
+                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="12"/>
+                                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="0N1-zE-nmL">
+                                            <rect key="frame" x="112" y="21" width="0.0" height="0.0"/>
+                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="12"/>
+                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstItem="FWm-UR-Y7o" firstAttribute="leading" secondItem="XQO-eX-ILx" secondAttribute="leading" id="9E6-yd-uZR"/>
+                                        <constraint firstAttribute="trailing" secondItem="FWm-UR-Y7o" secondAttribute="trailing" id="ERc-lw-c47"/>
+                                        <constraint firstAttribute="trailing" secondItem="0N1-zE-nmL" secondAttribute="trailing" id="TXC-70-nlt"/>
+                                        <constraint firstItem="0N1-zE-nmL" firstAttribute="leading" secondItem="oh8-xp-Wct" secondAttribute="trailing" constant="5" id="a13-wU-H2h"/>
+                                        <constraint firstItem="oh8-xp-Wct" firstAttribute="leading" secondItem="XQO-eX-ILx" secondAttribute="leading" id="bx0-My-TXi"/>
+                                        <constraint firstAttribute="centerY" secondItem="FWm-UR-Y7o" secondAttribute="bottom" constant="3" id="fIn-xY-AIb"/>
+                                        <constraint firstItem="oh8-xp-Wct" firstAttribute="top" secondItem="FWm-UR-Y7o" secondAttribute="bottom" constant="3" id="ij1-is-F2Y"/>
+                                        <constraint firstItem="FWm-UR-Y7o" firstAttribute="centerX" secondItem="XQO-eX-ILx" secondAttribute="centerX" id="nfx-qE-5EM"/>
+                                        <constraint firstItem="0N1-zE-nmL" firstAttribute="centerY" secondItem="oh8-xp-Wct" secondAttribute="centerY" id="tjd-Bq-paz"/>
+                                    </constraints>
+                                </view>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="WJf-zo-wng" firstAttribute="top" secondItem="zQf-L3-klZ" secondAttribute="top" id="Nph-HY-9wc"/>
+                        <constraint firstAttribute="bottom" secondItem="WJf-zo-wng" secondAttribute="bottom" id="mI7-SL-Bvn"/>
+                        <constraint firstItem="WJf-zo-wng" firstAttribute="leading" secondItem="zQf-L3-klZ" secondAttribute="leading" constant="10" id="ri9-Mr-AgQ"/>
+                        <constraint firstAttribute="trailing" secondItem="WJf-zo-wng" secondAttribute="trailing" constant="10" id="wsT-YI-VbK"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="zQf-L3-klZ" firstAttribute="bottom" secondItem="vUN-kp-3ea" secondAttribute="bottom" id="4Zz-Rp-U1C"/>
+                <constraint firstItem="zQf-L3-klZ" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="4wi-sx-rVk"/>
+                <constraint firstItem="zQf-L3-klZ" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="EED-cB-AEf"/>
+                <constraint firstItem="zQf-L3-klZ" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" id="JCn-Ng-sQF"/>
+                <constraint firstItem="zQf-L3-klZ" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="PGO-hA-Jxp"/>
+                <constraint firstAttribute="trailing" secondItem="zQf-L3-klZ" secondAttribute="trailing" id="Q4B-uJ-VVt"/>
+                <constraint firstAttribute="bottom" secondItem="zQf-L3-klZ" secondAttribute="bottom" id="ets-2E-1qD"/>
+                <constraint firstItem="zQf-L3-klZ" firstAttribute="trailing" secondItem="vUN-kp-3ea" secondAttribute="trailing" id="nnF-2H-Mov"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <point key="canvasLocation" x="-75" y="319.5"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icCameraModeVideo" width="20" height="13"/>
+    </resources>
+</document>

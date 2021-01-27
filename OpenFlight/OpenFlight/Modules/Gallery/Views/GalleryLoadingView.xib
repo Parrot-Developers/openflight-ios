@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="GalleryLoadingView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="infoLabel" destination="kZg-lD-KvI" id="kSM-U2-Nz5"/>
+                <outlet property="progressView" destination="Zgf-qw-kce" id="eOW-R1-k7U"/>
+                <outlet property="stopButton" destination="HsG-c4-gbI" id="1tQ-JZ-Yu7"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="530" height="50"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.25" translatesAutoresizingMaskIntoConstraints="NO" id="Zgf-qw-kce">
+                    <rect key="frame" x="0.0" y="0.0" width="530" height="50"/>
+                </progressView>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HsG-c4-gbI">
+                    <rect key="frame" x="468" y="2" width="46" height="46"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="46" id="TSE-Nq-lCt"/>
+                        <constraint firstAttribute="width" secondItem="HsG-c4-gbI" secondAttribute="height" multiplier="1:1" id="sUR-ZU-rLh"/>
+                    </constraints>
+                    <inset key="imageEdgeInsets" minX="16" minY="16" maxX="16" maxY="16"/>
+                    <state key="normal" image="icClose"/>
+                    <connections>
+                        <action selector="stopButtonDidTouchUpInside:" destination="-1" eventType="touchUpInside" id="b3p-Ti-uxK"/>
+                    </connections>
+                </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kZg-lD-KvI">
+                    <rect key="frame" x="244" y="15" width="42" height="20.5"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="HsG-c4-gbI" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="1Zu-iQ-43m"/>
+                <constraint firstItem="kZg-lD-KvI" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="1ps-V3-lvq"/>
+                <constraint firstItem="kZg-lD-KvI" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="9c3-8p-C4r"/>
+                <constraint firstAttribute="bottom" secondItem="Zgf-qw-kce" secondAttribute="bottom" id="Rse-fP-rda"/>
+                <constraint firstItem="Zgf-qw-kce" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="b3Y-zt-JKE"/>
+                <constraint firstAttribute="trailing" secondItem="Zgf-qw-kce" secondAttribute="trailing" id="cdY-9t-4Yt"/>
+                <constraint firstAttribute="trailing" secondItem="HsG-c4-gbI" secondAttribute="trailing" constant="16" id="gbv-y8-ePn"/>
+                <constraint firstItem="Zgf-qw-kce" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="lcV-Wj-Bft"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="76.799999999999997" y="374.66266866566718"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icClose" width="24" height="24"/>
+    </resources>
+</document>

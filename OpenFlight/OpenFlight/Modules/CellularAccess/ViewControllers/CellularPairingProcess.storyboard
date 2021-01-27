@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina4_7" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Cellular Pairing Process View Controller-->
+        <scene sceneID="gAF-Wg-Bhz">
+            <objects>
+                <viewController storyboardIdentifier="CellularLoginSucceedViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="CellularPairingProcessViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="YGE-bN-Zi8">
+                        <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dN7-wP-wKN" userLabel="invisibleButton">
+                                <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                                <connections>
+                                    <action selector="backgroundButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="xUC-3P-zLK"/>
+                                </connections>
+                            </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3Ka-vY-chT" userLabel="Panel View">
+                                <rect key="frame" x="8" y="125.5" width="651" height="255.5"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="GnM-WJ-M1v">
+                                        <rect key="frame" x="0.0" y="8" width="651" height="207.5"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2FW-Mt-ThO" userLabel="TopView">
+                                                <rect key="frame" x="0.0" y="0.0" width="651" height="40"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="B1s-ca-lfB">
+                                                        <rect key="frame" x="12" y="11.5" width="17" height="17"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" secondItem="B1s-ca-lfB" secondAttribute="height" multiplier="1:1" id="5yl-IH-0zW"/>
+                                                            <constraint firstAttribute="width" constant="17" id="BPu-Ut-2Z5"/>
+                                                        </constraints>
+                                                        <state key="normal" image="icClose"/>
+                                                        <connections>
+                                                            <action selector="closeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="qAE-1y-EiY"/>
+                                                        </connections>
+                                                    </button>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="blJ-f5-Pk2">
+                                                        <rect key="frame" x="305" y="10" width="41.5" height="20.5"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstItem="blJ-f5-Pk2" firstAttribute="centerX" secondItem="2FW-Mt-ThO" secondAttribute="centerX" id="1w4-pi-idY"/>
+                                                    <constraint firstItem="B1s-ca-lfB" firstAttribute="centerY" secondItem="2FW-Mt-ThO" secondAttribute="centerY" id="Eoo-7d-gxd"/>
+                                                    <constraint firstAttribute="height" constant="40" id="P7k-4Q-3Jj"/>
+                                                    <constraint firstItem="blJ-f5-Pk2" firstAttribute="centerY" secondItem="2FW-Mt-ThO" secondAttribute="centerY" id="fiG-r6-ljv"/>
+                                                    <constraint firstItem="B1s-ca-lfB" firstAttribute="leading" secondItem="2FW-Mt-ThO" secondAttribute="leading" constant="12" id="jwp-PJ-4Ac"/>
+                                                </constraints>
+                                            </view>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="ZgN-6O-NWr">
+                                                <rect key="frame" x="0.0" y="52" width="651" height="20.5"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic4GConnectionSucceed" translatesAutoresizingMaskIntoConstraints="NO" id="fx4-dN-cS1">
+                                                <rect key="frame" x="0.0" y="84.5" width="651" height="61"/>
+                                            </imageView>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EhL-K5-K7U" userLabel="ButtonsView">
+                                                <rect key="frame" x="0.0" y="157.5" width="651" height="50"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dbv-Nh-NxN">
+                                                        <rect key="frame" x="228" y="0.0" width="195" height="50"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="50" id="sG8-K0-ngv"/>
+                                                        </constraints>
+                                                        <connections>
+                                                            <action selector="okButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="K1U-Nj-wWR"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstItem="dbv-Nh-NxN" firstAttribute="centerX" secondItem="EhL-K5-K7U" secondAttribute="centerX" id="4hb-Mx-a2Z"/>
+                                                    <constraint firstItem="dbv-Nh-NxN" firstAttribute="top" secondItem="EhL-K5-K7U" secondAttribute="top" id="IjS-MI-CSW"/>
+                                                    <constraint firstItem="dbv-Nh-NxN" firstAttribute="width" secondItem="EhL-K5-K7U" secondAttribute="width" multiplier="0.3" id="ZBb-X3-dFp"/>
+                                                    <constraint firstAttribute="bottom" secondItem="dbv-Nh-NxN" secondAttribute="bottom" id="r6D-VW-xjE"/>
+                                                </constraints>
+                                            </view>
+                                        </subviews>
+                                        <variation key="heightClass=compact-widthClass=compact" spacing="12"/>
+                                    </stackView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="GnM-WJ-M1v" firstAttribute="top" secondItem="3Ka-vY-chT" secondAttribute="top" constant="8" id="hou-bo-ZT6"/>
+                                    <constraint firstAttribute="bottom" secondItem="GnM-WJ-M1v" secondAttribute="bottom" constant="40" id="iu6-aC-gUf"/>
+                                    <constraint firstItem="GnM-WJ-M1v" firstAttribute="leading" secondItem="3Ka-vY-chT" secondAttribute="leading" id="nCf-QT-p0O"/>
+                                    <constraint firstAttribute="trailing" secondItem="GnM-WJ-M1v" secondAttribute="trailing" id="noV-qz-faT"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="rLE-aO-Qp0"/>
+                        <constraints>
+                            <constraint firstItem="dN7-wP-wKN" firstAttribute="top" secondItem="rLE-aO-Qp0" secondAttribute="top" id="0Lg-G8-LOp"/>
+                            <constraint firstItem="dN7-wP-wKN" firstAttribute="leading" secondItem="rLE-aO-Qp0" secondAttribute="leading" id="0lE-Ow-KpK"/>
+                            <constraint firstItem="rLE-aO-Qp0" firstAttribute="trailing" secondItem="3Ka-vY-chT" secondAttribute="trailing" constant="8" id="2fO-O7-1f0" userLabel="Safe Area.trailing = Panel View.trailing"/>
+                            <constraint firstAttribute="bottom" secondItem="3Ka-vY-chT" secondAttribute="bottom" constant="-6" id="Qow-Iy-b0D"/>
+                            <constraint firstItem="dN7-wP-wKN" firstAttribute="trailing" secondItem="rLE-aO-Qp0" secondAttribute="trailing" id="Z5x-fL-z5h"/>
+                            <constraint firstItem="3Ka-vY-chT" firstAttribute="leading" secondItem="rLE-aO-Qp0" secondAttribute="leading" constant="8" id="pbS-qI-aVQ" userLabel="Panel View.leading = Safe Area.leading"/>
+                            <constraint firstAttribute="bottom" secondItem="dN7-wP-wKN" secondAttribute="bottom" id="w9g-fT-NKV"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="closeButton" destination="B1s-ca-lfB" id="cWQ-xP-nTd"/>
+                        <outlet property="descriptionLabel" destination="ZgN-6O-NWr" id="9ir-0G-pGC"/>
+                        <outlet property="okButton" destination="dbv-Nh-NxN" id="5Vk-a2-Ydi"/>
+                        <outlet property="panelView" destination="3Ka-vY-chT" id="9Mg-XU-Rc1"/>
+                        <outlet property="titleLabel" destination="blJ-f5-Pk2" id="cua-NH-ttE"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-718" y="215"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="ic4GConnectionSucceed" width="321" height="61"/>
+        <image name="icClose" width="24" height="24"/>
+    </resources>
+</document>

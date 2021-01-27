@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" translatesAutoresizingMaskIntoConstraints="NO" id="gTV-IL-0wX" customClass="DashboardProviderCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="60"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="600" height="60"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oCQ-db-nuT" userLabel="view">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="60"/>
+                        <subviews>
+                            <view alpha="0.5" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="d2I-J4-oor" userLabel="Background view">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="60"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.29805222602739728" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="9"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBaseAvatar" translatesAutoresizingMaskIntoConstraints="NO" id="smZ-0F-Osr">
+                                <rect key="frame" x="12" y="0.0" width="60" height="60"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="smZ-0F-Osr" secondAttribute="height" id="dhS-2u-XFy"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.CornerRadius">
+                                        <integer key="value" value="9"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jPf-By-R2c">
+                                <rect key="frame" x="84" y="0.0" width="36" height="60"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="smZ-0F-Osr" secondAttribute="bottom" id="65I-5i-o2M"/>
+                            <constraint firstItem="smZ-0F-Osr" firstAttribute="top" secondItem="oCQ-db-nuT" secondAttribute="top" id="CyA-W2-Jh4"/>
+                            <constraint firstAttribute="trailing" secondItem="d2I-J4-oor" secondAttribute="trailing" id="J0A-kf-e9D"/>
+                            <constraint firstItem="jPf-By-R2c" firstAttribute="leading" secondItem="smZ-0F-Osr" secondAttribute="trailing" constant="12" id="KBk-zw-IDU"/>
+                            <constraint firstAttribute="bottom" secondItem="d2I-J4-oor" secondAttribute="bottom" id="h5I-96-2r2"/>
+                            <constraint firstItem="jPf-By-R2c" firstAttribute="top" secondItem="oCQ-db-nuT" secondAttribute="top" id="iS7-Ic-nsR"/>
+                            <constraint firstAttribute="bottom" secondItem="jPf-By-R2c" secondAttribute="bottom" id="kde-wJ-3gG"/>
+                            <constraint firstItem="d2I-J4-oor" firstAttribute="leading" secondItem="oCQ-db-nuT" secondAttribute="leading" id="qqP-T8-ppg"/>
+                            <constraint firstItem="smZ-0F-Osr" firstAttribute="leading" secondItem="oCQ-db-nuT" secondAttribute="leading" constant="12" id="vb7-8W-eGa"/>
+                            <constraint firstItem="d2I-J4-oor" firstAttribute="top" secondItem="oCQ-db-nuT" secondAttribute="top" id="xMf-Np-fIh"/>
+                        </constraints>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                <integer key="value" value="9"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                    </view>
+                </subviews>
+            </view>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="oCQ-db-nuT" secondAttribute="bottom" id="AvT-Yh-QeU"/>
+                <constraint firstItem="oCQ-db-nuT" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="uCN-Bo-KnV"/>
+                <constraint firstAttribute="trailing" secondItem="oCQ-db-nuT" secondAttribute="trailing" id="ufr-vO-AaF"/>
+                <constraint firstItem="oCQ-db-nuT" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="x8P-rd-2lJ"/>
+            </constraints>
+            <connections>
+                <outlet property="nameLabel" destination="jPf-By-R2c" id="uwt-Mc-dCE"/>
+                <outlet property="profileImageView" destination="smZ-0F-Osr" id="eT0-Gc-M5r"/>
+            </connections>
+            <point key="canvasLocation" x="139" y="155"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <image name="icBaseAvatar" width="110" height="110"/>
+    </resources>
+</document>

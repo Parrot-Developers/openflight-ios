@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="ipad9_7" orientation="landscape" layout="fullscreen" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Dashboard View Controller-->
+        <scene sceneID="gAF-Wg-Bhz">
+            <objects>
+                <viewController storyboardIdentifier="DashboardViewController" modalPresentationStyle="fullScreen" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="DashboardViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xds-vG-0gg">
+                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <subviews>
+                            <view alpha="0.69999999999999996" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lkb-HL-GtE">
+                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
+                            </view>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" indicatorStyle="white" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="64E-0f-39c">
+                                <rect key="frame" x="16" y="16" width="992" height="752"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="sRG-nV-tdO">
+                                    <size key="itemSize" width="500" height="150"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells/>
+                                <connections>
+                                    <outlet property="dataSource" destination="om2-Bk-pxl" id="n2T-pG-9Ux"/>
+                                    <outlet property="delegate" destination="om2-Bk-pxl" id="GSR-Se-Yrt"/>
+                                </connections>
+                            </collectionView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="pxc-RV-TXU"/>
+                        <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="lkb-HL-GtE" firstAttribute="leading" secondItem="xds-vG-0gg" secondAttribute="leading" id="4gx-Ck-aZO"/>
+                            <constraint firstItem="lkb-HL-GtE" firstAttribute="top" secondItem="xds-vG-0gg" secondAttribute="top" id="DMv-7w-6SB"/>
+                            <constraint firstItem="64E-0f-39c" firstAttribute="bottom" secondItem="xds-vG-0gg" secondAttribute="bottom" id="MOZ-so-iPs"/>
+                            <constraint firstItem="64E-0f-39c" firstAttribute="leading" secondItem="pxc-RV-TXU" secondAttribute="leading" constant="16" id="WJo-Rc-uye">
+                                <variation key="heightClass=regular-widthClass=compact" constant="20"/>
+                            </constraint>
+                            <constraint firstAttribute="trailing" secondItem="lkb-HL-GtE" secondAttribute="trailing" id="umd-fy-jFR"/>
+                            <constraint firstItem="pxc-RV-TXU" firstAttribute="trailing" secondItem="64E-0f-39c" secondAttribute="trailing" constant="16" id="wsz-xF-3Nz">
+                                <variation key="heightClass=regular-widthClass=compact" constant="20"/>
+                            </constraint>
+                            <constraint firstItem="64E-0f-39c" firstAttribute="top" secondItem="pxc-RV-TXU" secondAttribute="top" constant="16" id="xP1-Zh-xEi"/>
+                            <constraint firstAttribute="bottom" secondItem="lkb-HL-GtE" secondAttribute="bottom" id="xye-Pr-ZKL"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="collectionView" destination="64E-0f-39c" id="BPA-6M-qpG"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-718.52678571428567" y="214.49275362318843"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="viewFlipsideBackgroundColor">
+            <color red="0.1215686274509804" green="0.12941176470588239" blue="0.14117647058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

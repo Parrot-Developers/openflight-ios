@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="MissionLauncherButton" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="missionImageView" destination="dWX-sE-dvS" id="ebZ-8w-OTA"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view userInteractionEnabled="NO" contentMode="scaleToFill" id="8RS-o6-zSq">
+            <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icClassicMissionMode" translatesAutoresizingMaskIntoConstraints="NO" id="dWX-sE-dvS">
+                    <rect key="frame" x="32.5" y="32.5" width="35" height="35"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="35" id="Jkx-bC-2Im"/>
+                        <constraint firstAttribute="height" constant="35" id="NF4-Ar-gyD"/>
+                    </constraints>
+                </imageView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="dWX-sE-dvS" firstAttribute="centerY" secondItem="8RS-o6-zSq" secondAttribute="centerY" id="Uf1-Yb-F8y"/>
+                <constraint firstItem="dWX-sE-dvS" firstAttribute="centerX" secondItem="8RS-o6-zSq" secondAttribute="centerX" id="vAK-7J-Gqs"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="huP-ue-pAx"/>
+            <point key="canvasLocation" x="141" y="155"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icClassicMissionMode" width="21" height="21"/>
+    </resources>
+</document>

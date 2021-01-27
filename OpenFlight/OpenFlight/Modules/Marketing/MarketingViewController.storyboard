@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_0" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Marketing View Controller-->
+        <scene sceneID="Y1q-FW-yAS">
+            <objects>
+                <viewController storyboardIdentifier="MarketingViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="rRa-mJ-wGh" customClass="MarketingViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="xBW-aF-eAA">
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icMarketingBackground" translatesAutoresizingMaskIntoConstraints="NO" id="Z62-ex-Wfg" userLabel="Background Image">
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
+                            </imageView>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="V7E-Ao-5wD">
+                                <rect key="frame" x="28.5" y="80" width="511" height="160"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" sectionInsetReference="safeArea" id="BZ8-Js-iQb">
+                                    <size key="itemSize" width="200" height="200"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells/>
+                            </collectionView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="l45-B5-nHg">
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="64"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="64" id="SNT-m6-cEg"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="41K-eI-urm"/>
+                        <color key="backgroundColor" red="0.1019607843" green="0.10980392160000001" blue="0.1176470588" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstItem="l45-B5-nHg" firstAttribute="top" secondItem="41K-eI-urm" secondAttribute="top" id="95A-1d-oNE"/>
+                            <constraint firstItem="V7E-Ao-5wD" firstAttribute="height" secondItem="xBW-aF-eAA" secondAttribute="height" multiplier="0.8" id="9SX-uc-uXm"/>
+                            <constraint firstItem="l45-B5-nHg" firstAttribute="leading" secondItem="41K-eI-urm" secondAttribute="leading" id="CWF-mL-0co"/>
+                            <constraint firstItem="V7E-Ao-5wD" firstAttribute="width" secondItem="xBW-aF-eAA" secondAttribute="width" multiplier="0.7" id="DGj-41-YcH"/>
+                            <constraint firstAttribute="trailing" secondItem="Z62-ex-Wfg" secondAttribute="trailing" id="M1E-Tw-WIq"/>
+                            <constraint firstItem="V7E-Ao-5wD" firstAttribute="centerX" secondItem="xBW-aF-eAA" secondAttribute="centerX" id="Myw-vB-D5p"/>
+                            <constraint firstItem="Z62-ex-Wfg" firstAttribute="leading" secondItem="xBW-aF-eAA" secondAttribute="leading" id="Rqi-R0-Vhy"/>
+                            <constraint firstItem="V7E-Ao-5wD" firstAttribute="width" secondItem="xBW-aF-eAA" secondAttribute="width" multiplier="0.8" id="VWL-nS-Cs0"/>
+                            <constraint firstItem="V7E-Ao-5wD" firstAttribute="centerY" secondItem="xBW-aF-eAA" secondAttribute="centerY" id="XKI-6z-BvV"/>
+                            <constraint firstAttribute="bottom" secondItem="Z62-ex-Wfg" secondAttribute="bottom" id="cTL-Om-t9z"/>
+                            <constraint firstItem="V7E-Ao-5wD" firstAttribute="width" secondItem="xBW-aF-eAA" secondAttribute="width" multiplier="0.9" id="fUC-d0-OYV"/>
+                            <constraint firstItem="41K-eI-urm" firstAttribute="trailing" secondItem="l45-B5-nHg" secondAttribute="trailing" id="l0i-i2-b4b"/>
+                            <constraint firstItem="V7E-Ao-5wD" firstAttribute="height" secondItem="xBW-aF-eAA" secondAttribute="height" multiplier="0.5" id="o2U-i5-uHA"/>
+                            <constraint firstItem="Z62-ex-Wfg" firstAttribute="top" secondItem="xBW-aF-eAA" secondAttribute="top" id="ter-Fu-z5i"/>
+                        </constraints>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="9SX-uc-uXm"/>
+                                <exclude reference="DGj-41-YcH"/>
+                                <exclude reference="fUC-d0-OYV"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=compact-widthClass=compact">
+                            <mask key="constraints">
+                                <exclude reference="VWL-nS-Cs0"/>
+                                <include reference="fUC-d0-OYV"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=compact">
+                            <mask key="constraints">
+                                <include reference="9SX-uc-uXm"/>
+                                <include reference="DGj-41-YcH"/>
+                                <exclude reference="VWL-nS-Cs0"/>
+                                <exclude reference="fUC-d0-OYV"/>
+                                <exclude reference="o2U-i5-uHA"/>
+                            </mask>
+                        </variation>
+                    </view>
+                    <connections>
+                        <outlet property="marketingComponentsCollectionView" destination="V7E-Ao-5wD" id="esD-AP-WDA"/>
+                        <outlet property="titleLabel" destination="l45-B5-nHg" id="lWk-k6-Z8R"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ahw-WX-v01" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-170.08928571428569" y="163.768115942029"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="icMarketingBackground" width="2048" height="1366"/>
+    </resources>
+</document>

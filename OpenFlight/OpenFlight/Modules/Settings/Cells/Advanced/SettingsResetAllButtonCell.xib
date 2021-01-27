@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="SettingsResetAllButtonCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsResetAllButtonCell" rowHeight="47" id="Lix-y4-alL" customClass="SettingsResetAllButtonCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="601" height="104"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Lix-y4-alL" id="HuR-uR-wbD">
+                <rect key="frame" x="0.0" y="0.0" width="601" height="104"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vMk-83-eac">
+                        <rect key="frame" x="260.5" y="30" width="80" height="44"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="44" id="zu3-Bx-yuo"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="14"/>
+                        <inset key="contentEdgeInsets" minX="20" minY="0.0" maxX="20" maxY="0.0"/>
+                        <state key="normal" title="Button">
+                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        </state>
+                        <connections>
+                            <action selector="resetButtonTouchedUpInside:" destination="Lix-y4-alL" eventType="touchUpInside" id="7pH-Cu-hVU"/>
+                        </connections>
+                    </button>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                <constraints>
+                    <constraint firstItem="vMk-83-eac" firstAttribute="top" secondItem="HuR-uR-wbD" secondAttribute="top" constant="30" id="FOn-sf-Avf"/>
+                    <constraint firstItem="vMk-83-eac" firstAttribute="centerX" secondItem="HuR-uR-wbD" secondAttribute="centerX" id="PPd-4Y-cwt"/>
+                    <constraint firstAttribute="bottom" secondItem="vMk-83-eac" secondAttribute="bottom" id="Q5e-af-dWJ"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <connections>
+                <outlet property="resetButton" destination="vMk-83-eac" id="ZHB-z6-VlG"/>
+                <outlet property="topConstraint" destination="FOn-sf-Avf" id="AvP-FB-ose"/>
+            </connections>
+            <point key="canvasLocation" x="-32.5" y="20"/>
+        </tableViewCell>
+    </objects>
+</document>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DroneCalibrationInstructionsView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="firstLabel" destination="Aa4-kA-RdC" id="mOq-JD-CDR"/>
+                <outlet property="imageView" destination="ngi-EO-LHp" id="ujY-fD-iA0"/>
+                <outlet property="secondLabel" destination="0cI-yM-wjw" id="bTW-Vm-kVA"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="x2V-xl-cEb">
+            <rect key="frame" x="0.0" y="0.0" width="489" height="308"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="252" image="Calibration_yaw_0001" translatesAutoresizingMaskIntoConstraints="NO" id="ngi-EO-LHp">
+                    <rect key="frame" x="228.5" y="0.0" width="32" height="32"/>
+                </imageView>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eZc-a0-WPT">
+                    <rect key="frame" x="0.0" y="32" width="489" height="276"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="Ren-st-23B">
+                            <rect key="frame" x="75.5" y="121" width="338" height="34"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="You are going to calibrate your drone. This quick " textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Aa4-kA-RdC">
+                                    <rect key="frame" x="0.0" y="0.0" width="338" height="17"/>
+                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="operation will allow you to fly outside." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0cI-yM-wjw">
+                                    <rect key="frame" x="0.0" y="17" width="338" height="17"/>
+                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="Ren-st-23B" firstAttribute="centerY" secondItem="eZc-a0-WPT" secondAttribute="centerY" id="Yla-kf-heA"/>
+                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Ren-st-23B" secondAttribute="trailing" constant="20" id="djs-V5-xsP"/>
+                        <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Ren-st-23B" secondAttribute="bottom" id="eMu-Y7-p4u"/>
+                        <constraint firstItem="Ren-st-23B" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="eZc-a0-WPT" secondAttribute="leading" constant="20" id="fVb-Sh-AFy"/>
+                        <constraint firstItem="Ren-st-23B" firstAttribute="centerX" secondItem="eZc-a0-WPT" secondAttribute="centerX" id="hax-wb-TDc"/>
+                        <constraint firstItem="Ren-st-23B" firstAttribute="top" relation="greaterThanOrEqual" secondItem="eZc-a0-WPT" secondAttribute="top" id="nSz-LS-MLd"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="ngi-EO-LHp" firstAttribute="top" secondItem="J5V-IK-jZA" secondAttribute="top" id="2LI-VM-eEi"/>
+                <constraint firstAttribute="bottom" secondItem="eZc-a0-WPT" secondAttribute="bottom" id="4kv-QC-Mr9"/>
+                <constraint firstItem="eZc-a0-WPT" firstAttribute="top" secondItem="ngi-EO-LHp" secondAttribute="bottom" id="Zzx-dl-TIP"/>
+                <constraint firstItem="eZc-a0-WPT" firstAttribute="centerX" secondItem="x2V-xl-cEb" secondAttribute="centerX" id="gSW-Vv-f2H"/>
+                <constraint firstItem="eZc-a0-WPT" firstAttribute="leading" secondItem="J5V-IK-jZA" secondAttribute="leading" id="ofa-qO-UsQ"/>
+                <constraint firstItem="J5V-IK-jZA" firstAttribute="trailing" secondItem="eZc-a0-WPT" secondAttribute="trailing" id="qHc-Sz-tdA"/>
+                <constraint firstItem="ngi-EO-LHp" firstAttribute="centerX" secondItem="x2V-xl-cEb" secondAttribute="centerX" id="xHe-Sb-n6E"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="J5V-IK-jZA"/>
+            <point key="canvasLocation" x="90.5" y="-126"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="Calibration_yaw_0001" width="16" height="16"/>
+    </resources>
+</document>

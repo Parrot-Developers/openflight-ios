@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Imaging Settings Bar View Controller-->
+        <scene sceneID="gAF-Wg-Bhz">
+            <objects>
+                <viewController storyboardIdentifier="ImagingSettingsBarViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="ImagingSettingsBarViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Wf3-fd-o0X">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="34"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="wS5-Kc-vnX">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="34"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ePC-K6-UEL">
+                                        <rect key="frame" x="0.0" y="0.0" width="50" height="34"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="91O-vb-9pP">
+                                                <rect key="frame" x="0.0" y="0.0" width="50" height="34"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <state key="highlighted">
+                                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="lockAEButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="bho-O4-g2S"/>
+                                                </connections>
+                                            </button>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="lockAEEnabled" translatesAutoresizingMaskIntoConstraints="NO" id="8Mn-dj-tfh">
+                                                <rect key="frame" x="20.5" y="10.5" width="9" height="13"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" secondItem="8Mn-dj-tfh" secondAttribute="height" multiplier="9:13" id="NZQ-3c-jtQ"/>
+                                                    <constraint firstAttribute="width" constant="9" id="bQX-Sp-9yD"/>
+                                                </constraints>
+                                            </imageView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="8Mn-dj-tfh" firstAttribute="centerX" secondItem="ePC-K6-UEL" secondAttribute="centerX" id="7DD-ZM-82Q"/>
+                                            <constraint firstAttribute="trailing" secondItem="91O-vb-9pP" secondAttribute="trailing" id="9ar-ub-B7Y"/>
+                                            <constraint firstItem="8Mn-dj-tfh" firstAttribute="centerY" secondItem="ePC-K6-UEL" secondAttribute="centerY" id="dZK-fl-C7d"/>
+                                            <constraint firstAttribute="width" constant="50" id="gEv-3b-oPG"/>
+                                            <constraint firstItem="91O-vb-9pP" firstAttribute="leading" secondItem="ePC-K6-UEL" secondAttribute="leading" id="pqp-UA-gbl"/>
+                                            <constraint firstAttribute="bottom" secondItem="91O-vb-9pP" secondAttribute="bottom" id="s9S-c9-6SE"/>
+                                            <constraint firstItem="91O-vb-9pP" firstAttribute="top" secondItem="ePC-K6-UEL" secondAttribute="top" id="xac-uX-Vbp"/>
+                                        </constraints>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eaH-Rc-nYI">
+                                        <rect key="frame" x="60" y="0.0" width="300.5" height="34"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dEp-cr-ki5" customClass="HighlightableUIControl" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="43.5" height="34"/>
+                                                <subviews>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconManualAutoManual" translatesAutoresizingMaskIntoConstraints="NO" id="Pei-Ii-jCN">
+                                                        <rect key="frame" x="4" y="0.0" width="35.5" height="34"/>
+                                                    </imageView>
+                                                </subviews>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="bottom" secondItem="Pei-Ii-jCN" secondAttribute="bottom" id="grt-nh-ElV"/>
+                                                    <constraint firstItem="Pei-Ii-jCN" firstAttribute="top" secondItem="dEp-cr-ki5" secondAttribute="top" id="nHG-1C-QbR"/>
+                                                    <constraint firstAttribute="trailing" secondItem="Pei-Ii-jCN" secondAttribute="trailing" constant="4" id="sFo-BE-nm1"/>
+                                                    <constraint firstItem="Pei-Ii-jCN" firstAttribute="leading" secondItem="dEp-cr-ki5" secondAttribute="leading" constant="4" id="xou-9c-Axd"/>
+                                                </constraints>
+                                                <connections>
+                                                    <action selector="autoModeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="dMT-RH-6KG"/>
+                                                </connections>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lPm-qw-8r9">
+                                                <rect key="frame" x="43.5" y="0.0" width="1" height="34"/>
+                                                <color key="backgroundColor" white="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="1" id="z2u-rg-zRY"/>
+                                                </constraints>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="c9u-Jd-SwP" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="44.5" y="0.0" width="87.5" height="34"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <connections>
+                                                    <action selector="shutterSpeedItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="HZj-IA-fhw"/>
+                                                </connections>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UOK-ox-xZM">
+                                                <rect key="frame" x="132" y="0.0" width="1" height="34"/>
+                                                <color key="backgroundColor" white="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="1" id="8yP-WV-GIr"/>
+                                                </constraints>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="k8k-aJ-Pq0" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="133" y="0.0" width="79" height="34"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <connections>
+                                                    <action selector="cameroIsoItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="mes-F6-xDN"/>
+                                                </connections>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MI8-Aj-qjE">
+                                                <rect key="frame" x="212" y="0.0" width="1" height="34"/>
+                                                <color key="backgroundColor" white="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="1" id="Mdk-lp-tv0"/>
+                                                </constraints>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rGT-ui-TnM" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="213" y="0.0" width="87.5" height="34"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <connections>
+                                                    <action selector="evCompensationItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="hy4-j0-HPu"/>
+                                                </connections>
+                                            </view>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="rGT-ui-TnM" firstAttribute="width" secondItem="dEp-cr-ki5" secondAttribute="width" multiplier="2" id="3f1-hL-R6L"/>
+                                            <constraint firstItem="rGT-ui-TnM" firstAttribute="width" secondItem="c9u-Jd-SwP" secondAttribute="width" id="I36-Wi-prm"/>
+                                            <constraint firstItem="rGT-ui-TnM" firstAttribute="width" secondItem="k8k-aJ-Pq0" secondAttribute="width" multiplier="10:9" id="X3Z-nP-lYt"/>
+                                        </constraints>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bF8-CD-yE2">
+                                        <rect key="frame" x="370.5" y="0.0" width="128" height="34"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8Nc-WO-B7c" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="63.5" height="34"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <connections>
+                                                    <action selector="whiteBalanceItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="7Do-7x-YaS"/>
+                                                </connections>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UWD-Vb-hIj">
+                                                <rect key="frame" x="63.5" y="0.0" width="1" height="34"/>
+                                                <color key="backgroundColor" white="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="1" id="ctc-eT-AH5"/>
+                                                </constraints>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TZd-fH-Ox3" customClass="DynamicRangeItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="64.5" y="0.0" width="63.5" height="34"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <connections>
+                                                    <action selector="dynamicRangeTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="cbT-Hk-9K5"/>
+                                                </connections>
+                                            </view>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="8Nc-WO-B7c" firstAttribute="width" secondItem="TZd-fH-Ox3" secondAttribute="width" id="0i0-ne-OgS"/>
+                                        </constraints>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="dft-1C-WQZ">
+                                        <rect key="frame" x="508.5" y="0.0" width="91.5" height="34"/>
+                                        <subviews>
+                                            <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kvf-Vr-z4Y">
+                                                <rect key="frame" x="0.0" y="0.0" width="1" height="34"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tru-qk-0ae" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="0.0" height="34"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <connections>
+                                                            <action selector="photoResolutionItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="CXq-DS-gOm"/>
+                                                        </connections>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qLT-LV-5go">
+                                                        <rect key="frame" x="0.0" y="0.0" width="1" height="34"/>
+                                                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="calibratedRGB"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="1" id="PAZ-YR-s92"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="79U-Dd-EFI" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="1" y="0.0" width="0.0" height="34"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <connections>
+                                                            <action selector="photoFormatItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="yo2-3h-6oU"/>
+                                                        </connections>
+                                                    </view>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstItem="tru-qk-0ae" firstAttribute="width" secondItem="79U-Dd-EFI" secondAttribute="width" id="UUL-KK-nRw"/>
+                                                </constraints>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PFw-BY-exF">
+                                                <rect key="frame" x="0.0" y="0.0" width="91.5" height="34"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JzT-dO-b6q" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="45.5" height="34"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <connections>
+                                                            <action selector="videoResolutionItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="eg1-yP-uI4"/>
+                                                        </connections>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2hV-rG-0C3">
+                                                        <rect key="frame" x="45.5" y="0.0" width="1" height="34"/>
+                                                        <color key="backgroundColor" white="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="1" id="YNd-R8-NDZ"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SY5-iL-37X" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="46.5" y="0.0" width="45" height="34"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <connections>
+                                                            <action selector="framerateItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="MUl-ry-G3x"/>
+                                                        </connections>
+                                                    </view>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstItem="SY5-iL-37X" firstAttribute="width" secondItem="JzT-dO-b6q" secondAttribute="width" id="oyv-to-8CG"/>
+                                                </constraints>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" relation="lessThanOrEqual" constant="34" id="8kl-HL-tgI"/>
+                                    <constraint firstAttribute="height" priority="900" constant="34" id="TJe-bx-AFY"/>
+                                    <constraint firstItem="dft-1C-WQZ" firstAttribute="width" secondItem="eaH-Rc-nYI" secondAttribute="width" multiplier="128:421" id="ZKj-sq-xCh"/>
+                                    <constraint firstItem="bF8-CD-yE2" firstAttribute="width" secondItem="eaH-Rc-nYI" secondAttribute="width" multiplier="180:421" id="zBm-WE-tKL"/>
+                                </constraints>
+                                <variation key="heightClass=compact-widthClass=compact" spacing="4"/>
+                            </stackView>
+                            <view hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pq3-dj-Qym">
+                                <rect key="frame" x="60" y="0.0" width="300.5" height="34"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uaB-ZI-zca">
+                                <rect key="frame" x="103" y="0.0" width="2" height="34"/>
+                                <color key="backgroundColor" red="1" green="0.86274509803921573" blue="0.0078431372549019607" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2" id="qwt-W8-05m"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="tEe-33-WLu"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="pq3-dj-Qym" firstAttribute="leading" secondItem="eaH-Rc-nYI" secondAttribute="leading" id="7gr-ZO-XOT"/>
+                            <constraint firstItem="pq3-dj-Qym" firstAttribute="top" secondItem="eaH-Rc-nYI" secondAttribute="top" id="9tU-az-HCy"/>
+                            <constraint firstAttribute="trailing" secondItem="wS5-Kc-vnX" secondAttribute="trailing" id="JT2-VW-0wd"/>
+                            <constraint firstItem="wS5-Kc-vnX" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="VGx-Xp-TGM"/>
+                            <constraint firstItem="pq3-dj-Qym" firstAttribute="trailing" secondItem="rGT-ui-TnM" secondAttribute="trailing" id="Zu2-hq-UYq"/>
+                            <constraint firstItem="pq3-dj-Qym" firstAttribute="bottom" secondItem="eaH-Rc-nYI" secondAttribute="bottom" id="cQu-x0-0Lf"/>
+                            <constraint firstAttribute="bottom" secondItem="wS5-Kc-vnX" secondAttribute="bottom" id="lH4-Oa-5hm"/>
+                            <constraint firstItem="uaB-ZI-zca" firstAttribute="bottom" secondItem="pq3-dj-Qym" secondAttribute="bottom" id="ldJ-xv-4i3"/>
+                            <constraint firstItem="uaB-ZI-zca" firstAttribute="centerX" secondItem="lPm-qw-8r9" secondAttribute="centerX" id="lvn-N7-FxT"/>
+                            <constraint firstItem="uaB-ZI-zca" firstAttribute="top" secondItem="pq3-dj-Qym" secondAttribute="top" id="mvm-mZ-n3F"/>
+                            <constraint firstItem="wS5-Kc-vnX" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="uQn-Vv-2Da"/>
+                        </constraints>
+                    </view>
+                    <size key="freeformSize" width="600" height="34"/>
+                    <connections>
+                        <outlet property="autoModeBorderView" destination="pq3-dj-Qym" id="h7c-5y-OZ3"/>
+                        <outlet property="autoModeButton" destination="dEp-cr-ki5" id="em2-yp-URH"/>
+                        <outlet property="autoModeImageView" destination="Pei-Ii-jCN" id="rNt-lq-mZ3"/>
+                        <outlet property="autoModeSeparatorView" destination="uaB-ZI-zca" id="BTP-I2-CRt"/>
+                        <outlet property="cameraIsoItemView" destination="k8k-aJ-Pq0" id="Ryv-kO-skP"/>
+                        <outlet property="dynamicRangeItemStackView" destination="bF8-CD-yE2" id="E7h-9d-Ews"/>
+                        <outlet property="dynamicRangeItemView" destination="TZd-fH-Ox3" id="Jxg-bJ-6Tk"/>
+                        <outlet property="evCompensationItemView" destination="rGT-ui-TnM" id="1KE-Ud-TJ8"/>
+                        <outlet property="framerateItemView" destination="SY5-iL-37X" id="VBe-TZ-fY2"/>
+                        <outlet property="generalSettingsStackView" destination="eaH-Rc-nYI" id="TrB-UJ-y4I"/>
+                        <outlet property="imagingSettingsBarStackView" destination="wS5-Kc-vnX" id="UuY-Aw-vpq"/>
+                        <outlet property="lockAEButton" destination="91O-vb-9pP" id="EcK-PR-uoq"/>
+                        <outlet property="lockAEImageView" destination="8Mn-dj-tfh" id="0YW-Nz-zKC"/>
+                        <outlet property="lockAEView" destination="ePC-K6-UEL" id="kFS-Hl-xZZ"/>
+                        <outlet property="photoFormatItemView" destination="79U-Dd-EFI" id="GGf-xT-Ubh"/>
+                        <outlet property="photoItemsStackView" destination="kvf-Vr-z4Y" id="0z6-0X-yQJ"/>
+                        <outlet property="photoResolutionItemView" destination="tru-qk-0ae" id="6TB-BM-vEC"/>
+                        <outlet property="recordingItemsStackView" destination="PFw-BY-exF" id="8Pu-JF-oP8"/>
+                        <outlet property="shutterSpeedItemView" destination="c9u-Jd-SwP" id="q6B-kK-E42"/>
+                        <outlet property="specificSettingsStackView" destination="dft-1C-WQZ" id="7lL-zg-WyO"/>
+                        <outlet property="videoResolutionItemView" destination="JzT-dO-b6q" id="n7x-2S-lsM"/>
+                        <outlet property="whiteBalanceItemView" destination="8Nc-WO-B7c" id="R7a-I9-Z47"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-718.84057971014499" y="214.95535714285714"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="iconManualAutoManual" width="35" height="18"/>
+        <image name="lockAEEnabled" width="9" height="13"/>
+    </resources>
+</document>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DroneActionView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="actionButton" destination="KB7-AI-Gmm" id="L5e-dv-qIZ"/>
+                <outlet property="returnHomeButton" destination="1Xh-U2-6Kn" id="Q5S-RI-Csz"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="40"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2pc-Ug-1ZM">
+                    <rect key="frame" x="200" y="0.0" width="200" height="40"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="8Xd-gY-iAT">
+                            <rect key="frame" x="0.0" y="0.0" width="200" height="40"/>
+                            <subviews>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1Xh-U2-6Kn">
+                                    <rect key="frame" x="0.0" y="0.0" width="98" height="40"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" relation="lessThanOrEqual" constant="98" id="kki-4G-sxm"/>
+                                    </constraints>
+                                    <state key="normal" image="icRthPanel"/>
+                                    <connections>
+                                        <action selector="returnHomeButtonTouchedUpInside:" destination="-1" eventType="touchUpInside" id="dyr-Bj-z8r"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KB7-AI-Gmm">
+                                    <rect key="frame" x="102" y="0.0" width="98" height="40"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" relation="lessThanOrEqual" constant="98" id="1Kw-5g-Yg7"/>
+                                    </constraints>
+                                    <state key="normal" image="icAltitude"/>
+                                    <connections>
+                                        <action selector="actionButtonTouchedUpInside:" destination="-1" eventType="touchUpInside" id="Bb6-GP-CUH"/>
+                                    </connections>
+                                </button>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                    <constraints>
+                        <constraint firstAttribute="width" relation="lessThanOrEqual" constant="200" id="AK4-VV-ZWb"/>
+                        <constraint firstItem="8Xd-gY-iAT" firstAttribute="leading" secondItem="2pc-Ug-1ZM" secondAttribute="leading" id="YLx-wD-CxL"/>
+                        <constraint firstAttribute="bottom" secondItem="8Xd-gY-iAT" secondAttribute="bottom" id="eLP-QW-crg"/>
+                        <constraint firstItem="8Xd-gY-iAT" firstAttribute="top" secondItem="2pc-Ug-1ZM" secondAttribute="top" id="iVa-qg-tM5"/>
+                        <constraint firstAttribute="trailing" secondItem="8Xd-gY-iAT" secondAttribute="trailing" id="pWJ-oa-4qd"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <constraints>
+                <constraint firstItem="lkt-Eo-77i" firstAttribute="trailing" secondItem="2pc-Ug-1ZM" secondAttribute="trailing" priority="750" id="0I3-Pd-Rbn"/>
+                <constraint firstItem="2pc-Ug-1ZM" firstAttribute="leading" secondItem="lkt-Eo-77i" secondAttribute="leading" priority="750" id="Hwy-Zc-7eV"/>
+                <constraint firstAttribute="bottom" secondItem="2pc-Ug-1ZM" secondAttribute="bottom" id="LOl-UM-VB8"/>
+                <constraint firstItem="2pc-Ug-1ZM" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="SoM-aU-69f"/>
+                <constraint firstItem="2pc-Ug-1ZM" firstAttribute="centerX" secondItem="lkt-Eo-77i" secondAttribute="centerX" id="cZ9-Pb-MtA"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="lkt-Eo-77i"/>
+            <point key="canvasLocation" x="139" y="154"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icAltitude" width="7" height="11"/>
+        <image name="icRthPanel" width="33.5" height="28"/>
+    </resources>
+</document>

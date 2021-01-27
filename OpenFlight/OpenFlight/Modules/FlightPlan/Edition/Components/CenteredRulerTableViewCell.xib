@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="center" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="CenteredRulerTableViewCell" id="KGk-i7-Jjw" customClass="CenteredRulerTableViewCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KGk-i7-Jjw" translatesAutoresizingMaskIntoConstraints="NO" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+                <subviews>
+                    <stackView opaque="NO" contentMode="center" axis="vertical" distribution="fillEqually" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="85X-GB-rOP">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="68O-gY-PYI">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="39"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="b6R-nR-BTH">
+                                <rect key="frame" x="0.0" y="41" width="320" height="39"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="80" id="eCt-kd-rTk"/>
+                        </constraints>
+                    </stackView>
+                    <view hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QvG-Sz-iUY">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.25" colorSpace="custom" customColorSpace="calibratedRGB"/>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <constraints>
+                    <constraint firstItem="QvG-Sz-iUY" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="7TQ-zC-KXC"/>
+                    <constraint firstAttribute="trailing" secondItem="85X-GB-rOP" secondAttribute="trailing" id="F82-FS-OeP"/>
+                    <constraint firstAttribute="bottom" secondItem="85X-GB-rOP" secondAttribute="bottom" id="I1u-Zi-2Tx"/>
+                    <constraint firstItem="85X-GB-rOP" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="MMS-QP-7Pa"/>
+                    <constraint firstItem="QvG-Sz-iUY" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="Mj9-IU-Wzq"/>
+                    <constraint firstAttribute="bottom" secondItem="QvG-Sz-iUY" secondAttribute="bottom" id="Zuy-iP-5hd"/>
+                    <constraint firstItem="85X-GB-rOP" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="g4r-Ed-nVx"/>
+                    <constraint firstAttribute="trailing" secondItem="QvG-Sz-iUY" secondAttribute="trailing" id="pAI-DA-Zvr"/>
+                </constraints>
+            </tableViewCellContentView>
+            <viewLayoutGuide key="safeArea" id="4Ly-yE-4yb"/>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="H2p-sc-9uM" firstAttribute="leading" secondItem="KGk-i7-Jjw" secondAttribute="leading" id="7Wm-0h-xiH"/>
+                <constraint firstItem="H2p-sc-9uM" firstAttribute="top" secondItem="KGk-i7-Jjw" secondAttribute="top" id="Iqk-RO-TCi"/>
+                <constraint firstAttribute="bottom" secondItem="H2p-sc-9uM" secondAttribute="bottom" id="LDH-pL-Z1n"/>
+                <constraint firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailing" id="sin-fL-Eds"/>
+            </constraints>
+            <connections>
+                <outlet property="disableView" destination="QvG-Sz-iUY" id="OoB-hO-D7h"/>
+                <outlet property="settingValueRulerViewContainer" destination="b6R-nR-BTH" id="8vz-bc-3Rg"/>
+                <outlet property="titleLabel" destination="68O-gY-PYI" id="oiQ-nH-16C"/>
+                <outlet property="trailingConstraint" destination="sin-fL-Eds" id="QMz-48-kdl"/>
+            </connections>
+            <point key="canvasLocation" x="139" y="155"/>
+        </tableViewCell>
+    </objects>
+</document>
