@@ -99,7 +99,7 @@ private extension GalleryPanoramaChoiceTypeViewController {
         generateButton.setTitle(L10n.commonStart, for: .normal)
         generateButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color, radius: Style.largeCornerRadius)
         generateButton.isEnabled = viewModel?.selectedPanoramaMediaType != nil
-        generateButton.alpha = generateButton.isEnabled ? 1.0 : 0.5
+        generateButton.alphaWithEnabledState(generateButton.isEnabled)
     }
 
     /// Sets up models associated with the choices view.

@@ -74,11 +74,6 @@ final class SettingsViewController: UIViewController {
         static let topInset: CGFloat = 5.0
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "Settings"
-    }
-
     // MARK: - Init
     /// init view controller with coordinator and settings type
     ///
@@ -116,7 +111,7 @@ final class SettingsViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.settings, logType: .screen)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -142,6 +137,7 @@ final class SettingsViewController: UIViewController {
 private extension SettingsViewController {
     /// Close button clicked.
     @IBAction func closeButtonTouchedUpInside(_ sender: AnyObject) {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .simpleButton)
         self.cleanContainerContent()
         self.coordinator?.dismissSettings()
     }
@@ -171,9 +167,9 @@ private extension SettingsViewController {
     /// - Parameters:
     ///    - settingsType: specify content type to display.
     func reloadPanelContent(settingsType: SettingsType? = nil) {
-        /// Update selected section if defined (advanced segment has multiple sections)
+        // Update selected section if defined (advanced segment has multiple sections).
         selectedSection = settingsType ?? selectedPanel.defaultSettings
-        /// Select segment associated with settingsType (if specified)
+        // Select segment associated with settingsType (if specified).
         if let settingsType = settingsType {
             self.segmentedControl.selectedSegmentIndex = SettingsPanelType.type(for: settingsType).rawValue
         }

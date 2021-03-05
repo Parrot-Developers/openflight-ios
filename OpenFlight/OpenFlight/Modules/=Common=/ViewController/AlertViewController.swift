@@ -34,23 +34,28 @@ import UIKit
 public final class AlertAction {
     /// Action title.
     var title: String?
-    /// Action handler.
-    var actionHandler: (() -> Void)?
     /// Action style.
     var style: UIAlertAction.Style?
+    /// Custom background color for cancel button.
+    var cancelCustomColor: ColorName?
+    /// Action handler.
+    var actionHandler: (() -> Void)?
 
     /// Init.
     ///
     /// - Parameters:
     ///     - title: action title
     ///     - style: action style
+    ///     - cancelCustomColor: custom color for cancel button
     ///     - actionHandler: action handler
     public init(title: String,
                 style: UIAlertAction.Style? = nil,
+                cancelCustomColor: ColorName? = nil,
                 actionHandler: (() -> Void)? = nil) {
         self.title = title
         self.style = style
         self.actionHandler = actionHandler
+        self.cancelCustomColor = cancelCustomColor
     }
 }
 
@@ -107,6 +112,8 @@ public final class AlertViewController: UIViewController {
 
     // MARK: - Private Properties
     private var message: String?
+    private var closeButtonStyle: CloseButtonStyle?
+    private var messageColor: ColorName = .white
     private var cancelAction: AlertAction?
     private var validateAction: AlertAction?
 
@@ -124,17 +131,23 @@ public final class AlertViewController: UIViewController {
     /// - Parameters:
     ///     - title: Alert title
     ///     - message: Alert message
+    ///     - messageColor: Alert message color
+    ///     - closeButtonStyle: Style of potential close button
     ///     - cancelAction: Cancel action
     ///     - validateAction: Validate action
     public static func instantiate(title: String,
                                    message: String,
-                                   cancelAction: AlertAction,
+                                   messageColor: ColorName = .white,
+                                   closeButtonStyle: CloseButtonStyle? = nil,
+                                   cancelAction: AlertAction? = nil,
                                    validateAction: AlertAction?) -> AlertViewController {
         let viewController = StoryboardScene.AlertViewController.initialScene.instantiate()
         viewController.title = title
         viewController.message = message
         viewController.cancelAction = cancelAction
         viewController.validateAction = validateAction
+        viewController.closeButtonStyle = closeButtonStyle
+        viewController.messageColor = messageColor
         viewController.modalPresentationStyle = .overFullScreen
 
         return viewController
@@ -144,21 +157,7 @@ public final class AlertViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.view.backgroundColor = .clear
-
-        alertTitle.text = title
-        alertMessage.text = message
-
-        cancelButton.setTitle(cancelAction?.title ?? L10n.cancel, for: .normal)
-        setupButton(cancelButton, with: cancelAction?.style ?? .cancel)
-
-        if let validateTitle = validateAction?.title {
-            validateButton.setTitle(validateTitle, for: .normal)
-        } else {
-            validateButton.isHidden = true
-        }
-
-        setupButton(validateButton, with: validateAction?.style ?? .default)
+        setupView()
     }
 
     public override func viewWillAppear(_ animated: Bool) {
@@ -203,7 +202,6 @@ public final class AlertViewController: UIViewController {
 private extension AlertViewController {
     /// Background button touched.
     @IBAction func backgroundButtonTouchedUpInside(_ sender: Any) {
-        cancel()
         dismissAlert { [weak self] in
             self?.cancel()
         }
@@ -211,7 +209,6 @@ private extension AlertViewController {
 
     /// Cancel button touched.
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
-        cancelAction?.actionHandler?()
         dismissAlert { [weak self] in
             self?.cancelAction?.actionHandler?()
         }
@@ -219,15 +216,51 @@ private extension AlertViewController {
 
     /// Confirm button touched.
     @IBAction func confirmButtonTouchedUpInside(_ sender: Any) {
-        validateAction?.actionHandler?()
         dismissAlert { [weak self] in
             self?.validateAction?.actionHandler?()
         }
+    }
+
+    /// Called when user touches the close button.
+    @objc func closeButtonTouchedUpInside(_ sender: UIButton) {
+        dismissAlert()
     }
 }
 
 // MARK: - Private Funcs
 private extension AlertViewController {
+    /// Sets up the alert view.
+    func setupView() {
+        self.view.backgroundColor = .clear
+
+        alertTitle.text = title
+        alertMessage.text = message
+        alertMessage.textColor = messageColor.color
+
+        if cancelAction != nil {
+            cancelButton.setTitle(cancelAction?.title ?? L10n.cancel, for: .normal)
+            setupButton(cancelButton,
+                        with: cancelAction?.style ?? .cancel,
+                        cancelCustomColor: cancelAction?.cancelCustomColor)
+        } else {
+            cancelButton.isHidden = true
+        }
+
+        if let validateTitle = validateAction?.title {
+            validateButton.setTitle(validateTitle, for: .normal)
+        } else {
+            validateButton.isHidden = true
+        }
+
+        if let closeStyle = closeButtonStyle {
+            addCloseButton(onTapAction: #selector(closeButtonTouchedUpInside(_:)),
+                           targetView: alertBackground,
+                           style: closeStyle)
+        }
+
+        setupButton(validateButton, with: validateAction?.style ?? .default)
+    }
+
     /// Cancel.
     /// Call cancel handler only if it is a cancel action style.
     func cancel() {
@@ -241,7 +274,10 @@ private extension AlertViewController {
     /// - Parameters:
     ///    - button: button to customize
     ///    - style: style to apply
-    func setupButton(_ button: UIButton, with style: UIAlertAction.Style?) {
+    ///    - cancelCustomColor: custom color to apply
+    func setupButton(_ button: UIButton,
+                     with style: UIAlertAction.Style?,
+                     cancelCustomColor: ColorName? = nil) {
         guard let style = style else { return }
 
         var color: UIColor = .clear
@@ -251,8 +287,12 @@ private extension AlertViewController {
         case .destructive:
             color = ColorName.redTorch25.color
         case .cancel:
-            color = .clear
-            borderWidth = Constants.cancelButtonBorderWidth
+            if let backgroundColor = cancelCustomColor {
+                color = backgroundColor.color
+            } else {
+                color = .clear
+                borderWidth = Constants.cancelButtonBorderWidth
+            }
         case .default:
             color = ColorName.greenSpring20.color
         @unknown default:

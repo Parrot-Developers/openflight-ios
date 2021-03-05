@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// State for `DroneDetailsViewModel`.
-
 final class DroneDetailsState: DroneInfosState {
     // MARK: - Internal Properties
     /// Drone copter motors state.
@@ -61,12 +60,11 @@ final class DroneDetailsState: DroneInfosState {
     ///    - gpsStrength: gps signal
     ///    - droneName: drone name
     ///    - droneConnectionState: drone connection state
-    ///    - droneNeedUpdate:tells if the drone need a firmwareupdate
     ///    - droneNeedGimbalCalibration: tells if the drone need a gimbal calibration
     ///    - droneNeedMagnetometerCalibration: tells if the drone need a magnetometer calibration
     ///    - droneNeedStereoVisionSensorCalibration: tells if the drone need a stereo vision sensor calibration
-    ///    - cellularNetworkIcon: provides about cellular access icon
-    ///    - isCellularAvailable: tells if cellular is available
+    ///    - cellularStrength: cellular signal strength
+    ///    - currentLink: provides current link
     init(connectionState: DeviceState.ConnectionState,
          copterMotors: Set<CopterMotor>?,
          gimbalState: DroneGimbalStatus?,
@@ -77,24 +75,23 @@ final class DroneDetailsState: DroneInfosState {
          gpsStrength: Observable<GpsStrength>,
          droneName: Observable<String>,
          droneConnectionState: Observable<DeviceState.ConnectionState>,
-         droneNeedUpdate: Observable<Bool>,
          droneNeedGimbalCalibration: Observable<Bool>,
          droneNeedMagnetometerCalibration: Observable<Bool>,
          droneNeedStereoVisionSensorCalibration: Observable<Bool>,
-         cellularNetworkIcon: Observable<UIImage>,
-         isCellularAvailable: Observable<Bool>) {
+         cellularStrength: Observable<CellularStrength>,
+         currentLink: Observable<NetworkControlLinkType>) {
         super.init(connectionState: connectionState,
                    batteryLevel: batteryLevel,
                    wifiStrength: wifiStrength,
                    gpsStrength: gpsStrength,
                    droneName: droneName,
                    droneConnectionState: droneConnectionState,
-                   droneNeedUpdate: droneNeedUpdate,
                    droneNeedGimbalCalibration: droneNeedGimbalCalibration,
                    droneNeedMagnetometerCalibration: droneNeedMagnetometerCalibration,
                    droneNeedStereoVisionSensorCalibration: droneNeedStereoVisionSensorCalibration,
-                   cellularNetworkIcon: cellularNetworkIcon,
-                   isCellularAvailable: isCellularAvailable)
+                   cellularStrength: cellularStrength,
+                   currentLink: currentLink)
+
         self.copterMotorsError = copterMotors
         self.gimbalState = gimbalState
         self.stereoVisionState = stereoVisionState
@@ -124,25 +121,29 @@ final class DroneDetailsState: DroneInfosState {
                                      gpsStrength: gpsStrength,
                                      droneName: droneName,
                                      droneConnectionState: droneConnectionState,
-                                     droneNeedUpdate: droneNeedUpdate,
                                      droneNeedGimbalCalibration: droneNeedGimbalCalibration,
                                      droneNeedMagnetometerCalibration: droneNeedMagnetometerCalibration,
                                      droneNeedStereoVisionSensorCalibration: droneNeedStereoVisionSensorCalibration,
-                                     cellularNetworkIcon: cellularNetworkIcon,
-                                     isCellularAvailable: isCellularAvailable)
+                                     cellularStrength: cellularStrength,
+                                     currentLink: currentLink)
         return copy
 
     }
 }
 
 /// View Model for Drone details screen.
-
 final class DroneDetailsViewModel: DroneInfosViewModel<DroneDetailsState> {
     // MARK: - Private Properties
     private var motorsRef: Ref<CopterMotors>?
     private var gimbalRef: Ref<Gimbal>?
     private var stereoVisionSensorRef: Ref<StereoVisionSensor>?
     private var gpsRef: Ref<Gps>?
+
+    // MARK: - Internal Properties
+    /// Returns drone model.
+    var droneModel: String {
+        return drone?.model.publicName ?? state.value.droneName.value
+    }
 
     // MARK: - Init
     override init(stateDidUpdate: ((DroneDetailsState) -> Void)? = nil,
@@ -151,24 +152,23 @@ final class DroneDetailsViewModel: DroneInfosViewModel<DroneDetailsState> {
                   gpsStrengthDidChange: ((GpsStrength) -> Void)? = nil,
                   nameDidChange: ((String) -> Void)? = nil,
                   connectionStateDidChange: ((DeviceState.ConnectionState) -> Void)? = nil,
-                  needUpdateDidChange: ((Bool) -> Void)? = nil,
-                  cellularStateDidChange: ((UIImage) -> Void)? = nil,
-                  isCellularAvailabilityChange: ((Bool) -> Void)? = nil) {
-
+                  cellularStrengthDidChange: ((CellularStrength) -> Void)? = nil,
+                  currentLinkDidChange: ((NetworkControlLinkType) -> Void)? = nil) {
         super.init(batteryLevelDidChange: batteryLevelDidChange,
                    wifiStrengthDidChange: wifiStrengthDidChange,
                    gpsStrengthDidChange: gpsStrengthDidChange,
                    nameDidChange: nameDidChange,
                    connectionStateDidChange: connectionStateDidChange,
-                   needUpdateDidChange: needUpdateDidChange,
-                   cellularStateDidChange: cellularStateDidChange,
-                   isCellularAvailabilityChange: isCellularAvailabilityChange)
+                   cellularStrengthDidChange: cellularStrengthDidChange,
+                   currentLinkDidChange: currentLinkDidChange)
+
         self.state.valueChanged = stateDidUpdate
     }
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
+
         listenGimbal(drone)
         listenGps(drone)
         listenStereoVisionSensor(drone)
@@ -182,6 +182,7 @@ private extension DroneDetailsViewModel {
     func listenGimbal(_ drone: Drone) {
         gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
             let copy = self?.state.value.copy()
+
             if gimbal?.currentErrors.isEmpty == true && gimbal?.calibrated == true {
                 copy?.gimbalState = .ready
             } else if gimbal?.currentErrors.contains(.critical) == true {
@@ -189,6 +190,7 @@ private extension DroneDetailsViewModel {
             } else {
                 copy?.gimbalState = .warning
             }
+
             self?.state.set(copy)
         }
     }

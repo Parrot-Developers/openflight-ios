@@ -41,9 +41,8 @@ enum MissionConstants {
 struct ClassicMission: MissionProvider {
     // MARK: - Internal Properties
     var mission: Mission
-    var currentActiveMode: MissionMode? {
-        return nil
-    }
+
+    var signature: ProtobufMissionSignature = DefaultMissionSignature()
 
     // MARK: - Static content
     static var manualModeConf = MissionModeConfigurator(key: MissionConstants.classicMissionManualKey,

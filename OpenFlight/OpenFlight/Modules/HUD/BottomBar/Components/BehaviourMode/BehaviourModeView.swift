@@ -98,8 +98,7 @@ private extension BehaviourModeView {
 // MARK: - Actions
 private extension BehaviourModeView {
     @objc func viewTouchedUpInside() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.bottomBarHUD.name,
-                             itemName: LogEvent.LogKeyHUDBottomBarButton.speedMode.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDBottomBarButton.speedMode.name,
                              newValue: (!self.viewModel.state.value.isSelected.value).logValue,
                              logType: .button)
         self.viewModel.toggleSelectionState()

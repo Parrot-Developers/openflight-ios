@@ -52,11 +52,6 @@ final class PairingViewController: UIViewController {
         static let thirdScreen: CGFloat = 3.0
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "Pairing"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: PairingCoordinator) -> PairingViewController {
         let viewController = StoryboardScene.Pairing.initialScene.instantiate()
@@ -88,7 +83,8 @@ final class PairingViewController: UIViewController {
             updateView()
             isFirstDisplay = false
         }
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairing, logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {

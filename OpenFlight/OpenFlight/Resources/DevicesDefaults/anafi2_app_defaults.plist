@@ -26,6 +26,11 @@
 					<string>standard</string>
 				</array>
 			</dict>
+			<key>ReturnHome</key>
+			<dict>
+				<key>preferredTarget</key>
+				<integer>1</integer>
+			</dict>
 			<key>Camera2-0</key>
 			<dict>
 				<key>capabilities</key>
@@ -3331,8 +3336,10 @@
 		<dict>
 			<key>ReturnHome</key>
 			<dict>
+				<key>preferredTarget</key>
+				<integer>1</integer>
 				<key>minAltitude</key>
-				<integer>20</integer>
+				<integer>30</integer>
 			</dict>
 			<key>Gimbal-main</key>
 			<dict>

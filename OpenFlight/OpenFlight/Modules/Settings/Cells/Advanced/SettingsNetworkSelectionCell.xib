@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -31,7 +31,7 @@
                                         <rect key="frame" x="0.0" y="0.0" width="359" height="52"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="8" translatesAutoresizingMaskIntoConstraints="NO" id="Hy0-P4-6tO">
-                                                <rect key="frame" x="20" y="8" width="143.5" height="36"/>
+                                                <rect key="frame" x="16" y="8" width="143.5" height="36"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <nil key="highlightedColor"/>
@@ -56,7 +56,7 @@
                                             <constraint firstItem="Hy0-P4-6tO" firstAttribute="top" secondItem="209-o0-PcZ" secondAttribute="top" constant="8" id="TNT-9Y-slc"/>
                                             <constraint firstItem="Hy0-P4-6tO" firstAttribute="centerY" secondItem="YDV-l4-S9s" secondAttribute="centerY" id="ZGA-tv-ATP"/>
                                             <constraint firstItem="Hy0-P4-6tO" firstAttribute="width" secondItem="209-o0-PcZ" secondAttribute="width" multiplier="0.4" id="aMR-1z-VPp"/>
-                                            <constraint firstItem="Hy0-P4-6tO" firstAttribute="leading" secondItem="209-o0-PcZ" secondAttribute="leading" constant="20" id="lSS-Dr-EJT"/>
+                                            <constraint firstItem="Hy0-P4-6tO" firstAttribute="leading" secondItem="209-o0-PcZ" secondAttribute="leading" constant="16" id="lSS-Dr-EJT"/>
                                             <constraint firstAttribute="height" constant="52" id="vJn-Z2-9oM"/>
                                         </constraints>
                                     </view>

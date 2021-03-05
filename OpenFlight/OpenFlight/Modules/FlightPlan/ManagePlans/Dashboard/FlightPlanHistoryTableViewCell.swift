@@ -40,6 +40,12 @@ protocol FlightPlanHistoryCellDelegate: class {
     ///     - action: action to perform
     func didTapOnMedia(fpExecution: FlightPlanExecution,
                        action: HistoryMediasActionType?)
+
+    /// Called when user taps the resumeButton view.
+    ///
+    /// - Parameters:
+    ///     - fpExecution: the current flight plan execution
+    func didTapOnResume(fpExecution: FlightPlanExecution)
 }
 
 // MARK: - Public Enums
@@ -57,6 +63,7 @@ final class FlightPlanHistoryTableViewCell: UITableViewCell, NibReusable {
     @IBOutlet private weak var dateLabel: UILabel!
     @IBOutlet private weak var mediaContainerView: UIView!
     @IBOutlet private weak var photoCountContainerView: UIView!
+    @IBOutlet private weak var resumeButton: UIButton!
 
     // MARK: - Internal Properties
     weak var delegate: FlightPlanHistoryCellDelegate?
@@ -64,6 +71,11 @@ final class FlightPlanHistoryTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Private Properties
     private var fpExecution: FlightPlanExecution?
     private var currentAction: HistoryMediasActionType?
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let buttonInset: CGFloat = 8.0
+    }
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
@@ -81,6 +93,15 @@ final class FlightPlanHistoryTableViewCell: UITableViewCell, NibReusable {
     }
 }
 
+// MARK: - IBActions
+private extension FlightPlanHistoryTableViewCell {
+    @IBAction func resumeTouchedUpInside(_ sender: Any) {
+        guard let execution = fpExecution else { return }
+
+        delegate?.didTapOnResume(fpExecution: execution)
+    }
+}
+
 // MARK: - Internal Funcs
 extension FlightPlanHistoryTableViewCell {
     /// Inits the view.
@@ -90,18 +111,21 @@ extension FlightPlanHistoryTableViewCell {
         dateLabel.makeUp()
     }
 
-    /// Setup cell. By default, progress is set to 1 (100%) and medias are hidden.
+    /// Setup cell.
     ///
     /// - Parameters:
     ///     - fpExecution: Flight Plan execution
     ///     - mediasView: Flight Plan execution history view
-    func setup(fpExecution: FlightPlanExecution?,
-               mediasView: HistoryMediasView?) {
-        guard let execution = fpExecution else { return }
-
-        dateLabel.text = execution.executionDate
-        addPhotoCountView(fpExecution: execution)
-        self.fpExecution = execution
+    ///     - tableType: table type
+    func setup(fpExecution: FlightPlanExecution,
+               mediasView: HistoryMediasView?,
+               tableType: HistoryTableType) {
+        let isCompactCell = tableType == .miniHistory
+        resumeButton.isHidden = isCompactCell
+        setupExecutionButton(for: fpExecution.state)
+        dateLabel.text = fpExecution.fomattedExecutionDate(isShort: isCompactCell)
+        addPhotoCountView(fpExecution: fpExecution)
+        self.fpExecution = fpExecution
 
         guard let view = mediasView?.view else {
             mediaContainerView.removeSubViews()
@@ -127,6 +151,30 @@ private extension FlightPlanHistoryTableViewCell {
 
 // MARK: - Private Funcs
 private extension FlightPlanHistoryTableViewCell {
+    /// Setup execution button.
+    ///
+    /// - Parameters:
+    ///     - executionState: execution state
+    func setupExecutionButton(for executionState: FlightPlanExecutionState?) {
+        resumeButton.isEnabled = executionState != .completed
+        if executionState == .completed {
+            resumeButton.makeup(color: .greenPea, and: .normal)
+            resumeButton.setTitle(L10n.flightPlanRunCompleted, for: .normal)
+            resumeButton.cornerRadiusedWith(backgroundColor: ColorName.clear.color,
+                                            radius: Style.smallCornerRadius)
+            resumeButton.contentEdgeInsets = UIEdgeInsets.zero
+        } else {
+            resumeButton.makeup(color: .orangePeel, and: .normal)
+            resumeButton.setTitle(L10n.flightPlanRunResume, for: .normal)
+            resumeButton.cornerRadiusedWith(backgroundColor: ColorName.orangePeel20.color,
+                                            radius: Style.smallCornerRadius)
+            resumeButton.contentEdgeInsets = UIEdgeInsets(top: 0.0,
+                                                          left: Constants.buttonInset,
+                                                          bottom: 0.0,
+                                                          right: Constants.buttonInset)
+        }
+    }
+
     /// Add medias view if it's needed.
     ///
     /// - Parameters:

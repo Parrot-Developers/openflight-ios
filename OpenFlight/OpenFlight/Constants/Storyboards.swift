@@ -6,7 +6,7 @@ import Foundation
 import UIKit
 
 // swiftlint:disable superfluous_disable_command
-// swiftlint:disable file_length
+// swiftlint:disable file_length implicit_return
 
 // MARK: - Storyboard Scenes
 
@@ -87,15 +87,40 @@ internal enum StoryboardScene {
 
     internal static let initialScene = InitialSceneType<OpenFlight.DroneDetailsViewController>(storyboard: DroneDetails.self)
 
+    internal static let droneDetailsButtons = SceneType<OpenFlight.DroneDetailsButtonsViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsButtons")
+
     internal static let droneDetailsCellularViewController = SceneType<OpenFlight.DroneDetailsCellularViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsCellularViewController")
+
+    internal static let droneDetailsDevice = SceneType<OpenFlight.DroneDetailsDeviceViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsDevice")
 
     internal static let droneDetailsFirmwareViewController = SceneType<OpenFlight.DroneDetailsFirmwareViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsFirmwareViewController")
 
-    internal static let droneDetailsInformationsViewController = SceneType<OpenFlight.DroneDetailsInformationsViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsInformationsViewController")
+    internal static let droneDetailsInformations = SceneType<OpenFlight.DroneDetailsInformationsViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsInformations")
 
     internal static let droneDetailsViewController = SceneType<OpenFlight.DroneDetailsViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsViewController")
 
     internal static let droneDetailsMapViewController = SceneType<OpenFlight.DroneDetailsMapViewController>(storyboard: DroneDetails.self, identifier: "droneDetailsMapViewController")
+  }
+  internal enum DroneDetailsFirmwares: StoryboardType {
+    internal static let storyboardName = "DroneDetailsFirmwares"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.DroneDetailsFirmwaresViewController>(storyboard: DroneDetailsFirmwares.self)
+
+    internal static let droneDetailsFirmwares = SceneType<OpenFlight.DroneDetailsFirmwaresViewController>(storyboard: DroneDetailsFirmwares.self, identifier: "DroneDetailsFirmwares")
+  }
+  internal enum FirmwareAndMissionsUpdate: StoryboardType {
+    internal static let storyboardName = "FirmwareAndMissionsUpdate"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.FirmwareAndMissionsUpdateViewController>(storyboard: FirmwareAndMissionsUpdate.self)
+
+    internal static let firmwareAndMissionsUpdate = SceneType<OpenFlight.FirmwareAndMissionsUpdateViewController>(storyboard: FirmwareAndMissionsUpdate.self, identifier: "FirmwareAndMissionsUpdate")
+  }
+  internal enum FirmwareUpdatingViewController: StoryboardType {
+    internal static let storyboardName = "FirmwareUpdatingViewController"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.FirmwareUpdatingViewController>(storyboard: FirmwareUpdatingViewController.self)
+
+    internal static let firmwareUpdatingViewController = SceneType<OpenFlight.FirmwareUpdatingViewController>(storyboard: FirmwareUpdatingViewController.self, identifier: "FirmwareUpdatingViewController")
   }
   internal enum FlightPlanDashboardViewController: StoryboardType {
     internal static let storyboardName = "FlightPlanDashboardViewController"
@@ -339,6 +364,13 @@ internal enum StoryboardScene {
 
     internal static let parrotDebugViewController = SceneType<OpenFlight.ParrotDebugViewController>(storyboard: ParrotDebug.self, identifier: "ParrotDebugViewController")
   }
+  internal enum ProtobufMissionsUpdating: StoryboardType {
+    internal static let storyboardName = "ProtobufMissionsUpdating"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.ProtobufMissionsUpdatingViewController>(storyboard: ProtobufMissionsUpdating.self)
+
+    internal static let protobufMissionsUpdating = SceneType<OpenFlight.ProtobufMissionsUpdatingViewController>(storyboard: ProtobufMissionsUpdating.self, identifier: "ProtobufMissionsUpdating")
+  }
   internal enum RemoteDetails: StoryboardType {
     internal static let storyboardName = "RemoteDetails"
 
@@ -470,6 +502,11 @@ internal struct SceneType<T: UIViewController> {
     }
     return controller
   }
+
+  @available(iOS 13.0, tvOS 13.0, *)
+  internal func instantiate(creator block: @escaping (NSCoder) -> T?) -> T {
+    return storyboard.storyboard.instantiateViewController(identifier: identifier, creator: block)
+  }
 }
 
 internal struct InitialSceneType<T: UIViewController> {
@@ -481,12 +518,24 @@ internal struct InitialSceneType<T: UIViewController> {
     }
     return controller
   }
+
+  @available(iOS 13.0, tvOS 13.0, *)
+  internal func instantiate(creator block: @escaping (NSCoder) -> T?) -> T {
+    guard let controller = storyboard.storyboard.instantiateInitialViewController(creator: block) else {
+      fatalError("Storyboard \(storyboard.storyboardName) does not have an initial scene.")
+    }
+    return controller
+  }
 }
 
 // swiftlint:disable convenience_type
 private final class BundleToken {
   static let bundle: Bundle = {
-    Bundle(for: BundleToken.self)
+    #if SWIFT_PACKAGE
+    return Bundle.module
+    #else
+    return Bundle(for: BundleToken.self)
+    #endif
   }()
 }
 // swiftlint:enable convenience_type

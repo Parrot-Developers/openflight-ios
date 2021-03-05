@@ -46,11 +46,6 @@ final class PairingDroneNotDetectedViewController: UIViewController {
         static let borderWidth: CGFloat = 1.0
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "Pairing/HowToConnect/DroneTurnOn"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: Coordinator) -> PairingDroneNotDetectedViewController {
         let viewController = StoryboardScene.Pairing.pairingDroneNotDetectedViewController.instantiate()
@@ -69,7 +64,7 @@ final class PairingDroneNotDetectedViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingHowToConnectDroneTurnOn, logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {

@@ -39,7 +39,7 @@ protocol CircleProgressViewDelegate: class {
 /// View displaying a circle representing a progress value.
 final class CircleProgressView: UIView, NibOwnerLoadable {
     // MARK: - Internal Properties
-    var strokeColor: UIColor = UIColor(named: .yellowSea)
+    var strokeColor: UIColor = UIColor(named: .greenSpring)
     var bgStokeColor: UIColor = UIColor(named: .white20) {
         didSet {
             progressLayerBackground.strokeColor = bgStokeColor.cgColor

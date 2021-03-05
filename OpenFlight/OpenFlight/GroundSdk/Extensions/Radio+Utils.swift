@@ -36,6 +36,7 @@ private enum Constants {
     static let linkSignalQualityThreshold: Int = 1
 }
 
+// MARK: - Internal Enums
 /// Enum describing Wifi strength.
 enum WifiStrength: Int {
     case none = -1
@@ -46,22 +47,6 @@ enum WifiStrength: Int {
     case ok4On4 = 4
 
     // MARK: - Internal Properties
-    /// Returns an image corresponding to current Wifi strength.
-    var image: UIImage {
-        switch self {
-        case .none, .ko0On4:
-            return Asset.Wifi.icWifi04.image
-        case .ok1On4:
-            return Asset.Wifi.icWifi14.image
-        case .ok2On4:
-            return Asset.Wifi.icWifi24.image
-        case .ok3On4:
-            return Asset.Wifi.icWifi34.image
-        case .ok4On4:
-            return Asset.Wifi.icWifi44.image
-        }
-    }
-
     /// Returns alert level for current wifi strength.
     var alertLevel: AlertLevel {
         switch self {
@@ -77,8 +62,61 @@ enum WifiStrength: Int {
     }
 }
 
-/// Utility extension for `Radio`.
+// MARK: - SignalStrength
+extension WifiStrength: SignalStrength {
+    var backgroundColor: ColorName {
+        switch self {
+        case .none:
+            return .clear
+        case .ko0On4:
+            return .redTorch
+        case .ok1On4, .ok2On4:
+            return .orangePeel20
+        case .ok3On4, .ok4On4:
+            return .greenSpring20
+        }
+    }
 
+    var borderColor: ColorName {
+        switch self {
+        case .none:
+            return .clear
+        case .ko0On4:
+            return .redTorch
+        case .ok1On4, .ok2On4:
+            return .orangePeel
+        case .ok3On4, .ok4On4:
+            return .greenSpring
+        }
+    }
+
+    func signalIcon(isLinkActive: Bool = false, isBackgroundStyle: Bool = false) -> UIImage {
+        let isInactiveStyle: Bool = (isLinkActive && isBackgroundStyle)
+            || !isLinkActive
+        switch self {
+        case .none, .ko0On4:
+            return Asset.Wifi.icWifiNoSignal.image
+        case .ok1On4:
+            return isInactiveStyle
+                ? Asset.Wifi.icWifiOff14.image
+                : Asset.Wifi.icWifiOn14.image
+        case .ok2On4:
+            return isInactiveStyle
+                ? Asset.Wifi.icWifiOff24.image
+                : Asset.Wifi.icWifiOn24.image
+        case .ok3On4:
+            return isLinkActive
+                ? Asset.Wifi.icWifiOn34.image
+                : Asset.Wifi.icWifiOff34.image
+        case .ok4On4:
+            return isLinkActive
+                ? Asset.Wifi.icWifiOn44.image
+                : Asset.Wifi.icWifiOff44.image
+        }
+    }
+}
+
+/// Utility extension for `Radio`.
 extension Radio {
     // MARK: - Internal Properties
     /// Returns current Wifi strength.

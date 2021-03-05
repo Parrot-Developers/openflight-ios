@@ -68,11 +68,6 @@ final class FlightDetailsViewController: UIViewController, FileShare {
         static let landscapeContentLeading: CGFloat = 40.0
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "FlightDetails"
-    }
-
     // MARK: - Setup
     /// Instantiate.
     ///
@@ -133,7 +128,8 @@ final class FlightDetailsViewController: UIViewController, FileShare {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.flightDetails,
+                             logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {

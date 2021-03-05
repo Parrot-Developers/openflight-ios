@@ -54,6 +54,6 @@ open class DroneWatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     // MARK: - Internal Funcs
     /// Method to override in subclass in order to listen drone instruments, piloting interfaces, etc.
     open func listenDrone(drone: Drone) {
-        assert(false) //Must Override
+        assert(false) // Must Override
     }
 }

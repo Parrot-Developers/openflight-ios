@@ -35,6 +35,7 @@ import GroundSdk
 enum ActionType: String, Codable {
     case takeOff = "TakeOff"
     case landing = "Landing"
+    case rth = "RTH"
     case tilt = "Tilt"
     case delay = "Delay"
     case imageStartCapture = "ImageStartCapture"
@@ -139,6 +140,8 @@ public final class Action: Codable {
         switch type {
         case .takeOff:
             return TakeOffCommand()
+        case .rth:
+            return ReturnToLaunchCommand()
         case .landing:
             return LandCommand()
         case .tilt:
@@ -209,7 +212,7 @@ public final class Action: Codable {
     ///
     /// - Parameters:
     ///    - mavLinkCommand: Mavlink command
-    convenience init?(mavLinkCommand: MavlinkCommand) {
+    public convenience init?(mavLinkCommand: MavlinkCommand) {
         switch mavLinkCommand {
         case is TakeOffCommand:
             self.init(type: .takeOff)

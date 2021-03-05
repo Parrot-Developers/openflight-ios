@@ -57,7 +57,6 @@ final class DroneCalibrationAxesView: UIView, NibOwnerLoadable {
 
 // MARK: - Internal Funcs
 extension DroneCalibrationAxesView {
-
     /// Display the current axis.
     ///
     /// - Parameters:
@@ -74,6 +73,14 @@ extension DroneCalibrationAxesView {
     ///    - axis: axis calibrated.
     func markAsCalibrated(axis: Magnetometer3StepCalibrationProcessState.Axis) {
         items[axis]?.viewModel.tickBoxImage = Asset.Pairing.icPairingCheck.image
+    }
+
+    /// Resets all tickboxes to their initial state.
+    /// Should be called on failure to handle retry properly.
+    func reset() {
+        items
+            .compactMap { return $1 }
+            .forEach { $0.viewModel.tickBoxImage = Asset.Common.Checks.icCheckUnchecked.image }
     }
 }
 

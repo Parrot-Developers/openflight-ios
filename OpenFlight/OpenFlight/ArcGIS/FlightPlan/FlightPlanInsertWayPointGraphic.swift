@@ -36,7 +36,10 @@ final class FlightPlanInsertWayPointGraphic: FlightPlanPointGraphic {
     override var itemType: FlightPlanGraphicItemType {
         return .insertWayPoint
     }
-    override var itemIndex: Int? {
+
+    // MARK: - Internal Properties
+    /// Returns index for waypoint that might get created from this.
+    var targetIndex: Int? {
         return self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] as? Int
     }
 

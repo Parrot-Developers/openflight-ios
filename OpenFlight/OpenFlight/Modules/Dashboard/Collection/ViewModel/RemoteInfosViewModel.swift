@@ -33,7 +33,6 @@ import GroundSdk
 
 // MARK: - RemoteInfosState
 /// State for `RemoteInfosViewModel`.
-
 final class RemoteInfosState: ViewModelState {
     // MARK: - Internal Properties
     /// Observable for current battery level.

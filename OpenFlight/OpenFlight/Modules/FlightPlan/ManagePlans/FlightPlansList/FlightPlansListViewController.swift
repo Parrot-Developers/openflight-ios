@@ -56,6 +56,11 @@ final class FlightPlansListViewController: UIViewController {
     // MARK: - Internal Properties
     weak var delegate: FlightPlansListViewControllerDelegate?
     var displayMode: FlightPlansListDisplayMode = .full
+    var selectedFlightPlanUuid: String? {
+        didSet {
+            collectionView?.reloadData()
+        }
+    }
 
     // MARK: - Private Properties
     private var missionProviderViewModel: MissionProviderViewModel = MissionProviderViewModel()
@@ -70,7 +75,7 @@ final class FlightPlansListViewController: UIViewController {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let nbColumnsLandscape: CGFloat = 4.0
+        static let nbColumnsLandscape: CGFloat = 3.0
         static let nbColumnsPortrait: CGFloat = 2.0
         static let itemSpacing: CGFloat = 10.0
         static let cellWidthRatio: CGFloat = 0.9
@@ -104,7 +109,8 @@ final class FlightPlansListViewController: UIViewController {
         super.viewWillAppear(animated)
 
         self.collectionView.reloadData()
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.flightPlanList,
+                             logType: .screen)
     }
 
     /// Update display when orientation changed.
@@ -118,8 +124,10 @@ final class FlightPlansListViewController: UIViewController {
     override var prefersStatusBarHidden: Bool {
         return true
     }
+}
 
-    // MARK: - Internal Funcs
+// MARK: - Privates Funcs
+private extension FlightPlansListViewController {
     /// Update data source.
     func updateDataSource() {
         var predicate: NSPredicate?
@@ -148,7 +156,9 @@ extension FlightPlansListViewController: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(for: indexPath) as FlightPlanCollectionViewCell
         if indexPath.row < allFlightPlans.count {
             let flightPlan = allFlightPlans[indexPath.row]
-            cell.configureCell(viewModel: flightPlan)
+            let isSelected = displayMode == .full ? false : selectedFlightPlanUuid == flightPlan.state.value.uuid
+            cell.configureCell(viewModel: flightPlan,
+                               isSelected: isSelected)
         }
         return cell
     }
@@ -157,10 +167,11 @@ extension FlightPlansListViewController: UICollectionViewDataSource {
 // MARK: - UICollectionViewDelegate
 extension FlightPlansListViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard indexPath.row < allFlightPlans.count else {
-            return
-        }
-        delegate?.didSelect(flightPlan: allFlightPlans[indexPath.row])
+        guard indexPath.row < allFlightPlans.count else { return }
+
+        let flightPlan = allFlightPlans[indexPath.row]
+        selectedFlightPlanUuid = flightPlan.state.value.uuid
+        delegate?.didSelect(flightPlan: flightPlan)
     }
 }
 

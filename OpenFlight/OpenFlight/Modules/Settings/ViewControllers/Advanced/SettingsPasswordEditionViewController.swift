@@ -42,7 +42,7 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     }
     @IBOutlet private weak var titleLabel: UILabel! {
         didSet {
-            titleLabel.makeUp(with: .huge, and: .white)
+            titleLabel.makeUp(with: .huge)
             titleLabel.text = L10n.settingsEditPasswordTitle
         }
     }
@@ -62,7 +62,7 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     }
     @IBOutlet private weak var passwordWarningLabel: UILabel! {
         didSet {
-            passwordWarningLabel.makeUp(with: .regular, and: .white)
+            passwordWarningLabel.makeUp()
             passwordWarningLabel.text = L10n.settingsEditPasswordSecurityDescription
         }
     }
@@ -76,7 +76,7 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     }
     @IBOutlet private weak var changePasswordButton: UIButton! {
         didSet {
-            changePasswordButton.makeup(with: .large, color: .white)
+            changePasswordButton.makeup(with: .large)
             changePasswordButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
                                                     borderColor: ColorName.greenSpring20.color,
                                                     radius: Style.mediumCornerRadius)
@@ -85,11 +85,11 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     }
     @IBOutlet private weak var cancelButton: UIButton! {
         didSet {
-            cancelButton.makeup(with: .large, color: .white)
+            cancelButton.makeup(with: .large)
             cancelButton.cornerRadiusedWith(backgroundColor: .clear,
-                                                    borderColor: ColorName.white.color,
-                                                    radius: Style.mediumCornerRadius,
-                                                    borderWidth: Constants.cancelButtonBorderWidth)
+                                            borderColor: ColorName.white.color,
+                                            radius: Style.mediumCornerRadius,
+                                            borderWidth: Style.largeBorderWidth)
             cancelButton.setTitle(L10n.cancel, for: .normal)
         }
     }
@@ -99,13 +99,8 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     @IBOutlet private weak var textfieldsContainer: UIView!
     @IBOutlet private weak var scrollViewBottomConstraint: NSLayoutConstraint!
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let cancelButtonBorderWidth: CGFloat = 2.0
-    }
-
     // MARK: - Private Properties
-    private var coordinator: SettingsCoordinator?
+    private var coordinator: Coordinator?
     private var viewModel: SettingsNetworkViewModel?
     private var isValidPassword: Bool {
         var isValid = false
@@ -120,8 +115,8 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     private var isValidConfirmPassword: Bool {
         var isValid = false
         if let password = passwordTextField.text,
-            let confirm = confirmPasswordTextField.text,
-            password == confirm {
+           let confirm = confirmPasswordTextField.text,
+           password == confirm {
             passwordWarningLabel.text = ""
             isValid = true
         } else {
@@ -130,11 +125,22 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
         }
         return isValid
     }
+    private var orientation: UIInterfaceOrientationMask = .landscape
 
     // MARK: - Init
-    static func instantiate(coordinator: SettingsCoordinator, viewModel: SettingsNetworkViewModel?) -> SettingsPasswordEditionViewController {
+    /// Inits view controller.
+    ///
+    /// - Parameters:
+    ///     - coordinator: coordinator
+    ///     - viewModel: Network view model
+    ///     - orientation: interface orientation
+    /// - Returns: The drone password edition view controller.
+    static func instantiate(coordinator: Coordinator,
+                            viewModel: SettingsNetworkViewModel?,
+                            orientation: UIInterfaceOrientationMask = .landscape) -> SettingsPasswordEditionViewController {
         let viewController = StoryboardScene.SettingsNetworkViewController.settingsPasswordEditionViewController.instantiate()
         viewController.coordinator = coordinator
+        viewController.orientation = orientation
         viewController.viewModel = viewModel
 
         return viewController
@@ -173,7 +179,11 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
+        return orientation
+    }
+
+    override var prefersStatusBarHidden: Bool {
+        return true
     }
 }
 
@@ -181,8 +191,7 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
 private extension SettingsPasswordEditionViewController {
     /// Close action.
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.wifiPasswordEdition.name,
-                             itemName: LogEvent.LogKeyWifiPasswordEdition.cancel,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.cancel,
                              newValue: nil,
                              logType: .button)
         self.coordinator?.back()
@@ -192,28 +201,27 @@ private extension SettingsPasswordEditionViewController {
     @IBAction func toggleButtonTouchedUpInside(_ sender: Any) {
         passwordTextField.toggleVisibility()
         togglePasswordVisibilityButton.setImage(passwordTextField.isSecureTextEntry ?
-            Asset.Common.Icons.icPasswordShow.image :
-            Asset.Common.Icons.icPasswordHide.image, for: .normal)
+                                                    Asset.Common.Icons.icPasswordShow.image :
+                                                    Asset.Common.Icons.icPasswordHide.image, for: .normal)
     }
 
     /// Toggle confirm password visibility action.
     @IBAction func toggleConfirmButtonTouchedUpInside(_ sender: Any) {
         confirmPasswordTextField.toggleVisibility()
         toggleConfirmVisibilityButton.setImage(confirmPasswordTextField.isSecureTextEntry ?
-            Asset.Common.Icons.icPasswordShow.image :
-            Asset.Common.Icons.icPasswordHide.image, for: .normal)
+                                                Asset.Common.Icons.icPasswordShow.image :
+                                                Asset.Common.Icons.icPasswordHide.image, for: .normal)
     }
 
     /// Change password action.
     @IBAction func changeButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.wifiPasswordEdition.name,
-                             itemName: LogEvent.LogKeyWifiPasswordEdition.changePassword,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyWifiPasswordEdition.changePassword,
                              newValue: isValidPassword.description,
                              logType: .button)
         guard isValidPassword,
-            isValidConfirmPassword,
-            let password = passwordTextField.text else {
-                return
+              isValidConfirmPassword,
+              let password = passwordTextField.text else {
+            return
         }
 
         self.view.endEditing(true)
@@ -233,7 +241,7 @@ private extension SettingsPasswordEditionViewController {
     /// Manages view display when keyboard is displayed.
     @objc func keyboardWillShow(sender: NSNotification) {
         if let userInfo = sender.userInfo,
-            let keyboardFrame = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+           let keyboardFrame = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
             // Move view upward.
             scrollViewBottomConstraint.constant = keyboardFrame.size.height
         }
@@ -242,7 +250,7 @@ private extension SettingsPasswordEditionViewController {
     /// Manages view display after keyboard was displayed.
     @objc func keyboardWillHide(sender: NSNotification) {
         // Move view to original position.
-        scrollViewBottomConstraint.constant = 0
+        scrollViewBottomConstraint.constant = 0.0
     }
 }
 

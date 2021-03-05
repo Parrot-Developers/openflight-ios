@@ -175,6 +175,11 @@ final class MapLocationsViewModel: DevicesStateViewModel<MapLocationsState> {
     private var userHeadingRef: Ref<UserHeading>?
     private var remoteControlCompassRef: Ref<Compass>?
 
+    // MARK: - Private Enums
+    private enum Constants {
+        static let headingOrientationCorrection: Double = 90.0
+    }
+
     // MARK: - Init
     /// Init.
     ///
@@ -301,7 +306,13 @@ private extension MapLocationsViewModel {
                 let copy = self?.state.value.copy() else {
                     return
             }
-            copy.userDeviceHeading = heading
+
+            // Fix heading depending device orientation
+            let correctedHeading = UIApplication.shared.statusBarOrientation == .landscapeLeft
+                ? heading-Constants.headingOrientationCorrection
+                : heading+Constants.headingOrientationCorrection
+
+            copy.userDeviceHeading = correctedHeading
             self?.state.set(copy)
         }
     }

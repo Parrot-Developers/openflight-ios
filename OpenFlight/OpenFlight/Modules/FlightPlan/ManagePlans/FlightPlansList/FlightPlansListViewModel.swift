@@ -74,7 +74,10 @@ private extension FlightPlansListViewModel {
 
         // Check inserts.
         if let inserts = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject>,
-            inserts.filter({ $0 is FlightPlanModel }).isEmpty == false {
+           inserts.filter({ $0 is FlightPlanModel }).isEmpty == false {
+            self.delegate?.flightPlansUpdated()
+        } else if let updates = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject>,
+                  updates.filter({ $0 is FlightPlanModel }).isEmpty == false {
             self.delegate?.flightPlansUpdated()
         }// Check deletes.
         else if let deletes = userInfo[NSDeletedObjectsKey] as? Set<NSManagedObject>,

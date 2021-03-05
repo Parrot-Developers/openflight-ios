@@ -41,12 +41,6 @@ final class PairingRemoteNotRecognizedViewController: UIViewController {
     // MARK: - Private Properties
     private weak var coordinator: PairingCoordinator?
 
-    // MARK: - Private Enums
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "Pairing/HowToConnect/RemoteToPhone"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: Coordinator) -> PairingRemoteNotRecognizedViewController {
         let viewController = StoryboardScene.Pairing.pairingRemoteNotRecognizedViewController.instantiate()
@@ -65,7 +59,8 @@ final class PairingRemoteNotRecognizedViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingHowToConnectRemoteToPhone,
+                             logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {

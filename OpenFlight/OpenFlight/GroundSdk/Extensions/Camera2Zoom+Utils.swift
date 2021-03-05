@@ -36,10 +36,15 @@ private enum Constants {
 }
 
 /// Utility extension for `Camera2Zoom`.
-
 extension Camera2Zoom {
-    /// Returns true if zoom is currently at maximum value.
-    var isZoomMaxReached: Bool {
-        return level.rounded(toPlaces: Constants.roundPrecision) >= maxLevel.rounded(toPlaces: Constants.roundPrecision)
+    // MARK: - Internal Funcs
+    /// Checks if zoom has reached its max value.
+    ///
+    /// - Parameters:
+    ///    - isLossyAllowed: whether lossy zoom is currently allowed.
+    /// - Returns: true if zoom is currently at maximum value, false otherwise
+    func isZoomMaxReached(isLossyAllowed: Bool) -> Bool {
+        let maxZoomLevel = isLossyAllowed ? maxLevel : maxLossLessLevel
+        return level.rounded(toPlaces: Constants.roundPrecision) >= maxZoomLevel.rounded(toPlaces: Constants.roundPrecision)
     }
 }

@@ -100,7 +100,7 @@ private class CameraAngle {
         //
         // the '% value' is smmoothed
         let normMaxSpeed = abs(deltaToTarget) / Float.pi
-        //let smoothNormMaxSpeed = simd_smoothstep(0, Float(1), normMaxSpeed * 0.5)
+        // let smoothNormMaxSpeed = simd_smoothstep(0, Float(1), normMaxSpeed * 0.5)
         let realIncSpeed = incSpeed * Float(elpasedTime)
         let currentMaxSpeed = max(maxSpeed * normMaxSpeed, realIncSpeed)
 
@@ -226,7 +226,7 @@ private class TargetSphere: SCNNode {
 }
 
 private class TargetDestination {
-    static let discreteNumber: Int = 5 //Occupancy.maxBeamSegments
+    static let discreteNumber: Int = 5 // Occupancy.maxBeamSegments
 
     static func compute(speed: simd_float3, rotationSpeed: simd_float3) -> simd_float3? {
         guard simd_length(speed) > Occupancy.minCameraSpeedTargetTriger else {

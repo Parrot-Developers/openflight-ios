@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -16,11 +16,11 @@
                 <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="AaL-Pk-LAS">
-                        <rect key="frame" x="39" y="28" width="32" height="32"/>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconAvoidanceInactive" translatesAutoresizingMaskIntoConstraints="NO" id="AaL-Pk-LAS">
+                        <rect key="frame" x="21" y="28" width="68" height="34"/>
                         <constraints>
-                            <constraint firstAttribute="width" secondItem="AaL-Pk-LAS" secondAttribute="height" multiplier="1:1" id="4aq-nL-H87"/>
-                            <constraint firstAttribute="height" constant="32" id="PUw-oM-JK9"/>
+                            <constraint firstAttribute="width" secondItem="AaL-Pk-LAS" secondAttribute="height" multiplier="2:1" id="4aq-nL-H87"/>
+                            <constraint firstAttribute="height" constant="34" id="PUw-oM-JK9"/>
                         </constraints>
                     </imageView>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bVM-6r-b4d">
@@ -55,4 +55,7 @@
             <point key="canvasLocation" x="132.80000000000001" y="136.73163418290855"/>
         </collectionViewCell>
     </objects>
+    <resources>
+        <image name="iconAvoidanceInactive" width="34" height="34"/>
+    </resources>
 </document>

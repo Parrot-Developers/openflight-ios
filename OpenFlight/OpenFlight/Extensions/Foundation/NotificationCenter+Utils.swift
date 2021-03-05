@@ -53,5 +53,4 @@ public extension Notification.Name {
     static let handDetectedAlertModalPresentDidChange = NSNotification.Name("handDetectedAlertModalPresentDidChange")
     static let joysticksAvailabilityDidChange = NSNotification.Name("joysticksAvailabilityDidChange")
     static let takeOffRequestedDidChange = NSNotification.Name("takeOffRequestedDidChange")
-    static let flightPlanExecutionDidStart = NSNotification.Name("flightPlanExecutionDidStart")
 }

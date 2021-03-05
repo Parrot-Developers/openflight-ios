@@ -90,7 +90,8 @@ final class PairingConnectDroneViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: LogEvent.EventLoggerScreenConstants.pairingDroneFinderList.name)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingDroneFinderList,
+                             logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -133,12 +134,12 @@ extension PairingConnectDroneViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let item = items?[indexPath.row] {
             if pairingConnectDroneViewModel?.needPassword(uid: item.droneUid) == false {
-                logEvent(with: LogEvent.LogKeyPairingButton.connectToDroneWithoutPassword.name, and: .button)
+                logEvent(with: LogEvent.LogKeyPairingButton.connectToDroneWithoutPassword.name)
                 // Save the current indexPath when we try to connect to the drone without password.
                 selectedItem = indexPath
                 pairingConnectDroneViewModel?.connectDroneWithoutPassword(uid: item.droneUid)
             } else {
-                logEvent(with: LogEvent.LogKeyPairingButton.connectToDronePasswordNeeded.name, and: .button)
+                logEvent(with: LogEvent.LogKeyPairingButton.connectToDronePasswordNeeded.name)
                 selectedItem = nil
                 // Open detail screen if we need to connect to the drone with a password.
                 coordinator?.startRemoteConnectDroneDetail(droneModel: item)
@@ -220,12 +221,10 @@ private extension PairingConnectDroneViewController {
     ///
     /// - Parameters:
     ///     - itemName: Button name
-    ///     - logType: Action type
-    func logEvent(with itemName: String, and logType: LogEvent.LogType) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingDroneFinderList.name,
-                             itemName: itemName,
+    func logEvent(with itemName: String) {
+        LogEvent.logAppEvent(itemName: itemName,
                              newValue: nil,
-                             logType: logType)
+                             logType: .button)
     }
 
     /// Shows an alert when user can't unpair a drone.
@@ -248,7 +247,7 @@ private extension PairingConnectDroneViewController {
 // MARK: - DroneListDelegate
 extension PairingConnectDroneViewController: DroneListDelegate {
     func refresh() {
-        logEvent(with: LogEvent.LogKeyPairingButton.refreshDroneList.name, and: .button)
+        logEvent(with: LogEvent.LogKeyPairingButton.refreshDroneList.name)
         pairingConnectDroneViewModel?.refreshDroneList()
         failedToConnect = false
         isConnecting = false

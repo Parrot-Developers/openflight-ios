@@ -57,16 +57,10 @@ struct BehavioursPreset {
 enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
     case video
     case sport
-    // FIXME: Temporary disable cinematic and racing modes.
-    //    case cinematic
-    //    case racing
 
     static var allValues: [BarItemMode] {
         return [SettingsBehavioursMode.video,
-                SettingsBehavioursMode.sport/*,
-             SettingsBehavioursMode.cinematic,
-             SettingsBehavioursMode.racing*/]
-        // FIXME: Temporary disable cinematic and racing modes.
+                SettingsBehavioursMode.sport]
     }
 
     var subModes: [BarItemSubMode]? {
@@ -92,11 +86,6 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
             return L10n.settingsBehaviourVideo
         case .sport:
             return L10n.settingsBehaviourSport
-            // FIXME: Temporary disable cinematic and racing modes.
-            //        case .cinematic:
-            //            return L10n.settingsBehaviourCinematic
-            //        case .racing:
-            //            return L10n.settingsBehaviourRacing
         }
     }
 
@@ -106,11 +95,6 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
             return Asset.Settings.Advanced.presetFilm.image
         case .sport:
             return Asset.Settings.Advanced.presetSport.image
-            // FIXME: Temporary disable cinematic and racing modes.
-            //        case .cinematic:
-            //            return Asset.Settings.Advanced.presetCinematic.image
-            //        case .racing:
-            //            return Asset.Settings.Advanced.presetRacing.image
         }
     }
 
@@ -124,11 +108,6 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
             return DefaultsKeys.filmMaxPitchRollKey
         case .sport:
             return DefaultsKeys.sportMaxPitchRollKey
-            // FIXME: Temporary disable cinematic and racing modes.
-            //        case .cinematic:
-            //            return .cinematicMaxPitchRoll
-            //        case .racing:
-            //            return .racingMaxPitchRoll
         }
     }
 
@@ -138,11 +117,6 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
             return DefaultsKeys.filmMaxPitchRollVelocityKey
         case .sport:
             return DefaultsKeys.sportMaxPitchRollVelocityKey
-            // FIXME: Temporary disable cinematic and racing modes.
-            //        case .cinematic:
-            //            return .cinematicMaxPitchRollVelocity
-            //        case .racing:
-            //            return .racingMaxPitchRollVelocity
         }
     }
 
@@ -152,11 +126,6 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
             return DefaultsKeys.filmMaxVerticalSpeedKey
         case .sport:
             return DefaultsKeys.sportMaxVerticalSpeedKey
-            // FIXME: Temporary disable cinematic and racing modes.
-            //        case .cinematic:
-            //            return .cinematicMaxVerticalSpeed
-            //        case .racing:
-            //            return .racingMaxVerticalSpeed
         }
     }
 
@@ -166,11 +135,6 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
             return DefaultsKeys.filmMaxYawRotationSpeedKey
         case .sport:
             return DefaultsKeys.sportMaxYawRotationSpeedKey
-            // FIXME: Temporary disable cinematic and racing modes.
-            //        case .cinematic:
-            //            return .cinematicMaxYawRotationSpeed
-            //        case .racing:
-            //            return .racingMaxYawRotationSpeed
         }
     }
 
@@ -180,11 +144,6 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
             return DefaultsKeys.filmBankedTurnModeKey
         case .sport:
             return DefaultsKeys.sportBankedTurnModeKey
-            // FIXME: Temporary disable cinematic and racing modes.
-            //        case .cinematic:
-            //            return .cinematicBankedTurnMode
-            //        case .racing:
-            //            return .racingBankedTurnMode
         }
     }
 
@@ -194,11 +153,6 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
             return DefaultsKeys.filmInclinedRollModeKey
         case .sport:
             return DefaultsKeys.sportInclinedRollModeKey
-            // FIXME: Temporary disable cinematic and racing modes.
-            //        case .cinematic:
-            //            return .cinematicInclinedRollMode
-            //        case .racing:
-            //            return .racingInclinedRollMode
         }
     }
 
@@ -208,11 +162,6 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
             return DefaultsKeys.filmCameraTiltKey
         case .sport:
             return DefaultsKeys.sportCameraTiltKey
-            // FIXME: Temporary disable cinematic and racing modes.
-            //        case .cinematic:
-            //            return .cinematicCameraTilt
-            //        case .racing:
-            //            return .racingCameraTilt
         }
     }
 
@@ -234,23 +183,6 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
                                     cameraTilt: 20.0,
                                     bankedTurn: false,
                                     inclinedRoll: false)
-            // FIXME: Temporary disable cinematic and racing modes.
-            //        case .cinematic:
-            //            return BehavioursPreset(horizontalSpeed: 20.0,
-            //                               horizontalAcceleration: 0.15,
-            //                               verticalSpeed: 2.5,
-            //                               rotationSpeed: 20.0,
-            //                               cameraTilt: 10.0,
-            //                               bankedTurn: true,
-            //                               inclinedRoll: true)
-            //        case .racing:
-            //            return BehavioursPreset(horizontalSpeed: 25.0,
-            //                               horizontalAcceleration: 0.3,
-            //                               verticalSpeed: 3,
-            //                               rotationSpeed: 40.0,
-            //                               cameraTilt: 20.0,
-            //                               bankedTurn: true,
-            //                               inclinedRoll: true)
         }
     }
 
@@ -264,15 +196,6 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
                                     cameraTilt: 0.0,
                                     bankedTurn: true,
                                     inclinedRoll: false)
-            // FIXME: Temporary disable cinematic and racing modes.
-            //        case .cinematic:
-            //            return BehavioursPreset(horizontalSpeed: 30.0,
-            //                               horizontalAcceleration: 0.2,
-            //                               verticalSpeed: 3,
-            //                               rotationSpeed: 25.0,
-            //                               cameraTilt: 0.0,
-            //                               bankedTurn: true,
-        //                               inclinedRoll: true)
         default:
             return nil
         }
@@ -280,11 +203,10 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
 
     /// Returns recommended `Camera2ExposureMode` for current mode.
     var cameraExposureAutomaticMode: Camera2ExposureMode {
-        // FIXME: Temporary disable cinematic and racing modes.
         switch self {
-        case .video://, .cinematic:
+        case .video:
             return .automaticPreferShutterSpeed
-        case .sport://, .racing:
+        case .sport:
             return .automaticPreferIsoSensitivity
         }
     }

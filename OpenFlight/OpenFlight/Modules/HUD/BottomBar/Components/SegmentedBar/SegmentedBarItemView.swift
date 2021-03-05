@@ -90,8 +90,7 @@ final class SegmentedBarItemView: UIControl, NibOwnerLoadable {
 private extension SegmentedBarItemView {
     /// Called when user taps item view.
     @IBAction func onTap(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.bottomBarHUD.name,
-                             itemName: model?.mode?.logKey,
+        LogEvent.logAppEvent(itemName: model?.mode?.logKey,
                              newValue: model?.mode?.key ?? "",
                              logType: .button)
         if model?.isSelected.value == true {

@@ -47,4 +47,12 @@ final class UpdateCustomButton: UIButton, NibOwnerLoadable {
         self.loadNibContent()
         updateLabel.text = L10n.dashboardUpdate
     }
+
+    /// Sets up the title of the button.
+    ///
+    /// - Parameters:
+    ///    - title: the title
+    func setup(with title: String) {
+        updateLabel.text = title
+    }
 }

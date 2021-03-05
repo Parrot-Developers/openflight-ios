@@ -37,13 +37,25 @@ final class DroneDetailsButtonsViewController: UIViewController {
     @IBOutlet private weak var calibrationButtonView: DroneDetailsButtonView!
     @IBOutlet private weak var firmwareUpdateButtonView: DroneDetailsButtonView!
     @IBOutlet private weak var cellularAccessButtonView: DroneDetailsButtonView!
-    @IBOutlet private weak var informationsButtonView: DroneDetailsButtonView!
-
-    // MARK: - Internal Properties
-    weak var coordinator: DroneCoordinator?
+    @IBOutlet private weak var passwordButtonView: DroneDetailsButtonView!
 
     // MARK: - Private Properties
     private var viewModel = DroneDetailsButtonsViewModel()
+    private var firmwareAndMissionsInteractorListener: FirmwareAndMissionsListener?
+    private weak var coordinator: DroneCoordinator?
+
+    // MARK: - Setup
+    static func instantiate(coordinator: DroneCoordinator) -> DroneDetailsButtonsViewController {
+        let viewController = StoryboardScene.DroneDetails.droneDetailsButtons.instantiate()
+        viewController.coordinator = coordinator
+
+        return viewController
+    }
+
+    // MARK: - Deinit
+    deinit {
+        FirmwareAndMissionsInteractor.shared.unregister(firmwareAndMissionsInteractorListener)
+    }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
@@ -68,22 +80,19 @@ private extension DroneDetailsButtonsViewController {
 
     @IBAction func firmwareUpdateButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyDroneDetailsButtons.firmwareUpdate)
-        self.coordinator?.startFirmwareVersionInformation(model: viewModel.state.value.firmwareUpdateNeeded ? .needUpdate : .upToDate,
-                                                          versionNumber: viewModel.state.value.firmwareVersion,
-                                                          versionNeeded: viewModel.state.value.idealFirmwareVersion)
+        self.coordinator?.startFimwareAndProtobufMissionsUpdate()
     }
 
     @IBAction func cellularAccessButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyDroneDetailsButtons.cellularAccess)
-        guard viewModel.state.value.canShowCellular else { return }
 
         viewModel.resetPairingDroneListIfNeeded()
         coordinator?.displayCellularDetails()
     }
 
-    @IBAction func informationButtonTouchedUpInside(_ sender: Any) {
+    @IBAction func passwordEditionButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyDroneDetailsButtons.informations)
-        self.coordinator?.startInformations()
+        coordinator?.displayDronePasswordEdition()
     }
 }
 
@@ -95,20 +104,20 @@ private extension DroneDetailsButtonsViewController {
         calibrationButtonView.applyCornerRadius(Style.largeCornerRadius)
         firmwareUpdateButtonView.applyCornerRadius(Style.largeCornerRadius)
         cellularAccessButtonView.applyCornerRadius(Style.largeCornerRadius)
-        informationsButtonView.applyCornerRadius(Style.largeCornerRadius)
+        passwordButtonView.applyCornerRadius(Style.largeCornerRadius)
 
         mapButtonView.model = DroneDetailsButtonModel(mainImage: Asset.Drone.iconMap.image,
                                                       title: L10n.droneDetailsLastKnownPosition)
         calibrationButtonView.model = DroneDetailsButtonModel(mainImage: Asset.Drone.iconDrone.image,
                                                               title: L10n.remoteDetailsCalibration)
-        firmwareUpdateButtonView.model = DroneDetailsButtonModel(mainImage: Asset.Drone.iconDownload.image,
+        firmwareUpdateButtonView.model = DroneDetailsButtonModel(mainImage: Asset.Drone.icUpdateFirmwareAndMission.image,
                                                                  title: L10n.remoteDetailsSoftware)
         cellularAccessButtonView.model = DroneDetailsButtonModel(mainImage: Asset.Drone.iconCellularDatas.image,
                                                                  title: L10n.droneDetailsCellularAccess,
-                                                                 subtitle: viewModel.state.value.cellularState.title)
-        informationsButtonView.model = DroneDetailsButtonModel(mainImage: Asset.Drone.iconInfos.image,
-                                                               title: L10n.droneDetailsInformations,
-                                                               subtitle: nil)
+                                                                 subtitle: viewModel.state.value.cellularStatus.droneDetailsTileDescription)
+        passwordButtonView.model = DroneDetailsButtonModel(mainImage: Asset.Drone.icDronePassword.image,
+                                                           title: L10n.commonPassword,
+                                                           subtitle: nil)
     }
 
     /// Sets up view model.
@@ -117,6 +126,11 @@ private extension DroneDetailsButtonsViewController {
             self?.updateView(state: state)
         }
         updateView(state: viewModel.state.value)
+
+        firmwareAndMissionsInteractorListener = FirmwareAndMissionsInteractor.shared
+            .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
+                self?.updateFirmwareUpdateButtonView(for: firmwareAndMissionToUpdateModel)
+            }
     }
 
     /// Update the buttons with state.
@@ -132,18 +146,26 @@ private extension DroneDetailsButtonsViewController {
         calibrationButtonView.model?.subtitle = state.calibrationText
         calibrationButtonView.model?.subtitleColor = state.stereoVisionSensorCalibrationNeeded ? .redTorch : .white50
         calibrationButtonView.model?.backgroundColor = state.calibrationNeeded || state.stereoVisionSensorCalibrationNeeded ? .redTorch25 : .white10
-        calibrationButtonView.isEnabled = state.isConnected()
-
-        // Firmware button.
-        firmwareUpdateButtonView.model?.subtitle = state.firmwareVersion
-        firmwareUpdateButtonView.model?.complementarySubtitle = state.firmwareUpdateComplementaryText
-        firmwareUpdateButtonView.model?.subImage = state.firmwareUpdateNeeded ? nil : Asset.Common.Checks.iconCheck.image
-        firmwareUpdateButtonView.model?.backgroundColor = state.firmwareUpdateNeeded ? .greenSpring20 : .white10
+        calibrationButtonView.isEnabled = state.isCalibrationButtonAvailable
 
         // Cellular button.
-        cellularAccessButtonView.model?.subtitle = state.cellularState.title
-        cellularAccessButtonView.model?.subtitleColor = state.cellularState.color
+        cellularAccessButtonView.model?.subtitle = state.cellularStatus.droneDetailsTileDescription
+        cellularAccessButtonView.model?.subtitleColor = state.cellularStatus.detailsTextColor
         cellularAccessButtonView.isEnabled = viewModel.state.value.canShowCellular
+
+        // Password button.
+        passwordButtonView.isEnabled = state.isConnected()
+    }
+
+    /// Updates the firmwareUpdateButtonView UI.
+    ///
+    /// - Parameters:
+    ///    - model: the current `FirmwareAndMissionToUpdateModel`
+    func updateFirmwareUpdateButtonView(for model: FirmwareAndMissionToUpdateModel) {
+        firmwareUpdateButtonView.model?.subtitle = model.subtitle
+        firmwareUpdateButtonView.model?.complementarySubtitle = model.complementarySubtitle
+        firmwareUpdateButtonView.model?.subImage = model.subImage
+        firmwareUpdateButtonView.model?.backgroundColor = model.backgroundColor
     }
 
     /// Calls log event.
@@ -151,8 +173,7 @@ private extension DroneDetailsButtonsViewController {
     /// - Parameters:
     ///     - itemName: Button name
     func logEvent(with itemName: String) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.droneInformations.name,
-                             itemName: itemName,
+        LogEvent.logAppEvent(itemName: itemName,
                              newValue: nil,
                              logType: .button)
     }

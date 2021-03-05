@@ -62,11 +62,11 @@ open class WatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     // MARK: - Internal Funcs
     /// Method to override in subclass in order to listen drone instruments, peripherals, piloting interfaces, etc.
     internal func listenDrone(drone: Drone) {
-        assert(false) //Must Override
+        assert(false) // Must Override
     }
 
     /// Method to override in subclass in order to listen remote control instruments, peripherals, etc.
     internal func listenRemoteControl(remoteControl: RemoteControl) {
-        assert(false) //Must Override
+        assert(false) // Must Override
     }
 }

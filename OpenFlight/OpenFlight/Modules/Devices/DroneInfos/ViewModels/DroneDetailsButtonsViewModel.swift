@@ -43,22 +43,18 @@ final class DroneDetailsButtonsState: DeviceConnectionState {
     fileprivate(set) var calibrationNeeded: Bool = false
     /// Whether a stereo vision sensor calibration is needed.
     fileprivate(set) var stereoVisionSensorCalibrationNeeded: Bool = false
-    /// Drone's currrent firmware version.
-    fileprivate(set) var firmwareVersion: String?
-    /// Whether a firmware update is needed.
-    fileprivate(set) var firmwareUpdateNeeded: Bool = false
-    /// Drone's ideal firmware version.
-    fileprivate(set) var idealFirmwareVersion: String?
     /// Drone's cellular network state.
     fileprivate(set) var cellularStateDescription: String?
-    /// Drone's cellular connection state.
-    fileprivate(set) var cellularState: CellularSimStatus = .unknown
+    /// Drone's cellular connection status.
+    fileprivate(set) var cellularStatus: DetailsCellularStatus = .noState
+    /// Drone's flying state.
+    fileprivate(set) var flyingState: FlyingIndicatorsState?
 
     // MARK: Helpers
     /// Message to display on calibration button.
     var calibrationText: String {
         // TODO: add message for all calibration cases.
-        if !isConnected() {
+        if !isConnected() || flyingState == .flying {
             return Style.dash
         } else if stereoVisionSensorCalibrationNeeded {
             return L10n.droneObstacleDetectionTitle + Style.whiteSpace + L10n.loveCalibrationRequired
@@ -68,22 +64,15 @@ final class DroneDetailsButtonsState: DeviceConnectionState {
             return L10n.droneDetailsCalibrationOk
         }
     }
-    /// Message to display next to firmware version.
-    /// Displays target firmware version when needed, nothing otherwise.
-    var firmwareUpdateComplementaryText: String? {
-        guard firmwareUpdateNeeded,
-              let idealVersion = idealFirmwareVersion else {
-            return nil
-        }
-
-        return String(format: "%@ %@",
-                      Style.dash,
-                      L10n.droneDetailsUpdateTo(idealVersion))
-    }
 
     /// Tells if we can display the cellular modal.
     var canShowCellular: Bool {
-        return cellularState.isCellularAvailable && isConnected()
+        return cellularStatus != .noState && isConnected()
+    }
+
+    /// Tells if calibration button is available.
+    var isCalibrationButtonAvailable: Bool {
+        return isConnected() && flyingState == .landed
     }
 
     // MARK: - Init
@@ -98,30 +87,24 @@ final class DroneDetailsButtonsState: DeviceConnectionState {
     ///    - lastKnownPosition: drone's last known position
     ///    - calibrationNeeded: wheter a calibration is needed
     ///    - stereoVisionSensorCalibrationNeeded: wheter a stereo vision sensor calibration is needed
-    ///    - firmwareVersion: drone's current firmware version
-    ///    - firmwareUpdateNeeded: whether a firmware update is needed
-    ///    - idealFirmwareVersion: drone's ideal firmware version
     ///    - cellularStateDescription: cellular description state
-    ///    - cellularState: current cellular state
+    ///    - cellularStatus: current cellular status
+    ///    - flyingState: flying state of the drone.
     init(connectionState: DeviceState.ConnectionState,
          lastKnownPosition: CLLocation?,
          calibrationNeeded: Bool,
          stereoVisionSensorCalibrationNeeded: Bool,
-         firmwareVersion: String?,
-         firmwareUpdateNeeded: Bool,
-         idealFirmwareVersion: String?,
          cellularStateDescription: String?,
-         cellularState: CellularSimStatus) {
+         cellularStatus: DetailsCellularStatus,
+         flyingState: FlyingIndicatorsState?) {
         super.init(connectionState: connectionState)
 
         self.lastKnownPosition = lastKnownPosition
         self.calibrationNeeded = calibrationNeeded
         self.stereoVisionSensorCalibrationNeeded = stereoVisionSensorCalibrationNeeded
-        self.firmwareVersion = firmwareVersion
-        self.firmwareUpdateNeeded = firmwareUpdateNeeded
-        self.idealFirmwareVersion = idealFirmwareVersion
         self.cellularStateDescription = cellularStateDescription
-        self.cellularState = cellularState
+        self.cellularStatus = cellularStatus
+        self.flyingState = flyingState
     }
 
     // MARK: - Override Funcs
@@ -132,11 +115,9 @@ final class DroneDetailsButtonsState: DeviceConnectionState {
             && self.lastKnownPosition == other.lastKnownPosition
             && self.calibrationNeeded == other.calibrationNeeded
             && self.stereoVisionSensorCalibrationNeeded == other.stereoVisionSensorCalibrationNeeded
-            && self.firmwareVersion == other.firmwareVersion
-            && self.firmwareUpdateNeeded == other.firmwareUpdateNeeded
-            && self.idealFirmwareVersion == other.idealFirmwareVersion
             && self.cellularStateDescription == other.cellularStateDescription
-            && self.cellularState == other.cellularState
+            && self.cellularStatus == other.cellularStatus
+            && self.flyingState == other.flyingState
     }
 
     override func copy() -> DroneDetailsButtonsState {
@@ -144,11 +125,9 @@ final class DroneDetailsButtonsState: DeviceConnectionState {
                                         lastKnownPosition: self.lastKnownPosition,
                                         calibrationNeeded: self.calibrationNeeded,
                                         stereoVisionSensorCalibrationNeeded: self.stereoVisionSensorCalibrationNeeded,
-                                        firmwareVersion: self.firmwareVersion,
-                                        firmwareUpdateNeeded: self.firmwareUpdateNeeded,
-                                        idealFirmwareVersion: self.idealFirmwareVersion,
                                         cellularStateDescription: self.cellularStateDescription,
-                                        cellularState: self.cellularState)
+                                        cellularStatus: self.cellularStatus,
+                                        flyingState: self.flyingState)
     }
 }
 
@@ -167,9 +146,23 @@ final class DroneDetailsButtonsViewModel: DroneStateViewModel<DroneDetailsButton
     private var gimbalRef: Ref<Gimbal>?
     private var stereoVisionSensorRef: Ref<StereoVisionSensor>?
     private var magnetometerRef: Ref<Magnetometer>?
-    private var systemInfoRef: Ref<SystemInfo>?
-    private var updaterRef: Ref<Updater>?
-    private var cellularRef: Ref<Cellular>?
+    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var cellularViewModel: DroneDetailsCellularViewModel?
+
+    // MARK: - Init
+    override init(stateDidUpdate: ((DroneDetailsButtonsState) -> Void)? = nil) {
+        super.init(stateDidUpdate: stateDidUpdate)
+
+        cellularViewModel = DroneDetailsCellularViewModel(stateDidUpdate: { [weak self] _ in
+            self?.updateCellularState()
+        })
+        updateCellularState()
+    }
+
+    // MARK: - Deinit
+    deinit {
+        cellularViewModel = nil
+    }
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
@@ -179,19 +172,7 @@ final class DroneDetailsButtonsViewModel: DroneStateViewModel<DroneDetailsButton
         listenGimbal(drone)
         listenStereoVisionSensor(drone)
         listenMagnetometer(drone)
-        listenSystemInfo(drone)
-        listenUpdater(drone)
-        listenCellularAccess(drone)
-    }
-
-    override func droneConnectionStateDidChange() {
-        super.droneConnectionStateDidChange()
-
-        if !state.value.isConnected() {
-            let copy = state.value.copy()
-            copy.cellularState = .unknown
-            state.set(copy)
-        }
+        listenFlyingIndicators(drone: drone)
     }
 
     // MARK: - Internal Funcs
@@ -233,29 +214,21 @@ private extension DroneDetailsButtonsViewModel {
         }
     }
 
+    /// Starts watcher for flying indicators.
+    func listenFlyingIndicators(drone: Drone) {
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicators in
+            guard let flyingState = flyingIndicators?.state else { return }
+
+            let copy = self?.state.value.copy()
+            copy?.flyingState = flyingState
+            self?.state.set(copy)
+        }
+    }
+
     /// Starts watcher for magnetometer.
     func listenMagnetometer(_ drone: Drone) {
         magnetometerRef = drone.getPeripheral(Peripherals.magnetometer) { [weak self] _ in
             self?.updateCalibrationState()
-        }
-    }
-
-    /// Starts watcher for system infos.
-    func listenSystemInfo(_ drone: Drone) {
-        systemInfoRef = drone.getPeripheral(Peripherals.systemInfo) { [weak self] systemInfo in
-            let copy = self?.state.value.copy()
-            copy?.firmwareVersion = systemInfo?.firmwareVersion
-            self?.state.set(copy)
-        }
-    }
-
-    /// Starts watcher for firmware updater.
-    func listenUpdater(_ drone: Drone) {
-        updaterRef = drone.getPeripheral(Peripherals.updater) { [weak self] updater in
-            let copy = self?.state.value.copy()
-            copy?.firmwareUpdateNeeded = updater?.isUpToDate == false
-            copy?.idealFirmwareVersion = updater?.idealVersion?.description
-            self?.state.set(copy)
         }
     }
 
@@ -284,27 +257,10 @@ private extension DroneDetailsButtonsViewModel {
         self.state.set(copy)
     }
 
-    /// Starts watcher for drone cellular access state.
-    func listenCellularAccess(_ drone: Drone) {
-        cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] _ in
-            self?.updateCellularState()
-        }
-        updateCellularState()
-    }
-
     /// Updates cellular state.
     func updateCellularState() {
-        let cellular = cellularRef?.value
         let copy = state.value.copy()
-        guard let status = cellular?.simStatus,
-              copy.isConnected() else {
-            copy.cellularState = .unknown
-            state.set(copy)
-
-            return
-        }
-
-        copy.cellularState = status
+        copy.cellularStatus = cellularViewModel?.state.value.cellularStatus ?? .noState
         state.set(copy)
     }
 }

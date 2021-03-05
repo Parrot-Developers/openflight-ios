@@ -57,7 +57,6 @@ public extension MapViewController {
         static let sceneViewIdentifyMaxResults: Int = 5
         static let defaultPointAltitude: Double = 5.0
         static let defaultWayPointYaw: Double = 0.0
-        static let defaultWayPointSpeed: Double = 2.0
     }
 
     // MARK: - Public Funcs
@@ -269,7 +268,6 @@ extension MapViewController {
                             maximumResults: Constants.sceneViewIdentifyMaxResults) { [weak self] result in
             guard let selection = result.selectedFlightPlanObject as? FlightPlanPointGraphic,
                   selection.itemType.draggable,
-                  let index = selection.itemIndex,
                   result.error == nil else {
                 completion(false)
                 return
@@ -277,6 +275,18 @@ extension MapViewController {
 
             if let arrowGraphic = selection as? FlightPlanWayPointArrowGraphic,
                !arrowGraphic.isOrientationEditionAllowed(mapPoint) {
+                completion(false)
+                return
+            }
+
+            let index: Int
+            if let wayPointGraphic = selection as? WayPointRelatedGraphic,
+               let wayPointIndex = wayPointGraphic.wayPointIndex {
+                index = wayPointIndex
+            } else if let poiPointGraphic = selection as? PoiPointRelatedGraphic,
+                      let poiPointIndex = poiPointGraphic.poiIndex {
+                index = poiPointIndex
+            } else {
                 completion(false)
                 return
             }
@@ -354,6 +364,8 @@ extension MapViewController {
 
             if flightPlanOverlay?.draggedGraphic is FlightPlanWayPointGraphic {
                 flightPlanViewModel?.didChangeCourse()
+            } else if flightPlanOverlay?.draggedGraphic is FlightPlanPoiPointGraphic {
+                flightPlanViewModel?.didChangePOI()
             }
 
             resetDraggedGraphics()
@@ -392,7 +404,7 @@ private extension MapViewController {
                                                                    longitude: location.x),
                                 altitude: lastWayPoint?.altitude ?? Constants.defaultPointAltitude,
                                 yaw: Constants.defaultWayPointYaw,
-                                speed: lastWayPoint?.speed ?? Constants.defaultWayPointSpeed,
+                                speed: lastWayPoint?.speed,
                                 shouldContinue: true,
                                 shouldFollowPOI: false,
                                 poiIndex: nil,
@@ -403,13 +415,14 @@ private extension MapViewController {
         let labelGraphics = wayPoint.labelsGraphic(index: index)
         flightPlanOverlay?.graphics.add(graphics)
         flightPlanLabelsOverlay?.graphics.add(labelGraphics)
-        if let angle = getScreenAngleBetween(wayPoint.agsPoint,
-                                             and: wayPoint.target) {
-            let arrowGraphic = FlightPlanWayPointArrowGraphic(wayPoint: wayPoint,
-                                                              wayPointIndex: index,
-                                                              angle: Float(angle))
-            flightPlanOverlay?.graphics.add(arrowGraphic)
-        }
+
+        let angle = getScreenAngleBetween(wayPoint.agsPoint,
+                                          and: wayPoint.target) ?? CGFloat(Constants.defaultWayPointYaw)
+        let arrowGraphic = FlightPlanWayPointArrowGraphic(wayPoint: wayPoint,
+                                                          wayPointIndex: index,
+                                                          angle: Float(angle))
+        flightPlanOverlay?.graphics.add(arrowGraphic)
+
         if let lineGraphic = flightPlan.plan.lastLineGraphic {
             flightPlanOverlay?.graphics.add(lineGraphic)
         }
@@ -433,6 +446,7 @@ private extension MapViewController {
         let labelGraphic = poi.labelGraphic(index: index)
         flightPlanOverlay?.graphics.add(graphic)
         flightPlanLabelsOverlay?.graphics.add(labelGraphic)
+        flightPlanViewModel?.didChangePOI()
     }
 
     /// Resets currently dragged graphic on overlays.

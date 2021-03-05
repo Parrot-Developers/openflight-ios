@@ -81,6 +81,10 @@ final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProv
 
         initView()
         initViewModel()
+
+        self.addCloseButton(onTapAction: #selector(closeButtonTouchedUpInside(_:)),
+                            targetView: panelView,
+                            style: .cross)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -99,7 +103,12 @@ final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProv
 // MARK: - Actions
 private extension RemoteShutdownAlertViewController {
     @IBAction func backgroundButtonTouchedUpInside(_ sender: Any) {
-        coordinator?.dismiss()
+        dismissRemoteAlertShutdown()
+    }
+
+    // Called when user touches the close button.
+    @objc func closeButtonTouchedUpInside(_ sender: UIButton) {
+        dismissRemoteAlertShutdown()
     }
 }
 

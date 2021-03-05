@@ -76,8 +76,8 @@ extension ExecutionTableViewCell {
                fpExecution: FlightPlanExecution?) {
         typeImage.image = icon
         titleLabel.text = name
-        dateLabel.text = fpExecution?.startDate?.formattedString(dateStyle: .none,
-                                                                 timeStyle: .medium) ?? Style.dash
+        dateLabel.text = fpExecution?.startDate.formattedString(dateStyle: .none,
+                                                                timeStyle: .medium) ?? Style.dash
         if fpExecution?.state != .completed {
             completionLabel.text = L10n.flightPlanRunStopped
             completionLabel.textColor = ColorName.redTorch.color

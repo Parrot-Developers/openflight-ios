@@ -32,13 +32,10 @@ import ArcGIS
 
 /// Graphic class for Flight Plan's point of interest's label.
 
-public final class FlightPlanPoiPointLabelGraphic: FlightPlanLabelGraphic {
+public final class FlightPlanPoiPointLabelGraphic: FlightPlanLabelGraphic, PoiPointRelatedGraphic {
     // MARK: - Override Properties
     override var itemType: FlightPlanGraphicItemType {
         return .poi
-    }
-    override var itemIndex: Int? {
-        return attributes[FlightPlanAGSConstants.poiIndexAttributeKey] as? Int
     }
     override var mainLabel: AGSTextSymbol? {
         return self.symbol as? AGSTextSymbol
@@ -103,13 +100,5 @@ public final class FlightPlanPoiPointLabelGraphic: FlightPlanLabelGraphic {
                    attributes: nil)
         self.attributes[FlightPlanAGSConstants.agsPointAttributeKey] = elevatedPoint
         self.attributes[FlightPlanAGSConstants.drapedAgsPointAttributeKey] = drapedPoint
-    }
-
-    // MARK: - Override Funcs
-    override func decrementIndex() {
-        guard let index = itemIndex else {
-            return
-        }
-        self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = index - 1
     }
 }

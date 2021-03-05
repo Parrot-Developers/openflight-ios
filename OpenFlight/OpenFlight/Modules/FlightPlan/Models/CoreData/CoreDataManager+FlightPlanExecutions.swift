@@ -37,10 +37,10 @@ extension CoreDataManager {
     ///
     /// - Parameters:
     ///     - execution: flight plan execution.
-    public func saveOrUpdate(execution: FlightPlanExecution) {
+    ///     - isFromRun: Saved from a run or not.
+    public func saveOrUpdate(execution: FlightPlanExecution, isFromRun: Bool = false) {
         // 1 - Prepare content to save.
-        guard let managedContext = currentContext,
-              let executionId = execution.executionId else { return }
+        guard let managedContext = currentContext else { return }
 
         // 2 - Prepare core data context and entity.
         let fetchRequest: NSFetchRequest<FlightPlanExecutionDataModel> = FlightPlanExecutionDataModel.fetchRequest()
@@ -51,7 +51,7 @@ extension CoreDataManager {
         }
 
         fetchRequest.entity = entity
-        let predicate = FlightPlanExecutionDataModel.fileKeyPredicate(sortValue: executionId)
+        let predicate = FlightPlanExecutionDataModel.fileKeyPredicate(sortValue: execution.executionId)
         fetchRequest.predicate = predicate
 
         let executionData: NSManagedObject?
@@ -69,22 +69,24 @@ extension CoreDataManager {
         // 4 - Write values in core data.
         guard let data = executionData as? FlightPlanExecutionDataModel else { return }
 
+        if execution.state == .initialized, isFromRun == false {
+            // State should not be nil (ex: sync from server)
+            // except if a execution has just been started.
+            execution.state = .error
+        }
+
         data.setValue(execution.startDate, forKeyPath: #keyPath(FlightPlanExecutionDataModel.startDate))
         data.setValue(execution.endDate, forKeyPath: #keyPath(FlightPlanExecutionDataModel.endDate))
         data.setValue(execution.flightId, forKeyPath: #keyPath(FlightPlanExecutionDataModel.flightId))
         data.setValue(execution.flightPlanId, forKeyPath: #keyPath(FlightPlanExecutionDataModel.flightPlanId))
         data.setValue(execution.executionId, forKeyPath: #keyPath(FlightPlanExecutionDataModel.executionId))
         data.setValue(execution.endDate, forKeyPath: #keyPath(FlightPlanExecutionDataModel.endDate))
-        data.setValue(execution.projectIdForPersistance, forKeyPath: #keyPath(FlightPlanExecutionDataModel.projectId))
-        data.setValue(execution.stateForPersistance, forKeyPath: #keyPath(FlightPlanExecutionDataModel.state))
+        data.setValue(execution.state.rawValue, forKeyPath: #keyPath(FlightPlanExecutionDataModel.state))
         data.setValue(execution.settingsForPersistance, forKeyPath: #keyPath(FlightPlanExecutionDataModel.settings))
+        data.setValue(execution.latestItemExecutedForPersistance, forKeyPath: #keyPath(FlightPlanExecutionDataModel.latestItemExecuted))
 
         managedContext.performAndWait {
-            do {
-                try managedContext.save()
-            } catch let error {
-                print("Error saving execution with id \(executionId) => \(error.localizedDescription)")
-            }
+            try? managedContext.save()
         }
     }
 
@@ -108,6 +110,7 @@ extension CoreDataManager {
     ///
     /// - Parameters:
     ///     - forFlightplanId: flight plan id.
+    /// - Returns: Flight plan executions.
     func executions(forFlightplanIds: [String]) -> [FlightPlanExecution] {
         return executions(key: #keyPath(FlightPlanExecutionDataModel.flightPlanId),
                           values: forFlightplanIds)
@@ -117,9 +120,20 @@ extension CoreDataManager {
     ///
     /// - Parameters:
     ///     - forFlightId: flight id.
+    /// - Returns: Flight plan executions.
     func executions(forFlightId: String) -> [FlightPlanExecution] {
         return executions(key: #keyPath(FlightPlanExecutionDataModel.flightId),
                           values: [forFlightId])
+    }
+
+    /// Returns flight plan's execution related to an execution id.
+    ///
+    /// - Parameters:
+    ///     - forExecutionId: execution id.
+    /// - Returns: Flight plan execution.
+    public func executions(forExecutionId: String) -> FlightPlanExecution? {
+        return executions(key: #keyPath(FlightPlanExecutionDataModel.executionId),
+                          values: [forExecutionId]).first
     }
 }
 
@@ -130,6 +144,7 @@ private extension CoreDataManager {
     /// - Parameters:
     ///     - key: key.
     ///     - values: values.
+    /// - Returns: Flight plan execution.
     func executions(key: String, values: [String]) -> [FlightPlanExecution] {
         guard let managedContext = currentContext else { return [] }
 
@@ -149,6 +164,7 @@ private extension CoreDataManager {
     ///
     /// - Parameters:
     ///     - keys: flight plan execution ids.
+    /// - Returns: Flight plan execution data models.     
     func executions(for keys: [String]) -> [FlightPlanExecutionDataModel] {
         guard let managedContext = currentContext else { return [] }
 

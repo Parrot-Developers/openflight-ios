@@ -72,32 +72,20 @@ public final class FlightPlanEditionCoordinator: Coordinator {
         self.overContextModalDelegate = viewController
     }
 
-    /// Starts manage plans modal.
-    func startManagePlans() {
-        presentModal(viewController: ManagePlansViewController.instantiate(coordinator: self))
-    }
-
-    /// Starts Flight Plan history modal.
-    ///
-    /// - Parameters:
-    ///     - flightPlanViewModel: Flight Plan ViewModel
-    func startFlightPlanHistory(flightPlanViewModel: FlightPlanViewModel?) {
-        let viewController = FlightPlanFullHistoryViewController.instantiate(coordinator: self,
-                                                                             viewModel: flightPlanViewModel)
-        presentModal(viewController: viewController)
-    }
-
     /// Dismisses flight plan edition view.
     func dismissFlightPlanEdition() {
         self.parentCoordinator?.dismissChildCoordinator(animated: false)
     }
 }
 
-// MARK: - ManagePlansNavigation
-extension FlightPlanEditionCoordinator: ManagePlansNavigation {
-    func closeManagePlans() {
+// MARK: - FlightPlanManagerCoordinator
+extension FlightPlanEditionCoordinator: FlightPlanManagerCoordinator {
+    public func closeManagePlans() {
         self.overContextModalDelegate?.willDismissModal()
-        self.navigationController?.dismiss(animated: true)
+        self.dismiss(animated: false)
+        NotificationCenter.default.post(name: .modalPresentDidChange,
+                                        object: self,
+                                        userInfo: [BottomBarViewControllerNotifications.notificationKey: false])
     }
 }
 

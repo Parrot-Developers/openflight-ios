@@ -52,11 +52,12 @@ class DashboardDeviceCell: UICollectionViewCell, NibReusable, CellConfigurable {
     @IBOutlet private weak var bottomView: UIView!
     @IBOutlet private weak var needUpdateButton: UpdateCustomButton!
 
-    // MARK: - Internal Properties
-    weak var delegate: DashboardDeviceCellDelegate?
-
     // MARK: - Private Properties
     private var currentState: ViewModelState?
+    private weak var delegate: DashboardDeviceCellDelegate?
+
+    private var firmwareAndMissionsUpdateListener: FirmwareAndMissionsListener?
+    private var firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel?
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
@@ -75,7 +76,10 @@ class DashboardDeviceCell: UICollectionViewCell, NibReusable, CellConfigurable {
     }
 
     // MARK: - Internal Funcs
-    /// Setup function used for User Device, Remote and Drone states.
+    /// Sets up function used for User Device, Remote and Drone states.
+    ///
+    /// - Parameters:
+    ///    - state: the current state
     func setup(state: ViewModelState) {
         // We need to clean the current state and UI.
         currentState = state
@@ -90,6 +94,14 @@ class DashboardDeviceCell: UICollectionViewCell, NibReusable, CellConfigurable {
         default:
             break
         }
+    }
+
+    /// Sets up the cell's delegate.
+    ///
+    /// - Parameters:
+    ///    - delegate: the cell's delegate
+    func setup(delegate: DashboardDeviceCellDelegate) {
+        self.delegate = delegate
     }
 }
 
@@ -121,6 +133,47 @@ private extension DashboardDeviceCell {
         }
     }
 
+    /// This method is used to clean UI before setting value from the state.
+    func cleanViews() {
+        networkImageView.image = nil
+        nameDeviceLabel.text = nil
+        stateDeviceLabel.text = nil
+        batteryValueLabel.text = nil
+        needUpdateButton.isHidden = true
+        bottomView.isHidden = false
+        deviceImageView.image = nil
+        wifiStatusImageView.image = nil
+        gpsStatusImageView.image = nil
+        stateDeviceLabel.text = nil
+    }
+
+    /// This method is used to clean all current states.
+    func cleanStates() {
+        FirmwareAndMissionsInteractor.shared.unregister(firmwareAndMissionsUpdateListener)
+        firmwareAndMissionToUpdateModel = nil
+        switch currentState {
+        case is UserDeviceInfosState:
+            let userDeviceInfosState = currentState as? UserDeviceInfosState
+            userDeviceInfosState?.userDeviceBatteryLevel.valueChanged = nil
+        case is RemoteInfosState:
+            let remoteInfosState = currentState as? RemoteInfosState
+            remoteInfosState?.remoteBatteryLevel.valueChanged = nil
+            remoteInfosState?.remoteName.valueChanged = nil
+            remoteInfosState?.remoteNeedUpdate.valueChanged = nil
+        case is DroneInfosState:
+            let droneInfosState = currentState as? DroneInfosState
+            droneInfosState?.batteryLevel.valueChanged = nil
+            droneInfosState?.wifiStrength.valueChanged = nil
+            droneInfosState?.gpsStrength.valueChanged = nil
+            droneInfosState?.droneName.valueChanged = nil
+        default:
+            break
+        }
+    }
+}
+
+/// Utils for User Device case.
+private extension DashboardDeviceCell {
     /// Update User Device cell view.
     ///
     /// - Parameters:
@@ -128,12 +181,16 @@ private extension DashboardDeviceCell {
     func setupUserDevice(_ state: ViewModelState) {
         let userDeviceInfosState = currentState as? UserDeviceInfosState
         // Set current values because we cleared all fields.
-        updateBatteryLevel(userDeviceInfosState?.userDeviceBatteryLevel.value.currentValue)
         gpsStatusImageView.image = userDeviceInfosState?.userDeviceGpsStrength.value.image
         stateDeviceLabel.text = nil
+        deviceImageView.image = Asset.Dashboard.icPhone.image
+        deviceImageView.tintColor = ColorName.white.color
+        // Get the current app version.
+        nameDeviceLabel.text = AppUtils.version
         // TODO: Add bottom view visibility when new app version is available.
         bottomView.isHidden = true
 
+        updateBatteryLevel(userDeviceInfosState?.userDeviceBatteryLevel.value.currentValue)
         userDeviceInfosState?.userDeviceBatteryLevel.valueChanged = { [weak self] batteryValue in
             self?.batteryValueLabel.isHidden = false
             self?.updateBatteryLevel(batteryValue.currentValue)
@@ -141,12 +198,11 @@ private extension DashboardDeviceCell {
         userDeviceInfosState?.userDeviceGpsStrength.valueChanged = { [weak self] gpsStrength in
             self?.gpsStatusImageView.image = gpsStrength.image
         }
-        deviceImageView.image = Asset.Dashboard.icPhone.image
-        deviceImageView.tintColor = ColorName.white.color
-        // Get the current app version.
-        nameDeviceLabel.text = AppUtils.version
     }
+}
 
+/// Utils for Remote Case.
+private extension DashboardDeviceCell {
     /// Update remote cell view.
     ///
     /// - Parameters:
@@ -163,9 +219,10 @@ private extension DashboardDeviceCell {
     /// - Parameters:
     ///    - remoteInfosState: The view model state for remote cell
     func setRemoteValues(_ remoteInfosState: RemoteInfosState?) {
-        updateBatteryLevel(remoteInfosState?.remoteBatteryLevel.value.currentValue)
         nameDeviceLabel.text = remoteInfosState?.remoteName.value
+        deviceImageView.image = Asset.Dashboard.icController.image
 
+        updateBatteryLevel(remoteInfosState?.remoteBatteryLevel.value.currentValue)
         if remoteInfosState?.remoteNeedUpdate.value == true,
            remoteInfosState?.remoteConnectionState.value == .connected {
             stateDeviceLabel.text = nil
@@ -175,6 +232,24 @@ private extension DashboardDeviceCell {
 
         needUpdateButton.isHidden = (remoteInfosState?.remoteNeedUpdate.value == false
                                         || remoteInfosState?.remoteConnectionState.value != .connected)
+    }
+
+    /// Updates label according to remote states.
+    ///
+    /// - Parameters:
+    ///    - remoteInfosState: the view model state for remote cell
+    func updateRemoteLabel(_ remoteInfosState: RemoteInfosState?) {
+        if remoteInfosState?.remoteNeedCalibration.value == true {
+            stateDeviceLabel.textColor = ColorName.redTorch.color
+        } else if remoteInfosState?.remoteConnectionState.value == .connected {
+            stateDeviceLabel.textColor = ColorName.greenSpring.color
+        } else {
+            stateDeviceLabel.textColor = ColorName.white50.color
+        }
+
+        stateDeviceLabel.text = remoteInfosState?.remoteNeedCalibration.value == true
+            ? L10n.droneCalibrationRequired
+            : remoteInfosState?.remoteConnectionState.value.title
     }
 
     /// Observe values from remote state.
@@ -204,163 +279,120 @@ private extension DashboardDeviceCell {
         remoteInfosState?.remoteNeedCalibration.valueChanged = { [weak self] _ in
             self?.updateRemoteLabel(remoteInfosState)
         }
-        deviceImageView.image = Asset.Dashboard.icController.image
     }
+}
 
+/// Utils for drone Case.
+private extension DashboardDeviceCell {
     /// Update drone cell view.
     ///
     /// - Parameters:
     ///    - state: The view model state for drone cell
     func setupDrone(_ state: ViewModelState) {
-        let droneInfosState = currentState as? DroneInfosState
-        setDroneValues(droneInfosState)
-        observeDroneValues(droneInfosState)
-        deviceImageView.image = Asset.Dashboard.icDrone.image
-    }
-
-    /// Set drone cell state.
-    ///
-    /// - Parameters:
-    ///    - droneInfosState: The view model state for drone cell
-    func setDroneValues(_ droneInfosState: DroneInfosState?) {
-        updateBatteryLevel(droneInfosState?.batteryLevel.value.currentValue)
-        wifiStatusImageView.image = droneInfosState?.wifiStrength.value.image
-        gpsStatusImageView.image = droneInfosState?.gpsStrength.value.image
-        nameDeviceLabel.text = droneInfosState?.droneName.value
-
-        // We need to hide the text when an update is available.
-        if droneInfosState?.droneConnectionState.value != .connected {
-            stateDeviceLabel.text = droneInfosState?.droneConnectionState.value.title
-            stateDeviceLabel.textColor = ColorName.white50.color
-        } else if droneInfosState?.droneConnectionState.value == .connected {
-            if droneInfosState?.droneNeedUpdate.value != true {
-                if droneInfosState?.droneNeedStereoVisionSensorCalibration.value == true {
-                    stateDeviceLabel.text = L10n.droneCalibrationRequired
-                    stateDeviceLabel.textColor = ColorName.redTorch.color
-                } else {
-                    stateDeviceLabel.text = droneInfosState?.droneConnectionState.value.title
-                    stateDeviceLabel.textColor = ColorName.greenSpring.color
-                }
-            } else {
-                stateDeviceLabel.text = nil
-            }
+        guard let droneInfosState = currentState as? DroneInfosState else {
+            return
         }
 
-        needUpdateButton.isHidden = (droneInfosState?.droneNeedUpdate.value == false
-                                        || droneInfosState?.droneConnectionState.value != .connected)
-        networkImageView.image = droneInfosState?.cellularNetworkIcon.value
-        networkImageView.isHidden = droneInfosState?.isCellularAvailable.value == false
+        initUIForDroneCase(droneInfosState)
+        listenViewModelsForDroneCase(droneInfosState)
+        firmwareAndMissionsUpdateListener = FirmwareAndMissionsInteractor.shared
+            .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
+                self?.firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel
+                self?.setStateDeviceLabelForDroneCase(with: firmwareAndMissionToUpdateModel,
+                                                      droneInfosState: droneInfosState)
+            }
     }
 
-    /// Observe values from drone state.
+    /// Inits the UI for drone case.
     ///
     /// - Parameters:
     ///    - droneInfosState: The view model state for drone cell
-    func observeDroneValues(_ droneInfosState: DroneInfosState?) {
-        droneInfosState?.batteryLevel.valueChanged = { [weak self] batteryValue in
+    func initUIForDroneCase(_ droneInfosState: DroneInfosState) {
+        let isCellularActive = droneInfosState.currentLink.value == .cellular
+        deviceImageView.image = Asset.Dashboard.icDrone.image
+        updateBatteryLevel(droneInfosState.batteryLevel.value.currentValue)
+        wifiStatusImageView.image = droneInfosState.wifiStrength.value.signalIcon(isLinkActive: !isCellularActive)
+        gpsStatusImageView.image = droneInfosState.gpsStrength.value.image
+        nameDeviceLabel.text = droneInfosState.droneName.value
+        networkImageView.image = droneInfosState.cellularStrength.value.signalIcon(isLinkActive: isCellularActive)
+        networkImageView.isHidden = droneInfosState.isConnected()
+    }
+
+    /// Listens View Model for drone state.
+    ///
+    /// - Parameters:
+    ///    - droneInfosState: The view model state for drone cell
+    func listenViewModelsForDroneCase(_ droneInfosState: DroneInfosState) {
+        droneInfosState.batteryLevel.valueChanged = { [weak self] batteryValue in
             self?.updateBatteryLevel(batteryValue.currentValue)
         }
-        droneInfosState?.wifiStrength.valueChanged = { [weak self] wifiStrength in
-            self?.wifiStatusImageView.image = wifiStrength.image
+        droneInfosState.wifiStrength.valueChanged = { [weak self] wifiStrength in
+            let isActive = droneInfosState.currentLink.value == .wlan
+            self?.wifiStatusImageView.image = wifiStrength.signalIcon(isLinkActive: isActive)
         }
-        droneInfosState?.gpsStrength.valueChanged = { [weak self] gpsStrength in
+        droneInfosState.gpsStrength.valueChanged = { [weak self] gpsStrength in
             self?.gpsStatusImageView.image = gpsStrength.image
         }
-        droneInfosState?.droneName.valueChanged = { [weak self] droneName in
+        droneInfosState.droneName.valueChanged = { [weak self] droneName in
             self?.nameDeviceLabel.text = droneName
         }
-        droneInfosState?.droneNeedUpdate.valueChanged = {[weak self] droneNeedUpdate in
-            self?.needUpdateButton.isHidden = !droneNeedUpdate || droneInfosState?.droneConnectionState.value != .connected
-            if droneNeedUpdate,
-               droneInfosState?.droneConnectionState.value == .connected {
-                self?.stateDeviceLabel.text = nil
-            }
+        droneInfosState.droneNeedStereoVisionSensorCalibration.valueChanged = { [weak self] _ in
+            guard let firmwareAndMissionToUpdateModel = self?.firmwareAndMissionToUpdateModel else { return }
+
+            self?.setStateDeviceLabelForDroneCase(with: firmwareAndMissionToUpdateModel,
+                                                  droneInfosState: droneInfosState)
         }
-        droneInfosState?.droneConnectionState.valueChanged = { [weak self] droneConnectionState in
-            if droneConnectionState != .connected {
-                self?.stateDeviceLabel.text = droneConnectionState.title
-                self?.stateDeviceLabel.textColor = ColorName.white50.color
-            } else if droneConnectionState == .connected {
-                if droneInfosState?.droneNeedStereoVisionSensorCalibration.value == true {
-                    self?.stateDeviceLabel.text = L10n.droneCalibrationRequired
-                    self?.stateDeviceLabel.textColor = ColorName.redTorch.color
-                } else {
-                    self?.stateDeviceLabel.text = droneConnectionState.title
-                    self?.stateDeviceLabel.textColor = ColorName.greenSpring.color
-                }
-            }
-        }
-        droneInfosState?.droneNeedStereoVisionSensorCalibration.valueChanged = { [weak self] stereoVisionSensorCalibrationNeeded in
-            if stereoVisionSensorCalibrationNeeded == true {
-                self?.stateDeviceLabel.text = L10n.droneCalibrationRequired
-                self?.stateDeviceLabel.textColor = ColorName.redTorch.color
-            } else {
-                self?.stateDeviceLabel.text = droneInfosState?.droneConnectionState.value.title
-                self?.stateDeviceLabel.textColor = ColorName.greenSpring.color
-            }
-        }
-        droneInfosState?.cellularNetworkIcon.valueChanged = { [weak self] cellularIcon in
-            self?.networkImageView.image = cellularIcon
-        }
-        droneInfosState?.isCellularAvailable.valueChanged = { [weak self] isAvailable in
-            self?.networkImageView.isHidden = !isAvailable
+        droneInfosState.cellularStrength.valueChanged = { [weak self] cellularStrength in
+            let isActive = droneInfosState.currentLink.value == .cellular
+            self?.networkImageView.image = cellularStrength.signalIcon(isLinkActive: isActive)
         }
     }
 
-    /// This method is used to clean UI before setting value from the state.
-    func cleanViews() {
-        networkImageView.image = nil
-        nameDeviceLabel.text = nil
-        stateDeviceLabel.text = nil
-        batteryValueLabel.text = nil
-        needUpdateButton.isHidden = true
-        bottomView.isHidden = false
-        deviceImageView.image = nil
-        wifiStatusImageView.image = nil
-        gpsStatusImageView.image = nil
-        stateDeviceLabel.text = nil
-    }
-
-    /// This method is used to clean all current states.
-    func cleanStates() {
-        switch currentState {
-        case is UserDeviceInfosState:
-            let userDeviceInfosState = currentState as? UserDeviceInfosState
-            userDeviceInfosState?.userDeviceBatteryLevel.valueChanged = nil
-        case is RemoteInfosState:
-            let remoteInfosState = currentState as? RemoteInfosState
-            remoteInfosState?.remoteBatteryLevel.valueChanged = nil
-            remoteInfosState?.remoteName.valueChanged = nil
-            remoteInfosState?.remoteNeedUpdate.valueChanged = nil
-        case is DroneInfosState:
-            let droneInfosState = currentState as? DroneInfosState
-            droneInfosState?.batteryLevel.valueChanged = nil
-            droneInfosState?.wifiStrength.valueChanged = nil
-            droneInfosState?.gpsStrength.valueChanged = nil
-            droneInfosState?.droneName.valueChanged = nil
-            droneInfosState?.droneNeedUpdate.valueChanged = nil
-        default:
-            break
-        }
-    }
-
-    /// Updates label according to remote states.
+    /// Sets the state device label.
     ///
     /// - Parameters:
-    ///    - remoteInfosState: the view model state for remote cell
-    func updateRemoteLabel(_ remoteInfosState: RemoteInfosState?) {
-        stateDeviceLabel.text = nil
+    ///    - firmwareAndMissionToUpdateModel: The firmware and mission update model
+    ///    - droneInfosState: The view model state for drone cell
+    func setStateDeviceLabelForDroneCase(with firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel,
+                                         droneInfosState: DroneInfosState) {
+        // TODO: Probably missing check on the magnetometer and perhaps on the gimbal
+        let droneCalibrationRequired = droneInfosState.droneConnectionState.value == .connected
+            && droneInfosState.droneNeedStereoVisionSensorCalibration.value == true
 
-        if remoteInfosState?.remoteNeedCalibration.value == true {
+        switch firmwareAndMissionToUpdateModel {
+        case .upToDate where droneCalibrationRequired,
+             .notInitialized where droneCalibrationRequired:
+            stateDeviceLabel.text = L10n.droneCalibrationRequired
             stateDeviceLabel.textColor = ColorName.redTorch.color
-        } else if remoteInfosState?.remoteConnectionState.value == .connected {
-            stateDeviceLabel.textColor = ColorName.greenSpring.color
-        } else {
-            stateDeviceLabel.textColor = ColorName.white50.color
+        default:
+            stateDeviceLabel.textColor = firmwareAndMissionToUpdateModel
+                .stateDeviceLabelTextColor(deviceConnectionState: droneInfosState.droneConnectionState.value)
+            stateDeviceLabel.text = firmwareAndMissionToUpdateModel
+                .stateDeviceLabelText(deviceConnectionState: droneInfosState.droneConnectionState.value)
         }
 
-        stateDeviceLabel.text = remoteInfosState?.remoteNeedCalibration.value == true
-            ? L10n.droneCalibrationRequired
-            : remoteInfosState?.remoteConnectionState.value.title
+        setNeedUpdateButtonLayoutForDroneCase(with: firmwareAndMissionToUpdateModel,
+                                              droneInfosState: droneInfosState)
+    }
+
+    /// Sets the need update button layout.
+    ///
+    /// - Parameters:
+    ///    - firmwareAndMissionToUpdateModel: The firmware and mission update model
+    ///    - droneInfosState: The view model state for drone cell
+    func setNeedUpdateButtonLayoutForDroneCase(with firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel,
+                                               droneInfosState: DroneInfosState) {
+        switch firmwareAndMissionToUpdateModel {
+        case .upToDate,
+             .notInitialized:
+            needUpdateButton.isHidden = true
+        case .firmware,
+             .singleMission,
+             .missions:
+            needUpdateButton.isHidden = false
+            let buttonTitle = firmwareAndMissionToUpdateModel
+                .stateDeviceLabelText(deviceConnectionState: droneInfosState.droneConnectionState.value)
+            needUpdateButton.setup(with: buttonTitle)
+        }
     }
 }

@@ -35,7 +35,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     // MARK: - Internal Properties
     /// Returns middle point of the line.
     var middlePoint: AGSPoint? {
-        return self.polyline?.pointAt(percent: Constants.halfPercent)
+        return self.polyline?.middlePoint
     }
     /// Origin waypoint.
     private(set) weak var originWayPoint: WayPoint?
@@ -58,17 +58,13 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     override var itemType: FlightPlanGraphicItemType {
         return .lineWayPoint
     }
-    override var itemIndex: Int? {
-        return attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] as? Int
-    }
 
     // MARK: - Private Enums
     private enum Constants {
         static let defaultColor: UIColor = ColorName.blueDodger.color
         static let selectedColor: UIColor = ColorName.greenSpring.color
         static let lineWidth: CGFloat = 5.0
-        static let invisibleLineWidth: CGFloat = 18.0
-        static let halfPercent: Double = 0.5
+        static let invisibleLineWidth: CGFloat = 28.0
     }
 
     // MARK: - Init
@@ -128,20 +124,42 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     func updateEndPoint(_ endPoint: AGSPoint) {
         self.geometry = polyline?.replacingLastPoint(endPoint)
     }
+}
 
-    /// Decrements waypoint indexes for the line.
-    func decrementWayPointIndexes() {
-        guard let index = itemIndex else { return }
-
-        self.attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = index - 1
-        self.attributes[FlightPlanAGSConstants.lineDestinationWayPointAttributeKey] = index
+// MARK: WayPointRelatedGraphic
+extension FlightPlanWayPointLineGraphic: WayPointRelatedGraphic {
+    /// Waypoint's index.
+    ///
+    /// Note: in waypoint line case, index is the index of origin waypoint.
+    var wayPointIndex: Int? {
+        get {
+            return attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] as? Int
+        }
+        set {
+            attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = newValue
+        }
     }
 
-    /// Increments waypoint indexes for the line.
-    func incrementWayPointIndexes() {
-        guard let index = itemIndex else { return }
+    /// Increments waypoint's index.
+    ///
+    /// Note: in waypoint line case, this increments both related waypoints.
+    func incrementWayPointIndex() {
+        guard let index = wayPointIndex else { return }
 
         self.attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = index + 1
         self.attributes[FlightPlanAGSConstants.lineDestinationWayPointAttributeKey] = index + 2
+    }
+
+    /// Decrements waypoint's index.
+    ///
+    /// Note: in waypoint line case, this decrements both related waypoints.
+    func decrementWayPointIndex() {
+        guard let index = wayPointIndex,
+              index > 0 else {
+            return
+        }
+
+        self.attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = index - 1
+        self.attributes[FlightPlanAGSConstants.lineDestinationWayPointAttributeKey] = index
     }
 }

@@ -121,7 +121,8 @@ private extension CellularAvailableViewModel {
     ///     - cellular: current cellular reference's value
     func updateCellularAvailability(with cellular: Cellular?) {
         let copy = state.value.copy()
-        copy.isCellularAvailable = cellular?.simStatus.isCellularAvailable == true
+        copy.isCellularAvailable = cellular?.simStatus == .locked
+            || cellular?.simStatus == .ready
         state.set(copy)
     }
 

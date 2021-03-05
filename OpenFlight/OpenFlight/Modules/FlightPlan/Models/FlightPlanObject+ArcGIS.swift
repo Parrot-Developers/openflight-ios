@@ -33,8 +33,31 @@ import ArcGIS
 /// Utility extension for `FlightPlanObject` usage with ArcGIS.
 extension FlightPlanObject {
     // MARK: - Public Properties
+    /// Returns plan estimations.
+    public var estimations: FlightPlanEstimationsModel {
+        var estimations = FlightPlanEstimationsModel()
+        var lastPoint: WayPoint?
+        var totalDistance: Double = 0.0
+        var totalTime: TimeInterval = 0.0
+        wayPoints
+            .forEach { wayPoint in
+                if let lastPoint = lastPoint {
+                    let distance = lastPoint.agsPoint.distanceToPoint(wayPoint.agsPoint)
+                    totalTime += distance / lastPoint.speed
+                    totalDistance += distance
+                }
+                lastPoint = wayPoint
+            }
+        estimations.distance = totalDistance
+        estimations.duration = totalTime
+        // TODO: memory size in next gerrit (need more informations)
+
+        return estimations
+    }
+
+    // MARK: - Internal Properties
     /// Returns an array with all lines graphics.
-    public var allLinesGraphics: [FlightPlanWayPointLineGraphic] {
+    var allLinesGraphics: [FlightPlanWayPointLineGraphic] {
         return wayPoints
             .enumerated()
             .compactMap { (index, point) in
@@ -76,28 +99,6 @@ extension FlightPlanObject {
     var polyline: AGSPolyline {
         return AGSPolyline(points: wayPoints.compactMap { return $0.agsPoint }
             + pois.compactMap { return $0.agsPoint })
-    }
-
-    /// Returns plan estimations.
-    public var estimations: FlightPlanEstimationsModel {
-        var estimations = FlightPlanEstimationsModel()
-        var lastPoint: WayPoint?
-        var totalDistance: Double = 0.0
-        var totalTime: TimeInterval = 0.0
-        wayPoints
-            .forEach { wayPoint in
-                if let lastPoint = lastPoint {
-                    let distance = lastPoint.agsPoint.distanceToPoint(wayPoint.agsPoint)
-                    totalTime += distance / lastPoint.speed
-                    totalDistance += distance
-                }
-                lastPoint = wayPoint
-            }
-        estimations.distance = totalDistance
-        estimations.duration = totalTime
-        // TODO: memory size in next gerrit (need more informations)
-
-        return estimations
     }
 
     // MARK: - Private Properties
@@ -144,6 +145,14 @@ extension FlightPlanObject {
             .map { (index, poiPoint) in
                 poiPoint.labelGraphic(index: index)
         }
+    }
+
+    /// Returns weight of all waypoint segments (a fraction representing their
+    /// relative duration inside the entire Flight Plan).
+    private var segmentWeights: [Double] {
+        guard let totalDuration = estimations.duration else { return [] }
+
+        return wayPoints.map { $0.navigateToNextDuration / totalDuration }
     }
 
     // MARK: - Public Funcs
@@ -206,5 +215,22 @@ extension FlightPlanObject {
         wayPoint.updateYaw()
 
         return wayPoint
+    }
+
+    /// Computes current Flight Plan progress with given location and last waypoint index.
+    ///
+    /// - Parameters:
+    ///    - currentLocation: location from which progress should be calculated
+    ///    - lastWayPointIndex: index of the last passed waypoint
+    /// - Returns: global Flight Plan progress, from 0.0 to 1.0.
+    func completionProgress(with currentLocation: AGSPoint, lastWayPointIndex: Int) -> Double {
+        guard (0...wayPoints.count-1).contains(lastWayPointIndex) else { return 0.0 }
+
+        let currentSegmentProgress = self.wayPoints[lastWayPointIndex].navigateToNextProgress(with: currentLocation)
+        let progressAtWayPoint = self.segmentWeights
+            .prefix(lastWayPointIndex)
+            .reduce(0.0) { return $0 + $1 }
+
+        return (0.0...1.0).clamp(progressAtWayPoint + segmentWeights[lastWayPointIndex] * currentSegmentProgress)
     }
 }

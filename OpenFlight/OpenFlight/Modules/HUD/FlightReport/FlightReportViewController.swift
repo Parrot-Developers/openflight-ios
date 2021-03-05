@@ -117,7 +117,7 @@ final class FlightReportViewController: UIViewController {
     @IBOutlet private weak var scrollViewBottomConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
-    private var flightViewModel: FlightDataViewModel? = CoreDataManager.shared.lastFlight()
+    private var flightViewModel: FlightDataViewModel?
 
     // MARK: - Deinit
     deinit {
@@ -125,8 +125,13 @@ final class FlightReportViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate() -> FlightReportViewController {
+    /// Instantiates FlightReport ViewController.
+    ///
+    /// - Parameters:
+    ///     - flightState: flight state
+    static func instantiate(flightState: FlightDataState) -> FlightReportViewController {
         let viewController = StoryboardScene.FlightReport.flightReportViewController.instantiate()
+        viewController.flightViewModel = FlightDataViewModel(state: flightState)
         return viewController
     }
 

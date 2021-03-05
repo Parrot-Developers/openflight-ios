@@ -72,10 +72,9 @@ final class SettingsGeofenceViewController: SettingsContentViewController {
 
     /// Reset to default settings.
     override func resetSettings() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced.name,
-                             itemName: LogEvent.LogKeyAdvancedSettings.resetGeofenceSettings,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyAdvancedSettings.resetGeofenceSettings,
                              newValue: nil,
-                             logType: LogEvent.LogType.button)
+                             logType: .button)
 
         geofenceViewModel?.resetSettings()
     }

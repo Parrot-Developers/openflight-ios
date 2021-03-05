@@ -46,6 +46,7 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
         }
     }
     @IBOutlet private weak var typeImage: UIImageView!
+    @IBOutlet private weak var selectedView: UIView!
 
     // MARK: - Private Enums
     private enum Constants {
@@ -59,6 +60,10 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
         self.applyCornerRadius(Style.largeCornerRadius)
+        selectedView.cornerRadiusedWith(backgroundColor: .clear,
+                                        borderColor: ColorName.greenSpring.color,
+                                        radius: Style.largeCornerRadius,
+                                        borderWidth: Style.largeBorderWidth)
     }
 
     override func layoutSublayers(of layer: CALayer) {
@@ -83,10 +88,11 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     ///
     /// - Parameters:
     ///     - viewModel: flight plan view model
-    func configureCell(viewModel: FlightPlanViewModel) {
+    ///     - isSelected: Whether cell is selected.
+    func configureCell(viewModel: FlightPlanViewModel, isSelected: Bool) {
         let viewModelState = viewModel.state.value
         self.titleLabel.text = viewModelState.title ?? viewModelState.location?.coordinatesDescription
-        self.dateLabel.text = viewModelState.date?.shortFormattedString
+        self.dateLabel.text = viewModelState.date?.shortWithTimeFormattedString
         self.backgroundImageView.image = viewModelState.thumbnail
         if let type = viewModelState.type,
            FlightPlanTypeManager.shared.missionKey(for: type) != FlightPlanMissionMode.standard.rawValue {
@@ -101,5 +107,6 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
             self?.layoutSubviews()
         }
         viewModel.requestThumbnail(thumbnailSize: self.frame.size)
+        selectedView.isHidden = !isSelected
     }
 }

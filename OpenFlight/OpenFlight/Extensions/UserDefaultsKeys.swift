@@ -84,9 +84,6 @@ public extension DefaultsKeys {
     var evTriggerSetting: DefaultsKey<Bool?> { .init("key_evTriggerSetting") }
     var userShowMiniMapSetting: DefaultsKey<String?> { .init("key_userShowMiniMapSetting") }
 
-    // RTH settings
-    var rthTypeSetting: DefaultsKey<String?> { DefaultsKeys.rthTypeSettingKey }
-
     // MARK: - Camera
     var overexposureSetting: DefaultsKey<String?> { DefaultsKeys.overexposureSettingKey }
     var hdrModeSetting: DefaultsKey<String?> { .init("key_hdrModeSetting") }
@@ -98,6 +95,7 @@ public extension DefaultsKeys {
     var lastShutterSpeedValue: DefaultsKey<String?> { .init("key_lastShutterSpeedValue") }
     var lastCameraIsoValue: DefaultsKey<String?> { .init("key_lastCameraIsoValue") }
     var highDynamicRangeSetting: DefaultsKey<String?> { .init("key_highDynamicRangeSetting") }
+    var isAutoExposureLocked: DefaultsKey<Bool> { .init("key_isAutoExposureLocked", defaultValue: false) }
 
     // MARK: - Last sync dates
     var profileLastSyncDate: DefaultsKey<Date?> { DefaultsKeys.profileLastSyncDateKey }
@@ -171,9 +169,6 @@ public extension DefaultsKeys {
                                                                                       defaultValue: String(describing: SecondaryScreenType.map.rawValue))
     static let userMiniMapTypeSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_userMiniMapTypeSetting",
                                                                                       defaultValue: String(describing: SettingsMapDisplayType.hybrid.rawValue))
-
-    // RTH settings
-    static let rthTypeSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_rthTypeSetting")
 
     // MARK: - Camera
     static let overexposureSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_overexposureSetting")

@@ -152,7 +152,7 @@ final class SettingsControlModeCell: UITableViewCell, NibReusable {
 private extension SettingsControlModeCell {
     /// Inverse button touched.
     @IBAction func inverseButtonTouchedUpInside(_ sender: AnyObject) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls.name,
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls,
                              itemName: LogEvent.LogKeyControlsSettings.inverseJoys,
                              newValue: String(!jogsInversed),
                              logType: LogEvent.LogType.button)
@@ -172,7 +172,7 @@ private extension SettingsControlModeCell {
 
     /// Special button touched.
     @IBAction func specialModeButtonTouchedUpInside(_ sender: AnyObject) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls.name,
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls,
                              itemName: LogEvent.LogKeyControlsSettings.special,
                              newValue: String(!isSpecialMode),
                              logType: LogEvent.LogType.button)
@@ -185,7 +185,7 @@ private extension SettingsControlModeCell {
     /// EV trigger button touched.
     @IBAction func evTriggerButtonTouchedUpInside(_ sender: AnyObject) {
         let evTriggerSetting = Defaults.evTriggerSetting ?? false
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls.name,
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls,
                              itemName: LogEvent.LogKeyControlsSettings.evTrigger,
                              newValue: String(!evTriggerSetting),
                              logType: LogEvent.LogType.button)

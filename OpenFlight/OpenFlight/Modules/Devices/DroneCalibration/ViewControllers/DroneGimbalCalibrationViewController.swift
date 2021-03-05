@@ -45,12 +45,6 @@ final class DroneGimbalCalibrationViewController: UIViewController {
     private var viewModel = DroneCalibrationViewModel()
     private var isLoading: Bool = false
 
-    // MARK: - Private Enums
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "GimbalCalibration"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: DroneGimbalCalibrationCoordinator) -> DroneGimbalCalibrationViewController {
         let viewController = StoryboardScene.DroneCalibration.droneGimbalCalibrationViewController.instantiate()
@@ -70,7 +64,8 @@ final class DroneGimbalCalibrationViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.gimbalCalibration,
+                             logType: .screen)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -121,8 +116,7 @@ private extension DroneGimbalCalibrationViewController {
             self.viewModel.startGimbalCalibration()
         }
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.gimbal.name,
-                             itemName: LogEvent.LogKeyDroneDetailsCalibrationButton.gimbalCalibrationStart,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyDroneDetailsCalibrationButton.gimbalCalibrationStart,
                              newValue: self.viewModel.gimbalCalibrationState.value.description,
                              logType: .button)
     }

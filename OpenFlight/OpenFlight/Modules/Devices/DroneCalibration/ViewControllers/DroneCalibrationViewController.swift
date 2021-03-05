@@ -45,12 +45,6 @@ final class DroneCalibrationViewController: UIViewController {
     private weak var coordinator: DroneCalibrationCoordinator?
     private var viewModel = DroneCalibrationViewModel()
 
-    // MARK: - Private Enums
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "DroneCalibration"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: DroneCalibrationCoordinator) -> DroneCalibrationViewController {
         let viewController = StoryboardScene.DroneCalibration.initialScene.instantiate()
@@ -69,7 +63,8 @@ final class DroneCalibrationViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.droneCalibration,
+                             logType: .screen)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -114,18 +109,20 @@ private extension DroneCalibrationViewController {
             logEvent(with: LogEvent.LogKeyDroneDetailsCalibrationButton.magnetometerCalibration)
             self.coordinator?.startMagnetometerCalibration()
         } else if view == obstacleDetectionChoiceView {
-            logEvent(with: LogEvent.LogKeyDroneDetailsCalibrationButton.obstacleAvoidanceCalibration)
+            logEvent(with: LogEvent.LogKeyDroneDetailsCalibrationButton.sensorCalibrationTutorial)
             self.coordinator?.startStereoVisionCalibration()
         }
     }
 
     /// Function called when the back button is clicked.
     @IBAction func backButtonTouchedUpInside(_ sender: Any) {
+        logEvent(with: LogEvent.LogKeyCommonButton.back)
         dismissView()
     }
 
     /// Function called when the background button is clicked.
     @IBAction func backgroundButtonTouchedUpInside(_ sender: Any) {
+        logEvent(with: LogEvent.LogKeyCommonButton.tapToDismiss)
         dismissView()
     }
 }
@@ -212,8 +209,7 @@ private extension DroneCalibrationViewController {
     /// - Parameters:
     ///     - itemName: Button name
     func logEvent(with itemName: String) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.droneCalibration.name,
-                             itemName: itemName,
+        LogEvent.logAppEvent(itemName: itemName,
                              newValue: nil,
                              logType: .button)
     }

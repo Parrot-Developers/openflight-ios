@@ -33,20 +33,20 @@ import Foundation
 /// Helpers for `FlightPlanExecutionDataModel`.
 extension FlightPlanExecutionDataModel {
     /// Returns FlightPlanExecution object.
-    var asFlightPlanExecution: FlightPlanExecution {
+    public var asFlightPlanExecution: FlightPlanExecution {
         let execution = FlightPlanExecution(flightPlanId: self.flightPlanId,
                                             flightId: self.flightId,
                                             startDate: self.startDate,
                                             endDate: self.endDate,
                                             state: self.stateEnum,
                                             settings: self.lightSettings,
-                                            projectId: self.projectIdAsInt64)
+                                            latestItemExecuted: self.latestItemExecutedAsInt)
         return execution
     }
 
-    /// Helper to deal with Core Data's Number and Int64.
-    var projectIdAsInt64: Int64? {
-        return self.projectId?.int64Value
+    /// Helper to deal with Core Data's Number and Int.
+    var latestItemExecutedAsInt: Int? {
+        return self.latestItemExecuted?.intValue
     }
 
     /// Helper to deal with Core Data's Data and FlightPlanLightSetting.
@@ -57,10 +57,10 @@ extension FlightPlanExecutionDataModel {
     }
 
     /// Helper to deal with Core Data's String and FlightPlanExecutionState.
-    var stateEnum: FlightPlanExecutionState? {
+    public var stateEnum: FlightPlanExecutionState {
         guard let state = state,
               let enumValue = FlightPlanExecutionState(rawValue: state)
-        else { return nil }
+        else { return .initialized }
 
         return enumValue
     }
@@ -78,19 +78,14 @@ extension FlightPlanExecutionDataModel {
 
 /// FlightPlanExecution's utilities for `FlightPlanExecutionDataModel`.
 extension FlightPlanExecution {
-    /// Project id as string.
-    var stateForPersistance: String? {
-        return state?.rawValue
-    }
-
     /// Light settings as Data.
     var settingsForPersistance: Data? {
         return try? JSONEncoder().encode(settings)
     }
 
     /// projectId as NSNumber.
-    var projectIdForPersistance: NSNumber? {
-        guard let value = projectId else { return nil }
+    var latestItemExecutedForPersistance: NSNumber? {
+        guard let value = latestItemExecuted else { return nil }
 
         return NSNumber(value: value)
     }

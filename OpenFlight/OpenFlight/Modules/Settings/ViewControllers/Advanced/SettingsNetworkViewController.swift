@@ -72,8 +72,7 @@ final class SettingsNetworkViewController: SettingsContentViewController {
 
     /// Reset to default settings.
     override func resetSettings() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced.name,
-                             itemName: LogEvent.LogKeyAdvancedSettings.resetNetworkSettings,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyAdvancedSettings.resetNetworkSettings,
                              newValue: nil,
                              logType: LogEvent.LogType.button)
 
@@ -82,8 +81,7 @@ final class SettingsNetworkViewController: SettingsContentViewController {
 
     override func settingsSegmentedCellDidChange(selectedSegmentIndex: Int, atIndexPath indexPath: IndexPath) {
         let settingEntry = filteredSettings[indexPath.row]
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced.name,
-                             itemName: settingEntry.itemLogKey,
+        LogEvent.logAppEvent(itemName: settingEntry.itemLogKey,
                              newValue: LogEvent.formatNewValue(settingEntry: settingEntry,
                                                                index: selectedSegmentIndex),
                              logType: .button)

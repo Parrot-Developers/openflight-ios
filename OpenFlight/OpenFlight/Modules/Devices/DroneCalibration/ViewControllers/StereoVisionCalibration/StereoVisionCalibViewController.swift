@@ -56,16 +56,6 @@ final class StereoVisionCalibViewController: UIViewController {
         static let videoFormat: String = "mp4"
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "SensorCalibration/Tutorial"
-    }
-
-    // MARK: - Deinit
-    deinit {
-        NotificationCenter.default.remove(observer: videoEndedObserver)
-    }
-
     // MARK: - Setup
     /// Instantiate View controller.
     ///
@@ -88,7 +78,9 @@ final class StereoVisionCalibViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.sensorCalibrationTutorial,
+                             logType: .screen)
     }
 
     override func viewDidDisappear(_ animated: Bool) {

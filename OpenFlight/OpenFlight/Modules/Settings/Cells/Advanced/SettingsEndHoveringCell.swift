@@ -119,6 +119,11 @@ extension SettingsEndHoveringCell: SettingsSliderCellDelegate {
             setting.value = Double(value)
         }
     }
+
+    func settingsSliderCellStartEditing() { }
+
+
+    func settingsSliderCellCancelled() { }
 }
 
 // MARK: - SettingsSegmentedCellDelegate

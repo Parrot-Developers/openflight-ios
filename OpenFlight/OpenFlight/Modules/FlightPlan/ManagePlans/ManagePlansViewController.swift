@@ -30,54 +30,34 @@
 
 import UIKit
 
-// MARK: - Protocols
-/// Protocol for `ManagePlansViewController` navigation.
-protocol ManagePlansNavigation: class {
-    /// Close manage plans view.
-    func closeManagePlans()
-}
-
 /// Manages flight plan managing view.
 final class ManagePlansViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var topView: UIView!
-    @IBOutlet private weak var closeButton: UIView!
+    @IBOutlet private weak var closeButton: UIButton!
+    @IBOutlet private weak var projectTitle: UILabel! {
+        didSet {
+            projectTitle.makeUp(with: .largeMedium)
+            projectTitle.text = L10n.flightPlanProject
+        }
+    }
     @IBOutlet private weak var currentProjectView: UIView!
     @IBOutlet private weak var openRecentView: UIView!
-    @IBOutlet private weak var managePlansButton: FlightPlanManageBarView! {
-        didSet {
-            managePlansButton.isUserInteractionEnabled = false
-        }
-    }
     @IBOutlet private weak var projectName: UILabel! {
         didSet {
-            projectName.makeUp()
-            projectName.text = L10n.flightPlanProjectName
-        }
-    }
-    @IBOutlet private weak var textfieldView: UIView! {
-        didSet {
-            textfieldView.backgroundColor = ColorName.white10.color
-            textfieldView.cornerRadiusedWith(backgroundColor: ColorName.white10.color,
-                                             borderColor: .clear,
-                                             radius: Style.largeCornerRadius,
-                                             borderWidth: Style.largeBorderWidth)
+            projectName.makeUp(with: .small, and: .white80)
+            projectName.text = L10n.flightPlanProjectName.uppercased()
         }
     }
     @IBOutlet private weak var textfield: UITextField! {
         didSet {
-            textfield.makeUp()
+            textfield.makeUp(style: .largeMedium)
             textfield.backgroundColor = .clear
-        }
-    }
-    @IBOutlet private weak var editImage: UIImageView! {
-        didSet {
-            editImage.tintColor = ColorName.greySilver.color
         }
     }
     @IBOutlet private weak var duplicateButton: UIButton! {
         didSet {
-            duplicateButton.makeup(with: .regular, color: .white)
+            duplicateButton.makeup()
             duplicateButton.makeup(with: .regular, color: .white50, and: .disabled)
             duplicateButton.applyCornerRadius(Style.largeCornerRadius)
             duplicateButton.backgroundColor = ColorName.white20.color
@@ -86,25 +66,32 @@ final class ManagePlansViewController: UIViewController {
     }
     @IBOutlet private weak var deleteButton: UIButton! {
         didSet {
-            deleteButton.makeup(with: .regular, color: .white)
+            deleteButton.makeup()
             deleteButton.applyCornerRadius(Style.largeCornerRadius)
             deleteButton.backgroundColor = ColorName.redTorch50.color
             deleteButton.tintColor = ColorName.white.color
-            deleteButton.setTitle(nil, for: .normal)
-            deleteButton.setImage(Asset.Common.Icons.iconTrashWhite.image, for: .normal)
+            deleteButton.setTitle(L10n.commonDelete, for: .normal)
         }
     }
     @IBOutlet private weak var newButton: UIButton! {
         didSet {
-            newButton.makeup(with: .regular, color: .greenSpring)
+            newButton.makeup(color: .greenSpring)
             newButton.applyCornerRadius(Style.largeCornerRadius)
             newButton.backgroundColor = ColorName.greenSpring20.color
             newButton.setTitle(L10n.flightPlanNew, for: .normal)
         }
     }
+    @IBOutlet private weak var openButton: UIButton! {
+        didSet {
+            openButton.makeup()
+            openButton.cornerRadiusedWith(backgroundColor: ColorName.white50.color,
+                                          radius: Style.largeCornerRadius)
+            openButton.setTitle(L10n.flightPlanOpen, for: .normal)
+        }
+    }
 
     // MARK: - Private Properties
-    private weak var coordinator: ManagePlansNavigation?
+    private weak var coordinator: FlightPlanManagerCoordinator?
     private var flightPlanListener: FlightPlanListener?
     private var flightPlanViewModel: FlightPlanViewModel?
     private var flightPlansListViewController: FlightPlansListViewController?
@@ -115,13 +102,8 @@ final class ManagePlansViewController: UIViewController {
         static let textFieldMaximumLength: Int = 50
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "FlightPlan/ManageDialog"
-    }
-
     // MARK: - Setup
-    static func instantiate(coordinator: ManagePlansNavigation?) -> ManagePlansViewController {
+    static func instantiate(coordinator: FlightPlanManagerCoordinator?) -> ManagePlansViewController {
         let viewController = StoryboardScene.ManagePlans.initialScene.instantiate()
         viewController.coordinator = coordinator
 
@@ -136,27 +118,28 @@ final class ManagePlansViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        closeButton.addBlurEffect()
-        currentProjectView.addBlurEffect()
-        openRecentView.addBlurEffect()
-
-        // Allow dismiss view controller by tapping in the all top area.
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(closeButtonTouchedUpInside))
-        topView.addGestureRecognizer(tapGesture)
-        topView.isUserInteractionEnabled = true
-
+        // Setup view.
+        currentProjectView.addBlurEffect(with: .dark, cornerRadius: 0.0)
+        // Setup textfield.
+        textfield.text = nil
         textfield.delegate = self
-        managePlansButton.setSelectedDisplay()
-        flightPlanListener = FlightPlanManager.shared.register(didChange: { [weak self] flightPlan in
-            self?.update(flightPlanViewModel: flightPlan)
-        })
+        // Setup flight plan.
+        let currentFlightPlan = FlightPlanManager.shared.currentFlightPlanViewModel
+        if let uCurrentFlightPlan = currentFlightPlan {
+            self.update(flightPlanViewModel: uCurrentFlightPlan)
+        }
+        // Setup button regarding current flight plan.
+        duplicateButton.isEnabled = currentFlightPlan != nil
+        deleteButton.isEnabled = currentFlightPlan != nil
+        openButton.isEnabled = currentFlightPlan != nil
+        textfield.isEnabled = currentFlightPlan != nil
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.flightPlanManageDialog,
+                             logType: .screen)
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -180,18 +163,39 @@ final class ManagePlansViewController: UIViewController {
 
 // MARK: - Actions
 private extension ManagePlansViewController {
+    @IBAction func openButtonTouchedUpInside(_ sender: Any) {
+        self.flightPlanViewModel?.setAsLastUsed()
+        FlightPlanManager.shared.currentFlightPlanViewModel = self.flightPlanViewModel
+        coordinator?.closeManagePlans()
+    }
+
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
         coordinator?.closeManagePlans()
     }
 
     @IBAction func duplicateTouchUpInside(_ sender: Any) {
-        FlightPlanManager.shared.duplicateCurrent()
+        guard let flightplan = self.flightPlanViewModel else { return }
+
+        FlightPlanManager.shared.duplicate(flightPlan: flightplan)
+
+        if let currentFlightPlan = FlightPlanManager.shared.currentFlightPlanViewModel {
+            update(flightPlanViewModel: currentFlightPlan)
+        }
     }
 
     @IBAction func deleteTouchUpInside(_ sender: Any) {
+        guard let flightplan = self.flightPlanViewModel,
+              !flightplan.runFlightPlanViewModel.state.value.runState.isActive else {
+            return
+        }
+
         // Delete current FP, then load latest opened one.
-        FlightPlanManager.shared.deleteCurrent()
+        FlightPlanManager.shared.delete(flightPlan: flightplan)
         FlightPlanManager.shared.loadLastOpenedFlightPlan(state: missionProviderViewModel.state.value)
+
+        if let currentFlightPlan = FlightPlanManager.shared.currentFlightPlanViewModel {
+            update(flightPlanViewModel: currentFlightPlan)
+        }
     }
 
     @IBAction func newTouchUpInside(_ sender: Any) {
@@ -206,23 +210,16 @@ private extension ManagePlansViewController {
 // MARK: - FlightPlansListViewControllerDelegate
 extension ManagePlansViewController: FlightPlansListViewControllerDelegate {
     func didSelect(flightPlan: FlightPlanViewModel) {
-        FlightPlanManager.shared.currentFlightPlanViewModel = flightPlan
-        coordinator?.closeManagePlans()
+        update(flightPlanViewModel: flightPlan)
     }
 }
 
 // MARK: - Private Funcs
 private extension ManagePlansViewController {
-    func update(flightPlanViewModel: FlightPlanViewModel?) {
+    func update(flightPlanViewModel: FlightPlanViewModel) {
         self.flightPlanViewModel = flightPlanViewModel
-        managePlansButton.flightPlanName = flightPlanViewModel?.state.value.title
-        textfield.text = flightPlanViewModel?.state.value.title
-
-        duplicateButton.isEnabled = flightPlanViewModel != nil
-        deleteButton.isEnabled = flightPlanViewModel != nil
-        textfield.isEnabled = flightPlanViewModel != nil
-
-        flightPlansListViewController?.updateDataSource()
+        flightPlansListViewController?.selectedFlightPlanUuid = flightPlanViewModel.state.value.uuid
+        textfield.text = flightPlanViewModel.state.value.title
     }
 }
 

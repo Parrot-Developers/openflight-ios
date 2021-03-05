@@ -45,11 +45,6 @@ public class FlightPlanPointGraphic: FlightPlanGraphic {
     }
 
     // MARK: - Public Funcs
-    /// Decrements index of the given point.
-    func decrementIndex() {
-        /// Implement in children.
-    }
-
     /// Updates altitude of waypoint.
     ///
     /// - Parameters:

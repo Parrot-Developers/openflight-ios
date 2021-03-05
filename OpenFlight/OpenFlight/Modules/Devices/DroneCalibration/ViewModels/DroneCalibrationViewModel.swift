@@ -89,14 +89,17 @@ final class DroneCalibrationState: ViewModelState, EquatableState, Copying {
     ///    - gimbalState: state of the gimbal.
     ///    - frontStereoGimbalState: state of the stereo vision.
     ///    - stereoVisionSensorCalibrationNeeded: Bool that indicates if stereo vision sensor calibration is needed.
+    ///    - flyingState: flying state of the drone.
     init(droneState: DeviceState.ConnectionState?,
          gimbalState: GimbalCalibrationState?,
          frontStereoGimbalState: FrontStereoGimbalCalibrationState?,
-         stereoVisionSensorCalibrationNeeded: Bool) {
+         stereoVisionSensorCalibrationNeeded: Bool,
+         flyingState: FlyingIndicatorsState?) {
         self.droneState = droneState
         self.gimbalState = gimbalState
         self.frontStereoGimbalState = frontStereoGimbalState
         self.stereoVisionSensorCalibrationNeeded = stereoVisionSensorCalibrationNeeded
+        self.flyingState = flyingState
     }
 
     // MARK: - Internal Funcs
@@ -105,6 +108,7 @@ final class DroneCalibrationState: ViewModelState, EquatableState, Copying {
             && self.gimbalState == other.gimbalState
             && self.frontStereoGimbalState == other.frontStereoGimbalState
             && self.stereoVisionSensorCalibrationNeeded == other.stereoVisionSensorCalibrationNeeded
+            && self.flyingState == other.flyingState
     }
 
     /// Returns a copy of the object.
@@ -112,7 +116,8 @@ final class DroneCalibrationState: ViewModelState, EquatableState, Copying {
         let copy = DroneCalibrationState(droneState: self.droneState,
                                          gimbalState: self.gimbalState,
                                          frontStereoGimbalState: self.frontStereoGimbalState,
-                                         stereoVisionSensorCalibrationNeeded: self.stereoVisionSensorCalibrationNeeded)
+                                         stereoVisionSensorCalibrationNeeded: self.stereoVisionSensorCalibrationNeeded,
+                                         flyingState: self.flyingState)
         return copy
     }
 }
@@ -231,9 +236,9 @@ extension DroneCalibrationViewModel {
     /// Updates stereo vision sensor calibration state.
     func updateStereoVisionSensorCalibrationState() {
         guard let drone = drone,
-            let stereoVisionSensor = drone.getPeripheral(Peripherals.stereoVisionSensor)
-            else {
-                return
+              let stereoVisionSensor = drone.getPeripheral(Peripherals.stereoVisionSensor)
+        else {
+            return
         }
 
         let copy = self.state.value.copy()

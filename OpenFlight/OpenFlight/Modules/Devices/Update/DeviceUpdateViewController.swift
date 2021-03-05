@@ -62,11 +62,6 @@ final class DeviceUpdateViewController: UIViewController {
         static let maxProgressValue: Int = 100
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "FirmwareUpdate"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: UpdateCoordinator,
                             deviceUpdateType: DeviceUpdateType) -> DeviceUpdateViewController {
@@ -96,7 +91,8 @@ final class DeviceUpdateViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.firmwareUpdate,
+                             logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -307,12 +303,7 @@ private extension DeviceUpdateViewController {
 
     /// Init the ViewModel for drone update.
     func initDroneViewModel() {
-        viewModel = DroneUpdateViewModel(stateDidUpdate: { [weak self] state in
-            self?.observeDeviceUpdateState(state) },
-                                         deviceUpdateStepDidUpdate: { [weak self] step in
-                                            self?.updateStepView(step)
-        })
-        initViewModel()
+        // FIXME: Will be remove with new firmware and missions architecture ?
     }
 
     /// Init view model.

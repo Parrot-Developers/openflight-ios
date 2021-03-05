@@ -63,7 +63,8 @@ final class PairingWhereIsWifiViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingHowToConnectPhoneToDrone,
+                             logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {

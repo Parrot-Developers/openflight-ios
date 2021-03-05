@@ -82,10 +82,6 @@ final class DashboardViewController: UIViewController {
         case content
         case footer
     }
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "Dashboard"
-    }
 
     // MARK: - Init
     static func instantiate(coordinator: DashboardCoordinator) -> DashboardViewController {
@@ -108,7 +104,7 @@ final class DashboardViewController: UIViewController {
 
         self.collectionView.reloadData()
         self.setNeedsStatusBarAppearanceUpdate()
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.dashboard, logType: .screen)
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
@@ -141,6 +137,7 @@ final class DashboardViewController: UIViewController {
 private extension DashboardViewController {
     /// Come back to HUD when user tap on back button.
     @IBAction func flyButtonTouchedUpInside(_ sender: Any) {
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.hud, logType: .screen)
         dimissDashboard()
     }
 }
@@ -153,20 +150,27 @@ extension DashboardViewController: UICollectionViewDelegate {
 
         switch sectionType {
         case .header where collectionView.cellForItem(at: indexPath) is DashboardLoginCell:
+            logEvent(with: LogEventScreenManager.shared.logEventProvider?.logStringWithKey(logKey: .parrot) ?? "")
             self.coordinator?.startLogin()
         case .header where collectionView.cellForItem(at: indexPath) is DashboardProviderCell:
+            logEvent(with: LogEvent.LogKeyDashboardButton.pilot)
             self.coordinator?.startProviderProfile()
         case .content:
             switch viewModel {
             case let myFlightsViewModel as MyFlightsViewModel:
+                logEvent(with: LogEvent.LogKeyDashboardButton.myFlights)
                 self.coordinator?.startMyFlights(myFlightsViewModel)
             case _ as MarketingViewModel:
+                logEvent(with: LogEvent.LogKeyDashboardButton.marketing)
                 self.coordinator?.startMarketing()
             case is RemoteInfosViewModel:
+                logEvent(with: LogEvent.LogKeyDashboardButton.controllerDetails)
                 self.coordinator?.startRemoteInfos()
             case is DroneInfosViewModel<DroneInfosState>:
+                logEvent(with: LogEvent.LogKeyDashboardButton.droneDetails)
                 self.coordinator?.startDroneInfos()
             case is GalleryMediaViewModel:
+                logEvent(with: LogEvent.LogKeyDashboardButton.gallery)
                 self.coordinator?.startMedias()
             default:
                 break
@@ -458,8 +462,8 @@ private extension DashboardViewController {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: getCellReuseIdentifier(viewModel), for: indexPath)
         guard let remoteCell = cell as? DashboardDeviceCell else { return DashboardDeviceCell() }
 
-        remoteCell.delegate = self
         remoteCell.setup(state: viewModel.state.value)
+        remoteCell.setup(delegate: self)
 
         return remoteCell
     }
@@ -475,7 +479,7 @@ private extension DashboardViewController {
         guard let droneCell = cell as? DashboardDeviceCell else { return DashboardDeviceCell() }
 
         droneCell.setup(state: viewModel.state.value)
-
+        droneCell.setup(delegate: self)
         return droneCell
     }
 
@@ -539,6 +543,7 @@ private extension DashboardViewController {
 
     /// Come back to the HUD.
     @objc func dimissDashboard() {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .button)
         coordinator?.dismissDashboard()
     }
 
@@ -583,18 +588,36 @@ private extension DashboardViewController {
                               MarketingViewModel(),
                               myFlightsViewModel]
     }
+
+    /// Calls log event.
+    ///
+    /// - Parameters:
+    ///     - itemName: Button name
+    func logEvent(with itemName: String) {
+        LogEvent.logAppEvent(itemName: itemName,
+                             logType: .simpleButton)
+    }
 }
 
 // MARK: - DashboardDeviceCellDelegate
 extension DashboardViewController: DashboardDeviceCellDelegate {
     func startUpdate(_ model: DeviceUpdateModel) {
-        coordinator?.startUpdate(model: model)
+        switch model {
+        case .drone:
+            // FIXME: StartUpdate is not functional for drone.
+            logEvent(with: LogEvent.LogKeyDashboardButton.droneUpdate)
+            self.coordinator?.startDroneInfos()
+        case .remote:
+            logEvent(with: LogEvent.LogKeyDashboardButton.remoteUpdate)
+            coordinator?.startUpdate(model: model)
+        }
     }
 }
 
 // MARK: - DashboardHeaderCellDelegate
 extension DashboardViewController: DashboardHeaderCellDelegate {
     func dismissDasboard() {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .button)
         coordinator?.dismissDashboard()
     }
 }

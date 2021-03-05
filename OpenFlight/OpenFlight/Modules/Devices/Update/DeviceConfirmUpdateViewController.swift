@@ -45,12 +45,6 @@ final class DeviceConfirmUpdateViewController: UIViewController {
     private var model: DeviceUpdateModel = .remote
     private var viewModel: DeviceConfirmUpdateViewModel?
 
-    // MARK: - Private Enums
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "ConfirmUpdate"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: UpdateCoordinator, model: DeviceUpdateModel) -> DeviceConfirmUpdateViewController {
         let viewController = StoryboardScene.DeviceUpdate.deviceConfirmUpdate.instantiate()
@@ -71,7 +65,7 @@ final class DeviceConfirmUpdateViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.confirmUpdate, logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {

@@ -32,7 +32,7 @@ import GroundSdk
 
 // MARK: - Internal Enums
 enum RthPreset {
-    static let rthType: SettingsRthType = .takeOffPoint
+    static let rthType: ReturnHomeTarget = .takeOffPosition
     static let maxAltitude: Double = 150.0
     static let minAltitude: Double = 20.0
     static let defaultAltitude: Double = 30.0
@@ -40,35 +40,31 @@ enum RthPreset {
     static let defaultEndingBehavior: ReturnHomeEndingBehavior = .hovering
 }
 
-/// Setting return to home model.
-enum SettingsRthType: String, SettingEnum, CaseIterable {
-    case takeOffPoint
-    case pilotPosition
-
-    static var allValues: [SettingEnum] {
-        return SettingsRthType.allCases
-    }
-
-    static var defaultKey: DefaultsKey<String?> {
-        return DefaultsKeys.rthTypeSettingKey
-    }
-
+/// `ReturnHomeTarget` extension used in Settings.
+extension ReturnHomeTarget: SettingMode {
     var localized: String {
         switch self {
-        case .takeOffPoint:
-            return L10n.settingsRthTypeTakeOff
-        case .pilotPosition:
+        case .controllerPosition:
             return L10n.settingsRthTypePilot
+        case .takeOffPosition:
+            return L10n.settingsRthTypeTakeOff
+        default:
+            return ""
         }
     }
 
-    var image: UIImage {
-        switch self {
-        case .takeOffPoint:
-            return Asset.Settings.Advanced.iconPoiRth.image//Asset.Settings.Advanced.iconUser.image
-        case .pilotPosition:
-            return Asset.Settings.Advanced.iconPoiRth.image
-        }
+    var key: String {
+        return description
+    }
+
+    static var allValues: [SettingMode] {
+        return [ReturnHomeTarget.takeOffPosition,
+                ReturnHomeTarget.controllerPosition]
+    }
+
+    /// Returns true if current setting value is take off or controller position.
+    var isHomeAvailable: Bool {
+        return self == .takeOffPosition || self == .controllerPosition
     }
 }
 

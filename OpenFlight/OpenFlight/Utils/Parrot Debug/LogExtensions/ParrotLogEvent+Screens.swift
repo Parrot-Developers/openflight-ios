@@ -33,77 +33,65 @@ public extension LogEvent {
     /// Enum which stores all screen name for log message.
     enum EventLoggerScreenConstants {
         /// Settings screens.
-        case quick
-        case controls
-        case advanced
+        static let settings: String = "Settings"
+        static let quick: String = "Settings/Quick"
+        static let controls: String = "Settings/Controls"
+        static let advanced: String = "Settings/Advanced"
         /// Wifi setting password edition.
-        case wifiPasswordEdition
+        static let wifiPasswordEdition: String = "Settings/Advanced/WifiPasswordEdition"
         /// Drone infos screens.
-        case gimbal
-        case correctHorizon
-        case magnetometer
-        case obstacleAvoidance
-        case confirmUpdate
-        case droneInformations
-        case droneCalibration
-        case droneCellular
+        static let gimbal: String = "GimbalCalibration"
+        static let correctHorizon: String = "CorrectHorizonCalibration"
+        static let magnetometerCalibration: String = "DroneMagnetometerCalibration"
+        static let obstacleAvoidance: String = "ObstacleAvoidance"
+        static let confirmUpdate: String = "ConfirmUpdate"
+        static let droneInformations: String = "DroneInformations"
+        static let droneCalibration: String = "DroneCalibration"
+        static let droneCellular: String = "DroneInformations/Cellular"
         /// Remote infos screens.
-        case remoteControlDetails
-        case remoteCalibration
-        case pairingDroneFinderList
-        case connectToDrone
+        static let remoteControlDetails: String = "RemoteControlDetails"
+        static let remoteCalibration: String = "RemoteCalibration"
+        static let pairingDroneFinderList: String = "Pairing/DroneFinder/List"
+        static let connectToDrone: String = "Pairing/DroneFinder/List/Connection"
         /// Data confidentiality screens.
-        case dashboard
-        case myParrotDataConfidentiality
+        static let dashboard: String = "Dashboard"
+        static let myParrotDataConfidentiality: String = "MyParrot/DataConfidentiality"
         /// HUD.
-        case bottomBarHUD
+        static let bottomBarHUD: String = "HUD/BottomBar"
         /// Cellular access.
-        case cellularAccessPinDialog
+        static let cellularAccessPinDialog: String = "Pairing/4G/PinDialog"
+        /// Others.
+        static let debugLogs: String = "Debug/Logs"
+        static let pairing4gPinDialog: String = "Pairing/4G/PinDialog"
+        static let gallery: String = "Gallery"
+        static let galleryViewer: String = "Gallery/Viewer"
+        static let sensorCalibrationTutorial: String = "SensorCalibration/Tutorial"
+        static let sensorCalibration: String = "SensorCalibration"
+        static let sensorCalibrationSuccess: String = "SensorCalibrationSuccess"
+        static let sensorCalibrationFailure: String = "SensorCalibrationFailure"
+        static let gimbalCalibration: String = "GimbalCalibration"
+        static let pairingHowToConnectPhoneToDrone: String = "Pairing/HowToConnect/PhoneToDrone"
+        static let pairing: String = "Pairing"
+        static let pairingHowToConnectDroneTurnOn: String = "Pairing/HowToConnect/DroneTurnOn"
+        static let pairingDroneFinderConnection: String = "Pairing/DroneFinder/Connection"
+        static let myFlightsFlightList: String = "MyFlights/FlightList"
+        static let myFlightsPlans: String = "MyFlights/Plans"
+        static let settingsBankedTurnInfo: String = "Settings/BankedTurnInfo"
+        static let settingsHorizonLineInfo: String = "Settings/HorizonLineInfo"
+        static let hud: String = "HUD"
+        static let pairingHowToConnectRemoteToPhone: String = "Pairing/HowToConnect/RemoteToPhone"
+        // TODO: Use provider for this.
+        static let flightPlanList: String = "FlightPlanList"
+        static let flightDetails: String = "FlightDetails"
+        static let droneDetails: String = "DroneDetails"
+        static let firmwareUpdate: String = "FirmwareUpdate"
+        static let flightPlanManageDialog: String = "FlightPlan/ManageDialog"
+        static let flightPlanEditor: String = "FlightPlan/Editor"
+    }
 
-        /// Name of the screen according to log key for log.
-        public var name: String {
-            switch self {
-            case .quick:
-                return "Settings/Quick"
-            case .controls:
-                return "Settings/Controls"
-            case .advanced:
-                return "Settings/Advanced"
-            case .gimbal:
-                return "GimbalCalibration"
-            case .correctHorizon:
-                return "CorrectHorizonCalibration"
-            case .magnetometer:
-                return "DroneMagnetometerCalibration"
-            case .obstacleAvoidance:
-                return "SensorCalibration/Tutorial"
-            case .confirmUpdate:
-                return "ConfirmUpdate"
-            case .droneInformations:
-                return "DroneInformations"
-            case .droneCalibration:
-                return "DroneCalibration"
-            case .remoteControlDetails:
-                return "RemoteControlDetails"
-            case .remoteCalibration:
-                return "RemoteCalibration"
-            case .pairingDroneFinderList:
-                return "Pairing/DroneFinder/List"
-            case .connectToDrone:
-                return "Pairing/DroneFinder/List/Connection"
-            case .dashboard:
-                return "Dashboard"
-            case .myParrotDataConfidentiality:
-                return "MyParrot/DataConfidentiality"
-            case .bottomBarHUD:
-                return "HUD/BottomBar"
-            case .cellularAccessPinDialog:
-                return "Pairing/4G/PinDialog"
-            case .droneCellular:
-                return "DroneInformations/Cellular"
-            case .wifiPasswordEdition:
-                return "Settings/Advanced/WifiPasswordEdition"
-            }
-        }
+    /// Enum which stores some button keys for log message.
+    enum KeyForScreenLogger {
+        case data
+        case parrot
     }
 }

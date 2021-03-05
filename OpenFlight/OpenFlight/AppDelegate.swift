@@ -63,9 +63,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - Public Funcs
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
 
+        /// Sets up global managers and interactors
+        setupProtobufMissionManager()
+        setupFirmwareAndMissionsInteractor()
+
         /// Start AppCoordinator.
         self.appCoordinator = AppCoordinator()
         self.appCoordinator.start()
+        addMissionsToHUDPanel()
 
         /// Configure Main Window of the App.
         self.window = UIWindow(frame: UIScreen.main.bounds)
@@ -78,8 +83,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                     groundSdk: groundSdk,
                                                     dataManager: CoreDataManager.shared)
 
-        addMissions()
-
         return true
     }
 
@@ -89,6 +92,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
         return UIInterfaceOrientationMask.all
+    }
+}
+
+// MARK: - ProtobufMissionsSetupProtocol
+extension AppDelegate: ProtobufMissionsSetupProtocol {
+    /// Sets up `FirmwareAndMissionsInteractor`
+    func setupFirmwareAndMissionsInteractor() {
+        FirmwareAndMissionsInteractor.shared.setup()
+    }
+
+    /// Sets up the ProtobufMissionManager.
+    func setupProtobufMissionManager() {
+        ProtobufMissionsManager.shared.setup(with: [OFMissionSignatures.defaultMission,
+                                                    OFMissionSignatures.helloWorld])
+    }
+
+    /// Add protobuf missions to the HUD Panel.
+    func addMissionsToHUDPanel() {
+        MissionsManager.shared.addMissions([HelloWorldMission()])
     }
 }
 
@@ -163,14 +185,5 @@ public class AppDelegateSetup {
                 _ = gutmaLogManager?.delete(file: urlFile)
             }
         }
-    }
-}
-
-// MARK: - Private extension
-private extension AppDelegate {
-    // MARK: - Funcs
-    /// Add missions.
-    func addMissions() {
-        MissionsManager.shared.addMissions([HelloWorldMission()])
     }
 }

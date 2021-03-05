@@ -50,7 +50,7 @@ final class SettingsCameraViewController: SettingsContentViewController {
 
     /// Reset to default settings.
     override func resetSettings() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced.name,
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced,
                              itemName: LogEvent.LogKeyAdvancedSettings.resetRecordingSettings,
                              newValue: nil,
                              logType: LogEvent.LogType.button)

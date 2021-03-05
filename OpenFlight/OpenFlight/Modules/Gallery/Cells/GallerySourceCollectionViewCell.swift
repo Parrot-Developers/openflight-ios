@@ -88,13 +88,10 @@ internal extension GallerySourceCollectionViewCell {
     ///    - source: GallerySource
     ///    - isSelected: cell is selected
     func setup(source: GallerySource, isSelected: Bool) {
-        guard !source.isOffline else {
-            offlineSetup(source: source)
-            return
-        }
 
         let isCompact = !UIApplication.isLandscape
         mainStackView.axis = isCompact ? .vertical : .horizontal
+
         // Convert each value in Double to succeed to computation.
         storageRatio = Double(source.storageUsed) / Double(source.storageCapacity)
         let isStorageWarningLimitReached: Bool = storageRatio > Constants.warningStorageLimit
@@ -145,6 +142,10 @@ internal extension GallerySourceCollectionViewCell {
             }
 
             circleProgressView.setProgress(Float(storageRatio))
+        }
+
+        if source.isOffline {
+            offlineSetup(source: source)
         }
     }
 }

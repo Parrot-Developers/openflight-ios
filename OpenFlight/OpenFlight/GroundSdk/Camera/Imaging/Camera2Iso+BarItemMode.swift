@@ -39,6 +39,8 @@ extension Camera2Iso: BarItemMode, RulerDisplayable, Sortable {
 
     var shortTitle: String {
         switch self {
+        case .iso25:
+            return "25"
         case .iso50:
             return "50"
         case .iso64:
@@ -65,14 +67,42 @@ extension Camera2Iso: BarItemMode, RulerDisplayable, Sortable {
             return "640"
         case .iso800:
             return "800"
+        case .iso1000:
+            return "1000"
         case .iso1200:
             return "1200"
         case .iso1600:
             return "1600"
+        case .iso2000:
+            return "2000"
         case .iso2500:
             return "2500"
         case .iso3200:
             return "3200"
+        case .iso4000:
+            return "4000"
+        case .iso5000:
+            return "5000"
+        case .iso6400:
+            return "6400"
+        case .iso8000:
+            return "8000"
+        case .iso10000:
+            return "10000"
+        case .iso12800:
+            return "12800"
+        case .iso16000:
+            return "16000"
+        case .iso20000:
+            return "20000"
+        case .iso25600:
+            return "25600"
+        case .iso32000:
+            return "32000"
+        case .iso40000:
+            return "40000"
+        case .iso51200:
+            return "51200"
         }
     }
 
@@ -103,8 +133,9 @@ extension Camera2Iso: BarItemMode, RulerDisplayable, Sortable {
 
     // MARK: - Sortable
     static var sortedCases: [Camera2Iso] {
-        return [.iso50, .iso64, .iso80, .iso100, .iso125, .iso160, .iso200, .iso250, .iso320,
-                .iso400, .iso500, .iso640, .iso800, .iso1200, .iso1600, .iso2500, .iso3200]
+        return [.iso25, .iso50, .iso64, .iso80, .iso100, .iso125, .iso160, .iso200, .iso250, .iso320, .iso400, .iso500,
+                .iso640, .iso800, .iso1000, .iso1200, .iso1600, .iso2000, .iso2500, .iso3200, .iso4000, .iso5000,
+                .iso6400, .iso8000, .iso10000, .iso12800, .iso16000, .iso20000, .iso25600, .iso32000, .iso40000, .iso51200]
     }
 
     public var logKey: String {

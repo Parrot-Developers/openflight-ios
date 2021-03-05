@@ -32,6 +32,7 @@
 public class FlightPlanSetting: FlightPlanSettingType {
     // MARK: - Public Properties
     public var title: String
+    public var shortTitle: String?
     public var allValues: [Int]
     public var valueDescriptions: [String]?
     public var currentValue: Int?
@@ -46,6 +47,7 @@ public class FlightPlanSetting: FlightPlanSettingType {
     ///
     /// - Parameters:
     ///    - title: title of the setting
+    ///    - shortTitle: setting short title
     ///    - allValues: array of edition setting values
     ///    - valueDescriptions: custom descriptions for values
     ///    - currentValue: current value of the setting
@@ -55,6 +57,7 @@ public class FlightPlanSetting: FlightPlanSettingType {
     ///    - step: step between values of the setting
     ///    - isDisabled: Tells if the setting must be disabled
     init(title: String,
+         shortTitle: String?,
          allValues: [Int],
          valueDescriptions: [String]?,
          currentValue: Int?,
@@ -64,6 +67,7 @@ public class FlightPlanSetting: FlightPlanSettingType {
          step: Double,
          isDisabled: Bool) {
         self.title = title
+        self.shortTitle = shortTitle
         self.allValues = allValues
         self.valueDescriptions = valueDescriptions
         self.currentValue = currentValue
@@ -88,6 +92,7 @@ public class FlightPlanLightSetting: Codable, Equatable {
     // MARK: - Public Properties
     public var key: String
     public var currentValue: Int?
+    public var longValue: Int64?
 
     // MARK: - Init
     /// Init.
@@ -100,22 +105,35 @@ public class FlightPlanLightSetting: Codable, Equatable {
         self.currentValue = currentValue
     }
 
+    /// Init.
+    ///
+    /// - Parameters:
+    ///    - key: key of the setting
+    ///    - longValue: current value of the setting as Int64
+    public init(key: String, longValue: Int64? = nil) {
+        self.key = key
+        self.longValue = longValue
+    }
+
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.key = try container.decode(String.self, forKey: .key)
-        self.currentValue = try container.decode(Int?.self, forKey: .currentValue)
+        self.currentValue = try container.decodeIfPresent(Int.self, forKey: .currentValue)
+        self.longValue = try container.decodeIfPresent(Int64.self, forKey: .longValue)
     }
 
     // MARK: - Coding Keys
     private enum CodingKeys: String, CodingKey {
         case key
         case currentValue
+        case longValue
     }
 
     // MARK: - Equatable
     public static func == (lhs: FlightPlanLightSetting, rhs: FlightPlanLightSetting) -> Bool {
         return lhs.key == rhs.key
             && lhs.currentValue == rhs.currentValue
+            && lhs.longValue == rhs.longValue
     }
 }
 
@@ -127,6 +145,23 @@ extension Array where Element == FlightPlanLightSetting {
     ///    - key: key of the setting
     /// - Returns: The value of the setting if it exists.
     public func value(for key: String) -> Int? {
-        return self.first(where: { $0.key == key })?.currentValue
+        if let value = self.first(where: { $0.key == key })?.currentValue {
+            return Int(value)
+        } else {
+            return nil
+        }
+    }
+
+    /// Returns an Int64 value for a key if it exists.
+    ///
+    /// - Parameters:
+    ///    - key: key of the setting
+    /// - Returns: The value as Int64 of the setting if it exists.
+    public func longValue(for key: String) -> Int64? {
+        if let value = self.first(where: { $0.key == key })?.longValue {
+            return Int64(value)
+        } else {
+            return nil
+        }
     }
 }

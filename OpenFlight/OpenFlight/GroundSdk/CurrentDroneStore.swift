@@ -102,7 +102,7 @@ public final class CurrentDroneStore {
 // MARK: - Private Funcs
 private extension CurrentDroneStore {
     func listenState(_ drone: Drone) {
-        stateRef = drone.getState { state in
+        stateRef = drone.getState { [weak self] state in
             if let state = state, state.connectionState == .connected {
                 // Enable streaming by default.
                 if !drone.isUpdating {
@@ -119,16 +119,32 @@ private extension CurrentDroneStore {
                 // Resets the media meta data customId if it is already set.
                 // Can happen if there is a crash/killing app during a flight plan execution.
                 if let customId = drone.getPeripheral(Peripherals.mainCamera2)?.mediaMetadata?.customId,
-                   !customId.isEmpty {
+                   !customId.isEmpty,
+                   self?.isDroneStillRunningFlightPlan(drone: drone, executionId: customId) == false {
                     drone.getPeripheral(Peripherals.mainCamera2)?.mediaMetadata?.customId = ""
                 }
             }
         }
     }
 
+    /// Checks if drone is running the flight plan after a connection lost.
+    ///
+    /// - Parameters:
+    ///    - drone: drone
+    ///    - executionId: flight plan execution
+    func isDroneStillRunningFlightPlan(drone: Drone, executionId: String) -> Bool {
+        guard drone.getPilotingItf(PilotingItfs.flightPlan)?.state == .active,
+              let executions = FlightPlanManager.shared.currentFlightPlanViewModel?.executions,
+              let execution = executions.first(where: { $0.executionId == executionId }) else {
+            return false
+        }
+
+        return execution.state != .completed
+    }
+
     /// Dri listener.
     func listenDri(_ drone: Drone) {
-        driRef = drone.getPeripheral(Peripherals.dri) { [weak self] dri in
+        driRef = drone.getPeripheral(Peripherals.dri) { dri in
             guard dri?.mode?.value == true,
                   let driId = dri?.droneId?.id else {
                 return

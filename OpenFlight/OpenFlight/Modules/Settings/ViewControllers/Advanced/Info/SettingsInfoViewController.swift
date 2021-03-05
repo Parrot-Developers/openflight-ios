@@ -127,12 +127,6 @@ final class SettingsInfoViewController: UIViewController, StoryboardBased {
         static let bankedImageScreenRatio: CGFloat = 0.3
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessageBankedTurn: String = "Settings/BankedTurnInfo"
-        static let screenMessageHorizonLine: String = "Settings/HorizonLineInfo"
-    }
-
     // MARK: - Init
     static func instantiate(coordinator: SettingsCoordinator, infoType: BehaviourInfoTypeModel) -> SettingsInfoViewController {
         let viewController = StoryboardScene.SettingsInfoViewController.initialScene.instantiate()
@@ -165,9 +159,10 @@ final class SettingsInfoViewController: UIViewController, StoryboardBased {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: infoType == .bankedTurn
-                    ? EventLoggerConstants.screenMessageBankedTurn
-                    : EventLoggerConstants.screenMessageHorizonLine )
+        LogEvent.logAppEvent(screen: infoType == .bankedTurn
+                                ? LogEvent.EventLoggerScreenConstants.settingsBankedTurnInfo
+                                : LogEvent.EventLoggerScreenConstants.settingsHorizonLineInfo,
+                             logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {

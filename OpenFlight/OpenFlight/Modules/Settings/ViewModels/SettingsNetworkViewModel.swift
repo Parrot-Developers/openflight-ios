@@ -331,9 +331,9 @@ extension SettingsNetworkViewModel {
               let apnUsername = Defaults.networkUsername,
               let apnPassword = Defaults.networkPassword else { return }
 
-        _ = drone?.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToManual(apnUrl: apnUrl,
-                                                                                            apnUsername: apnUsername,
-                                                                                            apnPassword: apnPassword)
+        _ = drone?.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToManual(url: apnUrl,
+                                                                                            username: apnUsername,
+                                                                                            password: apnPassword)
         Defaults.isManualApnRequested = false
     }
 }

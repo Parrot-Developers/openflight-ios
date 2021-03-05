@@ -33,7 +33,7 @@ typealias ChunkKey = Point
 
 public protocol Chunk: Equatable {
 
-    //var points: Set<Point> { get }
+    // var points: Set<Point> { get }
 
     subscript(key: Point) -> Bool { get set }
     func setPoint(_ point: Point) 

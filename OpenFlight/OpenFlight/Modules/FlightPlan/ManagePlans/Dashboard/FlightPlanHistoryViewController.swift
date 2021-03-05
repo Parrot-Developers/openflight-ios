@@ -58,6 +58,7 @@ final class FlightPlanHistoryViewController: UIViewController {
 
     // MARK: - Internal Properties
     weak var delegate: FlightPlanHistoryDelegate?
+    weak var coordinator: Coordinator?
 
     /// Defines the type of the flight plan history table view.
     var tableType: HistoryTableType = .fullHistory {
@@ -133,7 +134,8 @@ extension FlightPlanHistoryViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(for: indexPath,
                                                  cellType: FlightPlanHistoryTableViewCell.self)
         cell.setup(fpExecution: data[indexPath.row],
-                   mediasView: fpExecutionsViews[data[indexPath.row].executionId ?? ""])
+                   mediasView: fpExecutionsViews[data[indexPath.row].executionId],
+                   tableType: tableType)
         cell.delegate = self
 
         if tableType == .miniHistory,
@@ -156,6 +158,13 @@ extension FlightPlanHistoryViewController: UITableViewDataSource {
 
 // MARK: - FlightPlanHistoryCellDelegate
 extension FlightPlanHistoryViewController: FlightPlanHistoryCellDelegate {
+    func didTapOnResume(fpExecution: FlightPlanExecution) {
+        let canResume = flightplan?.resumeExecution(fpExecution) ?? false
+        if canResume {
+            coordinator?.dismiss()
+        }
+    }
+
     func didTapOnMedia(fpExecution: FlightPlanExecution, action: HistoryMediasActionType?) {
         delegate?.didTapOnMedia(fpExecution: fpExecution,
                                 action: action)

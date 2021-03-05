@@ -42,7 +42,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     var selectedWayPointIndex: Int? {
         let selection = self.wayPoints.first(where: { $0.isSelected })
 
-        return selection?.itemIndex
+        return selection?.wayPointIndex
     }
 
     /// Returns all Flight Plan's waypoint arrows.
@@ -114,7 +114,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     /// - Returns: point of interest's graphic, if it exists
     func poiPoint(at index: Int) -> FlightPlanPoiPointGraphic? {
         return poiPoints
-            .first(where: { $0.itemIndex == index })
+            .first(where: { $0.poiIndex == index })
     }
 
     /// Returns waypoint line before waypoint at given index.
@@ -124,7 +124,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     /// - Returns: waypoint line, if it exists
     func lineBeforeWayPoint(at index: Int) -> FlightPlanWayPointLineGraphic? {
         return wayPointLines
-            .first(where: { $0.itemIndex == index-1 })
+            .first(where: { $0.wayPointIndex == index-1 })
     }
 
     /// Returns waypoint line after waypoint at given index.
@@ -134,7 +134,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     /// - Returns: waypoint line, if it exists
     func lineAfterWayPoint(at index: Int) -> FlightPlanWayPointLineGraphic? {
         return wayPointLines
-            .first(where: { $0.itemIndex == index })
+            .first(where: { $0.wayPointIndex == index })
     }
 
     /// Returns point of interest line for waypoint at given index.
@@ -144,7 +144,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     /// - Returns: point of interest line, if it exists
     func poiLineForWayPoint(at index: Int) -> FlightPlanWayPointToPoiLineGraphic? {
         return wayPointToPoiLines
-            .first(where: { $0.itemIndex == index })
+            .first(where: { $0.wayPointIndex == index })
     }
 
     /// Returns arrow for waypoint at given index.
@@ -154,7 +154,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     /// - Returns: arrow graphic, if it exists
     func arrowForWayPoint(at index: Int) -> FlightPlanWayPointArrowGraphic? {
         return wayPointArrows
-            .first(where: { $0.itemIndex == index })
+            .first(where: { $0.wayPointIndex == index })
     }
 
     /// Updates given graphic selection state.
@@ -183,7 +183,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     ///    - poiPointGraphic: point of interest's graphic
     func toggleRelation(between wayPointGraphic: FlightPlanWayPointGraphic,
                         and poiPointGraphic: FlightPlanPoiPointGraphic) {
-        if wayPointGraphic.poiIndex == poiPointGraphic.itemIndex {
+        if wayPointGraphic.poiIndex == poiPointGraphic.poiIndex {
             // Points are related, remove relation.
             unassignPoiPointFrom(wayPointGraphic)
         } else {
@@ -205,11 +205,11 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     ///    - index: waypoint's index
     ///    - altitude: new altitude
     func updateWayPointAltitude(at index: Int, altitude: Double) {
-        guard let wpGraphic = wayPoints.first(where: { $0.itemIndex == index }) else { return }
+        guard let wpGraphic = wayPoints.first(where: { $0.wayPointIndex == index }) else { return }
 
         wpGraphic.updateAltitude(altitude)
         wayPointArrows
-            .first(where: { $0.itemIndex == index })?
+            .first(where: { $0.wayPointIndex == index })?
             .updateAltitude(altitude)
         if let mapPoint = wpGraphic.mapPoint {
             lineBeforeWayPoint(at: index)?.updateEndPoint(mapPoint)
@@ -223,7 +223,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     ///    - index: point of interest's index
     ///    - altitude: new altitude
     func updatePoiPointAltitude(at index: Int, altitude: Double) {
-        guard let poiGraphic = poiPoints.first(where: { $0.itemIndex == index }) else { return }
+        guard let poiGraphic = poiPoints.first(where: { $0.poiIndex == index }) else { return }
 
         poiGraphic.updateAltitude(altitude)
         if let mapPoint = poiGraphic.mapPoint {
@@ -265,17 +265,17 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     ///    - location: new location
     func updateWayPointLocation(_ wayPointGraphic: FlightPlanWayPointGraphic,
                                 location: AGSPoint) {
-        guard let index = wayPointGraphic.itemIndex else { return }
+        guard let index = wayPointGraphic.wayPointIndex else { return }
 
         // Update Flight Plan.
         wayPointGraphic.wayPoint?.setCoordinate(location.toCLLocationCoordinate2D())
 
         // Get all lines concerned by this waypoint.
         let lines = wayPointLines
-        let lineBefore = lines.first(where: { $0.itemIndex == index-1 })
-        let lineAfter = lines.first(where: { $0.itemIndex == index })
-        let poiLine = wayPointToPoiLines.first(where: { $0.itemIndex == index })
-        let arrow = wayPointArrows.first(where: { $0.itemIndex == index })
+        let lineBefore = lines.first(where: { $0.wayPointIndex == index-1 })
+        let lineAfter = lines.first(where: { $0.wayPointIndex == index })
+        let poiLine = wayPointToPoiLines.first(where: { $0.wayPointIndex == index })
+        let arrow = wayPointArrows.first(where: { $0.wayPointIndex == index })
 
         /// Update geometries.
         lineBefore?.updateEndPoint(location)
@@ -299,7 +299,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     ///    - location: new location
     func updatePoiPointLocation(_ poiPointGraphic: FlightPlanPoiPointGraphic,
                                 location: AGSPoint) {
-        guard let index = poiPointGraphic.itemIndex else { return }
+        guard let index = poiPointGraphic.poiIndex else { return }
 
         // Update Flight Plan.
         poiPointGraphic.poiPoint?.coordinate = location.toCLLocationCoordinate2D()
@@ -334,7 +334,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     ///    - wayPoint: waypoint to insert
     ///    - index: index at which it should be inserted
     func insertWayPoint(_ wayPoint: WayPoint, at index: Int) {
-        guard let line = wayPointLines.first(where: { $0.itemIndex == index - 1 }),
+        guard let line = wayPointLines.first(where: { $0.wayPointIndex == index - 1 }),
               let originWayPoint = line.originWayPoint,
               let destinationWayPoint = line.destinationWayPoint else {
             return
@@ -352,18 +352,9 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
                                                       originIndex: index)
 
         // Increment indexes on existing graphics.
-        // TODO: make generic function for increments & decrements on graphic indexes.
-        self.wayPointLines
-            .filter { $0.itemIndex ?? Constants.noIndex >= index }
-            .forEach { $0.incrementWayPointIndexes() }
-        self.wayPoints
-            .filter { $0.itemIndex ?? Constants.noIndex >= index }
-            .forEach { $0.incrementIndex() }
-        self.wayPointToPoiLines
-            .filter { $0.itemIndex ?? Constants.noIndex >= index }
-            .forEach { $0.incrementWayPointIndex() }
-        self.wayPointArrows
-            .filter { $0.itemIndex ?? Constants.noIndex >= index }
+        self.flightPlanGraphics
+            .compactMap { $0 as? WayPointRelatedGraphic }
+            .filter { $0.wayPointIndex ?? Constants.noIndex >= index }
             .forEach { $0.incrementWayPointIndex() }
 
         // Remove existing line.
@@ -382,11 +373,11 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     /// - Parameters:
     ///    - index: waypoint's index
     func removeWayPoint(at index: Int) {
-        guard let wayPoint = wayPoints.first(where: { $0.itemIndex == index }) else { return }
+        guard let wayPoint = wayPoints.first(where: { $0.wayPointIndex == index }) else { return }
 
         let wpLines = wayPointLines
-        let lineBefore = wpLines.first(where: { $0.itemIndex == index-1 })
-        let lineAfter = wpLines.first(where: { $0.itemIndex == index })
+        let lineBefore = wpLines.first(where: { $0.wayPointIndex == index-1 })
+        let lineAfter = wpLines.first(where: { $0.wayPointIndex == index })
         // Add new waypoint line if needed.
         if let startPoint = lineBefore?.originWayPoint,
            let endPoint = lineAfter?.destinationWayPoint {
@@ -406,22 +397,14 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
         if let poiLine = poiLineForWayPoint(at: index) {
             self.graphics.remove(poiLine)
         }
-        if let arrow = wayPointArrows.first(where: { $0.itemIndex == index }) {
+        if let arrow = wayPointArrows.first(where: { $0.wayPointIndex == index }) {
             self.graphics.remove(arrow)
         }
         // Decrement subsequent waypoints, waypoint lines
         // and waypoint to point of interest lines indexes.
-        wpLines
-            .filter { $0.itemIndex ?? Constants.noIndex > index }
-            .forEach { $0.decrementWayPointIndexes() }
-        wayPoints
-            .filter { $0.itemIndex ?? Constants.noIndex > index }
-            .forEach { $0.decrementIndex() }
-        wayPointToPoiLines
-            .filter { $0.itemIndex ?? Constants.noIndex > index }
-            .forEach { $0.decrementWayPointIndex() }
-        wayPointArrows
-            .filter { $0.itemIndex ?? Constants.noIndex > index }
+        self.flightPlanGraphics
+            .compactMap { $0 as? WayPointRelatedGraphic }
+            .filter { $0.wayPointIndex ?? Constants.noIndex > index }
             .forEach { $0.decrementWayPointIndex() }
     }
 
@@ -430,7 +413,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     /// - Parameters:
     ///    - index: point of interest's index
     func removePoiPoint(at index: Int) {
-        guard let poiPoint = poiPoints.first(where: { $0.itemIndex == index }) else { return }
+        guard let poiPoint = poiPoints.first(where: { $0.poiIndex == index }) else { return }
 
         // Remove graphic.
         self.graphics.remove(poiPoint)
@@ -440,9 +423,6 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
             .forEach { unassignPoiPointFrom($0) }
         // Decrement subsequent points of interest and
         // waypoint to point of interest lines/arrows indexes.
-        poiPoints
-            .filter { $0.itemIndex ?? Constants.noIndex > index }
-            .forEach { $0.decrementIndex() }
         graphics
             .compactMap { $0 as? PoiPointRelatedGraphic }
             .filter { $0.poiIndex ?? Constants.noIndex > index }
@@ -460,7 +440,7 @@ private extension FlightPlanGraphicsOverlay {
     func assignPoiPointToWayPoint(wayPointGraphic: FlightPlanWayPointGraphic,
                                   poiPointGraphic: FlightPlanPoiPointGraphic) {
         guard let poiPoint = poiPointGraphic.poiPoint,
-              let poiIndex = poiPointGraphic.itemIndex else {
+              let poiIndex = poiPointGraphic.poiIndex else {
             return
         }
 
@@ -470,10 +450,10 @@ private extension FlightPlanGraphicsOverlay {
         wayPointGraphic.wayPoint?.assignPoiPoint(poiPoint: poiPoint,
                                                  poiIndex: poiIndex)
         // Update graphic.
-        wayPointGraphic.poiIndex = poiPointGraphic.itemIndex
+        wayPointGraphic.poiIndex = poiPointGraphic.poiIndex
 
         // Update arrow.
-        if let arrow = wayPointArrows.first(where: { $0.itemIndex == wayPointGraphic.itemIndex }) {
+        if let arrow = wayPointArrows.first(where: { $0.wayPointIndex == wayPointGraphic.wayPointIndex }) {
             arrow.addPoiPoint(poiPointGraphic)
             arrow.isSelected = true
         }
@@ -497,12 +477,12 @@ private extension FlightPlanGraphicsOverlay {
         wayPointGraphic.poiIndex = nil
 
         // Remove line.
-        if let line = wayPointToPoiLines.first(where: { $0.itemIndex == wayPointGraphic.itemIndex }) {
+        if let line = wayPointToPoiLines.first(where: { $0.wayPointIndex == wayPointGraphic.wayPointIndex }) {
             self.graphics.remove(line)
         }
 
         // Update arrow.
-        if let arrow = wayPointArrows.first(where: { $0.itemIndex == wayPointGraphic.itemIndex }) {
+        if let arrow = wayPointArrows.first(where: { $0.wayPointIndex == wayPointGraphic.wayPointIndex }) {
             arrow.removePoiPoint()
         }
     }
@@ -516,12 +496,12 @@ private extension FlightPlanGraphicsOverlay {
                                  isSelected: Bool) {
         poiPointGraphic.isSelected = isSelected
         wayPointArrows
-            .filter { $0.poiIndex == poiPointGraphic.itemIndex }
+            .filter { $0.poiIndex == poiPointGraphic.poiIndex }
             .forEach { $0.isSelected = isSelected }
         if isSelected {
             // Creates waypoint to point of interest lines.
             let poiLines = wayPoints
-                .filter { $0.poiIndex == poiPointGraphic.itemIndex }
+                .filter { $0.poiIndex == poiPointGraphic.poiIndex }
                 .compactMap { wayPointGraphic in
                     return FlightPlanWayPointToPoiLineGraphic(wayPointGraphic: wayPointGraphic,
                                                               poiPointGraphic: poiPointGraphic)
@@ -543,10 +523,10 @@ private extension FlightPlanGraphicsOverlay {
         wayPointLineGraphic.isSelected = isSelected
         if isSelected {
             guard let middlePoint = wayPointLineGraphic.middlePoint,
-                  let originIndex = wayPointLineGraphic.itemIndex else { return }
+                  let originIndex = wayPointLineGraphic.wayPointIndex else { return }
 
             let addGraphic = FlightPlanInsertWayPointGraphic(middlePoint,
-                                                          index: originIndex + 1)
+                                                             index: originIndex + 1)
 
             self.graphics.add(addGraphic)
         } else {

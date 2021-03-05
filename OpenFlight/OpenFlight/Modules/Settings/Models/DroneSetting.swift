@@ -81,14 +81,13 @@ extension Bool: SettingMode {
 }
 
 /// Dedicated model for drone settings when value changed.
-
 struct DroneSettingModel {
     var allValues: [SettingMode]
     var supportedValues: [SettingMode]
     var currentValue: SettingMode?
     var isUpdating: Bool?
     var onSelect: ((SettingMode) -> Void )?
-    var selectedIndex: Int? {
-        return self.allValues.firstIndex(where: {$0.key == self.currentValue?.key})
+    var selectedIndex: Int {
+        return self.allValues.firstIndex(where: {$0.key == self.currentValue?.key}) ?? -1
     }
 }

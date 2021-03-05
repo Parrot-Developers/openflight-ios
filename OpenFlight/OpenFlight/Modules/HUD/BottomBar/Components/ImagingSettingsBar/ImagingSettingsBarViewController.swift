@@ -51,8 +51,8 @@ final class ImagingSettingsBarViewController: UIViewController {
     }
     @IBOutlet private weak var autoModeSeparatorView: UIView!
     @IBOutlet private weak var lockAEView: UIView!
-    @IBOutlet private weak var lockAEButton: UIButton!
-    @IBOutlet private weak var lockAEImageView: UIImageView!
+    @IBOutlet private weak var autoExposurePadlockButton: UIButton!
+    @IBOutlet private weak var autoExposurePadlockImageView: UIImageView!
     @IBOutlet private weak var autoModeButton: UIControl!
     @IBOutlet private weak var autoModeImageView: UIImageView!
     @IBOutlet private weak var shutterSpeedItemView: ImagingBarItemView!
@@ -64,6 +64,10 @@ final class ImagingSettingsBarViewController: UIViewController {
     @IBOutlet private weak var photoFormatItemView: ImagingBarItemView!
     @IBOutlet private weak var videoResolutionItemView: ImagingBarItemView!
     @IBOutlet private weak var framerateItemView: ImagingBarItemView!
+
+    // MARK: - Internal Properties
+    fileprivate(set) var isAutoExposureLockDisplayed: Bool = Defaults.isAutoExposureLocked
+    weak var bottomBarDelegate: BottomBarViewControllerDelegate?
 
     // MARK: - Private Properties
     private weak var delegate: BottomBarContainerDelegate?
@@ -80,15 +84,6 @@ final class ImagingSettingsBarViewController: UIViewController {
     private var framerateItemViewModel = ImagingBarFramerateViewModel()
     private var lockAETargetZoneViewModel = LockAETargetZoneViewModel()
     private var deselectableViewModels = [Deselectable]()
-
-    // MARK: - Internal Properties
-    fileprivate(set) var isLocked: Bool = false
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let enabledAlpha: CGFloat = 1.0
-        static let disabledAlpha: CGFloat = 0.5
-    }
 
     // MARK: - Setup
     static func instantiate(delegate: BottomBarContainerDelegate? = nil) -> ImagingSettingsBarViewController {
@@ -113,6 +108,7 @@ final class ImagingSettingsBarViewController: UIViewController {
                                   framerateItemViewModel]
         setupViewModels()
         setupCorners()
+        setupView()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -141,13 +137,20 @@ final class ImagingSettingsBarViewController: UIViewController {
 
 // MARK: - Actions
 private extension ImagingSettingsBarViewController {
-    @IBAction func lockAEButtonTouchedUpInside(_ sender: Any) {
-        isLocked == true ? self.lockAETargetZoneViewModel.unlock() : self.lockAETargetZoneViewModel.lockOnCurrentValues()
-        updateLockAEButtonState()
+    @IBAction func autoExposurePadklockTouchedUpInside(_ sender: Any) {
+        isAutoExposureLockDisplayed = !isAutoExposureLockDisplayed
+        Defaults.isAutoExposureLocked = isAutoExposureLockDisplayed
+        updateGeneralAutoExposureUI(isAutoExposurePadlockLocked: isAutoExposureLockDisplayed)
+        if isAutoExposureLockDisplayed {
+            bottomBarDelegate?.showAETargetZone()
+        } else {
+            bottomBarDelegate?.hideAETargetZone()
+        }
     }
 
     @IBAction func autoModeButtonTouchedUpInside(_ sender: Any) {
         autoModeViewModel.toggleAutoMode()
+        updateAutoExposurePadlockButtonVisibility()
         logEvent(with: LogEvent.LogKeyHUDBottomBarButton.shutterSpeedSetting.name,
                  and: autoModeViewModel.state.value.isActive.logValue)
     }
@@ -157,10 +160,6 @@ private extension ImagingSettingsBarViewController {
         shutterSpeedItemViewModel.toggleSelectionState()
         logEvent(with: LogEvent.LogKeyHUDBottomBarButton.shutterSpeedSetting.name,
                  and: shutterSpeedItemViewModel.state.value.mode?.key)
-        if !shutterSpeedItemViewModel.state.value.isAutomatic {
-            lockAEButton.isEnabled = false
-            lockAEButton.alpha = Constants.disabledAlpha
-        }
     }
 
     @IBAction func cameroIsoItemTouchedUpInside(_ sender: Any) {
@@ -226,6 +225,14 @@ private extension ImagingSettingsBarViewController {
         imagingSettingsBarStackView.setCustomSpacing(2.0, after: lockAEView)
     }
 
+    /// Sets up view according to auto exposure lock button status.
+    func setupView() {
+        autoExposurePadlockButton.backgroundColor = isAutoExposureLockDisplayed ?  ColorName.yellowSea.color : .clear
+        autoExposurePadlockImageView.image = isAutoExposureLockDisplayed ? Asset.BottomBar.Icons.lockAElocked.image : Asset.BottomBar.Icons.lockAEEnabled.image
+        generalSettingsStackView.isUserInteractionEnabled = !isAutoExposureLockDisplayed
+        generalSettingsStackView.alphaWithEnabledState(generalSettingsStackView.isUserInteractionEnabled)
+    }
+
     /// Sets up all imaging bar view models.
     func setupViewModels() {
         // Setup state update callbacks.
@@ -236,32 +243,7 @@ private extension ImagingSettingsBarViewController {
         // Setup dynamic range view model and its item view.
         dynamicRangeBarViewModel.state.valueChanged = { [weak self] state in
             self?.dynamicRangeItemView.model = state
-        }
-
-        lockAETargetZoneViewModel.state.valueChanged = { [weak self] state in
-            // if HDR is not ON and exposure setting are automatic, the lock AE button is enabled, otherwise, the button is disabled.
-            if state.isLockAeEnabled {
-                self?.lockAEButton.isEnabled = true
-                self?.lockAEButton.alpha = Constants.enabledAlpha
-                self?.lockAEImageView.alpha = Constants.enabledAlpha
-            } else {
-                self?.enableAEState()
-                self?.lockAEButton.isEnabled = false
-                self?.lockAEButton.alpha = Constants.disabledAlpha
-                self?.lockAEImageView.alpha = Constants.disabledAlpha
-            }
-
-            if let mode = state.lockAEMode, mode == .none {
-                self?.lockAETargetZoneViewModel.lockOnCurrentValues()
-                self?.lockAEState()
-                self?.generalSettingsStackView.isUserInteractionEnabled = false
-                self?.generalSettingsStackView.alpha = Constants.disabledAlpha
-            } else {
-                self?.lockAETargetZoneViewModel.unlock()
-                self?.enableAEState()
-                self?.generalSettingsStackView.isUserInteractionEnabled = true
-                self?.generalSettingsStackView.alpha = Constants.enabledAlpha
-            }
+            self?.updateAutoExposurePadlockButtonVisibility()
         }
 
         dynamicRangeBarViewModel.state.value.isSelected.valueChanged = { [weak self] isSelected in
@@ -290,6 +272,7 @@ private extension ImagingSettingsBarViewController {
     func setupAutoModeViewModel() {
         autoModeViewModel.state.valueChanged = { [weak self] state in
             self?.updateAutoMode(state: state)
+            self?.updateAutoExposurePadlockButtonVisibility()
         }
         updateAutoMode(state: autoModeViewModel.state.value)
     }
@@ -336,12 +319,15 @@ private extension ImagingSettingsBarViewController {
     }
 
     /// Updates lockAE button according state.
-    func updateLockAEButtonState() {
-        isLocked = !isLocked
-        generalSettingsStackView.isUserInteractionEnabled = !isLocked
-        generalSettingsStackView.alpha = isLocked ? Constants.disabledAlpha :  Constants.enabledAlpha
-        self.lockAEButton.backgroundColor = isLocked ?  ColorName.yellowSea.color : .clear
-        self.lockAEImageView.image = isLocked ? Asset.BottomBar.Icons.lockAElocked.image : Asset.BottomBar.Icons.lockAEEnabled.image
+    ///
+    /// - Parameters:
+    ///    - isAutoExposurePadlockLocked: Boolean to precise the auto exposure padlock status
+    func updateGeneralAutoExposureUI(isAutoExposurePadlockLocked: Bool) {
+        generalSettingsStackView.isUserInteractionEnabled = !isAutoExposurePadlockLocked
+        generalSettingsStackView.alphaWithEnabledState(generalSettingsStackView.isUserInteractionEnabled)
+        self.autoExposurePadlockButton.backgroundColor = isAutoExposurePadlockLocked ?  ColorName.yellowSea.color : .clear
+        let aeImage = isAutoExposurePadlockLocked ? Asset.BottomBar.Icons.lockAElocked.image : Asset.BottomBar.Icons.lockAEEnabled.image
+        self.autoExposurePadlockImageView.image = aeImage
     }
 
     /// Update UI with given auto mode state.
@@ -368,8 +354,7 @@ private extension ImagingSettingsBarViewController {
     ///     - itemName: Button name
     ///     - newValue: New value
     func logEvent(with itemName: String, and newValue: String?) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.bottomBarHUD.name,
-                             itemName: itemName,
+        LogEvent.logAppEvent(itemName: itemName,
                              newValue: newValue,
                              logType: .button)
     }
@@ -377,17 +362,34 @@ private extension ImagingSettingsBarViewController {
 
 // MARK: - AE Lock
 private extension ImagingSettingsBarViewController {
-    /// Show AE button locked.
-    func lockAEState() {
-        isLocked = true
-        self.lockAEButton.backgroundColor = ColorName.yellowSea.color
-        self.lockAEImageView.image = Asset.BottomBar.Icons.lockAElocked.image
+    /// Updates UI for auto exposure padlock.
+    func openAutoExposurePadlock() {
+        isAutoExposureLockDisplayed = false
+        self.autoExposurePadlockButton.backgroundColor = .clear
+        self.autoExposurePadlockImageView.image = Asset.BottomBar.Icons.lockAEEnabled.image
     }
 
-    /// Show AE button enabled.
-    func enableAEState() {
-        isLocked = false
-        self.lockAEButton.backgroundColor = .clear
-        self.lockAEImageView.image = Asset.BottomBar.Icons.lockAEEnabled.image
+    /// Updates auto exposure button visibility according to hdr mode and auto/manual bar status.
+    func updateAutoExposurePadlockButtonVisibility() {
+        if !Defaults.isImagingAutoModeActive
+            || (self.dynamicRangeBarViewModel.state.value.mode as? DynamicRange) == DynamicRange.hdrOn {
+            enableAutoExposurePadlockButton(false)
+        } else {
+            enableAutoExposurePadlockButton(true)
+        }
+    }
+
+    /// Enables auto exposure padlock button.
+    func enableAutoExposurePadlockButton(_ isEnabled: Bool) {
+        if isEnabled == false {
+            if !isAutoExposureLockDisplayed {
+                updateGeneralAutoExposureUI(isAutoExposurePadlockLocked: isAutoExposureLockDisplayed)
+            }
+
+            self.openAutoExposurePadlock()
+        }
+        self.autoExposurePadlockButton.isEnabled = isEnabled
+        autoExposurePadlockButton.alphaWithEnabledState(autoExposurePadlockButton.isEnabled)
+        autoExposurePadlockImageView.alphaWithEnabledState(autoExposurePadlockButton.isEnabled)
     }
 }

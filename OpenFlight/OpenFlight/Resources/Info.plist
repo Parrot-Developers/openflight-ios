@@ -35,6 +35,8 @@
 		<string>$(GSDK_INTERNAL_UPDATE_URL)</string>
 		<key>FlightDataQuotaMb</key>
 		<integer>200</integer>
+		<key>flightCameraRecordQuotaMb</key>
+		<integer>200</integer>
 		<key>FlightLogQuotaMb</key>
 		<integer>100</integer>
 		<key>SupportedDevices</key>
@@ -63,8 +65,19 @@
 	<string>OpenFlight requires access to the Bluetooth to connect to your controller.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>OpenFlight requires access to the Bluetooth to connect to your controller.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_arsdk-mux._tcp.</string>
+		<string>_arsdk-0919._udp.</string>
+		<string>_arsdk-091a._udp.</string>
+		<string>_arsdk-091e._udp.</string>
+		<string>_arsdk-091b._udp.</string>
+		<string>_arsdk-0914._udp.</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>OpenFlight requires access to the Camera for FPV piloting mode.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>We need to access your local network to detect your drone over WiFi</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>OpenFlight requires access to the GPS position to locate you.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
@@ -110,16 +123,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>We need to access your local network to detect your drone over WiFi</string>
-	<key>NSBonjourServices</key>
-	<array>
-		<string>_arsdk-mux._tcp.</string>
-		<string>_arsdk-0919._udp.</string>
-		<string>_arsdk-091a._udp.</string>
-		<string>_arsdk-091e._udp.</string>
-		<string>_arsdk-091b._udp.</string>
-		<string>_arsdk-0914._udp.</string>
-	</array>
 </dict>
 </plist>

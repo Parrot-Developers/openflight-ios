@@ -307,7 +307,7 @@ class BeamComponent: GKComponent {
                 continue
             }
             if let previousSegment = previousSegment {
-                //previousSegment.planeNode.//look(at: currentSegment.worldPosition)
+                // previousSegment.planeNode.// look(at: currentSegment.worldPosition)
                 previousSegment.ringNode.look(
                     at: currentSegment.worldPosition, up: previousSegment.worldUp, localFront: SCNVector3(0, 0, 1))
             }

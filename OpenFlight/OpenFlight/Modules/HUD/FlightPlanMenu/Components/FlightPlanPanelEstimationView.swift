@@ -31,12 +31,63 @@
 import UIKit
 import Reusable
 
-/// View that displays estimations for flight plan.
+// MARK: - Public Structs
+/// Flight Plan Estimations Model.
+public struct FlightPlanEstimationsModel: Equatable {
+    // MARK: - Public properties
+    /// Flight Plan distance, in meters.
+    public var distance: Double?
+    /// Flight Plan duration, in seconds.
+    public var duration: TimeInterval? {
+        // formattedDuration is not used as a computed property to prevent from extra computing.
+        didSet {
+            guard let duration = duration else {
+                formattedDuration = Style.dash
+                return
+            }
+
+            let formatter = DateComponentsFormatter()
+            formatter.allowedUnits = [.minute, .second]
+            formatter.unitsStyle = .abbreviated
+            formattedDuration = formatter.string(from: TimeInterval(duration)) ?? Style.dash
+        }
+    }
+    /// Flight Plan memory size, in bytes.
+    public var memorySize: UInt64? {
+        // formattedMemorySize is not used as a computed property to prevent from extra computing.
+        didSet {
+            guard let memorySize = memorySize else {
+                formattedMemorySize = Style.dash
+                return
+            }
+
+            formattedMemorySize = StorageUtils.sizeForFile(size: memorySize)
+        }
+    }
+
+    // MARK: - Internal properties
+    private (set) var formattedDuration: String = Style.dash
+    private (set) var formattedMemorySize: String = Style.dash
+    /// Distance formatter in right measurement system.
+    /// Formatted distance is computed because it may change regarding measurement system.
+    var formattedDistance: String {
+        guard let distance = distance else {
+            return Style.dash
+        }
+
+        return UnitHelper.stringDistanceWithDouble(distance)
+    }
+}
+
+/// View that displays flight plan estimations.
 final class FlightPlanPanelEstimationView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
-    @IBOutlet private weak var distanceItemView: FlightPlanPanelEstimationItemView!
-    @IBOutlet private weak var durationItemView: FlightPlanPanelEstimationItemView!
-    @IBOutlet private weak var memoryItemView: FlightPlanPanelEstimationItemView!
+    @IBOutlet weak var timeImage: UIImageView!
+    @IBOutlet weak var timeLabel: UILabel!
+    @IBOutlet weak var batteryImage: UIImageView!
+    @IBOutlet weak var batteryLabel: UILabel!
+    @IBOutlet weak var mediaImage: UIImageView!
+    @IBOutlet weak var mediaLabel: UILabel!
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
@@ -57,16 +108,9 @@ final class FlightPlanPanelEstimationView: UIView, NibOwnerLoadable {
     /// - Parameters:
     ///     - model: Flight Plan estimations
     func updateEstimations(model: FlightPlanEstimationsModel?) {
-        let estimations = model ?? FlightPlanEstimationsModel()
-        distanceItemView.model = FlightPlanPanelEstimationItemModel(title: L10n.commonDistance,
-                                                                    value: estimations.formattedDistance,
-                                                                    detail: nil)
-        durationItemView.model = FlightPlanPanelEstimationItemModel(title: L10n.commonDuration,
-                                                                    value: estimations.formattedDuration,
-                                                                    detail: nil)
-        memoryItemView.model = FlightPlanPanelEstimationItemModel(title: L10n.commonMemory,
-                                                                  value: estimations.formattedMemorySize,
-                                                                  detail: nil)
+        timeLabel.text = model?.formattedDuration ?? Style.dash
+        batteryLabel.text = Style.dash
+        mediaLabel.text = Style.dash
     }
 }
 
@@ -75,5 +119,18 @@ private extension FlightPlanPanelEstimationView {
     /// Common init.
     func commonInitFlightPlanPanelEstimationView() {
         self.loadNibContent()
+
+        timeImage.image = Asset.BottomBar.CameraModes.icCameraModeTimer.image
+            .withRenderingMode(.alwaysTemplate)
+        timeImage.tintColor = ColorName.white50.color
+        timeLabel.makeUp()
+        batteryImage.image = Asset.Common.Icons.icBattery.image
+            .withRenderingMode(.alwaysTemplate)
+        batteryImage.tintColor = ColorName.white50.color
+        batteryLabel.makeUp()
+        mediaImage.image = Asset.Dashboard.icPhotoMini.image
+            .withRenderingMode(.alwaysTemplate)
+        mediaImage.tintColor = ColorName.white50.color
+        mediaLabel.makeUp()
     }
 }

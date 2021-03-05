@@ -55,6 +55,16 @@ final class FlightPlanCourseModificationListener: NSObject {
     }
 }
 
+// MARK: - FlightPlanPOIModificationListener
+/// Listener for Flight Plan's POI modification.
+final class FlightPlanPOIModificationListener: NSObject {
+    let didChange: () -> Void
+
+    init(didChange: @escaping () -> Void) {
+        self.didChange = didChange
+    }
+}
+
 // MARK: - FlightPlanState
 /// State for `FlightPlanViewModel`.
 public class FlightPlanState: ViewModelState, EquatableState, Copying, FlightStateProtocol {
@@ -62,7 +72,7 @@ public class FlightPlanState: ViewModelState, EquatableState, Copying, FlightSta
     /// Flight Plan uuid.
     public fileprivate(set) var uuid: String?
     /// Flight Plan title.
-    fileprivate(set) var title: String?
+    public fileprivate(set) var title: String?
     /// Flight Plan custom type.
     public fileprivate(set) var type: String?
     /// Flight Plan date.
@@ -195,6 +205,8 @@ public class FlightPlanState: ViewModelState, EquatableState, Copying, FlightSta
 /// View model for Flight Plan.
 public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewModelProtocol {
     // MARK: - Public Properties
+    /// Returns full flight plan object.
+    /// Prefer use state values as much as possible intead of this object.
     public lazy var flightPlan: SavedFlightPlan? = {
         // Get persisted data if needed.
         guard let uuid = self.state.value.uuid,
@@ -252,6 +264,7 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     private var runFlightPlanListeners: Set<RunFlightPlanListener> = []
     private var graphicTapListeners: Set<GraphicTapListener> = []
     private var courseModificationListeners: Set<FlightPlanCourseModificationListener> = []
+    private var poiModificationListeners: Set<FlightPlanPOIModificationListener> = []
 
     // MARK: - Init
     /// Init.
@@ -281,7 +294,7 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     }
 
     // MARK: - Public Funcs
-    /// Persist state data.
+    /// Persist flight plan.
     ///
     /// - Parameters:
     ///     - copy: Optional Flight Plan state
@@ -312,18 +325,27 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     /// - Parameters:
     ///    - execution: flight plan execution
     public func saveExecution(_ execution: FlightPlanExecution) {
-        guard execution.flightPlanId != nil,
-              execution.flightId != nil,
-              execution.startDate != nil else {
+        guard execution.flightId != nil else {
             return
         }
 
-        CoreDataManager.shared.saveOrUpdate(execution: execution)
+        CoreDataManager.shared.saveOrUpdate(execution: execution, isFromRun: true)
     }
 
     /// Deletes flight plan executions.
     func deleteExecutions() {
         CoreDataManager.shared.delete(executions: self.executions)
+    }
+
+    /// Resumes flight plan execution.
+    ///
+    /// - Parameters:
+    ///    - execution: flight plan execution
+    /// - Returns: if resume will happen or not.
+    func resumeExecution(_ execution: FlightPlanExecution) -> Bool {
+        guard execution.flightPlanId == state.value.uuid else { return false }
+
+        return runFlightPlanViewModel.resume(execution)
     }
 
     /// Update the polygon points for the current flight plan.
@@ -354,6 +376,11 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
         save(copy)
     }
 
+    /// Update estimations.
+    func updateEstimations() {
+        self.estimations = flightPlan?.plan.estimations ?? FlightPlanEstimationsModel()
+    }
+
     /// Remove Flight Plan.
     func removeFlightPlan() {
         if let uuid = self.state.value.uuid {
@@ -374,12 +401,19 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     /// - Parameters:
     ///     - image: new thumbnail image
     func updateThumbnail(_ image: UIImage?) {
-        guard let image = image else { return }
-        let copy = self.state.value.copy()
-        copy.thumbnail = image
         DispatchQueue.main.async { [weak self] in
             // Update DispatchQueue to be sure the UI will be updated in main thread.
-            self?.save(copy)
+            guard let strongSelf = self,
+                  let image = image else { return }
+
+            let copy = strongSelf.state.value.copy()
+            copy.thumbnail = image
+            strongSelf.state.set(copy)
+
+            // Use dedicated method to persist thumbnail.
+            // Do not use save() method because flight plan date should not be changed
+            // to prevent from flight plan list display mess.
+            CoreDataManager.shared.saveThumbnail(state: strongSelf.state.value)
         }
     }
 
@@ -433,6 +467,11 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
         self.courseModificationListeners.forEach { $0.didChange() }
     }
 
+    /// Notifies listeners when Flight Plan's POI is modified.
+    func didChangePOI() {
+        self.poiModificationListeners.forEach { $0.didChange() }
+    }
+
     /// Starts waypoint orientation edition.
     func startWayPointOrientationEdition() {
         self.state.value.wayPointOrientationEditionObservable.set(true)
@@ -484,14 +523,6 @@ extension FlightPlanViewModel {
     }
 }
 
-// MARK: - Private Funcs
-private extension FlightPlanViewModel {
-    /// Update estimations.
-    func updateEstimations() {
-        self.estimations = flightPlan?.plan.estimations ?? FlightPlanEstimationsModel()
-    }
-}
-
 // MARK: - GraphicTapListeners
 extension FlightPlanViewModel {
     /// Registers a listener for graphic selection.
@@ -539,5 +570,30 @@ extension FlightPlanViewModel {
         guard let listener = listener else { return }
 
         self.courseModificationListeners.remove(listener)
+    }
+}
+
+// MARK: - FlightPlanPOIModificationListeners
+extension FlightPlanViewModel {
+    /// Registers a listener for POI modification.
+    ///
+    /// - Parameters:
+    ///    - didChange: listener's closure
+    /// - Returns: registered listener
+    func registerPOIModificationListener(didChange: @escaping () -> Void) -> FlightPlanPOIModificationListener {
+        let listener = FlightPlanPOIModificationListener(didChange: didChange)
+        poiModificationListeners.insert(listener)
+
+        return listener
+    }
+
+    /// Removes previously registered `FlightPlanPOIModificationListener`.
+    ///
+    /// - Parameters:
+    ///    - listener: listener to remove
+    func unregisterPOIModificationListener(_ listener: FlightPlanPOIModificationListener?) {
+        guard let listener = listener else { return }
+
+        self.poiModificationListeners.remove(listener)
     }
 }

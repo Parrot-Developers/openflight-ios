@@ -74,6 +74,8 @@ private extension HUDControllerInfoViewController {
     /// Called when user taps the view.
     @IBAction func controllerInfoTouchedUpInside(_ sender: Any) {
         if controllerInfosViewModel?.state.value.currentController.value == .remoteControl {
+            LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDTopBarButton.remoteControlDetails,
+                                 logType: .simpleButton)
             navigationDelegate?.openRemoteControlInfos()
         }
     }

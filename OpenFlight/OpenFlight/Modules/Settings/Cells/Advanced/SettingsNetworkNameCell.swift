@@ -99,8 +99,7 @@ final class SettingsNetworkNameCell: UITableViewCell, NibReusable {
 private extension SettingsNetworkNameCell {
     /// Password button touched.
     @IBAction func passwordTouchedUpInside(sender: AnyObject) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced.name,
-                             itemName: LogEvent.LogKeyAdvancedSettings.networkPassword,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyAdvancedSettings.networkPassword,
                              newValue: nil,
                              logType: .button)
         showInfo?()

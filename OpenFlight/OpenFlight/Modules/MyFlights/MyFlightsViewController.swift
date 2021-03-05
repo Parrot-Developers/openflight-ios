@@ -93,13 +93,6 @@ final class MyFlightsViewController: UIViewController {
         MyFlightsPanelType.type(at: segmentedControl?.selectedSegmentIndex ?? 0)
     }
 
-    // MARK: - Private Enums
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessageList: String = "MyFlights/FlightList"
-        static let screenMessagePlans: String = "MyFlights/Plans"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: DashboardCoordinator, viewModel: MyFlightsViewModel) -> MyFlightsViewController {
         let viewController = StoryboardScene.MyFlightsViewController.initialScene.instantiate()
@@ -124,9 +117,10 @@ final class MyFlightsViewController: UIViewController {
         super.viewWillAppear(animated)
 
         setupAccountView()
-        logScreen(logMessage: selectedPanel == .completedFlights
-            ? EventLoggerConstants.screenMessageList
-            : EventLoggerConstants.screenMessagePlans)
+        LogEvent.logAppEvent(screen: selectedPanel == .completedFlights
+                                ? LogEvent.EventLoggerScreenConstants.myFlightsFlightList
+                                : LogEvent.EventLoggerScreenConstants.myFlightsPlans,
+                             logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -152,9 +146,10 @@ private extension MyFlightsViewController {
     /// UISegmentedControl's segment changed.
     @IBAction func segmentDidChange(_ sender: UISegmentedControl) {
         reloadContainerView()
-        logScreen(logMessage: selectedPanel == .completedFlights
-            ? EventLoggerConstants.screenMessageList
-            : EventLoggerConstants.screenMessagePlans)
+        LogEvent.logAppEvent(screen: selectedPanel == .completedFlights
+                                ? LogEvent.EventLoggerScreenConstants.myFlightsFlightList
+                                : LogEvent.EventLoggerScreenConstants.myFlightsPlans,
+                             logType: .screen)
     }
 }
 

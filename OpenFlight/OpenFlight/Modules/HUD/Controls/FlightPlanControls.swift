@@ -54,7 +54,7 @@ final class FlightPlanControls: NSObject {
 
     // MARK: - Internal Funcs
     /// Sets up view model's callback.
-    /// Should be called inside viewDidLoad.
+    /// Should be called inside viewWillAppear.
     func start() {
         viewModel.state.valueChanged = { [weak self] state in
             if state.shouldDisplayFlightPlanPanel {
@@ -69,6 +69,12 @@ final class FlightPlanControls: NSObject {
             }
         }
     }
+
+    /// Stops view model's callback if needed.
+    func stop() {
+        viewModel.state.valueChanged = nil
+        missionModeViewModel.state.valueChanged = nil
+    }
 }
 
 // MARK: - Private Funcs
@@ -79,6 +85,8 @@ private extension FlightPlanControls {
         UIView.animate(withDuration: Constants.animationDuration, animations: {
             self.flightPlanPanelWidthConstraint.constant = Constants.openedPanelWidth
             self.stackView.layoutIfNeeded()
+        }, completion: { _ in
+            self.flightPlanPanelViewController?.panelDidShow()
         })
     }
 
@@ -92,6 +100,7 @@ private extension FlightPlanControls {
             self.flightPlanPanelWidthConstraint.constant = 0.0
             self.stackView.layoutIfNeeded()
         }, completion: { _ in
+            self.flightPlanPanelViewController?.panelDidHide()
             completion?()
         })
     }

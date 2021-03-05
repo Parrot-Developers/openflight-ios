@@ -75,7 +75,7 @@ extension Date {
         return formatter.string(from: self)
     }
 
-    /// Formatted date.
+    /// Short formatted date.
     var shortFormattedString: String? {
         if self.isToday {
             return L10n.commonToday
@@ -84,5 +84,27 @@ extension Date {
         } else {
             return self.formattedString(dateStyle: .short, timeStyle: .medium)
         }
+    }
+
+    /// Short formatted date, always show time.
+    var shortWithTimeFormattedString: String? {
+        if self.isToday {
+            return addTimeTo(stringDate: L10n.commonToday)
+        } else if self.isYesterday {
+            return addTimeTo(stringDate: L10n.commonYesterday)
+        } else {
+            return self.formattedString(dateStyle: .short, timeStyle: .medium)
+        }
+    }
+
+    /// Add time to formatted date.
+    ///
+    /// - Parameters:
+    /// - stringDate: date as string to add time
+    private func addTimeTo(stringDate: String) -> String {
+        return String(format: "%@ %@",
+                      stringDate,
+                      self.formattedString(dateStyle: .none,
+                                           timeStyle: .short))
     }
 }

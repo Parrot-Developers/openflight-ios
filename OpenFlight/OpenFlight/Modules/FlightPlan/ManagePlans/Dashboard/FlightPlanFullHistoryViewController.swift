@@ -95,6 +95,7 @@ final class FlightPlanFullHistoryViewController: UIViewController {
         if let historyViewController = segue.destination as? FlightPlanHistoryViewController {
             historyViewController.flightplan = flightPlan
             historyViewController.tableType = .fullHistory
+            historyViewController.coordinator = coordinator
             historyViewController.delegate = self
         }
     }

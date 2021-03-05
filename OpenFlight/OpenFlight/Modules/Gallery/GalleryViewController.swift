@@ -87,11 +87,7 @@ final class GalleryViewController: UIViewController {
     @IBOutlet private weak var leftSourcesContainer: UIView!
     @IBOutlet private weak var mediasContainer: UIView!
     @IBOutlet private weak var bottomSourcesContainer: UIView!
-    @IBOutlet private weak var bottomContainerHeightConstraint: NSLayoutConstraint! {
-        didSet {
-            bottomContainerHeightConstraint.constant += UIApplication.shared.keyWindow?.safeAreaInsets.bottom ?? 0.0
-        }
-    }
+    @IBOutlet private weak var bottomContainerHeightConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
     private var filtersViewController: GalleryFiltersViewController?
@@ -104,11 +100,6 @@ final class GalleryViewController: UIViewController {
     private enum Constants {
         static let closeButtonSize = CGSize(width: 25.0, height: 25.0)
         static let filtersMinimumHeight: CGFloat = 37.0
-    }
-
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "Gallery"
     }
 
     // MARK: - Setup
@@ -127,6 +118,7 @@ final class GalleryViewController: UIViewController {
         setupViewModel()
         setupFormatButton()
         setupSelectButton()
+        setupBottomContainerHeightConstraint()
 
         if let coordinator = coordinator, let viewModel = viewModel {
             let filtersViewController = GalleryFiltersViewController.instantiate(coordinator: coordinator, viewModel: viewModel)
@@ -152,7 +144,8 @@ final class GalleryViewController: UIViewController {
         super.viewWillAppear(animated)
 
         self.updateContainers()
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.gallery,
+                             logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -320,6 +313,15 @@ private extension GalleryViewController {
 
         self.navigationItem.rightBarButtonItem?.title = buttonText
         self.selectButton.setTitle(buttonText, for: .normal)
+    }
+
+    /// Sets up bottom container height constraint.
+    func setupBottomContainerHeightConstraint() {
+        if !UIApplication.isLandscape {
+            bottomContainerHeightConstraint.constant += UIApplication.shared.keyWindow?.safeAreaInsets.bottom ?? 0.0
+        } else {
+            bottomContainerHeightConstraint.constant += UIApplication.shared.keyWindow?.safeAreaInsets.left ?? 0.0
+        }
     }
 }
 

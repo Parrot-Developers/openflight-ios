@@ -44,8 +44,8 @@ extension LogEvent {
     /// Enum which stores button keys for log message.
     enum LogKeyDroneDetailsCalibrationButton {
         static let gimbalCalibration: String = "GimbalCalibration"
-        static let magnetometerCalibration: String = "MagnetometerCalibration"
-        static let obstacleAvoidanceCalibration: String = "ObstacleAvoidanceCalibration"
+        static let magnetometerCalibration: String = "DroneMagnometerCalibration"
+        static let sensorCalibrationTutorial: String = "SensorCalibration/Tutorial"
         static let gimbalCalibrationStart: String = "GimbalCalibrationStart"
         static let magnetometerCalibrationCalibrate: String = "MagnetometerCalibrationCalibrate"
         static let obstacleAvoidanceCalibrationReady: String = "ObstacleAvoidanceCalibrationReady"
@@ -59,7 +59,6 @@ extension LogEvent {
     /// Enum which stores button keys for log message.
     enum LogKeyDroneDetailsFirmwareUpdate {
         static let update: String = "Update"
-        static let cancel: String = "Cancel"
     }
 
     /// Enum which stores drone details cellular keys for log messages.
@@ -78,7 +77,6 @@ extension LogEvent {
         case remoteCalibration
         case updateRemote
         case cancelRemoteUpdate
-        case backRemoteCalibration
         case okRemoteCalibration
 
         /// Name of the button according to log key for log.
@@ -96,8 +94,6 @@ extension LogEvent {
                 return "RemoteReset"
             case .okRemoteCalibration:
                 return "OkRemoteCalibration"
-            case.backRemoteCalibration:
-                return "BackRemoteCalibration"
             }
         }
     }

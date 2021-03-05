@@ -47,7 +47,7 @@ final class SettingsInterfaceViewController: SettingsContentViewController {
 
     /// Reset to default settings.
     override func resetSettings() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced.name,
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced,
                              itemName: LogEvent.LogKeyAdvancedSettings.resetInterfaceSettings,
                              newValue: nil,
                              logType: LogEvent.LogType.button)

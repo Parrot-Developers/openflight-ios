@@ -71,8 +71,7 @@ final class BehavioursViewController: SettingsContentViewController {
             itemName = LogEvent.LogKeyAdvancedSettings.resetSportSettings
         }
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced.name,
-                             itemName: itemName,
+        LogEvent.logAppEvent(itemName: itemName,
                              newValue: nil,
                              logType: LogEvent.LogType.button)
 

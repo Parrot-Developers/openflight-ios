@@ -116,7 +116,7 @@ final class FlightPlanPanelViewModel: DroneStateViewModel<FlightPlanPanelState> 
             self?.flightPlanViewModel = flightPlanViewModel
 
             let copy = self?.state.value.copy()
-            copy?.flightPlanID = flightPlanViewModel?.flightPlan?.uuid
+            copy?.flightPlanID = flightPlanViewModel?.state.value.uuid
             copy?.flightPlanEstimations = flightPlanViewModel?.estimations
             self?.state.set(copy)
 

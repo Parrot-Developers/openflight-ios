@@ -28,6 +28,8 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import GroundSdk
+
 // MARK: - Protocols
 /// AccountProvider protocol
 public protocol AccountProvider {
@@ -71,8 +73,8 @@ public protocol AccountProvider {
 public protocol MissionProvider {
     /// Returns mission description.
     var mission: Mission { get }
-    /// Returns current active missionMode, if already loaded.
-    var currentActiveMode: MissionMode? { get }
+    /// Returns mission signature
+    var signature: ProtobufMissionSignature { get }
 }
 
 /// Protocol that defines a business item model used within the launcher in HUD.
@@ -190,6 +192,8 @@ extension FlightPlanSettingsProvider {
 public protocol FlightPlanSettingType {
     /// Provides flight plan setting title.
     var title: String { get }
+    /// Provides flight plan setting short title.
+    var shortTitle: String? { get }
     /// Provides all flight plan setting values.
     var allValues: [Int] { get }
     /// Provides custom descriptions for values.
@@ -215,9 +219,14 @@ extension FlightPlanSettingType {
         return self.title + self.unit.unit
     }
 
+    public var shortTitle: String? {
+        return nil
+    }
+
     /// Returns a Flight Plan Setting.
     public func toFlightPlanSetting() -> FlightPlanSetting {
         return FlightPlanSetting(title: title,
+                                 shortTitle: shortTitle,
                                  allValues: allValues,
                                  valueDescriptions: valueDescriptions,
                                  currentValue: currentValue,
@@ -258,10 +267,12 @@ public protocol FlightPlanType {
     var tag: Int { get }
     /// Type's key.
     var key: String { get }
-    /// Allow generating Mavlink from Flight Plan.
+    /// Allow generating MAVlink from Flight Plan.
     var canGenerateMavlink: Bool { get }
+    /// Parser for MAVLink to Flight Plan conversion.
+    var fromMavlinkParser: MavlinkToFlightPlanParser.Type { get }
     /// Specify the type of the mavlink generation.
-    var mavLinkType: GroundSdkFlightPlanType { get }
+    var mavLinkType: FlightPlanInterpreter { get }
     /// Mode key.
     var modeKey: String { get }
 }
@@ -292,8 +303,13 @@ public struct Mission {
     var icon: UIImage
     /// Log name.
     var logName: String
-    /// Returns mission submodes.
+    /// Returns mission modes.
     public var modes: [MissionMode]
+    /// Returns default mission mode.
+    /// Mission have usually only one mode.
+    public var defaultMode: MissionMode? {
+        modes.first
+    }
 
     /// Default struct init, as public.
     public init(key: String,
@@ -371,7 +387,7 @@ public struct MissionMode: Equatable {
     /// Returns Flight Plan provider.
     public var flightPlanProvider: FlightPlanProvider? // TODO: make it smarter by directly handling current mission mode
     /// Returns a model for mission activation.
-    var missionActivationModel: MissionActivationModel?
+    var missionActivationModel: MissionActivationModel
     /// Provides Return to Home type title.
     var rthTypeTitle: String
     /// Returns true if this mode is a tracking one.
@@ -391,7 +407,7 @@ public struct MissionMode: Equatable {
     /// Default struct init, as public.
     public init(configurator: MissionModeConfigurator,
                 flightPlanProvider: FlightPlanProvider? = nil,
-                missionActivationModel: MissionActivationModel? = nil,
+                missionActivationModel: MissionActivationModel = DefaultMissionActivationModel(),
                 customMapProvider: (() -> UIViewController)? = nil,
                 entryCoordinatorProvider: (() -> Coordinator)? = nil,
                 bottomBarLeftStack: (() -> [UIView])?,

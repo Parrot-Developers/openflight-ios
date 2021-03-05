@@ -59,6 +59,8 @@ class SettingsContentViewController: UIViewController, StoryboardBased {
 
     // MARK: - Private Properties
     private var droneStateViewModel: DroneStateViewModel<DeviceConnectionState>?
+    /// Tells if a settings slider is editing.
+    private var isSliderEditing: Bool = false
 
     // MARK: - Private Enums
     private enum Constants {
@@ -114,7 +116,10 @@ class SettingsContentViewController: UIViewController, StoryboardBased {
     /// - Parameters:
     ///     - state: device connection state
     func updateDataSource(_ state: DeviceConnectionState = DeviceConnectionState()) {
-        guard let updatedSettings = settingEntries() else { return }
+        guard !isSliderEditing,
+              let updatedSettings = settingEntries() else {
+            return
+        }
 
         settings = updatedSettings
     }
@@ -281,12 +286,21 @@ extension SettingsContentViewController: UITableViewDataSource {
 // MARK: - Settings Slider Cell Delegate
 extension SettingsContentViewController: SettingsSliderCellDelegate {
     func settingsSliderCellSliderDidFinishEditing(value: Float, atIndexPath indexPath: IndexPath) {
+        isSliderEditing = false
         let settingEntry = filteredSettings[indexPath.row]
         if let setting = settingEntry.setting as? DoubleSetting {
             setting.value = Double(value)
         }
 
         saveSettings()
+    }
+
+    func settingsSliderCellStartEditing() {
+        isSliderEditing = true
+    }
+
+    func settingsSliderCellCancelled() {
+        isSliderEditing = false
     }
 }
 
@@ -301,18 +315,18 @@ extension SettingsContentViewController: SettingsResetAllButtonCellDelegate {
 extension SettingsContentViewController: SettingsSegmentedCellDelegate {
     @objc func settingsSegmentedCellDidChange(selectedSegmentIndex: Int, atIndexPath indexPath: IndexPath) {
         let settingEntry = filteredSettings[indexPath.row]
-        guard let logKey = settingEntry.itemLogKey else { return }
 
         // TODO: Add others key when logs will be added
         var newValue: String = ""
-        if logKey.contains(LogEvent.LogKeyAdvancedSettings.geofence) {
+        if let logKey = settingEntry.itemLogKey,
+           logKey.contains(LogEvent.LogKeyAdvancedSettings.geofence) {
             newValue = settingEntry.isEnabled.logValue
         } else {
             newValue = LogEvent.formatNewValue(settingEntry: settingEntry,
                                                index: selectedSegmentIndex)
         }
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced.name,
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced,
                              itemName: settingEntry.itemLogKey,
                              newValue: newValue,
                              logType: LogEvent.LogType.button)

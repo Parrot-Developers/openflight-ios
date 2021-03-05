@@ -54,12 +54,6 @@ final class PairingConnectDroneDetailViewController: UIViewController {
     private var droneModel: RemoteConnectDroneModel?
     private var isBadPwd: Bool = false
 
-    // MARK: - Private Enums
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "Pairing/DroneFinder/Connection"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: Coordinator, droneModel: RemoteConnectDroneModel) -> PairingConnectDroneDetailViewController {
         let viewController = StoryboardScene.Pairing.pairingConnectDroneDetailViewController.instantiate()
@@ -87,7 +81,8 @@ final class PairingConnectDroneDetailViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingDroneFinderConnection, logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -134,8 +129,7 @@ private extension PairingConnectDroneDetailViewController {
 
     @IBAction func connectButtonTouchedUpInside(_ sender: Any) {
         pairingConnectDroneViewModel?.connectDrone(uid: droneModel?.droneUid ?? "", password: self.password)
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.connectToDrone.name,
-                             itemName: LogEvent.LogKeyPairingButton.connectToDroneUsingPassword.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyPairingButton.connectToDroneUsingPassword.name,
                              newValue: nil,
                              logType: .button)
     }

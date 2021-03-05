@@ -142,11 +142,13 @@ final class HUDTopBarViewController: UIViewController {
 private extension HUDTopBarViewController {
     /// Called when user taps the Dashboard button.
     @IBAction func dashboardButtonTouchedUpInside(_ sender: Any) {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDTopBarButton.dashboard, logType: .simpleButton)
         navigationDelegate?.openDashboard()
     }
 
     /// Called when user taps the settings button.
     @IBAction func settingsButtonTouchedUpInside(_ sender: Any) {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDTopBarButton.settings, logType: .simpleButton)
         navigationDelegate?.openSettings(SettingsType.defaultType)
     }
 }

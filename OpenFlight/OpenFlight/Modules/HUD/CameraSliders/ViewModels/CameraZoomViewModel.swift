@@ -115,20 +115,13 @@ final class CameraZoomState: ViewModelState, EquatableState, Copying {
     }
 
     /// Updates current object with given zoom.
-    func update(with zoom: Camera2Zoom, velocityControlQualityMode: Camera2ZoomVelocityControlQualityMode?) {
+    ///
+    /// - Parameters:
+    ///    - zoom: current zoom
+    func update(with zoom: Camera2Zoom) {
         self.current = zoom.level
         self.maxLossLess = zoom.maxLossLessLevel
         self.maxLossy = zoom.maxLevel
-        // FIXME: isAvailable doesn't exist on Camera2.
-        self.isAvailable = true
-
-        if let strongVelocityControlQualityMode = velocityControlQualityMode {
-            self.isLossyAllowed = strongVelocityControlQualityMode.isLossyAllowed
-        }
-
-        if !self.isAvailable {
-            self.shouldOpenSlider.set(false)
-        }
     }
 }
 
@@ -138,6 +131,7 @@ final class CameraZoomState: ViewModelState, EquatableState, Copying {
 final class CameraZoomViewModel: DroneWatcherViewModel<CameraZoomState> {
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
+    private var zoomRef: Ref<Camera2Zoom>?
     private var remoteControlGrabber: RemoteControlAxisGrabber?
     private var isZoomingWithApp: Bool = false
     private var isZoomingWithGrabbedRemoteControl = false
@@ -196,7 +190,8 @@ final class CameraZoomViewModel: DroneWatcherViewModel<CameraZoomState> {
 
         zoom.control(mode: .velocity, target: velocity)
         isZoomingWithApp = velocity > 0
-        if zoom.isZoomMaxReached && isZoomingWithApp {
+        if zoom.isZoomMaxReached(isLossyAllowed: self.state.value.isLossyAllowed),
+           isZoomingWithApp {
             didOverzoom()
         }
     }
@@ -226,14 +221,38 @@ private extension CameraZoomViewModel {
     func listenCamera(drone: Drone) {
         cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
             guard let strongSelf = self,
-                let zoom = camera?.zoom else {
-                    return
+                  let camera = camera else { return }
+
+            // Update velocity control quality mode.
+            let copy = strongSelf.state.value.copy()
+            copy.isLossyAllowed = camera.config[Camera2Params.zoomVelocityControlQualityMode]?.value.isLossyAllowed == true
+            self?.state.set(copy)
+
+            // Refresh zoom ref.
+            strongSelf.listenZoom(camera: camera)
+        }
+    }
+
+    /// Starts watcher for camera zoom.
+    ///
+    /// - Parameters:
+    ///    - camera: the camera
+    func listenZoom(camera: Camera2) {
+        zoomRef = camera.getComponent(Camera2Components.zoom) { [weak self] zoom in
+            let copy = self?.state.value.copy()
+
+            guard let zoom = zoom else {
+                copy?.isAvailable = false
+                self?.state.set(copy)
+                self?.state.value.shouldOpenSlider.set(false)
+
+                return
             }
-            let copyState = strongSelf.state.value.copy()
+
             self?.handleZoomMax(zoom: zoom)
-            copyState.update(with: zoom,
-                             velocityControlQualityMode: camera?.config[Camera2Params.zoomVelocityControlQualityMode]?.value)
-            self?.state.set(copyState)
+            copy?.isAvailable = true
+            copy?.update(with: zoom)
+            self?.state.set(copy)
         }
     }
 
@@ -265,7 +284,7 @@ private extension CameraZoomViewModel {
 
     /// Checks if zoom max is reached and grabs remote control if needed.
     func handleZoomMax(zoom: Camera2Zoom) {
-        if zoom.isZoomMaxReached {
+        if zoom.isZoomMaxReached(isLossyAllowed: self.state.value.isLossyAllowed) {
             let oldValue = self.state.value.current.rounded(toPlaces: Constants.roundPrecision)
             let newValue = zoom.level.rounded(toPlaces: Constants.roundPrecision)
             if newValue > oldValue {

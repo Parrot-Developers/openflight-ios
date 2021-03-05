@@ -162,7 +162,10 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
             viewContentInfos.invalidateIntrinsicContentSize()
         }
 
-        segmentControl.selectedSegmentIndex = segmentModel.selectedIndex
+        if (0...segmentModel.segments.count - 1).contains(segmentModel.selectedIndex) {
+            segmentControl.selectedSegmentIndex = segmentModel.selectedIndex
+        }
+
         segmentControl.isEnabled = isEnabled
         subtitleLabel.text = subtitle
         subtitleLabel.textColor = subtitleColor

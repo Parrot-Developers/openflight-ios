@@ -120,11 +120,27 @@ public final class MissionLauncherViewModel: MissionLauncherButtonViewModel<Miss
         guard Defaults.userMissionMode != mode.key else { return }
 
         // Stops current mission if needed.
-        state.value.mode?.missionActivationModel?.stopMissionIfNeeded()
+        state.value.mode?.missionActivationModel.stopMissionIfNeeded()
         // Updates mode with the new one.
         Defaults.userMissionMode = mode.key
         // Starts new mission if needed.
-        mode.missionActivationModel?.startMission()
+        mode.missionActivationModel.startMission()
+    }
+}
+
+// MARK: - Internal Funcs
+extension MissionLauncherViewModel {
+    /// Update active mission regarding active mission Uid.
+    ///
+    /// - Parameters:
+    ///     - activeMissionUid: active mission Uid
+    func updateActiveMissionIfNeeded(activeMissionUid: String) {
+        if state.value.provider?.signature.missionUID != activeMissionUid,
+           let missionProvider = MissionsManager.shared.allMissions
+            .first(where: { $0.signature.missionUID ==  activeMissionUid}),
+           let mode = missionProvider.mission.defaultMode {
+            self.update(mode: mode)
+        }
     }
 }
 
@@ -132,7 +148,8 @@ public final class MissionLauncherViewModel: MissionLauncherButtonViewModel<Miss
 private extension MissionLauncherViewModel {
     /// Listen updates on user defaults to detect mission mode changes.
     func listenDefaults() {
-        // userMissionMode is the only user default observed to prevent from double notification.
+        // UserMissionMode is the only user default observed to prevent from double notification.
+        // Could be improve by replacing defaults with a specific manager.
         defaultsDisposables.append(Defaults.observe(\.userMissionMode, options: [.new]) { [weak self] _ in
             DispatchQueue.userDefaults.async {
                 let copy = self?.state.value.copy()

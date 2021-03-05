@@ -332,8 +332,7 @@ private extension HUDAlertPanelReturnHomeViewModel {
 
     /// Starts Return Home.
     func startReturnHome() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenAlertPanelConstants.returnToHome.name,
-                             itemName: LogEvent.LogKeyHUDPanelButton.start.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.start.name,
                              newValue: nil,
                              logType: .button)
         _ = returnHomeRef?.value?.activate()
@@ -341,8 +340,7 @@ private extension HUDAlertPanelReturnHomeViewModel {
 
     /// Stops Return Home.
     func stopReturnHome() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenAlertPanelConstants.returnToHome.name,
-                             itemName: LogEvent.LogKeyHUDPanelButton.stop.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.stop.name,
                              newValue: nil,
                              logType: .button)
         _ = returnHomeRef?.value?.deactivate()

@@ -33,7 +33,15 @@ import GroundSdk
 // MARK: - Internals Enums
 /// LogEvent for bottom bar in bottom bar in the HUD.
 extension LogEvent {
-    /// Enum which stores button keys for log message.
+    /// Enum which stores HUD top bar button keys for log message.
+    enum LogKeyHUDTopBarButton {
+        static let dashboard: String = "Dashboard"
+        static let settings: String = "Settings"
+        static let droneDetails: String = "DroneDetails"
+        static let remoteControlDetails: String = "RemoteControlDetails"
+    }
+
+    /// Enum which stores HUD bottom bar button keys for log message.
     enum LogKeyHUDBottomBarButton {
         /// Bottom bar buttons.
         case cameraShutter

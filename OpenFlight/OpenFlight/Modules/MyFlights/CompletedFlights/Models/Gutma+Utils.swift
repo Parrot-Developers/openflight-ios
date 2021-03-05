@@ -131,18 +131,14 @@ extension FlightLogging {
         let itemCount = self.flightLoggingItems?.count ?? 0
         // Find real battery value (0 is not a real one for a initial value).
         for index in 0...itemCount {
-            if let value = self.item(for: .batteryCurrent, atIndex: index), value > 0.0 {
+            if let value = self.item(for: .batteryPercent, atIndex: index), value > 0.0 {
                 initialBatteryValue = value
                 break
             }
         }
-        let finalBatteryValue = self.item(for: .batteryCurrent, atIndex: itemCount - 1) ?? 0.0
-        if let batteryCapacity = self.item(for: .batteryCapacity, atIndex: itemCount - 1),
-            batteryCapacity > 0.0 {
-            return ((initialBatteryValue - finalBatteryValue) / batteryCapacity) * Values.oneHundred
-        } else {
-            return nil
-        }
+        let finalBatteryValue = self.item(for: .batteryPercent, atIndex: itemCount - 1) ?? 0.0
+
+        return initialBatteryValue - finalBatteryValue
     }
 
     /// Returns final position.
@@ -210,9 +206,20 @@ private extension FlightLogging {
         case altitude = "gps_altitude"
         case speedVx = "speed_vx"
         case speedVy = "speed_vy"
+        case speedVz = "speed_vz"
         case batteryVoltage = "battery_voltage"
         case batteryCurrent = "battery_current"
         case batteryCapacity = "battery_capacity"
+        case batteryPercent = "battery_percent"
+        case batteryCellVoltage0 = "battery_cell_voltage_0"
+        case batteryCellVoltage1 = "battery_cell_voltage_1"
+        case batteryCellVoltage2 = "battery_cell_voltage_2"
+        case wifiSignal = "wifi_signal"
+        case productGpsAvailable = "product_gps_available"
+        case productGpsSvNumber = "product_gps_sv_number"
+        case anglePhi = "angle_phi"
+        case anglePsi = "angle_psi"
+        case angleTheta = "angle_theta"
     }
 
     /// Returns flightLoggingItems regarding flightLoggingKeys.
@@ -224,8 +231,7 @@ private extension FlightLogging {
         if let items = self.flightLoggingItems,
             atIndex >= 0,
             items.count > atIndex,
-            let valueIndex = self.index(for: key.rawValue),
-            items[atIndex].count == LoggingKeys.allCases.count {
+            let valueIndex = self.index(for: key.rawValue) {
             let item = items[atIndex]
             return item[valueIndex]
         }

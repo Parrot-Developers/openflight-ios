@@ -44,9 +44,15 @@ extension FlightPlanManager {
                 return nil
         }
         if url.pathExtension.lowercased() == FlightPlanConstants.mavlinkExtension,
-           let flightPlan = self.generateFlightPlanFromMavlink(url: url,
-                                                               title: url.deletingPathExtension().lastPathComponent,
-                                                               model: FlightPlanConstants.defaultDroneModel) {
+           let flightPlan = MavlinkLegacyToFlightPlanGenerator.generateFlightPlanFromMavlink(url: url,
+                                                                                             mavlinkString: nil,
+                                                                                             title: url.deletingPathExtension().lastPathComponent,
+                                                                                             type: nil,
+                                                                                             uuid: nil,
+                                                                                             settings: [],
+                                                                                             polygonPoints: nil,
+                                                                                             version: FlightPlanConstants.defaultFlightPlanVersion,
+                                                                                             model: FlightPlanConstants.defaultDroneModel) {
             // Remove mavlink.
             try? FileManager.default.removeItem(at: url)
             // Save flight plan made with mavlink.
@@ -236,88 +242,5 @@ extension FlightPlanManager {
         }
 
         return commands
-    }
-
-    /// Generates FlightPlan from MAVLink file at given URL or MAVLink string.
-    ///
-    /// - Parameters:
-    ///    - url: url of MAVLink file to parse
-    ///    - mavlinkString:  MAVLink string to parse
-    ///    - title: title of FlightPlan to generate
-    ///    - type: Flight Plan type
-    ///    - uuid: Flight Plan ID
-    ///    - version: version of FlightPlan
-    ///    - model: model of drone for generated FlightPlan
-    ///
-    /// - Returns: generated `SavedFlightPlan` is operation succeeded, `nil` otherwise
-    public func generateFlightPlanFromMavlink(url: URL? = nil,
-                                              mavlinkString: String? = nil,
-                                              title: String,
-                                              type: String? = nil,
-                                              uuid: String? = nil,
-                                              settings: [FlightPlanLightSetting] = [],
-                                              polygonPoints: [PolygonPoint]? = nil,
-                                              version: Int = FlightPlanConstants.defaultFlightPlanVersion,
-                                              model: Drone.Model) -> SavedFlightPlan? {
-
-        var commands: [MavlinkCommand] = []
-
-        if let strongUrl = url {
-            commands = MavlinkFiles.parse(filepath: strongUrl.path)
-        } else if let strongMavlinkString = mavlinkString {
-            commands = MavlinkFiles.parse(mavlinkString: strongMavlinkString)
-        }
-
-        var takeOffActions = [Action]()
-        var pois = [PoiPoint]()
-        var waypoints = [WayPoint]()
-
-        var currentWaypoint: WayPoint?
-        var currentViewModeCommand = SetViewModeCommand(mode: .absolute)
-        var currentSpeedCommand: ChangeSpeedCommand?
-
-        for command in commands {
-            switch command {
-            case let roiCommand as SetRoiCommand:
-                let newPoi = PoiPoint(roiMavLinkCommand: roiCommand)
-                pois.append(newPoi)
-
-            case let viewModeCommand as SetViewModeCommand:
-                currentWaypoint?.update(viewModeCommand: viewModeCommand)
-                currentViewModeCommand = viewModeCommand
-
-            case let speedModeCommand as ChangeSpeedCommand:
-                currentWaypoint?.update(speedMavlinkCommand: speedModeCommand)
-                currentSpeedCommand = speedModeCommand
-
-            case let waypointCommand as NavigateToWaypointCommand:
-                let newWaypoint = WayPoint(navigateToWaypointCommand: waypointCommand,
-                                           speedMavlinkCommand: currentSpeedCommand,
-                                           viewModeCommand: currentViewModeCommand)
-                waypoints.append(newWaypoint)
-                currentWaypoint = newWaypoint
-
-            default:
-                guard let newAction = Action(mavLinkCommand: command) else { continue }
-                if let currentWaypoint = currentWaypoint {
-                    currentWaypoint.addAction(newAction)
-                } else {
-                    takeOffActions.append(newAction)
-                }
-            }
-        }
-
-        let flightPlanObject = FlightPlanObject(takeoffActions: takeOffActions,
-                                                pois: pois,
-                                                wayPoints: waypoints)
-        let savedFlightPlan = SavedFlightPlan(version: version,
-                                              title: title,
-                                              type: type,
-                                              uuid: uuid ?? UUID().uuidString,
-                                              product: model,
-                                              plan: flightPlanObject,
-                                              settings: settings,
-                                              polygonPoints: polygonPoints)
-        return savedFlightPlan
     }
 }

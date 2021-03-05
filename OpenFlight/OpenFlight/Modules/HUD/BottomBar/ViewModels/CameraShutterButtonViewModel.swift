@@ -56,6 +56,13 @@ final class CameraShutterButtonState: DeviceConnectionState {
     /// Current state for timelapse and gpslapse mode.
     fileprivate(set) weak var lapseModeState: PhotoLapseState?
 
+    // MARK: - Public Properties
+    /// Returns if storage is ready.
+    var isStorageReady: Bool {
+        return userStorageState.removableUserStorageFileSystemState == .ready ||
+            userStorageState.internalUserStorageFileSystemState == .ready
+    }
+
     // MARK: - Init
     required init() {
         super.init()

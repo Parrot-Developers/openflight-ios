@@ -103,7 +103,6 @@ open class MapViewController: UIViewController {
         static let userLocationValue = "userLocation"
         static let droneLocationValue = "droneLocation"
         static let altitudeKey = "altitude"
-        static let headingOrientationCorrection: Double = 90.0
         static let sceneTolerance: Double = 1.0
         static let maxNbOfBuildingResults: Int = 1
         static let defaultLocation = CLLocationCoordinate2D(latitude: 48.879, longitude: 2.3673)
@@ -211,7 +210,7 @@ open class MapViewController: UIViewController {
 
     /// Edition view closed.
     open func editionViewClosed() {
-        // To be override.
+        FlightPlanManager.shared.resetUndoStack()
     }
 
     // MARK: - Public Funcs
@@ -257,7 +256,10 @@ open class MapViewController: UIViewController {
 
     /// User touched undo button in edition screen.
     open func didTapOnUndo() {
-        // To be override.
+        FlightPlanManager.shared.undo()
+        if let flightPlanViewModel = flightPlanViewModel {
+            self.displayFlightPlan(flightPlanViewModel, shouldReloadCamera: false)
+        }
     }
 
     /// Delete an item in edition screen.
@@ -478,7 +480,8 @@ private extension MapViewController {
     /// Set camera handler.
     func setCameraHandler() {
         sceneView.viewpointChangedHandler = { [weak self] in
-            guard let camera = self?.sceneView.currentViewpointCamera() else {
+            guard let camera = self?.sceneView.currentViewpointCamera(),
+                  self?.sceneView.cameraController is AGSGlobeCameraController else {
                 return
             }
 
@@ -589,20 +592,17 @@ private extension MapViewController {
     ///    - type: Graphic type
     ///    - location: New location to set
     ///    - heading: Updated heading
-    func updateLocationGraphic(type: LocationGraphicType, location: CLLocationCoordinate2D, heading: CLLocationDegrees) {
+    func updateLocationGraphic(type: LocationGraphicType,
+                               location: CLLocationCoordinate2D,
+                               heading: CLLocationDegrees) {
         let geometry = AGSPoint(clLocationCoordinate2D: location)
 
         switch type {
         case .user:
-            // Fix heading depending device orientation
-            let correctedHeading = UIApplication.shared.statusBarOrientation == .landscapeLeft
-                ? heading-MapConstants.headingOrientationCorrection
-                : heading+MapConstants.headingOrientationCorrection
-
             if userLocationGraphic == nil {
                 // If it doesn't exist, create graphic.
                 let symbol = AGSPictureMarkerSymbol(image: Asset.Map.user.image)
-                symbol.angle = Float(correctedHeading)
+                symbol.angle = Float(heading)
                 let attributes = [MapConstants.typeKey: MapConstants.userLocationValue]
                 let graphic = AGSGraphic(geometry: geometry, symbol: symbol, attributes: attributes)
                 self.userLocationGraphic = graphic
@@ -610,7 +610,7 @@ private extension MapViewController {
             } else {
                 // Otherwise update it.
                 self.userLocationGraphic?.geometry = geometry
-                (self.userLocationGraphic?.symbol as? AGSPictureMarkerSymbol)?.angle = Float(correctedHeading)
+                (self.userLocationGraphic?.symbol as? AGSPictureMarkerSymbol)?.angle = Float(heading)
             }
         case .drone where self.droneLocationGraphic != nil:
             self.droneLocationGraphic?.geometry = geometry

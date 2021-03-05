@@ -33,81 +33,45 @@ import GroundSdk
 /// Settings content sub class dedicated to return to home settings.
 final class SettingsRTHViewController: SettingsContentViewController {
     // MARK: - Private Properties
-    private var rthViewModel: RthViewModel?
     private var maxGridHeight: CGFloat = 200.0
 
     // MARK: - Private Enums
     private enum Constants {
-        static let gridIndex: Int = 1
+        static let gridIndex: Int = 0
+        static let secondCellIndex: Int = 1
+        static let minimumCellsCount: Int = 2
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        resetCellLabel = L10n.settingsRthReset
-
-        // Setup view model.
-        rthViewModel = RthViewModel(stateDidUpdate: { [weak self] state in
-            self?.updateDataSource(state)
-        })
-
-        // Inital data source update.
-        updateDataSource(RthState())
+        initView()
+        initViewModel()
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         // Dedicated treatment with the right frame size.
-        maxGridHeight = self.view.bounds.height - (self.settingsTableView.visibleCells.first?.frame.size.height ?? 0) - view.safeAreaInsets.bottom
+        if settingsTableView.visibleCells.count >= Constants.minimumCellsCount {
+            maxGridHeight = self.view.bounds.height
+                - self.settingsTableView.visibleCells[Constants.secondCellIndex].frame.size.height
+                - view.safeAreaInsets.bottom
+        } else {
+            maxGridHeight = self.view.bounds.height - view.safeAreaInsets.bottom
+        }
+
         settingsTableView.reloadData()
     }
 
     /// Reset to default settings.
     override func resetSettings() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced.name,
-                             itemName: LogEvent.LogKeyAdvancedSettings.resetRTHSettings,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyAdvancedSettings.resetRTHSettings,
                              newValue: nil,
                              logType: LogEvent.LogType.button)
 
-        rthViewModel?.resetSettings()
-    }
-}
-
-// MARK: - Private Funcs
-private extension SettingsRTHViewController {
-    /// Configures Control Mode Cell.
-    ///
-    /// - Parameters:
-    ///     - indexPath: cell indexPath
-    /// - Returns: UITableViewCell.
-    func configureRthCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
-        guard let rthViewModel = self.rthViewModel else { return UITableViewCell() }
-
-        let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsRthCell
-        cell.configureCell(viewModel: rthViewModel, maxGridHeight: maxGridHeight)
-
-        return cell
-    }
-
-    /// Configures the end Hovering mode cell.
-    ///
-    /// - Parameters:
-    ///     - indexPath: cell indexPath
-    /// - Returns: UITableViewCell.
-    func configureHoveringCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
-        return settingsTableView.dequeueReusableCell(for: indexPath) as SettingsEndHoveringCell
-    }
-
-    /// Updates data source.
-    ///
-    /// - Parameters:
-    ///     - state: RTH state
-    func updateDataSource(_ state: RthState = RthState()) {
-        guard let updatedSettings = rthViewModel?.settingEntries else { return }
-
-        settings = updatedSettings
+        viewModel?.resetSettings()
     }
 }
 
@@ -132,5 +96,45 @@ extension SettingsRTHViewController {
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return indexPath.row != Constants.gridIndex ? UITableView.automaticDimension : maxGridHeight
+    }
+}
+
+// MARK: - Private Funcs
+private extension SettingsRTHViewController {
+    /// Inits the view.
+    func initView() {
+        resetCellLabel = L10n.settingsRthReset
+    }
+
+    /// Inits the view model.
+    func initViewModel() {
+        viewModel = SettingsRthViewModel(stateDidUpdate: { [weak self] state in
+            self?.updateDataSource(state)
+        })
+
+        if let state = viewModel?.state.value {
+            updateDataSource(state)
+        }
+    }
+
+    /// Configures Control Mode Cell.
+    ///
+    /// - Parameters:
+    ///     - indexPath: cell indexPath
+    /// - Returns: UITableViewCell.
+    func configureRthCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsRthCell
+        cell.configureCell(maxGridHeight: maxGridHeight)
+
+        return cell
+    }
+
+    /// Configures the end Hovering mode cell.
+    ///
+    /// - Parameters:
+    ///     - indexPath: cell indexPath
+    /// - Returns: UITableViewCell.
+    func configureHoveringCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
+        return settingsTableView.dequeueReusableCell(for: indexPath) as SettingsEndHoveringCell
     }
 }

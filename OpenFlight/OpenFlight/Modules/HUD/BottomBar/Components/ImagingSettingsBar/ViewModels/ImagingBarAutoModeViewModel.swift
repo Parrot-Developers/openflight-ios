@@ -32,8 +32,7 @@ import GroundSdk
 import SwiftyUserDefaults
 
 /// State for `ImagingBarAutoModeViewModel`.
-
-final class ImagingBarAutoModeState: ViewModelState, EquatableState {
+final class ImagingBarAutoModeState: ViewModelState, EquatableState, Copying {
     // MARK: - Private Properties
     /// Boolean describing auto mode state.
     fileprivate(set) var isActive: Bool = Defaults.isImagingAutoModeActive
@@ -54,6 +53,11 @@ final class ImagingBarAutoModeState: ViewModelState, EquatableState {
     // MARK: - Internal Funcs
     func isEqual(to other: ImagingBarAutoModeState) -> Bool {
         return self.isActive == other.isActive
+    }
+
+    // MARK: - Copying
+    func copy() -> ImagingBarAutoModeState {
+        return ImagingBarAutoModeState(isActive: self.isActive)
     }
 }
 
@@ -84,7 +88,7 @@ final class ImagingBarAutoModeViewModel: DroneWatcherViewModel<ImagingBarAutoMod
     func toggleAutoMode() {
         Defaults.isImagingAutoModeActive.toggle()
         if Defaults.isImagingAutoModeActive,
-            let camera = drone?.currentCamera {
+           let camera = drone?.currentCamera {
             let currentEditor = camera.currentEditor
             currentEditor[Camera2Params.exposureMode]?.value = .automatic
             currentEditor[Camera2Params.whiteBalanceMode]?.value = .automatic
@@ -103,7 +107,11 @@ private extension ImagingBarAutoModeViewModel {
     func listenDefault() {
         autoModeObserver = Defaults.observe(\.isImagingAutoModeActive, options: [.new]) { [weak self] _ in
             DispatchQueue.userDefaults.async {
-                self?.state.set(ImagingBarAutoModeState(isActive: Defaults.isImagingAutoModeActive))
+                guard let strongSelf = self else { return }
+
+                let copy = strongSelf.state.value.copy()
+                copy.isActive = Defaults.isImagingAutoModeActive
+                strongSelf.state.set(copy)
             }
         }
     }

@@ -32,7 +32,7 @@
 protocol SettingsViewModelProtocol: BaseViewModel<DeviceConnectionState> {
     /// Setting entries list.
     var settingEntries: [SettingEntry] { get }
-    /// Optional handler to display informations in a dedicated view
+    /// Optional handler to display informations in a dedicated view.
     var infoHandler: ((_ modeType: SettingMode.Type) -> Void)? { get set }
     /// Reset to default settings.
     func resetSettings()

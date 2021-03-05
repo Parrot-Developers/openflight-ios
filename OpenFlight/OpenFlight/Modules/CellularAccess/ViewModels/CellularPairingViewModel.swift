@@ -145,7 +145,8 @@ private extension CellularPairingViewModel {
     ///     - cellular: current cellular reference's value
     func updateCellularAvailability(with cellular: Cellular?) {
         let copy = state.value.copy()
-        copy.isCellularAvailable = cellular?.simStatus.isCellularAvailable == true
+        copy.isCellularAvailable = cellular?.simStatus == .locked
+            || cellular?.simStatus == .ready
         state.set(copy)
     }
 
@@ -176,11 +177,23 @@ private extension CellularPairingViewModel {
                 return
             }
 
-            Defaults.cellularPairedDronesList = cellularPairedDronesList?
+            let pairedList = cellularPairedDronesList?
                 .filter({ $0.pairedFor4g == true })
                 .compactMap { return $0.serial } ?? []
 
+            Defaults.cellularPairedDronesList = pairedList
             self.updateDronePairingState()
+
+            // User account drone list should be done on the main Thread.
+            DispatchQueue.main.async {
+                guard let jsonString: String = ParserUtils.jsonString(cellularPairedDronesList),
+                      let userAccount = GroundSdk().getFacility(Facilities.userAccount) else {
+                    return
+                }
+
+                // Updates UserAccount paired drones list.
+                userAccount.set(droneList: jsonString)
+            }
         }
     }
 

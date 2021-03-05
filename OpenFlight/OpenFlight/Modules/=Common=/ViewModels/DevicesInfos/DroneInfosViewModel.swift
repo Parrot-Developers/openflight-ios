@@ -33,7 +33,6 @@ import UIKit
 
 // MARK: - DroneInfosState
 /// State for DroneInfosViewModel.
-
 class DroneInfosState: DeviceConnectionState {
     // MARK: - Internal Properties
     /// Observable for current battery level.
@@ -46,18 +45,16 @@ class DroneInfosState: DeviceConnectionState {
     fileprivate(set) var droneName: Observable<String> = Observable(String())
     /// Observable for connection state.
     fileprivate(set) var droneConnectionState: Observable<DeviceState.ConnectionState> = Observable(DeviceState.ConnectionState.disconnected)
-    /// Observable for drone update.
-    fileprivate(set) var droneNeedUpdate: Observable<Bool> = Observable(false)
     /// Observable for drone gimbal calibration.
     fileprivate(set) var droneNeedGimbalCalibration: Observable<Bool> = Observable(false)
     /// Observable for drone magnetometer calibration.
     fileprivate(set) var droneNeedMagnetometerCalibration: Observable<Bool> = Observable(false)
     /// Observable for drone stereo vision sensor calibration.
     fileprivate(set) var droneNeedStereoVisionSensorCalibration: Observable<Bool> = Observable(false)
-    /// Observable for drone cellular access. Provides the icon according to network state.
-    fileprivate(set) var cellularNetworkIcon: Observable<UIImage> = Observable(Asset.Cellular.ic4GNoSignal.image)
-    /// Observable for drone cellular access availability.
-    fileprivate(set) var isCellularAvailable: Observable<Bool> = Observable(false)
+    /// Observable for drone cellular access. Provides the signal strength.
+    fileprivate(set) var cellularStrength: Observable<CellularStrength> = Observable(CellularStrength.none)
+    /// Observable which provides current network link. It can be cellular or wlan one.
+    fileprivate(set) var currentLink: Observable<NetworkControlLinkType> = Observable(.wlan)
 
     // MARK: - Override Funcs
     required init() {
@@ -73,54 +70,49 @@ class DroneInfosState: DeviceConnectionState {
     ///    - gpsStrength: current recording function state
     ///    - droneName: drone name
     ///    - droneConnectionState: drone connection state
-    ///    - droneNeedUpdate: boolean for drone update state
     ///    - droneNeedGimbalCalibration: boolean for gimbal calibration
     ///    - droneNeedMagnetometerCalibration: boolean for magnetometer calibration
     ///    - droneNeedStereoVisionSensorCalibration: boolean for stereo vision sensor calibration
-    ///    - cellularNetworkIcon: current cellular access icon according to network state
-    ///    - isCellularAvailable: drone cellular access availability
+    ///    - cellularStrength: current cellular signal
+    ///    - currentLink: current network link
     init(connectionState: DeviceState.ConnectionState,
          batteryLevel: Observable<BatteryValueModel>,
          wifiStrength: Observable<WifiStrength>,
          gpsStrength: Observable<GpsStrength>,
          droneName: Observable<String>,
          droneConnectionState: Observable<DeviceState.ConnectionState>,
-         droneNeedUpdate: Observable<Bool>,
          droneNeedGimbalCalibration: Observable<Bool>,
          droneNeedMagnetometerCalibration: Observable<Bool>,
          droneNeedStereoVisionSensorCalibration: Observable<Bool>,
-         cellularNetworkIcon: Observable<UIImage>,
-         isCellularAvailable: Observable<Bool>) {
+         cellularStrength: Observable<CellularStrength>,
+         currentLink: Observable<NetworkControlLinkType>) {
         super.init(connectionState: connectionState)
+
         self.batteryLevel = batteryLevel
         self.wifiStrength = wifiStrength
         self.gpsStrength = gpsStrength
         self.droneName = droneName
         self.droneConnectionState = droneConnectionState
-        self.droneNeedUpdate = droneNeedUpdate
         self.droneNeedGimbalCalibration = droneNeedGimbalCalibration
         self.droneNeedMagnetometerCalibration = droneNeedMagnetometerCalibration
         self.droneNeedStereoVisionSensorCalibration = droneNeedStereoVisionSensorCalibration
-        self.cellularNetworkIcon = cellularNetworkIcon
-        self.isCellularAvailable = isCellularAvailable
+        self.cellularStrength = cellularStrength
     }
 
     override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? DroneDetailsState else {
-            return false
-        }
+        guard let other = other as? DroneDetailsState else { return false }
+
         return super.isEqual(to: other)
             && self.batteryLevel.value == other.batteryLevel.value
             && self.wifiStrength.value == other.wifiStrength.value
             && self.gpsStrength.value == other.gpsStrength.value
             && self.droneName.value == other.droneName.value
             && self.droneConnectionState.value == other.droneConnectionState.value
-            && self.droneNeedUpdate.value == other.droneNeedUpdate.value
             && self.droneNeedGimbalCalibration.value == other.droneNeedGimbalCalibration.value
             && self.droneNeedMagnetometerCalibration.value == other.droneNeedMagnetometerCalibration.value
             && self.droneNeedStereoVisionSensorCalibration.value == other.droneNeedStereoVisionSensorCalibration.value
-            && self.cellularNetworkIcon.value == other.cellularNetworkIcon.value
-            && self.isCellularAvailable.value == other.isCellularAvailable.value
+            && self.cellularStrength.value == other.cellularStrength.value
+            && self.currentLink.value == other.currentLink.value
     }
 }
 
@@ -134,11 +126,11 @@ class DroneInfosViewModel<T: DroneInfosState>: DroneWatcherViewModel<T> {
     private var gpsRef: Ref<Gps>?
     private var nameRef: Ref<String>?
     private var connectionStateRef: Ref<DeviceState>?
-    private var updaterRef: Ref<Updater>?
     private var gimbalRef: Ref<Gimbal>?
     private var magnetometerRef: Ref<Magnetometer>?
     private var stereoVisionSensorRef: Ref<StereoVisionSensor>?
     private var cellularRef: Ref<Cellular>?
+    private var networkControlRef: Ref<NetworkControl>?
 
     // MARK: - Init
     private init() { }
@@ -152,27 +144,25 @@ class DroneInfosViewModel<T: DroneInfosState>: DroneWatcherViewModel<T> {
     ///    - gpsStrengthDidChange: called when gps strength changes
     ///    - nameDidChange: called when name changes
     ///    - connectionStateDidChange: called when connection state changes
-    ///    - needUpdateDidChange: called when drone update availability changes
-    ///    - cellularStateDidChange: called when drone cellular changes
-    ///    - isCellularAvailabilityChange: called when drone cellular availability changes
+    ///    - cellularStrengthDidChange: called when drone cellular strength changes
+    ///    - currentLinkDidChange: called when drone network link changed
     init(stateDidUpdate: ((DroneInfosState) -> Void)? = nil,
          batteryLevelDidChange: ((BatteryValueModel) -> Void)? = nil,
          wifiStrengthDidChange: ((WifiStrength) -> Void)? = nil,
          gpsStrengthDidChange: ((GpsStrength) -> Void)? = nil,
          nameDidChange: ((String) -> Void)? = nil,
          connectionStateDidChange: ((DeviceState.ConnectionState) -> Void)? = nil,
-         needUpdateDidChange: ((Bool) -> Void)? = nil,
-         cellularStateDidChange: ((UIImage) -> Void)? = nil,
-         isCellularAvailabilityChange: ((Bool) -> Void)? = nil) {
+         cellularStrengthDidChange: ((CellularStrength) -> Void)? = nil,
+         currentLinkDidChange: ((NetworkControlLinkType) -> Void)? = nil) {
         super.init(stateDidUpdate: stateDidUpdate)
+
         state.value.batteryLevel.valueChanged = batteryLevelDidChange
         state.value.wifiStrength.valueChanged = wifiStrengthDidChange
         state.value.gpsStrength.valueChanged = gpsStrengthDidChange
         state.value.droneName.valueChanged = nameDidChange
         state.value.droneConnectionState.valueChanged = connectionStateDidChange
-        state.value.droneNeedUpdate.valueChanged = needUpdateDidChange
-        state.value.cellularNetworkIcon.valueChanged = cellularStateDidChange
-        state.value.isCellularAvailable.valueChanged = isCellularAvailabilityChange
+        state.value.cellularStrength.valueChanged = cellularStrengthDidChange
+        state.value.currentLink.valueChanged = currentLinkDidChange
     }
 
     // MARK: - Override Funcs
@@ -182,15 +172,16 @@ class DroneInfosViewModel<T: DroneInfosState>: DroneWatcherViewModel<T> {
         listenGps(drone: drone)
         listenName(drone: drone)
         listenConnectionState(drone: drone)
-        listenDroneUpdate(drone: drone)
-        listenDroneMagnetometer(drone)
-        listenDroneStereoVisionSensor(drone)
-        listenDroneGimbal(drone)
-        listenDroneCellularAccess(drone)
+        listenMagnetometer(drone)
+        listenStereoVisionSensor(drone)
+        listenGimbal(drone)
+        listenCellular(drone)
+        listenNetworkControl(drone)
     }
 }
 
 // MARK: - Private Funcs
+/// Ref Listeners.
 private extension DroneInfosViewModel {
     /// Starts watcher for battery info.
     func listenBatteryInfo(drone: Drone) {
@@ -241,58 +232,56 @@ private extension DroneInfosViewModel {
     func listenConnectionState(drone: Drone) {
         connectionStateRef = drone.getState { [weak self] deviceState in
             self?.state.value.droneConnectionState.set(deviceState?.connectionState)
-            self?.updateCellular()
-        }
-    }
-
-    /// Starts watcher for drone update.
-    func listenDroneUpdate(drone: Drone) {
-        updaterRef = drone.getPeripheral(Peripherals.updater) { [weak self] updater in
-            if let updater = updater {
-                self?.state.value.droneNeedUpdate.set(!updater.isUpToDate)
-            }
+            self?.updateCellularStrength()
         }
     }
 
     /// Starts watcher for drone gimbal state.
-    func listenDroneGimbal(_ drone: Drone) {
+    func listenGimbal(_ drone: Drone) {
         gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
             self?.state.value.droneNeedGimbalCalibration.set(gimbal?.calibrated)
         }
     }
 
     /// Starts watcher for drone magnetometer state.
-    func listenDroneMagnetometer(_ drone: Drone) {
+    func listenMagnetometer(_ drone: Drone) {
         magnetometerRef = drone.getPeripheral(Peripherals.magnetometer) { [weak self] magnetometer in
             self?.state.value.droneNeedMagnetometerCalibration.set(magnetometer?.calibrationState == .required)
         }
     }
 
     /// Starts watcher for drone stereo vision sensor state.
-    func listenDroneStereoVisionSensor(_ drone: Drone) {
+    func listenStereoVisionSensor(_ drone: Drone) {
         stereoVisionSensorRef = drone.getPeripheral(Peripherals.stereoVisionSensor) { [weak self] stereoVisionSensor in
             self?.state.value.droneNeedStereoVisionSensorCalibration.set(stereoVisionSensor?.isCalibrated == false)
         }
     }
 
-    /// Starts watcher for drone cellular access state.
-    func listenDroneCellularAccess(_ drone: Drone) {
+    /// Starts watcher for drone cellular.
+    func listenCellular(_ drone: Drone) {
         cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] _ in
-            self?.updateCellular()
+            self?.updateCellularStrength()
         }
-        updateCellular()
+
+        updateCellularStrength()
     }
 
-    /// Updates 4G state according to Cellular peripheral.
-    func updateCellular() {
-        guard drone?.isCellularAvailable == true else {
-            // Set a default icon when not available.
-            state.value.cellularNetworkIcon.set(Asset.Cellular.ic4GNoSignal.image)
-            state.value.isCellularAvailable.set(false)
+    /// Starts watcher for drone network control.
+    func listenNetworkControl(_ drone: Drone) {
+        networkControlRef = drone.getPeripheral(Peripherals.networkControl) { [weak self] state in
+            self?.state.value.currentLink.set(state?.currentLink ?? .wlan)
+            self?.updateCellularStrength()
+        }
+    }
+
+    /// Updates cellular signal strength.
+    func updateCellularStrength() {
+        guard drone?.getPeripheral(Peripherals.cellular)?.isAvailable == true else {
+            state.value.cellularStrength.set(CellularStrength.none)
             return
         }
 
-        state.value.cellularNetworkIcon.set(drone?.cellularIcon)
-        state.value.isCellularAvailable.set(true)
+        let strength = drone?.getPeripheral(Peripherals.networkControl)?.cellularStrength
+        state.value.cellularStrength.set(strength)
     }
 }

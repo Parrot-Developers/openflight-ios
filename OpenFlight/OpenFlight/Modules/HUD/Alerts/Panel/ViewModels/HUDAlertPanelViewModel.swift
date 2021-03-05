@@ -130,6 +130,7 @@ open class HUDAlertPanelViewModel<T: HUDAlertPanelState>: BaseViewModel<T> {
     // MARK: - Init
     public init(stateDidUpdate: ((HUDAlertPanelState) -> Void)? = nil) {
         super.init(stateDidUpdate: stateDidUpdate)
+
         listenHandLaunch()
         listenHandLand()
         listenReturnHome()

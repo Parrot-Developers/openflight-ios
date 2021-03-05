@@ -68,27 +68,14 @@ final class SettingsRthActionView: UIView {
     private var dashedLinePath = UIBezierPath()
     private var pointerHalfWidth: CGFloat = 0.0
     private var minHeight: CGFloat = 0.0
-    private var maxAltitude: Double {
-        return viewModel?.state.value.maxAltitude ?? RthPreset.maxAltitude
-    }
-    private var minAltitude: Double {
-        return viewModel?.state.value.minAltitude ?? RthPreset.minAltitude
-    }
-    private var viewModel: RthViewModel?
+    private var viewModel: SettingsRthActionViewModel = SettingsRthActionViewModel()
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        pointerHalfWidth = pointImage.frame.width / 2.0
-        minHeight = homeImage.frame.height * Constants.homeHeightRatio
-
-        // Init recognizers.
-        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
-        self.addGestureRecognizer(panRecognizer)
-
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        self.addGestureRecognizer(tapRecognizer)
+        initView()
+        listenViewModel()
     }
 
     override func draw(_ rect: CGRect) {
@@ -136,16 +123,12 @@ final class SettingsRthActionView: UIView {
     }
 
     // MARK: - Internal Funcs
-    /// Configure cell.
-    ///
-    /// - Parameters:
-    ///     - viewModel: Return home view model
-    func setup(viewModel: RthViewModel) {
-        self.viewModel = viewModel
+    /// Updates pointer view.
+    func updatePointerView() {
         // Convert meters in points.
         let altitudePercent = SettingsGridView.reverseExponentialLike(value: viewModel.state.value.altitude,
-                                                                      max: maxAltitude,
-                                                                      min: minAltitude)
+                                                                      max: viewModel.state.value.maxAltitude,
+                                                                      min: viewModel.state.value.minAltitude)
         let deltaHeight = Double(self.bounds.height - minHeight)
         let posY = deltaHeight - ((altitudePercent / Values.oneHundred) * deltaHeight)
         // Update display.
@@ -155,6 +138,26 @@ final class SettingsRthActionView: UIView {
 
 // MARK: - Private Funcs
 private extension SettingsRthActionView {
+    /// Inits the view.
+    func initView() {
+        pointerHalfWidth = pointImage.frame.width / 2.0
+        minHeight = homeImage.frame.height * Constants.homeHeightRatio
+
+        // Init recognizers.
+        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
+        self.addGestureRecognizer(panRecognizer)
+
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        self.addGestureRecognizer(tapRecognizer)
+    }
+
+    /// Listens the view model.
+    func listenViewModel() {
+        viewModel.state.valueChanged = { [weak self] _ in
+            self?.updatePointerView()
+        }
+    }
+
     /// Handle tap gesture.
     @objc func handleTap(recognizer: UIPanGestureRecognizer) {
         var location = recognizer.location(in: self)
@@ -215,8 +218,8 @@ private extension SettingsRthActionView {
         let deltaHeight = Double(self.bounds.height - minHeight)
         let altitudePercent: Double = Double(revertPosition - minHeight) / (deltaHeight / Values.oneHundred)
         let altitude = SettingsGridView.computeExponentialLike(value: altitudePercent,
-                                                               max: maxAltitude,
-                                                               min: minAltitude)
+                                                               max: viewModel.state.value.maxAltitude,
+                                                               min: viewModel.state.value.minAltitude)
         infoLabel.text = UnitHelper.stringDistanceWithDouble(Double(altitude))
         infoLabel.frame = CGRect(x: gridXCenter + Constants.margin,
                                  y: (location.y + (revertPosition / 2)) - Constants.labelSize.height / 2,
@@ -230,7 +233,7 @@ private extension SettingsRthActionView {
 
         // Save new altitude if needed.
         if shouldSaveValue {
-            viewModel?.saveRth(altitude: altitude)
+            viewModel.saveRth(altitude: altitude)
         }
     }
 }
@@ -259,10 +262,9 @@ final class SettingsRthCell: UITableViewCell, NibReusable {
     /// Configure cell.
     ///
     /// - Parameters:
-    ///     - viewModel: Rth view model
     ///     - maxGridHeight: Maxium height for grid
-    func configureCell(viewModel: RthViewModel, maxGridHeight: CGFloat) {
+    func configureCell(maxGridHeight: CGFloat) {
         gridViewHeightConstraint.constant = maxGridHeight
-        actionView.setup(viewModel: viewModel)
+        actionView.updatePointerView()
     }
 }

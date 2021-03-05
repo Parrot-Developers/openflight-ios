@@ -66,11 +66,6 @@ class ParrotDebugViewController: UIViewController {
         static let segmentTitles = ["front", "vertical", "stereo-left", "stereo-right", "disparity"]
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "Debug/Logs"
-    }
-
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -107,7 +102,8 @@ class ParrotDebugViewController: UIViewController {
         loadFileList()
         displayInformations()
         updateStreamRecordDisplay()
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.debugLogs,
+                             logType: .screen)
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -118,6 +114,7 @@ class ParrotDebugViewController: UIViewController {
 // MARK: - Actions
 private extension ParrotDebugViewController {
     @IBAction func doneAction(_ sender: UIButton) {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyDebugLogsButton.done, logType: .simpleButton)
         dismiss(animated: true)
     }
 
@@ -187,10 +184,10 @@ private extension ParrotDebugViewController {
 private extension ParrotDebugViewController {
     func displayInformations() {
         #if DEBUG
-        //let debugBuild = true
+        // let debugBuild = true
         var messDebugBuild = L10n.debugLogBuildDebug
         #else
-        //let debugBuild = false
+        // let debugBuild = false
         var messDebugBuild = L10n.debugLogBuildRelease
         #endif
 

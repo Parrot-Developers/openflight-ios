@@ -47,12 +47,6 @@ final class MagnetometerCalibrationViewController: UIViewController {
     private var viewModel = MagnetometerCalibrationViewModel()
     private var isRequired: Bool = false
 
-    // MARK: - Private Enums
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "DroneMagnetometerCalibration"
-    }
-
     // MARK: - Setup
     /// Instantiate View controller.
     ///
@@ -78,7 +72,7 @@ final class MagnetometerCalibrationViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.magnetometerCalibration, logType: .screen)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -117,8 +111,7 @@ private extension MagnetometerCalibrationViewController {
         self.calibrateButton.isHidden = true
         self.droneCalibrationAxesView.isHidden = false
         self.viewModel.startCalibration()
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.magnetometer.name,
-                             itemName: LogEvent.LogKeyDroneDetailsCalibrationButton.magnetometerCalibrationCalibrate,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyDroneDetailsCalibrationButton.magnetometerCalibrationCalibrate,
                              newValue: self.viewModel.state.value.calibrationProcessState?.failed.description,
                              logType: .button)
     }
@@ -226,6 +219,7 @@ private extension MagnetometerCalibrationViewController {
         instructionsView.viewModel.secondLabel = L10n.droneCalibrationFailureInstruction
         instructionsView.viewModel.firstLabelColor = ColorName.redTorch.color
         droneCalibrationAxesView.isHidden = true
+        droneCalibrationAxesView.reset()
         calibrateButton.setTitle(L10n.droneCalibrationRedo.uppercased(), for: .normal)
         calibrateButton.isHidden = false
     }

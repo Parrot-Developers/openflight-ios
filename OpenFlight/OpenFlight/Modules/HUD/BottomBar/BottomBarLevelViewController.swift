@@ -38,6 +38,9 @@ final class BottomBarLevelViewController: UIViewController {
     private var levelView: UIView?
     private var imagingSettingsBarViewController: ImagingSettingsBarViewController?
 
+    // MARK: - Internal Properties
+    weak var bottomBarDelegate: BottomBarViewControllerDelegate?
+
     // MARK: - Override Properties
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
@@ -73,8 +76,9 @@ extension BottomBarLevelViewController {
         removeLevelView()
         removeImagingSettingsBar()
         let imagingSettingsBarVC = ImagingSettingsBarViewController.instantiate(delegate: delegate)
-        self.add(imagingSettingsBarVC)
         imagingSettingsBarViewController = imagingSettingsBarVC
+        imagingSettingsBarViewController?.bottomBarDelegate = bottomBarDelegate
+        self.add(imagingSettingsBarVC)
     }
 
     /// Check if current segmented bar view is of the same type as given view model type.

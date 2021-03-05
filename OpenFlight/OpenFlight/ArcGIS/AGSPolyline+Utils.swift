@@ -32,8 +32,19 @@ import ArcGIS
 
 /// Utility extension for `AGSPolyline`.
 
-extension AGSPolyline {
-    // MARK: - Internal Funcs
+public extension AGSPolyline {
+    // MARK: - Public Properties
+    /// Returns middle point of the polyline, if any.
+    var middlePoint: AGSPoint? {
+        return pointAt(percent: Constants.middleFactor)
+    }
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let middleFactor: Double = 0.5
+    }
+
+    // MARK: - Public Funcs
     /// Returns a copy of the polyline with a new first point.
     ///
     /// - Parameters:

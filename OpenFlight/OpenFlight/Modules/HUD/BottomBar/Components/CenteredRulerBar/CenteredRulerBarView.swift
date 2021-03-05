@@ -138,8 +138,7 @@ final class CenteredRulerBarView<T: BarButtonState>: UIView, NibOwnerLoadable, N
         }
         // Select closest mode after a drag.
         let indexPath = collectionView.closestInteractiveToHorizontalCenterIndexPath ?? self.indexPathForSelectedMode
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.bottomBarHUD.name,
-                             itemName: models[indexPath.row].mode?.logKey,
+        LogEvent.logAppEvent(itemName: models[indexPath.row].mode?.logKey,
                              newValue: models[indexPath.row].mode?.key,
                              logType: .button)
         updateMode(indexPath: indexPath)

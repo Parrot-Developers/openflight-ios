@@ -39,6 +39,12 @@ protocol SettingsSliderCellDelegate: class {
     ///     - value: new value of the slider
     ///     - indexPath: IndexPath of the slider cell
     func settingsSliderCellSliderDidFinishEditing(value: Float, atIndexPath indexPath: IndexPath)
+
+    /// Notify when slider in currently editing.
+    func settingsSliderCellStartEditing()
+
+    /// Notify when cancel event happened.
+    func settingsSliderCellCancelled()
 }
 
 /// Common settings slider cell.
@@ -199,6 +205,7 @@ private extension SettingsSliderCell {
 // MARK: - Actions
 private extension SettingsSliderCell {
     @IBAction func sliderValueChanged(_ sender: AnyObject) {
+        delegate?.settingsSliderCellStartEditing()
         updateLabel()
     }
 
@@ -207,11 +214,15 @@ private extension SettingsSliderCell {
             ? LogEvent.LogKeyAdvancedSettings.filmMode
             : LogEvent.LogKeyAdvancedSettings.sportMode
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced.name,
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced,
                              itemName: settingEntry?.itemLogKey ?? "" + currentMode,
                              newValue: formattedValue,
                              logType: LogEvent.LogType.button)
 
         delegate?.settingsSliderCellSliderDidFinishEditing(value: sliderCurrentValue, atIndexPath: indexPath)
+    }
+
+    @IBAction func sliderTouchCancelled(_ sender: Any) {
+        delegate?.settingsSliderCellCancelled()
     }
 }

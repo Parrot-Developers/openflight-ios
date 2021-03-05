@@ -31,7 +31,7 @@
 import ArcGIS
 
 /// Graphic class for Flight Plan's waypoint to point of interest line.
-final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, PoiPointRelatedGraphic {
+final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, WayPointRelatedGraphic, PoiPointRelatedGraphic {
     // MARK: - Private Properties
     private var lineSymbol: AGSSimpleLineSymbol? {
         return symbol as? AGSSimpleLineSymbol
@@ -49,9 +49,6 @@ final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, PoiPointRelat
     // MARK: - Override Properties
     override var itemType: FlightPlanGraphicItemType {
         return .lineWayPointToPoi
-    }
-    override var itemIndex: Int? {
-        return attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] as? Int
     }
 
     // MARK: - Private Enums
@@ -96,8 +93,8 @@ final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, PoiPointRelat
                       poiPointGraphic: FlightPlanPoiPointGraphic) {
         guard let wayPoint = wayPointGraphic.wayPoint,
               let poiPoint = poiPointGraphic.poiPoint,
-              let wpIndex = wayPointGraphic.itemIndex,
-              let poiIndex = poiPointGraphic.itemIndex else {
+              let wpIndex = wayPointGraphic.wayPointIndex,
+              let poiIndex = poiPointGraphic.poiIndex else {
             return nil
         }
 
@@ -122,19 +119,5 @@ final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, PoiPointRelat
     ///    - poiPoint: point of interest's location
     func updatePoiPoint(_ poiPoint: AGSPoint) {
         self.geometry = polyline?.replacingLastPoint(poiPoint)
-    }
-
-    /// Decrements waypoint's index.
-    func decrementWayPointIndex() {
-        guard let index = itemIndex else { return }
-
-        self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index - 1
-    }
-
-    /// Increments waypoint's index.
-    func incrementWayPointIndex() {
-        guard let index = itemIndex else { return }
-
-        self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index + 1
     }
 }

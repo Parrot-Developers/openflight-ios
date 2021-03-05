@@ -59,6 +59,8 @@ enum DroneDetailsUpdateType {
     }
 }
 
+// FIXME: never used anymore with Missions and Firmware refactor.
+// It needs to be added after cliking on firmware cell in the update list.
 /// Displays infos about the version or a transition screen for update.
 final class DroneDetailsFirmwareViewController: UIViewController {
     // MARK: - Outlets
@@ -82,12 +84,6 @@ final class DroneDetailsFirmwareViewController: UIViewController {
     private var versionNeeded: String?
     /// Current drone details update model.
     private var model: DroneDetailsUpdateType = .upToDate
-
-    // MARK: - Private Enums
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "ConfirmUpdate"
-    }
 
     // MARK: - Setup
     /// Instantiates the view controller.
@@ -122,7 +118,8 @@ final class DroneDetailsFirmwareViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.confirmUpdate,
+                             logType: .screen)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -149,15 +146,17 @@ final class DroneDetailsFirmwareViewController: UIViewController {
 // MARK: - Actions
 private extension DroneDetailsFirmwareViewController {
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.close, logType: .simpleButton)
         closeView()
     }
 
     @IBAction func backgroundButtonTouchedUpInside(_ sender: Any) {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.tapToDismiss, logType: .simpleButton)
         closeView()
     }
 
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
-        logEvent(with: LogEvent.LogKeyDroneDetailsFirmwareUpdate.cancel, and: self.versionNumber)
+        logEvent(with: LogEvent.LogKeyCommonButton.cancel, and: self.versionNumber)
         closeView()
     }
 
@@ -230,8 +229,7 @@ private extension DroneDetailsFirmwareViewController {
     ///     - itemName: button name
     ///     - newValue: changed value
     func logEvent(with itemName: String, and newValue: String?) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.droneInformations.name,
-                             itemName: itemName,
+        LogEvent.logAppEvent(itemName: itemName,
                              newValue: newValue,
                              logType: .button)
     }

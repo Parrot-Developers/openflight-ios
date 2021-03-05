@@ -32,15 +32,11 @@ import ArcGIS
 
 /// Base class for Flight Plan graphical items.
 
-public class FlightPlanGraphic: AGSGraphic {
+open class FlightPlanGraphic: AGSGraphic {
     // MARK: - Public Properties
     /// Type of graphical item.
     var itemType: FlightPlanGraphicItemType {
         return .none
-    }
-    /// Index of item inside Flight Plan.
-    var itemIndex: Int? {
-        return nil
     }
 
     // MARK: - Override Properties

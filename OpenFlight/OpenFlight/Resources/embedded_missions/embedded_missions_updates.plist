@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>embeddedPath</key>
+		<string>embedded_missions/com.parrot.missions.samples.hello_7.0.0-beta43.tar.gz</string>
+		<key>md5</key>
+		<string>26af86cac7228d1d4af06633f94d8f20</string>
+		<key>name</key>
+		<string>Hello mission</string>
+		<key>size</key>
+		<integer>37667</integer>
+		<key>uid</key>
+		<string>com.parrot.missions.samples.hello</string>
+		<key>version</key>
+		<string>7.0.0-beta43</string>
+	</dict>
+</array>
+</plist>

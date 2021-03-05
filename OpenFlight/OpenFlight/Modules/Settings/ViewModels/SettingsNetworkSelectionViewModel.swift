@@ -55,8 +55,8 @@ enum NetworkManualSelectionField {
 /// State for in `SettingsNetworkSelectionViewModel`.
 final class SettingsNetworkSelectionState: DeviceConnectionState {
     // MARK: - Internal Properties
-    /// Tell if the current network selection is manual.
-    fileprivate(set) var isSelectionManual: Bool = false
+    /// Tell if the current network selection is manual or auto.
+    fileprivate(set) var selectionMode: SettingsCellularSelection = .auto
     /// Tell if the current network selection mode is updating.
     fileprivate(set) var isSelectionUpdating: Bool = false
 
@@ -84,28 +84,28 @@ final class SettingsNetworkSelectionState: DeviceConnectionState {
     ///
     /// - Parameters:
     ///     - connectionState: drone connection state
-    ///     - isSelectionManual: tell if the network selection is auto or manual
+    ///     - selectionMode: tell if the network selection is auto or manual
     ///     - isSelectionUpdating: tell if the network selection is updating
     init(connectionState: DeviceState.ConnectionState,
-         isSelectionManual: Bool,
+         selectionMode: SettingsCellularSelection,
          isSelectionUpdating: Bool) {
         super.init(connectionState: connectionState)
-        self.isSelectionManual = isSelectionManual
+
+        self.selectionMode = selectionMode
         self.isSelectionUpdating = isSelectionUpdating
     }
 
     // MARK: - Override Funcs
     override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? SettingsNetworkSelectionState else {
-            return false
-        }
-        return isSelectionManual == other.isSelectionManual
+        guard let other = other as? SettingsNetworkSelectionState else { return false }
+
+        return selectionMode == other.selectionMode
             && isSelectionUpdating == other.isSelectionUpdating
     }
 
     override func copy() -> SettingsNetworkSelectionState {
         return SettingsNetworkSelectionState(connectionState: self.connectionState,
-                                             isSelectionManual: self.isSelectionManual,
+                                             selectionMode: self.selectionMode,
                                              isSelectionUpdating: self.isSelectionUpdating)
     }
 }
@@ -117,7 +117,7 @@ final class SettingsNetworkSelectionViewModel: DroneStateViewModel<SettingsNetwo
 
     // MARK: - Internal Properties
     var settingEntry: SettingEntry {
-        return SettingEntry(setting: cellularRef?.value?.apnConfigurationSetting.isApnManual,
+        return SettingEntry(setting: selectionModel(with: drone?.getPeripheral(Peripherals.cellular)),
                             title: L10n.settingsConnectionNetworkSelection,
                             itemLogKey: LogEvent.LogKeyAdvancedSettings.wifiBand,
                             settingsBoolChoice: SettingsBoolChoice(firstChoiceName: L10n.commonAuto,
@@ -145,9 +145,22 @@ final class SettingsNetworkSelectionViewModel: DroneStateViewModel<SettingsNetwo
 
     /// Switch to auto or manual network selection mode.
     func switchSelectionMode() {
-        let selectionNetwork = cellularRef?.value?.apnConfigurationSetting
-        selectionNetwork?.isApnManual.value.toggle()
-        Defaults.isManualApnRequested = selectionNetwork?.isApnManual.value
+        let copy = state.value.copy()
+        if copy.selectionMode == .auto {
+            copy.selectionMode = .manual
+            state.set(copy)
+            guard let apnUrl = Defaults.networkUrl,
+                  let apnUsername = Defaults.networkUsername,
+                  let apnPassword = Defaults.networkPassword else { return }
+
+            _ = self.drone?.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToManual(url: apnUrl,
+                                                                                                     username: apnUsername,
+                                                                                                     password: apnPassword)
+        } else {
+            copy.selectionMode = .auto
+            state.set(copy)
+            _ = self.drone?.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToAuto()
+        }
     }
 }
 
@@ -163,10 +176,22 @@ private extension SettingsNetworkSelectionViewModel {
 
     /// Updates selection mode. Can be manual or auto.
     func updateSelectionMode() {
-        let selectionNetworkState = cellularRef?.value?.apnConfigurationSetting.isApnManual
+        let selectionNetworkState = drone?.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting
         let copy = state.value.copy()
         copy.isSelectionUpdating = selectionNetworkState?.updating == true
-        copy.isSelectionManual = selectionNetworkState?.value == true
+        copy.selectionMode = selectionNetworkState?.isManual == true ? .manual : .auto
         state.set(copy)
+    }
+
+    /// Creates a model for network selection.
+    ///
+    /// - Parameters:
+    ///     - cellular: cellular peripheral
+    /// - Returns: A drone setting model.
+    func selectionModel(with cellular: Cellular?) -> DroneSettingModel {
+        return DroneSettingModel(allValues: SettingsCellularSelection.allValues,
+                                 supportedValues: SettingsCellularSelection.allValues,
+                                 currentValue: state.value.selectionMode,
+                                 isUpdating: cellular?.apnConfigurationSetting.updating)
     }
 }

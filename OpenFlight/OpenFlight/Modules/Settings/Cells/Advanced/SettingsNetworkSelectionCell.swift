@@ -105,20 +105,11 @@ private extension SettingsNetworkSelectionCell {
     /// Inits segmented control.
     func initSegmentedControl() {
         segmentedControl.backgroundColor = .clear
-        segmentedControl.setBackgroundImage(UIColor.clear.asImage(),
-                                            for: .normal,
-                                            barMetrics: .default)
-        segmentedControl.setBackgroundImage(UIColor.clear.asImage(),
-                                            for: .selected,
-                                            barMetrics: .default)
-        segmentedControl.setDividerImage(UIImage(),
-                                         forLeftSegmentState: .normal,
-                                         rightSegmentState: .normal,
-                                         barMetrics: .default)
-        segmentedControl.makeup()
-        segmentedControl.makeup(color: .greenSpring, and: .selected)
-        segmentedControl.setWidth(Constants.segmentWidth, forSegmentAt: 0)
-        segmentedControl.setWidth(Constants.segmentWidth, forSegmentAt: 1)
+        segmentedControl.layer.backgroundColor = UIColor.clear.cgColor
+        segmentedControl.customMakeup(normalBackgroundColor: ColorName.clear,
+                                      selectedBackgroundColor: ColorName.greenSpring20,
+                                      selectedFontColor: ColorName.greenSpring)
+        segmentedControl.roundCornered()
     }
 
     /// Inits the view model.
@@ -137,7 +128,7 @@ private extension SettingsNetworkSelectionCell {
         passwordTextField.text = viewModel?.state.value.password
         segmentedControl.removeAllSegments()
         titleLabel.text = viewModel?.settingEntry.title
-        self.manualSelectionView.isHidden = viewModel?.state.value.isSelectionManual == false
+        self.manualSelectionView.isHidden = viewModel?.state.value.selectionMode == .auto
         segmentedControl.isEnabled = viewModel?.state.value.isSelectionUpdating == false
 
         guard let segmentModel = viewModel?.settingEntry.segmentModel else { return }

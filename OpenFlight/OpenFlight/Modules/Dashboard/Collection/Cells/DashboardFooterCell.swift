@@ -55,14 +55,14 @@ final class DashboardFooterCell: UICollectionViewCell, NibReusable {
 // MARK: - Actions
 private extension DashboardFooterCell {
     @IBAction func aboutButtonTouchedUpInside(_ sender: Any) {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyDashboardButton.about,
+                             logType: .simpleButton)
         coordinator?.startAbout()
     }
 
     @IBAction func dataConfidentialityButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.dashboard.name,
-                             itemName: LogEvent.LogKeyDashboardDataConfidentialityButton.dataConfidentiality.name,
-                             newValue: nil,
-                             logType: .button)
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyDashboardDataConfidentialityButton.dataConfidentiality.name,
+                             logType: .simpleButton)
         coordinator?.startConfidentiality()
     }
 }
@@ -80,6 +80,8 @@ private extension DashboardFooterCell {
 
     /// Shows the Parrot debug screen.
     @objc func showParrotDebugScreen() {
+        LogEvent.logAppEvent(itemName: LogEvent.EventLoggerScreenConstants.debugLogs,
+                             logType: .simpleButton)
         coordinator?.startParrotDebug()
     }
 }

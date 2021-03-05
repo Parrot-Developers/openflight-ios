@@ -8,10 +8,11 @@ target 'OpenFlightApp' do
     pod 'GroundSdk', '~> 2.0.0-beta1'
     pod 'ArsdkEngine', '~> 2.0.0-beta1'
     pod 'SdkCore', '~> 2.0.0-beta1'
-    pod 'OpenFlightCore', '~> 2.0.0-alpha7'
+    pod 'OpenFlightCore', '~> 7.0.0-beta12'
     pod 'Reusable'
     pod 'SwiftyUserDefaults'
     pod 'KeychainAccess'
     pod 'ReachabilitySwift'
+    pod 'lottie-ios'
     pod 'ArcGIS-Runtime-SDK-iOS'
 end

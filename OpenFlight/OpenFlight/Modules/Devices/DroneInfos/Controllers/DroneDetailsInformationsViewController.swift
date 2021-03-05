@@ -30,32 +30,21 @@
 
 import UIKit
 
-/// Displays a view with informations about the drone (system, flight time, etc).
+/// Displays a view with informations about the drone (system, imei etc).
 final class DroneDetailsInformationsViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var mainView: UIView!
-    @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var droneNameLabel: UILabel!
-    @IBOutlet private weak var droneNameView: UIView!
-    @IBOutlet private weak var imeiTitleLabel: UILabel!
-    @IBOutlet private weak var imeiValueLabel: UILabel!
+    @IBOutlet private weak var serialContainerView: DeviceInformationsView!
+    @IBOutlet private weak var hardwareVersionContainerView: DeviceInformationsView!
+    @IBOutlet private weak var imeiContainerView: DeviceInformationsView!
     @IBOutlet private weak var resetButton: UIButton!
-    @IBOutlet private weak var collectionView: UICollectionView!
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
     private var viewModel = DroneDetailsInformationsViewModel()
-    private var items = [DroneDetailsCollectionViewCellModel]()
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let cellsPerRow: Int = 2
-        static let standardCellSize: CGSize = CGSize(width: 150.0, height: 50.0)
-    }
 
     // MARK: - Setup
     static func instantiate(coordinator: Coordinator) -> DroneDetailsInformationsViewController {
-        let viewController = StoryboardScene.DroneDetails.droneDetailsInformationsViewController.instantiate()
+        let viewController = StoryboardScene.DroneDetails.droneDetailsInformations.instantiate()
         viewController.coordinator = coordinator
 
         return viewController
@@ -66,26 +55,7 @@ final class DroneDetailsInformationsViewController: UIViewController {
         super.viewDidLoad()
 
         setupView()
-        setupCollectionView()
         setupViewModel()
-
-        addCloseButton(onTapAction: #selector(closeButtonTouchedUpInside(_:)),
-                       targetView: mainView,
-                       style: .cross)
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        UIView.animate(withDuration: Style.shortAnimationDuration) {
-            self.view.backgroundColor = ColorName.greyDark60.color
-        }
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-
-        collectionView.reloadData()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -103,23 +73,10 @@ final class DroneDetailsInformationsViewController: UIViewController {
 
 // MARK: - Actions
 private extension DroneDetailsInformationsViewController {
-    @objc func closeButtonTouchedUpInside(_ sender: UIButton) {
-        closeView()
-    }
-
-    @IBAction func backgroundButtonTouchedUpInside(_ sender: Any) {
-        closeView()
-    }
-
-    @IBAction func droneNameViewTouchedUpInside(_ sender: Any) {
-        // TODO: implement rename drone.
-    }
-
     @IBAction func resetButtonTouchedUpInside(_ sender: Any) {
         let validateAction = AlertAction(title: L10n.commonReset, actionHandler: { [weak self] in
             self?.viewModel.resetDrone()
-            LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.droneInformations.name,
-                                 itemName: LogEvent.LogKeyDroneDetailsInformationsButton.resetDroneInformations,
+            LogEvent.logAppEvent(itemName: LogEvent.LogKeyDroneDetailsInformationsButton.resetDroneInformations,
                                  newValue: nil,
                                  logType: .button)
         })
@@ -134,33 +91,7 @@ private extension DroneDetailsInformationsViewController {
 private extension DroneDetailsInformationsViewController {
     /// Sets up the view.
     func setupView() {
-        mainView.applyCornerRadius(Style.largeCornerRadius,
-                                   maskedCorners: [.layerMinXMinYCorner,
-                                                   .layerMaxXMinYCorner])
-        titleLabel.makeUp(with: .huge)
-        titleLabel.text = L10n.droneDetailsInformations
-        droneNameView.cornerRadiusedWith(backgroundColor: .clear,
-                                         borderColor: ColorName.white20.color,
-                                         radius: Style.largeCornerRadius,
-                                         borderWidth: Style.mediumBorderWidth)
-        droneNameLabel.makeUp(with: .huge)
-        imeiTitleLabel.makeUp(with: .large, and: .white)
-        imeiTitleLabel.text = L10n.droneDetailsImei
-        imeiValueLabel.makeUp(with: .regular, and: .white50)
-        droneNameView.setBorder(borderColor: ColorName.white20.color, borderWidth: Style.mediumBorderWidth)
         resetButton.setTitle(L10n.commonReset, for: .normal)
-        resetButton.makeup(with: .large, color: .white)
-        resetButton.cornerRadiusedWith(backgroundColor: .clear,
-                                       borderColor: ColorName.white.color,
-                                       radius: Style.largeCornerRadius,
-                                       borderWidth: Style.largeBorderWidth)
-    }
-
-    /// Sets up informations collection view.
-    func setupCollectionView() {
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        collectionView.register(cellType: DroneDetailsCollectionViewCell.self)
     }
 
     /// Sets up view model.
@@ -176,48 +107,20 @@ private extension DroneDetailsInformationsViewController {
     /// - Parameters:
     ///    - state: current state
     func updateView(_ state: DroneDetailsInformationsState) {
-        self.items = state.items
-        self.droneNameLabel.text = state.name
-        self.imeiValueLabel.text = state.imei ?? Style.dash
-        self.resetButton.isEnabled = state.isConnected()
-        self.resetButton.alphaWithEnabledState(state.isConnected())
-    }
+        resetButton.isEnabled = state.isConnected()
+        let resetColor: ColorName = state.isConnected() ? ColorName.white : ColorName.white20
 
-    /// Closes the view.
-    func closeView() {
-        self.view.backgroundColor = .clear
-        coordinator?.dismiss()
-    }
-}
+        resetButton.makeup(with: .large, color: resetColor)
+        resetButton.cornerRadiusedWith(backgroundColor: .clear,
+                                       borderColor: resetColor.color,
+                                       radius: Style.largeCornerRadius,
+                                       borderWidth: Style.largeBorderWidth)
 
-// MARK: - UICollectionViewDataSource
-extension DroneDetailsInformationsViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return items.count
-    }
-
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(for: indexPath) as DroneDetailsCollectionViewCell
-        if indexPath.row < items.count {
-            cell.model = items[indexPath.row]
-        }
-        return cell
-    }
-}
-
-// MARK: - UICollectionViewDelegateFlowLayout
-extension DroneDetailsInformationsViewController: UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        sizeForItemAt indexPath: IndexPath) -> CGSize {
-        guard let flowLayout = collectionViewLayout as? UICollectionViewFlowLayout else {
-            return Constants.standardCellSize
-        }
-        let width = flowLayout.getDynamicCellWidth(cellsPerRow: Constants.cellsPerRow,
-                                                   width: collectionView.bounds.width)
-        let height = flowLayout.getDynamicCellHeight(cellsPerRow: Constants.cellsPerRow,
-                                                     height: collectionView.bounds.height,
-                                                     count: items.count)
-        return CGSize(width: width, height: height)
+        serialContainerView.model = DeviceInformationsModel(title: L10n.remoteDetailsSerialNumber,
+                                                           description: state.serialNumber)
+        hardwareVersionContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsHardwareVersion,
+                                                                    description: state.hardwareVersion)
+        imeiContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsImei,
+                                                         description: state.imei)
     }
 }

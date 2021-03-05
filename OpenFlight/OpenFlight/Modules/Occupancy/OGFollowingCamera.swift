@@ -127,7 +127,7 @@ private class TargetSphere: SCNNode {
 }
 
 private class TargetDestination {
-    static let discreteNumber: Int = 5 //Occupancy.maxBeamSegments
+    static let discreteNumber: Int = 5 // Occupancy.maxBeamSegments
 
     static func compute(speed: simd_float3, rotationSpeed: simd_float3) -> simd_float3? {
         guard simd_length(speed) > Occupancy.minCameraSpeedTargetTriger else {
@@ -238,7 +238,7 @@ private class SightAngleAnalyser: SightAngleAnalysis {
 
 private protocol FollowingAngleAnalysis: class {
     var currentAngle: Float { get }
-    //var nilMotionTrigerOveride: (TimeInterval, EnumMotionAnalyse)? { get set }
+    // var nilMotionTrigerOveride: (TimeInterval, EnumMotionAnalyse)? { get set }
     init(slicesNumber: UInt, plane: CameraPlane)
     func analyseNewDestination(destinationCoordinate: simd_float3?, isStationary: Bool, atTime: TimeInterval)
     func smartUpdateIfAnimationIsRunnig(atTime: TimeInterval)

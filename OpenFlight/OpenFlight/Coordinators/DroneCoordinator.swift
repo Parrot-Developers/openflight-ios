@@ -73,11 +73,6 @@ extension DroneCoordinator {
         self.present(childCoordinator: updateCoordinator)
     }
 
-    /// Starts informations (hardware, IMEI, etc).
-    func startInformations() {
-        presentModal(viewController: DroneDetailsInformationsViewController.instantiate(coordinator: self))
-    }
-
     /// Starts cellular information.
     func displayCellularDetails() {
         presentModal(viewController: DroneDetailsCellularViewController.instantiate(coordinator: self))
@@ -91,6 +86,14 @@ extension DroneCoordinator {
     /// Dismisses current coordinator.
     func dismissDroneInfos() {
         parentCoordinator?.dismissChildCoordinator()
+    }
+
+    /// Displays drone password edition setting.
+    func displayDronePasswordEdition() {
+        let viewController = SettingsPasswordEditionViewController.instantiate(coordinator: self,
+                                                                               viewModel: SettingsNetworkViewModel(),
+                                                                               orientation: .all)
+        self.push(viewController)
     }
 
     /// Starts update or version information.
@@ -107,5 +110,14 @@ extension DroneCoordinator {
                                                                                     versionNeeded: versionNeeded,
                                                                                     model: model)
         presentModal(viewController: firmwareViewController)
+    }
+
+    /// Starts the Firmware and Protobuf Missions updates process.
+    func startFimwareAndProtobufMissionsUpdate() {
+        let missionUpdateCoordinator = ProtobufMissionUpdateCoordinator()
+        missionUpdateCoordinator.parentCoordinator = self
+        missionUpdateCoordinator.start()
+        self.present(childCoordinator: missionUpdateCoordinator,
+                     overFullScreen: true)
     }
 }

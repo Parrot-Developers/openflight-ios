@@ -84,11 +84,9 @@ final class EditionSettingsViewController: UIViewController {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let firstSectionCellNumber: Int = 1
         static let sectionNumber: Int = 2
         static let cellHeight: CGFloat = 80.0
         static let titleCellHeight: CGFloat = 60.0
-        static let topConstraintHeight: CGFloat = 50.0
         static let deleteButtonTrailing: CGFloat = 16.0
     }
 
@@ -127,7 +125,6 @@ final class EditionSettingsViewController: UIViewController {
         self.settingsProvider = settingsProvider
         self.settingsProvider?.delegate = self
         self.savedFlightPlan = savedFlightPlan
-        self.closeButton.isHidden = settingsProvider?.hasCustomType == true
         self.deleteButton.isHidden = savedFlightPlan != nil || settingsProvider is WayPointSegmentSettingsProvider
 
         switch settingsProvider {
@@ -147,9 +144,9 @@ final class EditionSettingsViewController: UIViewController {
     /// Updates the top constraint of the tableview.
     ///
     /// - Parameters:
-    ///     - isDroneConnected: specify if the drone is connected
-    func updateTopTableViewConstraint(isDroneConnected: Bool) {
-        self.tableViewTopConstraint.constant = isDroneConnected ? Constants.topConstraintHeight : 0.0
+    ///     - value: contraint value
+    func updateTopTableViewConstraint(_ value: CGFloat) {
+        self.tableViewTopConstraint.constant = value
     }
 
     /// Refreshes table view data for Flight Plan estimation updates.
@@ -223,7 +220,7 @@ extension EditionSettingsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:
-            return Constants.firstSectionCellNumber
+            return settingsProvider?.hasCustomType == true ? 2 : 1
         case 1:
             return fpSettings?.count ?? settingsProvider?.settings.count ?? 0
         default:
@@ -245,7 +242,7 @@ extension EditionSettingsViewController: UITableViewDataSource {
     ///    - indexPath: the index path
     /// - Returns: cell to display
     private func cellForFirstSection(indexPath: IndexPath) -> UITableViewCell {
-        if settingsProvider?.hasCustomType == true {
+        if settingsProvider?.hasCustomType == true, indexPath.row == 1 {
             let cell = tableView.dequeueReusableCell(for: indexPath) as ModesChoiceTableViewCell
             cell.fill(with: settingsProvider)
             cell.updateTrailingConstraint(trailingConstraint)

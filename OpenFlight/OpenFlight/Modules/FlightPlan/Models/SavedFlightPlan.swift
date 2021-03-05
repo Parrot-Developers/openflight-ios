@@ -42,6 +42,7 @@ public final class SavedFlightPlan: Codable {
     public var polygonPoints: [PolygonPoint] = []
     public var settings: [FlightPlanLightSetting] = []
     public var remoteFlightPlanId: Int?
+    public var obstacleAvoidanceActivated: Bool? = true
     public var lastModifiedDate: Date? {
         get {
             guard lastModified > 0 else { return nil }
@@ -142,6 +143,7 @@ public final class SavedFlightPlan: Codable {
         case plan
         case canGenerateMavlink
         case remoteFlightPlanId
+        case obstacleAvoidanceActivated
     }
 
     private enum Constants {
@@ -161,15 +163,15 @@ public final class SavedFlightPlan: Codable {
     ///    - plan: structure of FlightPlan
     ///    - settings: settings of FlightPlan
     ///    - polygonPoints: list of polygon points
-    init(version: Int,
-         title: String,
-         type: String?,
-         uuid: String,
-         lastModified: Date? = nil,
-         product: Drone.Model,
-         plan: FlightPlanObject,
-         settings: [FlightPlanLightSetting],
-         polygonPoints: [PolygonPoint]? = nil) {
+    public init(version: Int,
+                title: String,
+                type: String?,
+                uuid: String,
+                lastModified: Date? = nil,
+                product: Drone.Model,
+                plan: FlightPlanObject,
+                settings: [FlightPlanLightSetting],
+                polygonPoints: [PolygonPoint]? = nil) {
         self.version = version
         self.title = title
         self.uuid = uuid
@@ -229,13 +231,12 @@ public final class SavedFlightPlan: Codable {
 
 extension Data {
     /// Returns FlightPlan object from JSON data.
-    func asFlightPlan() -> SavedFlightPlan? {
+    var asFlightPlan: SavedFlightPlan? {
         return try? JSONDecoder().decode(SavedFlightPlan.self, from: self)
     }
 }
 
 // MARK: - `SavedFlightPlan` helpers
-
 extension SavedFlightPlan {
     /// Returns default mavlink Url.
     public var mavlinkDefaultUrl: URL? {
@@ -262,5 +263,10 @@ extension SavedFlightPlan {
                         + error.localizedDescription)
             }
         }
+    }
+
+    /// Returns a SavedFlightPlan copy.
+    func copy() -> SavedFlightPlan? {
+        self.asData?.asFlightPlan
     }
 }

@@ -79,8 +79,8 @@ final class SegmentedBarView<T: BarButtonState>: UIView, NibOwnerLoadable, NibLo
         }
     }
 
-    ///Max items displayed at same time on segmented bar.
-    ///Additionnal items are accessible via navigation arrows.
+    /// Max items displayed at same time on segmented bar.
+    /// Additionnal items are accessible via navigation arrows.
     var maxItems: Int = 5
 
     /// Orientation of the items.
@@ -100,7 +100,7 @@ final class SegmentedBarView<T: BarButtonState>: UIView, NibOwnerLoadable, NibLo
 
     private var models = [BarButtonState]() {
         didSet {
-            //Reset pagination if needed.
+            // Reset pagination if needed.
             if models.count < startItemIndex {
                 startItemIndex = 0
             }

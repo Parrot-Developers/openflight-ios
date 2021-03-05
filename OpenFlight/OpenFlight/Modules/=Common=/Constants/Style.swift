@@ -35,9 +35,12 @@ import UIKit
 // MARK: - Global constants
 public enum Style {
     public static let dash: String = "-"
+    public static let arrow: String = " ▸ "
     public static let dot: String = "."
     public static let multiplySign: String = "×"
     public static let pipe: String = "|"
+    public static let comma: String = ","
+    public static let slash: String = " / "
     public static let newLine: String = "\n"
     public static let whiteSpace: String = " "
     public static let equalSign: String = "="

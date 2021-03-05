@@ -34,7 +34,7 @@ protocol HUDCoordinatorCriticalAlertDelegate: class {
 }
 
 /// Coordinator for HUD part.
-open class HUDCoordinator: Coordinator, HistoryMediasAction {
+open class HUDCoordinator: Coordinator, HistoryMediasAction, FlightPlanManagerCoordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
@@ -67,8 +67,11 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
     }
 
     /// Displays a flight report on the HUD.
-    open func displayFlightReport() {
-        presentModal(viewController: FlightReportViewController.instantiate())
+    ///
+    /// - Parameters:
+    ///     - flightState: flight state
+    open func displayFlightReport(flightState: FlightDataState) {
+        presentModal(viewController: FlightReportViewController.instantiate(flightState: flightState))
     }
 
     open func handleHistoryCellAction(with fpExecution: FlightPlanExecution,
@@ -139,21 +142,6 @@ extension HUDCoordinator {
         self.present(childCoordinator: flightPlanEditionCoordinator, animated: false)
     }
 
-    /// Starts manage plans modal.
-    func startManagePlans() {
-        presentModal(viewController: ManagePlansViewController.instantiate(coordinator: self))
-    }
-
-    /// Starts Flight Plan history modal.
-    ///
-    /// - Parameters:
-    ///     - flightPlanViewModel: Flight Plan ViewModel
-    func startFlightPlanHistory(flightPlanViewModel: FlightPlanViewModel?) {
-        let viewController = FlightPlanFullHistoryViewController.instantiate(coordinator: self,
-                                                                             viewModel: flightPlanViewModel)
-        presentModal(viewController: viewController)
-    }
-
     /// Displays a live streaming panel on the HUD.
     func displayLiveStreaming() {
         presentModal(viewController: LiveStreamingViewController.instantiate(coordinator: self))
@@ -213,17 +201,6 @@ extension HUDCoordinator {
     /// Displays a cellular configuration screen which displays successful modal or errors.
     public func displayPairingProcessState() {
         presentModal(viewController: CellularPairingProcessViewController.instantiate(coordinator: self))
-    }
-}
-
-// MARK: - ManagePlansNavigation
-extension HUDCoordinator: ManagePlansNavigation {
-    func closeManagePlans() {
-        self.navigationController?.dismiss(animated: true)
-        // Notify observers about flight plan modal's visibility status.
-        NotificationCenter.default.post(name: .modalPresentDidChange,
-                                        object: self,
-                                        userInfo: [BottomBarViewControllerNotifications.notificationKey: false])
     }
 }
 

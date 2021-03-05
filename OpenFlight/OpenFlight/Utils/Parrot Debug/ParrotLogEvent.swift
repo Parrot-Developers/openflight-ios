@@ -38,11 +38,12 @@ public class LogEvent {
     public enum LogType {
         case button
         case screen
+        case simpleButton
 
         /// Log name according to event type.
         var logName: String {
             switch self {
-            case .button:
+            case .button, .simpleButton:
                 return "BUTTON"
             case .screen:
                 return "SCREEN"
@@ -57,9 +58,9 @@ public class LogEvent {
     ///     - itemName: name of the item taped to log
     ///     - newValue: item new value to log
     ///     - logType: Determines type of log
-    public static func logAppEvent(screen: String,
-                                   itemName: String?,
-                                   newValue: String?,
+    public static func logAppEvent(screen: String? = nil,
+                                   itemName: String? = nil,
+                                   newValue: String? = nil,
                                    logType: LogType) {
         let gsdk: GroundSdk = GroundSdk()
         let peripheral = gsdk.getFacility(Facilities.eventLogger)
@@ -67,11 +68,21 @@ public class LogEvent {
 
         switch logType {
         case .screen:
-            message = "EVT:\(logType.logName);name='\(screen)'"
-        default:
-            message = "EVT:\(logType.logName);name='\(itemName ?? "")';value='\(newValue ?? "")'"
-        }
+            guard let screenString = screen else { return }
 
+            message = "EVT:\(logType.logName);name='\(screenString)'"
+        case .simpleButton:
+            guard let itemNameString = itemName else { return }
+
+            message = "EVT:\(logType.logName);name='\(itemNameString)'"
+        default:
+            guard let itemNameString = itemName,
+                  let newValueString = newValue else {
+                return
+            }
+
+            message = "EVT:\(logType.logName);name='\(itemNameString)';value='\(newValueString)'"
+        }
         peripheral?.log(message.trimmingCharacters(in: .whitespaces))
     }
 

@@ -1,52 +1,103 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="FlightPlanPanelEstimationView" customModule="OpenFlight" customModuleProvider="target">
             <connections>
-                <outlet property="distanceItemView" destination="0FZ-6O-oVd" id="Eun-4w-XS1"/>
-                <outlet property="durationItemView" destination="zsM-aT-AzX" id="mpA-YS-bS3"/>
-                <outlet property="memoryItemView" destination="rS6-I5-wWO" id="K8C-f7-jMj"/>
+                <outlet property="batteryImage" destination="E5U-Kw-WZH" id="sCj-aq-qNQ"/>
+                <outlet property="batteryLabel" destination="8wl-Vm-Rkl" id="QH9-nT-Ps2"/>
+                <outlet property="mediaImage" destination="4Ib-l4-FDT" id="m2g-Ym-AeD"/>
+                <outlet property="mediaLabel" destination="WG1-fp-P3i" id="gly-Kh-9lU"/>
+                <outlet property="timeImage" destination="0d3-82-zL4" id="MoK-ms-QaD"/>
+                <outlet property="timeLabel" destination="LWo-KI-pe2" id="Cf3-2S-aiS"/>
             </connections>
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view contentMode="scaleToFill" id="iN0-l3-epB">
-            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+            <rect key="frame" x="0.0" y="0.0" width="300" height="16"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="EyE-dS-Xma">
-                    <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                <stackView opaque="NO" contentMode="scaleToFill" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="hdy-NE-9kn">
+                    <rect key="frame" x="0.0" y="0.0" width="300" height="16"/>
                     <subviews>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0FZ-6O-oVd" customClass="FlightPlanPanelEstimationItemView" customModule="OpenFlight" customModuleProvider="target">
-                            <rect key="frame" x="0.0" y="0.0" width="600" height="200"/>
-                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        </view>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zsM-aT-AzX" customClass="FlightPlanPanelEstimationItemView" customModule="OpenFlight" customModuleProvider="target">
-                            <rect key="frame" x="0.0" y="200" width="600" height="200"/>
-                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        </view>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rS6-I5-wWO" customClass="FlightPlanPanelEstimationItemView" customModule="OpenFlight" customModuleProvider="target">
-                            <rect key="frame" x="0.0" y="400" width="600" height="200"/>
-                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        </view>
+                        <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="gSc-h3-MIL">
+                            <rect key="frame" x="0.0" y="0.0" width="60.5" height="16"/>
+                            <subviews>
+                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icCameraModeTimer" translatesAutoresizingMaskIntoConstraints="NO" id="0d3-82-zL4">
+                                    <rect key="frame" x="0.0" y="0.0" width="16" height="16"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" secondItem="0d3-82-zL4" secondAttribute="height" multiplier="1:1" id="yKe-be-nsX"/>
+                                    </constraints>
+                                </imageView>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="(0:00)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LWo-KI-pe2">
+                                    <rect key="frame" x="20" y="0.0" width="40.5" height="16"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                        </stackView>
+                        <stackView opaque="NO" contentMode="scaleToFill" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="D9u-tg-df0">
+                            <rect key="frame" x="72.5" y="0.0" width="45.5" height="16"/>
+                            <subviews>
+                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBattery" translatesAutoresizingMaskIntoConstraints="NO" id="E5U-Kw-WZH">
+                                    <rect key="frame" x="0.0" y="0.0" width="16" height="16"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" secondItem="E5U-Kw-WZH" secondAttribute="height" multiplier="1:1" id="kri-qw-Iyd"/>
+                                    </constraints>
+                                </imageView>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="- %" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8wl-Vm-Rkl">
+                                    <rect key="frame" x="22" y="0.0" width="23.5" height="16"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                        </stackView>
+                        <stackView opaque="NO" contentMode="scaleToFill" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="Zws-WU-HsD">
+                            <rect key="frame" x="130" y="0.0" width="170" height="16"/>
+                            <subviews>
+                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icPhotoMini" translatesAutoresizingMaskIntoConstraints="NO" id="4Ib-l4-FDT">
+                                    <rect key="frame" x="0.0" y="0.0" width="16" height="16"/>
+                                    <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" secondItem="4Ib-l4-FDT" secondAttribute="height" multiplier="1:1" id="Qx0-iV-yzL"/>
+                                    </constraints>
+                                </imageView>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="-" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WG1-fp-P3i">
+                                    <rect key="frame" x="22" y="0.0" width="148" height="16"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                        </stackView>
                     </subviews>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="16" id="PuU-ac-80f"/>
+                    </constraints>
                 </stackView>
             </subviews>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
-                <constraint firstAttribute="bottom" secondItem="EyE-dS-Xma" secondAttribute="bottom" id="TH1-xX-SQz"/>
-                <constraint firstItem="EyE-dS-Xma" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="WC0-oq-xjn"/>
-                <constraint firstItem="EyE-dS-Xma" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="aGa-m3-qlj"/>
-                <constraint firstAttribute="trailing" secondItem="EyE-dS-Xma" secondAttribute="trailing" id="jam-0J-xrS"/>
+                <constraint firstItem="hdy-NE-9kn" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="2Sq-DJ-8gA"/>
+                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="hdy-NE-9kn" secondAttribute="bottom" id="Zjy-gx-n39"/>
+                <constraint firstItem="hdy-NE-9kn" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="fyr-6L-nyY"/>
+                <constraint firstAttribute="trailing" secondItem="hdy-NE-9kn" secondAttribute="trailing" id="h7l-qi-dBa"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <point key="canvasLocation" x="141" y="155"/>
+            <point key="canvasLocation" x="134.40000000000001" y="35.532233883058474"/>
         </view>
     </objects>
+    <resources>
+        <image name="icBattery" width="7" height="14"/>
+        <image name="icCameraModeTimer" width="18" height="18"/>
+        <image name="icPhotoMini" width="11" height="9"/>
+    </resources>
 </document>

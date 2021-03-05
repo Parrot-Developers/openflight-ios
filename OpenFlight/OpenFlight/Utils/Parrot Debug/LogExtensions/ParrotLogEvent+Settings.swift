@@ -88,7 +88,6 @@ extension LogEvent {
 
     /// Enum which stores password edition button key for log message.
     enum LogKeyWifiPasswordEdition {
-        static let cancel: String = "Cancel"
         static let changePassword = "ChangePassword"
     }
 }

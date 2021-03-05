@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -47,28 +47,37 @@
                             <constraint firstAttribute="height" constant="26" id="fYx-jr-c2r"/>
                         </constraints>
                     </imageView>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ChT-xC-Xr5">
+                        <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
                 </subviews>
             </view>
             <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
                 <constraint firstAttribute="bottom" secondItem="HQn-6q-WuT" secondAttribute="bottom" constant="10" id="015-Zb-QVh"/>
+                <constraint firstAttribute="trailing" secondItem="ChT-xC-Xr5" secondAttribute="trailing" id="4td-RN-dNn"/>
                 <constraint firstAttribute="trailing" secondItem="5Z0-cs-Q1z" secondAttribute="trailing" constant="4" id="7Ng-mT-aEx"/>
+                <constraint firstItem="ChT-xC-Xr5" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="7VE-aS-JoH"/>
                 <constraint firstAttribute="bottom" secondItem="Hgc-Nf-OQt" secondAttribute="bottom" id="9xG-eE-ytT"/>
                 <constraint firstItem="HQn-6q-WuT" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="EGm-uI-eL4"/>
                 <constraint firstItem="ger-2h-MEb" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="Qbt-xN-wma"/>
                 <constraint firstItem="Hgc-Nf-OQt" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="TU0-Ie-Frj"/>
                 <constraint firstItem="5Z0-cs-Q1z" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" constant="4" id="TmR-eT-GBI"/>
                 <constraint firstAttribute="trailing" secondItem="HQn-6q-WuT" secondAttribute="trailing" id="Unq-tq-HDg"/>
+                <constraint firstAttribute="bottom" secondItem="ChT-xC-Xr5" secondAttribute="bottom" id="a2X-du-O3j"/>
                 <constraint firstItem="ger-2h-MEb" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="aUU-MS-VYB"/>
                 <constraint firstItem="Hgc-Nf-OQt" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="ajQ-Wp-AI3"/>
                 <constraint firstAttribute="trailing" secondItem="Hgc-Nf-OQt" secondAttribute="trailing" id="env-IS-hpz"/>
                 <constraint firstAttribute="trailing" secondItem="ger-2h-MEb" secondAttribute="trailing" id="h7T-Ve-4bd"/>
+                <constraint firstItem="ChT-xC-Xr5" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="hLa-bA-FEp"/>
                 <constraint firstAttribute="bottom" secondItem="ger-2h-MEb" secondAttribute="bottom" id="lcq-SY-gEn"/>
             </constraints>
             <connections>
                 <outlet property="backgroundImageView" destination="Hgc-Nf-OQt" id="pdX-Dh-LaT"/>
                 <outlet property="dateLabel" destination="o6r-Da-xpR" id="AWf-2z-ONf"/>
                 <outlet property="gradientView" destination="ger-2h-MEb" id="odt-CX-goU"/>
+                <outlet property="selectedView" destination="ChT-xC-Xr5" id="eW0-CD-n6s"/>
                 <outlet property="titleLabel" destination="tD3-UC-gOi" id="DES-T9-San"/>
                 <outlet property="typeImage" destination="5Z0-cs-Q1z" id="jUZ-fY-Lri"/>
             </connections>

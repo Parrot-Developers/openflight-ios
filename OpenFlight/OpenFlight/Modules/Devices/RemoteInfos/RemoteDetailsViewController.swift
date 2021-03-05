@@ -55,11 +55,6 @@ final class RemoteDetailsViewController: UIViewController {
         static let minimumBatteryLevel: Double = 40.0
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "RemoteControlDetails"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: RemoteCoordinator) -> RemoteDetailsViewController {
         let viewController = StoryboardScene.RemoteDetails.initialScene.instantiate()
@@ -81,7 +76,8 @@ final class RemoteDetailsViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.remoteControlDetails,
+                             logType: .screen)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -112,12 +108,12 @@ final class RemoteDetailsViewController: UIViewController {
 // MARK: - Actions
 private extension RemoteDetailsViewController {
     @IBAction func backButtonTouchedUpInside(_ sender: Any) {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .simpleButton)
         coordinator?.dismissChildCoordinator()
     }
 
     @IBAction func droneButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.remoteControlDetails.name,
-                             itemName: LogEvent.LogKeyRemoteInfosButton.remoteConnectToDrone.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyRemoteInfosButton.remoteConnectToDrone.name,
                              newValue: nil,
                              logType: .button)
         if detailsViewModel?.state.value.remoteControlConnectionState?.isConnected() == true {
@@ -129,8 +125,7 @@ private extension RemoteDetailsViewController {
         // Present an alert if the user wants to reset the remote.
         let validateAction = AlertAction(title: L10n.commonReset, actionHandler: { [weak self] in
             self?.detailsViewModel?.resetRemote()
-            LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.remoteControlDetails.name,
-                                 itemName: LogEvent.LogKeyRemoteInfosButton.remoteReset.name,
+            LogEvent.logAppEvent(itemName: LogEvent.LogKeyRemoteInfosButton.remoteReset.name,
                                  newValue: nil,
                                  logType: .button)
         })
@@ -223,7 +218,7 @@ private extension RemoteDetailsViewController {
         if state.droneConnectionState?.isConnected() == true,
            state.remoteControlConnectionState?.isConnected() == true {
             droneButtonView.fill(model: DeviceButtonModel(label: state.droneName,
-                                                          image: state.wifiStrength.image))
+                                                          image: state.wifiStrength.signalIcon()))
         } else if state.remoteControlConnectionState?.isConnected() == true,
                   state.droneConnectionState?.isConnected() == false {
             droneButtonView.fill(model: DeviceButtonModel(label: L10n.remoteDetailsConnectToADrone,
@@ -312,7 +307,7 @@ extension RemoteDetailsViewController: UITableViewDelegate {
            detailsListViewModel?.state.value.needUpdate == true {
             if detailsViewModel?.isBatteryLevelSufficient() == false {
                 let percent = Constants.minimumBatteryLevel.asPercent()
-                showErrorAlert(title: L10n.remoteUpdateInsufficientBatteryTitle(percent),
+                showErrorAlert(title: L10n.remoteUpdateInsufficientBatteryTitle,
                                message: L10n.remoteUpdateInsufficientBatteryDescription(percent))
             } else if detailsViewModel?.isDroneFlying() == true {
                 showErrorAlert(title: L10n.deviceUpdateImpossible,

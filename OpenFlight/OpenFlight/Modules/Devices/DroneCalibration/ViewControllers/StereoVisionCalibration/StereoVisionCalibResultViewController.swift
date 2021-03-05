@@ -51,12 +51,6 @@ final class StereoVisionCalibResultViewController: UIViewController {
         static let currentOrientation: String = "orientation"
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessageSuccess: String = "SensorCalibration/Success"
-        static let screenMessageFailure: String = "SensorCalibration/Failure"
-    }
-
     // MARK: - Setup
     /// Instantiate View controller.
     ///
@@ -142,8 +136,9 @@ private extension StereoVisionCalibResultViewController {
     func initLogs() {
         guard let isCalibrated = isCalibrated else { return }
 
-        logScreen(logMessage: isCalibrated
-                    ? EventLoggerConstants.screenMessageSuccess
-                    : EventLoggerConstants.screenMessageFailure)
+        LogEvent.logAppEvent(screen: isCalibrated
+                                ? LogEvent.EventLoggerScreenConstants.sensorCalibrationSuccess
+                                : LogEvent.EventLoggerScreenConstants.sensorCalibrationFailure,
+                             logType: .screen)
     }
 }

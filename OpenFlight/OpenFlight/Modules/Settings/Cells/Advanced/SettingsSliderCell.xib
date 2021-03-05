@@ -57,6 +57,7 @@
                                 <connections>
                                     <action selector="didFinishEditing:" destination="oyA-hu-LIV" eventType="touchUpOutside" id="zDe-bI-5Ab"/>
                                     <action selector="didFinishEditing:" destination="oyA-hu-LIV" eventType="touchUpInside" id="zr4-z7-Efn"/>
+                                    <action selector="sliderTouchCancelled:" destination="oyA-hu-LIV" eventType="touchCancel" id="MX3-qR-dgt"/>
                                     <action selector="sliderValueChanged:" destination="oyA-hu-LIV" eventType="valueChanged" id="bos-fG-IoT"/>
                                 </connections>
                             </slider>

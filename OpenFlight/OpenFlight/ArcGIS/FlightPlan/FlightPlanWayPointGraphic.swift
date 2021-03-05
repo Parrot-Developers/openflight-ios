@@ -31,7 +31,7 @@
 import ArcGIS
 
 /// Graphic class for Flight Plan's waypoint.
-public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, PoiPointRelatedGraphic {
+public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRelatedGraphic, PoiPointRelatedGraphic {
     // MARK: - Private Properties
     private var largeCircleSymbol: AGSSimpleMarkerSymbol? {
         guard let compositeSymbol = self.symbol as? AGSCompositeSymbol,
@@ -50,9 +50,6 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, PoiPointRe
     override var itemType: FlightPlanGraphicItemType {
         return .wayPoint
     }
-    override var itemIndex: Int? {
-        return attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] as? Int
-    }
     override var altitude: Double? {
         return mapPoint?.z
     }
@@ -67,6 +64,7 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, PoiPointRe
         static let largeCircleOutlineWidth: CGFloat = 2.0
         static let smallCircleSize: CGFloat = 15.0
         static let smallCircleOffset: CGFloat = 18.0
+        static let smallCircleOutlineWidth: CGFloat = 1.0
     }
 
     // MARK: - Init
@@ -85,6 +83,9 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, PoiPointRe
         let smallCircle = AGSSimpleMarkerSymbol(style: .circle,
                                                 color: Constants.secondaryColor,
                                                 size: Constants.smallCircleSize)
+        smallCircle.outline = AGSSimpleLineSymbol(style: .solid,
+                                                  color: Constants.defaultColor,
+                                                  width: Constants.smallCircleOutlineWidth)
         smallCircle.offsetX = Constants.smallCircleOffset
         smallCircle.offsetY = Constants.smallCircleOffset
         let symbol = AGSCompositeSymbol(symbols: [largeCircle, smallCircle])
@@ -122,12 +123,6 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, PoiPointRe
             : Constants.defaultColor
     }
 
-    override func decrementIndex() {
-        guard let index = itemIndex else { return }
-
-        self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index - 1
-    }
-
     override func updateAltitude(_ altitude: Double) {
         self.geometry = mapPoint?.withAltitude(altitude)
         wayPoint?.altitude = altitude
@@ -142,12 +137,5 @@ public extension FlightPlanWayPointGraphic {
     ///    - point: new point to apply
     func update(with point: AGSPoint) {
         self.geometry = point
-    }
-
-    /// Increment's waypoint index.
-    func incrementIndex() {
-        guard let index = itemIndex else { return }
-
-        self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index + 1
     }
 }

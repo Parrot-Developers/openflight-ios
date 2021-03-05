@@ -107,9 +107,7 @@ private extension GalleryLoadingView {
         progressView.trackTintColor = .clear
         progressView.backgroundColor = .clear
         infoLabel.makeUp(with: .large)
-        infoLabel.attributedText = NSMutableAttributedString(withImage: Asset.Gallery.mediaDownloading.image,
-                                                             text: L10n.commonDownloading,
-                                                             offset: Constants.loadingViewTextOffset)
+        infoLabel.text = L10n.commonDownloading
         infoLabel.backgroundColor = .clear
     }
 }

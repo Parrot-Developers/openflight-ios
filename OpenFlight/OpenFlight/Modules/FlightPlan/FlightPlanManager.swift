@@ -62,6 +62,8 @@ typealias FlightPlanListenerClosure = (FlightPlanViewModel?) -> Void
 public final class FlightPlanManager {
     // MARK: - Private Properties
     private var listeners: Set<FlightPlanListener> = []
+    /// SavedFlightPlan stack used for undo actions.
+    private var undoStack: [Data] = []
 
     // MARK: - Public Properties
     public var currentFlightPlanViewModel: FlightPlanViewModel? {
@@ -85,8 +87,6 @@ public final class FlightPlanManager {
     // MARK: - Internal Properties
     let jsonDecoder = JSONDecoder()
     let jsonEncoder = JSONEncoder()
-    /// SavedFlightPlan stack used for undo actions.
-    var undoStack: [SavedFlightPlan] = []
 
     // MARK: - Init
     // Singleton: shared static var must be used to access to manager.
@@ -121,10 +121,17 @@ public final class FlightPlanManager {
         currentFlightPlanViewModel?.updateFlightPlanExtraData()
     }
 
-    /// Deletes current Flight Plan.
-    func deleteCurrent() {
-        currentFlightPlanViewModel?.removeFlightPlan()
-        currentFlightPlanViewModel = nil
+    /// Deletes a flight plan.
+    ///
+    /// - Parameters:
+    ///     - flightPlan: flight plan to delete
+    func delete(flightPlan: FlightPlanViewModel) {
+        let uuid = flightPlan.state.value.uuid
+        flightPlan.removeFlightPlan()
+
+        if uuid == currentFlightPlanViewModel?.state.value.uuid {
+            currentFlightPlanViewModel = nil
+        }
     }
 
     /// Creates new Flight Plan.
@@ -146,9 +153,12 @@ public final class FlightPlanManager {
         currentFlightPlanViewModel = fpvm
     }
 
-    /// Duplicates current Flight Plan.
-    func duplicateCurrent() {
-        let savedFlightPlan = currentFlightPlanViewModel?.flightPlan
+    /// Duplicates Flight Plan.
+    ///
+    /// - Parameters:
+    ///     - flightPlan: flight plan to duplicate
+    func duplicate(flightPlan: FlightPlanViewModel) {
+        let savedFlightPlan = flightPlan.flightPlan?.copy()
         savedFlightPlan?.uuid = UUID().uuidString
         savedFlightPlan?.title = titleFromDuplicateTitle(savedFlightPlan?.title)
         let fpvm = FlightPlanViewModel(flightPlan: savedFlightPlan)
@@ -190,12 +200,15 @@ public extension FlightPlanManager {
             // Create new FP.
             let title = titleFromDuplicateTitle(L10n.flightPlanNewProject)
             // Generate flightPlanData from mavlink.
-            let flightPlanData = generateFlightPlanFromMavlink(url: url,
-                                                               title: title,
-                                                               type: type.key,
-                                                               settings: settings,
-                                                               polygonPoints: polygonPoints,
-                                                               model: FlightPlanConstants.defaultDroneModel)
+            let flightPlanData = type.fromMavlinkParser.generateFlightPlanFromMavlink(url: url,
+                                                                                      mavlinkString: nil,
+                                                                                      title: title,
+                                                                                      type: type.key,
+                                                                                      uuid: nil,
+                                                                                      settings: settings,
+                                                                                      polygonPoints: polygonPoints,
+                                                                                      version: FlightPlanConstants.defaultFlightPlanVersion,
+                                                                                      model: FlightPlanConstants.defaultDroneModel)
             // Save Mavlink into the intended Mavlink url if needed.
             if type.canGenerateMavlink == false {
                 flightPlanData?.copyMavlink(from: url)
@@ -210,12 +223,15 @@ public extension FlightPlanManager {
         let currentType = currentFP.state.value.type
         let product = currentFP.flightPlan?.product ?? FlightPlanConstants.defaultDroneModel
         // Generate flightPlanData from mavlink.
-        let flightPlanData = generateFlightPlanFromMavlink(url: url,
-                                                           title: title,
-                                                           type: currentType,
-                                                           settings: settings,
-                                                           polygonPoints: polygonPoints,
-                                                           model: product)
+        let flightPlanData = type.fromMavlinkParser.generateFlightPlanFromMavlink(url: url,
+                                                                                  mavlinkString: nil,
+                                                                                  title: title,
+                                                                                  type: currentType,
+                                                                                  uuid: nil,
+                                                                                  settings: settings,
+                                                                                  polygonPoints: polygonPoints,
+                                                                                  version: FlightPlanConstants.defaultFlightPlanVersion,
+                                                                                  model: product)
         // Keep uuid.
         flightPlanData?.uuid = uuid
         // Save Mavlink into the intended Mavlink url if needed.
@@ -228,13 +244,43 @@ public extension FlightPlanManager {
 }
 
 // MARK: - Undo management
-// TODO: to be continued...
 extension FlightPlanManager {
     /// Reset undo stack.
     func resetUndoStack() {
         undoStack.removeAll()
-        if let flightPlan = currentFlightPlanViewModel?.flightPlan {
-            undoStack.append(flightPlan)
+        appendUndoStack(with: currentFlightPlanViewModel?.flightPlan)
+    }
+
+    /// Add flight plan in the undo stack.
+    ///
+    /// - Parameters:
+    ///     - flightPlan: flightPlan to backup at some moment
+    func appendUndoStack(with flightPlan: SavedFlightPlan?) {
+        guard let flightPlanData = flightPlan?.asData else { return }
+
+        // Store flight plan as data to make a copy.
+        // FlightPlan's currentFlightPlanViewModel must not point on undo stack.
+        undoStack.append(flightPlanData)
+    }
+
+    /// Can undo.
+    func canUndo() -> Bool {
+        return undoStack.count > 1
+    }
+
+    /// Undo.
+    func undo() {
+        guard canUndo() else { return }
+
+        // Dump last.
+        undoStack.removeLast()
+
+        // Restore flight plan from data to make another copy.
+        // FlightPlan's currentFlightPlanViewModel must not point on undo stack.
+        if let flightPlan = undoStack.last?.asFlightPlan {
+            let state = FlightPlanState(flightPlan: flightPlan)
+            currentFlightPlanViewModel?.flightPlan = flightPlan
+            currentFlightPlanViewModel?.state.set(state)
         }
     }
 }

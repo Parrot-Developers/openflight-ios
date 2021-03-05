@@ -67,73 +67,94 @@ struct ClassicFlightPlanProvider: FlightPlanProvider {
 }
 
 /// Setting types for Classic Flight Plan.
-enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIterable {
+public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIterable {
     case continueMode
-    case lastPointLanding
+    case lastPointRth
+    case obstacleAvoidance
     case estimations
 
     // MARK: - Internal Properties
-    var title: String {
+    public var title: String {
         switch self {
         case .continueMode:
             return L10n.flightPlanSettingsProgressiveRace
-        case .lastPointLanding:
-            return L10n.flightPlanSettingsLastWaypoint
+        case .lastPointRth:
+            return L10n.flightPlanSettingsRthOnLastPoint
+        case .obstacleAvoidance:
+            return L10n.flightPlanSettingsAvoidance
         case .estimations:
             return ""
         }
     }
 
-    var allValues: [Int] {
+    public var shortTitle: String? {
+        switch self {
+        case .continueMode:
+            return L10n.flightPlanSettingsProgressiveRaceSort
+        case .lastPointRth:
+            return L10n.flightPlanSettingsRthOnLastPointShort
+        case .obstacleAvoidance:
+            return L10n.flightPlanSettingsAvoidanceShort
+        case .estimations:
+            return nil
+        }
+    }
+
+    public var allValues: [Int] {
         return [0, 1]
     }
 
-    var valueDescriptions: [String]? {
+    public var valueDescriptions: [String]? {
         switch self {
-        case .continueMode:
-            return nil
-        case .lastPointLanding:
-            return [L10n.commonLanding,
-                    L10n.commonHovering]
+        case .continueMode,
+             .lastPointRth,
+             .obstacleAvoidance:
+            return [L10n.commonYes, L10n.commonNo]
         case .estimations:
             return nil
         }
     }
 
-    var currentValue: Int? {
+    public var currentValue: Int? {
         switch self {
         case .continueMode:
             return currentFlightPlan?.plan.shouldContinue == true ? 0 : 1
-        case .lastPointLanding:
-            return currentFlightPlan?.plan.lastPointLanding == true ? 0 : 1
+        case .lastPointRth:
+            return currentFlightPlan?.plan.lastPointRth == true ? 0 : 1
+        case .obstacleAvoidance:
+            /// Obstacle avoidance enabled by default.
+            guard let oaSetting = currentFlightPlan?.obstacleAvoidanceActivated else { return 0 }
+
+            return oaSetting == true ? 0 : 1
         case .estimations:
             return nil
         }
     }
 
-    var type: FlightPlanSettingCellType {
+    public var type: FlightPlanSettingCellType {
         switch self {
         case .continueMode,
-             .lastPointLanding:
+             .lastPointRth,
+             .obstacleAvoidance:
             return .choice
         case .estimations:
             return .estimations
         }
     }
 
-    var key: String {
+    public var key: String {
         return self.rawValue
     }
 
-    var unit: UnitType {
+    public var unit: UnitType {
         return .none
     }
 
-    var step: Double {
+    public var step: Double {
         return 1.0
     }
 
-    var isDisabled: Bool {
+    public var isDisabled: Bool {
         return false
     }
 
@@ -182,8 +203,10 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
         switch key {
         case ClassicFlightPlanSettingType.continueMode.key:
             currentFlightPlan?.plan.setShouldContinue(value)
-        case ClassicFlightPlanSettingType.lastPointLanding.key:
-            currentFlightPlan?.plan.setLastPointLanding(value)
+        case ClassicFlightPlanSettingType.lastPointRth.key:
+            currentFlightPlan?.plan.setLastPointRth(value)
+        case ClassicFlightPlanSettingType.obstacleAvoidance.key:
+            currentFlightPlan?.obstacleAvoidanceActivated = value
         default:
             break
         }
@@ -191,7 +214,8 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
 
     func settings(for flightPlan: SavedFlightPlan) -> [FlightPlanSetting] {
         return [ClassicFlightPlanSettingType.continueMode.toFlightPlanSetting(),
-                ClassicFlightPlanSettingType.lastPointLanding.toFlightPlanSetting(),
+                ClassicFlightPlanSettingType.lastPointRth.toFlightPlanSetting(),
+                ClassicFlightPlanSettingType.obstacleAvoidance.toFlightPlanSetting(),
                 ClassicFlightPlanSettingType.estimations.toFlightPlanSetting()]
     }
 
@@ -288,6 +312,7 @@ final class WayPointSegmentSettingsProvider: FlightPlanSettingsProvider {
     func updateSettingValue(for key: String, value: Int) {
         if key == SpeedSettingType().key {
             self.wayPoint?.speed = Double(value)
+            FlightPlanManager.shared.currentFlightPlanViewModel?.didChangeCourse()
         }
     }
 

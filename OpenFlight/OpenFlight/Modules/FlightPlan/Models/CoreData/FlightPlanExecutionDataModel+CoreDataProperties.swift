@@ -36,12 +36,12 @@ extension FlightPlanExecutionDataModel {
         return NSFetchRequest<FlightPlanExecutionDataModel>(entityName: "FlightPlanExecutionDataModel")
     }
 
-    @NSManaged public var executionId: String?
-    @NSManaged public var flightPlanId: String?
+    @NSManaged public var executionId: String
+    @NSManaged public var flightPlanId: String
     @NSManaged public var flightId: String?
-    @NSManaged public var startDate: Date?
+    @NSManaged public var startDate: Date
     @NSManaged public var endDate: Date?
-    @NSManaged public var projectId: NSNumber? // Use number to use an Int64 as optional (Core data's Objc restriction)
+    @NSManaged public var latestItemExecuted: NSNumber? // Use number to use an Int as optional (Core data's Objc restriction)
     @NSManaged public var state: String? // Use state raw value
     @NSManaged public var settings: Data? // Use Data to store settings dictionary is easier
 }

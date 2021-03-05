@@ -139,7 +139,7 @@ public extension Coordinator {
                       completion: (() -> Void)? = nil) {
         viewController.modalPresentationStyle = .overFullScreen
         self.navigationController?.present(viewController,
-                                           animated: true,
+                                           animated: animated,
                                            completion: completion)
     }
 

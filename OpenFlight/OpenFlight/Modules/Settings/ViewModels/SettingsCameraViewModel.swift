@@ -37,10 +37,7 @@ final class SettingsCameraViewModel: DroneWatcherViewModel<DeviceConnectionState
     var infoHandler: ((_ modeType: SettingMode.Type) -> Void)?
 
     var settingEntries: [SettingEntry] {
-        return [SettingEntry(setting: self.zoomModel,
-                             title: L10n.settingsCameraLossyZoom,
-                             itemLogKey: LogEvent.LogKeyAdvancedSettings.extraZoom),
-                SettingEntry(setting: SettingsOverexposure.self,
+        return [SettingEntry(setting: SettingsOverexposure.self,
                              title: L10n.settingsCameraOverExposure,
                              itemLogKey: LogEvent.LogKeyAdvancedSettings.displayOverexposure),
                 SettingEntry(setting: self.photoSignatureModel,
@@ -56,9 +53,7 @@ final class SettingsCameraViewModel: DroneWatcherViewModel<DeviceConnectionState
                              itemLogKey: LogEvent.LogKeyAdvancedSettings.videoHDR),
                 SettingEntry(setting: self.antiflickerModel,
                              title: L10n.settingsCameraAntiFlickering,
-                             itemLogKey: LogEvent.LogKeyAdvancedSettings.antiFlickering),
-                SettingEntry(setting: self.autoRecordModel,
-                             title: L10n.settingsCameraAutoRecord)
+                             itemLogKey: LogEvent.LogKeyAdvancedSettings.antiFlickering)
                 // TODO: Add calibration button.
         ]
     }

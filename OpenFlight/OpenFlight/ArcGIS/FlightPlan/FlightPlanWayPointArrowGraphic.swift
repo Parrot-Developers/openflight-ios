@@ -31,7 +31,7 @@
 import ArcGIS
 
 /// Graphic class for Flight Plan's waypoint arrow.
-final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, PoiPointRelatedGraphic {
+final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRelatedGraphic, PoiPointRelatedGraphic {
     // MARK: - Internal Properties
     /// Graphic's orientation (in degrees).
     var angle: Float? {
@@ -61,9 +61,6 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, PoiPointRela
     // MARK: - Override Properties
     override var itemType: FlightPlanGraphicItemType {
         return .waypointArrow
-    }
-    override var itemIndex: Int? {
-        return attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] as? Int
     }
 
     // MARK: - Private Enums
@@ -133,27 +130,13 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, PoiPointRela
 
 // MARK: - Internal Funcs
 extension FlightPlanWayPointArrowGraphic {
-    /// Decrements waypoint's index.
-    func decrementWayPointIndex() {
-        guard let index = itemIndex else { return }
-
-        self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index - 1
-    }
-
-    /// Increments waypoint's index.
-    func incrementWayPointIndex() {
-        guard let index = itemIndex else { return }
-
-        self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index + 1
-    }
-
     /// Add a relation with point of interest.
     ///
     /// - Parameters:
     ///    - poiPointGraphic: point of interest's graphic
     func addPoiPoint(_ poiPointGraphic: FlightPlanPoiPointGraphic) {
         self.poiPoint = poiPointGraphic.poiPoint
-        self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiPointGraphic.itemIndex
+        self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiPointGraphic.poiIndex
     }
 
     /// Removes relation with point of interest.

@@ -32,6 +32,7 @@ import Foundation
 
 /// Flight Plan execution states.
 public enum FlightPlanExecutionState: String, Codable {
+    case initialized
     case completed
     case stopped
     case error
@@ -40,24 +41,16 @@ public enum FlightPlanExecutionState: String, Codable {
 /// Class used to link a Gutma flight file with a Flight Plan.
 public final class FlightPlanExecution: Codable, Equatable {
     // MARK: - Public Properties
-    public var flightPlanId: String?
+    public var flightPlanId: String
     public var flightId: String?
-    public var startDate: Date?
+    public var startDate: Date
     public var endDate: Date?
-    public var state: FlightPlanExecutionState?
+    public var state: FlightPlanExecutionState
     public var settings: [FlightPlanLightSetting]?
-    // TODO: See how to refact this property.
-    public var projectId: Int64?
-    // TODO: See with Android the final format of date in this variable (timestamp or ISO8601).
+    /// Used to resume flight plan execution.
+    public var latestItemExecuted: Int?
     // Property used to get the medias of a flight plan execution.
-    public var executionId: String? {
-        guard let strongFlightPlanId = flightPlanId,
-              let strongStartDate = startDate else {
-            return nil
-        }
-
-        return "\(strongFlightPlanId):\(ISO8601DateFormatter().string(from: strongStartDate))"
-    }
+    public let executionId: String
 
     // MARK: - Private Enums
     enum CodingKeys: String, CodingKey {
@@ -67,7 +60,8 @@ public final class FlightPlanExecution: Codable, Equatable {
         case endDate
         case state
         case settings
-        case projectId
+        case latestItemExecuted
+        case executionId
     }
 
     /// Init.
@@ -80,20 +74,25 @@ public final class FlightPlanExecution: Codable, Equatable {
     ///    - state: Flight Plan execution state
     ///    - settings: list of Flight Plan settings
     ///    - projectId: project Id
-    init(flightPlanId: String?,
+    init(flightPlanId: String,
          flightId: String?,
-         startDate: Date?,
+         startDate: Date,
          endDate: Date? = nil,
-         state: FlightPlanExecutionState? = nil,
+         state: FlightPlanExecutionState = .initialized,
          settings: [FlightPlanLightSetting]? = nil,
-         projectId: Int64? = nil) {
+         projectId: Int64? = nil,
+         latestItemExecuted: Int? = nil) {
         self.flightPlanId = flightPlanId
         self.flightId = flightId
         self.startDate = startDate
         self.endDate = endDate
         self.state = state
         self.settings = settings
-        self.projectId = projectId
+        self.latestItemExecuted = latestItemExecuted
+
+        executionId = String(format: "%@:%@",
+                             flightPlanId,
+                             ISO8601DateFormatter().string(from: startDate))
     }
 
     // MARK: - Equatable
@@ -104,15 +103,20 @@ public final class FlightPlanExecution: Codable, Equatable {
             && lhs.endDate == rhs.endDate
             && lhs.state == rhs.state
             && lhs.settings == rhs.settings
-            && lhs.projectId == rhs.projectId
+            && lhs.latestItemExecuted == rhs.latestItemExecuted
     }
 }
 
 // MARK: - Internal Properties
 /// Provides helpers for `FlightPlanExecution`.
 extension FlightPlanExecution {
-    /// Returns execution date.
-    var executionDate: String {
-        return self.startDate?.shortFormattedString ?? Style.dash
+    /// Returns fomatted execution date.
+    ///
+    /// - Parameters:
+    ///     - isShort: result string should be short
+    /// - Returns: fomatted execution date or dash if formatting failed.
+    func fomattedExecutionDate(isShort: Bool) -> String {
+        let fomattedDate = isShort ? self.startDate.shortFormattedString : self.startDate.shortWithTimeFormattedString
+        return fomattedDate ?? Style.dash
     }
 }

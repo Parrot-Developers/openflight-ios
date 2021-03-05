@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -83,7 +83,7 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="brV-3t-xDS">
                                 <rect key="frame" x="20" y="308" width="627" height="42"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="right" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="3Da-n2-Qr6" userLabel="Continue Button">
+                                    <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="right" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="3Da-n2-Qr6" userLabel="Continue Button">
                                         <rect key="frame" x="557" y="0.0" width="70" height="42"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                         <inset key="contentEdgeInsets" minX="12" minY="12" maxX="12" maxY="12"/>
@@ -94,7 +94,7 @@
                                             <action selector="continueButtonTouchedUpInside:" destination="u9P-9a-sFX" eventType="touchUpInside" id="lcK-lH-KCe"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZKx-rc-kCk" userLabel="Later Button">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZKx-rc-kCk" userLabel="Later Button">
                                         <rect key="frame" x="0.0" y="0.0" width="46" height="42"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                         <state key="normal" title="Button">
@@ -115,7 +115,8 @@
                                 </constraints>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                        <viewLayoutGuide key="safeArea" id="4pk-tx-QBd"/>
+                        <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="4pk-tx-QBd" firstAttribute="bottom" secondItem="brV-3t-xDS" secondAttribute="bottom" constant="25" id="BWT-xo-YBT"/>
                             <constraint firstAttribute="trailing" secondItem="nnQ-Ys-0pW" secondAttribute="trailing" constant="16" id="UCE-KB-zk1"/>
@@ -133,7 +134,6 @@
                             <constraint firstItem="nnQ-Ys-0pW" firstAttribute="top" secondItem="4pk-tx-QBd" secondAttribute="top" id="u1u-wx-1IU"/>
                             <constraint firstItem="wZ9-OD-pUN" firstAttribute="centerY" secondItem="9UW-fG-bUB" secondAttribute="centerY" id="vOh-L9-kIQ"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="4pk-tx-QBd"/>
                     </view>
                     <connections>
                         <outlet property="backButton" destination="aHM-Ce-lfN" id="Na6-Ne-WWM"/>
@@ -239,7 +239,7 @@
                                                 </constraints>
                                                 <variation key="heightClass=regular-widthClass=compact" alignment="center"/>
                                             </stackView>
-                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9dC-gO-aKu">
+                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9dC-gO-aKu">
                                                 <rect key="frame" x="10" y="210" width="200" height="40"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="200" id="Jtt-am-b2z"/>
@@ -307,7 +307,8 @@
                                 </variation>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                        <viewLayoutGuide key="safeArea" id="LLT-Zz-dxM"/>
+                        <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="bhp-kx-R8I" firstAttribute="leading" secondItem="LLT-Zz-dxM" secondAttribute="leading" id="3uG-Dq-r7u"/>
                             <constraint firstAttribute="trailing" secondItem="PUH-Vi-fac" secondAttribute="trailing" constant="16" id="JyM-gh-uYy"/>
@@ -317,7 +318,6 @@
                             <constraint firstItem="LLT-Zz-dxM" firstAttribute="trailing" secondItem="bhp-kx-R8I" secondAttribute="trailing" id="pEd-SA-wf8"/>
                             <constraint firstItem="LLT-Zz-dxM" firstAttribute="bottom" secondItem="bhp-kx-R8I" secondAttribute="bottom" id="tng-4y-2iJ"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="LLT-Zz-dxM"/>
                     </view>
                     <connections>
                         <outlet property="backButton" destination="rfa-hm-AVa" id="vzG-aI-TVM"/>
@@ -337,5 +337,11 @@
     </scenes>
     <resources>
         <image name="icRemoteUpdate" width="194" height="124.5"/>
+        <systemColor name="viewFlipsideBackgroundColor">
+            <color red="0.1215686274509804" green="0.12941176470588239" blue="0.14117647058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="viewFlipsideBackgroundColor">
+            <color red="0.1215686274509804" green="0.12941176470588239" blue="0.14117647058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
     </resources>
 </document>

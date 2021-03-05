@@ -93,7 +93,7 @@ public final class FlightPlanLabelsGraphicsOverlay: AGSGraphicsOverlay {
     func wayPointLabelGraphic(at index: Int) -> FlightPlanWayPointLabelsGraphic? {
         return self.graphics
             .compactMap { $0 as? FlightPlanWayPointLabelsGraphic }
-            .first(where: { $0.itemIndex == index })
+            .first(where: { $0.wayPointIndex == index })
     }
 
     /// Returns label graphic associated with point of interest at given index.
@@ -104,7 +104,7 @@ public final class FlightPlanLabelsGraphicsOverlay: AGSGraphicsOverlay {
     func poiPointLabelGraphic(at index: Int) -> FlightPlanPoiPointLabelGraphic? {
         return self.graphics
             .compactMap { $0 as? FlightPlanPoiPointLabelGraphic }
-            .first(where: { $0.itemIndex == index })
+            .first(where: { $0.poiIndex == index })
     }
 
     // MARK: Location Updates
@@ -115,7 +115,7 @@ public final class FlightPlanLabelsGraphicsOverlay: AGSGraphicsOverlay {
     ///    - altitude: new altitude
     func updateWayPointAltitude(at index: Int, altitude: Double) {
         guard let wpLabelGraphic = wayPointLabels
-            .first(where: { $0.itemIndex == index})
+            .first(where: { $0.wayPointIndex == index})
             else {
                 return
         }
@@ -129,7 +129,7 @@ public final class FlightPlanLabelsGraphicsOverlay: AGSGraphicsOverlay {
     ///    - altitude: new altitude
     func updatePoiPointAltitude(at index: Int, altitude: Double) {
         guard let poiLabelGraphic = poiPointLabels
-            .first(where: { $0.itemIndex == index })
+            .first(where: { $0.poiIndex == index })
             else {
                 return
         }
@@ -159,8 +159,8 @@ public final class FlightPlanLabelsGraphicsOverlay: AGSGraphicsOverlay {
 
         // Increment indexes on existing graphics.
         self.wayPointLabels
-            .filter { $0.itemIndex ?? Constants.noIndex >= index }
-            .forEach { $0.incrementIndex() }
+            .filter { $0.wayPointIndex ?? Constants.noIndex >= index }
+            .forEach { $0.incrementWayPointIndex() }
 
         // Add graphic.
         self.graphics.add(wayPointLabelGraphic)
@@ -172,13 +172,13 @@ public final class FlightPlanLabelsGraphicsOverlay: AGSGraphicsOverlay {
     /// - Parameters:
     ///    - index: waypoint's index
     func removeWayPoint(at index: Int) {
-        guard let wpLabelGraphic = wayPointLabels.first(where: { $0.itemIndex == index }) else {
+        guard let wpLabelGraphic = wayPointLabels.first(where: { $0.wayPointIndex == index }) else {
             return
         }
         self.graphics.remove(wpLabelGraphic)
         wayPointLabels
-            .filter { $0.itemIndex ?? Constants.noIndex > index }
-            .forEach { $0.decrementIndex() }
+            .filter { $0.wayPointIndex ?? Constants.noIndex > index }
+            .forEach { $0.decrementWayPointIndex() }
     }
 
     /// Removes point of interest label at given index and updates related graphics.
@@ -186,13 +186,13 @@ public final class FlightPlanLabelsGraphicsOverlay: AGSGraphicsOverlay {
     /// - Parameters:
     ///    - index: point of interest's index
     func removePoiPoint(at index: Int) {
-        guard let poiLabelGraphic = poiPointLabels.first(where: { $0.itemIndex == index }) else {
+        guard let poiLabelGraphic = poiPointLabels.first(where: { $0.poiIndex == index }) else {
             return
         }
         self.graphics.remove(poiLabelGraphic)
         poiPointLabels
-            .filter { $0.itemIndex ?? Constants.noIndex > index }
-            .forEach { $0.decrementIndex() }
+            .filter { $0.poiIndex ?? Constants.noIndex > index }
+            .forEach { $0.decrementPoiPointIndex() }
     }
 
     // MARK: Utility
@@ -217,5 +217,26 @@ public final class FlightPlanLabelsGraphicsOverlay: AGSGraphicsOverlay {
         self.graphics
             .compactMap { $0 as? FlightPlanLabelGraphic }
             .forEach { $0.refreshLabel() }
+    }
+
+    /// Updates graphic selection state.
+    ///
+    /// - Parameters:
+    ///    - graphic: graphic to update (from main overlay)
+    ///    - isSelected: whether graphic should be selected
+    func updateGraphicSelection(_ graphic: FlightPlanGraphic,
+                                isSelected: Bool) {
+        switch graphic {
+        case let poiPointGraphic as FlightPlanPoiPointGraphic:
+            if let index = poiPointGraphic.poiIndex {
+                poiPointLabelGraphic(at: index)?.isSelected = isSelected
+            }
+        case let wayPointGraphic as FlightPlanWayPointGraphic:
+            if let index = wayPointGraphic.wayPointIndex {
+                wayPointLabelGraphic(at: index)?.isSelected = isSelected
+            }
+        default:
+            break
+        }
     }
 }

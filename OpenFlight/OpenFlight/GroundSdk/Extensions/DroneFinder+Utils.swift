@@ -38,15 +38,15 @@ extension DiscoveredDrone {
     /// Returns wifi image regarding rssi value.
     var image: UIImage {
         if rssi > Constants.rssi50 {
-            return Asset.Wifi.icWifi44.image
+            return Asset.Wifi.icWifiOff44.image
         } else if rssi >= Constants.rssi50 {
-            return Asset.Wifi.icWifi34.image
+            return Asset.Wifi.icWifiOff34.image
         } else if rssi > Constants.rssi60 && rssi <= Constants.rssi50 {
-            return Asset.Wifi.icWifi24.image
+            return Asset.Wifi.icWifiOff24.image
         } else if rssi > Constants.rssi70 && rssi <= Constants.rssi60 {
-            return Asset.Wifi.icWifi14.image
+            return Asset.Wifi.icWifiOff14.image
         } else {
-            return Asset.Wifi.icWifi04.image
+            return Asset.Wifi.icWifiNoSignal.image
         }
     }
 

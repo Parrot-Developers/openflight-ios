@@ -62,11 +62,6 @@ final class GalleryMediaPlayerViewController: UIViewController {
         static let actionsTopItemsSpacing: CGFloat = 50.0
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "Gallery/Viewer"
-    }
-
     // MARK: - Setup
     /// Instantiate view controller.
     ///
@@ -111,7 +106,7 @@ final class GalleryMediaPlayerViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.galleryViewer, logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {

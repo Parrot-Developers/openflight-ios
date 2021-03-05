@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina5_9" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -27,7 +27,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zXX-L7-V9K">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zXX-L7-V9K">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                                 <state key="normal" title="Button"/>
                                 <connections>
@@ -113,7 +113,7 @@
                                         </subviews>
                                     </stackView>
                                 </subviews>
-                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstItem="feS-iU-maj" firstAttribute="leading" secondItem="EJ5-A0-gWb" secondAttribute="leading" constant="16" id="1L0-Nk-TUk"/>
                                     <constraint firstAttribute="bottom" secondItem="feS-iU-maj" secondAttribute="bottom" constant="16" id="CIt-ce-HEs"/>
@@ -126,6 +126,7 @@
                                 </constraints>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="tFU-hx-eZR"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="zXX-L7-V9K" secondAttribute="trailing" id="880-C2-o7M"/>
@@ -136,7 +137,6 @@
                             <constraint firstItem="EJ5-A0-gWb" firstAttribute="leading" secondItem="tFU-hx-eZR" secondAttribute="leading" constant="8" id="W39-VE-Vfd"/>
                             <constraint firstAttribute="bottom" secondItem="zXX-L7-V9K" secondAttribute="bottom" id="nxb-Op-Rwc"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="tFU-hx-eZR"/>
                     </view>
                     <connections>
                         <outlet property="correctHorizonChoiceView" destination="orb-om-fEz" id="MfI-Tz-kOB"/>
@@ -217,7 +217,7 @@
                                             <constraint firstAttribute="width" secondItem="JFX-Yu-DtT" secondAttribute="height" multiplier="1:1" id="vOZ-jA-ZTE"/>
                                         </constraints>
                                     </view>
-                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SL7-eK-yoL">
+                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SL7-eK-yoL">
                                         <rect key="frame" x="0.0" y="0.0" width="10" height="66"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="20"/>
                                         <inset key="contentEdgeInsets" minX="10" minY="0.0" maxX="0.0" maxY="0.0"/>
@@ -313,6 +313,7 @@
                                 </constraints>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="JNM-2x-sNa"/>
                         <color key="backgroundColor" red="0.094117647060000004" green="0.1176470588" blue="0.13725490200000001" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="KJe-VK-tku" secondAttribute="trailing" constant="5" id="0L9-LW-iFO"/>
@@ -333,7 +334,6 @@
                             <constraint firstItem="rSP-XU-D0b" firstAttribute="leading" secondItem="JNM-2x-sNa" secondAttribute="leading" id="oAc-fP-Xmt"/>
                             <constraint firstItem="rSP-XU-D0b" firstAttribute="top" secondItem="9LL-dr-UWN" secondAttribute="bottom" id="yBc-Ra-cmJ"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="JNM-2x-sNa"/>
                     </view>
                     <connections>
                         <outlet property="backButton" destination="Mbc-Kn-jZL" id="fA1-TX-Sbu"/>
@@ -361,7 +361,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1D9-4a-0ek">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1D9-4a-0ek">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                                 <connections>
                                     <action selector="backgroundButtonTouchedUpInside:" destination="cnZ-Fr-QvT" eventType="touchUpInside" id="6gr-fm-e6N"/>
@@ -405,7 +405,7 @@
                                             </mask>
                                         </variation>
                                     </imageView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mUN-FR-AKZ">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mUN-FR-AKZ">
                                         <rect key="frame" x="60.000000000000014" y="361" width="239.33333333333337" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="4oF-eV-r2y"/>
@@ -457,7 +457,7 @@
                                         </variation>
                                     </imageView>
                                 </subviews>
-                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="0Vc-IQ-ayN" secondAttribute="trailing" constant="50" id="39s-pg-Aoc"/>
                                     <constraint firstItem="0Vc-IQ-ayN" firstAttribute="top" secondItem="vth-vk-G1J" secondAttribute="bottom" constant="20" id="7Dg-vw-RCn"/>
@@ -505,6 +505,7 @@
                                 </variation>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="5ga-c6-ZOY"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="1D9-4a-0ek" secondAttribute="trailing" id="D7E-BP-xyD"/>
@@ -516,7 +517,6 @@
                             <constraint firstItem="zfd-rC-Frr" firstAttribute="leading" secondItem="5ga-c6-ZOY" secondAttribute="leading" constant="8" id="f7K-gT-37W"/>
                             <constraint firstAttribute="bottom" secondItem="1D9-4a-0ek" secondAttribute="bottom" id="hDO-Oa-uOW"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="5ga-c6-ZOY"/>
                         <variation key="heightClass=compact-widthClass=compact">
                             <mask key="constraints">
                                 <exclude reference="Va7-VI-2Wq"/>

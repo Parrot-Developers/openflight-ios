@@ -35,8 +35,8 @@ import CoreData
 
 final class FlightReportState: ViewModelState, EquatableState, Copying {
     // MARK: - Internal Properties
-    /// Whether a flight report should be displayed.
-    fileprivate(set) var shouldDisplayFlightReport: Bool = false
+    /// Flight report to be displayed.
+    fileprivate(set) var displayFlightReport: FlightDataState?
 
     // MARK: - Init
     required init() { }
@@ -44,19 +44,19 @@ final class FlightReportState: ViewModelState, EquatableState, Copying {
     /// Init.
     ///
     /// - Parameters:
-    ///    - shouldDisplayFlightReport: whether a flight report should be displayed
-    init(shouldDisplayFlightReport: Bool) {
-        self.shouldDisplayFlightReport = shouldDisplayFlightReport
+    ///    - displayFlightReport: flight report to be displayed
+    init(displayFlightReport: FlightDataState?) {
+        self.displayFlightReport = displayFlightReport
     }
 
     // MARK: - Equatable
     func isEqual(to other: FlightReportState) -> Bool {
-        return self.shouldDisplayFlightReport == other.shouldDisplayFlightReport
+        return self.displayFlightReport == other.displayFlightReport
     }
 
     // MARK: - Copying
     func copy() -> FlightReportState {
-        return FlightReportState(shouldDisplayFlightReport: self.shouldDisplayFlightReport)
+        return FlightReportState(displayFlightReport: self.displayFlightReport)
     }
 }
 
@@ -104,7 +104,7 @@ private extension FlightReportViewModel {
             }
             if flyingIndicators.flyingState == .takingOff {
                 let copy = self?.state.value.copy()
-                copy?.shouldDisplayFlightReport = false
+                copy?.displayFlightReport = nil
                 self?.state.set(copy)
             }
             self?.oldFlyingIndicatorsState = flyingIndicators.state
@@ -125,12 +125,13 @@ private extension FlightReportViewModel {
                          queue: nil) { [weak self] notification in
                             guard let userInfo = notification.userInfo,
                                 let inserts = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject>,
-                                inserts.contains(where: { $0 is FlightDataModel })
+                                let flight = inserts.first(where: { $0 is FlightDataModel }),
+                                let flightState = (flight as? FlightDataModel)?.flightDataState()
                                 else {
                                     return
                             }
                             let copy = self?.state.value.copy()
-                            copy?.shouldDisplayFlightReport = true
+                            copy?.displayFlightReport = flightState
                             self?.state.set(copy)
         }
 

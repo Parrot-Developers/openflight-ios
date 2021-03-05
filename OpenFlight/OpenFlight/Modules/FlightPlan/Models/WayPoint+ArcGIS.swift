@@ -34,27 +34,55 @@ import ArcGIS
 extension WayPoint {
     // MARK: - Public Properties
     /// Returns AGSPoint for waypoint.
-    var agsPoint: AGSPoint {
+    public var agsPoint: AGSPoint {
         return AGSPoint(x: self.coordinate.longitude,
                         y: self.coordinate.latitude,
                         z: self.altitude,
                         spatialReference: .wgs84())
     }
 
+    // MARK: - Internal Properties
     /// Returns a target point for current waypoint yaw.
     var target: AGSPoint? {
-        let newPoints = AGSGeometryEngine.geodeticMove([agsPoint],
-                                                       distance: Constants.targetDistance,
-                                                       distanceUnit: .meters(),
-                                                       azimuth: -yaw,
-                                                       azimuthUnit: .degrees(),
-                                                       curveType: .normalSection)
-        return newPoints?.first
+        return AGSGeometryEngine.standardGeodeticMove(agsPoint,
+                                                      distance: Constants.targetDistance,
+                                                      distanceUnit: .meters(),
+                                                      azimuth: -yaw,
+                                                      azimuthUnit: .degrees(),
+                                                      curveType: .normalSection)
+    }
+
+    /// Returns duration to get to next waypoint, 0.0 if no next waypoint or inconsistent data.
+    var navigateToNextDuration: Double {
+        guard let nextWayPointLocation = nextWayPoint?.agsPoint,
+              let distance = AGSGeometryEngine.standardGeodeticDistance(between: self.agsPoint,
+                                                                        and: nextWayPointLocation)?.distance,
+              speed > 0.0 else { return 0.0 }
+
+        return distance / speed
     }
 
     // MARK: - Private Enums
     private enum Constants {
         static let targetDistance: Double = 500.0
+    }
+
+    // MARK: - Internal Funcs
+    /// Computes progress towards next waypoint location, if any. This calculates a progress
+    /// considering that the drone goes straight to the next waypoint from given location.
+    /// Note that it will handle deviations from OA, but the bigger the detour is, the less precise result gets.
+    ///
+    /// - Parameters:
+    ///    - currentLocation: location from which progress should be calculated
+    /// - Returns: computed progress, 0.0 if no next waypoint or inconsistent data input.
+    func navigateToNextProgress(with currentLocation: AGSPoint) -> Double {
+        guard let nextWayPointLocation = nextWayPoint?.agsPoint,
+              let distanceFromOrigin = AGSGeometryEngine.standardGeodeticDistance(between: currentLocation,
+                                                                                  and: self.agsPoint),
+              let distanceToDestination = AGSGeometryEngine.standardGeodeticDistance(between: currentLocation,
+                                                                                     and: nextWayPointLocation) else { return 0.0 }
+
+        return distanceFromOrigin.distance / (distanceFromOrigin.distance + distanceToDestination.distance)
     }
 
     /// Computes marker graphic for waypoint.

@@ -36,7 +36,7 @@ final class LockAETargeZoneState: ViewModelState, EquatableState, Copying {
     // MARK: - Internal Properties
     fileprivate(set) var lockAEMode: Camera2ExposureLockMode?
     fileprivate(set) var camera: MainCamera2?
-    fileprivate(set) var isLockAeEnabled: Bool = false
+    fileprivate(set) var isLockAutoExposureEnabled: Bool = false
 
     // MARK: - Init
     required init() { }
@@ -46,26 +46,26 @@ final class LockAETargeZoneState: ViewModelState, EquatableState, Copying {
     /// - Parameters:
     ///    - lockAEMode: Camera exposure lock mode.
     ///    - camera: Drone main camera.
-    ///    - isLockAeEnabled: Bool that indicates if lockAE is enabled.
+    ///    - isLockAutoExposureEnabled: Bool that indicates if lock Auto exposure is enabled.
     init(lockAEMode: Camera2ExposureLockMode?,
          camera: MainCamera2?,
-         isLockAeEnabled: Bool) {
+         isLockAutoExposureEnabled: Bool) {
         self.lockAEMode = lockAEMode
         self.camera = camera
-        self.isLockAeEnabled = isLockAeEnabled
+        self.isLockAutoExposureEnabled = isLockAutoExposureEnabled
     }
 
     // MARK: - Internal Funcs
     func isEqual(to other: LockAETargeZoneState) -> Bool {
         return self.lockAEMode == other.lockAEMode
-            && self.isLockAeEnabled == other.isLockAeEnabled
+            && self.isLockAutoExposureEnabled == other.isLockAutoExposureEnabled
     }
 
     /// Returns a copy of the object.
     func copy() -> LockAETargeZoneState {
         let copy = LockAETargeZoneState(lockAEMode: self.lockAEMode,
                                         camera: self.camera,
-                                        isLockAeEnabled: self.isLockAeEnabled)
+                                        isLockAutoExposureEnabled: self.isLockAutoExposureEnabled)
         return copy
     }
 }
@@ -114,7 +114,7 @@ private extension LockAETargetZoneViewModel {
 
             copy.camera = camera
             copy.lockAEMode = exposureLockMode
-            copy.isLockAeEnabled = camera?.isHdrOn == false && exposureSettings != .manual
+            copy.isLockAutoExposureEnabled = camera?.isHdrOn == false || exposureSettings != .manual
             self?.state.set(copy)
         }
     }

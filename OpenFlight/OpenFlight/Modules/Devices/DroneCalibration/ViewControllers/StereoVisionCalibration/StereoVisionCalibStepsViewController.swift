@@ -110,11 +110,6 @@ final class StereoVisionCalibStepsViewController: UIViewController {
         static let currentCircleRadius: CGFloat = 12.0
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "SensorCalibration"
-    }
-
     // MARK: - Setup
     /// Instantiate View controller.
     ///
@@ -141,7 +136,8 @@ final class StereoVisionCalibStepsViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.sensorCalibration,
+                             logType: .screen)
         self.viewModel.startCalibration()
     }
 

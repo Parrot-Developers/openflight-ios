@@ -35,7 +35,7 @@ extension LogEvent {
     enum LogKeyCellularAccessCardPin {
         static let confirmPin: String = "Ok"
         static let cancel: String = "Cancel"
-        static let pinVisibility: String = "PinVisibility"
         static let close: String = "Close"
+        static let pinVisibility: String = "PinVisibility"
     }
 }

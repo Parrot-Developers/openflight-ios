@@ -271,7 +271,7 @@ public final class FlightDataViewModel: BaseViewModel<FlightDataState>, FlightVi
     ///
     /// - Parameters:
     ///     - state: flight data state
-    init(state: FlightDataState) {
+    public init(state: FlightDataState) {
         super.init(stateDidUpdate: nil)
         self.state.set(state)
     }

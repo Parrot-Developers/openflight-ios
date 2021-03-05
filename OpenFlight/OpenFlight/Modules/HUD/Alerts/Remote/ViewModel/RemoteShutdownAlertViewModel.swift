@@ -37,7 +37,7 @@ final class RemoteShutdownAlertState: DeviceConnectionState {
     fileprivate(set) var durationBeforeShutDown: TimeInterval = 0.0
     /// Helpes to know if the alert has to be displayed.
     var canShowModal: Bool {
-        return durationBeforeShutDown != 0.0 && connectionState == .connected
+        return durationBeforeShutDown > 0.0 && connectionState == .connected
     }
 
     // MARK: - Init

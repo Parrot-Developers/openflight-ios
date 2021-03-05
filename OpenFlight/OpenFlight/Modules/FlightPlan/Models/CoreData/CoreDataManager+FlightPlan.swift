@@ -53,10 +53,8 @@ extension CoreDataManager: FlightPlanDataProtocol {
     ///     - predicate: predicate used to filter Flight Plan if needed
     /// - Returns: All persisted Flight Plan States
     public func loadAllFlightPlanViewModels(predicate: NSPredicate?) -> [FlightPlanViewModel] {
-        guard let managedContext = currentContext
-            else {
-                return []
-        }
+        guard let managedContext = currentContext else { return [] }
+
         // Sort flight plans by date.
         let fetchRequest: NSFetchRequest<FlightPlanModel> = FlightPlanModel.sortByDateRequest()
         if let predicate = predicate {
@@ -95,6 +93,36 @@ extension CoreDataManager: FlightPlanDataProtocol {
         }
     }
 
+    /// Persists flight plan thumbnail.
+    ///
+    /// - Parameters:
+    ///     - state: flight plan state.
+    public func saveThumbnail(state: FlightPlanState) {
+        let fetchRequest: NSFetchRequest<FlightPlanModel> = FlightPlanModel.fetchRequest()
+        // Check content and context.
+        guard let managedContext = self.currentContext,
+              let uuid = state.uuid,
+              let imageData = state.thumbnail?.pngData(),
+              let name = fetchRequest.entityName,
+              let entity = NSEntityDescription.entity(forEntityName: name, in: managedContext) else { return }
+
+        // Check if flight plan Data exists.
+        fetchRequest.entity = entity
+        let predicate = FlightPlanModel.fileKeyPredicate(sortValue: uuid)
+        fetchRequest.predicate = predicate
+        guard let flightPlanData: FlightPlanModel = try? (managedContext.fetch(fetchRequest)).first else { return }
+
+        // Set data.
+        flightPlanData.setValue(imageData, forKeyPath: #keyPath(FlightPlanModel.thumbnail))
+
+        // Save data.
+        managedContext.performAndWait {
+            DispatchQueue.main.async {
+                try? managedContext.save()
+            }
+        }
+    }
+
     /// Persists flight plan file.
     ///
     /// - Parameters:
@@ -104,8 +132,8 @@ extension CoreDataManager: FlightPlanDataProtocol {
         // 1 - Prepare content to save.
         DispatchQueue.main.async {
             guard let managedContext = self.currentContext,
-                let date = state.date,
-                let uuid = state.uuid else {
+                  let date = state.date,
+                  let uuid = state.uuid else {
                 return
             }
 
@@ -115,9 +143,9 @@ extension CoreDataManager: FlightPlanDataProtocol {
             // 2 - Prepare core data context and entity.
             let fetchRequest: NSFetchRequest<FlightPlanModel> = FlightPlanModel.fetchRequest()
             guard let name = fetchRequest.entityName,
-                let entity = NSEntityDescription.entity(forEntityName: name, in: managedContext)
-                else {
-                    return
+                  let entity = NSEntityDescription.entity(forEntityName: name, in: managedContext)
+            else {
+                return
             }
 
             fetchRequest.entity = entity
@@ -150,7 +178,7 @@ extension CoreDataManager: FlightPlanDataProtocol {
             }
 
             if let thumbnail = state.thumbnail,
-                let imageData = thumbnail.pngData() {
+               let imageData = thumbnail.pngData() {
                 data.setValue(imageData, forKeyPath: #keyPath(FlightPlanModel.thumbnail))
             } else {
                 data.setValue(nil, forKeyPath: #keyPath(FlightPlanModel.thumbnail))
@@ -159,9 +187,9 @@ extension CoreDataManager: FlightPlanDataProtocol {
             if let flightPlanData = flightPlan?.asData {
                 // Save full content.
                 guard let name = (FlightPlanDataModel.fetchRequest() as NSFetchRequest<FlightPlanDataModel>).entityName,
-                    let flightPlanDataEntity = NSEntityDescription.entity(forEntityName: name, in: managedContext)
-                    else {
-                        return
+                      let flightPlanDataEntity = NSEntityDescription.entity(forEntityName: name, in: managedContext)
+                else {
+                    return
                 }
                 // Clean old data.
                 if let oldData = data.flightPlanData {
@@ -213,7 +241,7 @@ extension CoreDataManager: FlightPlanDataProtocol {
     ///
     /// - Parameters:
     ///     - keys: flight plans keys
-    func flightPlanStates(for keys: [String]) -> [FlightPlanState] {
+    public func flightPlanStates(for keys: [String]) -> [FlightPlanState] {
         let flightPlanModels = self.flightPlans(for: keys)
         return flightPlanModels.map { $0.flightPlanState() }
     }
@@ -227,7 +255,7 @@ extension CoreDataManager: FlightPlanDataProtocol {
         guard let flightPlanModel: FlightPlanModel = flightPlan(for: key),
             let flightPlanDataModel: FlightPlanDataModel = flightPlanModel.flightPlanData,
             let flightPlanData: Data = flightPlanDataModel.flightPlanData,
-            let finalFlightPlan = flightPlanData.asFlightPlan() else {
+            let finalFlightPlan = flightPlanData.asFlightPlan else {
                 return nil
         }
 
@@ -266,9 +294,9 @@ private extension CoreDataManager {
     ///     - key: key to retrieve flight
     func flightPlan(for key: String?) -> FlightPlanModel? {
         guard let managedContext = currentContext,
-            let key = key
-            else {
-                return nil
+              let key = key
+        else {
+            return nil
         }
 
         let fetchRequest: NSFetchRequest<FlightPlanModel> = FlightPlanModel.fetchRequest()
@@ -288,8 +316,8 @@ private extension CoreDataManager {
     ///     - keys: keys to retrieve flight plans
     func flightPlans(for keys: [String]) -> [FlightPlanModel] {
         guard let managedContext = currentContext
-            else {
-                return []
+        else {
+            return []
         }
 
         let fetchRequest: NSFetchRequest<FlightPlanModel> = FlightPlanModel.fetchRequest()

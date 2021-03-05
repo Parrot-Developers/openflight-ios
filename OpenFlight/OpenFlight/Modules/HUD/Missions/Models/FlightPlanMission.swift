@@ -41,10 +41,7 @@ struct FlightPlanMission: MissionProvider {
                        logName: LogEvent.LogKeyHUDMissionProviderSelectorButton.flightPlan,
                        modes: FlightPlanMissionMode.allMissionItems)
     }
-
-    var currentActiveMode: MissionMode? {
-        return nil
-    }
+    var signature: ProtobufMissionSignature = DefaultMissionSignature()
 }
 
 // MARK: - Internal Enums
@@ -94,13 +91,6 @@ enum FlightPlanMissionMode: String, CaseIterable {
     }
 
     private var bottomBarViews: [UIView] {
-        var views: [UIView] = []
-
-        switch self {
-        case .standard:
-            views.append(FlightPlanManageBarView())
-        }
-
-        return views
+        return []
     }
 }

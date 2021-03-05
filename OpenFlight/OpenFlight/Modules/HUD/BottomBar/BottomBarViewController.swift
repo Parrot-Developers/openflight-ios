@@ -55,6 +55,9 @@ protocol DeselectAllViewModelsDelegate: class {
     func deselectAllViewModels(except classType: AnyClass?)
 }
 
+/// Protocol used to knows if a view must be present in bottom bar, whatever happen.
+public protocol MandatoryBottomBarView { }
+
 /// Enum that represent all elements in right stack of the bottom bar.
 public enum ImagingStackElement {
     case expandButton
@@ -168,13 +171,6 @@ private extension BottomBarViewController {
         updateExpandAndCollapseViews(isCollapsing: false)
     }
 
-    @IBAction func managePlanTouchedUpInside(_ sender: Any) {
-        coordinator?.startManagePlans()
-        NotificationCenter.default.post(name: .modalPresentDidChange,
-                                        object: self,
-                                        userInfo: [BottomBarViewControllerNotifications.notificationKey: true])
-    }
-
     @IBAction func cameraWidgetTouchedUpInside(_ sender: Any) {
         cameraWidgetViewModel.toggleSelectionState()
         logEvent(with: LogEvent.LogKeyHUDBottomBarButton.cameraWidget.name,
@@ -257,33 +253,51 @@ private extension BottomBarViewController {
         self.leftStackView.safelyRemoveArrangedSubviews()
 
         // Check if drone is returning to home.
-        if returnHomeViewModel?.state.value.isReturnHomeActive == true {
+        let isReturningToHome = returnHomeViewModel?.state.value.isReturnHomeActive == true
+        if isReturningToHome {
             let view = ReturnHomeBottomBarView()
             view.addBlurEffect()
             self.leftStackView.addArrangedSubview(view)
-        } else {
-            // Add views for a specific mission.
-            let views: [UIView] = missionMode?.bottomBarLeftStack?() ?? []
+        }
 
-            // Apply specific treatment for views.
-            for view in views {
-                if let barButtonView = view as? BehaviourModeView {
-                    barButtonView.delegate = delegate
-                    barButtonView.deselectAllViewModelsDelegate = self
-                    self.deselectableViewModels.append(barButtonView.viewModel)
-                } else if let flightPlanManageBarView = view as? FlightPlanManageBarView {
-                    flightPlanManageBarView.delegate = self
-                }
-
-                if (view as? SeparatorView) == nil {
-                    // Add blur effect on every view except for SeparatorViews.
-                    view.addBlurEffect()
-                }
-
-                // Add the view in the left stackView.
-                self.leftStackView.addArrangedSubview(view)
+        // Add views for a specific mission.
+        var views: [UIView] = missionMode?.bottomBarLeftStack?() ?? []
+        // If RTH is enabled, add only mandatory views.
+        if isReturningToHome {
+            views = views.filter({ $0 is MandatoryBottomBarView })
+            if !views.isEmpty {
+                let separator = SeparatorView(size: Style.bottomBarSeparatorWidth,
+                                              backColor: .clear)
+                self.leftStackView.addArrangedSubview(separator)
             }
         }
+        addMissionViews(views)
+    }
+
+    /// Add mission views in bottom left view stack.
+    ///
+    /// - Parameters:
+    ///     - views: views to add
+    func addMissionViews(_ views: [UIView]) {
+        // Apply specific treatment for views.
+        for view in views {
+            if let barButtonView = view as? BehaviourModeView {
+                barButtonView.delegate = delegate
+                barButtonView.deselectAllViewModelsDelegate = self
+                self.deselectableViewModels.append(barButtonView.viewModel)
+            }
+
+            if (view as? SeparatorView) == nil {
+                // Add blur effect on every view except for SeparatorViews.
+                view.addBlurEffect()
+            }
+
+            // Add the view in the left stackView.
+            self.leftStackView.addArrangedSubview(view)
+        }
+
+        // Prevents the BehaviourModeView to be hidden when the drone is connecting in some case.
+        self.leftStackView.layoutIfNeeded()
     }
 
     /// Displays views in right stackview.
@@ -377,8 +391,7 @@ private extension BottomBarViewController {
     ///     - itemName: Button name
     ///     - newValue: New value
     func logEvent(with itemName: String, and newValue: String?) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.bottomBarHUD.name,
-                             itemName: itemName,
+        LogEvent.logAppEvent(itemName: itemName,
                              newValue: newValue,
                              logType: .button)
     }
@@ -390,19 +403,5 @@ extension BottomBarViewController: DeselectAllViewModelsDelegate {
         deselectableViewModels
             .filter({ type(of: $0) != classType })
             .forEach({ $0.deselect() })
-    }
-}
-
-// MARK: - FlightPlanManageBarViewDelegate
-extension BottomBarViewController: FlightPlanManageBarViewDelegate {
-    func managePlanTouchedUpInside() {
-        coordinator?.startManagePlans()
-        NotificationCenter.default.post(name: .modalPresentDidChange,
-                                        object: self,
-                                        userInfo: [BottomBarViewControllerNotifications.notificationKey: true])
-    }
-
-    func historyTouchedUpInside(flightPlanViewModel: FlightPlanViewModel?) {
-        coordinator?.startFlightPlanHistory(flightPlanViewModel: flightPlanViewModel)
     }
 }

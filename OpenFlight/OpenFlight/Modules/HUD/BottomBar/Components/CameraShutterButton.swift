@@ -121,7 +121,7 @@ private extension CameraShutterButton {
     /// - Parameters:
     ///     - model: current button state
     func updateRecordingMode(model: CameraShutterButtonState) {
-        guard model.userStorageState.removableUserStorageFileSystemState == .ready else {
+        guard model.isStorageReady else {
             applyRecordingUnavailableStyle(image: model.userStorageState.shutterIcon)
             return
         }
@@ -156,7 +156,7 @@ private extension CameraShutterButton {
     /// - Parameters:
     ///     - model: current button state
     func updatePhotoMode(model: CameraShutterButtonState) {
-        guard model.userStorageState.removableUserStorageFileSystemState == .ready else {
+        guard model.isStorageReady else {
             applyPhotoCaptureUnavailableStyle(image: model.userStorageState.shutterIcon)
             return
         }

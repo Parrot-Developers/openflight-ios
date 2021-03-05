@@ -162,29 +162,16 @@ private extension CellularPairingProcessViewController {
             self?.viewModel?.retryPairingProcess()
         })
 
-        let cancelAction = AlertAction(title: L10n.cancel, actionHandler: { [weak self] in
+        let cancelAction = AlertAction(title: L10n.cancel,
+                                       cancelCustomColor: .white20,
+                                       actionHandler: { [weak self] in
             self?.coordinator?.dismiss()
         })
 
-        self.showCustomAlert(title: L10n.cellularConnectionFailedToConnect,
-                             message: error?.alertMessage ?? L10n.cellularConnectionServerError,
-                             cancelAction: cancelAction,
-                             validateAction: validateAction)
-    }
-
-    /// Show an alert view controller.
-    ///
-    /// - Parameters:
-    ///     - title: alert title
-    ///     - message: alert message
-    ///     - cancelAction: alert cancel action
-    ///     - validateAction: alert validate action
-    func showCustomAlert(title: String,
-                         message: String,
-                         cancelAction: AlertAction = AlertAction(title: L10n.cancel),
-                         validateAction: AlertAction? = nil) {
-        let alert = AlertViewController.instantiate(title: title,
-                                                    message: message,
+        let alert = AlertViewController.instantiate(title: L10n.cellularConnectionFailedToConnect,
+                                                    message: error?.alertMessage ?? L10n.cellularConnectionServerError,
+                                                    messageColor: .redTorch,
+                                                    closeButtonStyle: .cross,
                                                     cancelAction: cancelAction,
                                                     validateAction: validateAction)
 

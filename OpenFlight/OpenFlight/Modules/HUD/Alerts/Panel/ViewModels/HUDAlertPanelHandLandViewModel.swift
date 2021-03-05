@@ -118,6 +118,7 @@ public final class HUDAlertPanelHandLandState: DeviceConnectionState, AlertPanel
          isAlertForceHidden: Bool,
          countdown: Int?) {
         super.init(connectionState: connectionState)
+
         self.state = state
         self.isAlertForceHidden = isAlertForceHidden
         self.countdown = countdown
@@ -125,9 +126,8 @@ public final class HUDAlertPanelHandLandState: DeviceConnectionState, AlertPanel
 
     // MARK: - Override Funcs
     public override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? HUDAlertPanelHandLandState else {
-            return false
-        }
+        guard let other = other as? HUDAlertPanelHandLandState else { return false }
+
         return super.isEqual(to: other)
             && self.state == other.state
             && self.isAlertForceHidden == other.isAlertForceHidden
@@ -165,6 +165,7 @@ final class HUDAlertPanelHandLandViewModel: DroneStateViewModel<HUDAlertPanelHan
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
+
         listenFlyingIndicators(drone: drone)
         listenManualPiloting(drone: drone)
     }
@@ -176,12 +177,14 @@ final class HUDAlertPanelHandLandViewModel: DroneStateViewModel<HUDAlertPanelHan
             copy.isAlertForceHidden = false
             self.state.set(copy)
         }
+
         updateHandLandAvailability()
     }
 
     // MARK: - Init
     init() {
         super.init()
+
         remoteControlButtonGrabber = RemoteControlButtonGrabber(button: .frontBottomButton,
                                                                 event: .frontBottomButton,
                                                                 key: actionKey,
@@ -309,8 +312,7 @@ private extension HUDAlertPanelHandLandViewModel {
 // MARK: - AlertPanelActionType
 extension HUDAlertPanelHandLandViewModel: AlertPanelActionType {
     func startAction() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenAlertPanelConstants.handLand.name,
-                             itemName: LogEvent.LogKeyHUDPanelButton.start.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.start.name,
                              newValue: state.value.state?.description,
                              logType: .button)
         guard state.value.state == .available else { return }
@@ -319,8 +321,7 @@ extension HUDAlertPanelHandLandViewModel: AlertPanelActionType {
     }
 
     func cancelAction() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenAlertPanelConstants.handLand.name,
-                             itemName: LogEvent.LogKeyHUDPanelButton.cancel.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.cancel.name,
                              newValue: state.value.state?.description,
                              logType: .button)
         let copy = state.value.copy()

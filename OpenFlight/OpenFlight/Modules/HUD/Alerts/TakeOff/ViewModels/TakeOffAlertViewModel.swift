@@ -95,9 +95,7 @@ final class TakeOffAlertState: DevicesConnectionState {
     }
 
     override func isEqual(to other: DevicesConnectionState) -> Bool {
-        guard let other = other as? TakeOffAlertState else {
-            return false
-        }
+        guard let other = other as? TakeOffAlertState else { return false }
 
         return super.isEqual(to: other)
             && self.alertStack == other.alertStack
@@ -280,15 +278,13 @@ private extension TakeOffAlertViewModel {
             let takeOffNotification = notification.userInfo?[HUDCriticalAlertConstants.takeOffRequestedNotificationKey]
             guard (takeOffNotification as? Bool) != nil else { return }
 
-            let copy = self?.state.value.copy()
-            copy?.alertStackDismissed.removeAll()
-            self?.state.set(copy)
+            self?.cleanDismissedAlerts()
         }
     }
 
     /// Inits remote control grabber.
     func initGrabber() {
-        // TODO: Will be reword when MPP4 is available
+        // TODO: Will be reworked with MPP4.
         remoteControlButtonGrabber = RemoteControlButtonGrabber(button: .frontBottomButton,
                                                                 event: .frontBottomButton,
                                                                 key: actionKey,

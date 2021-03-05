@@ -42,13 +42,13 @@ final class ObstacleAvoidanceState: DeviceConnectionState {
     /// Image to display obstacle avoidance state.
     var obstacleAvoidanceImage: UIImage {
         if !isConnected() {
-            return Asset.Telemetry.icObstacleDetectionDisconnected.image
+            return Asset.ObstacleAvoidance.icObstacleDetectionDisconnected.image
         } else if obstacleAvoidanceActivated && stereoVisionCalibrationNeeded {
-            return Asset.Telemetry.icObstacleDetectionError.image
+            return Asset.ObstacleAvoidance.icObstacleDetectionError.image
         } else if obstacleAvoidanceActivated && !stereoVisionCalibrationNeeded {
-            return Asset.Telemetry.icObstacleDetectionOn.image
+            return Asset.ObstacleAvoidance.icObstacleDetectionOn.image
         } else {
-            return Asset.Telemetry.icObstacleDetectionOff.image
+            return Asset.ObstacleAvoidance.icObstacleDetectionOff.image
         }
     }
 
@@ -95,11 +95,15 @@ final class ObstacleAvoidanceViewModel: DroneStateViewModel<ObstacleAvoidanceSta
     // MARK: - Private Properties
     private var obstacleAvoidanceRef: Ref<ObstacleAvoidance>?
     private var stereoVisionSensorRef: Ref<StereoVisionSensor>?
+    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var manualPilotingRef: Ref<ManualCopterPilotingItf>?
 
     // MARK: - Deinit
     deinit {
         self.obstacleAvoidanceRef = nil
         self.stereoVisionSensorRef = nil
+        self.flyingIndicatorsRef = nil
+        self.manualPilotingRef = nil
     }
 
     // MARK: - Override Funcs
@@ -108,6 +112,8 @@ final class ObstacleAvoidanceViewModel: DroneStateViewModel<ObstacleAvoidanceSta
 
         listenObstacleAvoidance(drone)
         listenStereoVisionSensor(drone)
+        listenManualPiloting(drone: drone)
+        listenFlyingIndicators(drone: drone)
     }
 }
 
@@ -115,17 +121,46 @@ final class ObstacleAvoidanceViewModel: DroneStateViewModel<ObstacleAvoidanceSta
 private extension ObstacleAvoidanceViewModel {
     /// Starts watcher for obstacle avoidance.
     func listenObstacleAvoidance(_ drone: Drone) {
-        obstacleAvoidanceRef = drone.getPeripheral(Peripherals.obstacleAvoidance) { [weak self] obstacleAvoidance in
-            self?.updateObstacleAvoidanceState(with: obstacleAvoidance)
+        obstacleAvoidanceRef = drone.getPeripheral(Peripherals.obstacleAvoidance) { [weak self] _ in
+            self?.updateObstacleAvoidanceState()
         }
-        updateObstacleAvoidanceState(with: drone.getPeripheral(Peripherals.obstacleAvoidance))
+        updateObstacleAvoidanceState()
+    }
+
+    /// Starts watcher for flying indicators.
+    func listenFlyingIndicators(drone: Drone) {
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
+            self?.updateObstacleAvoidanceState()
+        }
+    }
+
+    /// Starts watcher for manual piloting.
+    func listenManualPiloting(drone: Drone) {
+        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [weak self] _ in
+            self?.updateObstacleAvoidanceState()
+        }
     }
 
     /// Updates obstacle avoidance state.
-    func updateObstacleAvoidanceState(with obstacleAvoidance: ObstacleAvoidance?) {
-        guard let strongObstacleAvoidance = obstacleAvoidance else { return }
+    func updateObstacleAvoidanceState() {
+        guard let drone = drone,
+              let strongObstacleAvoidance = drone.getPeripheral(Peripherals.obstacleAvoidance),
+              let manualPiloting = drone.getPilotingItf(PilotingItfs.manualCopter),
+              let flyingIndicators = drone.getInstrument(Instruments.flyingIndicators) else {
+            return
+        }
 
         let copy = self.state.value.copy()
+        guard !manualPiloting.canHandLand,
+              manualPiloting.state == .active,
+              manualPiloting.smartTakeOffLandAction != .land,
+              flyingIndicators.flyingState != .takingOff,
+              flyingIndicators.flyingState != .landing else {
+            copy.obstacleAvoidanceActivated = false
+            self.state.set(copy)
+            return
+        }
+
         copy.obstacleAvoidanceActivated = strongObstacleAvoidance.mode.value == .standard
         self.state.set(copy)
     }

@@ -34,34 +34,14 @@ import GroundSdk
 /// View Controller used to display details about drone.
 final class DroneDetailsViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var landscapeContainerView: UIView!
     @IBOutlet private weak var bgView: UIView!
-    @IBOutlet private weak var componentsStatusView: DroneComponentsStatusView!
-    @IBOutlet private weak var nameLabel: UILabel!
-    @IBOutlet private weak var nbSatelliteLabel: UILabel!
-    @IBOutlet private weak var batteryLabel: UILabel!
-    @IBOutlet private weak var gpsImageView: UIImageView!
-    @IBOutlet private weak var batteryImageView: UIImageView!
-    @IBOutlet private weak var satelliteImageView: UIImageView!
-    @IBOutlet private weak var networkImageView: UIImageView!
-    @IBOutlet private weak var separatorView: UIView!
+    @IBOutlet private weak var stackView: UIStackView!
 
     // MARK: - Private Properties
     private weak var coordinator: DroneCoordinator?
-    private var droneDetailsViewModel: DroneDetailsViewModel?
-    private var droneDetailsListViewModel: DroneDetailsInformationsViewModel?
-    private var droneDetailsMapVC: DroneDetailsMapViewController?
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let cellHeight: CGFloat = 40.0
-        static let verticalCellMargin: CGFloat = 20.0
-    }
-
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "DroneDetails"
-    }
+    private var deviceViewController: DroneDetailsDeviceViewController?
+    private var informationViewController: DroneDetailsInformationsViewController?
+    private var buttonsViewController: DroneDetailsButtonsViewController?
 
     // MARK: - Setup
     static func instantiate(coordinator: DroneCoordinator) -> DroneDetailsViewController {
@@ -76,14 +56,14 @@ final class DroneDetailsViewController: UIViewController {
         super.viewDidLoad()
 
         initView()
-        observeDatas()
-        addCloseButton(onTapAction: #selector(backButtonTouchedUpInside(_:)))
+        setupOrientationObserver()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.droneDetails,
+                             logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -94,14 +74,6 @@ final class DroneDetailsViewController: UIViewController {
         return .all
     }
 
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        super.prepare(for: segue, sender: sender)
-
-        if let buttonsViewController = segue.destination as? DroneDetailsButtonsViewController {
-            buttonsViewController.coordinator = coordinator
-        }
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
     }
@@ -110,121 +82,66 @@ final class DroneDetailsViewController: UIViewController {
 // MARK: - Actions
 private extension DroneDetailsViewController {
     @objc func backButtonTouchedUpInside(_ sender: UIButton) {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .simpleButton)
         coordinator?.dismissDroneInfos()
     }
 }
 
 // MARK: - Private Funcs
 private extension DroneDetailsViewController {
-    /// Init the view.
+    /// Inits the view.
     func initView() {
-        bgView.backgroundColor = UIColor(named: .white10)
-        separatorView.backgroundColor = UIColor(named: .white20)
+        addCloseButton(onTapAction: #selector(backButtonTouchedUpInside(_:)))
+        setupViewControllers()
+        bgView.backgroundColor = ColorName.white10.color
+        updateStackView()
     }
 
-    /// Observes main view model.
-    func observeDatas() {
-        droneDetailsViewModel = DroneDetailsViewModel(stateDidUpdate: {[weak self] state in
-            self?.stateDidUpdate(state)
-            }, batteryLevelDidChange: {[weak self] battery in
-                self?.batteryLevelChanged(battery)
-            }, wifiStrengthDidChange: nil,
-               gpsStrengthDidChange: {[weak self] gpsStrength in
-                self?.gpsStrengthChanged(gpsStrength)
-            }, nameDidChange: {[weak self] droneName in
-                self?.nameChanged(droneName)
-            }, connectionStateDidChange: { [weak self] connectionState in
-                self?.updateVisibility(connectionState == .connected)
-            }, needUpdateDidChange: nil,
-               cellularStateDidChange: { [weak self] cellularIcon in
-                self?.cellularIconChanged(cellularIcon)
-            }, isCellularAvailabilityChange: { [weak self] isAvailable in
-                self?.updateCellularIconVisibility(isAvailable)
-            }
-        )
+    /// Sets up observer for orientation change.
+    func setupOrientationObserver() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateStackView),
+                                               name: UIDevice.orientationDidChangeNotification,
+                                               object: nil)
+    }
 
-        // First init.
-        if let state = droneDetailsViewModel?.state.value {
-            stateDidUpdate(state)
-            batteryLevelChanged(state.batteryLevel.value)
-            gpsStrengthChanged(state.gpsStrength.value)
-            nameChanged(state.droneName.value)
-            updateVisibility(state.droneConnectionState.value == DeviceState.ConnectionState.connected)
-            updateCellularIconVisibility(state.isCellularAvailable.value)
+    /// Sets up view controllers.
+    func setupViewControllers() {
+        guard let strongCoordinator = coordinator else { return }
+
+        buttonsViewController = DroneDetailsButtonsViewController.instantiate(coordinator: strongCoordinator)
+        deviceViewController = DroneDetailsDeviceViewController.instantiate(coordinator: strongCoordinator)
+        informationViewController = DroneDetailsInformationsViewController.instantiate(coordinator: strongCoordinator)
+        [buttonsViewController, deviceViewController, informationViewController].forEach { viewController in
+            guard let strongViewController = viewController else { return }
+
+            addChild(strongViewController)
         }
+
     }
 
-    /// Listens battery changed.
-    ///
-    /// - Parameters:
-    ///     - battery: current battery value
-    func batteryLevelChanged(_ battery: BatteryValueModel) {
-        if let batteryLevel = battery.currentValue {
-            batteryLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryLevel)
+    /// Updates stack view.
+    @objc func updateStackView() {
+        stackView.removeSubViews()
+
+        guard let infoView = informationViewController?.view,
+              let buttonView = buttonsViewController?.view,
+              let deviceView = deviceViewController?.view else {
+            return
+        }
+
+        if UIApplication.isLandscape {
+            [infoView,
+             deviceView,
+             buttonView].forEach { view in
+                stackView.addArrangedSubview(view)
+             }
         } else {
-            batteryLabel.text = Style.dash
+            [deviceView,
+             infoView,
+             buttonView].forEach { view in
+                stackView.addArrangedSubview(view)
+             }
         }
-        batteryImageView.image = battery.batteryImage
-    }
-
-    /// Listens gps changed.
-    ///
-    /// - Parameters:
-    ///     - gpsStrength: current gps value
-    func gpsStrengthChanged(_ gpsStrength: GpsStrength) {
-        gpsImageView.image = gpsStrength.image
-    }
-
-    /// Listens name changed.
-    ///
-    /// - Parameters:
-    ///     - name: current drone name
-    func nameChanged(_ name: String) {
-        nameLabel.text = name
-    }
-
-    /// Listens cellular access icon changed.
-    ///
-    /// - Parameters:
-    ///     - icon: current drone network image
-    func cellularIconChanged(_ icon: UIImage?) {
-        networkImageView.image = icon
-    }
-
-    /// Listens cellular access availability.
-    ///
-    /// - Parameters:
-    ///     - isAvailable: tells if 4G network is available
-    func updateCellularIconVisibility(_ isAvailable: Bool) {
-        networkImageView.isHidden = !isAvailable
-    }
-
-    /// State changed callback.
-    ///
-    /// - Parameters:
-    ///     - state: drone details state
-    func stateDidUpdate(_ state: DroneDetailsState) {
-        componentsStatusView.model.droneGimbalStatus = state.gimbalState
-        componentsStatusView.model.stereoVisionStatus = state.stereoVisionState
-        componentsStatusView.model.update(with: state.copterMotorsError)
-    }
-
-    /// Manages each item's visibility according to the connection state.
-    ///
-    /// - Parameters:
-    ///     - isConnected: drone connection state
-    func updateVisibility(_ isConnected: Bool) {
-        componentsStatusView.model.isDroneConnected = isConnected
-        nbSatelliteLabel.text = isConnected ? String(droneDetailsViewModel?.state.value.satelliteCount ?? 0) : Style.dash
-        satelliteImageView.image = isConnected ? Asset.Drone.icSatellite.image : Asset.Drone.icSatelliteUnavailable.image
-    }
-
-    /// Present a common alert in case of update error.
-    ///
-    /// - Parameters:
-    ///     - title: alert title
-    ///     - message: alert message
-    func showErrorAlert(title: String, message: String) {
-        self.showAlertInfo(title: title, message: title)
     }
 }

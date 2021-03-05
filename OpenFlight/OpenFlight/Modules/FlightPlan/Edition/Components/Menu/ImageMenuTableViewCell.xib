@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" rowHeight="112" id="KGk-i7-Jjw" customClass="ImageMenuTableViewCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="471" height="112"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="471" height="112"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Image" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Zod-ey-eJO">
+                        <rect key="frame" x="16" y="12" width="42" height="18"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRightArrow" translatesAutoresizingMaskIntoConstraints="NO" id="yWB-Lg-OK5">
+                        <rect key="frame" x="455" y="0.0" width="8" height="112"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="8" id="y77-PV-O5L"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z8X-II-t1u">
+                        <rect key="frame" x="16" y="42" width="42" height="21"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="yWB-Lg-OK5" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="0CS-nC-X77"/>
+                    <constraint firstItem="Z8X-II-t1u" firstAttribute="top" secondItem="Zod-ey-eJO" secondAttribute="bottom" constant="12" id="2U9-hU-zN9"/>
+                    <constraint firstAttribute="bottom" secondItem="yWB-Lg-OK5" secondAttribute="bottom" id="6g1-7t-Fdz"/>
+                    <constraint firstItem="Zod-ey-eJO" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="WQW-t6-ipJ"/>
+                    <constraint firstItem="Z8X-II-t1u" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="gzx-hy-Rwv"/>
+                    <constraint firstAttribute="trailing" secondItem="yWB-Lg-OK5" secondAttribute="trailing" constant="8" id="hUd-pp-mn2"/>
+                    <constraint firstItem="Zod-ey-eJO" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="12" id="pP5-Ra-cEP"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="cellTitle" destination="Zod-ey-eJO" id="Lxe-St-Vig"/>
+                <outlet property="imageLabel" destination="Z8X-II-t1u" id="VJT-qt-Xf9"/>
+            </connections>
+            <point key="canvasLocation" x="253.59999999999999" y="112.44377811094454"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="icRightArrow" width="9" height="16"/>
+    </resources>
+</document>

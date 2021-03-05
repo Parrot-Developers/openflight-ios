@@ -28,8 +28,5 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import enum GroundSdk.FlightPlanType
-public typealias GroundSdkFlightPlanType = GroundSdk.FlightPlanType
-
 import protocol GroundSdk.Mission
 public typealias GroundSdkMission = GroundSdk.Mission

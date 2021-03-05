@@ -38,14 +38,13 @@ protocol TelemetryBarViewControllerNavigation: class {
 }
 
 /// View controller for telemetry part of top bar.
-
 final class TelemetryBarViewController: UIViewController {
-
     // MARK: - Outlets
     @IBOutlet private weak var speedItemView: TelemetryItemView!
     @IBOutlet private weak var altitudeItemView: TelemetryItemView!
     @IBOutlet private weak var distanceItemView: TelemetryItemView!
     @IBOutlet private weak var obstacleAvoidanceItemView: TelemetryItemView!
+
     // MARK: - Internal Properties
     weak var navigationDelegate: TelemetryBarViewControllerNavigation?
 
@@ -62,11 +61,13 @@ final class TelemetryBarViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
         setupViewModels()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+
         telemetryViewModel = nil
     }
 }
@@ -137,6 +138,7 @@ private extension TelemetryBarViewController {
         } else {
             speedItemView.model?.label = defaultSpeedLabel
         }
+
         speedItemView.model?.backgroundColor = speed.alertLevel.color
     }
 
@@ -147,6 +149,7 @@ private extension TelemetryBarViewController {
         } else {
             altitudeItemView?.model?.label = defaultDistanceLabel
         }
+
         altitudeItemView.model?.backgroundColor = altitude.alertLevel.color
     }
 
@@ -157,6 +160,7 @@ private extension TelemetryBarViewController {
         } else {
             distanceItemView?.model?.label = defaultDistanceLabel
         }
+
         distanceItemView?.model?.backgroundColor = distance.alertLevel.color
     }
 }

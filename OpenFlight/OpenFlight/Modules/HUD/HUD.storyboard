@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="APi-HC-E6C">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="APi-HC-E6C">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -166,7 +166,7 @@
                                             <segue destination="hDx-6F-QJ9" kind="embed" id="oWV-BH-Zeb"/>
                                         </connections>
                                     </containerView>
-                                    <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7hw-J5-nSF" customClass="HUDLandingView" customModule="OpenFlight" customModuleProvider="target">
+                                    <view hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7hw-J5-nSF">
                                         <rect key="frame" x="180" y="180" width="240" height="240"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="240" id="3z3-pm-5pb"/>
@@ -262,6 +262,7 @@
                         <outlet property="alertPanelContainerView" destination="lo9-eM-DaS" id="yqk-zL-JSM"/>
                         <outlet property="customValidationView" destination="9gz-sh-CoN" id="VbQ-HG-kxe"/>
                         <outlet property="flightPlanControls" destination="Ofn-8r-hVZ" id="nsh-k8-FFa"/>
+                        <outlet property="indicatorContainerView" destination="7hw-J5-nSF" id="ssx-CQ-c3d"/>
                         <outlet property="joysticksView" destination="yQI-6E-ytt" id="kih-e9-XS9"/>
                         <outlet property="liveStreamingWidgetView" destination="okK-tm-t5F" id="oKf-4T-LkI"/>
                         <outlet property="missionControls" destination="0Th-fm-29S" id="1fS-gR-0rj"/>

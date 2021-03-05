@@ -35,13 +35,14 @@ import CoreLocation
 /// Class representing a FlightPlan structure including waypoints, POIs, etc.
 public final class FlightPlanObject: Codable {
     // MARK: - Public Properties
-    var takeoffActions: [Action]
-    var pois: [PoiPoint]
-    var wayPoints: [WayPoint]
-    var isBuckled: Bool?
-    var shouldContinue: Bool? = true
-    var lastPointLanding: Bool? = false
+    public var takeoffActions: [Action]
+    public var pois: [PoiPoint]
+    public var wayPoints: [WayPoint]
+    public var isBuckled: Bool?
+    public var shouldContinue: Bool? = true
+    public var lastPointRth: Bool? = false
 
+    // MARK: - Internal Properties
     /// Return to launch MAVLink command, if FlightPlan is buckled.
     var returnToLaunchCommand: ReturnToLaunchCommand? {
         guard isBuckled == true else { return nil }
@@ -49,8 +50,8 @@ public final class FlightPlanObject: Codable {
     }
 
     /// Returns true if drone should land on last waypoint.
-    var shouldLandOnLastPoint: Bool {
-        return lastPointLanding == true
+    var shouldRthOnLastPoint: Bool {
+        return lastPointRth == true
             && isBuckled != true
     }
 
@@ -72,14 +73,14 @@ public final class FlightPlanObject: Codable {
             .count
     }
 
-    // MARK: - Private Enums
+    // MARK: - Internal Enums
     enum CodingKeys: String, CodingKey {
         case takeoffActions = "takeoff"
         case wayPoints
         case pois = "poi"
         case isBuckled = "buckled"
         case shouldContinue = "continue"
-        case lastPointLanding = "landing"
+        case lastPointRth = "RTH"
     }
 
     // MARK: - Init
@@ -96,9 +97,9 @@ public final class FlightPlanObject: Codable {
     ///    - takeoffActions: actions to start on takeOff
     ///    - pois: POIs contained in FlightPlan
     ///    - wayPoints: wayPoints contained in FlightPlan
-    init(takeoffActions: [Action],
-         pois: [PoiPoint],
-         wayPoints: [WayPoint]) {
+    public init(takeoffActions: [Action],
+                pois: [PoiPoint],
+                wayPoints: [WayPoint]) {
         self.takeoffActions = takeoffActions
         self.pois = pois
         self.wayPoints = wayPoints
@@ -115,13 +116,13 @@ public final class FlightPlanObject: Codable {
         self.wayPoints.forEach { $0.shouldContinue = shouldContinue }
     }
 
-    /// Sets up landing on last point setting.
+    /// Sets up return to home on last point setting.
     ///
     /// - Parameters:
-    ///    - lastPointLanding: whether drone should land on last waypoint
-    func setLastPointLanding(_ lastPointLanding: Bool) {
-        self.lastPointLanding = lastPointLanding
-        self.wayPoints.last?.updateLandingAction(shouldLandOnLastPoint)
+    ///    - lastPointRth: whether drone should land on last waypoint
+    func setLastPointRth(_ lastPointRth: Bool) {
+        self.lastPointRth = lastPointRth
+        self.wayPoints.last?.updateRTHAction(shouldRthOnLastPoint)
     }
 
     /// Adds a waypoint at the end of the Flight Plan.
@@ -130,8 +131,8 @@ public final class FlightPlanObject: Codable {
         self.wayPoints.append(wayPoint)
         wayPoint.previousWayPoint = previous
         previous?.nextWayPoint = wayPoint
-        previous?.updateLandingAction(false)
-        wayPoint.updateLandingAction(shouldLandOnLastPoint)
+        previous?.updateRTHAction(false)
+        wayPoint.updateRTHAction(shouldRthOnLastPoint)
         wayPoint.updateYawAndRelations()
     }
 
@@ -160,7 +161,7 @@ public final class FlightPlanObject: Codable {
         next?.updateYaw()
         // Update previous point if it is the new last point.
         if isLastPoint {
-            previous?.updateLandingAction(shouldLandOnLastPoint)
+            previous?.updateRTHAction(shouldRthOnLastPoint)
         }
         return wayPoint
     }

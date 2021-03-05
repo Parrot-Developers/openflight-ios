@@ -160,18 +160,18 @@ class SettingEntry: Equatable {
         let segments: [SettingsSegment]
         let selectedIndex: Int
         let isBool: Bool
-        // BoolSetting
+        // BoolSetting.
         if let setting = self.setting as? BoolSetting {
             segments = [SettingsSegment(title: settingsBoolChoice.firstChoiceName, disabled: setting.updating, image: imageDisabled),
                         SettingsSegment(title: settingsBoolChoice.secondChoiceName, disabled: setting.updating, image: image)]
             var boolValue = setting.value
             if let reversibleSettingEntry = self as? ReversibleSettingEntry,
-                reversibleSettingEntry.isReversed {
+               reversibleSettingEntry.isReversed {
                 boolValue.toggle()
             }
             selectedIndex = boolValue ? 1 : 0
             isBool = true
-        } // DefaultsKey<Bool?>
+        } // DefaultsKey<Bool?>.
         else if let setting = self.setting as? DefaultsKey<Bool?> {
             segments = [SettingsSegment(title: settingsBoolChoice.firstChoiceName,
                                         disabled: false,
@@ -181,15 +181,14 @@ class SettingEntry: Equatable {
                                         image: image)]
             selectedIndex = (Defaults[key: setting] ?? true) ? 1 : 0
             isBool = true
-        } // SettingEnum.Type
+        } // SettingEnum.Type.
         else if let setting = self.setting as? SettingEnum.Type {
             segments = setting.allValues.map({ SettingsSegment(title: $0.localized, disabled: false, image: $0.image) })
             selectedIndex = setting.selectedIndex
             isBool = false
-        } // SpecialSettingModel
-        else if let viewModel = self.setting as? DroneSettingModel,
-            let index = viewModel.selectedIndex {
-            selectedIndex = index
+        } // DroneSettingModel.
+        else if let viewModel = self.setting as? DroneSettingModel {
+            selectedIndex = viewModel.selectedIndex
             segments = viewModel.allValues.map { mode in
                 let isModeSupported = !viewModel.supportedValues.filter({ mode.key == $0.key }).isEmpty
                 let isUpdating = viewModel.isUpdating ?? false
@@ -209,16 +208,16 @@ class SettingEntry: Equatable {
     /// - Parameters:
     ///     - settingIndex: setting index
     func save(at settingIndex: Int) {
-        // BoolSetting
+        // BoolSetting.
         if let setting = self.setting as? BoolSetting {
             setting.value = !setting.value
-        } // DefaultsKey<Bool?>
+        } // DefaultsKey<Bool?>.
         else if let setting = self.setting as? DefaultsKey<Bool?> {
             Defaults[key: setting] = settingIndex == 0 ? false : true
-        } // SettingEnum.Type
+        } // SettingEnum.Type.
         else if let setting = self.setting as? SettingEnum.Type {
             Defaults[key: setting.defaultKey] = setting.allValues[settingIndex].rawValue
-        } // SpecialSettingModel
+        } // DroneSettingModel.
         else if let setting = self.setting as? DroneSettingModel {
             setting.onSelect?(setting.allValues[settingIndex])
         }

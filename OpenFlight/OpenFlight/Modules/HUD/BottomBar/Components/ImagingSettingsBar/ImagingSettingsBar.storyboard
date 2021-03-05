@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
-    <device id="retina6_1" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -29,7 +27,7 @@
                                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                                 </state>
                                                 <connections>
-                                                    <action selector="lockAEButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="bho-O4-g2S"/>
+                                                    <action selector="autoExposurePadklockTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="bho-O4-g2S"/>
                                                 </connections>
                                             </button>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="lockAEEnabled" translatesAutoresizingMaskIntoConstraints="NO" id="8Mn-dj-tfh">
@@ -252,6 +250,8 @@
                     </view>
                     <size key="freeformSize" width="600" height="34"/>
                     <connections>
+                        <outlet property="autoExposurePadlockButton" destination="91O-vb-9pP" id="EcK-PR-uoq"/>
+                        <outlet property="autoExposurePadlockImageView" destination="8Mn-dj-tfh" id="0YW-Nz-zKC"/>
                         <outlet property="autoModeBorderView" destination="pq3-dj-Qym" id="h7c-5y-OZ3"/>
                         <outlet property="autoModeButton" destination="dEp-cr-ki5" id="em2-yp-URH"/>
                         <outlet property="autoModeImageView" destination="Pei-Ii-jCN" id="rNt-lq-mZ3"/>
@@ -263,8 +263,6 @@
                         <outlet property="framerateItemView" destination="SY5-iL-37X" id="VBe-TZ-fY2"/>
                         <outlet property="generalSettingsStackView" destination="eaH-Rc-nYI" id="TrB-UJ-y4I"/>
                         <outlet property="imagingSettingsBarStackView" destination="wS5-Kc-vnX" id="UuY-Aw-vpq"/>
-                        <outlet property="lockAEButton" destination="91O-vb-9pP" id="EcK-PR-uoq"/>
-                        <outlet property="lockAEImageView" destination="8Mn-dj-tfh" id="0YW-Nz-zKC"/>
                         <outlet property="lockAEView" destination="ePC-K6-UEL" id="kFS-Hl-xZZ"/>
                         <outlet property="photoFormatItemView" destination="79U-Dd-EFI" id="GGf-xT-Ubh"/>
                         <outlet property="photoItemsStackView" destination="kvf-Vr-z4Y" id="0z6-0X-yQJ"/>

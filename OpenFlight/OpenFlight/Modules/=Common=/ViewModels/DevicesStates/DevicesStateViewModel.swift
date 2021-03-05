@@ -47,7 +47,7 @@ open class DevicesConnectionState: ViewModelState, EquatableState, Copying {
     ///    - droneConnectionState: drone connection state
     ///    - remoteControlConnectionState: remote control connection state
     public init(droneConnectionState: DeviceConnectionState?,
-         remoteControlConnectionState: DeviceConnectionState?) {
+                remoteControlConnectionState: DeviceConnectionState?) {
         self.droneConnectionState = droneConnectionState
         self.remoteControlConnectionState = remoteControlConnectionState
     }

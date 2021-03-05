@@ -37,7 +37,12 @@ import GroundSdk
 protocol SettingsQuickCollectionViewCellDelegate: class {
     /// Called when user will swipe on a cell.
     func settingsQuickCellWillSwipe()
+
     /// Called when user did swipe on a cell.
+    ///
+    /// - Parameters:
+    ///     - direction: cell gesture recognizer
+    ///     - indexPath: index path of the cell
     func settingsQuickCelldidSwipe(_ direction: UISwipeGestureRecognizer.Direction, at indexPath: IndexPath)
 }
 
@@ -82,11 +87,13 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
     // MARK: - Override Funcs
     override func prepareForReuse() {
         super.prepareForReuse()
+
         self.resetCellContent()
     }
 
     override func awakeFromNib() {
         super.awakeFromNib()
+
         self.animationImage.frame = self.settingImage.frame
         self.addSubview(animationImage)
         self.resetCellContent()
@@ -125,14 +132,17 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
         let selectedIndex = segmentModel.selectedIndex
         self.selectedItem = selectedIndex
         self.pageControl.isHidden = segmentModel.isBoolean
-        self.settingImage.image = segmentModel.segments[selectedIndex].image
+
+        self.settingImage.image = segmentModel.segments.elementAt(index: selectedIndex)?.image
+
         if segmentModel.isBoolean {
             self.settingTitle.text = settingEntry.title
             self.contentView.backgroundColor = (selectedIndex == 0) ? ColorName.black60.color : ColorName.white20.color
             let textColor = (selectedIndex == 0) ? ColorName.white80 : ColorName.white
             settingTitle.makeUp(with: .regular, and: textColor)
+            self.layer.borderColor = selectedIndex == 0 ? ColorName.clear.color.cgColor :ColorName.white.color.cgColor
         } else {
-            var title = segmentModel.segments[selectedIndex].title
+            var title = segmentModel.segments.elementAt(index: selectedIndex)?.title ?? Style.dash
             if let cellTitle = settingEntry.title {
                 title = "\(cellTitle) : " + title
             }
@@ -140,11 +150,13 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
             self.contentView.backgroundColor = ColorName.white20.color
             self.pageControl.numberOfPages = segmentModel.segments.count
             self.pageControl.currentPage = selectedIndex
+            self.layer.borderColor = ColorName.white.color.cgColor
         }
+
         self.isSwipeAllowed = !segmentModel.isBoolean
 
-        nextImage = segmentModel.segments[segmentModel.nextIndex].image
-        previousImage = segmentModel.segments[segmentModel.previousIndex].image
+        nextImage = segmentModel.segments.elementAt(index: segmentModel.nextIndex)?.image
+        previousImage = segmentModel.segments.elementAt(index: segmentModel.previousIndex)?.image
     }
 }
 
@@ -166,8 +178,7 @@ private extension SettingsQuickCollectionViewCell {
         if let model = settingEntry?.segmentModel {
             guard let entry = settingEntry else { return }
 
-            LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.quick.name,
-                                 itemName: settingEntry?.itemLogKey,
+            LogEvent.logAppEvent(itemName: settingEntry?.itemLogKey,
                                  newValue: LogEvent.formatNewValue(settingEntry: entry,
                                                                    index: model.nextIndex),
                                  logType: LogEvent.LogType.button)
@@ -186,8 +197,7 @@ private extension SettingsQuickCollectionViewCell {
             let index = sender.direction == .left
                 ? model.nextIndex
                 : model.previousIndex
-            LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.quick.name,
-                                 itemName: settingEntry?.itemLogKey,
+            LogEvent.logAppEvent(itemName: settingEntry?.itemLogKey,
                                  newValue: LogEvent.formatNewValue(settingEntry: entry,
                                                                    index: index),
                                  logType: LogEvent.LogType.button)
@@ -202,6 +212,7 @@ private extension SettingsQuickCollectionViewCell {
     ///
     /// - Parameters:
     ///     - direction: left mean next item, right previous
+    ///     - animated: animation of the cell
     func changeItem(with direction: UISwipeGestureRecognizer.Direction, animated: Bool = true) {
         self.delegate?.settingsQuickCellWillSwipe()
         // FIXME: investigate if two cells are tapped very fast.

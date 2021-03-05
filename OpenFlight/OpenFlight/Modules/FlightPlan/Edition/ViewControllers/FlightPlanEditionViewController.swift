@@ -48,34 +48,26 @@ public protocol FlightPlanEditionViewControllerDelegate: EditionSettingsDelegate
 public class FlightPlanEditionViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var mapContainer: UIView!
-    @IBOutlet private weak var okButton: UIButton! {
-        didSet {
-            okButton.makeup(with: .large, color: .greenSpring)
-            okButton.backgroundColor = ColorName.greenPea.color
-            okButton.applyCornerRadius(Style.largeCornerRadius)
-            okButton.setTitle(L10n.ok.uppercased(), for: .normal)
-        }
-    }
     @IBOutlet private weak var editionSettingsContainer: UIView!
     @IBOutlet private weak var topBarContainer: UIView!
+    @IBOutlet private weak var topBarContainterHeightConstraint: NSLayoutConstraint!
     @IBOutlet private var allIntefaceViews: [UIView]!
     @IBOutlet private weak var settingsLeadConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var okButtonTopConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
     private weak var coordinator: FlightPlanEditionCoordinator?
     private weak var mapViewController: MapViewController?
     private weak var mapViewRestorer: MapViewRestorer?
     private var droneStateViewModel = DroneStateViewModel<DeviceConnectionState>()
-    private var settingsPanelWidth: CGFloat {
-        return self.view.frame.width * Constants.settingsPanelWidthMultiplier
-    }
-    private var settingsAlwaysDisplayed: Bool = false
     private var settingsDisplayed: Bool = false
     private var flightPlanListener: FlightPlanListener?
-    private weak var flightPlanViewModel: FlightPlanViewModel?
+    private weak var flightPlanViewModel: FlightPlanViewModel? {
+        didSet {
+            flightPlanEditionMenuViewController?.flightPlanViewModel = flightPlanViewModel
+        }
+    }
     private weak var editionSettingsViewController: EditionSettingsViewController?
-    private weak var bottomBarViewController: FlightPlanEditionBottomBarViewController?
+    private weak var flightPlanEditionMenuViewController: FlightPlanEditionMenuViewController?
     private var currentFlightPlan: FlightPlanObject? {
         return flightPlanViewModel?.flightPlan?.plan
     }
@@ -90,7 +82,7 @@ public class FlightPlanEditionViewController: UIViewController {
         case let poiPointGraphic as FlightPlanPoiPointGraphic:
             return poiPointGraphic.poiPoint?.settingsProvider
         case let wayPointLineGraphic as FlightPlanWayPointLineGraphic:
-            return wayPointLineGraphic.destinationWayPoint?.segmentSettingsProvider
+            return wayPointLineGraphic.originWayPoint?.segmentSettingsProvider
         default:
             return nil
         }
@@ -99,17 +91,7 @@ public class FlightPlanEditionViewController: UIViewController {
     private var selectedGraphic: FlightPlanGraphic?
     private weak var graphicTapListener: GraphicTapListener?
     private weak var courseModificationListener: FlightPlanCourseModificationListener?
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let settingsPanelWidthMultiplier: CGFloat = 175.0 / 640.0
-        static let okButtonTopConstraint: CGFloat = 15.0
-    }
-
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "FlightPlan/Editor"
-    }
+    private weak var poiModificationListener: FlightPlanPOIModificationListener?
 
     // MARK: - Setup
     /// Instantiate the view controller.
@@ -135,8 +117,6 @@ public class FlightPlanEditionViewController: UIViewController {
         viewController.mapViewController?.setMapMode(.flightPlanEdition)
         viewController.mapViewRestorer = mapViewRestorer
         viewController.globalSettingsProvider = flightPlanProvider?.settingsProvider
-        viewController.settingsAlwaysDisplayed = flightPlanProvider?.settingsAlwaysDisplayed ?? false
-        viewController.settingsDisplayed = viewController.settingsAlwaysDisplayed
 
         return viewController
     }
@@ -146,6 +126,7 @@ public class FlightPlanEditionViewController: UIViewController {
         FlightPlanManager.shared.unregister(flightPlanListener)
         flightPlanViewModel?.unregisterGraphicTapListener(graphicTapListener)
         flightPlanViewModel?.unregisterCourseModificationListener(courseModificationListener)
+        flightPlanViewModel?.unregisterPOIModificationListener(poiModificationListener)
         mapViewController?.flightPlanOverlay?.deselectAllGraphics()
     }
 
@@ -156,13 +137,13 @@ public class FlightPlanEditionViewController: UIViewController {
         if let mapView = mapViewController?.view {
             mapContainer.addWithConstraints(subview: mapView)
         }
-
+        FlightPlanManager.shared.resetUndoStack()
         setDroneStateViewModel()
-        initSettingsPanel()
 
         flightPlanListener = FlightPlanManager.shared.register { [weak self] flightPlanViewModel in
             self?.flightPlanViewModel?.unregisterGraphicTapListener(self?.graphicTapListener)
             self?.flightPlanViewModel?.unregisterCourseModificationListener(self?.courseModificationListener)
+            self?.flightPlanViewModel?.unregisterPOIModificationListener(self?.poiModificationListener)
             self?.flightPlanViewModel = flightPlanViewModel
 
             if let type = flightPlanViewModel?.state.value.type {
@@ -175,9 +156,17 @@ public class FlightPlanEditionViewController: UIViewController {
             })
 
             self?.courseModificationListener = flightPlanViewModel?.registerCourseModificationListener {
-                guard self?.settingsDisplayed == true else { return }
+                flightPlanViewModel?.updateEstimations()
+                FlightPlanManager.shared.appendUndoStack(with: flightPlanViewModel?.flightPlan)
+                self?.flightPlanEditionMenuViewController?.refreshContent()
+                if self?.settingsDisplayed == true {
+                    self?.editionSettingsViewController?.refreshEstimationsIfNeeded()
+                }
+            }
 
-                self?.editionSettingsViewController?.refreshEstimationsIfNeeded()
+            self?.poiModificationListener = flightPlanViewModel?.registerPOIModificationListener {
+                FlightPlanManager.shared.appendUndoStack(with: flightPlanViewModel?.flightPlan)
+                self?.flightPlanEditionMenuViewController?.refreshContent()
             }
         }
     }
@@ -185,7 +174,8 @@ public class FlightPlanEditionViewController: UIViewController {
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.flightPlanEditor,
+                             logType: .screen)
     }
 
     override public func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -193,16 +183,15 @@ public class FlightPlanEditionViewController: UIViewController {
 
         if let topBarVc = segue.destination as? HUDTopBarViewController {
             topBarVc.context = .flightPlanEdition
-        } else if let bottomBarVc = segue.destination as? FlightPlanEditionBottomBarViewController {
-            bottomBarViewController = bottomBarVc
-            bottomBarVc.delegate = self
-            bottomBarVc.showUndo = settingsProvider?.hasCustomType == true
-            bottomBarVc.showSettingsButton = !settingsAlwaysDisplayed
         } else if let settingsEditionVc = segue.destination as? EditionSettingsViewController {
             settingsEditionVc.settingsProvider = settingsProvider
             settingsEditionVc.savedFlightPlan = flightPlanViewModel?.flightPlan
             settingsEditionVc.delegate = self
             editionSettingsViewController = settingsEditionVc
+        } else if let menuViewController = segue.destination as? FlightPlanEditionMenuViewController {
+            menuViewController.delegate = self
+            menuViewController.settingsProvider = settingsProvider
+            flightPlanEditionMenuViewController = menuViewController
         }
     }
 
@@ -230,6 +219,14 @@ public class FlightPlanEditionViewController: UIViewController {
 // MARK: - Actions
 private extension FlightPlanEditionViewController {
     @IBAction func okButtonTouchedUpInside(_ sender: Any) {
+        endEdition()
+    }
+}
+
+// MARK: - Private Funcs
+private extension FlightPlanEditionViewController {
+    /// End flight plan edition.
+    func endEdition() {
         // Update flight plan informations.
         self.flightPlanViewModel?.updatePolygonPoints(points: mapViewController?.polygonPoints() ?? [])
         self.flightPlanViewModel?.updateFlightPlanExtraData()
@@ -241,10 +238,7 @@ private extension FlightPlanEditionViewController {
         mapViewController?.flightPlanEditionViewController = nil
         coordinator?.dismissFlightPlanEdition()
     }
-}
 
-// MARK: - Private Funcs
-private extension FlightPlanEditionViewController {
     /// Sets up drone state view model.
     func setDroneStateViewModel() {
         droneStateViewModel.state.valueChanged = { [weak self] state in
@@ -260,13 +254,10 @@ private extension FlightPlanEditionViewController {
     ///    - isDroneConnected: specify if the drone is connected
     func updateUI(isDroneConnected: Bool) {
         self.topBarContainer.isHidden = !isDroneConnected
-        self.okButtonTopConstraint.constant = isDroneConnected ? 0.0 : Constants.okButtonTopConstraint
-        self.editionSettingsViewController?.updateTopTableViewConstraint(isDroneConnected: isDroneConnected)
-    }
-
-    /// Inits edition settings view.
-    func initSettingsPanel() {
-        settingsLeadConstraint.constant = settingsAlwaysDisplayed ? settingsPanelWidth : 0.0
+        let topBarHeight = self.topBarContainterHeightConstraint.constant
+        let height: CGFloat = isDroneConnected ? topBarHeight : 0.0
+        self.editionSettingsViewController?.updateTopTableViewConstraint(height)
+        self.flightPlanEditionMenuViewController?.updateTopTableViewConstraint(height)
     }
 
     /// Shows or hides the interface.
@@ -310,7 +301,7 @@ private extension FlightPlanEditionViewController {
     ///    - graphic: graphic for waypoint insertion
     func insertWayPoint(with graphic: FlightPlanInsertWayPointGraphic) {
         guard let mapPoint = graphic.mapPoint,
-              let index = graphic.itemIndex,
+              let index = graphic.targetIndex,
               let wayPoint = flightPlanViewModel?.flightPlan?.plan.insertWayPoint(with: mapPoint,
                                                                                       at: index) else {
             return
@@ -332,6 +323,8 @@ private extension FlightPlanEditionViewController {
     func selectGraphic(_ graphic: FlightPlanGraphic) {
         mapViewController?.flightPlanOverlay?.updateGraphicSelection(graphic,
                                                                      isSelected: true)
+        mapViewController?.flightPlanLabelsOverlay?.updateGraphicSelection(graphic,
+                                                                           isSelected: true)
         selectedGraphic = graphic
         showItemEdition()
     }
@@ -349,8 +342,7 @@ private extension FlightPlanEditionViewController {
         guard !settingsDisplayed else { return }
 
         self.editionSettingsViewController?.refreshEstimationsIfNeeded()
-        self.bottomBarViewController?.showSettingsButton = false
-        self.settingsLeadConstraint.constant = settingsPanelWidth
+        self.settingsLeadConstraint.constant = editionSettingsContainer.frame.width
         self.settingsDisplayed = true
         self.view.layoutIfNeeded()
     }
@@ -361,9 +353,6 @@ private extension FlightPlanEditionViewController {
 
         deselectCurrentGraphic()
 
-        guard settingsAlwaysDisplayed == false else { return }
-
-        self.bottomBarViewController?.showSettingsButton = true
         self.settingsLeadConstraint.constant = 0.0
         self.settingsDisplayed = false
         self.view.layoutIfNeeded()
@@ -378,36 +367,13 @@ private extension FlightPlanEditionViewController {
         if let graphic = selectedGraphic {
             mapViewController?.flightPlanOverlay?.updateGraphicSelection(graphic,
                                                                          isSelected: false)
+            mapViewController?.flightPlanLabelsOverlay?.updateGraphicSelection(graphic,
+                                                                               isSelected: false)
         }
 
         selectedGraphic = nil
         editionSettingsViewController?.updateDataSource(with: globalSettingsProvider,
                                                         savedFlightPlan: flightPlanViewModel?.flightPlan)
-    }
-}
-
-// MARK: - FlightPlanEditionBottomBarViewControllerDelegate
-extension FlightPlanEditionViewController: FlightPlanEditionBottomBarViewControllerDelegate {
-    func centerMap() {
-        mapViewController?.centerMapOnDroneOrUser()
-    }
-
-    func showManagePlans() {
-        FlightPlanManager.shared.persistCurrentFlightPlan()
-        updateInterfaceVisibility(isHidden: true)
-        coordinator?.startManagePlans()
-    }
-
-    func showHistory(flightPlanViewModel: FlightPlanViewModel?) {
-        coordinator?.startFlightPlanHistory(flightPlanViewModel: flightPlanViewModel)
-    }
-
-    func didTapSettingsButton() {
-        openSettings()
-    }
-
-    func didTapOnUndo() {
-        mapViewController?.didTapOnUndo()
     }
 }
 
@@ -424,6 +390,8 @@ extension FlightPlanEditionViewController: EditionSettingsDelegate {
         settingsProvider?.updateType(tag: tag)
         mapViewController?.editionDelegate?.updateMode(tag: tag)
         editionSettingsViewController?.updateDataSource(with: settingsProvider, savedFlightPlan: flightPlanViewModel?.flightPlan)
+
+        FlightPlanManager.shared.appendUndoStack(with: flightPlanViewModel?.flightPlan)
     }
 
     public func updateChoiceSetting(for key: String?, value: Bool) {
@@ -431,22 +399,27 @@ extension FlightPlanEditionViewController: EditionSettingsDelegate {
 
         settingsProvider?.updateChoiceSetting(for: strongKey, value: value)
         mapViewController?.editionDelegate?.updateChoiceSetting(for: strongKey, value: value)
+
+        FlightPlanManager.shared.appendUndoStack(with: flightPlanViewModel?.flightPlan)
     }
 
     public func updateSettingValue(for key: String?, value: Int) {
         guard let strongKey = key else { return }
 
-        if let selectedGraphic = selectedGraphic,
-           let index = selectedGraphic.itemIndex {
+        if let selectedGraphic = selectedGraphic {
             let altitude = Double(value)
 
             switch selectedGraphic {
-            case is FlightPlanWayPointGraphic:
-                mapViewController?.flightPlanOverlay?.updateWayPointAltitude(at: index, altitude: altitude)
-                mapViewController?.flightPlanLabelsOverlay?.updateWayPointAltitude(at: index, altitude: altitude)
-            case is FlightPlanPoiPointGraphic:
-                mapViewController?.flightPlanOverlay?.updatePoiPointAltitude(at: index, altitude: altitude)
-                mapViewController?.flightPlanLabelsOverlay?.updatePoiPointAltitude(at: index, altitude: altitude)
+            case let wayPointGraphic as FlightPlanWayPointGraphic:
+                if let index = wayPointGraphic.wayPointIndex {
+                    mapViewController?.flightPlanOverlay?.updateWayPointAltitude(at: index, altitude: altitude)
+                    mapViewController?.flightPlanLabelsOverlay?.updateWayPointAltitude(at: index, altitude: altitude)
+                }
+            case let poiPointGraphic as FlightPlanPoiPointGraphic:
+                if let index = poiPointGraphic.poiIndex {
+                    mapViewController?.flightPlanOverlay?.updatePoiPointAltitude(at: index, altitude: altitude)
+                    mapViewController?.flightPlanLabelsOverlay?.updatePoiPointAltitude(at: index, altitude: altitude)
+                }
             default:
                 break
             }
@@ -454,25 +427,32 @@ extension FlightPlanEditionViewController: EditionSettingsDelegate {
 
         settingsProvider?.updateSettingValue(for: strongKey, value: value)
         mapViewController?.editionDelegate?.updateSettingValue(for: strongKey, value: value)
+
+        FlightPlanManager.shared.appendUndoStack(with: flightPlanViewModel?.flightPlan)
     }
 
     public func didTapCloseButton() {
         closeSettings()
+        flightPlanEditionMenuViewController?.refreshContent()
     }
 
     public func didTapDeleteButton() {
         if globalSettingsProvider?.hasCustomType == true {
             mapViewController?.didDeleteCorner()
-        } else if let index = selectedGraphic?.itemIndex {
+        } else {
             switch selectedGraphic {
-            case is FlightPlanWayPointGraphic:
-                currentFlightPlan?.removeWaypoint(at: index)
-                self.mapViewController?.flightPlanOverlay?.removeWayPoint(at: index)
-                self.mapViewController?.flightPlanLabelsOverlay?.removeWayPoint(at: index)
-            case is FlightPlanPoiPointGraphic:
-                currentFlightPlan?.removePoiPoint(at: index)
-                self.mapViewController?.flightPlanOverlay?.removePoiPoint(at: index)
-                self.mapViewController?.flightPlanLabelsOverlay?.removePoiPoint(at: index)
+            case let wayPointGraphic as FlightPlanWayPointGraphic:
+                if let index = wayPointGraphic.wayPointIndex {
+                    currentFlightPlan?.removeWaypoint(at: index)
+                    self.mapViewController?.flightPlanOverlay?.removeWayPoint(at: index)
+                    self.mapViewController?.flightPlanLabelsOverlay?.removeWayPoint(at: index)
+                }
+            case let poiPointGraphic as FlightPlanPoiPointGraphic:
+                if let index = poiPointGraphic.poiIndex {
+                    currentFlightPlan?.removePoiPoint(at: index)
+                    self.mapViewController?.flightPlanOverlay?.removePoiPoint(at: index)
+                    self.mapViewController?.flightPlanLabelsOverlay?.removePoiPoint(at: index)
+                }
             default:
                 break
             }
@@ -480,5 +460,36 @@ extension FlightPlanEditionViewController: EditionSettingsDelegate {
         }
 
         closeSettings()
+    }
+}
+
+// MARK: - FlightPlanEditionMenuDelegate
+extension FlightPlanEditionViewController: FlightPlanEditionMenuDelegate {
+    public func doneEdition() {
+        endEdition()
+    }
+
+    public func undoAction() {
+        mapViewController?.didTapOnUndo()
+    }
+
+    public func showSettings() {
+        openSettings()
+    }
+
+    public func showImageSettings() {
+        // TODO: next gerrit
+    }
+
+    public func showProjectManager() {
+        FlightPlanManager.shared.persistCurrentFlightPlan()
+        updateInterfaceVisibility(isHidden: true)
+        coordinator?.startManagePlans()
+    }
+
+    public func showHistory() {
+        if let flightPlanViewModel = flightPlanViewModel {
+            coordinator?.startFlightPlanHistory(flightPlanViewModel: flightPlanViewModel)
+        }
     }
 }

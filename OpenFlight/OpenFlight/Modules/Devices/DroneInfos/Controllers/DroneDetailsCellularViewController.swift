@@ -90,7 +90,7 @@ private extension DroneDetailsCellularViewController {
 
     @IBAction func pinCodeButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyDroneDetailsCellular.enterPinCode)
-        if viewModel?.state.value.canShowCellular == true {
+        if viewModel?.state.value.cellularStatus == .simLocked {
             closeView()
             coordinator?.displayCellularPinCode()
         }
@@ -159,13 +159,12 @@ private extension DroneDetailsCellularViewController {
             forgotErrorLabel.isHidden = true
         }
 
-        enterPinButton.isHidden = !state.canShowCellular
-        reinitializeButton.isEnabled = state.cellularState == .ready
-        connectionStateLabel.text = state.cellularState.title
-        connectionStateLabel.textColor = state.cellularState.color.color
-        connectionStateDescriptionLabel.text = state.cellularState.description
+        enterPinButton.isHidden = viewModel?.state.value.cellularStatus != .simLocked
+        reinitializeButton.isEnabled = state.cellularStatus == .cellularConnected
+        connectionStateLabel.text = state.cellularStatus.cellularDetailsTitle
+        connectionStateLabel.textColor = state.cellularStatus.detailsTextColor.color
 
-        if state.cellularState == .ready {
+        if !state.cellularStatus.isStatusError {
             reinitializeButton.makeup(with: .regular, color: .white)
             reinitializeButton.cornerRadiusedWith(backgroundColor: .clear,
                                                   borderColor: .white ,
@@ -179,7 +178,7 @@ private extension DroneDetailsCellularViewController {
                 userNumberDescriptionLabel.text = L10n.drone4gUserAccessSingular(state.userNumber)
             }
         } else {
-            connectionStateDescriptionLabel.text = state.cellularState.description
+            connectionStateDescriptionLabel.text = state.cellularStatus.cellularDetailsDescription
             userNumberDescriptionLabel.text = Style.dash
             reinitializeButton.cornerRadiusedWith(backgroundColor: .clear,
                                                   borderColor: ColorName.white20.color ,
@@ -196,8 +195,7 @@ private extension DroneDetailsCellularViewController {
     /// - Parameters:
     ///     - itemName: Button name
     func logEvent(with itemName: String) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.droneCellular.name,
-                             itemName: itemName,
+        LogEvent.logAppEvent(itemName: itemName,
                              newValue: nil,
                              logType: .button)
     }

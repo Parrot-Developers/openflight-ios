@@ -36,7 +36,7 @@ public class CoreDataManager {
     // MARK: - Public Properties
     public static var shared = CoreDataManager()
     /// Returns current Managed Object Context.
-    var currentContext: NSManagedObjectContext?
+    public var currentContext: NSManagedObjectContext?
 
     // MARK: - Public Funcs
     public func setup(with persistentContainer: PersistentContainer) {

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="KGk-i7-Jjw" customClass="ProtobufMissionUpdateTableViewCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <stackView opaque="NO" contentMode="scaleToFill" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="LkF-MF-dk2">
+                        <rect key="frame" x="15" y="15" width="92" height="14"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NlW-79-IzF">
+                                <rect key="frame" x="0.0" y="0.0" width="31" height="14"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="140" id="Hzl-4y-YGX"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="14"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                                <variation key="heightClass=regular-widthClass=compact">
+                                    <mask key="constraints">
+                                        <exclude reference="Hzl-4y-YGX"/>
+                                    </mask>
+                                </variation>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BdC-Us-08R">
+                                <rect key="frame" x="61" y="0.0" width="31" height="14"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="14"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <variation key="heightClass=regular-widthClass=compact" axis="vertical" spacing="10"/>
+                    </stackView>
+                    <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Gog-qg-YV2" customClass="ProtobufMissionUpdateStartView" customModule="OpenFlight" customModuleProvider="target">
+                        <rect key="frame" x="165" y="7" width="140" height="30"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="30" id="2Av-OG-7Wn">
+                                <variation key="heightClass=regular-widthClass=compact" constant="40"/>
+                            </constraint>
+                            <constraint firstAttribute="width" constant="140" id="2KJ-0g-Rrb"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="LkF-MF-dk2" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="1n5-6t-S9l"/>
+                    <constraint firstItem="Gog-qg-YV2" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="LkF-MF-dk2" secondAttribute="trailing" constant="5" id="79M-Ax-J0G"/>
+                    <constraint firstItem="LkF-MF-dk2" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="15" id="BpI-da-2mG"/>
+                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="LkF-MF-dk2" secondAttribute="bottom" constant="5" id="I4q-bg-4yj"/>
+                    <constraint firstAttribute="trailing" secondItem="Gog-qg-YV2" secondAttribute="trailing" constant="15" id="J0B-wH-WRS"/>
+                    <constraint firstItem="Gog-qg-YV2" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="PMj-uz-VWF"/>
+                    <constraint firstItem="LkF-MF-dk2" firstAttribute="top" relation="greaterThanOrEqual" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="cBn-Tb-p1U"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="startUpdateView" destination="Gog-qg-YV2" id="Hew-D0-WG3"/>
+                <outlet property="titleLabel" destination="NlW-79-IzF" id="X6e-5d-yvM"/>
+                <outlet property="versionLabel" destination="BdC-Us-08R" id="fe2-Ql-jEC"/>
+            </connections>
+            <point key="canvasLocation" x="139" y="111"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

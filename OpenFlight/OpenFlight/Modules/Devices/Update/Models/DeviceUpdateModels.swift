@@ -114,7 +114,7 @@ enum UpdateUnavailabilityReasons {
         case .droneFlying:
             return L10n.deviceUpdateImpossible
         case .notEnoughBattery:
-            return L10n.droneUpdateInsufficientBatteryTitle(Constants.minimumBatteryLevel.asPercent())
+            return L10n.droneUpdateInsufficientBatteryTitle
         case .droneNotConnected,
              .remoteControlNotConnected:
             return L10n.error

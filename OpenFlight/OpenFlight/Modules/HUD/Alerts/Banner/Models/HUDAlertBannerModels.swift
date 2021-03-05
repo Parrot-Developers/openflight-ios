@@ -256,9 +256,9 @@ enum HUDBannerWarningAlertType: Int, HUDAlertType {
         case .lowAndPerturbedWifi:
             return L10n.alertLowAndPerturbedWifi
         case .noAvoidanceStereoVisionKo:
-            return L10n.alertNoAvoidanceLoveKo
+            return L10n.alertNoAvoidanceSensorsFailure
         case .noAvoidanceStereoVisionNotCalibrated:
-            return L10n.alertNoAvoidanceLoveNotCalibrated
+            return L10n.alertNoAvoidanceSensorsNotCalibrated
         case .noAvoidanceTooDark:
             return L10n.alertNoAvoidanceTooDark
         case .noAvoidanceNoData:

@@ -75,7 +75,7 @@ private extension StorageUtils {
     ///     - isIncludingUnit: includes unit or not
     /// - Returns: size as string
     static func formatSize(size: String, isIncludingUnit: Bool) -> String {
-        guard let space = size.split(separator: " ").first?.replacingOccurrences(of: ",", with: "."),
+        guard let space = size.split(separator: " ").first?.replacingOccurrences(of: Style.comma, with: Style.dot),
             let doubleSpace = Double(space)?.rounded(toPlaces: 1) else {
                 return size
         }

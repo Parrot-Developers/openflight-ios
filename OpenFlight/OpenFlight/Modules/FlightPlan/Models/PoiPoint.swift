@@ -83,9 +83,9 @@ public final class PoiPoint: Codable {
     ///    - coordinate: POI GPS coordinate
     ///    - altitude: POI altitude (in meters)
     ///    - color: POI color
-    init(coordinate: CLLocationCoordinate2D,
-         altitude: Double,
-         color: Int) {
+    public init(coordinate: CLLocationCoordinate2D,
+                altitude: Double,
+                color: Int = 0) {
         self.latitude = coordinate.latitude
         self.longitude = coordinate.longitude
         self.altitude = altitude

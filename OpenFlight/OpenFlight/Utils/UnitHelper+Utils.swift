@@ -185,12 +185,12 @@ public final class UnitHelper: NSObject {
         case .auto:
             numberFormatter.locale = Locale.current
         case .metric:
-            numberFormatter.groupingSeparator = " "
+            numberFormatter.groupingSeparator = Style.whiteSpace
         case .imperial:
-            numberFormatter.groupingSeparator = ","
+            numberFormatter.groupingSeparator = Style.comma
         }
         if DistanceType.type(for: distance).useFractionDigit {
-            numberFormatter.decimalSeparator = "."
+            numberFormatter.decimalSeparator = Style.dot
             numberFormatter.maximumFractionDigits = 1
         } else {
             numberFormatter.maximumFractionDigits = 0
@@ -215,12 +215,12 @@ public final class UnitHelper: NSObject {
         case .auto:
             numberFormatter.locale = Locale.current
         case .metric:
-            numberFormatter.groupingSeparator = " "
+            numberFormatter.groupingSeparator = Style.whiteSpace
         case .imperial:
-            numberFormatter.groupingSeparator = ","
+            numberFormatter.groupingSeparator = Style.comma
         }
         if DistanceType.type(for: distance).useFractionDigit {
-            numberFormatter.decimalSeparator = "."
+            numberFormatter.decimalSeparator = Style.dot
             numberFormatter.minimumFractionDigits = 2
             numberFormatter.maximumFractionDigits = 2
         } else {

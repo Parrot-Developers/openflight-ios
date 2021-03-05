@@ -115,9 +115,9 @@ public final class WayPoint: Codable {
             return 0.0
         }
     }
-    /// Returns true if a landing action is set.
-    private var hasLandingAction: Bool {
-        return actions?.contains(where: { $0.type == .landing }) == true
+    /// Returns true if a Rth action is set.
+    private var hasRthAction: Bool {
+        return actions?.contains(where: { $0.type == .rth }) == true
     }
 
     // MARK: - Private Enums
@@ -136,7 +136,7 @@ public final class WayPoint: Codable {
 
     private enum Constants {
         static let defaultPoiIndex: Int = -1
-        static let defaultSpeed: Double = 2.0
+        static let defaultSpeed: Double = 5.0
         static let customYawDelta: Double = 5.0
     }
 
@@ -153,15 +153,15 @@ public final class WayPoint: Codable {
     ///    - shouldFollowPOI: determine if drone should follow POI for is orientation
     ///    - poiIndex: POI index
     ///    - actions: action to start on waypoint
-    init(coordinate: CLLocationCoordinate2D,
-         altitude: Double,
-         yaw: Double = 0.0,
-         hasCustomYaw: Bool = false,
-         speed: Double? = nil,
-         shouldContinue: Bool,
-         shouldFollowPOI: Bool,
-         poiIndex: Int?,
-         actions: [Action]?) {
+    public init(coordinate: CLLocationCoordinate2D,
+                altitude: Double,
+                yaw: Double = 0.0,
+                hasCustomYaw: Bool = false,
+                speed: Double? = nil,
+                shouldContinue: Bool,
+                shouldFollowPOI: Bool,
+                poiIndex: Int?,
+                actions: [Action]?) {
         self.latitude = coordinate.latitude
         self.longitude = coordinate.longitude
         self.altitude = altitude
@@ -197,10 +197,61 @@ public final class WayPoint: Codable {
             update(viewModeCommand: viewModeCommand)
         }
     }
+
+    // MARK: - Public Funcs
+    /// Updates waypoint's view mode with given parameters?
+    ///
+    /// - Parameters:
+    ///    - shouldContinue: conitnue mode
+    ///    - shouldFollowPOI: follow point of interest mode
+    ///    - poiIndex: index of point of interest
+    public func updateViewMode(shouldContinue: Bool = false,
+                               shouldFollowPOI: Bool = false,
+                               poiIndex: Int? = nil) {
+        self.shouldContinue = shouldContinue
+        self.shouldFollowPOI = shouldFollowPOI
+        self.poiIndex = poiIndex
+    }
+
+    /// Updates waypoint's speed with given parameter.
+    ///
+    /// - Parameters:
+    ///    - speed: target speed
+    public func updateSpeed(_ speed: Double) {
+        self.speed = speed
+    }
+
+    /// Add action to waypoint actions.
+    ///
+    /// - Parameters:
+    ///    - action: action to add to WayPoint
+    public func addAction(_ action: Action) {
+        if actions == nil {
+            actions = []
+        }
+        actions?.append(action)
+    }
 }
 
 // MARK: - Internal Funcs
 extension WayPoint {
+    /// Updates WayPoint with view mode Mavlink command.
+    ///
+    /// - Parameters:
+    ///    - viewModeCommand: view mode Mavlink command (absolute, continue, or ROI)
+    func update(viewModeCommand: SetViewModeCommand) {
+        switch viewModeCommand.mode {
+        case .continue:
+            updateViewMode(shouldContinue: true)
+        case .roi:
+            updateViewMode(shouldContinue: true,
+                           shouldFollowPOI: true,
+                           poiIndex: viewModeCommand.roiIndex)
+        default:
+            updateViewMode()
+        }
+    }
+
     /// Updates WayPoint with speed Mavlink command.
     ///
     /// - Parameters:
@@ -209,47 +260,16 @@ extension WayPoint {
         speed = speedMavlinkCommand.speed
     }
 
-    /// Updates WayPoint with view mode Mavlink command.
+    /// Updates RTH action.
     ///
     /// - Parameters:
-    ///    - viewModeCommand: view mode Mavlink command (absolute, continue, or ROI)
-    func update(viewModeCommand: SetViewModeCommand) {
-        shouldContinue = false
-        shouldFollowPOI = false
-        poiIndex = nil
-        switch viewModeCommand.mode {
-        case .continue:
-            shouldContinue = true
-        case .roi:
-            shouldContinue = true
-            shouldFollowPOI = true
-            poiIndex = viewModeCommand.roiIndex
-        default:
-            break
-        }
-    }
-
-    /// Add action to waypoint actions.
-    ///
-    /// - Parameters:
-    ///    - action: action to add to WayPoint
-    func addAction(_ action: Action) {
-        if actions == nil {
-            actions = []
-        }
-        actions?.append(action)
-    }
-
-    /// Updates landing action.
-    ///
-    /// - Parameters:
-    ///    - shouldLand: whether drone should perform a landing on this point
-    func updateLandingAction(_ shouldLand: Bool) {
-        switch (shouldLand, hasLandingAction) {
+    ///    - shouldRth: whether drone should perform a RTH on this point
+    func updateRTHAction(_ shouldRth: Bool) {
+        switch (shouldRth, hasRthAction) {
         case (true, false):
-            addAction(Action(type: .landing))
+            addAction(Action(type: .rth))
         case (false, true):
-            actions?.removeAll(where: { $0.type == .landing })
+            actions?.removeAll(where: { $0.type == .rth })
         default:
             break
         }

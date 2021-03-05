@@ -51,6 +51,9 @@ final class GallerySelectionView: UIView, NibOwnerLoadable {
     // MARK: - Internal Properties
     weak var delegate: GallerySelectionDelegate?
 
+    // MARK: - Private Properties
+    private var isDownloadAllowed: Bool = true
+
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -76,13 +79,24 @@ private extension GallerySelectionView {
 
 // MARK: - Internal Funcs
 internal extension GallerySelectionView {
-    /// Set number of items.
+    /// Set count and size of items.
     ///
     /// - Parameters:
     ///    - count: count
-    func setNumberOfItems(_ count: Int) {
+    ///    - size: size
+    func setCountAndSizeOfItems(_ count: Int, _ size: UInt64) {
         self.isHidden = false
-        infoLabel.text = String(format: "%d", count)
+
+        if isDownloadAllowed {
+            infoLabel.text = String(format: "%d %@ (%@)",
+                                    count,
+                                    L10n.galleryMediaSelected.lowercased(),
+                                    StorageUtils.sizeForFile(size: size))
+        } else {
+            infoLabel.text = String(format: "%d %@",
+                                    count,
+                                    L10n.galleryMediaSelected.lowercased())
+        }
     }
 
     /// Set if download is allowed.
@@ -90,6 +104,7 @@ internal extension GallerySelectionView {
     /// - Parameters:
     ///    - enabled: enabled
     func setAllowDownload(_ enabled: Bool) {
+        self.isDownloadAllowed = enabled
         downloadButton.isHidden = !enabled
     }
 

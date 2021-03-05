@@ -20,16 +20,16 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <stackView opaque="NO" clipsSubviews="YES" contentMode="center" axis="vertical" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="BX1-Ic-j9C">
-                    <rect key="frame" x="12" y="37" width="576" height="526"/>
+                    <rect key="frame" x="12" y="55.5" width="576" height="489"/>
                     <subviews>
                         <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="acc-iT-zBR">
-                            <rect key="frame" x="0.0" y="0.0" width="576" height="518"/>
+                            <rect key="frame" x="0.0" y="0.0" width="576" height="460.5"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" image="handAnimation000008" translatesAutoresizingMaskIntoConstraints="NO" id="EPJ-Rd-iVH">
-                                    <rect key="frame" x="14" y="14" width="548" height="490"/>
+                                    <rect key="frame" x="14" y="14" width="548" height="432.5"/>
                                 </imageView>
                                 <view clipsSubviews="YES" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="Hmo-g5-aFy" customClass="CircleProgressView" customModule="OpenFlight" customModuleProvider="target">
-                                    <rect key="frame" x="-3" y="-3" width="582" height="524"/>
+                                    <rect key="frame" x="-3" y="-3" width="582" height="466.5"/>
                                 </view>
                             </subviews>
                             <constraints>
@@ -54,28 +54,29 @@
                                 <constraint firstAttribute="bottom" secondItem="Hmo-g5-aFy" secondAttribute="bottom" constant="-3" id="f35-yO-sev">
                                     <variation key="heightClass=compact-widthClass=compact" constant="0.0"/>
                                 </constraint>
+                                <constraint firstAttribute="width" secondItem="acc-iT-zBR" secondAttribute="height" multiplier="1:0.8" id="jsX-NK-ot8"/>
                                 <constraint firstItem="Hmo-g5-aFy" firstAttribute="leading" secondItem="acc-iT-zBR" secondAttribute="leading" constant="-3" id="lxc-xE-Hry">
                                     <variation key="heightClass=compact-widthClass=compact" constant="0.0"/>
                                 </constraint>
                             </constraints>
                         </view>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="4" translatesAutoresizingMaskIntoConstraints="NO" id="X6A-fi-DyZ">
-                            <rect key="frame" x="86.5" y="526" width="403" height="0.0"/>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="test" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="4" translatesAutoresizingMaskIntoConstraints="NO" id="X6A-fi-DyZ">
+                            <rect key="frame" x="29" y="468.5" width="518" height="20.5"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <nil key="highlightedColor"/>
                         </label>
                     </subviews>
                     <constraints>
-                        <constraint firstItem="X6A-fi-DyZ" firstAttribute="width" secondItem="BX1-Ic-j9C" secondAttribute="width" multiplier="0.7" id="qpr-v8-wVs"/>
+                        <constraint firstItem="X6A-fi-DyZ" firstAttribute="width" secondItem="BX1-Ic-j9C" secondAttribute="width" multiplier="0.9" id="qpr-v8-wVs"/>
                     </constraints>
                 </stackView>
             </subviews>
             <constraints>
-                <constraint firstItem="BX1-Ic-j9C" firstAttribute="top" relation="greaterThanOrEqual" secondItem="iN0-l3-epB" secondAttribute="top" constant="12" id="0pF-E7-yt3"/>
+                <constraint firstItem="BX1-Ic-j9C" firstAttribute="top" relation="greaterThanOrEqual" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="0pF-E7-yt3"/>
+                <constraint firstItem="BX1-Ic-j9C" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="1Ka-5v-aRh"/>
                 <constraint firstAttribute="trailing" secondItem="BX1-Ic-j9C" secondAttribute="trailing" constant="12" id="DOw-9f-b8F"/>
                 <constraint firstItem="BX1-Ic-j9C" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="12" id="J6O-Lc-ftN"/>
-                <constraint firstItem="BX1-Ic-j9C" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="Nqq-9p-tDo"/>
                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="BX1-Ic-j9C" secondAttribute="bottom" constant="12" id="SNO-F0-yjJ"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>

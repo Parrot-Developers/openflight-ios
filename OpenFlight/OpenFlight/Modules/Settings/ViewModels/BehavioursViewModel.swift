@@ -32,7 +32,6 @@ import GroundSdk
 import SwiftyUserDefaults
 
 /// Behaviours settings view model.
-
 final class BehavioursViewModel: DroneWatcherViewModel<DeviceConnectionState>, SettingsViewModelProtocol {
     // MARK: - Internal Properties
     var infoHandler: ((_ modeType: SettingMode.Type) -> Void)?

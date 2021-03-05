@@ -50,11 +50,6 @@ final class RemoteCalibrationViewController: UIViewController {
         static let animationDuration: TimeInterval = 3.0
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "RemoteCalibration"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: Coordinator) -> RemoteCalibrationViewController {
         let viewController = StoryboardScene.RemoteDetails.remoteCalibrationViewController.instantiate()
@@ -88,7 +83,8 @@ final class RemoteCalibrationViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.remoteCalibration, logType: .screen)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -107,8 +103,7 @@ final class RemoteCalibrationViewController: UIViewController {
 // MARK: - Actions
 private extension RemoteCalibrationViewController {
     @IBAction func calibrationButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.remoteCalibration.name,
-                             itemName: LogEvent.LogKeyRemoteInfosButton.remoteCalibration.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyRemoteInfosButton.remoteCalibration.name,
                              newValue: remoteCalibrationViewModel?.state.value.calibrationState?.description,
                              logType: .button)
         calibrationButton.isHidden = true
@@ -121,18 +116,14 @@ private extension RemoteCalibrationViewController {
     }
 
     @IBAction func okButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.remoteCalibration.name,
-                             itemName: LogEvent.LogKeyRemoteInfosButton.okRemoteCalibration.name,
-                             newValue: nil,
-                             logType: .button)
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyRemoteInfosButton.okRemoteCalibration.name,
+                             logType: .simpleButton)
         closeCalibration()
     }
 
     @IBAction func backButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.remoteCalibration.name,
-                             itemName: LogEvent.LogKeyRemoteInfosButton.backRemoteCalibration.name,
-                             newValue: nil,
-                             logType: .button)
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back,
+                             logType: .simpleButton)
         closeCalibration()
     }
 }

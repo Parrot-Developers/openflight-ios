@@ -99,11 +99,7 @@ private extension HUDTopBannerViewController {
         }
 
         hdrInfoView.isHidden = !state.hdrOn
-        if state.shouldDisplayLockAE {
-            lockAeInfoView.isHidden = false
-        } else {
-            lockAeInfoView.isHidden = true
-        }
+        lockAeInfoView.isHidden = !state.shouldDisplayAutoExposureLock
         lockAeInfoView.model?.text = state.lockAeMode.displayText
         cameraLabelsContainer.isHidden = state.lockAeMode == .none && !state.hdrOn
         updateHomeInfo(homeState: state.homeState)

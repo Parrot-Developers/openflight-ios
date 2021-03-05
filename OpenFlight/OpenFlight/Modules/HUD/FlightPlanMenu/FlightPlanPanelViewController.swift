@@ -32,6 +32,7 @@ import UIKit
 
 // MARK: - Protocols
 protocol FlightPlanPanelCustomDisplay: class {
+    var flightPlanPanelProgressView: FlightPlanPanelProgressView? { get }
     /// Dedicated function for specific setup regarding mission sub mode.
     func setupExtraContent(with state: FlightPlanPanelState)
 }
@@ -46,9 +47,28 @@ extension FlightPlanPanelCustomDisplay where Self: UIViewController {
 
 final class FlightPlanPanelViewController: UIViewController, FlightPlanPanelCustomDisplay {
     // MARK: - Outlets
+    @IBOutlet private weak var projectView: UIView!
+    @IBOutlet private weak var projectNameLabel: UILabel! {
+        didSet {
+            projectNameLabel.makeUp(with: .small, and: .white50)
+            projectNameLabel.text = L10n.flightPlanMenuProject.uppercased()
+        }
+    }
+    @IBOutlet private weak var projectButton: UIButton! {
+        didSet {
+            projectButton.makeup()
+        }
+    }
+    @IBOutlet private weak var historyButton: UIButton!
+    @IBOutlet private weak var historySeparator: UIView!
     @IBOutlet private weak var playButton: UIButton! {
         didSet {
             playButton.makeup(with: .regular, color: .white)
+        }
+    }
+    @IBOutlet weak var arrowView: SimpleArrowView! {
+        didSet {
+            arrowView.orientation = .bottom
         }
     }
     @IBOutlet private weak var stopButton: UIButton! {
@@ -66,19 +86,15 @@ final class FlightPlanPanelViewController: UIViewController, FlightPlanPanelCust
         }
     }
     @IBOutlet private weak var buttonsStackView: UIStackView!
-    @IBOutlet private weak var estimationsLabel: UILabel! {
-        didSet {
-            estimationsLabel.makeUp(with: .small, and: .white50)
-            estimationsLabel.text = L10n.flightPlanEstimations.uppercased()
-        }
-    }
     @IBOutlet private weak var estimationsView: FlightPlanPanelEstimationView!
     @IBOutlet private weak var estimationsStackView: UIStackView!
     @IBOutlet private weak var noFlightPlanLabel: UILabel!
     @IBOutlet private weak var cameraStreamingContainerView: UIView!
+    @IBOutlet private weak var progressViewContainer: UIView!
 
     // MARK: - Internal Properties
     weak var delegate: FlightPlanEditionViewControllerDelegate?
+    weak var managerCoordinator: FlightPlanManagerCoordinator?
     /// Expose this label to customize it in extensions.
     var infoLabel: UILabel {
         return noFlightPlanLabel
@@ -87,6 +103,7 @@ final class FlightPlanPanelViewController: UIViewController, FlightPlanPanelCust
     var actionButton: UIButton {
         return editButton
     }
+    var flightPlanPanelProgressView: FlightPlanPanelProgressView?
 
     // MARK: - Private Properties
     private var flightPlanPanelViewModel = FlightPlanPanelViewModel()
@@ -101,11 +118,14 @@ final class FlightPlanPanelViewController: UIViewController, FlightPlanPanelCust
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        let progressView = FlightPlanPanelProgressView(frame: progressViewContainer.frame)
+        progressViewContainer.addWithConstraints(subview: progressView)
+        self.flightPlanPanelProgressView = progressView
+
         updateEstimations()
-        flightPlanPanelViewModel.state.valueChanged = { [weak self] state in
-            self?.updateView(state: state)
-        }
         updateView(state: flightPlanPanelViewModel.state.value)
+
+        panelDidHide()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -136,14 +156,40 @@ final class FlightPlanPanelViewController: UIViewController, FlightPlanPanelCust
         self.cameraStreamingViewController?.removeFromParent()
         self.cameraStreamingViewController = nil
     }
+
+    /// Panel did show.
+    func panelDidShow() {
+        self.view.isHidden = false
+        flightPlanPanelViewModel.state.valueChanged = { [weak self] state in
+            self?.updateView(state: state)
+        }
+        updateView(state: flightPlanPanelViewModel.state.value)
+    }
+
+    /// Panel did hide.
+    func panelDidHide() {
+        flightPlanPanelViewModel.state.valueChanged = nil
+        self.view.isHidden = true
+    }
 }
 
 // MARK: - Actions
 private extension FlightPlanPanelViewController {
+    /// History button touched up inside.
+    @IBAction func historyTouchUpInside(_ sender: Any) {
+        if let flightPlanViewModel = FlightPlanManager.shared.currentFlightPlanViewModel {
+            managerCoordinator?.startFlightPlanHistory(flightPlanViewModel: flightPlanViewModel)
+        }
+    }
+
+    /// Project button touched up inside.
+    @IBAction func projectTouchUpInside(_ sender: Any) {
+        managerCoordinator?.startManagePlans()
+    }
+
     /// Play button touched up inside.
     @IBAction func playButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenPanelConstants.flightPlan.name,
-                             itemName: LogEvent.LogKeyHUDPanelButton.play.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.play.name,
                              newValue: nil,
                              logType: .button)
         disableControlsForDelay()
@@ -152,8 +198,7 @@ private extension FlightPlanPanelViewController {
 
     /// Edit button touched up inside.
     @IBAction func editButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenPanelConstants.flightPlan.name,
-                             itemName: LogEvent.LogKeyHUDPanelButton.edit.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.edit.name,
                              newValue: nil,
                              logType: .button)
 
@@ -181,8 +226,7 @@ private extension FlightPlanPanelViewController {
 
     /// Stop button touched up inside.
     @IBAction func stopButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenPanelConstants.flightPlan.name,
-                             itemName: LogEvent.LogKeyHUDPanelButton.stop.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.stop.name,
                              newValue: nil,
                              logType: .button)
         disableControlsForDelay()
@@ -214,6 +258,7 @@ private extension FlightPlanPanelViewController {
         playButton.setTitle(state.runFlightPlanState?.formattedDuration, for: .normal)
         actionButton.isHidden = isActive
         stopButton.isHidden = !isActive
+        flightPlanPanelProgressView?.isHidden = !(state.isFlightPlanLoaded && state.isConnected())
         if isActive {
             buttonsStackView.distribution = .fill
             // TODO: add progress bar + timer on play button
@@ -241,11 +286,23 @@ private extension FlightPlanPanelViewController {
         }
         updateEstimations(state: state)
         noFlightPlanLabel.isHidden = state.isFlightPlanLoaded
+        projectView.isHidden = !state.isFlightPlanLoaded
 
         infoLabel.text = L10n.flightPlanCreateFirst
         infoLabel.makeUp(with: .large, and: .white50)
 
         self.setupExtraContent(with: state)
+
+        if let runFlightPlanState = state.runFlightPlanState {
+            flightPlanPanelProgressView?.model = FlightPlanPanelProgressModel(withRunFlightPlanState: runFlightPlanState)
+        }
+
+        if let viewModel = FlightPlanManager.shared.currentFlightPlanViewModel {
+            historyButton.isHidden = viewModel.executions.isEmpty == true
+            historySeparator.isHidden = historyButton.isHidden
+            projectButton.setTitle(viewModel.state.value.title,
+                                   for: .normal)
+        }
     }
 
     // Setup default play button style.

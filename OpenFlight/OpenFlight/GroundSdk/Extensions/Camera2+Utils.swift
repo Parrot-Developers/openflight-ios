@@ -82,7 +82,7 @@ extension PhotoFormatMode {
         switch self {
         case .rectilinearJpeg, .fullFrameDngRectJpeg:
             return .rectilinear
-        case  .fullFrameJpeg, .fullFrameDngJpeg:
+        case .fullFrameJpeg, .fullFrameDngJpeg:
             return .fullFrame
         }
     }
@@ -102,9 +102,9 @@ extension PhotoFormatMode {
         switch self {
         case .rectilinearJpeg, .fullFrameDngRectJpeg:
             return .rectilinear
-        case  .fullFrameJpeg:
+        case .fullFrameJpeg:
             return .fullFrame
-        case  .fullFrameDngJpeg:
+        case .fullFrameDngJpeg:
             return .fullFrameDng
         }
     }
@@ -118,9 +118,10 @@ extension StartPhotoCaptureCommand.Format {
         switch self {
         case .rectilinear:
             return .rectilinearJpeg
-        case  .fullFrame:
+        case .fullFrame,
+             .fullFrameEIS:
             return .fullFrameJpeg
-        case  .fullFrameDng:
+        case .fullFrameDng:
             return .fullFrameDngJpeg
         }
     }

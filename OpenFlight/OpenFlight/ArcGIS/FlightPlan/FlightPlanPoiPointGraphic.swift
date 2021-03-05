@@ -31,7 +31,7 @@
 import ArcGIS
 
 /// Graphic class for Flight Plan's point of interest.
-public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic {
+public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRelatedGraphic {
     // MARK: - Private Properties
     private var diamondSymbol: AGSSimpleMarkerSymbol? {
         return symbol as? AGSSimpleMarkerSymbol
@@ -44,9 +44,6 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic {
     // MARK: - Override Properties
     override var itemType: FlightPlanGraphicItemType {
         return .poi
-    }
-    override var itemIndex: Int? {
-        return attributes[FlightPlanAGSConstants.poiIndexAttributeKey] as? Int
     }
 
     // MARK: - Private Enums
@@ -100,14 +97,7 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic {
     override func updateColors(isSelected: Bool) {
         diamondSymbol?.color = isSelected
             ? Constants.selectedColor
-            : FlightPlanAGSConstants.colorForPoiIndex(itemIndex ?? 0)
-    }
-
-    override func decrementIndex() {
-        guard let index = itemIndex else { return }
-
-        self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = index - 1
-        updateColors(isSelected: self.isSelected)
+            : FlightPlanAGSConstants.colorForPoiIndex(poiIndex ?? 0)
     }
 
     override func updateAltitude(_ altitude: Double) {

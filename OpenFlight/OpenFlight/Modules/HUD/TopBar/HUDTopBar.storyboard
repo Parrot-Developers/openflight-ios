@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
-    <device id="retina4_7" orientation="landscape" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -22,7 +22,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lMg-w4-8De">
-                                <rect key="frame" x="0.0" y="4" width="667" height="40"/>
+                                <rect key="frame" x="44" y="4" width="623" height="40"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WUk-QM-rzn">
                                         <rect key="frame" x="0.0" y="0.0" width="40" height="40"/>
@@ -35,7 +35,7 @@
                                         </connections>
                                     </button>
                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UHd-7y-H1r">
-                                        <rect key="frame" x="40" y="0.0" width="587" height="40"/>
+                                        <rect key="frame" x="40" y="0.0" width="543" height="40"/>
                                         <subviews>
                                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eA4-Co-nMk">
                                                 <rect key="frame" x="0.0" y="0.0" width="220" height="40"/>
@@ -47,10 +47,10 @@
                                                 </connections>
                                             </containerView>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KD8-Ah-bV0">
-                                                <rect key="frame" x="220" y="0.0" width="147" height="40"/>
+                                                <rect key="frame" x="220" y="0.0" width="103" height="40"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vBB-xo-BHG">
-                                                        <rect key="frame" x="0.0" y="0.0" width="147" height="40"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="103" height="40"/>
                                                         <subviews>
                                                             <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="m0L-SB-2Mn" customClass="HUDRadarView" customModule="OpenFlight" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="0.0" height="50"/>
@@ -75,7 +75,7 @@
                                                 </constraints>
                                             </view>
                                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Fxb-Zg-KIU">
-                                                <rect key="frame" x="367" y="0.0" width="220" height="40"/>
+                                                <rect key="frame" x="323" y="0.0" width="220" height="40"/>
                                                 <subviews>
                                                     <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="84C-qs-StE">
                                                         <rect key="frame" x="0.0" y="0.0" width="90" height="40"/>
@@ -100,7 +100,7 @@
                                         </subviews>
                                     </stackView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Sv-Vx-Tdn">
-                                        <rect key="frame" x="627" y="0.0" width="40" height="40"/>
+                                        <rect key="frame" x="583" y="0.0" width="40" height="40"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="9Sv-Vx-Tdn" secondAttribute="height" multiplier="1:1" id="MkK-FI-bwf"/>
                                         </constraints>
@@ -282,15 +282,19 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2jM-U3-W4o">
-                                <rect key="frame" x="7" y="9" width="48" height="22"/>
+                                <rect key="frame" x="0.5" y="9" width="48" height="22"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KR2-BY-C11">
+                                <rect key="frame" x="49.5" y="9" width="24" height="22"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="V2e-yU-vuf">
-                                <rect key="frame" x="69" y="9" width="24" height="22"/>
+                                <rect key="frame" x="75.5" y="9" width="24" height="22"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <stackView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="V17-QS-rV6">
-                                <rect key="frame" x="7" y="12" width="116" height="16"/>
+                                <rect key="frame" x="0.5" y="12" width="129" height="16"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icDroneBattery" translatesAutoresizingMaskIntoConstraints="NO" id="UaB-sG-4lx">
                                         <rect key="frame" x="0.0" y="0.0" width="25" height="16"/>
@@ -308,18 +312,22 @@
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic4GNoSignal" translatesAutoresizingMaskIntoConstraints="NO" id="hKI-N2-Out">
-                                        <rect key="frame" x="49" y="0.0" width="11" height="16"/>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic4GNoSignal" translatesAutoresizingMaskIntoConstraints="NO" id="hKI-N2-Out">
+                                        <rect key="frame" x="49" y="0.0" width="24" height="16"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="24" id="9lw-Jb-dX0"/>
+                                        </constraints>
                                     </imageView>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icWifi44" translatesAutoresizingMaskIntoConstraints="NO" id="OxL-jV-SLW">
-                                        <rect key="frame" x="62" y="0.0" width="24" height="16"/>
+                                        <rect key="frame" x="75" y="0.0" width="24" height="16"/>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="24" id="y3o-dl-rVE"/>
                                         </constraints>
                                     </imageView>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGps55" translatesAutoresizingMaskIntoConstraints="NO" id="PKd-Ke-19S">
-                                        <rect key="frame" x="88" y="0.0" width="28" height="16"/>
+                                        <rect key="frame" x="101" y="0.0" width="28" height="16"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="28" id="lcV-78-vx3"/>
                                         </constraints>
@@ -336,12 +344,16 @@
                             <constraint firstItem="V17-QS-rV6" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Sh4-F7-On7" secondAttribute="leading" id="LCQ-tA-9x4"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="V17-QS-rV6" secondAttribute="trailing" id="MNg-Sw-ZQ5"/>
                             <constraint firstItem="UaB-sG-4lx" firstAttribute="leading" secondItem="2jM-U3-W4o" secondAttribute="leading" id="QpC-JN-ZjA"/>
+                            <constraint firstItem="KR2-BY-C11" firstAttribute="bottom" secondItem="hKI-N2-Out" secondAttribute="bottom" constant="3" id="QqQ-7L-X2d"/>
+                            <constraint firstItem="KR2-BY-C11" firstAttribute="leading" secondItem="hKI-N2-Out" secondAttribute="leading" id="URZ-xs-JdF"/>
                             <constraint firstItem="UaB-sG-4lx" firstAttribute="top" secondItem="2jM-U3-W4o" secondAttribute="top" constant="3" id="Ul7-hp-0du"/>
+                            <constraint firstItem="KR2-BY-C11" firstAttribute="trailing" secondItem="hKI-N2-Out" secondAttribute="trailing" id="dEE-Fw-o0B"/>
                             <constraint firstItem="V2e-yU-vuf" firstAttribute="bottom" secondItem="OxL-jV-SLW" secondAttribute="bottom" constant="3" id="dQK-4A-Ofc"/>
                             <constraint firstItem="V2e-yU-vuf" firstAttribute="trailing" secondItem="OxL-jV-SLW" secondAttribute="trailing" id="m46-Ar-FSW"/>
                             <constraint firstItem="V17-QS-rV6" firstAttribute="top" relation="greaterThanOrEqual" secondItem="Sh4-F7-On7" secondAttribute="top" id="oaq-wr-Gl6"/>
                             <constraint firstItem="2jM-U3-W4o" firstAttribute="trailing" secondItem="fQp-e0-6ZH" secondAttribute="trailing" constant="1" id="p6r-f1-Sb7"/>
                             <constraint firstItem="2jM-U3-W4o" firstAttribute="bottom" secondItem="UaB-sG-4lx" secondAttribute="bottom" constant="3" id="sM0-GF-I3Q"/>
+                            <constraint firstItem="KR2-BY-C11" firstAttribute="top" secondItem="hKI-N2-Out" secondAttribute="top" constant="-3" id="tJz-86-mXs"/>
                             <constraint firstItem="V17-QS-rV6" firstAttribute="centerY" secondItem="Sh4-F7-On7" secondAttribute="centerY" id="yG6-EK-ih3"/>
                             <constraint firstItem="OxL-jV-SLW" firstAttribute="top" secondItem="V2e-yU-vuf" secondAttribute="top" constant="3" id="yZo-Wc-ybB"/>
                         </constraints>
@@ -351,6 +363,7 @@
                     </view>
                     <connections>
                         <outlet property="batteryAlertBackgroundView" destination="2jM-U3-W4o" id="sJB-5n-XzN"/>
+                        <outlet property="cellularBackgroundView" destination="KR2-BY-C11" id="8zK-Z0-Wnt"/>
                         <outlet property="droneBatteryImageView" destination="UaB-sG-4lx" id="Xju-tC-DWn"/>
                         <outlet property="droneBatteryLabel" destination="fQp-e0-6ZH" id="4Sk-uO-O8L"/>
                         <outlet property="droneCellularImageView" destination="hKI-N2-Out" id="gd6-c8-JnG"/>

@@ -61,11 +61,6 @@ final class CellularAccessCardPinViewController: UIViewController {
         static let standardCellSize: CGSize = CGSize(width: 68.0, height: 68.0)
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "Pairing/4G/PinDialog"
-    }
-
     // MARK: - Setup
     static func instantiate(coordinator: Coordinator) -> CellularAccessCardPinViewController {
         let viewController = StoryboardScene.CellularAccessCardPin.initialScene.instantiate()
@@ -86,7 +81,7 @@ final class CellularAccessCardPinViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        logScreen(logMessage: EventLoggerConstants.screenMessage)
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairing4gPinDialog, logType: .screen)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -231,8 +226,7 @@ private extension CellularAccessCardPinViewController {
     ///     - itemName: Button name
     ///     - newValue: Value changed
     func logEvent(with itemName: String, and newValue: String? = nil) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.cellularAccessPinDialog.name,
-                             itemName: itemName,
+        LogEvent.logAppEvent(itemName: itemName,
                              newValue: newValue,
                              logType: .button)
     }

@@ -112,6 +112,7 @@ public final class HUDAlertPanelHandLaunchState: DeviceConnectionState, AlertPan
          isAlertForceHidden: Bool,
          countdown: Int?) {
         super.init(connectionState: connectionState)
+
         self.state = state
         self.isAlertForceHidden = isAlertForceHidden
         self.countdown = countdown
@@ -119,9 +120,8 @@ public final class HUDAlertPanelHandLaunchState: DeviceConnectionState, AlertPan
 
     // MARK: - Override Funcs
     public override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? HUDAlertPanelHandLaunchState else {
-            return false
-        }
+        guard let other = other as? HUDAlertPanelHandLaunchState else { return false }
+
         return super.isEqual(to: other)
             && self.state == other.state
             && self.isAlertForceHidden == other.isAlertForceHidden
@@ -159,8 +159,10 @@ final class HUDAlertPanelHandLaunchViewModel: DroneStateViewModel<HUDAlertPanelH
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
+
         listenFlyingIndicators(drone: drone)
         listenManualPiloting(drone: drone)
+        updateHandLaunchAvailability()
     }
 
     override func droneConnectionStateDidChange() {
@@ -215,14 +217,20 @@ private extension HUDAlertPanelHandLaunchViewModel {
         } else {
             copy.state = .unavailable
         }
+
         self.state.set(copy)
     }
 
     /// Starts or stops hand launch depending current state.
     func toggleHandLaunch() {
-        guard takeOffAlertViewModel.state.value.canTakeOff else { return }
+        guard let drone = drone else { return }
 
-        drone?.getPilotingItf(PilotingItfs.manualCopter)?.smartTakeOffLand()
+        NotificationCenter.default.post(name: .takeOffRequestedDidChange,
+                                        object: nil,
+                                        userInfo: [HUDCriticalAlertConstants.takeOffRequestedNotificationKey: true])
+        if takeOffAlertViewModel.state.value.canTakeOff {
+            drone.startHandLaunch()
+        }
     }
 
     /// Starts countdown.
@@ -249,8 +257,7 @@ private extension HUDAlertPanelHandLaunchViewModel {
 // MARK: - AlertPanelActionType
 extension HUDAlertPanelHandLaunchViewModel: AlertPanelActionType {
     func startAction() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenAlertPanelConstants.handLaunch.name,
-                             itemName: LogEvent.LogKeyHUDPanelButton.start.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.start.name,
                              newValue: state.value.state?.description,
                              logType: .button)
         guard state.value.state == .available else { return }
@@ -260,8 +267,7 @@ extension HUDAlertPanelHandLaunchViewModel: AlertPanelActionType {
     }
 
     func cancelAction() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenAlertPanelConstants.handLaunch.name,
-                             itemName: LogEvent.LogKeyHUDPanelButton.cancel.name,
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.cancel.name,
                              newValue: state.value.state?.description,
                              logType: .button)
         switch state.value.state {

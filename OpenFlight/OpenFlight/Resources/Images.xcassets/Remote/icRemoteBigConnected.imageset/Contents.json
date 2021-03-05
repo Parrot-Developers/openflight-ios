@@ -6,13 +6,13 @@
       "scale" : "1x"
     },
     {
+      "scale" : "2x",
       "idiom" : "universal",
-      "filename" : "icRemoteBigConnected@2x.png",
-      "scale" : "2x"
+      "filename" : "icRemoteBigConnected@2x.png"
     },
     {
-      "idiom" : "universal",
       "filename" : "icRemoteBigConnected@3x.png",
+      "idiom" : "universal",
       "scale" : "3x"
     }
   ],

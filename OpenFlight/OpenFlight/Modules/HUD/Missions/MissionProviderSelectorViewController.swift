@@ -79,10 +79,8 @@ extension MissionProviderSelectorViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension MissionProviderSelectorViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenPanelConstants.missionProvider.name,
-                             itemName: LogEvent.formatItemName(missionModeState: models[indexPath.row]),
-                             newValue: models[indexPath.row].title?.description,
-                             logType: .button)
+        LogEvent.logAppEvent(itemName: models[indexPath.row].title?.description,
+                             logType: .simpleButton)
         let model = models[indexPath.row]
         if model.isSelected.value == true {
             // Special case when item is already currently selected.

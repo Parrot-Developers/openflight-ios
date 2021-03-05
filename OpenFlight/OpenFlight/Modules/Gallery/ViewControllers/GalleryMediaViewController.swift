@@ -54,6 +54,9 @@ final class GalleryMediaViewController: UIViewController {
     private weak var viewModel: GalleryMediaViewModel?
     private var loadingMedias: [GalleryMedia] = []
     private var selectedMedias: [GalleryMedia] = []
+    private var selectedMediasSize: UInt64 {
+        return selectedMedias.reduce(0) { $0 + $1.size }
+    }
 
     // MARK: - Internal Properties
     weak var delegate: GalleryMediaViewDelegate?
@@ -255,6 +258,7 @@ extension GalleryMediaViewController: UICollectionViewDelegate {
         guard let viewModel = viewModel else { return }
 
         let media = dataSource[indexPath.section].medias[indexPath.row]
+
         if collectionView.allowsMultipleSelection {
             if selectedMedias.contains(media) {
                 selectedMedias.removeAll(where: {$0 == media})
@@ -264,7 +268,7 @@ extension GalleryMediaViewController: UICollectionViewDelegate {
 
             collectionView.reloadData()
             selectionView.setAllowDownload(viewModel.sourceType != .mobileDevice)
-            selectionView.setNumberOfItems(selectedMedias.count)
+            selectionView.setCountAndSizeOfItems(selectedMedias.count, selectedMediasSize)
             selectionView.updateButtons(isMediasSelected: selectedMedias.isEmpty)
         } else if let index = viewModel.getMediaIndex(media) {
             self.coordinator?.showMediaPlayer(viewModel: viewModel, index: index)
@@ -335,7 +339,7 @@ extension GalleryMediaViewController: GalleryViewDelegate {
     func multipleSelectionDidChange(enabled: Bool) {
         collection.allowsMultipleSelection = enabled
         selectionView.setAllowDownload(viewModel?.sourceType != .mobileDevice)
-        selectionView.setNumberOfItems(selectedMedias.count)
+        selectionView.setCountAndSizeOfItems(selectedMedias.count, selectedMediasSize)
         selectionView.updateButtons(isMediasSelected: selectedMedias.isEmpty)
         selectionView.isHidden = !enabled
         if !collection.allowsMultipleSelection {
@@ -347,7 +351,7 @@ extension GalleryMediaViewController: GalleryViewDelegate {
     func sourceDidChange(source: GallerySourceType) {
         if collection.allowsMultipleSelection {
             selectionView.setAllowDownload(source != .mobileDevice)
-            selectionView.setNumberOfItems(0)
+            selectionView.setCountAndSizeOfItems(0, 0)
             selectedMedias.removeAll()
             collection.reloadData()
         }

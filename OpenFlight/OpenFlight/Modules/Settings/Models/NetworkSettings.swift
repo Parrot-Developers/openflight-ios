@@ -83,6 +83,29 @@ enum SettingsCellularAvailability: String, SettingMode, CaseIterable {
     }
 }
 
+/// Model for cellular selection setting.
+enum SettingsCellularSelection: String, SettingMode, CaseIterable {
+    case auto
+    case manual
+
+    var localized: String {
+        switch self {
+        case .auto:
+            return L10n.commonAuto.capitalized
+        case .manual:
+            return L10n.commonManual.capitalized
+        }
+    }
+
+    var key: String {
+        return rawValue
+    }
+
+    static var allValues: [SettingMode] {
+        return SettingsCellularSelection.allCases
+    }
+}
+
 /// Setting related to broadcast DRI.
 enum BroadcastDRISettings: String, SettingMode, CaseIterable {
     case driOff

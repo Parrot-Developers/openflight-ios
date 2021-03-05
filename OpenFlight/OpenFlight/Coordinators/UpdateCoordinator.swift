@@ -52,10 +52,12 @@ public final class UpdateCoordinator: Coordinator {
 
     // MARK: - Public Funcs
     public func start() {
-        var viewController: UIViewController = UIViewController()
+        let viewController: UIViewController
 
         switch model {
         case .drone:
+            // FIXME: Update .drone update type which is never used with mission and firmware refactor. To remove?
+            // Checks specs if we need to chain both remote and drone update.
             guard let deviceUpdateType = deviceUpdateType else { return }
             viewController = DeviceUpdateViewController.instantiate(coordinator: self, deviceUpdateType: deviceUpdateType)
         default:

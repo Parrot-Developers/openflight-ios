@@ -72,6 +72,7 @@ final class MissionSelectorViewController: UIViewController {
         super.viewDidLoad()
 
         headerView.model = MissionProviderState(provider: selectedProvider, mode: nil)
+        listenViewModel()
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -97,10 +98,11 @@ extension MissionSelectorViewController: UITableViewDataSource {
 extension MissionSelectorViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let model = models[indexPath.row]
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenPanelConstants.missionSelector.name,
-                             itemName: LogEvent.formatItemName(missionModeState: model),
+
+        LogEvent.logAppEvent(itemName: LogEvent.formatItemName(missionModeState: model),
                              newValue: model.title?.description,
                              logType: .button)
+
         if model.isSelected.value == true {
             // Special case when item is already currently selected.
             model.isSelected.set(false)
@@ -113,12 +115,20 @@ extension MissionSelectorViewController: UITableViewDelegate {
 
 // MARK: - Private Funcs
 private extension MissionSelectorViewController {
+    /// Listens the view model.
+    func listenViewModel() {
+        viewModel?.state.valueChanged = { [weak self] _ in
+            self?.updateModels()
+        }
+    }
+
     /// Generate models for table view cells from viewModel subModes.
     func updateModels() {
         guard let provider = selectedProvider,
             let subMode = viewModel?.state.value.mode else {
                 return
         }
+
         models = provider.mission.modes.map {
             let itemState = MissionLauncherState(provider: provider,
                                                  mode: $0,
@@ -132,11 +142,11 @@ private extension MissionSelectorViewController {
                         self?.viewModel?.toggleSelectionState()
                         self?.tableView?.isUserInteractionEnabled = true // Prevents double tap issues.
                     }
-                    self?.updateModels()
                 }
             }
             return itemState
         }
+
         tableView?.reloadData()
     }
 

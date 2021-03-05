@@ -37,9 +37,6 @@ public final class FlightPlanWayPointLabelsGraphic: FlightPlanLabelGraphic {
     override var itemType: FlightPlanGraphicItemType {
         return .lineWayPoint
     }
-    override var itemIndex: Int? {
-        return attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] as? Int
-    }
     override var mainLabel: AGSTextSymbol? {
         guard let compositeSymbol = self.symbol as? AGSCompositeSymbol else { return nil }
 
@@ -49,6 +46,7 @@ public final class FlightPlanWayPointLabelsGraphic: FlightPlanLabelGraphic {
     // MARK: - Private Enums
     private enum Constants {
         static let mainTextColor: UIColor = ColorName.white.color
+        static let mainTextSelectedColor: UIColor = ColorName.black.color
         static let subTextColor: UIColor = ColorName.black.color
         static let smallCircleOffset: CGFloat = 18.0
         static let mainLabelSize: CGFloat = 12.0
@@ -121,8 +119,15 @@ public final class FlightPlanWayPointLabelsGraphic: FlightPlanLabelGraphic {
     }
 
     // MARK: - Override Funcs
-    override func decrementIndex() {
-        guard let index = itemIndex else {
+    override func updateColors(isSelected: Bool) {
+        mainLabel?.color = isSelected ? Constants.mainTextSelectedColor : Constants.mainTextColor
+    }
+}
+
+// MARK: - WayPointRelatedGraphic
+extension FlightPlanWayPointLabelsGraphic: WayPointRelatedGraphic {
+    func decrementWayPointIndex() {
+        guard let index = wayPointIndex else {
             return
         }
         self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index - 1
@@ -130,10 +135,8 @@ public final class FlightPlanWayPointLabelsGraphic: FlightPlanLabelGraphic {
         indexLabel?.text = String(index - 1 + Constants.displayedIndexOffset)
     }
 
-    // MARK: - Internal Funcs
-    /// Increment's waypoint index.
-    func incrementIndex() {
-        guard let index = itemIndex else { return }
+    func incrementWayPointIndex() {
+        guard let index = wayPointIndex else { return }
 
         self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index + 1
         let indexLabel = (self.symbol as? AGSCompositeSymbol)?.symbols.last as? AGSTextSymbol

@@ -29,7 +29,6 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
-// TODO: implement internal storage states when available.
 
 /// State for `UserStorageViewModel`.
 
@@ -39,6 +38,10 @@ final class GlobalUserStorageState: ViewModelState, EquatableState, Copying {
     fileprivate(set) var removableUserStoragePhysicalState: UserStoragePhysicalState = .available
     /// Current removable user storage file system state.
     fileprivate(set) var removableUserStorageFileSystemState: UserStorageFileSystemState = .ready
+    /// Current internal user storage physical state.
+    fileprivate(set) var internalUserStoragePhysicalState: UserStoragePhysicalState = .available
+    /// Current internal user storage file system state.
+    fileprivate(set) var internalUserStorageFileSystemState: UserStorageFileSystemState = .ready
     /// Boolean for insufficient storage space error.
     fileprivate(set) var hasInsufficientStorageSpaceError: Bool = false
     /// Boolean for insufficient storage speed error.
@@ -49,13 +52,13 @@ final class GlobalUserStorageState: ViewModelState, EquatableState, Copying {
     }
     /// Icon for shutter button.
     var shutterIcon: UIImage? {
-        return removableUserStoragePhysicalState.shutterIcon
-            ?? removableUserStorageFileSystemState.shutterIcon
+        return internalUserStoragePhysicalState.shutterIcon
+            ?? internalUserStorageFileSystemState.shutterIcon
     }
     /// Boolean for error state.
     var isErrorState: Bool {
-        return removableUserStoragePhysicalState.isErrorState
-            || removableUserStorageFileSystemState.isErrorState
+        return internalUserStoragePhysicalState.isErrorState
+            || internalUserStorageFileSystemState.isErrorState
     }
 
     // MARK: - Init
@@ -66,14 +69,20 @@ final class GlobalUserStorageState: ViewModelState, EquatableState, Copying {
     /// - Parameters:
     ///    - removableUserStoragePhysicalState: current removable user storage physical state
     ///    - removableUserStorageFileSystemState: current removable user file system storage state
+    ///    - internalUserStoragePhysicalState: current internal user storage physical state
+    ///    - internalUserStorageFileSystemState: current internal user file system storage state
     ///    - hasInsufficientStorageSpaceError: boolean for insufficient storage space error
     ///    - hasInsufficientStorageSpeedError: boolean for insufficient storage speed error
     init(removableUserStoragePhysicalState: UserStoragePhysicalState,
          removableUserStorageFileSystemState: UserStorageFileSystemState,
+         internalUserStoragePhysicalState: UserStoragePhysicalState,
+         internalUserStorageFileSystemState: UserStorageFileSystemState,
          hasInsufficientStorageSpaceError: Bool,
          hasInsufficientStorageSpeedError: Bool) {
         self.removableUserStoragePhysicalState = removableUserStoragePhysicalState
         self.removableUserStorageFileSystemState = removableUserStorageFileSystemState
+        self.internalUserStoragePhysicalState = internalUserStoragePhysicalState
+        self.internalUserStorageFileSystemState = internalUserStorageFileSystemState
         self.hasInsufficientStorageSpaceError = hasInsufficientStorageSpaceError
         self.hasInsufficientStorageSpeedError = hasInsufficientStorageSpeedError
     }
@@ -82,6 +91,8 @@ final class GlobalUserStorageState: ViewModelState, EquatableState, Copying {
     func isEqual(to other: GlobalUserStorageState) -> Bool {
         return self.removableUserStoragePhysicalState == other.removableUserStoragePhysicalState
             && self.removableUserStorageFileSystemState == other.removableUserStorageFileSystemState
+            && self.internalUserStoragePhysicalState == other.internalUserStoragePhysicalState
+            && self.internalUserStorageFileSystemState == other.internalUserStorageFileSystemState
             && self.hasInsufficientStorageSpaceError == other.hasInsufficientStorageSpaceError
             && self.hasInsufficientStorageSpeedError == other.hasInsufficientStorageSpeedError
     }
@@ -90,6 +101,8 @@ final class GlobalUserStorageState: ViewModelState, EquatableState, Copying {
     func copy() -> GlobalUserStorageState {
         return GlobalUserStorageState(removableUserStoragePhysicalState: self.removableUserStoragePhysicalState,
                                       removableUserStorageFileSystemState: self.removableUserStorageFileSystemState,
+                                      internalUserStoragePhysicalState: self.internalUserStoragePhysicalState,
+                                      internalUserStorageFileSystemState: self.internalUserStorageFileSystemState,
                                       hasInsufficientStorageSpaceError: self.hasInsufficientStorageSpaceError,
                                       hasInsufficientStorageSpeedError: self.hasInsufficientStorageSpeedError)
     }
@@ -101,7 +114,9 @@ final class GlobalUserStorageViewModel: DroneWatcherViewModel<GlobalUserStorageS
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
     private var removableUserStorageRef: Ref<RemovableUserStorage>?
-    private var oldStorageAvailableSpace: Int64?
+    private var internalUserStorageRef: Ref<InternalUserStorage>?
+    private var oldInternalStorageAvailableSpace: Int64?
+    private var oldRemovableStorageAvailableSpace: Int64?
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
@@ -110,6 +125,14 @@ final class GlobalUserStorageViewModel: DroneWatcherViewModel<GlobalUserStorageS
         removeInsufficientStorageSpeedError()
         listenCamera(drone: drone)
         listenRemovableUserStorage(drone: drone)
+        listenInternalUserStorage(drone: drone)
+    }
+
+    // MARK: - Deinit
+    deinit {
+        cameraRef = nil
+        removableUserStorageRef = nil
+        internalUserStorageRef = nil
     }
 }
 
@@ -158,20 +181,43 @@ private extension GlobalUserStorageViewModel {
     func listenRemovableUserStorage(drone: Drone) {
         removableUserStorageRef = drone.getPeripheral(Peripherals.removableUserStorage) { [weak self] removableUserStorage in
             guard let removableUserStorage = removableUserStorage,
-                let copy = self?.state.value.copy()
-                else {
-                    return
+                  let strongSelf = self else {
+                return
             }
+
+            let copy = strongSelf.state.value.copy()
             copy.removableUserStoragePhysicalState = removableUserStorage.physicalState
             copy.removableUserStorageFileSystemState = removableUserStorage.fileSystemState
-            self?.state.set(copy)
+            strongSelf.state.set(copy)
 
             // Remove storage space error if space has increased.
-            if let oldAvailableSpace = self?.oldStorageAvailableSpace,
+            if let oldAvailableSpace = strongSelf.oldRemovableStorageAvailableSpace,
                 removableUserStorage.availableSpace > oldAvailableSpace {
-                self?.removeInsufficientStorageSpaceError()
+                strongSelf.removeInsufficientStorageSpaceError()
             }
-            self?.oldStorageAvailableSpace = removableUserStorage.availableSpace
+            strongSelf.oldRemovableStorageAvailableSpace = removableUserStorage.availableSpace
+        }
+    }
+
+    /// Starts watcher for internal user storage.
+    func listenInternalUserStorage(drone: Drone) {
+        internalUserStorageRef = drone.getPeripheral(Peripherals.internalUserStorage) { [weak self] internalUserStorage in
+            guard let internalUserStorage = internalUserStorage,
+                  let strongSelf = self else {
+                return
+            }
+
+            let copy = strongSelf.state.value.copy()
+            copy.internalUserStoragePhysicalState = internalUserStorage.physicalState
+            copy.internalUserStorageFileSystemState = internalUserStorage.fileSystemState
+            strongSelf.state.set(copy)
+
+            // Remove storage space error if space has increased.
+            if let oldAvailableSpace = strongSelf.oldInternalStorageAvailableSpace,
+                internalUserStorage.availableSpace > oldAvailableSpace {
+                strongSelf.removeInsufficientStorageSpaceError()
+            }
+            strongSelf.oldInternalStorageAvailableSpace = internalUserStorage.availableSpace
         }
     }
 

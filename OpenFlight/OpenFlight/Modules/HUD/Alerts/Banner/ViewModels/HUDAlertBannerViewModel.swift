@@ -93,6 +93,7 @@ final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
     private var geofenceViewModel = HUDAlertBannerGeofenceViewModel()
     private var autoLandingViewModel = HUDAlertBannerAutoLandingViewModel()
     private var userStorageViewModel = HUDAlertBannerUserStorageViewModel()
+
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
@@ -117,6 +118,7 @@ private extension HUDAlertBannerViewModel {
             self?.updateMotorsAlerts(drone)
             self?.updateConditionsAlerts(drone)
             self?.updateImuSaturationAlerts(drone)
+            self?.updateDroneStuckAlert(drone)
             self?.updateState()
         }
     }
@@ -217,6 +219,17 @@ private extension HUDAlertBannerViewModel {
             self?.alertList.addAlerts(state.alerts)
             self?.updateState()
         }
+    }
+
+    /// Updates alerts for drone stuck.
+    func updateDroneStuckAlert(_ drone: Drone) {
+        alertList.cleanAlerts(withCategories: [.obstacleAvoidance])
+        guard drone.getPeripheral(Peripherals.obstacleAvoidance)?.mode.value == .standard,
+              drone.getInstrument(Instruments.alarms)?.getAlarm(kind: .droneStuck) != nil else {
+            return
+        }
+
+        alertList.addAlerts(HUDAlertBannerSubState(alerts: [HUDBannerWarningAlertType.droneStuck]).alerts)
     }
 
     /// Updates alerts for motors.
