@@ -119,15 +119,6 @@ struct GalleryMedia: Equatable {
             return false
         }
 
-        if let strongType = type {
-            switch strongType {
-            case .custom, .preview:
-                return true
-            default:
-                return urls.contains(where: { $0.lastPathComponent.contains(strongType.rawValue) })
-            }
-        } else {
-            return urls.contains(where: { $0.lastPathComponent.contains(panoramaType.rawValue) })
-        }
+        return urls.contains(where: { $0.lastPathComponent.contains(panoramaType.rawValue) })
     }
 }

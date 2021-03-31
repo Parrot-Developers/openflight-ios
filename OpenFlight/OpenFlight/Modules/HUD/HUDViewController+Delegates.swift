@@ -91,12 +91,6 @@ extension HUDViewController: BottomBarViewControllerDelegate {
 
 // MARK: - FlightPlanPanelViewControllerDelegate
 extension HUDViewController: FlightPlanEditionViewControllerDelegate {
-    func updateMode(tag: Int) {}
-    func updateSettingValue(for key: String?, value: Int) {}
-    func updateChoiceSetting(for key: String?, value: Bool) {}
-    func didTapCloseButton() {}
-    func didTapDeleteButton() {}
-
     func startFlightPlanEdition() {
         flightPlanControls.viewModel.forceHidePanel(true)
         coordinator?.startFlightPlanEdition(mapViewController: splitControls.mapViewController,

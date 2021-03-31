@@ -66,18 +66,17 @@ final class DynamicRangeBarViewModel: BarButtonViewModel<DynamicRangeBarState> {
 
         switch dynamicRange {
         case .plog:
+            currentEditor.disableHdr(camera: camera)
             currentEditor[Camera2Params.imageStyle]?.value = .plog
-            currentEditor.disableHdr(camera: camera)
         case .hdrOff:
-            currentEditor[Camera2Params.imageStyle]?.value = .standard
             currentEditor.disableHdr(camera: camera)
-        case .hdrOn:
             currentEditor[Camera2Params.imageStyle]?.value = .standard
+        case .hdrOn:
             currentEditor.enableHdr(camera: camera)
+            currentEditor[Camera2Params.imageStyle]?.value = .standard
         }
 
-        currentEditor.saveSettings()
-        updateCurrentMode(with: camera)
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 }
 
@@ -119,7 +118,17 @@ private extension DynamicRangeBarViewModel {
     ///     - camera: current camera
     func updateAvailableModes(with camera: MainCamera2) {
         let copy = state.value.copy()
-        copy.supportedModes = camera.hdrAvailable ? DynamicRange.allCases : [DynamicRange.plog, DynamicRange.hdrOff]
+        var supportedModes: [DynamicRange] = [.hdrOff]
+
+        if camera.hdrAvailable {
+            supportedModes.append(.hdrOn)
+        }
+
+        if camera.config[Camera2Params.imageStyle]?.currentSupportedValues.contains(.plog) == true {
+            supportedModes.append(.plog)
+        }
+
+        copy.supportedModes = supportedModes
         copy.showUnsupportedModes = true
         state.set(copy)
     }

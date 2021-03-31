@@ -40,9 +40,7 @@ final class GalleryPanoramaChoiceTypeViewController: UIViewController {
     @IBOutlet private weak var primaryStackView: UIStackView!
     @IBOutlet private weak var sphereChoiceView: GalleryPanoramaTypeChoiceView!
     @IBOutlet private weak var tinyPlanetChoiceView: GalleryPanoramaTypeChoiceView!
-    @IBOutlet private weak var secondaryStackView: UIStackView!
     @IBOutlet private weak var tunnelChoiceView: GalleryPanoramaTypeChoiceView!
-    @IBOutlet private weak var customChoiceView: GalleryPanoramaTypeChoiceView!
     @IBOutlet private weak var generateButton: UIButton!
 
     // MARK: - Private Properties
@@ -91,6 +89,7 @@ private extension GalleryPanoramaChoiceTypeViewController {
                 return
         }
 
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
         titleLabel.makeUp(with: .large)
         titleLabel.attributedText = currentMedia.titleAttributedString
         textLabel.makeUp(with: .huge)
@@ -113,10 +112,6 @@ private extension GalleryPanoramaChoiceTypeViewController {
         self.tunnelChoiceView.model = GalleryPanoramaTypeChoiceModel(image: Asset.Gallery.Panorama.tunnelChoice.image,
                                                                      text: L10n.galleryPanoramaTunnel,
                                                                      highlighted: viewModel?.selectedPanoramaMediaType == .tunnel)
-        self.customChoiceView.model = GalleryPanoramaTypeChoiceModel(image: Asset.Gallery.Panorama.customChoice.image,
-                                                                     icon: Asset.Gallery.Panorama.customEdit.image,
-                                                                     text: L10n.galleryPanoramaCustom,
-                                                                     highlighted: viewModel?.selectedPanoramaMediaType == .custom)
     }
 }
 
@@ -124,7 +119,8 @@ private extension GalleryPanoramaChoiceTypeViewController {
 private extension GalleryPanoramaChoiceTypeViewController {
     /// Redirect to the previous screen.
     @IBAction func backButtonTouchedUpInside() {
-        coordinator?.dismissPanoramaGenerationScreen()
+        self.navigationController?.setNavigationBarHidden(false, animated: true)
+        coordinator?.back()
     }
 
     /// Function called when a choice view is clicked.
@@ -137,7 +133,7 @@ private extension GalleryPanoramaChoiceTypeViewController {
         case tunnelChoiceView:
             viewModel?.selectedPanoramaMediaType = .tunnel
         default:
-            viewModel?.selectedPanoramaMediaType = .custom
+            break
         }
         setupUI()
         setupChoicesModels()

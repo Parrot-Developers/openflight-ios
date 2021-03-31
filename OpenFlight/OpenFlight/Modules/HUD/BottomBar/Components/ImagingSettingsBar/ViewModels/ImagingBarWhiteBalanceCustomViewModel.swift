@@ -51,7 +51,7 @@ final class ImagingBarWhiteBalanceCustomViewModel: BarButtonViewModel<ImagingBar
         let currentEditor = camera.currentEditor
         currentEditor[Camera2Params.whiteBalanceMode]?.value = .custom
         currentEditor[Camera2Params.whiteBalanceTemperature]?.value = customWhiteBalance
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 }
 

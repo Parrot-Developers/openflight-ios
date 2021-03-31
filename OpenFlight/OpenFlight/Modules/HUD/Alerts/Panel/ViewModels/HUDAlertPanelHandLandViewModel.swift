@@ -150,10 +150,6 @@ final class HUDAlertPanelHandLandViewModel: DroneStateViewModel<HUDAlertPanelHan
     private var manualPilotingRef: Ref<ManualCopterPilotingItf>?
     private var timer: Timer?
     private var cancelTimer: Timer?
-    private var remoteControlButtonGrabber: RemoteControlButtonGrabber?
-    private var actionKey: String {
-        return NSStringFromClass(type(of: self)) + SkyCtrl3ButtonEvent.frontBottomButton.description
-    }
 
     // MARK: - Private Enums
     private enum Constants {
@@ -181,21 +177,10 @@ final class HUDAlertPanelHandLandViewModel: DroneStateViewModel<HUDAlertPanelHan
         updateHandLandAvailability()
     }
 
-    // MARK: - Init
-    init() {
-        super.init()
-
-        remoteControlButtonGrabber = RemoteControlButtonGrabber(button: .frontBottomButton,
-                                                                event: .frontBottomButton,
-                                                                key: actionKey,
-                                                                action: onRemoteControlGrabUpdate)
-    }
-
     // MARK: - Deinit
     deinit {
         timer?.invalidate()
         timer = nil
-        remoteControlButtonGrabber?.ungrab()
     }
 }
 
@@ -205,7 +190,6 @@ private extension HUDAlertPanelHandLandViewModel {
     func listenFlyingIndicators(drone: Drone) {
         flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
             self?.updateHandLandAvailability()
-            self?.updateGrabState(drone)
         }
     }
 
@@ -279,33 +263,6 @@ private extension HUDAlertPanelHandLandViewModel {
 
             self?.state.set(copy)
         })
-    }
-
-    /// Called on remote control grab update.
-    ///
-    /// - Parameters:
-    ///     - newState: new skycontroller event state
-    func onRemoteControlGrabUpdate(_ newState: SkyCtrl3ButtonEventState) {
-        guard let drone = drone,
-              newState == .pressed else {
-            return
-        }
-
-        switch state.value.state {
-        case .available:
-            drone.startHandLand()
-        default:
-            manualPilotingRef?.value?.land()
-        }
-    }
-
-    /// Updates grab state.
-    func updateGrabState(_ drone: Drone) {
-        if drone.getInstrument(Instruments.flyingIndicators)?.flyingState.isFlyingOrWaiting == true {
-            remoteControlButtonGrabber?.grab()
-        } else {
-            remoteControlButtonGrabber?.ungrab()
-        }
     }
 }
 

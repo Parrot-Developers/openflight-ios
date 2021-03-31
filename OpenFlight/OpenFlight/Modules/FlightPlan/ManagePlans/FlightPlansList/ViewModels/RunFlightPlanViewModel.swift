@@ -111,7 +111,7 @@ final class RunFlightPlanState: DeviceConnectionState {
     /// Latest mission item executed.
     fileprivate(set) var latestItemExecuted: Int?
     /// MAVLink commands.
-    fileprivate(set) var mavlinkCommands: [MavlinkCommand] = []
+    fileprivate(set) var mavlinkCommands: [MavlinkStandard.MavlinkCommand] = []
     /// Whether Flight Plan is completed. Transient state.
     fileprivate(set) var completed: Bool = false
     /// Current completion progress (from 0.0 to 1.0).
@@ -125,7 +125,7 @@ final class RunFlightPlanState: DeviceConnectionState {
 
         return mavlinkCommands
             .prefix(latestItem + 1)
-            .filter { $0 is NavigateToWaypointCommand }
+            .filter { $0 is MavlinkStandard.NavigateToWaypointCommand }
             .count - 1
     }
 
@@ -161,7 +161,7 @@ final class RunFlightPlanState: DeviceConnectionState {
          isFileUpToDate: Bool,
          duration: TimeInterval,
          latestItemExecuted: Int?,
-         mavlinkCommands: [MavlinkCommand],
+         mavlinkCommands: [MavlinkStandard.MavlinkCommand],
          completed: Bool,
          progress: Double,
          distance: Double) {
@@ -242,10 +242,9 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
     ///
     /// - Parameters:
     ///     - flightPlanViewModel: Flight Plan view model
-    ///     - stateDidUpdate: state did update closure
-    init(flightPlanViewModel: FlightPlanViewModel,
-         stateDidUpdate: ((RunFlightPlanState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    init(flightPlanViewModel: FlightPlanViewModel) {
+        super.init()
+
         self.flightPlanViewModel = flightPlanViewModel
     }
 
@@ -274,12 +273,13 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
     // MARK: - Internal Funcs
     /// Toggle play/pause.
     func togglePlayPause() {
-        let state = self.state.value
-        guard state.runState != .uploading,
-              state.isConnected()
+        guard self.state.value.runState != .uploading,
+              self.state.value.isConnected()
         else { return }
 
-        state.runState == .playing ? pause() : play()
+        let copy = self.state.value.copy()
+        copy.runState == .playing ? pause() : play()
+        self.state.set(copy)
     }
 
     /// Resume execution.
@@ -301,9 +301,14 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
 
     /// Stop Flight Plan.
     func stop() {
-        if self.getPilotingItf()?.deactivate() ?? false {
+        let deactivationSucceeded = self.getPilotingItf()?.deactivate() ?? false
+        let copy = self.state.value.copy()
+        // If the FlightPlanPilotingItf interface was previously paused the it can not be deactivated.
+        // Note that "pausing" a FlightPlanPilotingItf is equivalent to calling .decativate().
+        // So when transitioning from a paused state to a stopped one always update the state so
+        // that it reflects on the User Interface.
+        if deactivationSucceeded || copy.runState == .paused {
             self.flightPlanExecution?.state = FlightPlanExecutionState.stopped
-            let copy = self.state.value.copy()
             copy.runState = .userStopped
             self.state.set(copy)
         }
@@ -363,7 +368,7 @@ private extension RunFlightPlanViewModel {
     func listenFlightPlanPiloting(drone: Drone) {
         flightPlanPilotingRef = drone.getPilotingItf(PilotingItfs.flightPlan) { [weak self] flightPlanPiloting in
             guard let strongSelf = self,
-                let pilotingItf = flightPlanPiloting else { return }
+                  let pilotingItf = flightPlanPiloting else { return }
 
             let copy = strongSelf.state.value.copy()
             copy.activationError = pilotingItf.latestActivationError
@@ -373,7 +378,7 @@ private extension RunFlightPlanViewModel {
             copy.isFileKnownByDrone = pilotingItf.flightPlanFileIsKnown
             copy.latestItemExecuted = pilotingItf.latestMissionItemExecuted
 
-            strongSelf.flightPlanExecution?.latestItemExecuted = pilotingItf.latestMissionItemExecuted
+            strongSelf.updateFlightPlanItemExecution(pilotingItf.latestMissionItemExecuted)
 
             // If a flight plan is active and reach the first way point, we start a new execution.
             if pilotingItf.state == .active,
@@ -449,7 +454,7 @@ private extension RunFlightPlanViewModel {
     func activate(isPaused: Bool) -> Bool {
         guard let interface = self.getPilotingItf() else { return false }
 
-        var interpreter: FlightPlanInterpreter = .legacy
+        var interpreter: FlightPlanInterpreter = .standard
         if let flightPlan = self.flightPlanViewModel?.flightPlan,
            let fpStringType = flightPlan.type,
            let flightPlanType = FlightPlanTypeManager.shared.typeForKey(fpStringType) {
@@ -457,7 +462,10 @@ private extension RunFlightPlanViewModel {
         }
 
         let activationSuccess: Bool
-        if let missionItem = flightPlanExecution?.latestItemExecuted, missionItem > 1 {
+        // Restart if missionItem > 1 because if missionItem == 1 means restart FP.
+        if let missionItem = flightPlanExecution?.latestItemExecuted,
+           missionItem > 1,
+           interface.activateAtMissionItemSupported {
             // FIXME: latestItemExecuted has currently one increment more (SDK related).
             activationSuccess = interface.activate(restart: !isPaused,
                                                    interpreter: interpreter,
@@ -516,10 +524,17 @@ private extension RunFlightPlanViewModel {
         if flightPlan.canGenerateMavlink == false,
            FileManager.default.fileExists(atPath: path) {
             // Do not generate Mavlink, use the stored one.
+            if let fpStringType = flightPlan.type,
+               let flightPlanType = FlightPlanTypeManager.shared.typeForKey(fpStringType),
+               flightPlanType.mavLinkType == .standard {
+                // If Flight Plan uses MavlinkStandard we can parse its commands to display progress.
+                copy.mavlinkCommands = (try? MavlinkStandard.MavlinkFiles.parse(filepath: path)) ?? []
+            }
         } else {
             // Generate Mavlink from flight plan.
             let mavlinkCommands = FlightPlanManager.shared.generateMavlinkCommands(for: flightPlan)
-            MavlinkFiles.generate(filepath: path, commands: mavlinkCommands)
+            try? MavlinkStandard.MavlinkFiles.generate(filepath: path, commands: mavlinkCommands)
+            // TODO: handle error for generation
             copy.mavlinkCommands = mavlinkCommands
         }
         copy.isFileUpToDate = true
@@ -580,14 +595,25 @@ private extension RunFlightPlanViewModel {
         let newProgress = currentPlan.completionProgress(with: currentLocation.agsPoint,
                                                          lastWayPointIndex: lastPassedWayPointIndex).rounded(toPlaces: Constants.progressRoundPrecision)
 
-        // Update progress only if new value is higher
-        // (value could regress due to GPS precision or OA).
-        if newProgress > state.value.progress {
-            let copy = self.state.value.copy()
-            copy.progress = newProgress
-            // TODO: implement a real traveled distance calculator instead of this.
-            copy.distance = newProgress * (currentPlan.estimations.distance ?? 0.0)
-            self.state.set(copy)
+        let copy = self.state.value.copy()
+        copy.progress = newProgress
+        // TODO: implement a real traveled distance calculator instead of this.
+        copy.distance = newProgress * (currentPlan.estimations.distance ?? 0.0)
+        self.state.set(copy)
+    }
+
+    /// Update flight plan item execution.
+    ///
+    /// - Parameters:
+    ///     - item: last item executed
+    func updateFlightPlanItemExecution(_ item: Int?) {
+        guard let execution = self.flightPlanExecution,
+              let newItem = item else { return }
+
+        // Save last item executed if it changed.
+        if execution.latestItemExecuted != newItem {
+            execution.latestItemExecuted = item
+            self.flightPlanViewModel?.saveExecution(execution)
         }
     }
 

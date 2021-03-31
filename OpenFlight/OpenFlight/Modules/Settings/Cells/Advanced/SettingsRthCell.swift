@@ -244,12 +244,6 @@ final class SettingsRthCell: UITableViewCell, NibReusable {
     @IBOutlet private weak var gridViewHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var gridView: SettingsGridView!
     @IBOutlet private weak var actionView: SettingsRthActionView!
-    @IBOutlet private weak var helpLabel: UILabel! {
-        didSet {
-            helpLabel.makeUp()
-            helpLabel.text = L10n.settingsRthHelp
-        }
-    }
 
     // MARK: - Override Funcs
     override func awakeFromNib() {

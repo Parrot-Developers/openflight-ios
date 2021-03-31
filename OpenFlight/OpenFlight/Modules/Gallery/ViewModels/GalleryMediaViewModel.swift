@@ -73,7 +73,7 @@ final class GalleryMediaState: GalleryContentState {
     ///    - downloadingItem: downloading item
     ///    - downloadStatus: download status
     ///    - downloadProgress: download progress
-    ///    - isRemoving: is removing
+    ///    - isRemoving: ViewModel is removing
     ///    - medias: media list
     ///    - sourceType: source type
     ///    - referenceDate: reference date
@@ -117,7 +117,7 @@ final class GalleryMediaState: GalleryContentState {
     ///    - downloadingItem: downloading item
     ///    - downloadStatus: download status
     ///    - downloadProgress: download progress
-    ///    - isRemoving: is removing
+    ///    - isRemoving: ViewModel is removing
     ///    - medias: media list
     ///    - selectedMediaType: selected media type
     ///    - shouldHideControls: should hide controls
@@ -226,10 +226,12 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
     private var mediaListener: Set<GalleryMediaListener> = []
     private var mediaInitialClosure: GalleryMediaListenerClosure?
     private var sdCardListener: GallerySdMediaListener?
+    private var internalListener: GalleryInternalMediaListener?
     private var deviceListener: GalleryDeviceMediaListener?
 
     // MARK: - Internal Properties
     var sdCardViewModel: GallerySDMediaViewModel? = GallerySDMediaViewModel.shared
+    var internalViewModel: GalleryInternalMediaViewModel? = GalleryInternalMediaViewModel.shared
     var deviceViewModel: GalleryDeviceMediaViewModel? = GalleryDeviceMediaViewModel.shared
     var selectionModeEnabled: Bool = false
     var shouldDisplayFormatOptions: Bool {
@@ -240,6 +242,8 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
         switch sourceType {
         case .droneSdCard:
             return sdCardViewModel?.mediaStore
+        case .droneInternal:
+            return internalViewModel?.mediaStore
         default:
             return nil
         }
@@ -292,6 +296,7 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
             }
         }
         initGallerySDCardViewModel()
+        initGalleryInternalViewModel()
         initGalleryDeviceViewModel()
     }
 
@@ -304,7 +309,10 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
     }
+}
 
+// MARK: - Internal Funcs
+extension GalleryMediaViewModel {
     /// Determines if generation view should be display or not.
     ///
     /// - Parameters:
@@ -321,11 +329,13 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
     /// Refresh media list.
     ///
     /// - Parameters:
-    ///   - source: says if we are on the sd card gallery or the device gallery
+    ///   - source: says if we are on the sd card gallery, internal memory galery or device gallery
     func refreshMedias(source: GallerySourceType? = nil) {
         switch source ?? sourceType {
         case .droneSdCard:
             sdCardViewModel?.refreshMedias()
+        case .droneInternal:
+            internalViewModel?.refreshMedias()
         case .mobileDevice:
             deviceViewModel?.refreshMedias()
         default:
@@ -340,19 +350,34 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
     ///    - completion: completion block
     func downloadMedias(_ medias: [GalleryMedia], completion: @escaping (Bool) -> Void) {
         let mediaItems = medias.compactMap({ $0.mediaItem })
-        sdCardViewModel?.downloadMedias(mediasToDownload: mediaItems,
-                                        completion: { [weak self] (_, success) in
-                                            if success {
-                                                // Check SD card when finish.
-                                                self?.sdCardViewModel?.refreshMedias()
-                                            }
-                                            completion(success)
-                                        })
+        switch sourceType {
+        case .droneSdCard:
+            sdCardViewModel?.downloadMedias(mediasToDownload: mediaItems,
+                                            completion: { [weak self] (_, success) in
+                                                if success {
+                                                    // Check SD card when finish.
+                                                    self?.sdCardViewModel?.refreshMedias()
+                                                }
+                                                completion(success)
+                                            })
+        case .droneInternal:
+            internalViewModel?.downloadMedias(mediasToDownload: mediaItems,
+                                              completion: { [weak self] (_, success) in
+                                                if success {
+                                                    // Check internal memory when finish.
+                                                    self?.internalViewModel?.refreshMedias()
+                                                }
+                                                completion(success)
+                                              })
+        default:
+            return
+        }
     }
 
     /// Cancel downloads.
     func cancelDownloads() {
         sdCardViewModel?.cancelDownloads()
+        internalViewModel?.cancelDownloads()
     }
 
     /// Delete medias.
@@ -365,6 +390,11 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
         case .droneSdCard:
             let mediaItems = medias.compactMap({ $0.mediaItem })
             sdCardViewModel?.deleteMedias(mediaItems, completion: { success in
+                completion(success)
+            })
+        case .droneInternal:
+            let mediaItems = medias.compactMap({ $0.mediaItem })
+            internalViewModel?.deleteMedias(mediaItems, completion: { success in
                 completion(success)
             })
         case .mobileDevice:
@@ -409,7 +439,19 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
                   mediaItem.resources.count > index else {
                 return
             }
+
             sdCardViewModel?.downloadResource(media: mediaItem,
+                                              resources: [mediaItem.resources[index]],
+                                              completion: { url in
+                                                completion(url)
+                                              })
+        case .droneInternal:
+            guard let mediaItem = media.mediaItem,
+                  mediaItem.resources.count > index else {
+                return
+            }
+
+            internalViewModel?.downloadResource(media: mediaItem,
                                               resources: [mediaItem.resources[index]],
                                               completion: { url in
                                                 completion(url)
@@ -419,6 +461,7 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
                   urls.count > index else {
                 return
             }
+
             completion(urls[index])
         default:
             return
@@ -463,6 +506,8 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
         switch media.source {
         case .droneSdCard:
             return media.mediaItem?.resources.count ?? 0
+        case .droneInternal:
+            return media.mediaItem?.resources.count ?? 0
         case .mobileDevice:
             return media.urls?.count ?? 0
         default:
@@ -480,6 +525,14 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
         switch media.source {
         case .droneSdCard:
             sdCardViewModel?.getMediaPreviewImageUrl(media, index, completion: { [weak self] url in
+                if url != nil {
+                    completion(url)
+                } else {
+                    self?.fetchMedia(media, index, completion: completion)
+                }
+            })
+        case .droneInternal:
+            internalViewModel?.getMediaPreviewImageUrl(media, index, completion: { [weak self] url in
                 if url != nil {
                     completion(url)
                 } else {
@@ -507,6 +560,7 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
 
         let imageCount = getMediaImageCount(media)
         let middleEntry = imageCount - (imageCount - 1) / 2
+
         return middleEntry - 1
     }
 
@@ -527,10 +581,18 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
             let imageCount = getMediaImageCount(media)
             let middleEntry = imageCount - (imageCount - 1) / 2
             let value = middleEntry - index - 1
+
             return "\(value > 0 ? "+" : "")\(value)"
         case .dng:
             switch media.source {
             case .droneSdCard:
+                guard let mediaItem = media.mediaItem,
+                      index < mediaItem.resources.count else {
+                    return "\(index + 1)"
+                }
+
+                return mediaItem.resources[index].format.description.uppercased()
+            case .droneInternal:
                 guard let mediaItem = media.mediaItem,
                       index < mediaItem.resources.count else {
                     return "\(index + 1)"
@@ -555,6 +617,7 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
                   index < urls.count else {
                 return "\(index + 1)"
             }
+
             let panoramaRelatedEntries = PanoramaMediaType.allCases.map({ $0.rawValue })
             if panoramaRelatedEntries.contains(where: urls[index].lastPathComponent.contains) {
                 let matchingTerms = panoramaRelatedEntries.filter({ urls[index].lastPathComponent.contains($0) })
@@ -591,6 +654,8 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
         switch sourceType {
         case .droneSdCard:
             return sdCardViewModel?.availableSpace ?? 0.0
+        case .droneInternal:
+            return internalViewModel?.availableSpace ?? 0.0
         case .mobileDevice:
             return deviceViewModel?.availableSpace ?? 0.0
         default:
@@ -605,6 +670,8 @@ private extension GalleryMediaViewModel {
     func resetListeners() {
         sdCardViewModel?.unregisterListener(sdCardListener)
         sdCardListener = nil
+        internalViewModel?.unregisterListener(internalListener)
+        internalListener = nil
         deviceViewModel?.unregisterListener(deviceListener)
         deviceListener = nil
     }
@@ -617,6 +684,23 @@ private extension GalleryMediaViewModel {
 
             let copy = strongSelf.state.value.copy()
             if strongSelf.sourceType == .droneSdCard {
+                copy.medias = state.medias
+                copy.downloadingItem = state.downloadingItem
+            }
+            copy.downloadStatus = state.downloadStatus
+            copy.downloadProgress = state.downloadProgress
+            strongSelf.state.set(copy)
+        })
+    }
+
+    /// Init gallery Internal view Model.
+    func initGalleryInternalViewModel() {
+        self.internalViewModel = GalleryInternalMediaViewModel.shared
+        internalListener = self.internalViewModel?.registerListener(didChange: { [weak self] state in
+            guard let strongSelf = self else { return }
+
+            let copy = strongSelf.state.value.copy()
+            if strongSelf.sourceType == .droneInternal {
                 copy.medias = state.medias
                 copy.downloadingItem = state.downloadingItem
             }

@@ -91,6 +91,8 @@ final class FlightPlanPanelViewController: UIViewController, FlightPlanPanelCust
     @IBOutlet private weak var noFlightPlanLabel: UILabel!
     @IBOutlet private weak var cameraStreamingContainerView: UIView!
     @IBOutlet private weak var progressViewContainer: UIView!
+    @IBOutlet private weak var bottomStackViewSafeAreaTrailingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var bottomStackViewSuperviewTrailingConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var delegate: FlightPlanEditionViewControllerDelegate?
@@ -124,6 +126,7 @@ final class FlightPlanPanelViewController: UIViewController, FlightPlanPanelCust
 
         updateEstimations()
         updateView(state: flightPlanPanelViewModel.state.value)
+        setupOrientationObserver()
 
         panelDidHide()
     }
@@ -137,6 +140,11 @@ final class FlightPlanPanelViewController: UIViewController, FlightPlanPanelCust
 
     override var prefersStatusBarHidden: Bool {
         return true
+    }
+
+    // MARK: - Deinit
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: - Internal Funcs
@@ -254,7 +262,7 @@ private extension FlightPlanPanelViewController {
         let runState = state.runFlightPlanState?.runState ?? .stopped
         let isActive = runState.isActive
         playButton.isHidden = !state.isFlightPlanLoaded
-        playButton.isEnabled = isAvailableToRun
+        playButton.isEnabled = isAvailableToRun && state.hasWayPoints
         playButton.setTitle(state.runFlightPlanState?.formattedDuration, for: .normal)
         actionButton.isHidden = isActive
         stopButton.isHidden = !isActive
@@ -275,6 +283,9 @@ private extension FlightPlanPanelViewController {
             default:
                 break
             }
+
+            let counterView = FlightPlanPanelMediaCounterView()
+            flightPlanPanelProgressView?.setExtraViews([counterView])
         } else {
             buttonsStackView.distribution = .fillEqually
             setupDefaultPlayButtonStyle()
@@ -283,6 +294,8 @@ private extension FlightPlanPanelViewController {
             editButton.setTitleColor(state.isFlightPlanLoaded ? ColorName.white.color : ColorName.greenSpring.color,
                                      for: .normal)
             editButton.backgroundColor = state.isFlightPlanLoaded ? ColorName.white20.color : ColorName.greenSpring20.color
+
+            flightPlanPanelProgressView?.setExtraViews([])
         }
         updateEstimations(state: state)
         noFlightPlanLabel.isHidden = state.isFlightPlanLoaded
@@ -323,5 +336,28 @@ private extension FlightPlanPanelViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: { [weak self] in
             self?.buttonsStackView.isUserInteractionEnabled = true
         })
+    }
+
+    /// Sets up observer for device orientation.
+    func setupOrientationObserver() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateTrailingConstraint),
+                                               name: UIDevice.orientationDidChangeNotification,
+                                               object: nil)
+        updateTrailingConstraint()
+    }
+
+    /// Updates trailing constraint according to current orientation.
+    @objc func updateTrailingConstraint() {
+        switch UIApplication.shared.statusBarOrientation {
+        case .landscapeLeft:
+            bottomStackViewSuperviewTrailingConstraint.isActive = false
+            bottomStackViewSafeAreaTrailingConstraint.isActive = true
+        case .landscapeRight:
+            bottomStackViewSafeAreaTrailingConstraint.isActive = false
+            bottomStackViewSuperviewTrailingConstraint.isActive = true
+        default:
+            break
+        }
     }
 }

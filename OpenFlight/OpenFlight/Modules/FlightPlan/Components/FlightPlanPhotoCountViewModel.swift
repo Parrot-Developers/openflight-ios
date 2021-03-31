@@ -76,12 +76,10 @@ final class FlightPlanPhotoCountViewModel: DroneWatcherViewModel<FlightPlanPhoto
     ///
     /// - Parameters:
     ///     - fpExecution: current flight plan execution
-    ///     - stateDidUpdate: callback called when state changed
-    init(fpExecution: FlightPlanExecution,
-         stateDidUpdate: ((FlightPlanPhotoCountState) -> Void)? = nil) {
+    init(fpExecution: FlightPlanExecution) {
         self.fpExecution = fpExecution
 
-        super.init(stateDidUpdate: stateDidUpdate)
+        super.init()
     }
 
     // MARK: - Deinit

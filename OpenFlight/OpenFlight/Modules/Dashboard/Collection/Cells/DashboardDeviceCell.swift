@@ -248,7 +248,7 @@ private extension DashboardDeviceCell {
         }
 
         stateDeviceLabel.text = remoteInfosState?.remoteNeedCalibration.value == true
-            ? L10n.droneCalibrationRequired
+            ? L10n.remoteCalibrationRequired
             : remoteInfosState?.remoteConnectionState.value.title
     }
 
@@ -362,7 +362,7 @@ private extension DashboardDeviceCell {
         switch firmwareAndMissionToUpdateModel {
         case .upToDate where droneCalibrationRequired,
              .notInitialized where droneCalibrationRequired:
-            stateDeviceLabel.text = L10n.droneCalibrationRequired
+            stateDeviceLabel.text = L10n.remoteCalibrationRequired
             stateDeviceLabel.textColor = ColorName.redTorch.color
         default:
             stateDeviceLabel.textColor = firmwareAndMissionToUpdateModel

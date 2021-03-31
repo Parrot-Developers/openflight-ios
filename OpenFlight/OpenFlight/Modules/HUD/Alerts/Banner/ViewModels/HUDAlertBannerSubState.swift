@@ -29,25 +29,24 @@
 //    SUCH DAMAGE.
 
 /// State for alert banner sub view models.
-
-final class HUDAlertBannerSubState: ViewModelState, EquatableState {
+public final class HUDAlertBannerSubState: ViewModelState, EquatableState {
     // MARK: - Internal Properties
     /// Current alerts.
     var alerts: [HUDAlertType] = []
 
     // MARK: - Init
-    required init() { }
+    public required init() { }
 
     /// Init.
     ///
     /// - Parameters:
     ///    - alerts: current alerts
-    init(alerts: [HUDAlertType]) {
+    public init(alerts: [HUDAlertType]) {
         self.alerts = alerts
     }
 
     // MARK: - Equatable Implementation
-    func isEqual(to other: HUDAlertBannerSubState) -> Bool {
+    public func isEqual(to other: HUDAlertBannerSubState) -> Bool {
         return self.alerts.map { $0.level } == other.alerts.map { $0.level }
             && self.alerts.map { $0.priority } == other.alerts.map { $0.priority }
     }

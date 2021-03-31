@@ -35,7 +35,6 @@ final class DashboardFooterCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var versionLabel: UILabel!
     @IBOutlet private weak var dataConfidentialityButton: UIButton!
-    @IBOutlet private weak var aboutButton: UIButton!
 
     // MARK: - Internal Properties
     weak var coordinator: DashboardCoordinatorNavigation?
@@ -54,12 +53,6 @@ final class DashboardFooterCell: UICollectionViewCell, NibReusable {
 
 // MARK: - Actions
 private extension DashboardFooterCell {
-    @IBAction func aboutButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyDashboardButton.about,
-                             logType: .simpleButton)
-        coordinator?.startAbout()
-    }
-
     @IBAction func dataConfidentialityButtonTouchedUpInside(_ sender: Any) {
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyDashboardDataConfidentialityButton.dataConfidentiality.name,
                              logType: .simpleButton)
@@ -72,8 +65,6 @@ private extension DashboardFooterCell {
     /// Update text for version number and buttons.
     func updateView() {
         versionLabel.text = AppUtils.version
-        aboutButton.setTitle(L10n.dashboardFooterAbout,
-                             for: .normal)
         dataConfidentialityButton.setTitle(L10n.dashboardFooterDataConfidentiality,
                                            for: .normal)
     }

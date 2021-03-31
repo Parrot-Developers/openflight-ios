@@ -90,6 +90,8 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
+        self.switchToVideoRecording(drone: drone)
+
         /// If monitoring is already enabled, reset it for drone change.
         if self.isMonitoring {
             self.enableMonitoring(false)
@@ -157,6 +159,17 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
 
 // MARK: - Private Funcs
 private extension TrackingViewModel {
+    /// Switch camera mode to recording if necessary.
+    func switchToVideoRecording(drone: Drone) {
+        guard let currentCamera = drone.currentCamera,
+              currentCamera.mode == .photo else {
+            return
+        }
+
+        let currentEditor = currentCamera.currentEditor
+        currentEditor[Camera2Params.mode]?.value = .recording
+        currentEditor.saveSettings(currentConfig: currentCamera.config)
+    }
 
     /// Starts watcher for stream server state.
     func listenStreamServer(drone: Drone) {
@@ -193,12 +206,6 @@ private extension TrackingViewModel {
     /// Starts watcher for gimbal.
     func listenGimbal(drone: Drone) {
         self.gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
-            // FIXME: To remove when calibration on ANAFI 2 will be available.
-            // Add default tilt to 30.
-            let tmpCopy = self?.state.value.copy()
-            tmpCopy?.tilt = Constants.defaultTilt
-            self?.state.set(tmpCopy)
-
             guard let strongGimbal = gimbal,
                 strongGimbal.calibrated,
                 let currentPitch = strongGimbal.currentAttitude[.pitch] else {

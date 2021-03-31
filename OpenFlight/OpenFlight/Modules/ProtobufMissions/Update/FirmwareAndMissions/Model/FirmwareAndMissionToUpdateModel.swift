@@ -67,7 +67,7 @@ enum FirmwareAndMissionToUpdateModel {
 
 // MARK: - Internal Funcs
 extension FirmwareAndMissionToUpdateModel {
-    /// `DroneDetailsButtonView` subtilte.
+    /// `DeviceDetailsButtonView` subtilte.
     var subtitle: String {
         switch self {
         case let .upToDate(firmwareVersion: firmwareVersion):
@@ -83,51 +83,42 @@ extension FirmwareAndMissionToUpdateModel {
         }
     }
 
-    /// `DroneDetailsButtonView` complementarySubtitle.
+    /// `DeviceDetailsButtonView` complementarySubtitle.
     var complementarySubtitle: String? {
         switch self {
-        case .upToDate:
-            return nil
         case let .firmware(currentVersion: _, versionToUpdate: versionToUpdate):
             return String(format: "%@%@", Style.arrow, versionToUpdate)
-        case .singleMission:
-            return nil
-        case .missions:
-            return nil
-        case .notInitialized:
+        case .singleMission,
+             .upToDate,
+             .missions,
+             .notInitialized:
             return nil
         }
     }
 
-    /// `DroneDetailsButtonView` subImage.
+    /// `DeviceDetailsButtonView` subImage.
     var subImage: UIImage {
         switch self {
-        case .upToDate:
+        case .upToDate,
+             .notInitialized:
             return Asset.Common.Checks.iconCheck.image
-        case .firmware:
-            return Asset.Dashboard.icupdate.image
-        case .singleMission:
-            return Asset.Dashboard.icupdate.image
-        case .missions:
-            return Asset.Dashboard.icupdate.image
-        case .notInitialized:
-            return Asset.Common.Checks.iconCheck.image
+        case .firmware,
+             .singleMission,
+             .missions:
+            return Asset.Dashboard.icUpdate.image
         }
     }
 
-    /// `DroneDetailsButtonView` backgroundColor.
+    /// `DeviceDetailsButtonView` backgroundColor.
     var backgroundColor: ColorName {
         switch self {
-        case .upToDate:
+        case .upToDate,
+             .notInitialized:
             return .white10
-        case .firmware:
+        case .firmware,
+             .missions,
+             .singleMission:
             return .greenSpring20
-        case .singleMission:
-            return .greenSpring20
-        case .missions:
-            return .greenSpring20
-        case .notInitialized:
-            return .white10
         }
     }
 }
@@ -157,11 +148,9 @@ extension FirmwareAndMissionToUpdateModel {
         case .upToDate:
             return deviceConnectionState == .disconnected ?
                 ColorName.white50.color : ColorName.greenSpring.color
-        case .firmware:
-            return ColorName.greenSpring20.color
-        case .singleMission:
-            return ColorName.greenSpring20.color
-        case .missions:
+        case .firmware,
+             .singleMission,
+             .missions:
             return ColorName.greenSpring20.color
         case .notInitialized:
             return ColorName.white50.color

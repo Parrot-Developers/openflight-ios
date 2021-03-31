@@ -46,6 +46,7 @@ open class MapViewController: UIViewController {
 
     // MARK: - Public Properties
     public weak var editionDelegate: FlightPlanEditionViewControllerDelegate?
+    public weak var settingsDelegate: EditionSettingsDelegate?
     public var currentMissionProviderState: MissionProviderState?
     public var currentMapMode: MapMode = .standard
     open var flightPlanViewModel: FlightPlanViewModel? {
@@ -256,9 +257,15 @@ open class MapViewController: UIViewController {
 
     /// User touched undo button in edition screen.
     open func didTapOnUndo() {
+        let selectedGraphic = self.flightPlanOverlay?.currentSelection
+        let selectedIndex = self.flightPlanOverlay?.selectedGraphicIndex(for: selectedGraphic?.itemType ?? .none)
         FlightPlanManager.shared.undo()
         if let flightPlanViewModel = flightPlanViewModel {
             self.displayFlightPlan(flightPlanViewModel, shouldReloadCamera: false)
+            if let selectedGraphic = selectedGraphic {
+                self.restoreSelectedItem(selectedGraphic,
+                                         at: selectedIndex)
+            }
         }
     }
 
@@ -279,6 +286,10 @@ open class MapViewController: UIViewController {
     func disableUserInteraction(_ isDisabled: Bool) {
         sceneView.isUserInteractionEnabled = !isDisabled
         locationsViewModel?.forceHideCenterButton(isDisabled)
+        // Map with disabled interaction always autocenters on drone/user location.
+        if isDisabled {
+            locationsViewModel?.disableAutoCenter(false)
+        }
     }
 
     /// Set map mode for current Map instance.
@@ -688,25 +699,4 @@ extension MapViewController: AGSGeoViewTouchDelegate {
             flightPlanHandleTouchUp(geoView, didTouchUpAtScreenPoint: screenPoint, mapPoint: mapPoint)
         }
     }
-}
-
-// MARK: - FlightPlanEditionViewControllerDelegate
-extension MapViewController: FlightPlanEditionViewControllerDelegate {
-    public func startFlightPlanEdition() {}
-    public func startNewFlightPlan(flightPlanProvider: FlightPlanProvider, creationCompletion: (_ createNewFp: Bool) -> Void) {}
-
-    public func updateMode(tag: Int) {
-        self.updateFlightPlanType(tag: tag)
-    }
-
-    public func updateSettingValue(for key: String?, value: Int) {
-        self.updateSetting(for: key, value: value)
-    }
-
-    public func updateChoiceSetting(for key: String?, value: Bool) {
-        self.updateSetting(for: key, value: value == true ? 0 : 1)
-    }
-
-    public func didTapCloseButton() {}
-    public func didTapDeleteButton() {}
 }

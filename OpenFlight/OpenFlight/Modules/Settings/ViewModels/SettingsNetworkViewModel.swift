@@ -113,9 +113,13 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
                                         title: L10n.settingsConnectionCellularData),
                            SettingEntry(setting: cellularAvailabilityModel(with: cellular),
                                         title: L10n.droneDetailsCellularAccess,
+                                        isEnabled: cellular.isSimCardInserted,
+                                        alpha: cellular.isSimCardInserted ? Constants.enabledAlpha : Constants.disabledAlpha,
                                         itemLogKey: LogEvent.LogKeyAdvancedSettings.cellularAccess),
                            SettingEntry(setting: networkModeModel(),
                                         title: L10n.settingsConnectionNetworkMode,
+                                        isEnabled: cellular.isSimCardInserted,
+                                        alpha: cellular.isSimCardInserted ? Constants.enabledAlpha : Constants.disabledAlpha,
                                         isSubMode: true,
                                         itemLogKey: LogEvent.LogKeyAdvancedSettings.networkPreferences),
                            SettingEntry(setting: SettingsCellType.networkSelection),
@@ -174,6 +178,12 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
     // MARK: - Deinit
     deinit {
         drone?.getPeripheral(Peripherals.wifiScanner)?.stopScan()
+    }
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let enabledAlpha: CGFloat = 1.0
+        static let disabledAlpha: CGFloat = 0.3
     }
 
     // MARK: - Override Funcs

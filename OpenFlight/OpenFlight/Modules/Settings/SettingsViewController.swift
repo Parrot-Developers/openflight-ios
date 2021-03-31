@@ -67,7 +67,7 @@ final class SettingsViewController: UIViewController {
     private weak var coordinator: SettingsCoordinator?
     fileprivate var sections = [SettingsType]()
 
-    private var viewModel: DroneStateViewModel<DeviceConnectionState>?
+    private let viewModel = DroneStateViewModel<DeviceConnectionState>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -98,9 +98,9 @@ final class SettingsViewController: UIViewController {
         // Prevent from safe area display issue if device has safeAreaInsets.
         sectionWidthConstraint.constant += UIApplication.shared.keyWindow?.safeAreaInsets.left ?? 0.0
 
-        viewModel = DroneStateViewModel(stateDidUpdate: { [weak self] state in
+        viewModel.state.valueChanged = { [weak self] state in
             self?.refreshContent(state)
-        })
+        }
 
         sectionsTableView.register(cellType: SettingsSectionCell.self)
 

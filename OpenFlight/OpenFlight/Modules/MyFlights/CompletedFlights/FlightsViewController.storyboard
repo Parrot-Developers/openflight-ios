@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina4_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -30,16 +30,16 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </tableView>
                             <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="CPj-eu-GQn">
-                                <rect key="frame" x="314.5" y="168" width="38" height="39"/>
+                                <rect key="frame" x="312.5" y="165" width="42" height="45"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pvu-rq-eJr">
-                                        <rect key="frame" x="0.0" y="0.0" width="38" height="17"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="42" height="20"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="17"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zXZ-Ad-Oxr">
-                                        <rect key="frame" x="0.0" y="22" width="38" height="17"/>
+                                        <rect key="frame" x="0.0" y="25" width="42" height="20"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
@@ -172,7 +172,7 @@
                                                                                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="Efe-q2-gH3">
                                                                                                                 <rect key="frame" x="0.0" y="0.0" width="73.5" height="12"/>
                                                                                                                 <subviews>
-                                                                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icCameraModeTimer" translatesAutoresizingMaskIntoConstraints="NO" id="Teu-VW-6Co">
+                                                                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icFlightPlanTime" translatesAutoresizingMaskIntoConstraints="NO" id="Teu-VW-6Co">
                                                                                                                         <rect key="frame" x="0.0" y="0.0" width="12" height="12"/>
                                                                                                                         <constraints>
                                                                                                                             <constraint firstAttribute="height" constant="12" id="QbT-La-L0J"/>
@@ -410,8 +410,8 @@
     <resources>
         <image name="distance" width="14" height="15"/>
         <image name="icBattery" width="7" height="14"/>
-        <image name="icCameraModeTimer" width="18" height="18"/>
         <image name="icExport" width="13" height="15"/>
+        <image name="icFlightPlanTime" width="18" height="18"/>
         <image name="ic_back" width="21" height="21"/>
         <image name="iconEdit" width="12" height="12"/>
         <systemColor name="systemBackgroundColor">

@@ -39,7 +39,6 @@ final class AdjustmentTableViewCell: UITableViewCell, NibReusable, EditionSettin
     @IBOutlet private weak var minusButton: UIButton!
     @IBOutlet private weak var plusButton: UIButton!
     @IBOutlet private weak var disableView: UIView!
-    @IBOutlet private weak var trailingConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var delegate: EditionSettingsCellModelDelegate?
@@ -70,10 +69,6 @@ final class AdjustmentTableViewCell: UITableViewCell, NibReusable, EditionSettin
 
     func disableCell(_ mustDisable: Bool) {
         self.disableView.isHidden = !mustDisable
-    }
-
-    func updateTrailingConstraint(_ width: CGFloat) {
-        trailingConstraint.constant = width
     }
 }
 

@@ -81,8 +81,14 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
         super.viewDidLoad()
 
         initUI()
+        listenToMissionsUpdaterManager()
         startProcesses()
         listenToDroneReconnection()
+
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(cancelProcesses),
+                                               name: UIApplication.didEnterBackgroundNotification,
+                                               object: nil)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -132,7 +138,7 @@ private extension FirmwareAndMissionsUpdateViewController {
         if isWaitingForDroneReconnection == false {
             presentCancelAlertViewController()
         } else {
-            quitProcesses()
+            presentQuitRebootAlertViewController()
         }
     }
 }
@@ -142,7 +148,6 @@ private extension FirmwareAndMissionsUpdateViewController {
     /// Starts the update processes.
     func startProcesses() {
         RemoteControlGrabManager.shared.disableRemoteControl()
-        listenToMissionsUpdaterManager()
         missionsUpdaterManager.startMissionsUpdateProcess()
     }
 
@@ -232,19 +237,50 @@ private extension FirmwareAndMissionsUpdateViewController {
         }
     }
 
-    /// Shows an alert view.
+    /// Cancel operation in progress and leave screen.
+    @objc func cancelProcesses() {
+        guard !isWaitingForDroneReconnection else {
+            return
+        }
+
+        let cancelSucceeded = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
+        self.cancelButton.isHidden = cancelSucceeded
+        if cancelSucceeded {
+            // FIXME: restart process instead in next gerrit.
+            self.quitProcesses()
+        }
+    }
+
+    /// Shows an alert view when user tries to cancel update.
     func presentCancelAlertViewController() {
         let validateAction = AlertAction(
-            title: L10n.firmwareMissionUpdateAlertQuitInstallationValidateAction,
-            actionHandler: {
-                let cancelsSucceed = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
-                self.cancelButton.isHidden = cancelsSucceed
+            title: L10n.firmwareMissionUpdateQuitInstallationValidateAction,
+            actionHandler: { [weak self] in
+                self?.cancelProcesses()
             })
         let cancelAction = AlertAction(title: L10n.cancel, actionHandler: nil)
 
         let alert = AlertViewController.instantiate(
-            title: L10n.firmwareMissionUpdateAlertQuitInstallationTitle,
-            message: L10n.firmwareMissionUpdateAlertQuitInstallationMessage,
+            title: L10n.firmwareMissionUpdateQuitInstallationTitle,
+            message: L10n.firmwareMissionUpdateQuitInstallationDroneMessage,
+            cancelAction: cancelAction,
+            validateAction: validateAction)
+        present(alert, animated: true, completion: nil)
+    }
+
+    /// Shows an alert view when user tries to quit drone reboot.
+    func presentQuitRebootAlertViewController() {
+        let validateAction = AlertAction(
+            title: L10n.firmwareAndMissionQuitRebootValidateAction,
+            actionHandler: {
+                self.quitProcesses()
+            })
+        let cancelAction = AlertAction(title: L10n.firmwareMissionUpdateQuitInstallationCancelAction,
+                                       actionHandler: nil)
+
+        let alert = AlertViewController.instantiate(
+            title: L10n.firmwareAndMissionQuitRebootTitle,
+            message: L10n.firmwareAndMissionQuitRebootDroneMessage,
             cancelAction: cancelAction,
             validateAction: validateAction)
         present(alert, animated: true, completion: nil)
@@ -265,11 +301,16 @@ private extension FirmwareAndMissionsUpdateViewController {
                                         borderColor: .clear,
                                         radius: 0.0,
                                         borderWidth: 0.0)
+        setupTableView()
+        resetUI()
+    }
+
+    /// Reset the dynamic UI part.
+    func resetUI() {
         progressView.update(currentProgress: Constants.minProgress)
         continueView.setup(delegate: self, state: .waiting)
         reportView.setup(with: .waiting)
-
-        setupTableView()
+        cancelButton.isHidden = false
         tableView.reloadData()
     }
 
@@ -319,14 +360,9 @@ private extension FirmwareAndMissionsUpdateViewController {
         tableView.allowsSelection = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.showsVerticalScrollIndicator = false
-        tableView.separatorInset = UIEdgeInsets.zero
-
-        tableView.tableFooterView = UIView()
+        tableView.makeUp(backgroundColor: ColorName.greyShark.color)
         tableView.tableHeaderView = UIView()
-
         tableView.separatorColor = .clear
-        tableView.backgroundColor = ColorName.greyShark.color
         tableView.register(cellType: ProtobufMissionUpdatingTableViewCell.self)
     }
 }

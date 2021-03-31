@@ -38,6 +38,11 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
         return self.flightPlanGraphics.contains(where: { $0.isSelected })
     }
 
+    /// Returns a graphic is currently selected inside Flight Plan.
+    var currentSelection: FlightPlanGraphic? {
+        return self.flightPlanGraphics.first(where: { $0.isSelected })
+    }
+
     /// Returns index of selected waypoint.
     var selectedWayPointIndex: Int? {
         let selection = self.wayPoints.first(where: { $0.isSelected })
@@ -104,8 +109,10 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
         let poiLines = self.graphics.compactMap { $0 as? FlightPlanWayPointToPoiLineGraphic }
         self.graphics.removeObjects(in: poiLines)
     }
+}
 
-    // MARK: - Public Funcs
+// MARK: - Internal Funcs
+extension FlightPlanGraphicsOverlay {
     // MARK: Graphics Getters
     /// Returns point of interest graphic at given index.
     ///
@@ -171,6 +178,9 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
         case let wayPointLineGraphic as FlightPlanWayPointLineGraphic:
             updateWayPointLineSelection(wayPointLineGraphic,
                                         isSelected: isSelected)
+        case let wayPointGraphic as FlightPlanWayPointGraphic:
+            updateWayPointSelection(wayPointGraphic,
+                                    isSelected: isSelected)
         default:
             graphic.isSelected = isSelected
         }
@@ -320,11 +330,12 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     ///    - location: touch location
     func updateWayPointArrowRotation(_ wayPointArrowGraphic: FlightPlanWayPointArrowGraphic,
                                      location: AGSPoint) {
-        guard let wayPointLocation = wayPointArrowGraphic.wayPoint?.coordinate else { return }
+        guard let wayPointLocation = wayPointArrowGraphic.wayPoint?.agsPoint else { return }
 
-        let newYaw = GeometryUtils.yaw(fromLocation: wayPointLocation,
-                                       toLocation: location.toCLLocationCoordinate2D()).toBoundedDegrees()
-        wayPointArrowGraphic.wayPoint?.setCustomYaw(newYaw)
+        let newYaw = AGSGeometryEngine.standardGeodeticDistance(between: wayPointLocation,
+                                                                and: location,
+                                                                azimuthUnit: .degrees())?.azimuth1 ?? 0.0
+        wayPointArrowGraphic.wayPoint?.setCustomYaw(newYaw.asPositiveDegrees)
     }
 
     // MARK: - Insertion
@@ -333,11 +344,12 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     /// - Parameters:
     ///    - wayPoint: waypoint to insert
     ///    - index: index at which it should be inserted
-    func insertWayPoint(_ wayPoint: WayPoint, at index: Int) {
+    /// - Returns: inserted waypoint graphic
+    func insertWayPoint(_ wayPoint: WayPoint, at index: Int) -> FlightPlanWayPointGraphic? {
         guard let line = wayPointLines.first(where: { $0.wayPointIndex == index - 1 }),
               let originWayPoint = line.originWayPoint,
               let destinationWayPoint = line.destinationWayPoint else {
-            return
+            return nil
         }
 
         // Create new graphics.
@@ -365,6 +377,8 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
         self.graphics.add(arrowGraphic)
         self.graphics.add(lineBefore)
         self.graphics.add(lineAfter)
+
+        return wayPointGraphic
     }
 
     // MARK: Deletion
@@ -428,6 +442,50 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
             .filter { $0.poiIndex ?? Constants.noIndex > index }
             .forEach { $0.decrementPoiPointIndex() }
     }
+
+    // MARK: Selected graphic
+    /// Returns index of selected graphic.
+    ///
+    /// - Parameters:
+    ///     - type: graphic item type
+    /// - Returns: selected item index
+    func selectedGraphicIndex(for type: FlightPlanGraphicItemType) -> Int? {
+        switch type {
+        case .wayPoint:
+            return self.wayPoints.first(where: { $0.isSelected })?.wayPointIndex
+        case .poi:
+            return self.poiPoints.first(where: { $0.isSelected })?.poiIndex
+        case .lineWayPoint:
+            return self.wayPointLines.first(where: { $0.isSelected })?.wayPointIndex
+        case .insertWayPoint,
+             .waypointArrow,
+             .lineWayPointToPoi,
+             .none:
+            return nil
+        }
+    }
+
+    /// Retruns graphic for an index and graphic type.
+    ///
+    /// - Parameters:
+    ///     - index: graphic item index
+    ///     - type: graphic item type
+    /// - Returns: graphic item
+    func graphicForIndex(_ index: Int, type: FlightPlanGraphicItemType) -> FlightPlanGraphic? {
+        switch type {
+        case .wayPoint:
+            return self.wayPoints.first(where: { $0.wayPointIndex == index })
+        case .poi:
+            return self.poiPoints.first(where: { $0.poiIndex == index })
+        case .lineWayPoint:
+            return self.wayPointLines.first(where: { $0.wayPointIndex == index })
+        case .insertWayPoint,
+             .waypointArrow,
+             .lineWayPointToPoi,
+             .none:
+            return nil
+        }
+    }
 }
 
 // MARK: - Private Funcs
@@ -487,6 +545,22 @@ private extension FlightPlanGraphicsOverlay {
         }
     }
 
+    /// Selects/deselects waypoint.
+    ///
+    /// - Parameters:
+    ///    - wayPointGraphic: waypoint's graphic
+    ///    - isSelected: whether waypoint should be selected.
+    func updateWayPointSelection(_ wayPointGraphic: FlightPlanWayPointGraphic,
+                                 isSelected: Bool) {
+        wayPointGraphic.isSelected = isSelected
+
+        // Update arrow selection if waypoint is not related to a point of interest.
+        if wayPointGraphic.poiIndex == nil,
+           let arrow = wayPointArrows.first(where: { $0.wayPointIndex == wayPointGraphic.wayPointIndex }) {
+            arrow.isSelected = isSelected
+        }
+    }
+
     /// Selects/deselects point of interest.
     ///
     /// - Parameters:
@@ -533,6 +607,14 @@ private extension FlightPlanGraphicsOverlay {
             guard let graphic = self.currentInsertWayPointGraphic else { return }
 
             self.graphics.remove(graphic)
+        }
+
+        // Update waypoint arrows selection if they are not related to points of interest.
+        if let originIndex = wayPointLineGraphic.wayPointIndex {
+            let previousArrow = wayPointArrows.first(where: { $0.wayPointIndex == originIndex })
+            let nextArrow = wayPointArrows.first(where: { $0.wayPointIndex == originIndex + 1 })
+            previousArrow?.isSelected = previousArrow?.poiIndex == nil ? isSelected : false
+            nextArrow?.isSelected = nextArrow?.poiIndex == nil ? isSelected : false
         }
     }
 }

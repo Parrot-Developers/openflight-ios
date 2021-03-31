@@ -49,8 +49,20 @@ open class WatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     private var currentRemoteControlWatcher = CurrentRemoteControlWatcher()
 
     // MARK: - Init
-    public override init(stateDidUpdate: ((T) -> Void)? = nil) {
+    public override init(stateDidUpdate: ((T) -> Void)?) {
         super.init(stateDidUpdate: stateDidUpdate)
+
+        currentDroneWatcher.start { [weak self] drone in
+            self?.listenDrone(drone: drone)
+        }
+        currentRemoteControlWatcher.start { [weak self] remoteControl in
+            self?.listenRemoteControl(remoteControl: remoteControl)
+        }
+    }
+
+    public override init() {
+        super.init()
+
         currentDroneWatcher.start { [weak self] drone in
             self?.listenDrone(drone: drone)
         }

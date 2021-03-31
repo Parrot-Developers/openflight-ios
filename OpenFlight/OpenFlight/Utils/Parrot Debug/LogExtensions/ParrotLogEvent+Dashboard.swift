@@ -35,12 +35,10 @@ extension LogEvent {
     enum LogKeyDashboardButton {
         static let pilot: String = "Pilot"
         static let myFlights: String = "MyFlights"
-        static let marketing: String = "Marketing"
         static let controllerDetails: String = "ControllerDetails"
         static let droneDetails: String = "DroneDetails"
         static let gallery: String = "Gallery"
         static let debugLogs: String = "Debug/Logs"
-        static let about: String = "About"
         static let droneUpdate: String = "DroneUpdate"
         static let remoteUpdate: String = "RemoteUpdate"
     }

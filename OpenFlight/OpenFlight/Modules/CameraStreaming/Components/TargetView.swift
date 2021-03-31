@@ -113,6 +113,8 @@ final class TargetView: UIView {
         static let closedButtonSize: CGFloat = 16.0
         static let closedButtonPadding: CGFloat = 20.0
         static let closedImageButtonPadding: CGFloat = 4.0
+        static let closedButtonTouchSize: CGFloat = 50.0
+        static let minimumSizeToDisplayBottomCircle: CGFloat = 4.0
     }
 
     // MARK: - Init
@@ -169,10 +171,19 @@ extension TargetView {
     ///    - frame: Frame.
     ///    - tilt: Gimbal tilt.
     func updateView(frame: CGRect, tilt: Double? = nil) {
-        self.frame = frame
+        switch state {
+        case .locked, .pending:
+            let newFrame = CGRect(x: frame.origin.x,
+                                  y: frame.origin.y - (Constants.closedButtonTouchSize / 2.0),
+                                  width: frame.width,
+                                  height: frame.height + (Constants.closedButtonTouchSize / 2.0))
+            self.frame = newFrame
+        case .drawing, .proposal:
+            self.frame = frame
+        }
 
         if let strongTilt = tilt {
-            self.tilt = strongTilt
+            self.tilt = abs(strongTilt)
         }
     }
 }
@@ -330,13 +341,13 @@ private extension TargetView {
     ///    - drawDashPattern: Specify if a dash pattern must be applied.
     func drawBackTargetLocked(drawDashPattern: Bool = false) {
         self.backGradientLayer = CAGradientLayer()
-
         self.backGradientLayer.frame = bounds
         self.backGradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
         self.backGradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
         self.backGradientLayer.colors = [self.state.enabledColor,
                                          self.state.disabledColor]
         let centerCircleHeight: CGFloat = self.bounds.height - (circleHeight / 2.0)
+        let topSpace = (state == .locked || state == .pending) ? Constants.closedButtonTouchSize / 2.0 : 0.0
         let backPath = UIBezierPath(rect: CGRect(x: 0.0,
                                                  y: centerCircleHeight,
                                                  width: 0.0,
@@ -363,10 +374,10 @@ private extension TargetView {
                           controlPoint2: secondCircleControlPoint2)
 
         // Next steps will draw a semi circle at the top of the frame.
-        backPath.addQuadCurve(to: CGPoint(x: self.bounds.width / 2.0, y: 0.0),
-                              controlPoint: CGPoint(x: self.bounds.width, y: 0.0))
+        backPath.addQuadCurve(to: CGPoint(x: self.bounds.width / 2.0, y: topSpace),
+                              controlPoint: CGPoint(x: self.bounds.width, y: topSpace))
         backPath.addQuadCurve(to: CGPoint(x: 0.0, y: centerCircleHeight),
-                              controlPoint: CGPoint(x: 0, y: 0))
+                              controlPoint: CGPoint(x: 0, y: topSpace))
 
         // Create a layer to add the back path on.
         let backLayer = CAShapeLayer()
@@ -386,6 +397,11 @@ private extension TargetView {
     func drawTopCircle(drawDashPattern: Bool = false) {
         self.topCircleGradientLayer = CAGradientLayer()
         let centerCircleHeight: CGFloat = self.bounds.height - self.circleHeight / 2.0
+        var topSpace: CGFloat = 0.0
+
+        if state == .locked || state == .pending {
+            topSpace = (Constants.closedButtonTouchSize / 2.0) + Constants.circleInset
+        }
 
         // Instantiate frame for the gradient color.
         let gradientFrame = CGRect(x: 0.0,
@@ -408,11 +424,10 @@ private extension TargetView {
 
         circlePath.addLine(to: CGPoint(x: self.bounds.width - Constants.circleInset,
                                        y: centerCircleHeight))
-
-        circlePath.addQuadCurve(to: CGPoint(x: self.bounds.width / 2.0, y: Constants.circleInset),
-                                controlPoint: CGPoint(x: self.bounds.width, y: 0.0))
+        circlePath.addQuadCurve(to: CGPoint(x: self.bounds.width / 2.0, y: topSpace),
+                                controlPoint: CGPoint(x: self.bounds.width, y: topSpace))
         circlePath.addQuadCurve(to: CGPoint(x: Constants.circleInset, y: centerCircleHeight),
-                                controlPoint: CGPoint(x: 0, y: 0))
+                                controlPoint: CGPoint(x: 0, y: topSpace))
 
         // Create a layer to add the circle path on.
         let circleLayer = CAShapeLayer()
@@ -435,11 +450,15 @@ private extension TargetView {
     func drawBottomCircle(drawDashPattern: Bool = false) {
         self.bottomCircleGradientLayer = CAGradientLayer()
 
+        // If the height of the circle is less than 4, the layer won't appear.
+        let bottomCircleHeight = max(Constants.minimumSizeToDisplayBottomCircle, self.circleHeight)
+
         // Instantiate frame for the gradient color.
         let gradientFrame = CGRect(x: 0.0,
-                                   y: self.bounds.height - self.circleHeight,
+                                   y: self.bounds.height - bottomCircleHeight,
                                    width: self.bounds.width,
-                                   height: self.circleHeight)
+                                   height: bottomCircleHeight)
+
         self.bottomCircleGradientLayer.frame = gradientFrame
         // Start point of the gradient will be on the center of the width and on the top of the frame.
         self.bottomCircleGradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
@@ -474,7 +493,7 @@ private extension TargetView {
     /// Draws a close button at the top of the view.
     func drawCloseButton() {
         let buttonSize = Constants.closedButtonSize + Constants.closedButtonPadding
-        let buttonFrame = CGRect(center: CGPoint(x: self.bounds.width / 2.0, y: 0.0),
+        let buttonFrame = CGRect(center: CGPoint(x: self.bounds.width / 2.0, y: Constants.closedButtonTouchSize / 2.0),
                                  width: buttonSize,
                                  height: buttonSize)
 

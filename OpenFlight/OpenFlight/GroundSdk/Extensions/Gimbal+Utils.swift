@@ -32,26 +32,86 @@ import GroundSdk
 
 // MARK: - Private Enums
 private enum Constants {
-    static let roundPrecision = 2
+    static let roundPrecision: Int = 2
+}
+
+/// Gimbal full calibration state.
+enum CalibratableGimbalState {
+    case calibrated
+    case recommended
+    case needed
+    case error
+
+    /// User interaction state for calibration view.
+    var isUserInteractionEnabled: Bool {
+        return self == .needed || self == .recommended
+    }
 }
 
 /// Utility extension for gimbal.
+extension CalibratableGimbal {
+    /// Gimbal calibration state.
+    var state: CalibratableGimbalState {
+        switch (calibrated, currentErrors.isEmpty) {
+        case (false, true):
+            return .recommended
+        case (_, false):
+            return .needed
+        default:
+            return .calibrated
+        }
+    }
+
+    /// Color for gimbal calibration subtext.
+    var subtextColor: ColorName {
+        switch self.state {
+        case .calibrated:
+            return .white50
+        case .recommended:
+            return .orangePeel
+        case .needed,
+             .error:
+            return .redTorch
+        }
+    }
+
+    /// Color for gimbal calibration background.
+    var backgroundColor: ColorName {
+        switch self.state {
+        case .calibrated,
+             .recommended:
+            return .white10
+        case .needed,
+             .error:
+            return .redTorch25
+        }
+    }
+}
 
 extension Gimbal {
     /// Returns true if tilt is currently at maximum positive value.
     var isMaxPositiveTiltReached: Bool {
-        guard let tilt = currentAttitude[.pitch], let range = attitudeBounds[.pitch] else {
+        guard let tilt = currentAttitude[.pitch],
+              let range = attitudeBounds[.pitch] else {
             return false
         }
+
         return tilt.rounded(toPlaces: Constants.roundPrecision) >= range.upperBound.rounded(toPlaces: Constants.roundPrecision)
     }
 
     /// Returns true if tilt is currently at maximum negative value.
     var isMaxNegativeTiltReached: Bool {
-        guard let tilt = currentAttitude[.pitch], let range = attitudeBounds[.pitch] else {
+        guard let tilt = currentAttitude[.pitch],
+              let range = attitudeBounds[.pitch] else {
             return false
         }
+
         return tilt.rounded(toPlaces: Constants.roundPrecision) <= range.lowerBound.rounded(toPlaces: Constants.roundPrecision)
+    }
+
+    /// Returns true if tilt reaches is maximum negative or positive value.
+    var didOvertilt: Bool {
+        return isMaxPositiveTiltReached || isMaxNegativeTiltReached
     }
 
     /// Returns current alerts for gimbal.
@@ -59,5 +119,18 @@ extension Gimbal {
         return currentErrors.isEmpty
             ? []
             : [HUDBannerWarningAlertType.cameraError]
+    }
+
+    /// String describing gimbal calibration state.
+    var calibrationStateDescription: String? {
+        switch self.state {
+        case .calibrated:
+            return nil
+        case .needed,
+             .error:
+            return L10n.commonRequired
+        case .recommended:
+            return L10n.commonRecommended
+        }
     }
 }

@@ -76,6 +76,7 @@ extension GallerySDMediaViewModel: GalleryVideoCompatible {
               position < streamingCurrentReplay.duration else {
             return false
         }
+        
         return streamingCurrentReplay.seekTo(position: position)
     }
 
@@ -92,7 +93,6 @@ extension GallerySDMediaViewModel: GalleryVideoCompatible {
 }
 
 extension GallerySDMediaViewModel {
-
     /// Configure streaming with resource.
     ///
     /// - Parameters:

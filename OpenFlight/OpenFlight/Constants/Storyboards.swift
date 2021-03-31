@@ -87,19 +87,35 @@ internal enum StoryboardScene {
 
     internal static let initialScene = InitialSceneType<OpenFlight.DroneDetailsViewController>(storyboard: DroneDetails.self)
 
-    internal static let droneDetailsButtons = SceneType<OpenFlight.DroneDetailsButtonsViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsButtons")
-
-    internal static let droneDetailsCellularViewController = SceneType<OpenFlight.DroneDetailsCellularViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsCellularViewController")
-
-    internal static let droneDetailsDevice = SceneType<OpenFlight.DroneDetailsDeviceViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsDevice")
-
-    internal static let droneDetailsFirmwareViewController = SceneType<OpenFlight.DroneDetailsFirmwareViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsFirmwareViewController")
-
-    internal static let droneDetailsInformations = SceneType<OpenFlight.DroneDetailsInformationsViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsInformations")
-
     internal static let droneDetailsViewController = SceneType<OpenFlight.DroneDetailsViewController>(storyboard: DroneDetails.self, identifier: "DroneDetailsViewController")
+  }
+  internal enum DroneDetailsButtons: StoryboardType {
+    internal static let storyboardName = "DroneDetailsButtons"
 
-    internal static let droneDetailsMapViewController = SceneType<OpenFlight.DroneDetailsMapViewController>(storyboard: DroneDetails.self, identifier: "droneDetailsMapViewController")
+    internal static let initialScene = InitialSceneType<OpenFlight.DroneDetailsButtonsViewController>(storyboard: DroneDetailsButtons.self)
+
+    internal static let droneDetailsButtons = SceneType<OpenFlight.DroneDetailsButtonsViewController>(storyboard: DroneDetailsButtons.self, identifier: "DroneDetailsButtons")
+  }
+  internal enum DroneDetailsCellular: StoryboardType {
+    internal static let storyboardName = "DroneDetailsCellular"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.DroneDetailsCellularViewController>(storyboard: DroneDetailsCellular.self)
+
+    internal static let droneDetailsCellularViewController = SceneType<OpenFlight.DroneDetailsCellularViewController>(storyboard: DroneDetailsCellular.self, identifier: "DroneDetailsCellularViewController")
+  }
+  internal enum DroneDetailsDevice: StoryboardType {
+    internal static let storyboardName = "DroneDetailsDevice"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.DroneDetailsDeviceViewController>(storyboard: DroneDetailsDevice.self)
+
+    internal static let droneDetailsDevice = SceneType<OpenFlight.DroneDetailsDeviceViewController>(storyboard: DroneDetailsDevice.self, identifier: "DroneDetailsDevice")
+  }
+  internal enum DroneDetailsFirmware: StoryboardType {
+    internal static let storyboardName = "DroneDetailsFirmware"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.DroneDetailsFirmwareViewController>(storyboard: DroneDetailsFirmware.self)
+
+    internal static let droneDetailsFirmwareViewController = SceneType<OpenFlight.DroneDetailsFirmwareViewController>(storyboard: DroneDetailsFirmware.self, identifier: "DroneDetailsFirmwareViewController")
   }
   internal enum DroneDetailsFirmwares: StoryboardType {
     internal static let storyboardName = "DroneDetailsFirmwares"
@@ -107,6 +123,20 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.DroneDetailsFirmwaresViewController>(storyboard: DroneDetailsFirmwares.self)
 
     internal static let droneDetailsFirmwares = SceneType<OpenFlight.DroneDetailsFirmwaresViewController>(storyboard: DroneDetailsFirmwares.self, identifier: "DroneDetailsFirmwares")
+  }
+  internal enum DroneDetailsInformations: StoryboardType {
+    internal static let storyboardName = "DroneDetailsInformations"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.DroneDetailsInformationsViewController>(storyboard: DroneDetailsInformations.self)
+
+    internal static let droneDetailsInformations = SceneType<OpenFlight.DroneDetailsInformationsViewController>(storyboard: DroneDetailsInformations.self, identifier: "DroneDetailsInformations")
+  }
+  internal enum DroneDetailsMap: StoryboardType {
+    internal static let storyboardName = "DroneDetailsMap"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.DroneDetailsMapViewController>(storyboard: DroneDetailsMap.self)
+
+    internal static let droneDetailsMapViewController = SceneType<OpenFlight.DroneDetailsMapViewController>(storyboard: DroneDetailsMap.self, identifier: "droneDetailsMapViewController")
   }
   internal enum FirmwareAndMissionsUpdate: StoryboardType {
     internal static let storyboardName = "FirmwareAndMissionsUpdate"
@@ -283,11 +313,6 @@ internal enum StoryboardScene {
 
     internal static let imagingSettingsBarViewController = SceneType<OpenFlight.ImagingSettingsBarViewController>(storyboard: ImagingSettingsBar.self, identifier: "ImagingSettingsBarViewController")
   }
-  internal enum LiveStreaming: StoryboardType {
-    internal static let storyboardName = "LiveStreaming"
-
-    internal static let liveStreamingViewController = SceneType<OpenFlight.LiveStreamingViewController>(storyboard: LiveStreaming.self, identifier: "LiveStreamingViewController")
-  }
   internal enum LockAETargetZone: StoryboardType {
     internal static let storyboardName = "LockAETargetZone"
 
@@ -313,11 +338,6 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.MapViewController>(storyboard: Map.self)
 
     internal static let mapViewController = SceneType<OpenFlight.MapViewController>(storyboard: Map.self, identifier: "MapViewController")
-  }
-  internal enum MarketingViewController: StoryboardType {
-    internal static let storyboardName = "MarketingViewController"
-
-    internal static let marketingViewController = SceneType<OpenFlight.MarketingViewController>(storyboard: MarketingViewController.self, identifier: "MarketingViewController")
   }
   internal enum Missions: StoryboardType {
     internal static let storyboardName = "Missions"
@@ -347,17 +367,42 @@ internal enum StoryboardScene {
 
     internal static let initialScene = InitialSceneType<OpenFlight.PairingViewController>(storyboard: Pairing.self)
 
-    internal static let pairingConnectDroneDetailViewController = SceneType<OpenFlight.PairingConnectDroneDetailViewController>(storyboard: Pairing.self, identifier: "PairingConnectDroneDetailViewController")
-
-    internal static let pairingConnectDroneViewController = SceneType<OpenFlight.PairingConnectDroneViewController>(storyboard: Pairing.self, identifier: "PairingConnectDroneViewController")
-
-    internal static let pairingDroneNotDetectedViewController = SceneType<OpenFlight.PairingDroneNotDetectedViewController>(storyboard: Pairing.self, identifier: "PairingDroneNotDetectedViewController")
-
-    internal static let pairingRemoteNotRecognizedViewController = SceneType<OpenFlight.PairingRemoteNotRecognizedViewController>(storyboard: Pairing.self, identifier: "PairingRemoteNotRecognizedViewController")
-
     internal static let pairingViewController = SceneType<OpenFlight.PairingViewController>(storyboard: Pairing.self, identifier: "PairingViewController")
+  }
+  internal enum PairingConnectDrone: StoryboardType {
+    internal static let storyboardName = "PairingConnectDrone"
 
-    internal static let pairingWhereIsWifiViewController = SceneType<OpenFlight.PairingWhereIsWifiViewController>(storyboard: Pairing.self, identifier: "PairingWhereIsWifiViewController")
+    internal static let initialScene = InitialSceneType<OpenFlight.PairingConnectDroneViewController>(storyboard: PairingConnectDrone.self)
+
+    internal static let pairingConnectDroneViewController = SceneType<OpenFlight.PairingConnectDroneViewController>(storyboard: PairingConnectDrone.self, identifier: "PairingConnectDroneViewController")
+  }
+  internal enum PairingConnectDroneDetails: StoryboardType {
+    internal static let storyboardName = "PairingConnectDroneDetails"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.PairingConnectDroneDetailViewController>(storyboard: PairingConnectDroneDetails.self)
+
+    internal static let pairingConnectDroneDetailViewController = SceneType<OpenFlight.PairingConnectDroneDetailViewController>(storyboard: PairingConnectDroneDetails.self, identifier: "PairingConnectDroneDetailViewController")
+  }
+  internal enum PairingDroneNotDetected: StoryboardType {
+    internal static let storyboardName = "PairingDroneNotDetected"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.PairingDroneNotDetectedViewController>(storyboard: PairingDroneNotDetected.self)
+
+    internal static let pairingDroneNotDetectedViewController = SceneType<OpenFlight.PairingDroneNotDetectedViewController>(storyboard: PairingDroneNotDetected.self, identifier: "PairingDroneNotDetectedViewController")
+  }
+  internal enum PairingRemoteNotRecognized: StoryboardType {
+    internal static let storyboardName = "PairingRemoteNotRecognized"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.PairingRemoteNotRecognizedViewController>(storyboard: PairingRemoteNotRecognized.self)
+
+    internal static let pairingRemoteNotRecognizedViewController = SceneType<OpenFlight.PairingRemoteNotRecognizedViewController>(storyboard: PairingRemoteNotRecognized.self, identifier: "PairingRemoteNotRecognizedViewController")
+  }
+  internal enum PairingWhereIsWifi: StoryboardType {
+    internal static let storyboardName = "PairingWhereIsWifi"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.PairingWhereIsWifiViewController>(storyboard: PairingWhereIsWifi.self)
+
+    internal static let pairingWhereIsWifiViewController = SceneType<OpenFlight.PairingWhereIsWifiViewController>(storyboard: PairingWhereIsWifi.self, identifier: "PairingWhereIsWifiViewController")
   }
   internal enum ParrotDebug: StoryboardType {
     internal static let storyboardName = "ParrotDebug"
@@ -371,14 +416,40 @@ internal enum StoryboardScene {
 
     internal static let protobufMissionsUpdating = SceneType<OpenFlight.ProtobufMissionsUpdatingViewController>(storyboard: ProtobufMissionsUpdating.self, identifier: "ProtobufMissionsUpdating")
   }
+  internal enum RemoteCalibration: StoryboardType {
+    internal static let storyboardName = "RemoteCalibration"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.RemoteCalibrationViewController>(storyboard: RemoteCalibration.self)
+
+    internal static let remoteCalibration = SceneType<OpenFlight.RemoteCalibrationViewController>(storyboard: RemoteCalibration.self, identifier: "RemoteCalibration")
+  }
   internal enum RemoteDetails: StoryboardType {
     internal static let storyboardName = "RemoteDetails"
 
     internal static let initialScene = InitialSceneType<OpenFlight.RemoteDetailsViewController>(storyboard: RemoteDetails.self)
 
-    internal static let remoteCalibrationViewController = SceneType<OpenFlight.RemoteCalibrationViewController>(storyboard: RemoteDetails.self, identifier: "RemoteCalibrationViewController")
-
     internal static let remoteDetailsViewController = SceneType<OpenFlight.RemoteDetailsViewController>(storyboard: RemoteDetails.self, identifier: "RemoteDetailsViewController")
+  }
+  internal enum RemoteDetailsButtons: StoryboardType {
+    internal static let storyboardName = "RemoteDetailsButtons"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.RemoteDetailsButtonsViewController>(storyboard: RemoteDetailsButtons.self)
+
+    internal static let remoteDetailsButtons = SceneType<OpenFlight.RemoteDetailsButtonsViewController>(storyboard: RemoteDetailsButtons.self, identifier: "RemoteDetailsButtons")
+  }
+  internal enum RemoteDetailsDevice: StoryboardType {
+    internal static let storyboardName = "RemoteDetailsDevice"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.RemoteDetailsDeviceViewController>(storyboard: RemoteDetailsDevice.self)
+
+    internal static let remoteDetailsDevice = SceneType<OpenFlight.RemoteDetailsDeviceViewController>(storyboard: RemoteDetailsDevice.self, identifier: "RemoteDetailsDevice")
+  }
+  internal enum RemoteDetailsInformations: StoryboardType {
+    internal static let storyboardName = "RemoteDetailsInformations"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.RemoteDetailsInformationsViewController>(storyboard: RemoteDetailsInformations.self)
+
+    internal static let remoteDetailsInformations = SceneType<OpenFlight.RemoteDetailsInformationsViewController>(storyboard: RemoteDetailsInformations.self, identifier: "RemoteDetailsInformations")
   }
   internal enum RemoteShutdownAlertViewController: StoryboardType {
     internal static let storyboardName = "RemoteShutdownAlertViewController"

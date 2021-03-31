@@ -69,8 +69,6 @@ final class CameraUtils {
             return camera.timeLapseMode
         case .panorama:
             return PanoramaMode(rawValue: Defaults[key: PanoramaMode.defaultKey])
-        case .timer:
-            return TimerMode(rawValue: Defaults[key: TimerMode.defaultKey])
         default:
             return nil
         }
@@ -103,7 +101,7 @@ private extension CameraUtils {
         case .gpsLapse:
             return .gpslapse
         case .single:
-            return Defaults.isPhotoTimerActivated ? .timer : Defaults.isPanoramaModeActivated ? .panorama : .photo
+            return Defaults.isPanoramaModeActivated ? .panorama : .photo
         case .bracketing:
             return .bracketing
         case .burst:

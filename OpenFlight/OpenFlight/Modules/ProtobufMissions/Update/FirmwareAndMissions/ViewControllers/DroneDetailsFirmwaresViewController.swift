@@ -158,7 +158,7 @@ private extension DroneDetailsFirmwaresViewController {
 private extension DroneDetailsFirmwaresViewController {
     /// Inits the UI.
     func initUI() {
-        titleLabel.text = L10n.firmwareMissionUpdateFirmwareVersion
+        titleLabel.text = L10n.firmwareMissionUpdateFirmwareVersionPlural
         contentView.backgroundColor = ColorName.greyShark.color
         contentSubview.backgroundColor = ColorName.greyShark.color
         contentView.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
@@ -170,11 +170,8 @@ private extension DroneDetailsFirmwaresViewController {
         tableView.allowsSelection = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.showsVerticalScrollIndicator = false
-        tableView.separatorInset = UIEdgeInsets.zero
-        tableView.tableFooterView = UIView()
+        tableView.makeUp(backgroundColor: ColorName.greyShark.color)
         tableView.separatorColor = ColorName.white10.color
-        tableView.backgroundColor = ColorName.greyShark.color
         tableView.register(cellType: ProtobufMissionUpdateTableViewCell.self)
         tableView.reloadData()
     }

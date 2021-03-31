@@ -127,8 +127,9 @@ private extension QuickSettingsViewModel {
             guard let mode = mode as? Camera2ZoomVelocityControlQualityMode else { return }
 
             let currentEditor = self?.drone?.currentCamera?.currentEditor
+            let currentConfig = self?.drone?.currentCamera?.config
             currentEditor?[Camera2Params.zoomVelocityControlQualityMode]?.value = mode
-            currentEditor?.saveSettings()
+            currentEditor?.saveSettings(currentConfig: currentConfig)
         }
     }
 
@@ -142,8 +143,9 @@ private extension QuickSettingsViewModel {
             guard let mode = mode as? Camera2AutoRecordMode else { return }
 
             let currentEditor = self?.drone?.currentCamera?.currentEditor
+            let currentConfig = self?.drone?.currentCamera?.config
             currentEditor?[Camera2Params.autoRecordMode]?.value = mode
-            currentEditor?.saveSettings()
+            currentEditor?.saveSettings(currentConfig: currentConfig)
         }
     }
 
@@ -176,8 +178,9 @@ private extension QuickSettingsViewModel {
             guard let audio = audio as? Camera2AudioRecordingMode else { return }
 
             let currentEditor = self?.drone?.currentCamera?.currentEditor
+            let currentConfig = self?.drone?.currentCamera?.config
             currentEditor?[Camera2Params.audioRecordingMode]?.value = audio
-            currentEditor?.saveSettings()
+            currentEditor?.saveSettings(currentConfig: currentConfig)
         }
     }
 }

@@ -65,6 +65,7 @@ final class GalleryPanoramaViewModel: NSObject {
             modelArray.append(GalleryPanoramaStepModel(image: Asset.Gallery.Panorama.icDownloadHighlighted.image,
                                                        text: L10n.galleryPanoramaDownloadingFiles,
                                                        textColor: ColorName.greenSpring))
+
             modelArray.append(GalleryPanoramaStepModel(image: panoType.image,
                                                        text: panoType.generatingText,
                                                        textColor: ColorName.white))
@@ -76,9 +77,10 @@ final class GalleryPanoramaViewModel: NSObject {
                 ? modelArray.append(GalleryPanoramaStepModel(image: Asset.Common.Checks.iconCheck.image,
                                                              text: panoType.generatingText,
                                                              textColor: ColorName.greenSpring))
-                : modelArray.append(GalleryPanoramaStepModel(image: panoType.highlightedImage,
+                : modelArray.append(GalleryPanoramaStepModel(image: panoType.image,
                                                              text: panoType.generatingText,
                                                              textColor: ColorName.greenSpring))
+
         }
         return modelArray
     }

@@ -49,8 +49,13 @@ final class RemoteInfosState: ViewModelState {
 
 // MARK: - RemoteInfosViewModel
 /// ViewModel for Remote Infos, notifies on battery level, state and name of the remote.
-
 final class RemoteInfosViewModel: RemoteControlWatcherViewModel<RemoteInfosState> {
+    // MARK: - Internal Properties
+    /// Returns drone model.
+    var remoteModel: String {
+        return remoteControl?.publicName ?? state.value.remoteName.value
+    }
+
     // MARK: - Private Properties
     private var batteryInfoRef: Ref<BatteryInfo>?
     private var nameRef: Ref<String>?
@@ -74,6 +79,7 @@ final class RemoteInfosViewModel: RemoteControlWatcherViewModel<RemoteInfosState
          needUpdateDidChange: ((Bool) -> Void)? = nil,
          needCalibrationDidChange: ((Bool) -> Void)? = nil) {
         super.init()
+
         state.value.remoteBatteryLevel.valueChanged = batteryLevelDidChange
         state.value.remoteName.valueChanged = nameDidChange
         state.value.remoteConnectionState.valueChanged = stateDidChange
@@ -109,11 +115,7 @@ private extension RemoteInfosViewModel {
     /// - Parameters:
     ///    - remoteControl: current Remote
     func updateBatteryLevel(_ remoteControl: RemoteControl) {
-        guard let batteryInfo = remoteControl.getInstrument(Instruments.batteryInfo) else {
-            self.state.value.remoteBatteryLevel.set(BatteryValueModel(currentValue: nil, alertLevel: .none))
-            return
-        }
-        state.value.remoteBatteryLevel.set(BatteryValueModel(currentValue: batteryInfo.batteryLevel, alertLevel: batteryInfo.alertLevel))
+        state.value.remoteBatteryLevel.set(remoteControl.getInstrument(Instruments.batteryInfo)?.batteryValueModel)
     }
 
     /// Starts watcher for remote name.
@@ -123,6 +125,7 @@ private extension RemoteInfosViewModel {
                 self?.state.value.remoteName.set(String())
                 return
             }
+
             self?.state.value.remoteName.set(name)
         })
     }
@@ -146,6 +149,7 @@ private extension RemoteInfosViewModel {
                 self?.state.value.remoteNeedUpdate.set(false)
                 return
             }
+
             self?.state.value.remoteNeedUpdate.set(!updater.isUpToDate)
         }
     }

@@ -39,7 +39,7 @@ private enum Constants {
 // MARK: - Internal Enums
 /// Enum describing Wifi strength.
 enum WifiStrength: Int {
-    case none = -1
+    case offline = -1
     case ko0On4 = 0
     case ok1On4 = 1
     case ok2On4 = 2
@@ -50,13 +50,15 @@ enum WifiStrength: Int {
     /// Returns alert level for current wifi strength.
     var alertLevel: AlertLevel {
         switch self {
-        case .none:
+        case .offline:
             return .none
         case .ko0On4:
             return .critical
-        case .ok1On4, .ok2On4:
+        case .ok1On4,
+             .ok2On4:
             return .warning
-        case .ok3On4, .ok4On4:
+        case .ok3On4,
+             .ok4On4:
             return .ready
         }
     }
@@ -66,52 +68,52 @@ enum WifiStrength: Int {
 extension WifiStrength: SignalStrength {
     var backgroundColor: ColorName {
         switch self {
-        case .none:
-            return .clear
-        case .ko0On4:
-            return .redTorch
-        case .ok1On4, .ok2On4:
-            return .orangePeel20
-        case .ok3On4, .ok4On4:
+        case .ok1On4,
+             .ok2On4,
+             .ok3On4,
+             .ok4On4:
             return .greenSpring20
+        default:
+            return .clear
         }
     }
 
     var borderColor: ColorName {
         switch self {
-        case .none:
-            return .clear
-        case .ko0On4:
-            return .redTorch
-        case .ok1On4, .ok2On4:
-            return .orangePeel
-        case .ok3On4, .ok4On4:
+        case .ok1On4,
+             .ok2On4,
+             .ok3On4,
+             .ok4On4:
             return .greenSpring
+        default:
+            return .clear
         }
     }
 
-    func signalIcon(isLinkActive: Bool = false, isBackgroundStyle: Bool = false) -> UIImage {
-        let isInactiveStyle: Bool = (isLinkActive && isBackgroundStyle)
-            || !isLinkActive
+    func signalIcon(isLinkActive: Bool = false) -> UIImage {
         switch self {
-        case .none, .ko0On4:
-            return Asset.Wifi.icWifiNoSignal.image
+        case .offline:
+            return Asset.Wifi.icWifiOffline.image
+        case .ko0On4:
+            return isLinkActive
+                ? Asset.Wifi.icWifiQuality1.image
+                : Asset.Wifi.icWifiInactiveQuality1.image
         case .ok1On4:
-            return isInactiveStyle
-                ? Asset.Wifi.icWifiOff14.image
-                : Asset.Wifi.icWifiOn14.image
+            return isLinkActive
+                ? Asset.Wifi.icWifiQuality2.image
+                : Asset.Wifi.icWifiInactiveQuality2.image
         case .ok2On4:
-            return isInactiveStyle
-                ? Asset.Wifi.icWifiOff24.image
-                : Asset.Wifi.icWifiOn24.image
+            return isLinkActive
+                ? Asset.Wifi.icWifiQuality3.image
+                : Asset.Wifi.icWifiInactiveQuality3.image
         case .ok3On4:
             return isLinkActive
-                ? Asset.Wifi.icWifiOn34.image
-                : Asset.Wifi.icWifiOff34.image
+                ? Asset.Wifi.icWifiQuality4.image
+                : Asset.Wifi.icWifiInactiveQuality4.image
         case .ok4On4:
             return isLinkActive
-                ? Asset.Wifi.icWifiOn44.image
-                : Asset.Wifi.icWifiOff44.image
+                ? Asset.Wifi.icWifiQuality5.image
+                : Asset.Wifi.icWifiInactiveQuality5.image
         }
     }
 }
@@ -121,7 +123,7 @@ extension Radio {
     // MARK: - Internal Properties
     /// Returns current Wifi strength.
     var wifiStrength: WifiStrength {
-        return WifiStrength(rawValue: linkSignalQuality ?? WifiStrength.none.rawValue) ?? .none
+        return WifiStrength(rawValue: linkSignalQuality ?? WifiStrength.offline.rawValue) ?? .offline
     }
 
     /// Returns current Wifi errors.

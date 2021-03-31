@@ -31,7 +31,7 @@
 import GroundSdk
 
 // TODO: Refact this class with the common one `MediaDownloadState`.
-/// Gallery SD Media ViewModel downlaod functions.
+/// Gallery SD Media ViewModel download functions.
 // MARK: - Internal Funcs
 extension GallerySDMediaViewModel {
     /// Load media's ressource(s) from drone.
@@ -57,6 +57,7 @@ extension GallerySDMediaViewModel {
             destination: .directory(path: imgUrl.path),
             observer: { [weak self] mediaDownloader in
                 guard let downloadStatus = mediaDownloader?.status else { return }
+
                 switch downloadStatus {
                 case .fileDownloaded:
                     completion(mediaDownloader?.fileUrl ?? imgUrl)

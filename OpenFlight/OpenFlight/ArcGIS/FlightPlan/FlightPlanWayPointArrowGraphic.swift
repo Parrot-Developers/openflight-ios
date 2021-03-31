@@ -159,10 +159,12 @@ extension FlightPlanWayPointArrowGraphic {
 
         // Checks if yaw for given point is in an acceptable field of view from current
         // waypoint's perspective (if user is trying to touch the arrow graphic).
-        let newYaw = GeometryUtils.yaw(fromLocation: wayPoint.coordinate,
-                                       toLocation: mapPoint.toCLLocationCoordinate2D()).toBoundedDegrees()
+        let newYaw = AGSGeometryEngine.standardGeodeticDistance(between: wayPoint.agsPoint,
+                                                                and: mapPoint,
+                                                                azimuthUnit: .degrees())?.azimuth1 ?? 0.0
 
-        return newYaw.isCloseTo(wayPoint.yaw, withDelta: Constants.yawEditionTolerance)
+        return newYaw.asPositiveDegrees.isCloseTo(wayPoint.yaw,
+                                                  withDelta: Constants.yawEditionTolerance)
     }
 }
 

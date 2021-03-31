@@ -51,7 +51,7 @@ final class ImagingBarPhotoResolutionViewModel: BarButtonViewModel<ImagingBarSta
 
         let currentEditor = camera.currentEditor
         currentEditor[Camera2Params.photoResolution]?.value = resolution
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 }
 

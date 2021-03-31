@@ -34,10 +34,10 @@ import GroundSdk
 final class SettingsRthViewModel: DroneStateViewModel<DeviceConnectionState>, SettingsViewModelProtocol {
     // MARK: - Internal Properties
     var settingEntries: [SettingEntry] {
-        var entries = [SettingEntry(setting: SettingsCellType.rth),
-                       SettingEntry(setting: rthTargetModel,
+        var entries = [SettingEntry(setting: rthTargetModel,
                                     title: L10n.settingsRthTypeTitle,
-                                    itemLogKey: LogEvent.LogKeyAdvancedSettings.returnHome)]
+                                    itemLogKey: LogEvent.LogKeyAdvancedSettings.returnHome),
+                       SettingEntry(setting: SettingsCellType.rth)]
         if drone?.isConnected == true {
             entries.append(SettingEntry(setting: SettingsCellType.endHovering))
         }

@@ -39,7 +39,7 @@ final class SettingsEndHoveringCell: UITableViewCell, NibReusable {
     @IBOutlet private weak var stackView: UIStackView!
 
     // MARK: - Private Properties
-    private var viewModel: SettingsEndHoveringViewModel?
+    private let viewModel = SettingsEndHoveringViewModel()
     private var segmentedCell: SettingsSegmentedCell = SettingsSegmentedCell.loadFromNib()
     private var sliderCell: SettingsSliderCell = SettingsSliderCell.loadFromNib()
 
@@ -65,9 +65,9 @@ private extension SettingsEndHoveringCell {
 
     /// Inits the hovering mode view model.
     func initViewModel() {
-        viewModel = SettingsEndHoveringViewModel(stateDidUpdate: { [weak self] _ in
+        viewModel.state.valueChanged = { [weak self] _ in
             self?.updateView()
-        })
+        }
 
         updateView()
     }
@@ -84,8 +84,8 @@ private extension SettingsEndHoveringCell {
 
     /// Configures the segmented cell.
     func configureSegmentedCell() {
-        if let settingSegmentedEntry = viewModel?.endHoveringModeEntry,
-           let settingSliderSegment: SettingsSegmentModel = settingSegmentedEntry.segmentModel {
+        let settingSegmentedEntry = viewModel.endHoveringModeEntry
+        if let settingSliderSegment: SettingsSegmentModel = settingSegmentedEntry.segmentModel {
             segmentedCell.configureCell(cellTitle: settingSegmentedEntry.title,
                                         segmentModel: settingSliderSegment,
                                         subtitle: settingSegmentedEntry.subtitle,
@@ -103,25 +103,23 @@ private extension SettingsEndHoveringCell {
 
     /// Configures the slider cell.
     func configureSliderCell() {
-        if let settingSliderEntry = viewModel?.endHoveringAltitudeEntry {
-            sliderCell.configureCell(settingEntry: settingSliderEntry,
-                                     atIndexPath: IndexPath(),
-                                     shouldShowBackground: false,
-                                     sideConstraint: 0.0)
-        }
+        let settingSliderEntry = viewModel.endHoveringAltitudeEntry
+        sliderCell.configureCell(settingEntry: settingSliderEntry,
+                                 atIndexPath: IndexPath(),
+                                 shouldShowBackground: false,
+                                 sideConstraint: 0.0)
     }
 }
 
 // MARK: - SettingsSliderCellDelegate
 extension SettingsEndHoveringCell: SettingsSliderCellDelegate {
     func settingsSliderCellSliderDidFinishEditing(value: Float, atIndexPath indexPath: IndexPath) {
-        if let setting = viewModel?.endHoveringAltitudeEntry.setting as? DoubleSetting {
+        if let setting = viewModel.endHoveringAltitudeEntry.setting as? DoubleSetting {
             setting.value = Double(value)
         }
     }
 
     func settingsSliderCellStartEditing() { }
-
 
     func settingsSliderCellCancelled() { }
 }
@@ -129,6 +127,6 @@ extension SettingsEndHoveringCell: SettingsSliderCellDelegate {
 // MARK: - SettingsSegmentedCellDelegate
 extension SettingsEndHoveringCell: SettingsSegmentedCellDelegate {
     func settingsSegmentedCellDidChange(selectedSegmentIndex: Int, atIndexPath indexPath: IndexPath) {
-        viewModel?.endHoveringModeEntry.save(at: selectedSegmentIndex)
+        viewModel.endHoveringModeEntry.save(at: selectedSegmentIndex)
     }
 }

@@ -37,7 +37,6 @@ final class CenteredRulerTableViewCell: UITableViewCell, NibReusable, EditionSet
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var settingValueRulerViewContainer: UIView!
     @IBOutlet private weak var disableView: UIView!
-    @IBOutlet private weak var trailingConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var delegate: EditionSettingsCellModelDelegate?
@@ -66,10 +65,6 @@ final class CenteredRulerTableViewCell: UITableViewCell, NibReusable, EditionSet
 
     func disableCell(_ mustDisable: Bool) {
         self.disableView.isHidden = !mustDisable
-    }
-
-    func updateTrailingConstraint(_ width: CGFloat) {
-        trailingConstraint.constant = width
     }
 }
 

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="GwF-Oz-S9W">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-Regular.ttf">
+            <string>Rajdhani-Regular</string>
+        </array>
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Pairing Drone Not Detected View Controller-->
+        <scene sceneID="bCU-OD-LaC">
+            <objects>
+                <viewController storyboardIdentifier="PairingDroneNotDetectedViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GwF-Oz-S9W" customClass="PairingDroneNotDetectedViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="MNX-oS-n83">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iU2-BZ-wq7">
+                                <rect key="frame" x="16" y="44" width="382" height="85"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HDh-e2-Nn7">
+                                        <rect key="frame" x="0.0" y="14.5" width="40" height="40"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="40" id="Dxs-Br-Awn"/>
+                                            <constraint firstAttribute="width" secondItem="HDh-e2-Nn7" secondAttribute="height" multiplier="1:1" id="XAN-1k-eLy"/>
+                                        </constraints>
+                                        <state key="normal" image="ic_back"/>
+                                        <connections>
+                                            <action selector="backButtonTouchedUpInside:" destination="GwF-Oz-S9W" eventType="touchUpInside" id="gyD-jA-7W1"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EE6-Nb-xsv" userLabel="Title">
+                                        <rect key="frame" x="40" y="25" width="302" height="19"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="85" id="EcK-Mv-RUC"/>
+                                    <constraint firstItem="HDh-e2-Nn7" firstAttribute="leading" secondItem="iU2-BZ-wq7" secondAttribute="leading" id="HHV-NB-5bF"/>
+                                    <constraint firstItem="EE6-Nb-xsv" firstAttribute="top" secondItem="iU2-BZ-wq7" secondAttribute="top" constant="25" id="Ogj-jQ-f3r"/>
+                                    <constraint firstItem="EE6-Nb-xsv" firstAttribute="centerX" secondItem="iU2-BZ-wq7" secondAttribute="centerX" id="Zvd-a4-lnq"/>
+                                    <constraint firstItem="HDh-e2-Nn7" firstAttribute="centerY" secondItem="EE6-Nb-xsv" secondAttribute="centerY" id="b9r-25-e1h"/>
+                                    <constraint firstAttribute="trailing" secondItem="EE6-Nb-xsv" secondAttribute="trailing" constant="40" id="iXV-LZ-3VP"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VzV-NO-JMD">
+                                <rect key="frame" x="57" y="149" width="300" height="598"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" image="icRemoteDronePairing" translatesAutoresizingMaskIntoConstraints="NO" id="cxc-8l-Wiy">
+                                        <rect key="frame" x="0.0" y="197" width="300" height="124"/>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iy4-iz-O75">
+                                        <rect key="frame" x="0.0" y="336" width="300" height="15"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="15"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="cxc-8l-Wiy" secondAttribute="trailing" id="3oh-1d-Xkp"/>
+                                    <constraint firstItem="iy4-iz-O75" firstAttribute="top" secondItem="cxc-8l-Wiy" secondAttribute="bottom" constant="30" id="9Lg-95-1Yl">
+                                        <variation key="heightClass=compact-widthClass=compact" constant="15"/>
+                                    </constraint>
+                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="HTB-0w-cby"/>
+                                    <constraint firstItem="cxc-8l-Wiy" firstAttribute="leading" secondItem="VzV-NO-JMD" secondAttribute="leading" id="Ynx-Cw-i26"/>
+                                    <constraint firstItem="cxc-8l-Wiy" firstAttribute="centerY" secondItem="VzV-NO-JMD" secondAttribute="centerY" constant="-40" id="eUE-34-Gjh"/>
+                                    <constraint firstAttribute="trailing" secondItem="iy4-iz-O75" secondAttribute="trailing" id="ucp-jF-MIj"/>
+                                    <constraint firstItem="iy4-iz-O75" firstAttribute="leading" secondItem="VzV-NO-JMD" secondAttribute="leading" id="z4L-I5-rfx"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Oyp-eh-a3t">
+                                <rect key="frame" x="20" y="800" width="374" height="37"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="1wS-fI-GeO">
+                                        <rect key="frame" x="0.0" y="0.0" width="374" height="37"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label " lineBreakMode="wordWrap" numberOfLines="8" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="U1E-aB-Upa">
+                                                <rect key="frame" x="0.0" y="0.0" width="172" height="37"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="kmn-HX-c8B">
+                                                <rect key="frame" x="202" y="0.0" width="172" height="37"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                <inset key="contentEdgeInsets" minX="12" minY="12" maxX="12" maxY="12"/>
+                                                <inset key="titleEdgeInsets" minX="12" minY="12" maxX="12" maxY="12"/>
+                                                <state key="normal" title="Button"/>
+                                                <connections>
+                                                    <action selector="enterWifiButtonTouchedUpInside:" destination="GwF-Oz-S9W" eventType="touchUpInside" id="O4z-Ah-SrN"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <variation key="heightClass=regular-widthClass=compact" axis="vertical" spacing="20"/>
+                                    </stackView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="1wS-fI-GeO" secondAttribute="bottom" id="EWG-37-5tu"/>
+                                    <constraint firstAttribute="trailing" secondItem="1wS-fI-GeO" secondAttribute="trailing" id="MLd-ne-63z"/>
+                                    <constraint firstItem="1wS-fI-GeO" firstAttribute="top" secondItem="Oyp-eh-a3t" secondAttribute="top" id="QyK-bH-0Fe"/>
+                                    <constraint firstItem="1wS-fI-GeO" firstAttribute="leading" secondItem="Oyp-eh-a3t" secondAttribute="leading" id="vw3-P8-YiU"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="Ehf-AZ-DsL"/>
+                        <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="iU2-BZ-wq7" secondAttribute="trailing" constant="16" id="2ct-Kh-Wih"/>
+                            <constraint firstItem="Ehf-AZ-DsL" firstAttribute="trailing" secondItem="Oyp-eh-a3t" secondAttribute="trailing" constant="100" id="B5B-l7-ia7">
+                                <variation key="heightClass=compact-widthClass=compact" constant="20"/>
+                                <variation key="heightClass=regular-widthClass=compact" constant="36"/>
+                            </constraint>
+                            <constraint firstItem="Oyp-eh-a3t" firstAttribute="leading" secondItem="Ehf-AZ-DsL" secondAttribute="leading" constant="100" id="F1y-CQ-DDg">
+                                <variation key="heightClass=compact-widthClass=compact" constant="20"/>
+                                <variation key="heightClass=regular-widthClass=compact" constant="36"/>
+                            </constraint>
+                            <constraint firstItem="VzV-NO-JMD" firstAttribute="top" secondItem="iU2-BZ-wq7" secondAttribute="bottom" constant="20" id="JBq-Q5-8Ng"/>
+                            <constraint firstItem="VzV-NO-JMD" firstAttribute="centerX" secondItem="Ehf-AZ-DsL" secondAttribute="centerX" id="dft-O3-Sav"/>
+                            <constraint firstItem="VzV-NO-JMD" firstAttribute="centerY" secondItem="MNX-oS-n83" secondAttribute="centerY" id="fFT-N7-4m9"/>
+                            <constraint firstItem="Ehf-AZ-DsL" firstAttribute="bottom" secondItem="Oyp-eh-a3t" secondAttribute="bottom" constant="25" id="fQL-FE-h5r"/>
+                            <constraint firstItem="iU2-BZ-wq7" firstAttribute="top" secondItem="Ehf-AZ-DsL" secondAttribute="top" id="hJr-Xu-TMh"/>
+                            <constraint firstItem="iU2-BZ-wq7" firstAttribute="leading" secondItem="MNX-oS-n83" secondAttribute="leading" constant="16" id="oaz-Pb-2nP"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="enterWifiButton" destination="kmn-HX-c8B" id="A03-Cy-Oqr"/>
+                        <outlet property="pairingDescriptionLabel" destination="iy4-iz-O75" id="Wqe-wk-IIV"/>
+                        <outlet property="pairingEnterWifiLabel" destination="U1E-aB-Upa" id="D76-K5-Zbk"/>
+                        <outlet property="titleLabel" destination="EE6-Nb-xsv" id="ZhT-Li-V3N"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="j4v-rC-iFQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-720" y="-740"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="icRemoteDronePairing" width="345" height="124"/>
+        <image name="ic_back" width="21" height="21"/>
+        <systemColor name="viewFlipsideBackgroundColor">
+            <color red="0.1215686275" green="0.12941176469999999" blue="0.14117647059999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

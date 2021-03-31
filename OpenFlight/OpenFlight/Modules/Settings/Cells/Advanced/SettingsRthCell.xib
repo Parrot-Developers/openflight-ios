@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -16,12 +17,6 @@
                 <rect key="frame" x="0.0" y="0.0" width="466" height="201"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Adjust safety height" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7r1-CU-Od1">
-                        <rect key="frame" x="64" y="2" width="121" height="16"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
-                        <nil key="textColor"/>
-                        <nil key="highlightedColor"/>
-                    </label>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="L0s-y8-BcI">
                         <rect key="frame" x="0.0" y="0.0" width="466" height="201"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -63,13 +58,13 @@
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <imageView clipsSubviews="YES" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="slider" translatesAutoresizingMaskIntoConstraints="NO" id="YTy-UJ-Pha">
-                                <rect key="frame" x="154" y="57" width="14" height="14"/>
+                                <rect key="frame" x="154" y="57" width="24" height="24"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
                             <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ogn-w0-FEf">
                                 <rect key="frame" x="216" y="97" width="2" height="57"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" systemColor="systemGreenColor" red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" systemColor="systemGreenColor"/>
                             </view>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -99,12 +94,10 @@
                     <constraint firstItem="ZzF-dG-eaJ" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="20" id="RM3-48-BFM"/>
                     <constraint firstAttribute="trailing" secondItem="L0s-y8-BcI" secondAttribute="trailing" id="Vap-b3-plp"/>
                     <constraint firstItem="ZzF-dG-eaJ" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="64" id="Xq6-5q-NIv"/>
-                    <constraint firstItem="7r1-CU-Od1" firstAttribute="leading" secondItem="ZzF-dG-eaJ" secondAttribute="leading" id="ccW-mx-wGm"/>
                     <constraint firstItem="L0s-y8-BcI" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="goL-yV-vfg"/>
                     <constraint firstAttribute="bottom" secondItem="7II-P4-d7e" secondAttribute="bottom" constant="16" id="qfE-MN-vSi"/>
                     <constraint firstAttribute="bottom" secondItem="L0s-y8-BcI" secondAttribute="bottom" id="tKE-sU-9FW"/>
                     <constraint firstItem="7II-P4-d7e" firstAttribute="leading" secondItem="ZzF-dG-eaJ" secondAttribute="leading" id="vlN-y7-ZOu"/>
-                    <constraint firstItem="ZzF-dG-eaJ" firstAttribute="top" secondItem="7r1-CU-Od1" secondAttribute="bottom" constant="2" id="wOh-Vp-Btd"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -112,7 +105,6 @@
                 <outlet property="actionView" destination="7II-P4-d7e" id="Crk-KY-Let"/>
                 <outlet property="gridView" destination="ZzF-dG-eaJ" id="U5y-Lu-XPI"/>
                 <outlet property="gridViewHeightConstraint" destination="L62-fJ-7ez" id="9nu-zs-W0J"/>
-                <outlet property="helpLabel" destination="7r1-CU-Od1" id="jwZ-NU-eql"/>
             </connections>
             <point key="canvasLocation" x="249.59999999999999" y="225.33733133433284"/>
         </tableViewCell>
@@ -120,6 +112,9 @@
     <resources>
         <image name="iconDroneFace" width="31" height="8"/>
         <image name="iconUser" width="14" height="40"/>
-        <image name="slider" width="14" height="14"/>
+        <image name="slider" width="24" height="24"/>
+        <systemColor name="systemGreenColor">
+            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
     </resources>
 </document>

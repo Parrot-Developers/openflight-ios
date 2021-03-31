@@ -37,7 +37,6 @@ final class SettingValuesChoiceTableViewCell: UITableViewCell, NibReusable, Edit
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var settingValuesStackView: UIStackView!
     @IBOutlet private weak var disableView: UIView!
-    @IBOutlet private weak var trailingConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var delegate: EditionSettingsCellModelDelegate?
@@ -59,7 +58,20 @@ final class SettingValuesChoiceTableViewCell: UITableViewCell, NibReusable, Edit
     // MARK: - Internal Funcs
     func fill(with settingType: FlightPlanSettingType?) {
         self.settingType = settingType
-        titleLabel.text = settingType?.valueToDisplay()
+
+        // FIXME: This part is for upload 4G testing only.
+        // It will be remove when the feature is finished.
+        var valueToDisplay = settingType?.valueToDisplay() ?? ""
+
+        if let additionalInformation = settingType?.additionalInformation {
+            valueToDisplay = "\(valueToDisplay) (\(additionalInformation))"
+        }
+
+        titleLabel.text = valueToDisplay
+        // End of testing
+
+        // FIXME: Uncomment this line when testing is done.
+        // titleLabel.text = settingType?.valueToDisplay()
 
         settingType?.allValues.forEach { value in
             let button = UIButton(type: UIButton.ButtonType.custom)
@@ -70,6 +82,7 @@ final class SettingValuesChoiceTableViewCell: UITableViewCell, NibReusable, Edit
                 button.setTitle(value == 0 ? L10n.commonYes : L10n.commonNo, for: .normal)
             }
             button.makeup(with: .regular, color: .white)
+            button.setTitleColor(ColorName.greenSpring.color, for: .selected)
             button.addTarget(self,
                              action: #selector(settingValueButtonTouchedUpInside),
                              for: .touchUpInside)
@@ -83,10 +96,6 @@ final class SettingValuesChoiceTableViewCell: UITableViewCell, NibReusable, Edit
 
     func disableCell(_ mustDisable: Bool) {
         self.disableView.isHidden = !mustDisable
-    }
-
-    func updateTrailingConstraint(_ width: CGFloat) {
-        trailingConstraint.constant = width
     }
 }
 
@@ -122,12 +131,15 @@ private extension SettingValuesChoiceTableViewCell {
     func updateType(tag: Int?) {
         guard let tag = tag else { return }
 
-        settingValuesStackView?.arrangedSubviews.forEach { view in
-            let isSelected = settingValuesStackView?.arrangedSubviews.firstIndex(of: view) == tag
+        settingValuesStackView?.arrangedSubviews
+            .compactMap { $0 as? UIButton}
+            .forEach { button in
+            let isSelected = settingValuesStackView?.arrangedSubviews.firstIndex(of: button) == tag
             let backgroundColor = isSelected ? ColorName.greenSpring20.color : .clear
-            view.cornerRadiusedWith(backgroundColor: backgroundColor,
-                                    radius: Style.largeCornerRadius,
-                                    borderWidth: Style.largeBorderWidth)
+            button.cornerRadiusedWith(backgroundColor: backgroundColor,
+                                      radius: Style.largeCornerRadius,
+                                      borderWidth: Style.largeBorderWidth)
+            button.isSelected = isSelected
         }
     }
 }

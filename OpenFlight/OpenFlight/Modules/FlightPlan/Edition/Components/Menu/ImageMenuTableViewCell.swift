@@ -34,15 +34,12 @@ import Reusable
 /// Image menu table view cell.
 final class ImageMenuTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
-    @IBOutlet private weak var cellTitle: UILabel!
     @IBOutlet private weak var imageLabel: UILabel!
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        cellTitle.makeUp(with: .small, and: .white50)
-        cellTitle.text = L10n.flightPlanMenuImage.uppercased()
         imageLabel.makeUp()
         imageLabel.text = Style.dash
     }

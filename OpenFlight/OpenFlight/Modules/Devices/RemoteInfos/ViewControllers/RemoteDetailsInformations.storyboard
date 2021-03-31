@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="sdU-5K-DkE">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Remote Details Informations View Controller-->
+        <scene sceneID="peg-u7-kgS">
+            <objects>
+                <viewController storyboardIdentifier="RemoteDetailsInformations" useStoryboardIdentifierAsRestorationIdentifier="YES" id="sdU-5K-DkE" customClass="RemoteDetailsInformationsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="AMI-hn-0Ur">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ML2-AP-Add">
+                                <rect key="frame" x="24" y="0.0" width="366" height="896"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="4if-k9-aKL">
+                                        <rect key="frame" x="0.0" y="89.5" width="366" height="717"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="EqD-aP-jZZ">
+                                                <rect key="frame" x="0.0" y="0.0" width="366" height="661"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="u1W-R9-0su" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="179" height="661"/>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0Qd-Fk-o9K" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="187" y="0.0" width="179" height="661"/>
+                                                    </view>
+                                                </subviews>
+                                                <variation key="heightClass=compact-widthClass=compact" spacing="8"/>
+                                                <variation key="heightClass=regular-widthClass=compact" axis="horizontal" spacing="8"/>
+                                            </stackView>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cXu-Go-lTZ">
+                                                <rect key="frame" x="0.0" y="677" width="366" height="40"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KKx-zM-Qa3">
+                                                        <rect key="frame" x="103" y="0.0" width="160" height="40"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="160" id="Kqo-NB-mwS"/>
+                                                            <constraint firstAttribute="height" constant="40" id="jpD-d9-iuk"/>
+                                                        </constraints>
+                                                        <variation key="heightClass=regular-widthClass=compact">
+                                                            <mask key="constraints">
+                                                                <include reference="Kqo-NB-mwS"/>
+                                                            </mask>
+                                                        </variation>
+                                                        <connections>
+                                                            <action selector="resetButtonTouchedUpInside:" destination="sdU-5K-DkE" eventType="touchUpInside" id="9Xe-OU-bIM"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstItem="KKx-zM-Qa3" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="cXu-Go-lTZ" secondAttribute="leading" id="6CD-Te-skG"/>
+                                                    <constraint firstItem="KKx-zM-Qa3" firstAttribute="centerX" secondItem="cXu-Go-lTZ" secondAttribute="centerX" id="hxU-bQ-R2W"/>
+                                                    <constraint firstItem="KKx-zM-Qa3" firstAttribute="leading" secondItem="cXu-Go-lTZ" secondAttribute="leading" id="kL3-ya-r0u"/>
+                                                    <constraint firstAttribute="trailing" secondItem="KKx-zM-Qa3" secondAttribute="trailing" id="ksU-6E-yXW"/>
+                                                    <constraint firstAttribute="bottom" secondItem="KKx-zM-Qa3" secondAttribute="bottom" id="qmw-dR-KYg"/>
+                                                    <constraint firstItem="KKx-zM-Qa3" firstAttribute="top" secondItem="cXu-Go-lTZ" secondAttribute="top" id="v9z-My-dEf"/>
+                                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="KKx-zM-Qa3" secondAttribute="trailing" id="zgm-HW-AXM"/>
+                                                </constraints>
+                                                <variation key="default">
+                                                    <mask key="constraints">
+                                                        <exclude reference="6CD-Te-skG"/>
+                                                        <exclude reference="zgm-HW-AXM"/>
+                                                        <exclude reference="hxU-bQ-R2W"/>
+                                                    </mask>
+                                                </variation>
+                                                <variation key="heightClass=regular-widthClass=compact">
+                                                    <mask key="constraints">
+                                                        <exclude reference="kL3-ya-r0u"/>
+                                                        <exclude reference="ksU-6E-yXW"/>
+                                                        <include reference="6CD-Te-skG"/>
+                                                        <include reference="zgm-HW-AXM"/>
+                                                        <include reference="hxU-bQ-R2W"/>
+                                                    </mask>
+                                                </variation>
+                                            </view>
+                                        </subviews>
+                                        <variation key="heightClass=compact-widthClass=compact" spacing="8"/>
+                                    </stackView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="4if-k9-aKL" secondAttribute="trailing" id="ab9-Ei-cPO"/>
+                                    <constraint firstItem="4if-k9-aKL" firstAttribute="centerY" secondItem="ML2-AP-Add" secondAttribute="centerY" id="ilU-93-akQ"/>
+                                    <constraint firstItem="4if-k9-aKL" firstAttribute="leading" secondItem="ML2-AP-Add" secondAttribute="leading" id="r3o-xL-0Ub"/>
+                                    <constraint firstItem="4if-k9-aKL" firstAttribute="height" secondItem="ML2-AP-Add" secondAttribute="height" multiplier="0.6" id="vTi-5n-05g"/>
+                                    <constraint firstItem="4if-k9-aKL" firstAttribute="height" secondItem="ML2-AP-Add" secondAttribute="height" multiplier="0.8" id="xdK-FO-8Ha"/>
+                                </constraints>
+                                <variation key="default">
+                                    <mask key="constraints">
+                                        <exclude reference="xdK-FO-8Ha"/>
+                                    </mask>
+                                </variation>
+                                <variation key="heightClass=regular-widthClass=compact">
+                                    <mask key="constraints">
+                                        <exclude reference="vTi-5n-05g"/>
+                                        <include reference="xdK-FO-8Ha"/>
+                                    </mask>
+                                </variation>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="ylm-35-rmO"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="ML2-AP-Add" secondAttribute="bottom" id="X5Y-dm-b6F"/>
+                            <constraint firstAttribute="trailing" secondItem="ML2-AP-Add" secondAttribute="trailing" constant="24" id="b8t-x5-4AM"/>
+                            <constraint firstItem="ML2-AP-Add" firstAttribute="leading" secondItem="AMI-hn-0Ur" secondAttribute="leading" id="cw8-F2-pVn">
+                                <variation key="heightClass=regular-widthClass=compact" constant="24"/>
+                            </constraint>
+                            <constraint firstItem="ML2-AP-Add" firstAttribute="centerX" secondItem="AMI-hn-0Ur" secondAttribute="centerX" id="jbl-Rm-A4f"/>
+                            <constraint firstItem="ML2-AP-Add" firstAttribute="top" secondItem="AMI-hn-0Ur" secondAttribute="top" id="sP5-JC-4ON"/>
+                        </constraints>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="b8t-x5-4AM"/>
+                                <exclude reference="jbl-Rm-A4f"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=compact">
+                            <mask key="constraints">
+                                <include reference="b8t-x5-4AM"/>
+                                <include reference="jbl-Rm-A4f"/>
+                            </mask>
+                        </variation>
+                    </view>
+                    <connections>
+                        <outlet property="hardwareVersionView" destination="0Qd-Fk-o9K" id="dKy-gl-gBv"/>
+                        <outlet property="resetButton" destination="KKx-zM-Qa3" id="Jc6-TY-Gdj"/>
+                        <outlet property="serialNumberView" destination="u1W-R9-0su" id="uYS-xt-gV8"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="EzN-K7-Hhf" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1504" y="1722"/>
+        </scene>
+    </scenes>
+</document>

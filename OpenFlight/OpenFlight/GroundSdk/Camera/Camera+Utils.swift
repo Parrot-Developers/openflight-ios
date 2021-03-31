@@ -77,12 +77,12 @@ public extension Camera2 {
         guard let currentMode = self.mode else { return false }
         switch currentMode {
         case .photo:
-            let hdr8Available = self.config[Camera2Params.photoDynamicRange]?.overallSupportedValues.contains(.hdr8)
+            let hdr8Available = self.config[Camera2Params.photoDynamicRange]?.currentSupportedValues.contains(.hdr8)
 
             return hdr8Available == true
         case .recording:
-            let hdr10Available = self.config[Camera2Params.videoRecordingDynamicRange]?.overallSupportedValues.contains(.hdr10)
-            let hdr8Available = self.config[Camera2Params.videoRecordingDynamicRange]?.overallSupportedValues.contains(.hdr8)
+            let hdr10Available = self.config[Camera2Params.videoRecordingDynamicRange]?.currentSupportedValues.contains(.hdr10)
+            let hdr8Available = self.config[Camera2Params.videoRecordingDynamicRange]?.currentSupportedValues.contains(.hdr8)
 
             return hdr10Available == true || hdr8Available == true
         }
@@ -116,9 +116,104 @@ public extension Camera2 {
 
 /// Utility extension for `Camera2Editor`.
 public extension Camera2Editor {
+
+    /// Set a parameter value, if undefined, by copying the parameter value of a given configuration.
+    ///
+    /// It has no effect if the given parameter value is not supported in the currently edited configuration.
+    ///
+    /// - Parameters:
+    ///   - config: configuration that handles the parameter value to apply
+    ///   - param: configuration parameter descriptor
+    func applyValueIfUndefined<V: Hashable>(_ config: Camera2Config, _ param: Camera2Param<V>) {
+        guard let editorParam = self[param],
+              editorParam.value == nil,
+              let valueToApply = config[param]?.value,
+              editorParam.currentSupportedValues.contains(valueToApply) else {
+            return
+        }
+        editorParam.value = valueToApply
+    }
+
+    /// Set a parameter value, if undefined, by copying the parameter value of a given configuration.
+    ///
+    /// It has no effect if the given parameter value is not supported in the currently edited configuration.
+    ///
+    /// - Parameters:
+    ///   - config: configuration that handles the parameter value to apply
+    ///   - param: configuration parameter descriptor
+    func applyValueIfUndefined(_ config: Camera2Config, _ param: Camera2Param<Double>) {
+        guard let editorParam = self[param],
+              editorParam.value == nil,
+              let valueToApply = config[param]?.value,
+              editorParam.currentSupportedValues?.contains(valueToApply) == true else {
+            return
+        }
+        editorParam.value = valueToApply
+    }
+
+    /// Complete edited configuration using a given configuration.
+    ///
+    /// For each currently undefined parameter, apply value of given configuration, if and only if
+    /// this value is supported in the currently edited configuration.
+    ///
+    /// - Parameter config: configuration used to set currently undefined parameters
+    ///
+    /// - Note: The configuration may not be complete after a call to this method.
+    func complete(config: Camera2Config) {
+        applyValueIfUndefined(config, Camera2Params.alignmentOffsetPitch)
+        applyValueIfUndefined(config, Camera2Params.alignmentOffsetRoll)
+        applyValueIfUndefined(config, Camera2Params.alignmentOffsetYaw)
+        applyValueIfUndefined(config, Camera2Params.audioRecordingMode)
+        applyValueIfUndefined(config, Camera2Params.autoExposureMeteringMode)
+        applyValueIfUndefined(config, Camera2Params.autoRecordMode)
+        applyValueIfUndefined(config, Camera2Params.exposureCompensation)
+        applyValueIfUndefined(config, Camera2Params.exposureMode)
+        applyValueIfUndefined(config, Camera2Params.imageContrast)
+        applyValueIfUndefined(config, Camera2Params.imageSaturation)
+        applyValueIfUndefined(config, Camera2Params.imageSharpness)
+        applyValueIfUndefined(config, Camera2Params.imageStyle)
+        applyValueIfUndefined(config, Camera2Params.isoSensitivity)
+        applyValueIfUndefined(config, Camera2Params.maximumIsoSensitivity)
+        applyValueIfUndefined(config, Camera2Params.mode)
+        applyValueIfUndefined(config, Camera2Params.photoBracketing)
+        applyValueIfUndefined(config, Camera2Params.photoBurst)
+        applyValueIfUndefined(config, Camera2Params.photoDigitalSignature)
+        applyValueIfUndefined(config, Camera2Params.photoDynamicRange)
+        applyValueIfUndefined(config, Camera2Params.photoFileFormat)
+        applyValueIfUndefined(config, Camera2Params.photoFormat)
+        applyValueIfUndefined(config, Camera2Params.photoGpslapseInterval)
+        applyValueIfUndefined(config, Camera2Params.photoMode)
+        applyValueIfUndefined(config, Camera2Params.photoResolution)
+        applyValueIfUndefined(config, Camera2Params.photoStreamingMode)
+        applyValueIfUndefined(config, Camera2Params.photoTimelapseInterval)
+        applyValueIfUndefined(config, Camera2Params.shutterSpeed)
+        applyValueIfUndefined(config, Camera2Params.storagePolicy)
+        applyValueIfUndefined(config, Camera2Params.streamingCodec)
+        applyValueIfUndefined(config, Camera2Params.streamingMode)
+        applyValueIfUndefined(config, Camera2Params.videoRecordingBitrate)
+        applyValueIfUndefined(config, Camera2Params.videoRecordingCodec)
+        applyValueIfUndefined(config, Camera2Params.videoRecordingDynamicRange)
+        applyValueIfUndefined(config, Camera2Params.videoRecordingFramerate)
+        applyValueIfUndefined(config, Camera2Params.videoRecordingHyperlapse)
+        applyValueIfUndefined(config, Camera2Params.videoRecordingMode)
+        applyValueIfUndefined(config, Camera2Params.videoRecordingResolution)
+        applyValueIfUndefined(config, Camera2Params.whiteBalanceMode)
+        applyValueIfUndefined(config, Camera2Params.whiteBalanceTemperature)
+        applyValueIfUndefined(config, Camera2Params.zoomMaxSpeed)
+        applyValueIfUndefined(config, Camera2Params.zoomVelocityControlQualityMode)
+    }
+
     /// Save settings.
-    func saveSettings() {
-        _ = self.autoComplete().commit()
+    ///
+    /// - Parameter currentConfig: curent camera configuration, used to set currently undefined parameters
+    func saveSettings(currentConfig: Camera2Config?) {
+        if !complete,
+           let config = currentConfig {
+            // complete with current configuration values
+            complete(config: config)
+        }
+
+        _ = autoComplete().commit()
     }
 
     /// Enable hdr.

@@ -65,8 +65,8 @@ enum HUDCriticalAlertType: Sortable {
 
     /// Returns the sorted list of alerts ordered by priority.
     static var sortedCases: [HUDCriticalAlertType] = [.verticalCameraFailure,
-                                                      .droneUpdateRequired,
                                                       .droneAndRemoteUpdateRequired,
+                                                      .droneUpdateRequired,
                                                       .droneCalibrationRequired,
                                                       .highTemperature,
                                                       .lowTemperature]
@@ -122,7 +122,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
     var mainImage: UIImage? {
         switch self {
         case .verticalCameraFailure:
-            return Asset.Alertes.TakeOff.icVerticalCameraFailureAlert.image
+            return Asset.Alertes.TakeOff.icDroneCalibrationAlert.image
         case .droneUpdateRequired:
             return Asset.Alertes.TakeOff.icDroneUpdateAlert.image
         case .droneAndRemoteUpdateRequired:
@@ -156,7 +156,8 @@ extension HUDCriticalAlertType: CriticalAlertModel {
     var showCancelButton: Bool? {
         switch self {
         case .highTemperature,
-             .lowTemperature:
+             .lowTemperature,
+             .verticalCameraFailure:
             return false
         default:
             return true
@@ -165,15 +166,14 @@ extension HUDCriticalAlertType: CriticalAlertModel {
 
     var actionButtonTitle: String? {
         switch self {
-        case .verticalCameraFailure:
-            return L10n.takeoffAlertContactParrotSupport
         case .droneUpdateRequired,
              .droneAndRemoteUpdateRequired:
             return L10n.dashboardUpdate
         case .droneCalibrationRequired:
             return L10n.remoteCalibrationCalibrate
         case .highTemperature,
-             .lowTemperature:
+             .lowTemperature,
+             .verticalCameraFailure:
             return L10n.ok
         }
     }

@@ -39,10 +39,12 @@ final class SettingsCameraViewController: SettingsContentViewController {
         resetCellLabel = L10n.settingsCameraReset
 
         // Setup view model.
-        viewModel = SettingsCameraViewModel(stateDidUpdate: { [weak self] state in
+        viewModel = SettingsCameraViewModel()
+        viewModel?.state.valueChanged = { [weak self] state in
             guard self?.viewModel?.isUpdating == false else { return }
+
             self?.updateDataSource(state)
-        })
+        }
 
         // Inital data source update.
         updateDataSource()

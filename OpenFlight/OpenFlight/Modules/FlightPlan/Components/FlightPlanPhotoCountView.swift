@@ -81,10 +81,10 @@ private extension FlightPlanPhotoCountView {
     /// - Parameters:
     ///     - fpExecution: the Flight Plan execution
     func initViewModel(fpExecution: FlightPlanExecution) {
-        viewModel = FlightPlanPhotoCountViewModel(fpExecution: fpExecution,
-                                                  stateDidUpdate: { [weak self] state in
-                                                    self?.updateView(state: state)
-                                                  })
+        viewModel = FlightPlanPhotoCountViewModel(fpExecution: fpExecution)
+        viewModel?.state.valueChanged = { [weak self] state in
+            self?.updateView(state: state)
+        }
         updateView(state: viewModel?.state.value)
     }
 

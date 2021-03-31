@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// Utility extension for `FlyingIndicatorsFlyingState`.
-
 extension FlyingIndicatorsFlyingState {
     /// Returns true if drone is flying or waiting.
     var isFlyingOrWaiting: Bool {

@@ -160,9 +160,6 @@ extension DashboardViewController: UICollectionViewDelegate {
             case let myFlightsViewModel as MyFlightsViewModel:
                 logEvent(with: LogEvent.LogKeyDashboardButton.myFlights)
                 self.coordinator?.startMyFlights(myFlightsViewModel)
-            case _ as MarketingViewModel:
-                logEvent(with: LogEvent.LogKeyDashboardButton.marketing)
-                self.coordinator?.startMarketing()
             case is RemoteInfosViewModel:
                 logEvent(with: LogEvent.LogKeyDashboardButton.controllerDetails)
                 self.coordinator?.startRemoteInfos()
@@ -247,8 +244,6 @@ extension DashboardViewController: UICollectionViewDataSource {
             return createMediasCell(galleryMediaViewModel, indexPath)
         case let myFlightsViewModel as MyFlightsViewModel:
             return createMyFlightsCell(myFlightsViewModel, indexPath)
-        case let marketingViewModel as MarketingViewModel:
-            return createMarketingCell(marketingViewModel, indexPath)
         default:
             assertionFailure("\(viewModel) not yet implemented")
         }
@@ -270,8 +265,6 @@ extension DashboardViewController: UICollectionViewDataSource {
             return DashboardDeviceCell.reuseIdentifier
         case is GalleryMediaViewModel:
             return DashboardMediasCell.reuseIdentifier
-        case is MarketingViewModel:
-            return DashboardMarketingCell.reuseIdentifier
         case is MyFlightsViewModel:
             return DashboardMyFlightsCell.reuseIdentifier
         default:
@@ -299,8 +292,6 @@ extension DashboardViewController: UICollectionViewDelegateFlowLayout {
             case .content:
                 height = SizeConstants.commonCellHeight
                 switch viewModel {
-                case is MarketingViewModel:
-                    width = (collectionView.frame.width - MarginConstants.defaultLanscapeMargin - MarginConstants.commonCellInset) / Constants.oneThirdScreen
                 case is MyFlightsViewModel:
                     // Set content width to the half of the screen without inset and the margin.
                     width = (collectionView.frame.width - MarginConstants.defaultLanscapeMargin - MarginConstants.commonCellInset)
@@ -332,8 +323,7 @@ extension DashboardViewController: UICollectionViewDelegateFlowLayout {
                      is GalleryMediaViewModel:
                     // Set content width to the half of the screen without inset and the margin.
                     width = (collectionView.frame.width - MarginConstants.defaultPortraitMargin - MarginConstants.commonCellInset) / Constants.halfScreen
-                case is MyFlightsViewModel,
-                     is MarketingViewModel:
+                case is MyFlightsViewModel:
                     height = SizeConstants.commonCellHeight
                     // Set content width to the whole screen.
                     width = collectionView.frame.width - MarginConstants.commonCellInset
@@ -514,20 +504,6 @@ private extension DashboardViewController {
         return myFlightCell
     }
 
-    /// Instantiate the Marketing Cell.
-    ///
-    /// - Parameters:
-    ///    - viewModel: ViewModel for the cell
-    ///    - indexPath: index of the cell
-    ///
-    /// - Returns: DashboardMarketingCell
-    func createMarketingCell(_ viewModel: MarketingViewModel, _ indexPath: IndexPath) -> DashboardMarketingCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: getCellReuseIdentifier(viewModel), for: indexPath)
-        guard let marketingCell = cell as? DashboardMarketingCell else { return DashboardMarketingCell() }
-
-        return marketingCell
-    }
-
     /// Instantiate the Footer Cell.
     ///
     /// - Parameters:
@@ -555,7 +531,6 @@ private extension DashboardViewController {
         collectionView.register(cellType: DashboardProviderCell.self)
         collectionView.register(cellType: DashboardDeviceCell.self)
         collectionView.register(cellType: DashboardMyFlightsCell.self)
-        collectionView.register(cellType: DashboardMarketingCell.self)
         collectionView.register(cellType: DashboardFooterCell.self)
         collectionView.register(cellType: DashboardMediasCell.self)
         // Clear the background of the collection view.
@@ -579,13 +554,11 @@ private extension DashboardViewController {
                                RemoteInfosViewModel(),
                                DroneInfosViewModel(),
                                galleryMediaViewModel,
-                               MarketingViewModel(),
                                myFlightsViewModel]
         viewModelsPortrait = [UserDeviceViewModel(userLocationManager: UserLocationManager()),
                               RemoteInfosViewModel(),
                               DroneInfosViewModel(),
                               galleryMediaViewModel,
-                              MarketingViewModel(),
                               myFlightsViewModel]
     }
 

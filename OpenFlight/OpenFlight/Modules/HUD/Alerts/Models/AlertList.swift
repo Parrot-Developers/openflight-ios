@@ -29,7 +29,6 @@
 //    SUCH DAMAGE.
 
 /// Manages a list of `HUDAlertType`.
-
 final class AlertList {
     // MARK: - Private Properties
     private var allAlerts: [HUDAlertType] = []
@@ -37,12 +36,11 @@ final class AlertList {
     // MARK: - Internal Properties
     /// Returns current highest priority alert if any.
     var mainAlert: HUDAlertType? {
-        guard let firstAlert = allAlerts.first else {
-            return nil
-        }
-        return allAlerts.reduce(firstAlert) { (result, alert) -> HUDAlertType in
-            return alert.hasHigherPriority(than: result) ? alert : result
-        }
+        guard !allAlerts.isEmpty else { return nil }
+
+        return HUDAlertBannerProvider.shared
+            .alertBannerSorter?
+            .highestPriority(in: allAlerts)
     }
 
     // MARK: - Internal Funcs

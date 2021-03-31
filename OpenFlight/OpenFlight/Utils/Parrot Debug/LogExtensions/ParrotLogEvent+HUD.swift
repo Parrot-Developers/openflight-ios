@@ -65,7 +65,6 @@ extension LogEvent {
         /// Bottom bar photo mode buttons.
         case gpsLapse
         case timeLapse
-        case timer
         case slowMotion
         case panorama
         case braketing
@@ -111,8 +110,6 @@ extension LogEvent {
                 return "GPSLapse"
             case .timeLapse:
                 return "TimeLapse"
-            case .timer:
-                return "Timer"
             case .slowMotion:
                 return "SlowMotion"
             case .panorama:

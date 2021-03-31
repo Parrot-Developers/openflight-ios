@@ -37,8 +37,8 @@ final class SettingsRTHViewController: SettingsContentViewController {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let gridIndex: Int = 0
-        static let secondCellIndex: Int = 1
+        static let firstCellIndex: Int = 0
+        static let gridIndex: Int = 1
         static let minimumCellsCount: Int = 2
     }
 
@@ -56,7 +56,7 @@ final class SettingsRTHViewController: SettingsContentViewController {
         // Dedicated treatment with the right frame size.
         if settingsTableView.visibleCells.count >= Constants.minimumCellsCount {
             maxGridHeight = self.view.bounds.height
-                - self.settingsTableView.visibleCells[Constants.secondCellIndex].frame.size.height
+                - self.settingsTableView.visibleCells[Constants.firstCellIndex].frame.size.height
                 - view.safeAreaInsets.bottom
         } else {
             maxGridHeight = self.view.bounds.height - view.safeAreaInsets.bottom
@@ -108,9 +108,10 @@ private extension SettingsRTHViewController {
 
     /// Inits the view model.
     func initViewModel() {
-        viewModel = SettingsRthViewModel(stateDidUpdate: { [weak self] state in
+        viewModel = SettingsRthViewModel()
+        viewModel?.state.valueChanged = { [weak self] state in
             self?.updateDataSource(state)
-        })
+        }
 
         if let state = viewModel?.state.value {
             updateDataSource(state)

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="GD6-ss-0eY">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Drone Details Buttons View Controller-->
+        <scene sceneID="7rR-lA-2rf">
+            <objects>
+                <viewController storyboardIdentifier="DroneDetailsButtons" id="GD6-ss-0eY" customClass="DroneDetailsButtonsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="EOh-q9-b83">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="n2B-Wh-zmR">
+                                <rect key="frame" x="41.5" y="0.0" width="372.5" height="896"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="naE-FZ-7Cg" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="372.5" height="173"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <connections>
+                                            <action selector="cellularAccessButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="Dma-is-OYi"/>
+                                        </connections>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="G1H-BN-fL2" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="181" width="372.5" height="172.5"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <connections>
+                                            <action selector="mapButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="jyN-Xk-U0k"/>
+                                        </connections>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FAu-et-3jF" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="361.5" width="372.5" height="173"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <connections>
+                                            <action selector="calibrationButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="R48-gj-Xcs"/>
+                                        </connections>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vWN-fC-h5d" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="542.5" width="372.5" height="172.5"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <connections>
+                                            <action selector="firmwareUpdateButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="Ba6-4P-dAy"/>
+                                        </connections>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sdQ-bX-ago" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="723" width="372.5" height="173"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <connections>
+                                            <action selector="passwordEditionButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="fw5-Z0-jMz"/>
+                                        </connections>
+                                    </view>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="hwW-HJ-cXi"/>
+                        <constraints>
+                            <constraint firstItem="n2B-Wh-zmR" firstAttribute="top" secondItem="EOh-q9-b83" secondAttribute="top" id="Ber-P5-CaB"/>
+                            <constraint firstAttribute="trailing" secondItem="n2B-Wh-zmR" secondAttribute="trailing" id="F3J-L6-aFg"/>
+                            <constraint firstItem="n2B-Wh-zmR" firstAttribute="leading" secondItem="EOh-q9-b83" secondAttribute="leading" id="Y2b-Oa-ekY"/>
+                            <constraint firstAttribute="bottom" secondItem="n2B-Wh-zmR" secondAttribute="bottom" id="etY-oI-0sL"/>
+                            <constraint firstItem="n2B-Wh-zmR" firstAttribute="width" secondItem="EOh-q9-b83" secondAttribute="width" multiplier="0.9" id="pRd-vE-IOh"/>
+                        </constraints>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="Y2b-Oa-ekY"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=compact">
+                            <mask key="constraints">
+                                <include reference="Y2b-Oa-ekY"/>
+                                <exclude reference="pRd-vE-IOh"/>
+                            </mask>
+                        </variation>
+                    </view>
+                    <connections>
+                        <outlet property="calibrationButtonView" destination="FAu-et-3jF" id="MWf-rv-tFs"/>
+                        <outlet property="cellularAccessButtonView" destination="naE-FZ-7Cg" id="qxZ-QL-mPA"/>
+                        <outlet property="firmwareUpdateButtonView" destination="vWN-fC-h5d" id="IUv-O4-tFJ"/>
+                        <outlet property="mapButtonView" destination="G1H-BN-fL2" id="Y3Z-o3-bL4"/>
+                        <outlet property="passwordButtonView" destination="sdQ-bX-ago" id="96f-p2-q6p"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="sgx-Wg-MDM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1368" y="2516"/>
+        </scene>
+    </scenes>
+</document>

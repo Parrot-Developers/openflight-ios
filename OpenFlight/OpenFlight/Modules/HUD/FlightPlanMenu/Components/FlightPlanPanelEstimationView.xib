@@ -28,7 +28,7 @@
                         <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="gSc-h3-MIL">
                             <rect key="frame" x="0.0" y="0.0" width="60.5" height="16"/>
                             <subviews>
-                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icCameraModeTimer" translatesAutoresizingMaskIntoConstraints="NO" id="0d3-82-zL4">
+                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icFlightPlanTime" translatesAutoresizingMaskIntoConstraints="NO" id="0d3-82-zL4">
                                     <rect key="frame" x="0.0" y="0.0" width="16" height="16"/>
                                     <constraints>
                                         <constraint firstAttribute="width" secondItem="0d3-82-zL4" secondAttribute="height" multiplier="1:1" id="yKe-be-nsX"/>
@@ -97,7 +97,7 @@
     </objects>
     <resources>
         <image name="icBattery" width="7" height="14"/>
-        <image name="icCameraModeTimer" width="18" height="18"/>
+        <image name="icFlightPlanTime" width="18" height="18"/>
         <image name="icPhotoMini" width="11" height="9"/>
     </resources>
 </document>

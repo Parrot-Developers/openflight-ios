@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina5_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -57,7 +57,7 @@
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jn5-cn-iNR">
-                                        <rect key="frame" x="35" y="334" width="666" height="60"/>
+                                        <rect key="frame" x="55" y="334" width="626" height="60"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="60" id="MGQ-d7-Der"/>
@@ -67,14 +67,20 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="tmc-0c-Ni9" secondAttribute="trailing" constant="80" id="1sl-yl-Te0"/>
-                                    <constraint firstItem="jn5-cn-iNR" firstAttribute="leading" secondItem="3LG-83-1wt" secondAttribute="leading" constant="35" id="5tS-3T-FxS"/>
+                                    <constraint firstItem="jn5-cn-iNR" firstAttribute="leading" secondItem="3LG-83-1wt" secondAttribute="leading" constant="40" id="5tS-3T-FxS">
+                                        <variation key="heightClass=compact-widthClass=regular" constant="55"/>
+                                        <variation key="heightClass=regular-widthClass=regular" constant="60"/>
+                                    </constraint>
                                     <constraint firstItem="tmc-0c-Ni9" firstAttribute="width" secondItem="QfY-7G-uYO" secondAttribute="width" id="7ph-cL-84j"/>
                                     <constraint firstItem="QfY-7G-uYO" firstAttribute="leading" secondItem="3LG-83-1wt" secondAttribute="leading" constant="80" id="9RM-1l-44C"/>
                                     <constraint firstItem="tmc-0c-Ni9" firstAttribute="leading" secondItem="QfY-7G-uYO" secondAttribute="trailing" constant="70" id="A3e-hM-h0A"/>
                                     <constraint firstItem="QfY-7G-uYO" firstAttribute="centerY" secondItem="3LG-83-1wt" secondAttribute="centerY" id="Lo9-g4-L4R"/>
                                     <constraint firstItem="tmc-0c-Ni9" firstAttribute="centerY" secondItem="3LG-83-1wt" secondAttribute="centerY" id="MLq-cU-8Zz"/>
                                     <constraint firstAttribute="bottom" secondItem="jn5-cn-iNR" secondAttribute="bottom" constant="20" id="Nah-kI-oc9"/>
-                                    <constraint firstAttribute="trailing" secondItem="jn5-cn-iNR" secondAttribute="trailing" constant="35" id="m5L-uL-m4y"/>
+                                    <constraint firstAttribute="trailing" secondItem="jn5-cn-iNR" secondAttribute="trailing" constant="40" id="m5L-uL-m4y">
+                                        <variation key="heightClass=compact-widthClass=regular" constant="55"/>
+                                        <variation key="heightClass=regular-widthClass=regular" constant="60"/>
+                                    </constraint>
                                 </constraints>
                             </view>
                             <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YpV-Yc-9vJ">

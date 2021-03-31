@@ -32,7 +32,7 @@ import UIKit
 
 // MARK: - Internal Enums
 /// List of critical alerts for HUD banner.
-enum HUDBannerCriticalAlertType: Int, HUDAlertType {
+public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     case motorCutout
     case motorCutoutTemperature
     case motorCutoutPowerSupply
@@ -44,6 +44,7 @@ enum HUDBannerCriticalAlertType: Int, HUDAlertType {
     case noGpsTooDark
     case noGpsTooHigh
     case noGps
+    case headingLockedKo
     case noGpsLapse
     case tooMuchWind
     case strongImuVibration
@@ -53,15 +54,19 @@ enum HUDBannerCriticalAlertType: Int, HUDAlertType {
     case geofenceAltitudeAndDistance
     case geofenceAltitude
     case geofenceDistance
-    case droneTooFar
-    case droneTooLow
-    case droneTooClose
+    case obstacleAvoidanceDroneStucked
+    case obstacleAvoidanceNoGpsTooHigh
+    case obstacleAvoidanceNoGpsTooDark
+    case obstacleAvoidanceTooDark
+    case obstacleAvoidanceSensorsFailure
+    case obstacleAvoidanceSensorsNotCalibrated
+    case obstacleAvoidanceDeteriorated
 
-    var level: HUDAlertLevel {
+    public var level: HUDAlertLevel {
         return .critical
     }
 
-    var category: AlertCategoryType {
+    public var category: AlertCategoryType {
         switch self {
         case .motorCutout,
              .motorCutoutTemperature,
@@ -76,7 +81,8 @@ enum HUDBannerCriticalAlertType: Int, HUDAlertType {
         case .noGpsTooDark,
              .noGpsTooHigh,
              .noGps,
-             .noGpsLapse:
+             .noGpsLapse,
+             .headingLockedKo:
             return .conditions
         case .tooMuchWind:
             return .conditionsWind
@@ -90,18 +96,22 @@ enum HUDBannerCriticalAlertType: Int, HUDAlertType {
              .geofenceAltitude,
              .geofenceDistance:
             return .geofence
-        case .droneTooClose,
-             .droneTooFar,
-             .droneTooLow:
-            return .followMe
+        case .obstacleAvoidanceDroneStucked,
+             .obstacleAvoidanceNoGpsTooHigh,
+             .obstacleAvoidanceNoGpsTooDark,
+             .obstacleAvoidanceTooDark,
+             .obstacleAvoidanceSensorsFailure,
+             .obstacleAvoidanceSensorsNotCalibrated,
+             .obstacleAvoidanceDeteriorated:
+            return .obstacleAvoidance
         }
     }
 
-    var priority: Int {
+    public var priority: String {
         return rawValue
     }
 
-    var label: String {
+    public var label: String {
         switch self {
         case .motorCutout:
             return L10n.alertMotorCutout
@@ -122,6 +132,8 @@ enum HUDBannerCriticalAlertType: Int, HUDAlertType {
             return L10n.alertNoGpsTooHigh
         case .noGps:
             return L10n.alertNoGps
+        case .headingLockedKo:
+            return L10n.alertHeadingLockKo
         case .noGpsLapse:
             return L10n.alertNoGpsGpslapse
         case .tooMuchWind:
@@ -138,16 +150,23 @@ enum HUDBannerCriticalAlertType: Int, HUDAlertType {
              .geofenceAltitude,
              .geofenceDistance:
             return L10n.alertGeofenceReached
-        case .droneTooFar:
-            return L10n.followMeDroneTooFarAway
-        case .droneTooLow:
-            return L10n.followMeDroneTooLow
-        case .droneTooClose:
-            return L10n.followMeSubjectTooClose
+        case .obstacleAvoidanceDroneStucked:
+            return L10n.alertDroneStuck
+        case .obstacleAvoidanceNoGpsTooHigh,
+             .obstacleAvoidanceNoGpsTooDark:
+            return L10n.alertNoAvoidanceNoGps
+        case .obstacleAvoidanceTooDark:
+            return L10n.alertNoAvoidanceTooDark
+        case .obstacleAvoidanceSensorsFailure:
+            return L10n.alertNoAvoidanceSensorsFailure
+        case .obstacleAvoidanceSensorsNotCalibrated:
+            return L10n.alertNoAvoidanceSensorsNotCalibrated
+        case .obstacleAvoidanceDeteriorated:
+            return L10n.alertAvoidanceDeteriorated
         }
     }
 
-    var icon: UIImage? {
+    public var icon: UIImage? {
         switch self {
         case .motorCutout,
              .motorCutoutTemperature,
@@ -174,14 +193,12 @@ enum HUDBannerCriticalAlertType: Int, HUDAlertType {
             return Asset.Telemetry.icAltitude.image
         case .geofenceDistance:
             return Asset.Telemetry.icDistance.image
-        case .droneTooLow:
-            return Asset.Telemetry.icAltitude.image
         default:
             return nil
         }
     }
 
-    var actionType: AlertActionType? {
+    public var actionType: AlertActionType? {
         switch self {
         case .veryLowBatteryLanding:
             return .landing
@@ -190,26 +207,22 @@ enum HUDBannerCriticalAlertType: Int, HUDAlertType {
         }
     }
 
-    var vibrationDelay: TimeInterval {
+    public var vibrationDelay: TimeInterval {
         switch self {
         case .veryLowBatteryLanding,
              .veryLowBattery:
             return 0.0
         default:
-            return Constants.defaultVibrationDelay
+            return HUDAlertConstants.defaultVibrationDelay
         }
     }
 }
 
 /// List of warning alerts for HUD banner.
-enum HUDBannerWarningAlertType: Int, HUDAlertType {
+public enum HUDBannerWarningAlertType: String, HUDAlertType {
     case cameraError
     case lowAndPerturbedWifi
-    case noAvoidanceStereoVisionKo
-    case noAvoidanceStereoVisionNotCalibrated
-    case noAvoidanceTooDark
-    case noAvoidanceNoData
-    case droneStuck
+    case obstacleAvoidanceDroneStucked
     case imuVibration
     case targetLost
     case droneGpsKo
@@ -217,21 +230,17 @@ enum HUDBannerWarningAlertType: Int, HUDAlertType {
     case unauthorizedFlightZone
     case unauthorizedFlightZoneWithMission
 
-    var level: HUDAlertLevel {
+    public var level: HUDAlertLevel {
         return .warning
     }
 
-    var category: AlertCategoryType {
+    public var category: AlertCategoryType {
         switch self {
         case .cameraError:
             return .componentsCamera
         case .lowAndPerturbedWifi:
             return .wifi
-        case .noAvoidanceStereoVisionKo,
-             .noAvoidanceStereoVisionNotCalibrated,
-             .noAvoidanceTooDark,
-             .noAvoidanceNoData,
-             .droneStuck:
+        case .obstacleAvoidanceDroneStucked:
             return .obstacleAvoidance
         case .imuVibration:
             return .componentsImu
@@ -245,29 +254,22 @@ enum HUDBannerWarningAlertType: Int, HUDAlertType {
         }
     }
 
-    var priority: Int {
+    public var priority: String {
         return rawValue
     }
 
-    var label: String {
+    public var label: String {
         switch self {
         case .cameraError:
             return L10n.alertCameraError
         case .lowAndPerturbedWifi:
             return L10n.alertLowAndPerturbedWifi
-        case .noAvoidanceStereoVisionKo:
-            return L10n.alertNoAvoidanceSensorsFailure
-        case .noAvoidanceStereoVisionNotCalibrated:
-            return L10n.alertNoAvoidanceSensorsNotCalibrated
-        case .noAvoidanceTooDark:
-            return L10n.alertNoAvoidanceTooDark
-        case .noAvoidanceNoData:
-            return L10n.alertNoAvoidanceNoData
-        case .droneStuck:
+        case .obstacleAvoidanceDroneStucked:
             return L10n.alertDroneStuck
         case .imuVibration:
             return L10n.alertImuVibrations
         case .targetLost:
+            // TODO: To move in FF in a warning enum (string + alert)
             return L10n.alertTargetLost
         case .droneGpsKo,
              .userDeviceGpsKo:
@@ -278,7 +280,7 @@ enum HUDBannerWarningAlertType: Int, HUDAlertType {
         }
     }
 
-    var icon: UIImage? {
+    public var icon: UIImage? {
         switch self {
         case .cameraError:
             return Asset.Common.Icons.iconCamera.image
@@ -293,40 +295,40 @@ enum HUDBannerWarningAlertType: Int, HUDAlertType {
         }
     }
 
-    var actionType: AlertActionType? {
+    public var actionType: AlertActionType? {
         return nil
     }
 
-    var vibrationDelay: TimeInterval {
+    public var vibrationDelay: TimeInterval {
         switch self {
         case .targetLost, .droneGpsKo, .userDeviceGpsKo:
             return 0.0
         default:
-            return Constants.defaultVibrationDelay
+            return HUDAlertConstants.defaultVibrationDelay
         }
     }
 }
 
 /// List of tutorial alerts for HUD banner.
-enum HUDBannerTutorialAlertType: Int, HUDAlertType {
+public enum HUDBannerTutorialAlertType: String, HUDAlertType {
     case takeOff
     case takeOffWaypoint
     case takeOffPoi
     case selectSubject
 
-    var level: HUDAlertLevel {
+    public var level: HUDAlertLevel {
         return .tutorial
     }
 
-    var category: AlertCategoryType {
+    public var category: AlertCategoryType {
         return .animations
     }
 
-    var priority: Int {
+    public var priority: String {
         return rawValue
     }
 
-    var label: String {
+    public var label: String {
         switch self {
         case .takeOff:
             return L10n.alertTakeOff
@@ -339,20 +341,15 @@ enum HUDBannerTutorialAlertType: Int, HUDAlertType {
         }
     }
 
-    var icon: UIImage? {
+    public var icon: UIImage? {
         return nil
     }
 
-    var actionType: AlertActionType? {
+    public var actionType: AlertActionType? {
         return nil
     }
 
-    var vibrationDelay: TimeInterval {
+    public var vibrationDelay: TimeInterval {
         return 0.0
     }
-}
-
-// MARK: - Private Enums
-private enum Constants {
-    static let defaultVibrationDelay: TimeInterval = 90.0
 }

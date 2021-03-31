@@ -68,7 +68,7 @@ final class ImagingBarShutterSpeedViewModel: AutomatableBarButtonViewModel<Autom
         let currentEditor = camera.currentEditor
         currentEditor[Camera2Params.shutterSpeed]?.value = shutterSpeed
         currentEditor[Camera2Params.exposureMode]?.value = camera.config[Camera2Params.exposureMode]?.value.toManualShutterSpeed()
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 
     override func toggleAutomaticMode() {
@@ -81,7 +81,7 @@ final class ImagingBarShutterSpeedViewModel: AutomatableBarButtonViewModel<Autom
         currentEditor[Camera2Params.exposureMode]?.value = exposureMode.automaticShutterSpeed ?
             exposureMode.toManualShutterSpeed() :
             exposureMode.toAutomaticShutterSpeed()
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 
     override func copy() -> ImagingBarShutterSpeedViewModel {

@@ -195,20 +195,20 @@ public extension FlightPlanManager {
                                             settings: [FlightPlanLightSetting],
                                             polygonPoints: [PolygonPoint]? = nil) {
         guard let currentFP = currentFlightPlanViewModel,
-            let uuid = currentFlightPlanViewModel?.state.value.uuid,
-            createCopy == false else {
+              let uuid = currentFlightPlanViewModel?.state.value.uuid,
+              createCopy == false else {
             // Create new FP.
             let title = titleFromDuplicateTitle(L10n.flightPlanNewProject)
             // Generate flightPlanData from mavlink.
-            let flightPlanData = type.fromMavlinkParser.generateFlightPlanFromMavlink(url: url,
-                                                                                      mavlinkString: nil,
-                                                                                      title: title,
-                                                                                      type: type.key,
-                                                                                      uuid: nil,
-                                                                                      settings: settings,
-                                                                                      polygonPoints: polygonPoints,
-                                                                                      version: FlightPlanConstants.defaultFlightPlanVersion,
-                                                                                      model: FlightPlanConstants.defaultDroneModel)
+            let flightPlanData = type.mavLinkType.generateFlightPlanFromMavlink(url: url,
+                                                                                mavlinkString: nil,
+                                                                                title: title,
+                                                                                type: type.key,
+                                                                                uuid: nil,
+                                                                                settings: settings,
+                                                                                polygonPoints: polygonPoints,
+                                                                                version: FlightPlanConstants.defaultFlightPlanVersion,
+                                                                                model: FlightPlanConstants.defaultDroneModel)
             // Save Mavlink into the intended Mavlink url if needed.
             if type.canGenerateMavlink == false {
                 flightPlanData?.copyMavlink(from: url)
@@ -223,15 +223,15 @@ public extension FlightPlanManager {
         let currentType = currentFP.state.value.type
         let product = currentFP.flightPlan?.product ?? FlightPlanConstants.defaultDroneModel
         // Generate flightPlanData from mavlink.
-        let flightPlanData = type.fromMavlinkParser.generateFlightPlanFromMavlink(url: url,
-                                                                                  mavlinkString: nil,
-                                                                                  title: title,
-                                                                                  type: currentType,
-                                                                                  uuid: nil,
-                                                                                  settings: settings,
-                                                                                  polygonPoints: polygonPoints,
-                                                                                  version: FlightPlanConstants.defaultFlightPlanVersion,
-                                                                                  model: product)
+        let flightPlanData = type.mavLinkType.generateFlightPlanFromMavlink(url: url,
+                                                                            mavlinkString: nil,
+                                                                            title: title,
+                                                                            type: currentType,
+                                                                            uuid: nil,
+                                                                            settings: settings,
+                                                                            polygonPoints: polygonPoints,
+                                                                            version: FlightPlanConstants.defaultFlightPlanVersion,
+                                                                            model: product)
         // Keep uuid.
         flightPlanData?.uuid = uuid
         // Save Mavlink into the intended Mavlink url if needed.
@@ -299,9 +299,9 @@ private extension FlightPlanManager {
         let similarTitles: [String] = CoreDataManager.shared.loadAllFlightPlanViewModels(predicate: nil)
             .compactMap({
                 guard let aTitle = $0.state.value.title,
-                    titleWithoutSuffix == textWithoutSuffix(aTitle)
-                    else {
-                        return nil
+                      titleWithoutSuffix == textWithoutSuffix(aTitle)
+                else {
+                    return nil
                 }
                 return aTitle
             })
@@ -313,9 +313,9 @@ private extension FlightPlanManager {
         similarTitles.forEach { text in
             // Find suffix.
             if let subString = matching(regexString: FlightPlanConstants.regexNameSuffix, text: text),
-                // Find integer in suffix.
-                let incrementString = matching(regexString: FlightPlanConstants.regexInt, text: subString),
-                let increment = Int(incrementString) {
+               // Find integer in suffix.
+               let incrementString = matching(regexString: FlightPlanConstants.regexInt, text: subString),
+               let increment = Int(incrementString) {
                 highestIncrement = increment > highestIncrement ? increment : highestIncrement
             }
         }
@@ -333,7 +333,7 @@ private extension FlightPlanManager {
         if let regex = try? NSRegularExpression(pattern: regexString) {
             let nsrange = NSRange(location: 0, length: text.count)
             if let patternRange = regex.matches(in: text, options: [], range: nsrange).last?.range,
-                let range = Range(patternRange, in: text) {
+               let range = Range(patternRange, in: text) {
                 return String(text[range])
             }
         }
@@ -346,8 +346,61 @@ private extension FlightPlanManager {
     ///     - text: text entry
     /// - Returns: text without suffix
     func textWithoutSuffix(_ text: String) -> String {
-        guard let suffix = matching(regexString: FlightPlanConstants.regexNameSuffix, text: text)
-            else { return text }
+        guard let suffix = matching(regexString: FlightPlanConstants.regexNameSuffix, text: text) else {
+            return text
+        }
+
         return String(text.prefix(text.count - suffix.count))
+    }
+}
+
+/// Utility extension for `FlightPlanInterpreter` MAVLink to Flight Plan conversion.
+// TODO: remove this when all Flight Plans use MavlinkStandard.
+private extension FlightPlanInterpreter {
+    /// Generates FlightPlan from MAVLink file at given URL or MAVLink string.
+    ///
+    /// - Parameters:
+    ///    - url: url of MAVLink file to parse
+    ///    - mavlinkString: MAVLink string to parse
+    ///    - title: title of FlightPlan to generate
+    ///    - type: Flight Plan type
+    ///    - uuid: Flight Plan ID
+    ///    - settings: Flight Plan settings
+    ///    - polygonPoints:Flight Plan polygon points
+    ///    - version: version of FlightPlan
+    ///    - model: model of drone for generated FlightPlan
+    ///
+    /// - Returns: generated `SavedFlightPlan` is operation succeeded, `nil` otherwise
+    func generateFlightPlanFromMavlink(url: URL? = nil,
+                                       mavlinkString: String? = nil,
+                                       title: String,
+                                       type: String? = nil,
+                                       uuid: String? = nil,
+                                       settings: [FlightPlanLightSetting] = [],
+                                       polygonPoints: [PolygonPoint]? = nil,
+                                       version: Int = FlightPlanConstants.defaultFlightPlanVersion,
+                                       model: Drone.Model) -> SavedFlightPlan? {
+        switch self {
+        case .legacy:
+            return MavlinkToFlightPlanParser.generateFlightPlanFromMavlinkLegacy(url: url,
+                                                                                 mavlinkString: mavlinkString,
+                                                                                 title: title,
+                                                                                 type: type,
+                                                                                 uuid: uuid,
+                                                                                 settings: settings,
+                                                                                 polygonPoints: polygonPoints,
+                                                                                 version: version,
+                                                                                 model: model)
+        case .standard:
+            return MavlinkToFlightPlanParser.generateFlightPlanFromMavlinkStandard(url: url,
+                                                                                   mavlinkString: mavlinkString,
+                                                                                   title: title,
+                                                                                   type: type,
+                                                                                   uuid: uuid,
+                                                                                   settings: settings,
+                                                                                   polygonPoints: polygonPoints,
+                                                                                   version: version,
+                                                                                   model: model)
+        }
     }
 }

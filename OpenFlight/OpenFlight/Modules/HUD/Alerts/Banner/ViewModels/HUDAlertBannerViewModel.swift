@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// State for `HUDAlertBannerViewModel`.
-
 final class HUDAlertBannerState: DeviceConnectionState {
     /// Alert to display.
     fileprivate(set) var alert: HUDAlertType?
@@ -59,9 +58,8 @@ final class HUDAlertBannerState: DeviceConnectionState {
 
     // MARK: - Override Funcs
     override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? HUDAlertBannerState else {
-            return false
-        }
+        guard let other = other as? HUDAlertBannerState else { return false }
+
         return super.isEqual(to: other)
             && (self.alert?.isSameAlert(as: other.alert) == true
                     || (self.alert == nil && other.alert == nil))
@@ -77,7 +75,6 @@ final class HUDAlertBannerState: DeviceConnectionState {
 
 /// View model for `HUDAlertBannerViewController`.
 /// Computes all current alerts and notifies on higher priority alert change.
-
 final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
     // MARK: - Private Properties
     private var alarmsRef: Ref<Alarms>?
@@ -87,16 +84,17 @@ final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
     private var radioRef: Ref<Radio>?
     private var gpsRef: Ref<Gps>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
-    private var followMePilotingItfRef: Ref<FollowMePilotingItf>?
     private var alertList = AlertList()
     private var lastVibrationTimestamps = [AlertCategoryType: TimeInterval]()
     private var geofenceViewModel = HUDAlertBannerGeofenceViewModel()
     private var autoLandingViewModel = HUDAlertBannerAutoLandingViewModel()
     private var userStorageViewModel = HUDAlertBannerUserStorageViewModel()
+    private var commonAlertViewModel = HUDAlertBannerProvider.shared.alertBannerCommonViewModel
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
+
         listenAlarms(drone: drone)
         listenMotors(drone: drone)
         listenCamera(drone: drone)
@@ -104,13 +102,15 @@ final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
         listenRadio(drone: drone)
         listenGps(drone: drone)
         listenFlyingIndicators(drone: drone)
-        listenFollowMeTrackingIssues(drone: drone)
         listenGeofence()
         listenAutoLanding()
         listenUserStorage()
+        listenCommonAlertViewModel()
     }
 }
 
+// MARK: - Private Funcs
+/// Listener Methods.
 private extension HUDAlertBannerViewModel {
     /// Starts watcher for alarms.
     func listenAlarms(drone: Drone) {
@@ -118,7 +118,7 @@ private extension HUDAlertBannerViewModel {
             self?.updateMotorsAlerts(drone)
             self?.updateConditionsAlerts(drone)
             self?.updateImuSaturationAlerts(drone)
-            self?.updateDroneStuckAlert(drone)
+            self?.updateObstacleAvoidanceAlerts(drone)
             self?.updateState()
         }
     }
@@ -145,23 +145,6 @@ private extension HUDAlertBannerViewModel {
             self?.alertList.cleanAlerts(withCategories: [.componentsCamera])
             if let alerts = gimbal?.currentAlerts {
                 self?.alertList.addAlerts(alerts)
-            }
-            self?.updateState()
-        }
-    }
-
-    /// Starts watcher for tracking issues.
-    func listenFollowMeTrackingIssues(drone: Drone) {
-        followMePilotingItfRef = drone.getPilotingItf(PilotingItfs.followMe) { [weak self] pilotingItf in
-            guard drone.isStateFlying,
-                  let followbehaviour = pilotingItf?.state,
-                  followbehaviour == .active else {
-                return
-            }
-
-            self?.alertList.cleanAlerts(withCategories: [.followMe])
-            if let followMeIssue = pilotingItf?.followMeAlerts {
-                self?.alertList.addAlerts(followMeIssue)
             }
             self?.updateState()
         }
@@ -221,15 +204,24 @@ private extension HUDAlertBannerViewModel {
         }
     }
 
-    /// Updates alerts for drone stuck.
-    func updateDroneStuckAlert(_ drone: Drone) {
-        alertList.cleanAlerts(withCategories: [.obstacleAvoidance])
-        guard drone.getPeripheral(Peripherals.obstacleAvoidance)?.mode.value == .standard,
-              drone.getInstrument(Instruments.alarms)?.getAlarm(kind: .droneStuck) != nil else {
-            return
+    /// Starts watcher for a common view model.
+    func listenCommonAlertViewModel() {
+        commonAlertViewModel?.state.valueChanged = { [weak self] state in
+            self?.alertList.cleanAlerts(withCategories: [.flightMode])
+            self?.alertList.addAlerts(state.alerts)
+            self?.updateState()
         }
+    }
+}
 
-        alertList.addAlerts(HUDAlertBannerSubState(alerts: [HUDBannerWarningAlertType.droneStuck]).alerts)
+/// State update Methods.
+private extension HUDAlertBannerViewModel {
+    /// Updates obstacle avoidance alerts.
+    func updateObstacleAvoidanceAlerts(_ drone: Drone) {
+        alertList.cleanAlerts(withCategories: [.obstacleAvoidance])
+        if let alerts = drone.getInstrument(Instruments.alarms)?.obastacleAvoidanceAlerts(drone: drone) {
+            alertList.addAlerts(alerts)
+        }
     }
 
     /// Updates alerts for motors.
@@ -270,11 +262,13 @@ private extension HUDAlertBannerViewModel {
             } else {
                 shouldVibrate = true
             }
+
             // Save last vibration timestamp.
             if shouldVibrate {
                 lastVibrationTimestamps[newAlert.category] = Date.timeIntervalSinceReferenceDate
             }
         }
+
         let copy = state.value.copy()
         copy.alert = alertList.mainAlert
         copy.shouldVibrate = shouldVibrate

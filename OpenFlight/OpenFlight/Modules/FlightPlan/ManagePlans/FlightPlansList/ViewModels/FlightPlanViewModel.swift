@@ -43,7 +43,7 @@ final class GraphicTapListener: NSObject {
 }
 
 /// Alias for `GraphicTapListener` closure.
-typealias GraphicTapListenerClosure = (FlightPlanGraphic) -> Void
+typealias GraphicTapListenerClosure = (FlightPlanGraphic?) -> Void
 
 // MARK: - FlightPlanCourseModificationListener
 /// Listener for Flight Plan's course modification.
@@ -55,9 +55,9 @@ final class FlightPlanCourseModificationListener: NSObject {
     }
 }
 
-// MARK: - FlightPlanPOIModificationListener
-/// Listener for Flight Plan's POI modification.
-final class FlightPlanPOIModificationListener: NSObject {
+// MARK: - FlightPlanPointOfViewModificationListener
+/// Listener for Flight Plan's POI and waypoint orientation modification.
+final class FlightPlanPointOfViewModificationListener: NSObject {
     let didChange: () -> Void
 
     init(didChange: @escaping () -> Void) {
@@ -223,9 +223,12 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     }()
 
     lazy var runFlightPlanViewModel: RunFlightPlanViewModel = {
-        return RunFlightPlanViewModel(flightPlanViewModel: self) { [weak self] state in
+        let runFlightPlanViewModel = RunFlightPlanViewModel(flightPlanViewModel: self)
+        runFlightPlanViewModel.state.valueChanged = { [weak self] state in
             self?.runFlightPlanListeners.forEach { $0.didChange(state) }
         }
+
+        return runFlightPlanViewModel
     }()
 
     // MARK: - FlightViewModelProtocol Properties
@@ -264,16 +267,15 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     private var runFlightPlanListeners: Set<RunFlightPlanListener> = []
     private var graphicTapListeners: Set<GraphicTapListener> = []
     private var courseModificationListeners: Set<FlightPlanCourseModificationListener> = []
-    private var poiModificationListeners: Set<FlightPlanPOIModificationListener> = []
+    private var povModificationListeners: Set<FlightPlanPointOfViewModificationListener> = []
 
     // MARK: - Init
     /// Init.
     ///
     /// - Parameters:
     ///     - flightPlan: Flight Plan object
-    ///     - stateDidUpdate: completion block to notify state changes
-    public init(flightPlan: SavedFlightPlan?, stateDidUpdate: ((FlightPlanState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    public init(flightPlan: SavedFlightPlan?) {
+        super.init()
 
         if let data = flightPlan {
             self.flightPlan = data
@@ -287,7 +289,7 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     /// - Parameters:
     ///     - state: Flight Plan state
     public init(state: FlightPlanState) {
-        super.init(stateDidUpdate: nil)
+        super.init()
 
         self.state.set(state)
         updateEstimations()
@@ -361,6 +363,7 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
         let copy = self.state.value.copy()
         copy.polygonPoints = polygonPoints
         self.save(copy)
+        didChangeCourse()
     }
 
     /// Update Flight Plan Extra Data.
@@ -456,9 +459,7 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     ///
     /// - Parameters:
     ///    - item: item to select
-    func didTapGraphicalItem(_ item: FlightPlanGraphic) {
-        guard item.itemType.selectable else { return }
-
+    func didTapGraphicalItem(_ item: FlightPlanGraphic?) {
         self.graphicTapListeners.forEach { $0.didChange(item) }
     }
 
@@ -467,9 +468,9 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
         self.courseModificationListeners.forEach { $0.didChange() }
     }
 
-    /// Notifies listeners when Flight Plan's POI is modified.
-    func didChangePOI() {
-        self.poiModificationListeners.forEach { $0.didChange() }
+    /// Notifies listeners when a Flight Plan's point of view is modified.
+    func didChangePointOfView() {
+        self.povModificationListeners.forEach { $0.didChange() }
     }
 
     /// Starts waypoint orientation edition.
@@ -575,25 +576,25 @@ extension FlightPlanViewModel {
 
 // MARK: - FlightPlanPOIModificationListeners
 extension FlightPlanViewModel {
-    /// Registers a listener for POI modification.
+    /// Registers a listener for point of view modification.
     ///
     /// - Parameters:
     ///    - didChange: listener's closure
     /// - Returns: registered listener
-    func registerPOIModificationListener(didChange: @escaping () -> Void) -> FlightPlanPOIModificationListener {
-        let listener = FlightPlanPOIModificationListener(didChange: didChange)
-        poiModificationListeners.insert(listener)
+    func registerPOVModificationListener(didChange: @escaping () -> Void) -> FlightPlanPointOfViewModificationListener {
+        let listener = FlightPlanPointOfViewModificationListener(didChange: didChange)
+        povModificationListeners.insert(listener)
 
         return listener
     }
 
-    /// Removes previously registered `FlightPlanPOIModificationListener`.
+    /// Removes previously registered `FlightPlanPointOfViewModificationListener`.
     ///
     /// - Parameters:
     ///    - listener: listener to remove
-    func unregisterPOIModificationListener(_ listener: FlightPlanPOIModificationListener?) {
+    func unregisterPOVModificationListener(_ listener: FlightPlanPointOfViewModificationListener?) {
         guard let listener = listener else { return }
 
-        self.poiModificationListeners.remove(listener)
+        self.povModificationListeners.remove(listener)
     }
 }

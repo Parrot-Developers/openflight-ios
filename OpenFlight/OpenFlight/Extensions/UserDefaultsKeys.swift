@@ -80,17 +80,15 @@ public extension DefaultsKeys {
     // Controls settings
     var userControlModeSetting: DefaultsKey<String?> { .init("key_userControlModeSetting") }
     var userControlModeArcadeSetting: DefaultsKey<String?> { .init("key_userControlModeArcadeSetting") }
-    var arcadeTiltReversedSetting: DefaultsKey<Bool?> { .init("key_arcadeTiltReversedSetting") }
-    var evTriggerSetting: DefaultsKey<Bool?> { .init("key_evTriggerSetting") }
+    var arcadeTiltReversedSetting: DefaultsKey<Bool> { .init("key_arcadeTiltReversedSetting", defaultValue: false) }
+    var evTriggerSetting: DefaultsKey<Bool> { .init("key_evTriggerSetting", defaultValue: false) }
     var userShowMiniMapSetting: DefaultsKey<String?> { .init("key_userShowMiniMapSetting") }
 
     // MARK: - Camera
     var overexposureSetting: DefaultsKey<String?> { DefaultsKeys.overexposureSettingKey }
     var hdrModeSetting: DefaultsKey<String?> { .init("key_hdrModeSetting") }
-    var isPhotoTimerActivated: DefaultsKey<Bool> { .init("key_isPhotoTimerActivated", defaultValue: false) }
     var isPanoramaModeActivated: DefaultsKey<Bool> { .init("key_isPanoramaModeActivated", defaultValue: false) }
     var userPanoramaSetting: DefaultsKey<String> { DefaultsKeys.userPanoramaSettingKey }
-    var userPhotoTimerDelaySetting: DefaultsKey<String> { DefaultsKeys.userPhotoTimerDelaySettingKey }
     var isImagingAutoModeActive: DefaultsKey<Bool> { .init("key_isImagingAutoModeActive", defaultValue: true) }
     var lastShutterSpeedValue: DefaultsKey<String?> { .init("key_lastShutterSpeedValue") }
     var lastCameraIsoValue: DefaultsKey<String?> { .init("key_lastCameraIsoValue") }
@@ -127,10 +125,6 @@ public extension DefaultsKeys {
     var localMediaCounts: DefaultsKey<[String: Any]?> { .init("key_localMediaCounts") }
     var mediasDatesGallery: DefaultsKey<[String: Any]?> { .init("key_mediasDates") }
     var mediasRunUidGallery: DefaultsKey<[String: Any]?> { .init("key_mediasRunUid") }
-
-    // MARK: - Live Streaming
-    var liveStreaming: DefaultsKey<Bool?> { DefaultsKeys.liveStreamingKey }
-    var liveStreamingUrlList: DefaultsKey<Data?> { .init("key_liveStreamingUrlData") }
 
     // MARK: - Cellular Access
     var networkUsername: DefaultsKey<String?> { DefaultsKeys.networkUsernameKey }
@@ -172,8 +166,6 @@ public extension DefaultsKeys {
 
     // MARK: - Camera
     static let overexposureSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_overexposureSetting")
-    static let userPhotoTimerDelaySettingKey: DefaultsKey<String> = DefaultsKey<String>("key_userPhotoTimerDelaySetting",
-                                                                                        defaultValue: TimerMode.fiveSeconds.rawValue)
     static let userPanoramaSettingKey: DefaultsKey<String> = DefaultsKey<String>("key_userPanoramaSetting", defaultValue: PanoramaMode.vertical.rawValue)
 
     // MARK: - Last sync dates
@@ -185,9 +177,6 @@ public extension DefaultsKeys {
     // MARK: - Drone
     static let lastDroneLocationKey: DefaultsKey<Data?> = DefaultsKey<Data?>("key_lastDroneLocation")
     static let lastDroneHeadingKey: DefaultsKey<Double?> = DefaultsKey<Double?>("key_lastDroneHeading")
-
-    // MARK: - Live Streaming
-    static let liveStreamingKey: DefaultsKey<Bool?> = DefaultsKey<Bool?>("key_isLiveStreamingActivated", defaultValue: false)
 
     // MARK: - Cellular Access
     static let networkUsernameKey: DefaultsKey<String?> = DefaultsKey<String?>("key_networkUsername")

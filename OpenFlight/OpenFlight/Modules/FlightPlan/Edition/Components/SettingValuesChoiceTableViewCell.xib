@@ -62,7 +62,6 @@
                 <outlet property="disableView" destination="xcU-gV-K1P" id="czX-4H-Cu8"/>
                 <outlet property="settingValuesStackView" destination="zli-GB-lKU" id="8fG-Km-gyl"/>
                 <outlet property="titleLabel" destination="QEA-XM-Hd7" id="SUR-2h-n88"/>
-                <outlet property="trailingConstraint" destination="Vy6-NS-SR6" id="wcX-Wd-OvU"/>
             </connections>
             <point key="canvasLocation" x="-112" y="141.67916041979012"/>
         </tableViewCell>

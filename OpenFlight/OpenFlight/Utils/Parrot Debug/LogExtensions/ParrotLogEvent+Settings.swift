@@ -51,10 +51,8 @@ extension LogEvent {
 
     /// Enum which stores advanced settings keys for log messages.
     enum LogKeyAdvancedSettings {
-        static let behavior: String = "Behavior"
         static let filmMode: String = "FilmMode"
         static let sportMode: String = "SportMode"
-        static let globalReactivity: String = "GlobalReactivity"
         static let horizon: String = "Horizon"
         static let cameraTiltSpeed: String = "CameraTiltSpeed"
         static let bankedTurn: String = "BankedTurn"

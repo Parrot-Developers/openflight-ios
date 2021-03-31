@@ -73,10 +73,10 @@ public extension AGSGeometryEngine {
                                      curveType: AGSGeodeticCurveType = .geodesic) -> AGSPoint? {
         return geodeticMove([point],
                             distance: distance,
-                            distanceUnit: .meters(),
+                            distanceUnit: distanceUnit,
                             azimuth: azimuth,
-                            azimuthUnit: .radians(),
-                            curveType: .geodesic)?.first
+                            azimuthUnit: azimuthUnit,
+                            curveType: curveType)?.first
     }
 
     /// Computes geodetic move for given array of points with standard default
@@ -98,9 +98,9 @@ public extension AGSGeometryEngine {
                                      curveType: AGSGeodeticCurveType = .geodesic) -> [AGSPoint]? {
         return geodeticMove(points,
                             distance: distance,
-                            distanceUnit: .meters(),
+                            distanceUnit: distanceUnit,
                             azimuth: azimuth,
-                            azimuthUnit: .radians(),
-                            curveType: .geodesic)
+                            azimuthUnit: azimuthUnit,
+                            curveType: curveType)
     }
 }

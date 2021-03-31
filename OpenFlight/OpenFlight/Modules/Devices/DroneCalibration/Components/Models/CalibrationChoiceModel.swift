@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import GroundSdk
 
 /// Model for calibration choice view.
 struct CalibrationChoiceModel {
@@ -69,5 +70,26 @@ struct CalibrationChoiceModel {
         self.subText = subText
         self.subTextColor = subTextColor
         self.backgroundColor = backgroundColor
+    }
+
+    // MARK: - Internal Funcs
+    /// Updates model with given set of calibrations.
+    ///
+    /// - Parameters:
+    ///     - state: drone calibration state.
+    mutating func update(state: DroneCalibrationState) {
+        if state.frontStereoGimbalState == .needed {
+            subText = state.frontStereoGimbalState?.description ?? ""
+            subTextColor = .redTorch
+        } else {
+            subText = state.gimbalCalibrationDescription
+            subTextColor = state.gimbalCalibrationTextColor ?? .white50
+        }
+
+        if state.gimbalState == .needed || state.frontStereoGimbalState == .needed {
+            backgroundColor = .redTorch25
+        } else {
+            backgroundColor = .white10
+        }
     }
 }

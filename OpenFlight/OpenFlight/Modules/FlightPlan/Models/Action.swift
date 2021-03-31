@@ -38,6 +38,7 @@ enum ActionType: String, Codable {
     case rth = "RTH"
     case tilt = "Tilt"
     case delay = "Delay"
+    // TODO: remove Image Start/Stop Capture commands and use CameraTrigger{Distance,Interval}Command if only Time/GPS lapse is needed.
     case imageStartCapture = "ImageStartCapture"
     case imageStopCapture = "ImageStopCapture"
     case videoStartCapture = "VideoStartCapture"
@@ -133,39 +134,41 @@ public final class Action: Codable {
         }
     }
 
-    var captureMode: SetStillCaptureModeCommand.Mode?
+    var captureMode: MavlinkStandard.SetStillCaptureModeCommand.PhotoMode?
 
     /// MAVLink command depending on action type.
-    var mavlinkCommand: MavlinkCommand {
+    var mavlinkCommand: MavlinkStandard.MavlinkCommand {
         switch type {
         case .takeOff:
-            return TakeOffCommand()
+            return MavlinkStandard.TakeOffCommand()
         case .rth:
-            return ReturnToLaunchCommand()
+            return MavlinkStandard.ReturnToLaunchCommand()
         case .landing:
-            return LandCommand()
+            return MavlinkStandard.LandCommand()
         case .tilt:
-            return MountControlCommand(tiltAngle: angle ?? 0.0)
+            // TODO: handle yaw.
+            return MavlinkStandard.MountControlCommand(tiltAngle: angle ?? 0.0, yaw: 0.0)
         case .delay:
-            return DelayCommand(delay: delay ?? 0.0)
+            return MavlinkStandard.DelayCommand(delay: delay ?? 0.0)
         case .imageStartCapture:
-            return StartPhotoCaptureCommand(interval: period ?? 0.0,
-                                            count: nbOfPictures ?? 0,
-                                            format: photoFormat?.photoCaptureCommandFormat ?? .rectilinear)
+            // TODO: set sequenceNumber to 1 if it is a single capture.
+            return MavlinkStandard.StartPhotoCaptureCommand(interval: period ?? 0.0,
+                                                            count: nbOfPictures ?? 0,
+                                                            sequenceNumber: 0)
         case .imageStopCapture:
-            return StopPhotoCaptureCommand()
+            return MavlinkStandard.StopPhotoCaptureCommand()
         case .videoStartCapture:
-            return StartVideoCaptureCommand()
+            return MavlinkStandard.StartVideoCaptureCommand()
         case .videoStopCapture:
-            return StopVideoCaptureCommand()
+            return MavlinkStandard.StopVideoCaptureCommand()
         case .panorama:
-            return CreatePanoramaCommand(horizontalAngle: angle ?? 0.0,
-                                         horizontalSpeed: speed ?? 0.0,
-                                         verticalAngle: 0.0,
-                                         verticalSpeed: 0.0)
+            return MavlinkStandard.CreatePanoramaCommand(horizontalAngle: angle ?? 0.0,
+                                                         horizontalSpeed: speed ?? 0.0,
+                                                         verticalAngle: 0.0,
+                                                         verticalSpeed: 0.0)
         case .stillCapture:
-            return SetStillCaptureModeCommand(mode: captureMode ?? .timelapse,
-                                              interval: period ?? 0.0)
+            // TODO: handle photo mode.
+            return MavlinkStandard.SetStillCaptureModeCommand(mode: captureMode ?? .rectilinear)
         }
     }
 
@@ -212,36 +215,34 @@ public final class Action: Codable {
     ///
     /// - Parameters:
     ///    - mavLinkCommand: Mavlink command
-    public convenience init?(mavLinkCommand: MavlinkCommand) {
+    public convenience init?(mavLinkCommand: MavlinkStandard.MavlinkCommand) {
         switch mavLinkCommand {
-        case is TakeOffCommand:
+        case is MavlinkStandard.TakeOffCommand:
             self.init(type: .takeOff)
-        case is LandCommand:
+        case is MavlinkStandard.LandCommand:
             self.init(type: .landing)
-        case let command as MountControlCommand:
+        case let command as MavlinkStandard.MountControlCommand:
             self.init(type: .tilt)
             self.angle = command.tiltAngle
-        case let command as DelayCommand:
+        case let command as MavlinkStandard.DelayCommand:
             self.init(type: .delay)
             self.delay = command.delay
-        case let command as StartPhotoCaptureCommand:
+        case let command as MavlinkStandard.StartPhotoCaptureCommand:
             self.init(type: .imageStartCapture)
             self.period = command.interval
             self.nbOfPictures = command.count
-            self.photoFormat = command.format.photoFormat
-        case is StopPhotoCaptureCommand:
+        case is MavlinkStandard.StopPhotoCaptureCommand:
             self.init(type: .imageStopCapture)
-        case is StartVideoCaptureCommand:
+        case is MavlinkStandard.StartVideoCaptureCommand:
             self.init(type: .videoStartCapture)
-        case is StopVideoCaptureCommand:
+        case is MavlinkStandard.StopVideoCaptureCommand:
             self.init(type: .videoStopCapture)
-        case let command as CreatePanoramaCommand:
+        case let command as MavlinkStandard.CreatePanoramaCommand:
             self.init(type: .panorama)
             self.angle = command.horizontalAngle
             self.speed = command.horizontalSpeed
-        case let command as SetStillCaptureModeCommand:
+        case let command as MavlinkStandard.SetStillCaptureModeCommand:
             self.init(type: .stillCapture)
-            self.period = command.interval
             self.captureMode = command.mode
         default:
             // FIXME: Remove this print when all MavLink commands management will be approved.

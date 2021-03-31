@@ -45,9 +45,9 @@ protocol ModesChoiceTableViewCellDelegate: class {
 final class ModesChoiceTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var modesStackView: UIStackView!
+    @IBOutlet private weak var modeLabel: UILabel!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var modesBackgroundView: UIView!
-    @IBOutlet private weak var trailingConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var delegate: ModesChoiceTableViewCellDelegate?
@@ -62,14 +62,6 @@ final class ModesChoiceTableViewCell: UITableViewCell, NibReusable {
     override func prepareForReuse() {
         super.prepareForReuse()
         resetView()
-    }
-
-    /// Updates the trailing constraint of the cell.
-    ///
-    /// - Parameters:
-    ///     - width: witdh of the trailing constraint
-    func updateTrailingConstraint(_ width: CGFloat) {
-        trailingConstraint.constant = width
     }
 }
 
@@ -89,8 +81,10 @@ private extension ModesChoiceTableViewCell {
 private extension ModesChoiceTableViewCell {
     /// Inits the view.
     func initView() {
-        titleLabel.makeUp()
-        titleLabel.text = L10n.commonMode
+        backgroundColor = .clear
+        modeLabel.makeUp()
+        titleLabel.makeUp(with: .small, and: .white50)
+        titleLabel.text = L10n.commonMode.uppercased()
         modesBackgroundView.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
                                                radius: Style.largeCornerRadius)
     }
@@ -135,6 +129,7 @@ extension ModesChoiceTableViewCell {
                              for: .touchUpInside)
             modesStackView.addArrangedSubview(button)
         }
+        modeLabel.text = settingsProvider?.currentType?.title
         updateType(tag: settingsProvider?.currentType?.tag)
     }
 }

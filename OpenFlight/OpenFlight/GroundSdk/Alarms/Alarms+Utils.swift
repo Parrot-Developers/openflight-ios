@@ -43,9 +43,11 @@ extension Alarms {
         if getAlarm(kind: .hoveringDifficultiesNoGpsTooDark).hasError {
             alerts.append(HUDBannerCriticalAlertType.noGpsTooDark)
         }
+
         if getAlarm(kind: .hoveringDifficultiesNoGpsTooHigh).hasError {
             alerts.append(HUDBannerCriticalAlertType.noGpsTooHigh)
         }
+
         if drone.getInstrument(Instruments.gps)?.fixed == false,
             drone.isStateFlying {
             if drone.currentCamera?.isGpsLapseStarted == true {
@@ -54,9 +56,65 @@ extension Alarms {
                 alerts.append(HUDBannerCriticalAlertType.noGps)
             }
         }
+
+        if getAlarm(kind: .magnetometerPertubation).hasError {
+            alerts.append(HUDBannerCriticalAlertType.headingLockedKo)
+        }
+
         if getAlarm(kind: .wind).hasError {
             alerts.append(HUDBannerCriticalAlertType.tooMuchWind)
         }
+
+        return alerts
+    }
+
+    /// Computes current obstacle avoidance alerts.
+    ///
+    /// - Parameters:
+    ///    - drone: current drone
+    /// - Returns: an array containing current obstacle avoidance alerts
+    func obastacleAvoidanceAlerts(drone: Drone) -> [HUDAlertType] {
+        var alerts = [HUDAlertType]()
+
+        // Checks alert for sensors failure.
+        if getAlarm(kind: Alarm.Kind.obstacleAvoidanceDisabledStereoFailure).hasError
+            || getAlarm(kind: Alarm.Kind.obstacleAvoidanceDisabledStereoLensFailure).hasError
+            || getAlarm(kind: Alarm.Kind.obstacleAvoidanceDisabledGimbalFailure).hasError {
+            alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceSensorsFailure)
+        }
+
+        // Checks alert for no gps, environnement too dark.
+        if getAlarm(kind: Alarm.Kind.hoveringDifficultiesNoGpsTooDark).hasError
+            && drone.getPeripheral(Peripherals.obstacleAvoidance)?.mode.value == .standard {
+            alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceNoGpsTooDark)
+        }
+
+        // Checks alert for no gps, drone too high.
+        if getAlarm(kind: Alarm.Kind.hoveringDifficultiesNoGpsTooHigh).hasError
+            && drone.getPeripheral(Peripherals.obstacleAvoidance)?.mode.value == .standard {
+            alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceNoGpsTooHigh)
+        }
+
+        // Checks alert for stereo sensors calibration.
+        if getAlarm(kind: Alarm.Kind.obstacleAvoidanceDisabledCalibrationFailure).hasError {
+            alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceSensorsNotCalibrated)
+        }
+
+        // Checks alert for environnement too dark.
+        if getAlarm(kind: Alarm.Kind.obstacleAvoidanceDisabledTooDark).hasError {
+            alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceTooDark)
+        }
+
+        // Check alert for manual piloting with poor gps quality and with obstacle avoidance in degraded mode.
+        if getAlarm(kind: Alarm.Kind.obstacleAvoidanceDegraded).hasError {
+            alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceDeteriorated)
+        }
+
+        // Checks alert for drone stuck.
+        if getAlarm(kind: Alarm.Kind.droneStuck).hasError {
+            alerts.append(HUDBannerWarningAlertType.obstacleAvoidanceDroneStucked)
+        }
+
         return alerts
     }
 

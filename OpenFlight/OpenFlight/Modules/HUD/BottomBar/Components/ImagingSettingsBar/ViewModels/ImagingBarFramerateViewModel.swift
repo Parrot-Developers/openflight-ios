@@ -51,15 +51,14 @@ final class ImagingBarFramerateViewModel: BarButtonViewModel<ImagingBarState> {
 
     override func update(mode: BarItemMode) {
         guard let camera = drone?.currentCamera,
-            !camera.config.updating,
-            let framerate = mode as? Camera2RecordingFramerate
-            else {
-                return
+              !camera.config.updating,
+              let framerate = mode as? Camera2RecordingFramerate else {
+            return
         }
 
         let currentEditor = camera.currentEditor
         currentEditor[Camera2Params.videoRecordingFramerate]?.value = framerate
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 }
 
@@ -69,11 +68,11 @@ private extension ImagingBarFramerateViewModel {
     func listenCamera(drone: Drone) {
         cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
             guard let camera = camera,
-                let copy = self?.state.value.copy(),
-                let availableFramerates = self?.availableFramerates
-                else {
-                    return
+                  let copy = self?.state.value.copy(),
+                  let availableFramerates = self?.availableFramerates else {
+                return
             }
+
             copy.mode = camera.config[Camera2Params.videoRecordingFramerate]?.value
 
             // Setup a camera configuration editor in order to compute which video recording framerates

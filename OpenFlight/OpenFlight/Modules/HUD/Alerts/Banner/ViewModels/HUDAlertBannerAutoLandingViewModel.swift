@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// View model for auto landing alerts.
-
 final class HUDAlertBannerAutoLandingViewModel: DroneWatcherViewModel<HUDAlertBannerSubState> {
     // MARK: - Private Properties
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?

@@ -35,7 +35,7 @@ import UIKit
 final class SettingsGeofenceViewController: SettingsContentViewController {
     // MARK: - Private Properties
     private var maxGridHeight: CGFloat = 200.0
-    private var geofenceViewModel: GeofenceViewModel?
+    private let geofenceViewModel = GeofenceViewModel()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -49,9 +49,9 @@ final class SettingsGeofenceViewController: SettingsContentViewController {
         resetCellLabel = L10n.settingsGeofenceReset
 
         // Setup view model.
-        geofenceViewModel = GeofenceViewModel(stateDidUpdate: { [weak self] state in
+        geofenceViewModel.state.valueChanged = { [weak self] state in
             self?.updateDataSource(state)
-        })
+        }
 
         // Inital data source update.
         updateDataSource()
@@ -76,7 +76,7 @@ final class SettingsGeofenceViewController: SettingsContentViewController {
                              newValue: nil,
                              logType: .button)
 
-        geofenceViewModel?.resetSettings()
+        geofenceViewModel.resetSettings()
     }
 }
 
@@ -110,8 +110,6 @@ private extension SettingsGeofenceViewController {
     ///     - indexPath: cell indexPath
     /// - Returns: UITableViewCell
     func configureGridCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
-        guard let geofenceViewModel = geofenceViewModel else { return UITableViewCell() }
-
         let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsGridTableViewCell
         cell.configureCell(viewModel: geofenceViewModel, maxGridHeight: maxGridHeight, delegate: self)
 
@@ -123,9 +121,7 @@ private extension SettingsGeofenceViewController {
     /// - Parameters:
     ///     - state: Geofence state
     func updateDataSource(_ state: GeofenceState = GeofenceState()) {
-        guard let updatedSettings = geofenceViewModel?.settingEntries else { return }
-
-        settings = updatedSettings
+        settings = geofenceViewModel.settingEntries
     }
 }
 

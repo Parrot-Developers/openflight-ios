@@ -42,9 +42,10 @@ final class BehavioursViewController: SettingsContentViewController {
         resetCellLabel = L10n.settingsBehaviourReset(SettingsBehavioursMode.current.title)
 
         // Setup view model.
-        viewModel = BehavioursViewModel(stateDidUpdate: { [weak self] state in
+        viewModel = BehavioursViewModel()
+        viewModel?.state.valueChanged = { [weak self] state in
             self?.updateDataSource(state)
-        })
+        }
         viewModel?.infoHandler = { [weak self] modeType in
             self?.showInfo(modeType)
         }

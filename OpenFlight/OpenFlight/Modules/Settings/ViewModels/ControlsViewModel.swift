@@ -151,8 +151,8 @@ final class ControlsViewModel: DevicesStateViewModel<ControlsState> {
     }
 
     // MARK: - Init
-    override init(stateDidUpdate: ((ControlsState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
 
         // Init content regarding data.
         if !Defaults.hasKey(\.userControlModeSetting) {
@@ -197,8 +197,8 @@ final class ControlsViewModel: DevicesStateViewModel<ControlsState> {
     // MARK: - Internal Funcs
     /// Reset settings to default values.
     func resetSettings() {
-        Defaults.arcadeTiltReversedSetting = nil
-        Defaults.evTriggerSetting = nil
+        Defaults.arcadeTiltReversedSetting = false
+        Defaults.evTriggerSetting = false
         updateRemoteMapping(withMode: ControlsSettingsMode.defaultMode(for: self.state.value.currentPilotingStyle))
         drone?.getPilotingItf(PilotingItfs.manualCopter)?.thrownTakeOffSettings?.value = PilotingPreset.thrownTakeOff
     }

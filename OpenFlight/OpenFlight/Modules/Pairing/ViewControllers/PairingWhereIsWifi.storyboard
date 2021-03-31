@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ppx-C8-4WC">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Pairing Where Is Wifi View Controller-->
+        <scene sceneID="4OQ-Jq-Rws">
+            <objects>
+                <viewController storyboardIdentifier="PairingWhereIsWifiViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ppx-C8-4WC" customClass="PairingWhereIsWifiViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="zjt-1L-dIj">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="97l-6O-5hl">
+                                <rect key="frame" x="36" y="44" width="342" height="85"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zWg-aH-93u">
+                                        <rect key="frame" x="0.0" y="25" width="21" height="22"/>
+                                        <state key="normal" image="ic_back"/>
+                                        <connections>
+                                            <action selector="backButtonTouchedUpInside:" destination="ppx-C8-4WC" eventType="touchUpInside" id="BhD-Mj-NcB"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aob-mD-7ms" userLabel="Title">
+                                        <rect key="frame" x="40" y="25" width="262" height="19"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="aob-mD-7ms" firstAttribute="centerX" secondItem="97l-6O-5hl" secondAttribute="centerX" id="KY7-ft-YyY"/>
+                                    <constraint firstAttribute="trailing" secondItem="aob-mD-7ms" secondAttribute="trailing" constant="40" id="MDt-dS-GPX"/>
+                                    <constraint firstItem="aob-mD-7ms" firstAttribute="leading" secondItem="zWg-aH-93u" secondAttribute="leading" constant="40" id="N1P-y0-STM"/>
+                                    <constraint firstItem="aob-mD-7ms" firstAttribute="top" secondItem="97l-6O-5hl" secondAttribute="top" constant="25" id="VwS-cg-pOR"/>
+                                    <constraint firstItem="zWg-aH-93u" firstAttribute="leading" secondItem="97l-6O-5hl" secondAttribute="leading" id="WUr-ZU-zN4"/>
+                                    <constraint firstAttribute="height" constant="85" id="rVr-Yf-sCa"/>
+                                    <constraint firstItem="zWg-aH-93u" firstAttribute="top" secondItem="97l-6O-5hl" secondAttribute="top" constant="25" id="rn5-oD-ckm"/>
+                                </constraints>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="6" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="caF-gQ-Dii">
+                                <rect key="frame" x="100" y="34" width="214" height="828"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="C9l-wk-EWq"/>
+                        <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="caF-gQ-Dii" firstAttribute="centerX" secondItem="97l-6O-5hl" secondAttribute="centerX" id="1wY-At-dQc"/>
+                            <constraint firstItem="caF-gQ-Dii" firstAttribute="leading" secondItem="C9l-wk-EWq" secondAttribute="leading" constant="100" id="Uxh-Pp-Cqb">
+                                <variation key="heightClass=regular-widthClass=compact" constant="40"/>
+                            </constraint>
+                            <constraint firstItem="C9l-wk-EWq" firstAttribute="bottom" secondItem="caF-gQ-Dii" secondAttribute="bottom" id="Yup-Lk-cTW"/>
+                            <constraint firstItem="97l-6O-5hl" firstAttribute="top" secondItem="C9l-wk-EWq" secondAttribute="top" id="amh-Us-Op8"/>
+                            <constraint firstItem="caF-gQ-Dii" firstAttribute="centerY" secondItem="zjt-1L-dIj" secondAttribute="centerY" id="aoV-Dc-hJE"/>
+                            <constraint firstItem="C9l-wk-EWq" firstAttribute="trailing" secondItem="97l-6O-5hl" secondAttribute="trailing" constant="36" id="lwO-nH-hDU"/>
+                            <constraint firstItem="97l-6O-5hl" firstAttribute="leading" secondItem="C9l-wk-EWq" secondAttribute="leading" constant="36" id="yqw-Zg-3OF"/>
+                            <constraint firstItem="C9l-wk-EWq" firstAttribute="trailing" secondItem="caF-gQ-Dii" secondAttribute="trailing" constant="100" id="zjp-Kz-SIG">
+                                <variation key="heightClass=regular-widthClass=compact" constant="40"/>
+                            </constraint>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="descriptionLabel" destination="caF-gQ-Dii" id="r3E-x6-Z6M"/>
+                        <outlet property="titleLabel" destination="aob-mD-7ms" id="TF6-26-7PQ"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iLl-Ev-enx" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1014" y="1246"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="ic_back" width="21" height="21"/>
+        <systemColor name="viewFlipsideBackgroundColor">
+            <color red="0.1215686275" green="0.12941176469999999" blue="0.14117647059999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

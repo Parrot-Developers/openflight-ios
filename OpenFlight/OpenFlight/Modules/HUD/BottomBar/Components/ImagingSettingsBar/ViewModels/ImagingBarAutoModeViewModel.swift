@@ -92,7 +92,7 @@ final class ImagingBarAutoModeViewModel: DroneWatcherViewModel<ImagingBarAutoMod
             let currentEditor = camera.currentEditor
             currentEditor[Camera2Params.exposureMode]?.value = .automatic
             currentEditor[Camera2Params.whiteBalanceMode]?.value = .automatic
-            currentEditor.saveSettings()
+            currentEditor.saveSettings(currentConfig: camera.config)
         }
     }
 

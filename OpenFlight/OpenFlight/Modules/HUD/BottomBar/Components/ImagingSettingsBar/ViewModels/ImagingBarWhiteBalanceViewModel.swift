@@ -56,7 +56,7 @@ final class ImagingBarWhiteBalanceViewModel: BarButtonViewModel<ImagingBarState>
         }
         let currentEditor = camera.currentEditor
         currentEditor[Camera2Params.whiteBalanceMode]?.value = mode
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 
     // MARK: - Internal Funcs

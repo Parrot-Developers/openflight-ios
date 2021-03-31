@@ -33,6 +33,7 @@ public class FlightPlanSetting: FlightPlanSettingType {
     // MARK: - Public Properties
     public var title: String
     public var shortTitle: String?
+    public var additionalInformation: String?
     public var allValues: [Int]
     public var valueDescriptions: [String]?
     public var currentValue: Int?
@@ -41,6 +42,7 @@ public class FlightPlanSetting: FlightPlanSettingType {
     public var unit: UnitType
     public var step: Double
     public var isDisabled: Bool
+    public var category: FlightPlanSettingCategory
 
     // MARK: - Init
     /// Init.
@@ -48,6 +50,7 @@ public class FlightPlanSetting: FlightPlanSettingType {
     /// - Parameters:
     ///    - title: title of the setting
     ///    - shortTitle: setting short title
+    ///    - additionalInformation: setting additional information
     ///    - allValues: array of edition setting values
     ///    - valueDescriptions: custom descriptions for values
     ///    - currentValue: current value of the setting
@@ -56,8 +59,10 @@ public class FlightPlanSetting: FlightPlanSettingType {
     ///    - unit: unit of the setting
     ///    - step: step between values of the setting
     ///    - isDisabled: Tells if the setting must be disabled
+    ///    - category: setting category
     init(title: String,
          shortTitle: String?,
+         additionalInformation: String?,
          allValues: [Int],
          valueDescriptions: [String]?,
          currentValue: Int?,
@@ -65,9 +70,11 @@ public class FlightPlanSetting: FlightPlanSettingType {
          key: String,
          unit: UnitType,
          step: Double,
-         isDisabled: Bool) {
+         isDisabled: Bool,
+         category: FlightPlanSettingCategory) {
         self.title = title
         self.shortTitle = shortTitle
+        self.additionalInformation = additionalInformation
         self.allValues = allValues
         self.valueDescriptions = valueDescriptions
         self.currentValue = currentValue
@@ -76,6 +83,7 @@ public class FlightPlanSetting: FlightPlanSettingType {
         self.unit = unit
         self.step = step
         self.isDisabled = isDisabled
+        self.category = category
     }
 }
 

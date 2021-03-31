@@ -55,10 +55,12 @@ enum NetworkManualSelectionField {
 /// State for in `SettingsNetworkSelectionViewModel`.
 final class SettingsNetworkSelectionState: DeviceConnectionState {
     // MARK: - Internal Properties
-    /// Tell if the current network selection is manual or auto.
+    /// Tells if the current network selection is manual or auto.
     fileprivate(set) var selectionMode: SettingsCellularSelection = .auto
-    /// Tell if the current network selection mode is updating.
+    /// Tells if the current network selection mode is updating.
     fileprivate(set) var isSelectionUpdating: Bool = false
+    /// Tells if the current sim card is inserted or not.
+    fileprivate(set) var isSimCardInserted: Bool = false
 
     /// Retrieves the network username.
     var username: String? {
@@ -84,15 +86,18 @@ final class SettingsNetworkSelectionState: DeviceConnectionState {
     ///
     /// - Parameters:
     ///     - connectionState: drone connection state
-    ///     - selectionMode: tell if the network selection is auto or manual
-    ///     - isSelectionUpdating: tell if the network selection is updating
+    ///     - selectionMode: tells if the network selection is auto or manual
+    ///     - isSelectionUpdating: tells if the network selection is updating
+    ///     - isSimCardInserted: tells if the sim card status is inserted
     init(connectionState: DeviceState.ConnectionState,
          selectionMode: SettingsCellularSelection,
-         isSelectionUpdating: Bool) {
+         isSelectionUpdating: Bool,
+         isSimCardInserted: Bool) {
         super.init(connectionState: connectionState)
 
         self.selectionMode = selectionMode
         self.isSelectionUpdating = isSelectionUpdating
+        self.isSimCardInserted = isSimCardInserted
     }
 
     // MARK: - Override Funcs
@@ -101,12 +106,14 @@ final class SettingsNetworkSelectionState: DeviceConnectionState {
 
         return selectionMode == other.selectionMode
             && isSelectionUpdating == other.isSelectionUpdating
+            && isSimCardInserted == other.isSimCardInserted
     }
 
     override func copy() -> SettingsNetworkSelectionState {
         return SettingsNetworkSelectionState(connectionState: self.connectionState,
                                              selectionMode: self.selectionMode,
-                                             isSelectionUpdating: self.isSelectionUpdating)
+                                             isSelectionUpdating: self.isSelectionUpdating,
+                                             isSimCardInserted: self.isSimCardInserted)
     }
 }
 
@@ -169,17 +176,17 @@ private extension SettingsNetworkSelectionViewModel {
     /// Starts watcher for cellular.
     func listenCellular(_ drone: Drone) {
         cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] _ in
-            self?.updateSelectionMode()
+            self?.updateSelectionMode(cellular: drone.getPeripheral(Peripherals.cellular))
         }
-        updateSelectionMode()
+        updateSelectionMode(cellular: drone.getPeripheral(Peripherals.cellular))
     }
 
-    /// Updates selection mode. Can be manual or auto.
-    func updateSelectionMode() {
-        let selectionNetworkState = drone?.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting
+    /// Updates selection mode if sim card is inserted. Can be manual or auto.
+    func updateSelectionMode(cellular: Cellular?) {
         let copy = state.value.copy()
-        copy.isSelectionUpdating = selectionNetworkState?.updating == true
-        copy.selectionMode = selectionNetworkState?.isManual == true ? .manual : .auto
+        copy.isSimCardInserted = cellular?.isSimCardInserted == true
+        copy.isSelectionUpdating = cellular?.apnConfigurationSetting.updating == true
+        copy.selectionMode = cellular?.apnConfigurationSetting.isManual == true ? .manual : .auto
         state.set(copy)
     }
 

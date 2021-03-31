@@ -85,7 +85,7 @@ final class TelemetryViewModel: DroneWatcherViewModel<TelemetryState> {
     }
 
     // MARK: - Init
-    private init() {
+    private override init() {
         fatalError("Forbidden init")
     }
 

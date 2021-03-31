@@ -40,7 +40,7 @@ final class SettingsQuickViewController: UIViewController, StoryboardBased {
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
-    private var viewModel: QuickSettingsViewModel?
+    private let viewModel = QuickSettingsViewModel()
     private var settings: [SettingEntry] = [] {
         didSet {
             collection?.reloadData()
@@ -67,9 +67,9 @@ final class SettingsQuickViewController: UIViewController, StoryboardBased {
         setupCollection()
 
         // watch current drone.
-        viewModel = QuickSettingsViewModel(stateDidUpdate: { [weak self] state in
-            self?.updateCells(state)
-        })
+        viewModel.state.valueChanged = { [weak self] _ in
+            self?.updateCells()
+        }
 
         updateCells()
     }
@@ -97,10 +97,8 @@ private extension SettingsQuickViewController {
         collection.register(cellType: SettingsQuickCollectionViewCell.self)
     }
 
-    func updateCells(_ state: DeviceConnectionState = DeviceConnectionState()) {
-        guard let updatedSettings = viewModel?.settingEntries else { return }
-
-        settings = updatedSettings
+    func updateCells() {
+        settings = viewModel.settingEntries
     }
 }
 
@@ -133,7 +131,7 @@ extension SettingsQuickViewController: SettingsQuickCollectionViewCellDelegate {
         let settingEntry = filteredSettings[indexPath.row]
         if let model = settingEntry.segmentModel {
             let index = (direction == .left) ? model.nextIndex : model.previousIndex
-            viewModel?.saveSettingsEntry(settingEntry, at: index)
+            viewModel.saveSettingsEntry(settingEntry, at: index)
         }
     }
 }

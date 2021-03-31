@@ -16,23 +16,26 @@
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KGk-i7-Jjw" translatesAutoresizingMaskIntoConstraints="NO" id="H2p-sc-9uM">
                 <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
                 <subviews>
-                    <stackView opaque="NO" contentMode="center" axis="vertical" distribution="fillEqually" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="85X-GB-rOP">
+                    <stackView opaque="NO" contentMode="center" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="85X-GB-rOP">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="68O-gY-PYI">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="39"/>
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="HH6-Sg-06s"/>
+                                </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="b6R-nR-BTH">
-                                <rect key="frame" x="0.0" y="41" width="320" height="39"/>
+                                <rect key="frame" x="0.0" y="32" width="320" height="48"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstAttribute="height" constant="80" id="eCt-kd-rTk"/>
+                            <constraint firstAttribute="height" priority="750" constant="90" id="eCt-kd-rTk"/>
                         </constraints>
                     </stackView>
                     <view hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QvG-Sz-iUY">
@@ -64,7 +67,6 @@
                 <outlet property="disableView" destination="QvG-Sz-iUY" id="OoB-hO-D7h"/>
                 <outlet property="settingValueRulerViewContainer" destination="b6R-nR-BTH" id="8vz-bc-3Rg"/>
                 <outlet property="titleLabel" destination="68O-gY-PYI" id="oiQ-nH-16C"/>
-                <outlet property="trailingConstraint" destination="sin-fL-Eds" id="QMz-48-kdl"/>
             </connections>
             <point key="canvasLocation" x="139" y="155"/>
         </tableViewCell>

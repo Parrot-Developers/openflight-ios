@@ -50,8 +50,10 @@ public final class PoiPoint: Codable {
     }
 
     /// ROI MAVLink command.
-    var mavlinkCommand: SetRoiCommand {
-        return SetRoiCommand(latitude: latitude, longitude: longitude, altitude: altitude)
+    var mavlinkCommand: MavlinkStandard.SetRoiLocationCommand {
+        return MavlinkStandard.SetRoiLocationCommand(latitude: latitude,
+                                                     longitude: longitude,
+                                                     altitude: altitude)
     }
 
     /// Returns altitude value with unit.
@@ -95,8 +97,8 @@ public final class PoiPoint: Codable {
     /// Init with Mavlink command.
     ///
     /// - Parameters:
-    ///    - roiMavLinkCommand: ROI Mavlink command
-    init(roiMavLinkCommand: SetRoiCommand) {
+    ///    - roiMavLinkCommand: ROI Mavlink location command
+    public init(roiMavLinkCommand: MavlinkStandard.SetRoiLocationCommand) {
         self.latitude = roiMavLinkCommand.latitude
         self.longitude = roiMavLinkCommand.longitude
         self.altitude = roiMavLinkCommand.altitude

@@ -59,6 +59,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private let currentRemoteControlStore = CurrentRemoteControlStore()
     /// Gutma log manager ref.
     private var gutmaLogManager: Ref<GutmaLogManager>?
+    /// Inits Grab view model.
+    private var grabberViewModel: RemoteControlGrabberViewModel = RemoteControlGrabberViewModel()
 
     // MARK: - Public Funcs
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
@@ -87,6 +89,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
+        grabberViewModel.ungrabAll()
         self.persistentContainer.saveContext()
     }
 
@@ -162,12 +165,6 @@ public class AppDelegateSetup {
         // Reset mission mode defaults.
         Defaults.remove(\.userMissionProvider)
         Defaults.remove(\.userMissionMode)
-
-        // Temporary reset Live streaming default.
-        Defaults.remove(\.liveStreaming)
-
-        // Start EV trigger manager.
-        EVTriggerManager.shared.setup()
 
         // Start Core Data manager.
         CoreDataManager.shared.setup(with: persistentContainer)

@@ -118,6 +118,11 @@ extension FirmwareUpdaterManager {
     func currentProgress(for operation: FirwmwareToUpdateOperation) -> Int {
         return firmwareUpdaterWrapper.currentProgress(for: operation)
     }
+
+    /// Returns whether updater requires drone.
+    func remainingOperationsRequiresDrone() -> Bool {
+        return firmwareToUpdate?.allOperationsNeeded.contains(.update) == true
+    }
 }
 
 /// Utils for listener management.

@@ -55,7 +55,7 @@ extension UIDevice {
 
     /// Returns model for current battery level and associated alert.
     var batteryValueModel: BatteryValueModel {
-        return BatteryValueModel(currentValue: Int(batteryLevel * 100), alertLevel: alertLevel)
+        return BatteryValueModel(currentValue: Int(batteryLevel * 100))
     }
 
     /// Returns device total capacity in bytes.

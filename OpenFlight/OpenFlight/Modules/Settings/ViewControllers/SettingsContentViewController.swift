@@ -58,7 +58,7 @@ class SettingsContentViewController: UIViewController, StoryboardBased {
     var viewModel: SettingsViewModelProtocol?
 
     // MARK: - Private Properties
-    private var droneStateViewModel: DroneStateViewModel<DeviceConnectionState>?
+    private let droneStateViewModel = DroneStateViewModel<DeviceConnectionState>()
     /// Tells if a settings slider is editing.
     private var isSliderEditing: Bool = false
 
@@ -76,9 +76,9 @@ class SettingsContentViewController: UIViewController, StoryboardBased {
 
         setupTableView()
 
-        droneStateViewModel = DroneStateViewModel(stateDidUpdate: { [weak self] state in
+        droneStateViewModel.state.valueChanged = { [weak self] state in
             self?.updateInputViews(state)
-        })
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {

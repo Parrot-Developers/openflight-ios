@@ -37,7 +37,7 @@ final class UserDeviceInfosState: ViewModelState {
     /// Observable for current battery level.
     fileprivate(set) var userDeviceBatteryLevel = Observable(BatteryValueModel())
     /// Observable for gps strength level.
-    fileprivate(set) var userDeviceGpsStrength = Observable(UserLocationGpsStrength.unauthorized)
+    fileprivate(set) var userDeviceGpsStrength = Observable(UserLocationGpsStrength.unavailable)
 }
 
 // MARK: - UserDeviceViewModel
@@ -96,7 +96,6 @@ private extension UserDeviceViewModel {
 
     /// Update the battery value.
     @objc func updateBatteryLevel() {
-        state.value.userDeviceBatteryLevel.set(BatteryValueModel(currentValue: UIDevice.current.batteryValueModel.currentValue,
-                                                                 alertLevel: .none))
+        state.value.userDeviceBatteryLevel.set(UIDevice.current.batteryValueModel)
     }
 }

@@ -118,8 +118,7 @@ private extension HUDDroneInfoViewController {
     ///     - wifiStrength: wifi strength
     ///     - isWlanActive: tells if wlan is the active link
     func onWifiStrengthChanged(_ wifiStrength: WifiStrength, isWlanActive: Bool = true) {
-        droneWifiImageView.image = wifiStrength.signalIcon(isLinkActive: isWlanActive,
-                                                           isBackgroundStyle: true)
+        droneWifiImageView.image = wifiStrength.signalIcon(isLinkActive: isWlanActive)
         wifiAlertBackgroundView.isHidden = !isWlanActive || wifiStrength == .none
         if isWlanActive {
             wifiAlertBackgroundView.cornerRadiusedWith(backgroundColor: wifiStrength.backgroundColor.color,
@@ -141,8 +140,7 @@ private extension HUDDroneInfoViewController {
     ///     - isCellularActive: tells if cellular is the active link
     func onCellularStrengthChanged(_ cellularStrength: CellularStrength,
                                    isCellularActive: Bool = false) {
-        droneCellularImageView.image = cellularStrength.signalIcon(isLinkActive: isCellularActive,
-                                                                   isBackgroundStyle: true)
+        droneCellularImageView.image = cellularStrength.signalIcon(isLinkActive: isCellularActive)
         cellularBackgroundView.isHidden = !isCellularActive || cellularStrength == .none
         if isCellularActive {
             cellularBackgroundView.cornerRadiusedWith(backgroundColor: cellularStrength.backgroundColor.color,

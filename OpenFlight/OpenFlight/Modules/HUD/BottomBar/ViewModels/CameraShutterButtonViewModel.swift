@@ -39,18 +39,12 @@ final class CameraShutterButtonState: DeviceConnectionState {
     fileprivate(set) var cameraCaptureMode: CameraCaptureMode = .video
     /// Current camera capture sub mode.
     fileprivate(set) var cameraCaptureSubMode: BarItemSubMode?
-    /// Current recording function state.
-    fileprivate(set) var recordingFunctionState: Camera2RecordingState = .stopped(latestSavedMediaId: nil)
     /// Current photo function state.
     fileprivate(set) var photoFunctionState: Camera2PhotoCaptureState = .stopped(latestSavedMediaId: nil)
     /// Current user storage state.
     fileprivate(set) var userStorageState = GlobalUserStorageState()
-    /// Current recording time.
-    fileprivate(set) var recordingTime: TimeInterval?
-    /// Remaining record time.
-    fileprivate(set) var remainingRecordTime: TimeInterval?
-    /// Current state for timer mode.
-    fileprivate(set) weak var timerModeState: TimerModeState?
+    /// Current recording time state.
+    fileprivate(set) var recordingTimeState = RecordingTimeState()
     /// Current state for panorama mode.
     fileprivate(set) weak var panoramaModeState: PanoramaModeState?
     /// Current state for timelapse and gpslapse mode.
@@ -75,55 +69,43 @@ final class CameraShutterButtonState: DeviceConnectionState {
     ///    - cameraMode: current camera mode
     ///    - cameraCaptureMode: current camera capture mode
     ///    - cameraCaptureSubMode: current camera capture sub mode
-    ///    - recordingFunctionState: current recording function state
     ///    - photoFunctionState: current photo function state
     ///    - userStorageState: current user storage state
-    ///    - recordingTime: current recording time
-    ///    - remainingRecordTime: remaining record time
-    ///    - timerModeState: current state for timer mode
+    ///    - recordingTimeState: current recording time state
     ///    - panoramaModeState: current state for panorama mode
     ///    - lapseModeState: current state for lapse capture mode
     init(connectionState: DeviceState.ConnectionState,
          cameraMode: Camera2Mode,
          cameraCaptureMode: CameraCaptureMode,
          cameraCaptureSubMode: BarItemSubMode?,
-         recordingFunctionState: Camera2RecordingState,
          photoFunctionState: Camera2PhotoCaptureState,
          userStorageState: GlobalUserStorageState,
-         recordingTime: TimeInterval?,
-         remainingRecordTime: TimeInterval?,
-         timerModeState: TimerModeState?,
+         recordingTimeState: RecordingTimeState,
          panoramaModeState: PanoramaModeState?,
          lapseModeState: PhotoLapseState?) {
         super.init(connectionState: connectionState)
+
         self.cameraMode = cameraMode
         self.cameraCaptureMode = cameraCaptureMode
         self.cameraCaptureSubMode = cameraCaptureSubMode
-        self.recordingFunctionState = recordingFunctionState
         self.photoFunctionState = photoFunctionState
         self.userStorageState = userStorageState
-        self.recordingTime = recordingTime
-        self.remainingRecordTime = remainingRecordTime
-        self.timerModeState = timerModeState
+        self.recordingTimeState = recordingTimeState
         self.panoramaModeState = panoramaModeState
         self.lapseModeState = lapseModeState
     }
 
     // MARK: - Override Funcs
     override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? CameraShutterButtonState else {
-            return false
-        }
+        guard let other = other as? CameraShutterButtonState else { return false }
+
         return super.isEqual(to: other)
             && self.cameraMode == other.cameraMode
             && self.cameraCaptureMode == other.cameraCaptureMode
             && self.cameraCaptureSubMode?.key == other.cameraCaptureSubMode?.key
-            && self.recordingFunctionState == other.recordingFunctionState
             && self.photoFunctionState == other.photoFunctionState
             && self.userStorageState == other.userStorageState
-            && self.recordingTime == other.recordingTime
-            && self.remainingRecordTime == other.remainingRecordTime
-            && self.timerModeState == other.timerModeState
+            && self.recordingTimeState == other.recordingTimeState
             && self.panoramaModeState == other.panoramaModeState
             && self.lapseModeState == other.lapseModeState
     }
@@ -133,12 +115,9 @@ final class CameraShutterButtonState: DeviceConnectionState {
                                             cameraMode: self.cameraMode,
                                             cameraCaptureMode: self.cameraCaptureMode,
                                             cameraCaptureSubMode: self.cameraCaptureSubMode,
-                                            recordingFunctionState: self.recordingFunctionState,
                                             photoFunctionState: self.photoFunctionState,
                                             userStorageState: self.userStorageState,
-                                            recordingTime: self.recordingTime,
-                                            remainingRecordTime: self.remainingRecordTime,
-                                            timerModeState: self.timerModeState,
+                                            recordingTimeState: self.recordingTimeState,
                                             panoramaModeState: self.panoramaModeState,
                                             lapseModeState: self.lapseModeState)
         return copy
@@ -151,76 +130,74 @@ final class CameraShutterButtonViewModel: DroneStateViewModel<CameraShutterButto
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
     private var photoCaptureRef: Ref<Camera2PhotoCapture>?
-    private var recordingRef: Ref<Camera2Recording>?
     private var cameraCaptureModeViewModel = CameraCaptureModeViewModel()
-    private var timerModeViewModel = TimerModeViewModel()
     private var panoramaModeViewModel = PanoramaModeViewModel()
     private var userStorageViewModel = GlobalUserStorageViewModel()
     private var photoLapseModeViewModel = PhotoLapseModeViewModel()
-    private var recordingTimeTimer: Timer?
-    private var remoteControlButtonGrabber: RemoteControlButtonGrabber?
-    private var actionKey: String {
-        return NSStringFromClass(type(of: self)) + SkyCtrl3ButtonEvent.rearRightButton.description
-    }
+    private var recordingTimeViewModel = RecordingTimeViewModel()
+    private var remoteControlRecordObserver: Any?
 
     // MARK: - Init
     override init(stateDidUpdate: ((CameraShutterButtonState) -> Void)? = nil) {
         super.init(stateDidUpdate: stateDidUpdate)
+
         listenCameraCaptureMode()
-        listenTimerMode()
         listenPanoramaMode()
         listenUserStorage()
         listenLapseMode()
-        remoteControlButtonGrabber = RemoteControlButtonGrabber(button: .rearRightButton,
-                                                                event: .rearRightButton,
-                                                                key: actionKey,
-                                                                action: onRemoteControlGrabUpdate)
+        listenRecordingTime()
+        listenRemoteControlRecordChanges()
     }
 
     // MARK: - Deinit
     deinit {
-        stopRecordingTimeTimer()
+        NotificationCenter.default.remove(observer: remoteControlRecordObserver)
+        remoteControlRecordObserver = nil
     }
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
+
         listenCamera(drone: drone)
     }
 
     // MARK: - Internal Funcs
-    /// Starts/stops recording or photo capture.
-    func startStopCapture() {
+    /// Starts or stops recording or photo capture.
+    func toggleCapture() {
         guard let camera = drone?.currentCamera,
-            let cameraMode = camera.mode else {
-                return
+              let cameraMode = camera.mode else {
+            return
         }
 
         switch cameraMode {
         case .recording:
-            startStopRecording(camera: camera)
+            toggleRecording(camera: camera)
         case .photo:
-            startStopPhoto(camera: camera)
+            togglePhoto(camera: camera)
         }
     }
 }
 
 // MARK: - Private Funcs
+/// Private methods related to watcher on Peripherals or ViewModels.
 private extension CameraShutterButtonViewModel {
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
         cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
-            guard let camera = camera else { return }
+            guard let camera = camera,
+                  let cameraMode = camera.mode else {
+                return
+            }
 
             self?.listenPhotoCapture(camera)
-            self?.listenRecording(camera)
+            let copy = self?.state.value.copy()
+            copy?.cameraMode = cameraMode
+            self?.state.set(copy)
         }
     }
 
     /// Starts watcher for photo capture.
-    ///
-    /// - Parameters:
-    ///     - camera: drone camera
     func listenPhotoCapture(_ camera: MainCamera2) {
         photoCaptureRef = camera.getComponent(Camera2Components.photoCapture) { [weak self] photo in
             guard let cameraMode = camera.mode,
@@ -235,50 +212,12 @@ private extension CameraShutterButtonViewModel {
         }
     }
 
-    /// Starts watcher for camera recording.
-    ///
-    /// - Parameters:
-    ///     - camera: drone camera
-    func listenRecording(_ camera: MainCamera2) {
-        recordingRef = camera.getComponent(Camera2Components.recording) { [weak self] recording in
-            guard let cameraMode = camera.mode,
-                  let recordingState = recording?.state else {
-                return
-            }
-
-            let copy = self?.state.value.copy()
-            copy?.cameraMode = cameraMode
-            copy?.recordingFunctionState = recordingState
-
-            // Start/stop recording timer.
-            switch recordingState {
-            case .started(let startTime, _, _) where self?.recordingTimeTimer == nil:
-                self?.startRecordingTimeTimer()
-                copy?.recordingTime = recordingState.getDuration(startTime: startTime)
-            case .stopped where self?.recordingTimeTimer != nil,
-                 .stopping(reason: .errorInternal, savedMediaId: nil):
-                self?.stopRecordingTimeTimer()
-                copy?.recordingTime = nil
-            default:
-                break
-            }
-            self?.state.set(copy)
-        }
-    }
-
     /// Starts watcher for user storage state.
     func listenUserStorage() {
         userStorageViewModel.state.valueChanged = { [weak self] state in
             self?.updateUserStorageState(state)
         }
         updateUserStorageState(userStorageViewModel.state.value)
-    }
-
-    /// Update current user storage state.
-    func updateUserStorageState(_ state: GlobalUserStorageState) {
-        let copy = self.state.value.copy()
-        copy.userStorageState = state
-        self.state.set(copy)
     }
 
     /// Starts watcher for camera capture mode.
@@ -289,43 +228,16 @@ private extension CameraShutterButtonViewModel {
         updateCameraCaptureModeState(cameraCaptureModeViewModel.state.value)
     }
 
-    /// Update current camera capture mode.
-    func updateCameraCaptureModeState(_ state: CameraBarButtonState) {
-        if let mode = state.mode as? CameraCaptureMode {
-            let copy = self.state.value.copy()
-            copy.cameraCaptureMode = mode
-            copy.cameraCaptureSubMode = state.subMode
-            // Cancel timer if needed.
-            if mode != .timer && timerModeViewModel.state.value.inProgress {
-                timerModeViewModel.cancelPhotoTimer()
-            }
-            // Update remote control grab.
-            switch mode {
-            case .timer, .panorama:
-                remoteControlButtonGrabber?.grab()
-            default:
-                remoteControlButtonGrabber?.ungrab()
-            }
-            self.state.set(copy)
-        }
-    }
-
-    /// Starts watcher for timer mode.
-    func listenTimerMode() {
-        timerModeViewModel.state.valueChanged = { [weak self] state in
-            self?.updateTimerModeState(state)
-        }
-        updateTimerModeState(timerModeViewModel.state.value)
-    }
-
-    /// Update current timer mode state.
-    ///
-    /// - Parameters:
-    ///     - state: current timer mode state
-    func updateTimerModeState(_ state: TimerModeState) {
-        let copy = self.state.value.copy()
-        copy.timerModeState = state
-        self.state.set(copy)
+    /// Listen notifications about remote control rear right button changes.
+    /// It corresponds to photo capture or recording start.
+    func listenRemoteControlRecordChanges() {
+        remoteControlRecordObserver = NotificationCenter.default.addObserver(
+            forName: .remoteControlShutterButtonPressed,
+            object: nil,
+            queue: nil,
+            using: { [weak self] _ in
+                self?.toggleCapture()
+            })
     }
 
     /// Starts watcher for panorama mode.
@@ -336,22 +248,33 @@ private extension CameraShutterButtonViewModel {
         updatePanoramaModeState(panoramaModeViewModel.state.value)
     }
 
-    /// Update current panorama mode state.
-    ///
-    /// - Parameters:
-    ///     - state: current panorama mode state
-    func updatePanoramaModeState(_ state: PanoramaModeState) {
-        let copy = self.state.value.copy()
-        copy.panoramaModeState = state
-        self.state.set(copy)
-    }
-
     /// Starts watcher for timelapse and gpslapse mode.
     func listenLapseMode() {
         photoLapseModeViewModel.state.valueChanged = { [weak self] state in
             self?.updateLapseModeState(state)
         }
         updateLapseModeState(photoLapseModeViewModel.state.value)
+    }
+
+    /// Starts watcher for current recording time.
+    func listenRecordingTime() {
+        recordingTimeViewModel.state.valueChanged = { [weak self] state in
+            self?.updateRecordingTimeState(state)
+        }
+        updateRecordingTimeState(recordingTimeViewModel.state.value)
+    }
+}
+
+/// Private methods related to state update.
+private extension CameraShutterButtonViewModel {
+    /// Updates current recording time state.
+    ///
+    /// - Parameters:
+    ///    - state: current recording time state
+    func updateRecordingTimeState(_ state: RecordingTimeState) {
+        let copy = self.state.value.copy()
+        copy.recordingTimeState = state
+        self.state.set(copy)
     }
 
     /// Update current lapse capture mode state.
@@ -364,69 +287,48 @@ private extension CameraShutterButtonViewModel {
         self.state.set(copy)
     }
 
-    /// Starts timer for recording time.
-    func startRecordingTimeTimer() {
-        recordingTimeTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { [weak self] _ in
-            self?.updateRecordingTime()
-        })
-        recordingTimeTimer?.fire()
-    }
-
-    /// Stops timer for recording time.
-    func stopRecordingTimeTimer() {
-        recordingTimeTimer?.invalidate()
-        recordingTimeTimer = nil
-    }
-
-    /// Updates `recordingTime` and `remainingRecordTime` values.
-    func updateRecordingTime() {
-        guard let drone = drone,
-              let camera = drone.currentCamera,
-              drone.getPeripheral(Peripherals.removableUserStorage) != nil else {
-            return
-        }
+    /// Update current panorama mode state.
+    ///
+    /// - Parameters:
+    ///     - state: current panorama mode state
+    func updatePanoramaModeState(_ state: PanoramaModeState) {
         let copy = self.state.value.copy()
-
-        switch camera.recording?.state {
-        case .started(let startTime, _, _):
-            copy.recordingTime = camera.recording?.state.getDuration(startTime: startTime)
-        default:
-            break
-        }
-
-        // FIXME: Bitrate is not returned by camera2 for now.
-        // copy.remainingRecordTime = StorageUtils.remainingTime(availableSpace: removableUserStorage.availableSpace,
-        //                                                       bitrate: Int64(camera.recordingSettings.bitrate))
+        copy.panoramaModeState = state
         self.state.set(copy)
     }
 
-    /// Starts or stops video recording.
+    /// Update current user storage state.
     ///
     /// - Parameters:
-    ///     - camera: current camera
-    func startStopRecording(camera: Camera2) {
-        guard let recording = camera.recording else { return }
-
-        switch recording.state {
-        case .stopped:
-            recording.start()
-        case .started:
-            recording.stop()
-        default:
-            break
-        }
+    ///     - state: current global user storage state
+    func updateUserStorageState(_ state: GlobalUserStorageState) {
+        let copy = self.state.value.copy()
+        copy.userStorageState = state
+        self.state.set(copy)
     }
 
+    /// Update current camera capture mode.
+    ///
+    /// - Parameters:
+    ///     - state: current bar button state
+    func updateCameraCaptureModeState(_ state: CameraBarButtonState) {
+        if let mode = state.mode as? CameraCaptureMode {
+            let copy = self.state.value.copy()
+            copy.cameraCaptureMode = mode
+            copy.cameraCaptureSubMode = state.subMode
+            self.state.set(copy)
+        }
+    }
+}
+
+/// Private methods related to photo or record action.
+private extension CameraShutterButtonViewModel {
     /// Starts or stops photo capture.
     ///
     /// - Parameters:
     ///     - camera: current camera
-    func startStopPhoto(camera: Camera2) {
+    func togglePhoto(camera: Camera2) {
         switch state.value.cameraCaptureMode {
-        case .timer where state.value.timerModeState?.inProgress == true:
-            timerModeViewModel.cancelPhotoTimer()
-        case .timer:
-            timerModeViewModel.startPhotoTimer()
         case .panorama where state.value.panoramaModeState?.inProgress == true:
             panoramaModeViewModel.cancelPanoramaPhotoCapture()
         case .panorama:
@@ -445,13 +347,20 @@ private extension CameraShutterButtonViewModel {
         }
     }
 
-    /// Called on remote control grab update.
+    /// Starts or stops video recording.
     ///
     /// - Parameters:
-    ///     - newState: new skycontroller event state
-    func onRemoteControlGrabUpdate(_ newState: SkyCtrl3ButtonEventState) {
-        if newState == .pressed {
-            startStopCapture()
+    ///     - camera: current camera
+    func toggleRecording(camera: Camera2) {
+        guard let recording = camera.recording else { return }
+
+        switch recording.state {
+        case .stopped:
+            recording.start()
+        case .started:
+            recording.stop()
+        default:
+            break
         }
     }
 }

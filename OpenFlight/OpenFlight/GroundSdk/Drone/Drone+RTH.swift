@@ -29,10 +29,9 @@
 
 import GroundSdk
 
-/// Piloting utility extension for Drone.
-
+/// Utility extension for `Drone` Return Home Piloting Interface.
 public extension Drone {
-    // MARK: - Internal Properties
+    // MARK: - Public Properties
     /// Returns true if drone is Returning Home.
     var isReturningHome: Bool {
         let rth = getPilotingItf(PilotingItfs.returnHome)
@@ -42,7 +41,7 @@ public extension Drone {
     // MARK: - Internal Funcs
     /// Triggers RTH.
     @discardableResult
-    func doReturnHome() -> Bool? {
+    func performReturnHome() -> Bool? {
         return getPilotingItf(PilotingItfs.returnHome)?.activate()
     }
 

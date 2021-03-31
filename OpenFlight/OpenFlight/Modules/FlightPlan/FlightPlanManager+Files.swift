@@ -44,15 +44,15 @@ extension FlightPlanManager {
                 return nil
         }
         if url.pathExtension.lowercased() == FlightPlanConstants.mavlinkExtension,
-           let flightPlan = MavlinkLegacyToFlightPlanGenerator.generateFlightPlanFromMavlink(url: url,
-                                                                                             mavlinkString: nil,
-                                                                                             title: url.deletingPathExtension().lastPathComponent,
-                                                                                             type: nil,
-                                                                                             uuid: nil,
-                                                                                             settings: [],
-                                                                                             polygonPoints: nil,
-                                                                                             version: FlightPlanConstants.defaultFlightPlanVersion,
-                                                                                             model: FlightPlanConstants.defaultDroneModel) {
+           let flightPlan = MavlinkToFlightPlanParser.generateFlightPlanFromMavlinkStandard(url: url,
+                                                                                            mavlinkString: nil,
+                                                                                            title: url.deletingPathExtension().lastPathComponent,
+                                                                                            type: nil,
+                                                                                            uuid: nil,
+                                                                                            settings: [],
+                                                                                            polygonPoints: nil,
+                                                                                            version: FlightPlanConstants.defaultFlightPlanVersion,
+                                                                                            model: FlightPlanConstants.defaultDroneModel) {
             // Remove mavlink.
             try? FileManager.default.removeItem(at: url)
             // Save flight plan made with mavlink.
@@ -186,10 +186,10 @@ extension FlightPlanManager {
     /// - Parameters:
     ///    - flightPlan: Flight Plan to generate to MAVLink
     /// - Returns: array of MAVLink commands
-    func generateMavlinkCommands(for flightPlan: SavedFlightPlan) -> [MavlinkCommand] {
-        var commands = [MavlinkCommand]()
+    func generateMavlinkCommands(for flightPlan: SavedFlightPlan) -> [MavlinkStandard.MavlinkCommand] {
+        var commands = [MavlinkStandard.MavlinkCommand]()
         var currentSpeed: Double = 0.0
-        var currentViewMode = SetViewModeCommand.Mode.absolute
+        var currentViewMode = MavlinkStandard.SetViewModeCommand.Mode.absolute
         var lastPoiIndex: Int = 0
 
         // Insert all POI commands
@@ -209,18 +209,18 @@ extension FlightPlanManager {
         }
 
         flightPlan.plan.wayPoints.forEach {
-            // Insert navigate to waypoint command.
-            commands.append($0.wayPointMavlinkCommand)
-
             let speed = $0.speedMavlinkCommand.speed
-            let viewMode = $0.viewModeCommand.mode
-            let poiIndex = $0.viewModeCommand.roiIndex
-
             if speed != currentSpeed {
                 // Insert new speed command.
                 commands.append($0.speedMavlinkCommand)
                 currentSpeed = speed
             }
+
+            // Insert navigate to waypoint command.
+            commands.append($0.wayPointMavlinkCommand)
+
+            let viewMode = $0.viewModeCommand.mode
+            let poiIndex = $0.viewModeCommand.roiIndex
 
             if viewMode != currentViewMode || lastPoiIndex != poiIndex {
                 // Insert new view mode command.
@@ -230,7 +230,7 @@ extension FlightPlanManager {
             }
 
             $0.actions?.forEach {
-                guard !(currentViewMode == SetViewModeCommand.Mode.roi && $0.type == .tilt) else { return } // No tilt during poi
+                guard !(currentViewMode == MavlinkStandard.SetViewModeCommand.Mode.roi && $0.type == .tilt) else { return } // No tilt during poi
                 // Insert all waypoint actions commands.
                 commands.append($0.mavlinkCommand)
             }

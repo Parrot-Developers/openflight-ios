@@ -68,7 +68,7 @@ final class ReturnHomeBottomBarViewModel: DroneWatcherViewModel<ReturnHomeBottom
     private var defaultsDisposable: DefaultsDisposable?
 
     // MARK: - Init
-    init() {
+    override init() {
         super.init()
 
         listenDefaults()

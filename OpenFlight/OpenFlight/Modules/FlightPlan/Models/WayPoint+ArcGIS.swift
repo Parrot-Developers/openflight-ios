@@ -46,10 +46,8 @@ extension WayPoint {
     var target: AGSPoint? {
         return AGSGeometryEngine.standardGeodeticMove(agsPoint,
                                                       distance: Constants.targetDistance,
-                                                      distanceUnit: .meters(),
-                                                      azimuth: -yaw,
-                                                      azimuthUnit: .degrees(),
-                                                      curveType: .normalSection)
+                                                      azimuth: yaw,
+                                                      azimuthUnit: .degrees())
     }
 
     /// Returns duration to get to next waypoint, 0.0 if no next waypoint or inconsistent data.
@@ -107,7 +105,7 @@ extension WayPoint {
                                               wayPointIndex: index,
                                               poiPoint: poiPoint,
                                               poiIndex: poiIndex,
-                                              angle: Float(-yaw))
+                                              angle: Float(yaw))
     }
 
     /// Computes label graphic for waypoint.

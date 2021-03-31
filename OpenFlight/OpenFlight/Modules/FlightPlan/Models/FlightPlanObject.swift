@@ -40,13 +40,13 @@ public final class FlightPlanObject: Codable {
     public var wayPoints: [WayPoint]
     public var isBuckled: Bool?
     public var shouldContinue: Bool? = true
-    public var lastPointRth: Bool? = false
+    public var lastPointRth: Bool? = true
 
     // MARK: - Internal Properties
     /// Return to launch MAVLink command, if FlightPlan is buckled.
-    var returnToLaunchCommand: ReturnToLaunchCommand? {
+    var returnToLaunchCommand: MavlinkStandard.ReturnToLaunchCommand? {
         guard isBuckled == true else { return nil }
-        return ReturnToLaunchCommand()
+        return MavlinkStandard.ReturnToLaunchCommand()
     }
 
     /// Returns true if drone should land on last waypoint.

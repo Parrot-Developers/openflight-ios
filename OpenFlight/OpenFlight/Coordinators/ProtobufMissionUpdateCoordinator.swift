@@ -57,13 +57,13 @@ final class ProtobufMissionUpdateCoordinator: Coordinator {
         switch functionalUpdateChoice {
         case .firmware:
             let viewController = FirmwareUpdatingViewController.instantiate(coordinator: self)
-            navigationController?.pushViewController(viewController, animated: true)
+            push(viewController)
         case .protobufMissions:
             let viewController = ProtobufMissionsUpdatingViewController.instantiate(coordinator: self)
-            navigationController?.pushViewController(viewController, animated: true)
+            push(viewController)
         case .firmwareAndProtobufMissions:
             let viewController = FirmwareAndMissionsUpdateViewController.instantiate(coordinator: self)
-            navigationController?.pushViewController(viewController, animated: true)
+            push(viewController)
         }
     }
 }

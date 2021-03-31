@@ -181,3 +181,21 @@ public extension UITextField {
         self.layer.borderColor = bgColor.color.cgColor
     }
 }
+
+// MARK: - UITableView
+public extension UITableView {
+    /// Makingup UITableView.
+    ///
+    /// - Parameters:
+    ///     - backgroundColor: optinal background color
+    ///     - showsVerticalScrollIndicator: shows vertical scroll indicator
+    func makeUp(backgroundColor: UIColor? = nil,
+                showsVerticalScrollIndicator: Bool = false) {
+        if let backgroundColor = backgroundColor {
+            self.backgroundColor = backgroundColor
+        }
+        self.tableFooterView = UIView() // Prevents form extra separators
+        self.showsVerticalScrollIndicator = showsVerticalScrollIndicator
+        self.separatorInset = UIEdgeInsets.zero
+    }
+}

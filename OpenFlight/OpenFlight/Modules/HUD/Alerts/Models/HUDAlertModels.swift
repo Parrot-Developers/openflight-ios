@@ -32,13 +32,13 @@ import UIKit
 
 // MARK: - Protocols
 /// Protocol that defines an alert to display on HUD.
-protocol HUDAlertType {
+public protocol HUDAlertType {
     /// Alert category level.
     var level: HUDAlertLevel { get }
     /// Alert category.
     var category: AlertCategoryType { get }
-    /// Alert priority.
-    var priority: Int { get }
+    /// Alert raw value.
+    var priority: String { get }
     /// Label for the alert type.
     var label: String { get }
     /// Associated icon to the alert type.
@@ -53,15 +53,10 @@ protocol HUDAlertType {
     ///    - other: alert to test
     /// - Returns: result of test
     func isSameAlert(as other: HUDAlertType?) -> Bool
-    /// Checks if alert has a higher priority than given one.
-    ///
-    /// - Parameters:
-    ///    - other: alert to compare
-    /// - Returns: result of comparison
-    func hasHigherPriority(than other: HUDAlertType) -> Bool
 }
 
-extension HUDAlertType {
+// MARK: - Public Funcs
+public extension HUDAlertType {
     func isSameAlert(as other: HUDAlertType?) -> Bool {
         guard let other = other else {
             return false
@@ -69,18 +64,10 @@ extension HUDAlertType {
         return self.level == other.level
             && self.priority == other.priority
     }
-
-    func hasHigherPriority(than other: HUDAlertType) -> Bool {
-        if self.level == other.level {
-            return self.priority < other.priority
-        } else {
-            return self.level.rawValue < other.level.rawValue
-        }
-    }
 }
 
 /// Protocol that defines an alert for HUD's left panel.
-protocol AlertPanelType {
+public protocol AlertPanelType {
     /// Alert title.
     var title: String? { get }
     /// Alert button title.
@@ -88,9 +75,9 @@ protocol AlertPanelType {
     // TODO: add generic actions/properties for new proactive alerts when implemented.
 }
 
-// MARK: - Internal Enums
+// MARK: - Public Enums
 /// Category for HUD alert.
-enum AlertCategoryType {
+public enum AlertCategoryType {
     case animations
     case autoLanding
     case componentsCamera
@@ -103,11 +90,17 @@ enum AlertCategoryType {
     case obstacleAvoidance
     case sdCard
     case wifi
-    case followMe
+    case flightMode
+}
+
+/// Stores constants about alerts.
+public enum HUDAlertConstants {
+    /// Default vibration delay.
+    public static let defaultVibrationDelay: TimeInterval = 90.0
 }
 
 /// Alert level for HUD alert.
-enum HUDAlertLevel: Int {
+public enum HUDAlertLevel: Int {
     case critical = 1
     case warning
     case info
@@ -149,7 +142,7 @@ enum HUDAlertLevel: Int {
 }
 
 /// Action type for HUD alert.
-enum AlertActionType {
+public enum AlertActionType {
     case landing
     case rth
 }

@@ -38,6 +38,7 @@ final class ImagingSettingsBarViewController: UIViewController {
     @IBOutlet private weak var imagingSettingsBarStackView: UIStackView!
     @IBOutlet private weak var generalSettingsStackView: UIStackView!
     @IBOutlet private weak var specificSettingsStackView: UIStackView!
+    @IBOutlet private weak var evStackView: UIStackView!
     @IBOutlet private weak var recordingItemsStackView: UIStackView!
     @IBOutlet private weak var photoItemsStackView: UIStackView!
     @IBOutlet private weak var dynamicRangeItemStackView: UIStackView!
@@ -114,7 +115,8 @@ final class ImagingSettingsBarViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        generalSettingsStackView.addBlurEffectWithTwoCorners(firstCorner: .layerMaxXMinYCorner, secondCorner: .layerMaxXMaxYCorner)
+        evStackView.addBlurEffectWithTwoCorners(firstCorner: .layerMaxXMinYCorner, secondCorner: .layerMaxXMaxYCorner)
+        generalSettingsStackView.addBlurEffect(cornerRadius: Style.mediumCornerRadius)
         dynamicRangeItemStackView.addBlurEffect(cornerRadius: Style.mediumCornerRadius)
         specificSettingsStackView.addBlurEffect(cornerRadius: Style.mediumCornerRadius)
         lockAEView.addBlurEffectWithTwoCorners(firstCorner: .layerMinXMinYCorner, secondCorner: .layerMinXMaxYCorner)
@@ -223,6 +225,7 @@ private extension ImagingSettingsBarViewController {
         whiteBalanceItemView.roundedCorners = [.topLeft, .bottomLeft]
         lockAEView.customCornered(corners: [.bottomLeft, .topLeft], radius: Style.mediumCornerRadius)
         imagingSettingsBarStackView.setCustomSpacing(2.0, after: lockAEView)
+        imagingSettingsBarStackView.setCustomSpacing(0.0, after: generalSettingsStackView)
     }
 
     /// Sets up view according to auto exposure lock button status.

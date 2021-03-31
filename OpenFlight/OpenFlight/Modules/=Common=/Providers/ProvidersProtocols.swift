@@ -136,6 +136,9 @@ public protocol FlightPlanSettingsProvider {
     /// Returns all Flight Plan edition settings.
     var settings: [FlightPlanSetting] { get }
 
+    /// Returns all Flight Plan edition settings categories.
+    var settingsCategories: [FlightPlanSettingCategory] { get }
+
     /// Delegate triggered when the settings need to be updated.
     var delegate: FlightPlanSettingsProviderDelegate? { get set }
 
@@ -210,6 +213,13 @@ public protocol FlightPlanSettingType {
     var step: Double { get }
     /// Tells if the setting must be disabled.
     var isDisabled: Bool { get }
+    /// Provides cell category of the current flight plan setting.
+    var category: FlightPlanSettingCategory { get }
+
+    // FIXME: This part is for upload 4G testing only.
+    // It will be remove when the feature is finished.
+    /// Provides flight plan setting additional information.
+    var additionalInformation: String? { get }
 }
 
 /// Flight plan settings type utility extension.
@@ -223,10 +233,15 @@ extension FlightPlanSettingType {
         return nil
     }
 
+    public var additionalInformation: String? {
+        return nil
+    }
+
     /// Returns a Flight Plan Setting.
     public func toFlightPlanSetting() -> FlightPlanSetting {
         return FlightPlanSetting(title: title,
                                  shortTitle: shortTitle,
+                                 additionalInformation: additionalInformation,
                                  allValues: allValues,
                                  valueDescriptions: valueDescriptions,
                                  currentValue: currentValue,
@@ -234,7 +249,8 @@ extension FlightPlanSettingType {
                                  key: key,
                                  unit: unit,
                                  step: step,
-                                 isDisabled: isDisabled)
+                                 isDisabled: isDisabled,
+                                 category: category)
     }
 
     /// Returns a Flight Plan Light Setting.
@@ -269,8 +285,6 @@ public protocol FlightPlanType {
     var key: String { get }
     /// Allow generating MAVlink from Flight Plan.
     var canGenerateMavlink: Bool { get }
-    /// Parser for MAVLink to Flight Plan conversion.
-    var fromMavlinkParser: MavlinkToFlightPlanParser.Type { get }
     /// Specify the type of the mavlink generation.
     var mavLinkType: FlightPlanInterpreter { get }
     /// Mode key.
@@ -442,5 +456,22 @@ public enum FlightPlanSettingCellType {
     case choice
     case adjustement
     case centeredRuler
-    case estimations
+}
+
+/// Flight plan settings categories.
+public enum FlightPlanSettingCategory: Hashable {
+    case common
+    case image
+    case custom(String)
+
+    var title: String {
+        switch self {
+        case .common:
+            return L10n.flightPlanSettingsTitle
+        case .image:
+            return L10n.flightPlanMenuImage
+        case .custom(let title):
+            return title
+        }
+    }
 }

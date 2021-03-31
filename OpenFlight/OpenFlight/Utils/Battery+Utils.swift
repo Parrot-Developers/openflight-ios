@@ -30,12 +30,37 @@
 
 import UIKit
 
+// MARK: - Private Enums
+private enum Constants {
+    static let criticalLevel: Int = 10
+    static let warningLevel: Int = 20
+}
+
 // MARK: - Public Structs
 /// Struct representing a battery value and its associated alert level.
 public struct BatteryValueModel: Equatable {
+    /// Battery value.
     var currentValue: Int?
-    var alertLevel: AlertLevel = AlertLevel.none
 
+    /// Alert level for current battery value.
+    var alertLevel: AlertLevel {
+        guard let value = currentValue else {
+            return .none
+        }
+
+        switch value {
+        case ...Constants.criticalLevel:
+            return .critical
+        case Constants.criticalLevel...Constants.warningLevel:
+            return .warning
+        case Constants.warningLevel...:
+            return .ready
+        default:
+            return .none
+        }
+    }
+
+    /// Image for current alert level.
     var batteryImage: UIImage {
         switch alertLevel {
         case .critical:

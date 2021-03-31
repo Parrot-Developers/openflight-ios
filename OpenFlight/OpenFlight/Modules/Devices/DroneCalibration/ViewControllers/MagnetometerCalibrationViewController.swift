@@ -127,14 +127,15 @@ private extension MagnetometerCalibrationViewController {
     /// Initializes all the UI for the view controller.
     func initUI() {
         self.droneCalibrationTitle.text = L10n.remoteCalibrationTitle
-        instructionsView.viewModel = DroneCalibrationInstructionsModel(image: Asset.Drone.icDroneDetails.image,
-                                                                       firstLabel: L10n.droneCalibrationIntroduction,
-                                                                       secondLabel: L10n.droneCalibrationIntroductionComplement,
+        instructionsView.viewModel = DroneCalibrationInstructionsModel(image: Asset.Drone.icDroneOpenYourDrone.image,
+                                                                       firstLabel: L10n.droneMagnetometerCalibrationInstruction,
+                                                                       secondLabel: L10n.droneMagnetometerCalibrationInstructionComplement,
                                                                        firstLabelColor: ColorName.white.color)
-        calibrateButton.setTitle(L10n.remoteCalibrationCalibrate.uppercased(), for: .normal)
+        calibrateButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
+        calibrateButton.setTitleColor(.black, for: .normal)
+        calibrateButton.setTitle(L10n.commonStart, for: .normal)
         okButton.setTitle(L10n.ok.uppercased(), for: .normal)
         cancelButton.setTitle(L10n.cancel, for: .normal)
-        calibrateButton.roundCorneredWith(backgroundColor: ColorName.white20.color)
         okButton.roundCorneredWith(backgroundColor: ColorName.white20.color)
         cancelButton.isHidden = !isRequired
         backButton.isHidden = isRequired
@@ -168,7 +169,7 @@ private extension MagnetometerCalibrationViewController {
     func setupViewModels() {
         self.viewModel.state.valueChanged = { [weak self] state in
             if let droneState = state.droneState,
-                droneState == .disconnected || droneState == .disconnecting {
+               droneState == .disconnected || droneState == .disconnecting {
                 self?.closeCalibrationView()
             }
 
@@ -214,7 +215,7 @@ private extension MagnetometerCalibrationViewController {
 
     /// Update UI for the calibration failure.
     func onFailure() {
-        instructionsView.viewModel.image = Asset.Drone.Calibration.Yaw.calibrationYaw00001.image
+        instructionsView.viewModel.image = Asset.Drone.icDroneOpenYourDrone.image
         instructionsView.viewModel.firstLabel = L10n.droneCalibrationFailed
         instructionsView.viewModel.secondLabel = L10n.droneCalibrationFailureInstruction
         instructionsView.viewModel.firstLabelColor = ColorName.redTorch.color
@@ -226,7 +227,7 @@ private extension MagnetometerCalibrationViewController {
 
     /// Update UI for the calibration success.
     func onCalibrationCompleted() {
-        instructionsView.viewModel.image = Asset.Drone.Calibration.Yaw.calibrationYaw00001.image
+        instructionsView.viewModel.image = Asset.Drone.Calibration.Yaw.icAnafi2CalibrationYaw00.image
         instructionsView.viewModel.firstLabel = L10n.droneCalibrationReadyToFly
         instructionsView.viewModel.secondLabel = nil
         instructionsView.viewModel.firstLabelColor = ColorName.greenSpring.color
@@ -238,6 +239,6 @@ private extension MagnetometerCalibrationViewController {
     /// Close the view controller.
     func closeCalibrationView() {
         self.viewModel.cancelCalibration()
-        self.navigationController?.popViewController(animated: true)
+        coordinator?.back()
     }
 }

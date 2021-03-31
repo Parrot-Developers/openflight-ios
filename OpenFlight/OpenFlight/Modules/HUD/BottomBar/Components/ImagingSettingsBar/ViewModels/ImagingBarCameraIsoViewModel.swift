@@ -67,7 +67,7 @@ final class ImagingBarCameraIsoViewModel: AutomatableBarButtonViewModel<Automata
 
         let currentEditor = camera.currentEditor
         currentEditor[Camera2Params.isoSensitivity]?.value = cameraIso
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 
     override func toggleAutomaticMode() {
@@ -80,7 +80,7 @@ final class ImagingBarCameraIsoViewModel: AutomatableBarButtonViewModel<Automata
         currentEditor[Camera2Params.exposureMode]?.value = exposureMode.automaticIsoSensitivity ?
             exposureMode.toManualIsoSensitivity() :
             exposureMode.toAutomaticIsoSensitivity()
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 
     override func copy() -> ImagingBarCameraIsoViewModel {

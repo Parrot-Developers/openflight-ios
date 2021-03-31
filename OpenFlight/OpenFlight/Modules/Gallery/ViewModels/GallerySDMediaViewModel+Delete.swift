@@ -61,7 +61,7 @@ extension GallerySDMediaViewModel {
                 case .running:
                     self?.updateRemovingState(true)
                 default:
-                    // fileDownloaded case is not supposed to happen
+                    // fileDownloaded case is not supposed to happen.
                     break
                 }
         }

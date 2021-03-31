@@ -30,32 +30,11 @@
 
 import GroundSdk
 
-// MARK: - Private Enums
-private enum Constants {
-    static let criticalLevel: Int = 10
-    static let warningLevel: Int = 20
-}
-
 /// Utility extension for `BatteryInfo`.
-
 extension BatteryInfo {
     // MARK: - Internal Properties
-    /// Returns alert level associated with current battery level.
-    var alertLevel: AlertLevel {
-        switch batteryLevel {
-        case ...Constants.criticalLevel:
-            return .critical
-        case Constants.criticalLevel...Constants.warningLevel:
-            return .warning
-        case Constants.warningLevel...:
-            return .ready
-        default:
-            return .none
-        }
-    }
-
     /// Returns model for current battery level and associated alert.
     var batteryValueModel: BatteryValueModel {
-        return BatteryValueModel(currentValue: batteryLevel, alertLevel: alertLevel)
+        return BatteryValueModel(currentValue: batteryLevel)
     }
 }

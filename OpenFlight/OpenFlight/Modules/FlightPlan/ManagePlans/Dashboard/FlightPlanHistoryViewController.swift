@@ -111,12 +111,10 @@ private extension FlightPlanHistoryViewController {
         view.backgroundColor = .clear
         headerLabel.makeUp(and: .white50)
         tableView.register(cellType: FlightPlanHistoryTableViewCell.self)
-        tableView.backgroundColor = .clear
         if tableType == .miniHistory {
             tableView.applyCornerRadius(Style.largeCornerRadius)
         }
-
-        tableView.tableFooterView = UIView()
+        tableView.makeUp(backgroundColor: .clear)
         tableView.dataSource = self
 
         let dataCount = data.count

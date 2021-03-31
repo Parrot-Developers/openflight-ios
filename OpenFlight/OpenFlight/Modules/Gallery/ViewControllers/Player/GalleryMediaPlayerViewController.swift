@@ -311,7 +311,7 @@ private extension GalleryMediaPlayerViewController {
             return
         }
 
-        downloadButton.updateState(currentMedia.downloadState)
+        downloadButton.updateState(currentMedia.downloadState, title: currentMedia.formattedSize)
         deleteButton.isEnabled = currentMedia.downloadState != .downloading
         switch currentMedia.downloadState {
         case .toDownload,
@@ -328,7 +328,7 @@ private extension GalleryMediaPlayerViewController {
         }
 
         // Top bar buttons (portrait).
-        downloadTopBarButton.updateState(currentMedia.downloadState)
+        downloadTopBarButton.updateState(currentMedia.downloadState, title: currentMedia.formattedSize)
         shareTopBarButton.isHidden = shareButton.isHidden
         downloadTopBarButton.isHidden = downloadButton.isHidden
         deleteTopBarButton.isEnabled = deleteButton.isEnabled

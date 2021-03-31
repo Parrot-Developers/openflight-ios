@@ -38,7 +38,7 @@ class DroneInfosState: DeviceConnectionState {
     /// Observable for current battery level.
     fileprivate(set) var batteryLevel: Observable<BatteryValueModel> = Observable(BatteryValueModel())
     /// Observable for wifi strength.
-    fileprivate(set) var wifiStrength: Observable<WifiStrength> = Observable(WifiStrength.none)
+    fileprivate(set) var wifiStrength: Observable<WifiStrength> = Observable(WifiStrength.offline)
     /// Observable for gps strength.
     fileprivate(set) var gpsStrength: Observable<GpsStrength> = Observable(GpsStrength.none)
     /// Observable for name.
@@ -52,7 +52,7 @@ class DroneInfosState: DeviceConnectionState {
     /// Observable for drone stereo vision sensor calibration.
     fileprivate(set) var droneNeedStereoVisionSensorCalibration: Observable<Bool> = Observable(false)
     /// Observable for drone cellular access. Provides the signal strength.
-    fileprivate(set) var cellularStrength: Observable<CellularStrength> = Observable(CellularStrength.none)
+    fileprivate(set) var cellularStrength: Observable<CellularStrength> = Observable(CellularStrength.offline)
     /// Observable which provides current network link. It can be cellular or wlan one.
     fileprivate(set) var currentLink: Observable<NetworkControlLinkType> = Observable(.wlan)
 
@@ -133,7 +133,9 @@ class DroneInfosViewModel<T: DroneInfosState>: DroneWatcherViewModel<T> {
     private var networkControlRef: Ref<NetworkControl>?
 
     // MARK: - Init
-    private init() { }
+    private override init() {
+        fatalError("Forbidden init")
+    }
 
     /// Init.
     ///
@@ -186,23 +188,15 @@ private extension DroneInfosViewModel {
     /// Starts watcher for battery info.
     func listenBatteryInfo(drone: Drone) {
         batteryInfoRef = drone.getInstrument(Instruments.batteryInfo) { [weak self] batteryInfo in
-            guard let batteryInfo = batteryInfo else {
-                self?.state.value.batteryLevel.set(BatteryValueModel(currentValue: nil,
-                                                                     alertLevel: .none))
-                return
-            }
-            self?.state.value.batteryLevel.set(batteryInfo.batteryValueModel)
+            let batteryLevel = BatteryValueModel(currentValue: batteryInfo?.batteryLevel)
+            self?.state.value.batteryLevel.set(batteryLevel)
         }
     }
 
     /// Starts watcher for radio.
     func listenRadio(drone: Drone) {
-        radioRef = drone.getInstrument(Instruments.radio) { [weak self] radio in
-            guard let radio = radio else {
-                self?.state.value.wifiStrength.set(WifiStrength.none)
-                return
-            }
-            self?.state.value.wifiStrength.set(radio.wifiStrength)
+        radioRef = drone.getInstrument(Instruments.radio) { [weak self] _ in
+            self?.updateWifiStrength()
         }
     }
 
@@ -276,12 +270,33 @@ private extension DroneInfosViewModel {
 
     /// Updates cellular signal strength.
     func updateCellularStrength() {
-        guard drone?.getPeripheral(Peripherals.cellular)?.isAvailable == true else {
-            state.value.cellularStrength.set(CellularStrength.none)
+        guard drone?.isConnected == true else {
+            state.value.cellularStrength.set(CellularStrength.offline)
             return
         }
 
-        let strength = drone?.getPeripheral(Peripherals.networkControl)?.cellularStrength
+        guard drone?.getPeripheral(Peripherals.cellular)?.isActivated == true else {
+            state.value.cellularStrength.set(CellularStrength.deactivated)
+            return
+        }
+
+        guard drone?.getPeripheral(Peripherals.cellular)?.isAvailable == true,
+              let strength = drone?.getPeripheral(Peripherals.networkControl)?.cellularStrength else {
+            state.value.cellularStrength.set(CellularStrength.ko0On4)
+            return
+        }
+
         state.value.cellularStrength.set(strength)
+    }
+
+    /// Updates Wi-Fi signal strength.
+    func updateWifiStrength() {
+        guard drone?.isConnected == true,
+              let strength = drone?.getInstrument(Instruments.radio)?.wifiStrength else {
+            state.value.wifiStrength.set(WifiStrength.offline)
+            return
+        }
+
+        state.value.wifiStrength.set(strength)
     }
 }

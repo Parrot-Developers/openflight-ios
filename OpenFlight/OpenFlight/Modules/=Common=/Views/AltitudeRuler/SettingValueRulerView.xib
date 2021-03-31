@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -75,7 +75,7 @@
                                     </constraints>
                                 </view>
                                 <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DW8-Uj-Afe">
-                                    <rect key="frame" x="25" y="256.5" width="50" height="42"/>
+                                    <rect key="frame" x="25" y="0.0" width="50" height="555"/>
                                     <subviews>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jzg-7c-WgR">
                                             <rect key="frame" x="24.5" y="0.0" width="1" height="10"/>
@@ -86,7 +86,7 @@
                                             </constraints>
                                         </view>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Op5-39-rY9">
-                                            <rect key="frame" x="24.5" y="32" width="1" height="10"/>
+                                            <rect key="frame" x="24.5" y="545" width="1" height="10"/>
                                             <color key="backgroundColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="calibratedRGB"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="1" id="5Xa-Ls-Gwr"/>
@@ -97,7 +97,6 @@
                                     <color key="backgroundColor" red="0.0" green="1" blue="0.54117647059999996" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="calibratedRGB"/>
                                     <constraints>
                                         <constraint firstAttribute="width" constant="50" id="9qL-X7-kak"/>
-                                        <constraint firstAttribute="height" constant="42" id="OgY-9e-bb6"/>
                                         <constraint firstItem="jzg-7c-WgR" firstAttribute="top" secondItem="DW8-Uj-Afe" secondAttribute="top" id="YN2-W3-hQI"/>
                                         <constraint firstAttribute="bottom" secondItem="Op5-39-rY9" secondAttribute="bottom" id="uYo-iQ-umM"/>
                                         <constraint firstItem="jzg-7c-WgR" firstAttribute="centerX" secondItem="DW8-Uj-Afe" secondAttribute="centerX" id="viV-RS-xxZ"/>
@@ -108,6 +107,7 @@
                             <constraints>
                                 <constraint firstItem="4yb-ub-E8L" firstAttribute="leading" secondItem="UwD-iJ-bdH" secondAttribute="leading" id="3yZ-5m-swH"/>
                                 <constraint firstAttribute="trailing" secondItem="4yb-ub-E8L" secondAttribute="trailing" id="7Nb-dj-eoQ"/>
+                                <constraint firstItem="DW8-Uj-Afe" firstAttribute="height" secondItem="qvS-rv-8jh" secondAttribute="height" id="CNY-6D-DkY"/>
                                 <constraint firstAttribute="bottom" secondItem="qvS-rv-8jh" secondAttribute="bottom" id="DKc-7A-ews"/>
                                 <constraint firstItem="DW8-Uj-Afe" firstAttribute="centerX" secondItem="UwD-iJ-bdH" secondAttribute="centerX" id="JKG-xe-yRz"/>
                                 <constraint firstItem="Op5-39-rY9" firstAttribute="centerX" secondItem="UwD-iJ-bdH" secondAttribute="centerX" id="OJt-ti-XC8"/>

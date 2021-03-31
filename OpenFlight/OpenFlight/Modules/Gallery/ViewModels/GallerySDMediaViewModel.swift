@@ -53,7 +53,6 @@ enum FormattingState {
 }
 
 /// State for `GalleryMediaViewModel.
-
 final class GallerySDMediaState: GalleryContentState {
     // MARK: - Private Properties
     /// Drone Uid.
@@ -93,7 +92,7 @@ final class GallerySDMediaState: GalleryContentState {
     ///    - downloadingItem: downloading item
     ///    - downloadStatus: download status
     ///    - downloadProgress: download progress
-    ///    - isRemoving: is removing
+    ///    - isRemoving: ViewModel is removing
     ///    - medias: media list
     ///    - sourceType: source type
     ///    - referenceDate: reference date
@@ -142,7 +141,7 @@ final class GallerySDMediaState: GalleryContentState {
     ///    - formattingProgress: SDCard formatting progress
     ///    - formattingState: SDCard formatting state
     ///    - formattingStep: SDCard formatting step
-    ///    - isRemoving: is removing
+    ///    - isRemoving: ViewModel is removing
     ///    - medias: media list
     ///    - referenceDate: reference date
     ///    - sourceType: source type
@@ -198,6 +197,7 @@ final class GallerySDMediaState: GalleryContentState {
         guard let typedOther = other as? GallerySDMediaState else {
             return super.isEqual(to: other)
         }
+
         return super.isEqual(to: typedOther)
             && self.canFormat == typedOther.canFormat
             && self.droneUid == typedOther.droneUid
@@ -233,7 +233,6 @@ final class GallerySDMediaState: GalleryContentState {
 }
 
 /// ViewModel for SDCard Gallery Media Item.
-
 final class GallerySDMediaViewModel: DroneStateViewModel<GallerySDMediaState> {
     // MARK: - Private Properties
     private let groundSdk = GroundSdk()
@@ -272,6 +271,7 @@ final class GallerySDMediaViewModel: DroneStateViewModel<GallerySDMediaState> {
     ///    - stateDidUpdate: called when drone location changed
     private override init(stateDidUpdate: ((GallerySDMediaState) -> Void)? = nil) {
         super.init(stateDidUpdate: stateDidUpdate)
+
         // Keep initial closure to prevent from breaking BaseViewModel's stateDidUpdate behaviour.
         initialClosure = stateDidUpdate
         state.valueChanged = { [weak self] state in
@@ -287,11 +287,13 @@ final class GallerySDMediaViewModel: DroneStateViewModel<GallerySDMediaState> {
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
+
         setupDroneListeners(drone: drone)
     }
 
     override func droneConnectionStateDidChange() {
         super.droneConnectionStateDidChange()
+        
         if !self.state.value.isConnected() {
             let copy = self.state.value.copy()
             copy.sourceType = .droneSdCard
@@ -301,6 +303,7 @@ final class GallerySDMediaViewModel: DroneStateViewModel<GallerySDMediaState> {
             self.state.set(copy)
         } else {
             guard let drone = drone else { return }
+
             setupDroneListeners(drone: drone)
         }
     }
@@ -348,6 +351,7 @@ extension GallerySDMediaViewModel {
     /// Refresh media list.
     func refreshMedias() {
         guard let drone = drone else { return }
+
         loadMedia(drone: drone)
     }
 
@@ -378,6 +382,7 @@ extension GallerySDMediaViewModel {
     ///     - type: formatting type
     func format(_ type: FormattingType = .quick) {
         guard let drone = drone else { return }
+
         let copy = self.state.value.copy()
         copy.formattingState = .inProgress
         self.state.set(copy)
@@ -411,6 +416,7 @@ private extension GallerySDMediaViewModel {
                 let copy = self?.state.value.copy() else {
                     return
             }
+
             // Turn storage in mega bytes.
             copy.availableSpace = Double(storage.availableSpace) / Double(StorageUtils.Constants.bytesPerGigabyte)
             copy.physicalStorageState = storage.physicalState
@@ -447,7 +453,8 @@ private extension GallerySDMediaViewModel {
 
             copy.sourceType = .droneSdCard
             copy.referenceDate = Date()
-            let allMedias = droneMediaList.compactMap({ strongSelf.convertToGalleryMedia(mediaItem: $0, drone: drone) })
+            let filteredMediaResources = droneMediaList.filter({ $0.isSdStorage })
+            let allMedias = filteredMediaResources.compactMap({ strongSelf.convertToGalleryMedia(mediaItem: $0, drone: drone) })
             copy.medias = allMedias.sorted(by: { $0.date > $1.date })
             strongSelf.state.set(copy)
         }
@@ -495,8 +502,7 @@ private extension GallerySDMediaViewModel {
     ///    - state: Gallery SDMedia State
     /// - Returns: Updated Gallery SD Media State
     func updateMediasDownloadState(state: GallerySDMediaState) -> GallerySDMediaState {
-        guard let loadingMedia = state.downloadingItem
-            else { return state }
+        guard let loadingMedia = state.downloadingItem else { return state }
 
         let isError = state.downloadStatus == .error
         var allMedia = self.state.value.medias
@@ -523,6 +529,7 @@ private extension GallerySDMediaViewModel {
             mediaItem.resources.count > index else {
                 return nil
         }
+
         return mediaItem.resources[index].galleryURL(droneId: self.state.value.droneUid,
                                                      mediaType: mediaItem.mediaType)
     }
@@ -539,6 +546,7 @@ private extension GallerySDMediaViewModel {
             mediaItem.resources.count > index else {
                 return false
         }
+
         return mediaItem.resources[index].isDownloaded(droneId: self.state.value.droneUid,
                                                        mediaType: mediaItem.mediaType)
     }
@@ -567,6 +575,7 @@ extension GallerySDMediaViewModel {
         guard let listener = listener else {
             return
         }
+
         self.sdMediaListener.remove(listener)
     }
 

@@ -33,30 +33,16 @@ import GroundSdk
 import Reachability
 
 /// View Model for remote update process.
-
 final class RemoteUpdateViewModel: DevicesStateViewModel<DeviceUpdateState>, DeviceUpdateProtocol {
-    // MARK: - Internal Properties
-    var rebootingErrorMessage: String {
-        return L10n.remoteUpdateRebootingError
-    }
-
     // MARK: - Private Properties
     private var remoteControlUpdaterRef: Ref<Updater>?
     private var reachability: Reachability?
-    private var actionKey: String {
-        return NSStringFromClass(type(of: self)) + SkyCtrl3ButtonEvent.frontBottomButton.description
-    }
 
     // MARK: - Init
     /// Init.
-    ///
-    /// - Parameters:
-    ///     - stateDidUpdate: callback to notify update state changes
-    ///     - deviceUpdateStepDidUpdate: completion block to notify update step changes
-    init(stateDidUpdate: ((DeviceUpdateState) -> Void)? = nil,
-         deviceUpdateStepDidUpdate: ((DeviceUpdateStep) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
-        self.state.value.deviceUpdateStep.valueChanged = deviceUpdateStepDidUpdate
+    override init() {
+        super.init()
+
         RemoteControlGrabManager.shared.disableRemoteControl()
     }
 
@@ -69,6 +55,7 @@ final class RemoteUpdateViewModel: DevicesStateViewModel<DeviceUpdateState>, Dev
     // MARK: - Override Funcs
     override func listenRemoteControl(remoteControl: RemoteControl) {
         super.listenRemoteControl(remoteControl: remoteControl)
+
         listenUpdater(remoteControl)
         listenReachability()
     }
@@ -125,9 +112,8 @@ private extension RemoteUpdateViewModel {
     ///     - remoteControl: current remote
     func listenUpdater(_ remoteControl: RemoteControl) {
         remoteControlUpdaterRef = remoteControl.getPeripheral(Peripherals.updater) { [weak self] updater in
-            guard let updater = updater else {
-                return
-            }
+            guard let updater = updater else { return }
+
             self?.updateCurrentDownload(updater)
             self?.updateCurrentUpdate(updater)
         }
@@ -138,9 +124,7 @@ private extension RemoteUpdateViewModel {
     /// - Parameters:
     ///     - updater: current updater
     func updateCurrentDownload(_ updater: Updater) {
-        guard let currentDownload = updater.currentDownload else {
-            return
-        }
+        guard let currentDownload = updater.currentDownload else { return }
 
         let copy = state.value.copy()
         switch currentDownload.state {
@@ -153,6 +137,7 @@ private extension RemoteUpdateViewModel {
         case .success:
             copy.deviceUpdateStep.set(.downloadCompleted)
         }
+
         copy.currentProgress = currentDownload.currentProgress
         state.set(copy)
     }
@@ -162,9 +147,7 @@ private extension RemoteUpdateViewModel {
     /// - Parameters:
     ///     - updater: current updater
     func updateCurrentUpdate(_ updater: Updater) {
-        guard let currentUpdate = updater.currentUpdate else {
-            return
-        }
+        guard let currentUpdate = updater.currentUpdate else { return }
 
         let copy = state.value.copy()
         switch currentUpdate.state {
@@ -181,6 +164,7 @@ private extension RemoteUpdateViewModel {
         case .success:
             copy.deviceUpdateStep.set(.updateCompleted)
         }
+
         copy.currentProgress = currentUpdate.currentProgress
         state.set(copy)
     }
@@ -194,6 +178,7 @@ private extension RemoteUpdateViewModel {
         } catch {
             copy.isNetworkReachable = false
         }
+
         reachability?.whenReachable = { _ in
             copy.isNetworkReachable = true
             self.state.set(copy)

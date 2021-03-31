@@ -70,7 +70,7 @@ final class GalleryDeviceMediaState: GalleryContentState {
     ///    - downloadingItem: downloading item
     ///    - downloadStatus: download status
     ///    - downloadProgress: download progress
-    ///    - isRemoving: is removing
+    ///    - isRemoving: ViewModel is removing
     ///    - medias: media list
     ///    - sourceType: source type
     ///    - referenceDate: reference date

@@ -184,8 +184,9 @@ final class HUDAlertPanelReturnHomeViewModel: DevicesStateViewModel<HUDAlertPane
     }
 
     // MARK: - Init
-    init() {
+    override init() {
         super.init()
+
         listenBatteryInfo()
     }
 
@@ -358,7 +359,8 @@ private extension HUDAlertPanelReturnHomeViewModel {
 
         self.state.set(copy)
         updatePowerAlarm()
-        updateBatteryInfoState(alertLevel: batteryRemoteControlRef?.value?.alertLevel,
+        let remoteBatteryInfo = remoteControl?.getInstrument(Instruments.batteryInfo)
+        updateBatteryInfoState(alertLevel: remoteBatteryInfo?.batteryValueModel.alertLevel,
                                deviceType: .remoteControl)
         updateBatteryInfoState(alertLevel: UIDevice.current.batteryValueModel.alertLevel,
                                deviceType: .userDevice)

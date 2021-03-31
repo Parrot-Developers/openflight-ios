@@ -144,9 +144,6 @@ final class HUDAlertPanelHandLaunchViewModel: DroneStateViewModel<HUDAlertPanelH
     private var manualPilotingRef: Ref<ManualCopterPilotingItf>?
     private var timer: Timer?
     private var cancelTimer: Timer?
-    private var actionKey: String {
-        return NSStringFromClass(type(of: self)) + SkyCtrl3ButtonEvent.frontBottomButton.description
-    }
     private var takeOffAlertViewModel: TakeOffAlertViewModel = TakeOffAlertViewModel()
 
     // MARK: - Private Enums

@@ -38,9 +38,10 @@ final class SettingsInterfaceViewController: SettingsContentViewController {
 
         resetCellLabel = L10n.settingsInterfaceReset
         // Setup view model.
-        viewModel = InterfaceViewModel(stateDidUpdate: { [weak self] state in
+        viewModel = InterfaceViewModel()
+        viewModel?.state.valueChanged = { [weak self] state in
             self?.updateDataSource(state)
-        })
+        }
         // Inital data source update.
         updateDataSource()
     }

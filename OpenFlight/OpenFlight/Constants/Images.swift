@@ -315,7 +315,6 @@ public enum Asset {
       public static let icRearLeftMotorAlert = ImageAsset(name: "icRearLeftMotorAlert")
       public static let icRearRightMotorAlert = ImageAsset(name: "icRearRightMotorAlert")
       public static let icRefreshAlert = ImageAsset(name: "icRefreshAlert")
-      public static let icVerticalCameraFailureAlert = ImageAsset(name: "icVerticalCameraFailureAlert")
       public static let allValues: [ImageAsset] = [
         icDownloadAlert,
         icDroneCalibrationAlert,
@@ -329,7 +328,6 @@ public enum Asset {
         icRearLeftMotorAlert,
         icRearRightMotorAlert,
         icRefreshAlert,
-        icVerticalCameraFailureAlert,
       ]
     }
     public static let icPanelActionButton = ImageAsset(name: "icPanelActionButton")
@@ -348,7 +346,6 @@ public enum Asset {
       public static let icCameraModePhoto = ImageAsset(name: "icCameraModePhoto")
       public static let icCameraModeSlowMotion = ImageAsset(name: "icCameraModeSlowMotion")
       public static let icCameraModeTimeLapse = ImageAsset(name: "icCameraModeTimeLapse")
-      public static let icCameraModeTimer = ImageAsset(name: "icCameraModeTimer")
       public static let icCameraModeVideo = ImageAsset(name: "icCameraModeVideo")
       public static let allValues: [ImageAsset] = [
         icCameraModeBracketing,
@@ -359,7 +356,6 @@ public enum Asset {
         icCameraModePhoto,
         icCameraModeSlowMotion,
         icCameraModeTimeLapse,
-        icCameraModeTimer,
         icCameraModeVideo,
       ]
     }
@@ -458,33 +454,33 @@ public enum Asset {
 
     public static let ic4GBigConnected = ImageAsset(name: "ic4GBigConnected")
     public static let ic4GBigConnecting = ImageAsset(name: "ic4GBigConnecting")
+    public static let ic4GDeactivated = ImageAsset(name: "ic4GDeactivated")
     public static let ic4GInactiveQuality1 = ImageAsset(name: "ic4GInactiveQuality1")
     public static let ic4GInactiveQuality2 = ImageAsset(name: "ic4GInactiveQuality2")
     public static let ic4GInactiveQuality3 = ImageAsset(name: "ic4GInactiveQuality3")
     public static let ic4GInactiveQuality4 = ImageAsset(name: "ic4GInactiveQuality4")
     public static let ic4GInactiveQuality5 = ImageAsset(name: "ic4GInactiveQuality5")
-    public static let ic4GNoSignal = ImageAsset(name: "ic4GNoSignal")
     public static let ic4GQuality1 = ImageAsset(name: "ic4GQuality1")
     public static let ic4GQuality2 = ImageAsset(name: "ic4GQuality2")
     public static let ic4GQuality3 = ImageAsset(name: "ic4GQuality3")
     public static let ic4GQuality4 = ImageAsset(name: "ic4GQuality4")
     public static let ic4GQuality5 = ImageAsset(name: "ic4GQuality5")
-    public static let ic4GQuality6 = ImageAsset(name: "ic4GQuality6")
+    public static let icon4GOffline = ImageAsset(name: "icon4GOffline")
     public static let allValues: [ImageAsset] = [
       ic4GBigConnected,
       ic4GBigConnecting,
+      ic4GDeactivated,
       ic4GInactiveQuality1,
       ic4GInactiveQuality2,
       ic4GInactiveQuality3,
       ic4GInactiveQuality4,
       ic4GInactiveQuality5,
-      ic4GNoSignal,
       ic4GQuality1,
       ic4GQuality2,
       ic4GQuality3,
       ic4GQuality4,
       ic4GQuality5,
-      ic4GQuality6,
+      icon4GOffline,
     ]
   }
   public enum Common {
@@ -517,7 +513,7 @@ public enum Asset {
       public static let icExpand = ImageAsset(name: "icExpand")
       public static let icExport = ImageAsset(name: "icExport")
       public static let icFlightPlanSettings = ImageAsset(name: "icFlightPlanSettings")
-      public static let icLiveOn = ImageAsset(name: "icLiveOn")
+      public static let icFlightPlanTimer = ImageAsset(name: "icFlightPlanTimer")
       public static let icNext = ImageAsset(name: "icNext")
       public static let icPasswordHide = ImageAsset(name: "icPasswordHide")
       public static let icPasswordShow = ImageAsset(name: "icPasswordShow")
@@ -564,7 +560,7 @@ public enum Asset {
         icExpand,
         icExport,
         icFlightPlanSettings,
-        icLiveOn,
+        icFlightPlanTimer,
         icNext,
         icPasswordHide,
         icPasswordShow,
@@ -662,7 +658,6 @@ public enum Asset {
         flyButton0026,
       ]
     }
-    public static let backgroundMarketing = ImageAsset(name: "backgroundMarketing")
     public static let icCardMini = ImageAsset(name: "icCardMini")
     public static let icController = ImageAsset(name: "icController")
     public static let icDrone = ImageAsset(name: "icDrone")
@@ -672,10 +667,9 @@ public enum Asset {
     public static let icRemote = ImageAsset(name: "icRemote")
     public static let icTimePassedMini = ImageAsset(name: "icTimePassedMini")
     public static let icTotalDistance = ImageAsset(name: "icTotalDistance")
+    public static let icUpdate = ImageAsset(name: "icUpdate")
     public static let icVideoMini = ImageAsset(name: "icVideoMini")
-    public static let icupdate = ImageAsset(name: "icupdate")
     public static let allValues: [ImageAsset] = [
-      backgroundMarketing,
       icCardMini,
       icController,
       icDrone,
@@ -685,203 +679,203 @@ public enum Asset {
       icRemote,
       icTimePassedMini,
       icTotalDistance,
+      icUpdate,
       icVideoMini,
-      icupdate,
     ]
   }
   public enum Drone {
 
     public enum Calibration {
       public enum Pitch {
-        public static let calibrationPitch00001 = ImageAsset(name: "Calibration_pitch_00001")
-        public static let calibrationPitch00002 = ImageAsset(name: "Calibration_pitch_00002")
-        public static let calibrationPitch00003 = ImageAsset(name: "Calibration_pitch_00003")
-        public static let calibrationPitch00004 = ImageAsset(name: "Calibration_pitch_00004")
-        public static let calibrationPitch00005 = ImageAsset(name: "Calibration_pitch_00005")
-        public static let calibrationPitch00006 = ImageAsset(name: "Calibration_pitch_00006")
-        public static let calibrationPitch00007 = ImageAsset(name: "Calibration_pitch_00007")
-        public static let calibrationPitch00008 = ImageAsset(name: "Calibration_pitch_00008")
-        public static let calibrationPitch00009 = ImageAsset(name: "Calibration_pitch_00009")
-        public static let calibrationPitch00010 = ImageAsset(name: "Calibration_pitch_00010")
-        public static let calibrationPitch00011 = ImageAsset(name: "Calibration_pitch_00011")
-        public static let calibrationPitch00012 = ImageAsset(name: "Calibration_pitch_00012")
-        public static let calibrationPitch00013 = ImageAsset(name: "Calibration_pitch_00013")
-        public static let calibrationPitch00014 = ImageAsset(name: "Calibration_pitch_00014")
-        public static let calibrationPitch00015 = ImageAsset(name: "Calibration_pitch_00015")
-        public static let calibrationPitch00016 = ImageAsset(name: "Calibration_pitch_00016")
-        public static let calibrationPitch00017 = ImageAsset(name: "Calibration_pitch_00017")
-        public static let calibrationPitch00018 = ImageAsset(name: "Calibration_pitch_00018")
-        public static let calibrationPitch00019 = ImageAsset(name: "Calibration_pitch_00019")
-        public static let calibrationPitch00020 = ImageAsset(name: "Calibration_pitch_00020")
-        public static let calibrationPitch00021 = ImageAsset(name: "Calibration_pitch_00021")
-        public static let calibrationPitch00022 = ImageAsset(name: "Calibration_pitch_00022")
-        public static let calibrationPitch00023 = ImageAsset(name: "Calibration_pitch_00023")
-        public static let calibrationPitch00024 = ImageAsset(name: "Calibration_pitch_00024")
-        public static let calibrationPitch00025 = ImageAsset(name: "Calibration_pitch_00025")
-        public static let calibrationPitch00026 = ImageAsset(name: "Calibration_pitch_00026")
-        public static let calibrationPitch00027 = ImageAsset(name: "Calibration_pitch_00027")
-        public static let calibrationPitch00028 = ImageAsset(name: "Calibration_pitch_00028")
-        public static let calibrationPitch00029 = ImageAsset(name: "Calibration_pitch_00029")
-        public static let calibrationPitch00030 = ImageAsset(name: "Calibration_pitch_00030")
+        public static let icAnafi2CalibrationPitch00 = ImageAsset(name: "icAnafi2CalibrationPitch00")
+        public static let icAnafi2CalibrationPitch01 = ImageAsset(name: "icAnafi2CalibrationPitch01")
+        public static let icAnafi2CalibrationPitch02 = ImageAsset(name: "icAnafi2CalibrationPitch02")
+        public static let icAnafi2CalibrationPitch03 = ImageAsset(name: "icAnafi2CalibrationPitch03")
+        public static let icAnafi2CalibrationPitch04 = ImageAsset(name: "icAnafi2CalibrationPitch04")
+        public static let icAnafi2CalibrationPitch05 = ImageAsset(name: "icAnafi2CalibrationPitch05")
+        public static let icAnafi2CalibrationPitch06 = ImageAsset(name: "icAnafi2CalibrationPitch06")
+        public static let icAnafi2CalibrationPitch07 = ImageAsset(name: "icAnafi2CalibrationPitch07")
+        public static let icAnafi2CalibrationPitch08 = ImageAsset(name: "icAnafi2CalibrationPitch08")
+        public static let icAnafi2CalibrationPitch09 = ImageAsset(name: "icAnafi2CalibrationPitch09")
+        public static let icAnafi2CalibrationPitch10 = ImageAsset(name: "icAnafi2CalibrationPitch10")
+        public static let icAnafi2CalibrationPitch11 = ImageAsset(name: "icAnafi2CalibrationPitch11")
+        public static let icAnafi2CalibrationPitch12 = ImageAsset(name: "icAnafi2CalibrationPitch12")
+        public static let icAnafi2CalibrationPitch13 = ImageAsset(name: "icAnafi2CalibrationPitch13")
+        public static let icAnafi2CalibrationPitch14 = ImageAsset(name: "icAnafi2CalibrationPitch14")
+        public static let icAnafi2CalibrationPitch15 = ImageAsset(name: "icAnafi2CalibrationPitch15")
+        public static let icAnafi2CalibrationPitch16 = ImageAsset(name: "icAnafi2CalibrationPitch16")
+        public static let icAnafi2CalibrationPitch17 = ImageAsset(name: "icAnafi2CalibrationPitch17")
+        public static let icAnafi2CalibrationPitch18 = ImageAsset(name: "icAnafi2CalibrationPitch18")
+        public static let icAnafi2CalibrationPitch19 = ImageAsset(name: "icAnafi2CalibrationPitch19")
+        public static let icAnafi2CalibrationPitch20 = ImageAsset(name: "icAnafi2CalibrationPitch20")
+        public static let icAnafi2CalibrationPitch21 = ImageAsset(name: "icAnafi2CalibrationPitch21")
+        public static let icAnafi2CalibrationPitch22 = ImageAsset(name: "icAnafi2CalibrationPitch22")
+        public static let icAnafi2CalibrationPitch23 = ImageAsset(name: "icAnafi2CalibrationPitch23")
+        public static let icAnafi2CalibrationPitch24 = ImageAsset(name: "icAnafi2CalibrationPitch24")
+        public static let icAnafi2CalibrationPitch25 = ImageAsset(name: "icAnafi2CalibrationPitch25")
+        public static let icAnafi2CalibrationPitch26 = ImageAsset(name: "icAnafi2CalibrationPitch26")
+        public static let icAnafi2CalibrationPitch27 = ImageAsset(name: "icAnafi2CalibrationPitch27")
+        public static let icAnafi2CalibrationPitch28 = ImageAsset(name: "icAnafi2CalibrationPitch28")
+        public static let icAnafi2CalibrationPitch29 = ImageAsset(name: "icAnafi2CalibrationPitch29")
         public static let allValues: [ImageAsset] = [
-          calibrationPitch00001,
-          calibrationPitch00002,
-          calibrationPitch00003,
-          calibrationPitch00004,
-          calibrationPitch00005,
-          calibrationPitch00006,
-          calibrationPitch00007,
-          calibrationPitch00008,
-          calibrationPitch00009,
-          calibrationPitch00010,
-          calibrationPitch00011,
-          calibrationPitch00012,
-          calibrationPitch00013,
-          calibrationPitch00014,
-          calibrationPitch00015,
-          calibrationPitch00016,
-          calibrationPitch00017,
-          calibrationPitch00018,
-          calibrationPitch00019,
-          calibrationPitch00020,
-          calibrationPitch00021,
-          calibrationPitch00022,
-          calibrationPitch00023,
-          calibrationPitch00024,
-          calibrationPitch00025,
-          calibrationPitch00026,
-          calibrationPitch00027,
-          calibrationPitch00028,
-          calibrationPitch00029,
-          calibrationPitch00030,
+          icAnafi2CalibrationPitch00,
+          icAnafi2CalibrationPitch01,
+          icAnafi2CalibrationPitch02,
+          icAnafi2CalibrationPitch03,
+          icAnafi2CalibrationPitch04,
+          icAnafi2CalibrationPitch05,
+          icAnafi2CalibrationPitch06,
+          icAnafi2CalibrationPitch07,
+          icAnafi2CalibrationPitch08,
+          icAnafi2CalibrationPitch09,
+          icAnafi2CalibrationPitch10,
+          icAnafi2CalibrationPitch11,
+          icAnafi2CalibrationPitch12,
+          icAnafi2CalibrationPitch13,
+          icAnafi2CalibrationPitch14,
+          icAnafi2CalibrationPitch15,
+          icAnafi2CalibrationPitch16,
+          icAnafi2CalibrationPitch17,
+          icAnafi2CalibrationPitch18,
+          icAnafi2CalibrationPitch19,
+          icAnafi2CalibrationPitch20,
+          icAnafi2CalibrationPitch21,
+          icAnafi2CalibrationPitch22,
+          icAnafi2CalibrationPitch23,
+          icAnafi2CalibrationPitch24,
+          icAnafi2CalibrationPitch25,
+          icAnafi2CalibrationPitch26,
+          icAnafi2CalibrationPitch27,
+          icAnafi2CalibrationPitch28,
+          icAnafi2CalibrationPitch29,
         ]
       }
       public enum Roll {
-        public static let calibrationRoll00001 = ImageAsset(name: "Calibration_roll_00001")
-        public static let calibrationRoll00002 = ImageAsset(name: "Calibration_roll_00002")
-        public static let calibrationRoll00003 = ImageAsset(name: "Calibration_roll_00003")
-        public static let calibrationRoll00004 = ImageAsset(name: "Calibration_roll_00004")
-        public static let calibrationRoll00005 = ImageAsset(name: "Calibration_roll_00005")
-        public static let calibrationRoll00006 = ImageAsset(name: "Calibration_roll_00006")
-        public static let calibrationRoll00007 = ImageAsset(name: "Calibration_roll_00007")
-        public static let calibrationRoll00008 = ImageAsset(name: "Calibration_roll_00008")
-        public static let calibrationRoll00009 = ImageAsset(name: "Calibration_roll_00009")
-        public static let calibrationRoll00010 = ImageAsset(name: "Calibration_roll_00010")
-        public static let calibrationRoll00011 = ImageAsset(name: "Calibration_roll_00011")
-        public static let calibrationRoll00012 = ImageAsset(name: "Calibration_roll_00012")
-        public static let calibrationRoll00013 = ImageAsset(name: "Calibration_roll_00013")
-        public static let calibrationRoll00014 = ImageAsset(name: "Calibration_roll_00014")
-        public static let calibrationRoll00015 = ImageAsset(name: "Calibration_roll_00015")
-        public static let calibrationRoll00016 = ImageAsset(name: "Calibration_roll_00016")
-        public static let calibrationRoll00017 = ImageAsset(name: "Calibration_roll_00017")
-        public static let calibrationRoll00018 = ImageAsset(name: "Calibration_roll_00018")
-        public static let calibrationRoll00019 = ImageAsset(name: "Calibration_roll_00019")
-        public static let calibrationRoll00020 = ImageAsset(name: "Calibration_roll_00020")
-        public static let calibrationRoll00021 = ImageAsset(name: "Calibration_roll_00021")
-        public static let calibrationRoll00022 = ImageAsset(name: "Calibration_roll_00022")
-        public static let calibrationRoll00023 = ImageAsset(name: "Calibration_roll_00023")
-        public static let calibrationRoll00024 = ImageAsset(name: "Calibration_roll_00024")
-        public static let calibrationRoll00025 = ImageAsset(name: "Calibration_roll_00025")
-        public static let calibrationRoll00026 = ImageAsset(name: "Calibration_roll_00026")
-        public static let calibrationRoll00027 = ImageAsset(name: "Calibration_roll_00027")
-        public static let calibrationRoll00028 = ImageAsset(name: "Calibration_roll_00028")
-        public static let calibrationRoll00029 = ImageAsset(name: "Calibration_roll_00029")
-        public static let calibrationRoll00030 = ImageAsset(name: "Calibration_roll_00030")
+        public static let icAnafi2CalibrationRoll00 = ImageAsset(name: "icAnafi2CalibrationRoll00")
+        public static let icAnafi2CalibrationRoll01 = ImageAsset(name: "icAnafi2CalibrationRoll01")
+        public static let icAnafi2CalibrationRoll02 = ImageAsset(name: "icAnafi2CalibrationRoll02")
+        public static let icAnafi2CalibrationRoll03 = ImageAsset(name: "icAnafi2CalibrationRoll03")
+        public static let icAnafi2CalibrationRoll04 = ImageAsset(name: "icAnafi2CalibrationRoll04")
+        public static let icAnafi2CalibrationRoll05 = ImageAsset(name: "icAnafi2CalibrationRoll05")
+        public static let icAnafi2CalibrationRoll06 = ImageAsset(name: "icAnafi2CalibrationRoll06")
+        public static let icAnafi2CalibrationRoll07 = ImageAsset(name: "icAnafi2CalibrationRoll07")
+        public static let icAnafi2CalibrationRoll08 = ImageAsset(name: "icAnafi2CalibrationRoll08")
+        public static let icAnafi2CalibrationRoll09 = ImageAsset(name: "icAnafi2CalibrationRoll09")
+        public static let icAnafi2CalibrationRoll10 = ImageAsset(name: "icAnafi2CalibrationRoll10")
+        public static let icAnafi2CalibrationRoll11 = ImageAsset(name: "icAnafi2CalibrationRoll11")
+        public static let icAnafi2CalibrationRoll12 = ImageAsset(name: "icAnafi2CalibrationRoll12")
+        public static let icAnafi2CalibrationRoll13 = ImageAsset(name: "icAnafi2CalibrationRoll13")
+        public static let icAnafi2CalibrationRoll14 = ImageAsset(name: "icAnafi2CalibrationRoll14")
+        public static let icAnafi2CalibrationRoll15 = ImageAsset(name: "icAnafi2CalibrationRoll15")
+        public static let icAnafi2CalibrationRoll16 = ImageAsset(name: "icAnafi2CalibrationRoll16")
+        public static let icAnafi2CalibrationRoll17 = ImageAsset(name: "icAnafi2CalibrationRoll17")
+        public static let icAnafi2CalibrationRoll18 = ImageAsset(name: "icAnafi2CalibrationRoll18")
+        public static let icAnafi2CalibrationRoll19 = ImageAsset(name: "icAnafi2CalibrationRoll19")
+        public static let icAnafi2CalibrationRoll20 = ImageAsset(name: "icAnafi2CalibrationRoll20")
+        public static let icAnafi2CalibrationRoll21 = ImageAsset(name: "icAnafi2CalibrationRoll21")
+        public static let icAnafi2CalibrationRoll22 = ImageAsset(name: "icAnafi2CalibrationRoll22")
+        public static let icAnafi2CalibrationRoll23 = ImageAsset(name: "icAnafi2CalibrationRoll23")
+        public static let icAnafi2CalibrationRoll24 = ImageAsset(name: "icAnafi2CalibrationRoll24")
+        public static let icAnafi2CalibrationRoll25 = ImageAsset(name: "icAnafi2CalibrationRoll25")
+        public static let icAnafi2CalibrationRoll26 = ImageAsset(name: "icAnafi2CalibrationRoll26")
+        public static let icAnafi2CalibrationRoll27 = ImageAsset(name: "icAnafi2CalibrationRoll27")
+        public static let icAnafi2CalibrationRoll28 = ImageAsset(name: "icAnafi2CalibrationRoll28")
+        public static let icAnafi2CalibrationRoll29 = ImageAsset(name: "icAnafi2CalibrationRoll29")
         public static let allValues: [ImageAsset] = [
-          calibrationRoll00001,
-          calibrationRoll00002,
-          calibrationRoll00003,
-          calibrationRoll00004,
-          calibrationRoll00005,
-          calibrationRoll00006,
-          calibrationRoll00007,
-          calibrationRoll00008,
-          calibrationRoll00009,
-          calibrationRoll00010,
-          calibrationRoll00011,
-          calibrationRoll00012,
-          calibrationRoll00013,
-          calibrationRoll00014,
-          calibrationRoll00015,
-          calibrationRoll00016,
-          calibrationRoll00017,
-          calibrationRoll00018,
-          calibrationRoll00019,
-          calibrationRoll00020,
-          calibrationRoll00021,
-          calibrationRoll00022,
-          calibrationRoll00023,
-          calibrationRoll00024,
-          calibrationRoll00025,
-          calibrationRoll00026,
-          calibrationRoll00027,
-          calibrationRoll00028,
-          calibrationRoll00029,
-          calibrationRoll00030,
+          icAnafi2CalibrationRoll00,
+          icAnafi2CalibrationRoll01,
+          icAnafi2CalibrationRoll02,
+          icAnafi2CalibrationRoll03,
+          icAnafi2CalibrationRoll04,
+          icAnafi2CalibrationRoll05,
+          icAnafi2CalibrationRoll06,
+          icAnafi2CalibrationRoll07,
+          icAnafi2CalibrationRoll08,
+          icAnafi2CalibrationRoll09,
+          icAnafi2CalibrationRoll10,
+          icAnafi2CalibrationRoll11,
+          icAnafi2CalibrationRoll12,
+          icAnafi2CalibrationRoll13,
+          icAnafi2CalibrationRoll14,
+          icAnafi2CalibrationRoll15,
+          icAnafi2CalibrationRoll16,
+          icAnafi2CalibrationRoll17,
+          icAnafi2CalibrationRoll18,
+          icAnafi2CalibrationRoll19,
+          icAnafi2CalibrationRoll20,
+          icAnafi2CalibrationRoll21,
+          icAnafi2CalibrationRoll22,
+          icAnafi2CalibrationRoll23,
+          icAnafi2CalibrationRoll24,
+          icAnafi2CalibrationRoll25,
+          icAnafi2CalibrationRoll26,
+          icAnafi2CalibrationRoll27,
+          icAnafi2CalibrationRoll28,
+          icAnafi2CalibrationRoll29,
         ]
       }
       public enum Yaw {
-        public static let calibrationYaw00001 = ImageAsset(name: "Calibration_yaw_00001")
-        public static let calibrationYaw00002 = ImageAsset(name: "Calibration_yaw_00002")
-        public static let calibrationYaw00003 = ImageAsset(name: "Calibration_yaw_00003")
-        public static let calibrationYaw00004 = ImageAsset(name: "Calibration_yaw_00004")
-        public static let calibrationYaw00005 = ImageAsset(name: "Calibration_yaw_00005")
-        public static let calibrationYaw00006 = ImageAsset(name: "Calibration_yaw_00006")
-        public static let calibrationYaw00007 = ImageAsset(name: "Calibration_yaw_00007")
-        public static let calibrationYaw00008 = ImageAsset(name: "Calibration_yaw_00008")
-        public static let calibrationYaw00009 = ImageAsset(name: "Calibration_yaw_00009")
-        public static let calibrationYaw00010 = ImageAsset(name: "Calibration_yaw_00010")
-        public static let calibrationYaw00011 = ImageAsset(name: "Calibration_yaw_00011")
-        public static let calibrationYaw00012 = ImageAsset(name: "Calibration_yaw_00012")
-        public static let calibrationYaw00013 = ImageAsset(name: "Calibration_yaw_00013")
-        public static let calibrationYaw00014 = ImageAsset(name: "Calibration_yaw_00014")
-        public static let calibrationYaw00015 = ImageAsset(name: "Calibration_yaw_00015")
-        public static let calibrationYaw00016 = ImageAsset(name: "Calibration_yaw_00016")
-        public static let calibrationYaw00017 = ImageAsset(name: "Calibration_yaw_00017")
-        public static let calibrationYaw00018 = ImageAsset(name: "Calibration_yaw_00018")
-        public static let calibrationYaw00019 = ImageAsset(name: "Calibration_yaw_00019")
-        public static let calibrationYaw00020 = ImageAsset(name: "Calibration_yaw_00020")
-        public static let calibrationYaw00021 = ImageAsset(name: "Calibration_yaw_00021")
-        public static let calibrationYaw00022 = ImageAsset(name: "Calibration_yaw_00022")
-        public static let calibrationYaw00023 = ImageAsset(name: "Calibration_yaw_00023")
-        public static let calibrationYaw00024 = ImageAsset(name: "Calibration_yaw_00024")
-        public static let calibrationYaw00025 = ImageAsset(name: "Calibration_yaw_00025")
-        public static let calibrationYaw00026 = ImageAsset(name: "Calibration_yaw_00026")
-        public static let calibrationYaw00027 = ImageAsset(name: "Calibration_yaw_00027")
-        public static let calibrationYaw00028 = ImageAsset(name: "Calibration_yaw_00028")
-        public static let calibrationYaw00029 = ImageAsset(name: "Calibration_yaw_00029")
-        public static let calibrationYaw00030 = ImageAsset(name: "Calibration_yaw_00030")
+        public static let icAnafi2CalibrationYaw00 = ImageAsset(name: "icAnafi2CalibrationYaw00")
+        public static let icAnafi2CalibrationYaw01 = ImageAsset(name: "icAnafi2CalibrationYaw01")
+        public static let icAnafi2CalibrationYaw02 = ImageAsset(name: "icAnafi2CalibrationYaw02")
+        public static let icAnafi2CalibrationYaw03 = ImageAsset(name: "icAnafi2CalibrationYaw03")
+        public static let icAnafi2CalibrationYaw04 = ImageAsset(name: "icAnafi2CalibrationYaw04")
+        public static let icAnafi2CalibrationYaw05 = ImageAsset(name: "icAnafi2CalibrationYaw05")
+        public static let icAnafi2CalibrationYaw06 = ImageAsset(name: "icAnafi2CalibrationYaw06")
+        public static let icAnafi2CalibrationYaw07 = ImageAsset(name: "icAnafi2CalibrationYaw07")
+        public static let icAnafi2CalibrationYaw08 = ImageAsset(name: "icAnafi2CalibrationYaw08")
+        public static let icAnafi2CalibrationYaw09 = ImageAsset(name: "icAnafi2CalibrationYaw09")
+        public static let icAnafi2CalibrationYaw10 = ImageAsset(name: "icAnafi2CalibrationYaw10")
+        public static let icAnafi2CalibrationYaw11 = ImageAsset(name: "icAnafi2CalibrationYaw11")
+        public static let icAnafi2CalibrationYaw12 = ImageAsset(name: "icAnafi2CalibrationYaw12")
+        public static let icAnafi2CalibrationYaw13 = ImageAsset(name: "icAnafi2CalibrationYaw13")
+        public static let icAnafi2CalibrationYaw14 = ImageAsset(name: "icAnafi2CalibrationYaw14")
+        public static let icAnafi2CalibrationYaw15 = ImageAsset(name: "icAnafi2CalibrationYaw15")
+        public static let icAnafi2CalibrationYaw16 = ImageAsset(name: "icAnafi2CalibrationYaw16")
+        public static let icAnafi2CalibrationYaw17 = ImageAsset(name: "icAnafi2CalibrationYaw17")
+        public static let icAnafi2CalibrationYaw18 = ImageAsset(name: "icAnafi2CalibrationYaw18")
+        public static let icAnafi2CalibrationYaw19 = ImageAsset(name: "icAnafi2CalibrationYaw19")
+        public static let icAnafi2CalibrationYaw20 = ImageAsset(name: "icAnafi2CalibrationYaw20")
+        public static let icAnafi2CalibrationYaw21 = ImageAsset(name: "icAnafi2CalibrationYaw21")
+        public static let icAnafi2CalibrationYaw22 = ImageAsset(name: "icAnafi2CalibrationYaw22")
+        public static let icAnafi2CalibrationYaw23 = ImageAsset(name: "icAnafi2CalibrationYaw23")
+        public static let icAnafi2CalibrationYaw24 = ImageAsset(name: "icAnafi2CalibrationYaw24")
+        public static let icAnafi2CalibrationYaw25 = ImageAsset(name: "icAnafi2CalibrationYaw25")
+        public static let icAnafi2CalibrationYaw26 = ImageAsset(name: "icAnafi2CalibrationYaw26")
+        public static let icAnafi2CalibrationYaw27 = ImageAsset(name: "icAnafi2CalibrationYaw27")
+        public static let icAnafi2CalibrationYaw28 = ImageAsset(name: "icAnafi2CalibrationYaw28")
+        public static let icAnafi2CalibrationYaw29 = ImageAsset(name: "icAnafi2CalibrationYaw29")
         public static let allValues: [ImageAsset] = [
-          calibrationYaw00001,
-          calibrationYaw00002,
-          calibrationYaw00003,
-          calibrationYaw00004,
-          calibrationYaw00005,
-          calibrationYaw00006,
-          calibrationYaw00007,
-          calibrationYaw00008,
-          calibrationYaw00009,
-          calibrationYaw00010,
-          calibrationYaw00011,
-          calibrationYaw00012,
-          calibrationYaw00013,
-          calibrationYaw00014,
-          calibrationYaw00015,
-          calibrationYaw00016,
-          calibrationYaw00017,
-          calibrationYaw00018,
-          calibrationYaw00019,
-          calibrationYaw00020,
-          calibrationYaw00021,
-          calibrationYaw00022,
-          calibrationYaw00023,
-          calibrationYaw00024,
-          calibrationYaw00025,
-          calibrationYaw00026,
-          calibrationYaw00027,
-          calibrationYaw00028,
-          calibrationYaw00029,
-          calibrationYaw00030,
+          icAnafi2CalibrationYaw00,
+          icAnafi2CalibrationYaw01,
+          icAnafi2CalibrationYaw02,
+          icAnafi2CalibrationYaw03,
+          icAnafi2CalibrationYaw04,
+          icAnafi2CalibrationYaw05,
+          icAnafi2CalibrationYaw06,
+          icAnafi2CalibrationYaw07,
+          icAnafi2CalibrationYaw08,
+          icAnafi2CalibrationYaw09,
+          icAnafi2CalibrationYaw10,
+          icAnafi2CalibrationYaw11,
+          icAnafi2CalibrationYaw12,
+          icAnafi2CalibrationYaw13,
+          icAnafi2CalibrationYaw14,
+          icAnafi2CalibrationYaw15,
+          icAnafi2CalibrationYaw16,
+          icAnafi2CalibrationYaw17,
+          icAnafi2CalibrationYaw18,
+          icAnafi2CalibrationYaw19,
+          icAnafi2CalibrationYaw20,
+          icAnafi2CalibrationYaw21,
+          icAnafi2CalibrationYaw22,
+          icAnafi2CalibrationYaw23,
+          icAnafi2CalibrationYaw24,
+          icAnafi2CalibrationYaw25,
+          icAnafi2CalibrationYaw26,
+          icAnafi2CalibrationYaw27,
+          icAnafi2CalibrationYaw28,
+          icAnafi2CalibrationYaw29,
         ]
       }
       public static let allValues: [ImageAsset] = [
@@ -898,6 +892,7 @@ public enum Asset {
     public static let icDroneMotorError = ImageAsset(name: "icDroneMotorError")
     public static let icDroneMotorOk = ImageAsset(name: "icDroneMotorOk")
     public static let icDroneMotorWarning = ImageAsset(name: "icDroneMotorWarning")
+    public static let icDroneOpenYourDrone = ImageAsset(name: "icDroneOpenYourDrone")
     public static let icDronePassword = ImageAsset(name: "icDronePassword")
     public static let icDroneStereoVisionOk = ImageAsset(name: "icDroneStereoVisionOk")
     public static let icDroneStereoVisionWarning = ImageAsset(name: "icDroneStereoVisionWarning")
@@ -933,6 +928,7 @@ public enum Asset {
       icDroneMotorError,
       icDroneMotorOk,
       icDroneMotorWarning,
+      icDroneOpenYourDrone,
       icDronePassword,
       icDroneStereoVisionOk,
       icDroneStereoVisionWarning,
@@ -990,8 +986,6 @@ public enum Asset {
       ]
     }
     public enum Panorama {
-      public static let customChoice = ImageAsset(name: "customChoice")
-      public static let customEdit = ImageAsset(name: "customEdit")
       public static let highQualityChoice = ImageAsset(name: "highQualityChoice")
       public static let icDownload = ImageAsset(name: "icDownload")
       public static let icDownloadBig = ImageAsset(name: "icDownloadBig")
@@ -1011,8 +1005,6 @@ public enum Asset {
       public static let tinyPlanetChoice = ImageAsset(name: "tinyPlanetChoice")
       public static let tunnelChoice = ImageAsset(name: "tunnelChoice")
       public static let allValues: [ImageAsset] = [
-        customChoice,
-        customEdit,
         highQualityChoice,
         icDownload,
         icDownloadBig,
@@ -1137,21 +1129,6 @@ public enum Asset {
       user,
     ]
   }
-  public enum Marketing {
-
-    public static let icMarketingBackground = ImageAsset(name: "icMarketingBackground")
-    public static let icProducts = ImageAsset(name: "icProducts")
-    public static let icSupport = ImageAsset(name: "icSupport")
-    public static let icUseCases = ImageAsset(name: "icUseCases")
-    public static let iconExternalLink = ImageAsset(name: "iconExternalLink")
-    public static let allValues: [ImageAsset] = [
-      icMarketingBackground,
-      icProducts,
-      icSupport,
-      icUseCases,
-      iconExternalLink,
-    ]
-  }
   public enum MissionModes {
 
     public enum MissionSubModes {
@@ -1258,73 +1235,67 @@ public enum Asset {
   public enum Remote {
 
     public enum Calibration {
-      public static let calibrationRemote00001 = ImageAsset(name: "calibration_remote_00001")
-      public static let calibrationRemote00002 = ImageAsset(name: "calibration_remote_00002")
-      public static let calibrationRemote00003 = ImageAsset(name: "calibration_remote_00003")
-      public static let calibrationRemote00004 = ImageAsset(name: "calibration_remote_00004")
-      public static let calibrationRemote00005 = ImageAsset(name: "calibration_remote_00005")
-      public static let calibrationRemote00006 = ImageAsset(name: "calibration_remote_00006")
-      public static let calibrationRemote00007 = ImageAsset(name: "calibration_remote_00007")
-      public static let calibrationRemote00008 = ImageAsset(name: "calibration_remote_00008")
-      public static let calibrationRemote00009 = ImageAsset(name: "calibration_remote_00009")
-      public static let calibrationRemote00010 = ImageAsset(name: "calibration_remote_00010")
-      public static let calibrationRemote00011 = ImageAsset(name: "calibration_remote_00011")
-      public static let calibrationRemote00012 = ImageAsset(name: "calibration_remote_00012")
-      public static let calibrationRemote00013 = ImageAsset(name: "calibration_remote_00013")
-      public static let calibrationRemote00014 = ImageAsset(name: "calibration_remote_00014")
-      public static let calibrationRemote00015 = ImageAsset(name: "calibration_remote_00015")
-      public static let calibrationRemote00016 = ImageAsset(name: "calibration_remote_00016")
-      public static let calibrationRemote00017 = ImageAsset(name: "calibration_remote_00017")
-      public static let calibrationRemote00018 = ImageAsset(name: "calibration_remote_00018")
-      public static let calibrationRemote00019 = ImageAsset(name: "calibration_remote_00019")
-      public static let calibrationRemote00020 = ImageAsset(name: "calibration_remote_00020")
-      public static let calibrationRemote00021 = ImageAsset(name: "calibration_remote_00021")
-      public static let calibrationRemote00022 = ImageAsset(name: "calibration_remote_00022")
-      public static let calibrationRemote00023 = ImageAsset(name: "calibration_remote_00023")
-      public static let calibrationRemote00024 = ImageAsset(name: "calibration_remote_00024")
-      public static let calibrationRemote00025 = ImageAsset(name: "calibration_remote_00025")
-      public static let calibrationRemote00026 = ImageAsset(name: "calibration_remote_00026")
-      public static let calibrationRemote00027 = ImageAsset(name: "calibration_remote_00027")
-      public static let calibrationRemote00028 = ImageAsset(name: "calibration_remote_00028")
-      public static let calibrationRemote00029 = ImageAsset(name: "calibration_remote_00029")
-      public static let calibrationRemote00030 = ImageAsset(name: "calibration_remote_00030")
-      public static let calibrationRemote00031 = ImageAsset(name: "calibration_remote_00031")
-      public static let calibrationRemote00032 = ImageAsset(name: "calibration_remote_00032")
-      public static let calibrationRemote00033 = ImageAsset(name: "calibration_remote_00033")
+      public static let icRemoteCalibration00 = ImageAsset(name: "icRemoteCalibration00")
+      public static let icRemoteCalibration01 = ImageAsset(name: "icRemoteCalibration01")
+      public static let icRemoteCalibration02 = ImageAsset(name: "icRemoteCalibration02")
+      public static let icRemoteCalibration03 = ImageAsset(name: "icRemoteCalibration03")
+      public static let icRemoteCalibration04 = ImageAsset(name: "icRemoteCalibration04")
+      public static let icRemoteCalibration05 = ImageAsset(name: "icRemoteCalibration05")
+      public static let icRemoteCalibration06 = ImageAsset(name: "icRemoteCalibration06")
+      public static let icRemoteCalibration07 = ImageAsset(name: "icRemoteCalibration07")
+      public static let icRemoteCalibration08 = ImageAsset(name: "icRemoteCalibration08")
+      public static let icRemoteCalibration09 = ImageAsset(name: "icRemoteCalibration09")
+      public static let icRemoteCalibration10 = ImageAsset(name: "icRemoteCalibration10")
+      public static let icRemoteCalibration11 = ImageAsset(name: "icRemoteCalibration11")
+      public static let icRemoteCalibration12 = ImageAsset(name: "icRemoteCalibration12")
+      public static let icRemoteCalibration13 = ImageAsset(name: "icRemoteCalibration13")
+      public static let icRemoteCalibration14 = ImageAsset(name: "icRemoteCalibration14")
+      public static let icRemoteCalibration15 = ImageAsset(name: "icRemoteCalibration15")
+      public static let icRemoteCalibration16 = ImageAsset(name: "icRemoteCalibration16")
+      public static let icRemoteCalibration17 = ImageAsset(name: "icRemoteCalibration17")
+      public static let icRemoteCalibration18 = ImageAsset(name: "icRemoteCalibration18")
+      public static let icRemoteCalibration19 = ImageAsset(name: "icRemoteCalibration19")
+      public static let icRemoteCalibration20 = ImageAsset(name: "icRemoteCalibration20")
+      public static let icRemoteCalibration21 = ImageAsset(name: "icRemoteCalibration21")
+      public static let icRemoteCalibration22 = ImageAsset(name: "icRemoteCalibration22")
+      public static let icRemoteCalibration23 = ImageAsset(name: "icRemoteCalibration23")
+      public static let icRemoteCalibration24 = ImageAsset(name: "icRemoteCalibration24")
+      public static let icRemoteCalibration25 = ImageAsset(name: "icRemoteCalibration25")
+      public static let icRemoteCalibration26 = ImageAsset(name: "icRemoteCalibration26")
+      public static let icRemoteCalibration27 = ImageAsset(name: "icRemoteCalibration27")
+      public static let icRemoteCalibration28 = ImageAsset(name: "icRemoteCalibration28")
+      public static let icRemoteCalibration29 = ImageAsset(name: "icRemoteCalibration29")
       public static let allValues: [ImageAsset] = [
-        calibrationRemote00001,
-        calibrationRemote00002,
-        calibrationRemote00003,
-        calibrationRemote00004,
-        calibrationRemote00005,
-        calibrationRemote00006,
-        calibrationRemote00007,
-        calibrationRemote00008,
-        calibrationRemote00009,
-        calibrationRemote00010,
-        calibrationRemote00011,
-        calibrationRemote00012,
-        calibrationRemote00013,
-        calibrationRemote00014,
-        calibrationRemote00015,
-        calibrationRemote00016,
-        calibrationRemote00017,
-        calibrationRemote00018,
-        calibrationRemote00019,
-        calibrationRemote00020,
-        calibrationRemote00021,
-        calibrationRemote00022,
-        calibrationRemote00023,
-        calibrationRemote00024,
-        calibrationRemote00025,
-        calibrationRemote00026,
-        calibrationRemote00027,
-        calibrationRemote00028,
-        calibrationRemote00029,
-        calibrationRemote00030,
-        calibrationRemote00031,
-        calibrationRemote00032,
-        calibrationRemote00033,
+        icRemoteCalibration00,
+        icRemoteCalibration01,
+        icRemoteCalibration02,
+        icRemoteCalibration03,
+        icRemoteCalibration04,
+        icRemoteCalibration05,
+        icRemoteCalibration06,
+        icRemoteCalibration07,
+        icRemoteCalibration08,
+        icRemoteCalibration09,
+        icRemoteCalibration10,
+        icRemoteCalibration11,
+        icRemoteCalibration12,
+        icRemoteCalibration13,
+        icRemoteCalibration14,
+        icRemoteCalibration15,
+        icRemoteCalibration16,
+        icRemoteCalibration17,
+        icRemoteCalibration18,
+        icRemoteCalibration19,
+        icRemoteCalibration20,
+        icRemoteCalibration21,
+        icRemoteCalibration22,
+        icRemoteCalibration23,
+        icRemoteCalibration24,
+        icRemoteCalibration25,
+        icRemoteCalibration26,
+        icRemoteCalibration27,
+        icRemoteCalibration28,
+        icRemoteCalibration29,
       ]
     }
     public static let icBatteryCritic = ImageAsset(name: "icBatteryCritic")
@@ -1427,8 +1398,6 @@ public enum Asset {
       public static let geofenceInactive = ImageAsset(name: "geofenceInactive")
       public static let grid6x6 = ImageAsset(name: "grid6x6")
       public static let gridNone = ImageAsset(name: "gridNone")
-      public static let icLiveSharingActive = ImageAsset(name: "icLiveSharingActive")
-      public static let icLiveSharingInactive = ImageAsset(name: "icLiveSharingInactive")
       public static let icStartAudio = ImageAsset(name: "icStartAudio")
       public static let icStopAudio = ImageAsset(name: "icStopAudio")
       public static let iconAvoidanceActive = ImageAsset(name: "iconAvoidanceActive")
@@ -1444,8 +1413,6 @@ public enum Asset {
         geofenceInactive,
         grid6x6,
         gridNone,
-        icLiveSharingActive,
-        icLiveSharingInactive,
         icStartAudio,
         icStopAudio,
         iconAvoidanceActive,
@@ -1507,25 +1474,41 @@ public enum Asset {
   }
   public enum Wifi {
 
+    public static let icWifiDeactivated = ImageAsset(name: "icWifiDeactivated")
+    public static let icWifiInactiveQuality1 = ImageAsset(name: "icWifiInactiveQuality1")
+    public static let icWifiInactiveQuality2 = ImageAsset(name: "icWifiInactiveQuality2")
+    public static let icWifiInactiveQuality3 = ImageAsset(name: "icWifiInactiveQuality3")
+    public static let icWifiInactiveQuality4 = ImageAsset(name: "icWifiInactiveQuality4")
+    public static let icWifiInactiveQuality5 = ImageAsset(name: "icWifiInactiveQuality5")
     public static let icWifiNoSignal = ImageAsset(name: "icWifiNoSignal")
     public static let icWifiOff14 = ImageAsset(name: "icWifiOff14")
     public static let icWifiOff24 = ImageAsset(name: "icWifiOff24")
     public static let icWifiOff34 = ImageAsset(name: "icWifiOff34")
     public static let icWifiOff44 = ImageAsset(name: "icWifiOff44")
-    public static let icWifiOn14 = ImageAsset(name: "icWifiOn14")
-    public static let icWifiOn24 = ImageAsset(name: "icWifiOn24")
-    public static let icWifiOn34 = ImageAsset(name: "icWifiOn34")
-    public static let icWifiOn44 = ImageAsset(name: "icWifiOn44")
+    public static let icWifiOffline = ImageAsset(name: "icWifiOffline")
+    public static let icWifiQuality1 = ImageAsset(name: "icWifiQuality1")
+    public static let icWifiQuality2 = ImageAsset(name: "icWifiQuality2")
+    public static let icWifiQuality3 = ImageAsset(name: "icWifiQuality3")
+    public static let icWifiQuality4 = ImageAsset(name: "icWifiQuality4")
+    public static let icWifiQuality5 = ImageAsset(name: "icWifiQuality5")
     public static let allValues: [ImageAsset] = [
+      icWifiDeactivated,
+      icWifiInactiveQuality1,
+      icWifiInactiveQuality2,
+      icWifiInactiveQuality3,
+      icWifiInactiveQuality4,
+      icWifiInactiveQuality5,
       icWifiNoSignal,
       icWifiOff14,
       icWifiOff24,
       icWifiOff34,
       icWifiOff44,
-      icWifiOn14,
-      icWifiOn24,
-      icWifiOn34,
-      icWifiOn44,
+      icWifiOffline,
+      icWifiQuality1,
+      icWifiQuality2,
+      icWifiQuality3,
+      icWifiQuality4,
+      icWifiQuality5,
     ]
   }
   public static let icRemoteDronePairing = ImageAsset(name: "icRemoteDronePairing")

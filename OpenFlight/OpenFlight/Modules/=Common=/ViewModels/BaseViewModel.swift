@@ -63,8 +63,14 @@ open class BaseViewModel<T: ViewModelState> {
     /// Init
     ///
     /// - Parameter stateDidUpdate: completion block to notify state changes.
-    public init(stateDidUpdate: ((T) -> Void)? = nil) {
+    @available(*, deprecated, message: "Use init without parameters")
+    public init(stateDidUpdate: ((T) -> Void)?) {
         state = Observable(T())
         state.valueChanged = stateDidUpdate
+    }
+
+    /// Init.
+    public init() {
+        state = Observable(T())
     }
 }

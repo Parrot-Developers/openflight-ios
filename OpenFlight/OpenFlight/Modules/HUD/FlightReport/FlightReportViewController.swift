@@ -215,7 +215,7 @@ private extension FlightReportViewController {
 
     /// Sets up models for flight informations.
     func setupFlightInfoModels() {
-        flightTimeInfoView.model = FlightReportInfoModel(image: Asset.BottomBar.CameraModes.icCameraModeTimer.image,
+        flightTimeInfoView.model = FlightReportInfoModel(image: Asset.Common.Icons.icFlightPlanTimer.image,
                                                          title: L10n.flightInfoFlightTime.uppercased(),
                                                          value: Style.dash)
         totalDistanceInfoView.model = FlightReportInfoModel(image: Asset.MyFlights.distance.image,

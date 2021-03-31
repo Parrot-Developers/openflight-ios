@@ -31,7 +31,6 @@
 import UIKit
 
 /// Custom settings slider.
-
 @IBDesignable
 final class SettingsSlider: UISlider {
     // MARK: - Internal Properties
@@ -54,7 +53,15 @@ final class SettingsSlider: UISlider {
                 return (view as? UIImageView)
             }
         }
+
         return nil
+    }
+
+    // MARK: - Override Properties
+    override var value: Float {
+        didSet {
+            updateSliderTint()
+        }
     }
 
     // MARK: - Private Enums
@@ -63,13 +70,6 @@ final class SettingsSlider: UISlider {
         static let trackHeight: CGFloat = 2.0
         static let leadingTrailingMargin: CGFloat = 6.0
         static let overLimitMarkerHeight: CGFloat = 9.0
-    }
-
-    // MARK: - Override Properties
-    override var value: Float {
-        didSet {
-            updateSliderTint()
-        }
     }
 
     // MARK: - Override Funcs
@@ -128,7 +128,6 @@ final class SettingsSlider: UISlider {
         self.setThumbImage(image, for: .highlighted)
         self.setThumbImage(image, for: .disabled)
     }
-
 }
 
 // MARK: - Private Funcs
@@ -138,10 +137,11 @@ private extension SettingsSlider {
         removeSubview(withBackgroundColor: underLimitColor)
 
         guard let overLimitValue = overLimitValue,
-            !overLimitValue.isNaN,
-            maximumValue > minimumValue else {
-                return
+              !overLimitValue.isNaN,
+              maximumValue > minimumValue else {
+            return
         }
+
         let overLimitRatio = (overLimitValue-minimumValue) / (maximumValue-minimumValue)
         var frame = self.frame
         frame.size.width = Constants.trackHeight

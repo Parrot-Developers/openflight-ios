@@ -33,8 +33,6 @@ import UIKit
 // MARK: - Protocols
 /// Used to store methods for `RemoteUpdateViewModel` and `DroneUpdateViewModel`.
 protocol DeviceUpdateProtocol {
-    /// Returns error message when user cancel action in rebooting step.
-    var rebootingErrorMessage: String { get }
     /// Returns state of the current device update.
     var state: Observable<DeviceUpdateState> { get }
     /// Returns true if the user can start the update.

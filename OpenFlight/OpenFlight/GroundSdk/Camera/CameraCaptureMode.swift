@@ -43,12 +43,11 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
     case timelapse
     case gpslapse
     case burst
-    case timer
 
     static var allValues: [BarItemMode] {
         // FIXME: Temporarily remove slowmotion and hyperlapse
         // Should return CameraCaptureMode.allCases
-        return [video, photo, panorama, bracketing, timelapse, gpslapse, burst, timer]
+        return [video, photo, panorama, bracketing, timelapse, gpslapse, burst]
     }
 
     /// String describing camera capture mode.
@@ -72,8 +71,6 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
             return "Camera Mode Gpslapse"
         case .burst:
             return "Camera Mode Burst"
-        case .timer:
-            return "Camera Mode Timer"
         }
     }
 
@@ -97,8 +94,6 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
             return L10n.cameraModeGpslapse
         case .burst:
             return L10n.cameraModeBurst
-        case .timer:
-            return L10n.cameraModeTimer
         }
     }
 
@@ -122,8 +117,6 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
             return Asset.BottomBar.CameraModes.icCameraModeGpsLapse.image
         case .burst:
             return Asset.BottomBar.CameraModes.icCameraModeBurst.image
-        case .timer:
-            return Asset.BottomBar.CameraModes.icCameraModeTimer.image
         }
     }
 
@@ -141,8 +134,6 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
             return TimeLapseMode.allValues as? [BarItemSubMode]
         case .panorama:
             return PanoramaMode.allValues as? [BarItemSubMode]
-        case .timer:
-            return TimerMode.allValues as? [BarItemSubMode]
         default:
             return nil
         }
@@ -168,8 +159,7 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
     var photoMode: Camera2PhotoMode? {
         switch self {
         case .photo,
-             .panorama,
-             .timer:
+             .panorama:
             return .single
         case .bracketing:
             return .bracketing

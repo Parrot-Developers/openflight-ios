@@ -127,19 +127,12 @@ final class CameraZoomState: ViewModelState, EquatableState, Copying {
 
 // MARK: - CameraZoomViewModel
 /// ViewModel for camera zoom, notifies on zoom changes.
-
 final class CameraZoomViewModel: DroneWatcherViewModel<CameraZoomState> {
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
     private var zoomRef: Ref<Camera2Zoom>?
-    private var remoteControlGrabber: RemoteControlAxisGrabber?
-    private var isZoomingWithApp: Bool = false
-    private var isZoomingWithGrabbedRemoteControl = false
-    private var evSettingObserver: DefaultsDisposable?
     private var splitModeObserver: Any?
-    private var actionKey: String {
-        return NSStringFromClass(type(of: self)) + SkyCtrl3AxisEvent.rightSlider.description
-    }
+    private var remoteControlOverzoomObserver: Any?
 
     // MARK: - Private Enums
     private enum Constants {
@@ -149,12 +142,11 @@ final class CameraZoomViewModel: DroneWatcherViewModel<CameraZoomState> {
 
     // MARK: - Deinit
     deinit {
-        evSettingObserver?.dispose()
-        evSettingObserver = nil
-        if let splitModeObserver = splitModeObserver {
-            NotificationCenter.default.removeObserver(splitModeObserver)
-        }
+        NotificationCenter.default.remove(observer: splitModeObserver)
+        NotificationCenter.default.remove(observer: remoteControlOverzoomObserver)
+
         splitModeObserver = nil
+        remoteControlOverzoomObserver = nil
     }
 
     // MARK: - Init
@@ -163,14 +155,12 @@ final class CameraZoomViewModel: DroneWatcherViewModel<CameraZoomState> {
          isOverzoomingDidUpdate: ((Bool) -> Void)? = nil,
          zoomVisibilityDidUpdate: ((Bool) -> Void)? = nil) {
         super.init(stateDidUpdate: stateDidUpdate)
+
         self.state.value.shouldOpenSlider.valueChanged = sliderVisibilityDidUpdate
         self.state.value.isOverzooming.valueChanged = isOverzoomingDidUpdate
         self.state.value.shouldHideZoom.valueChanged = zoomVisibilityDidUpdate
-        remoteControlGrabber = RemoteControlAxisGrabber(axis: .rightSlider,
-                                                        event: .rightSlider,
-                                                        key: actionKey,
-                                                        action: onRemoteControlGrabUpdate)
         listenSplitModeChanges()
+        listenRemoteControlOverzoomChanges()
     }
 
     // MARK: - Override Funcs
@@ -184,23 +174,18 @@ final class CameraZoomViewModel: DroneWatcherViewModel<CameraZoomState> {
     /// - Parameters:
     ///    - velocity: velocity (between -1.0 and 1.0)
     func setZoomVelocity(_ velocity: Double) {
-        guard let zoom: Camera2Zoom = drone?.currentCamera?.zoom else {
-            return
-        }
+        guard let zoom: Camera2Zoom = drone?.currentCamera?.zoom else { return }
 
         zoom.control(mode: .velocity, target: velocity)
-        isZoomingWithApp = velocity > 0
-        if zoom.isZoomMaxReached(isLossyAllowed: self.state.value.isLossyAllowed),
-           isZoomingWithApp {
+        if zoom.isZoomMaxReached(isLossyAllowed: self.state.value.isLossyAllowed) {
             didOverzoom()
         }
     }
 
     /// Controls the camera's zoom and resets its level to default.
     func resetZoom() {
-        guard let zoom = drone?.currentCamera?.zoom else {
-            return
-        }
+        guard let zoom = drone?.currentCamera?.zoom else { return }
+
         zoom.control(mode: .level, target: Constants.defaultZoomLevel)
     }
 
@@ -267,18 +252,12 @@ private extension CameraZoomViewModel {
         }
     }
 
-    /// Called on remote control grab update.
-    func onRemoteControlGrabUpdate(_ newState: Int) {
-        switch newState {
-        case ..<0:
-            if isZoomingWithGrabbedRemoteControl == false {
-                didOverzoom()
-                isZoomingWithGrabbedRemoteControl = true
-            }
-        case 0:
-            isZoomingWithGrabbedRemoteControl = false
-        default:
-            ungrabRemoteControl()
+    /// Starts listening split mode changes.
+    func listenRemoteControlOverzoomChanges() {
+        remoteControlOverzoomObserver = NotificationCenter.default.addObserver(forName: .remoteControlDidOverZoom,
+                                                                               object: nil,
+                                                                               queue: nil) { [weak self] _ in
+            self?.didOverzoom()
         }
     }
 
@@ -289,32 +268,8 @@ private extension CameraZoomViewModel {
             let newValue = zoom.level.rounded(toPlaces: Constants.roundPrecision)
             if newValue > oldValue {
                 didOverzoom()
-                if !isZoomingWithApp { // Not zooming with app == Zooming with remote control.
-                    isZoomingWithGrabbedRemoteControl = true
-                }
-            }
-            remoteControlGrabber?.grab()
-        } else {
-            ungrabRemoteControl()
-        }
-    }
-
-    /// Listen Ev trigger setting to prevent from grab issues.
-    func listenEvSetting() {
-        evSettingObserver = Defaults.observe(\.evTriggerSetting, options: [.new]) { [weak self] _ in
-            DispatchQueue.userDefaults.async {
-                if EVTriggerManager.shared.isEvTriggerSettingEnabled {
-                    // If EV trigger changed to state enable, ungrab zoom
-                    self?.ungrabRemoteControl()
-                }
             }
         }
-    }
-
-    /// Helper to ungrab remote control.
-    func ungrabRemoteControl() {
-        self.remoteControlGrabber?.ungrab()
-        self.isZoomingWithGrabbedRemoteControl = false
     }
 
     /// Called when an overzoom is detected.

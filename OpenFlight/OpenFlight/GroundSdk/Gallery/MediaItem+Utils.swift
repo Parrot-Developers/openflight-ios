@@ -88,6 +88,16 @@ extension MediaItem {
     var isDownloaded: Bool {
         return downloadableResources.isEmpty
     }
+
+    /// Returns true if resources are present in SD Card memory.
+    var isSdStorage: Bool {
+        return !resources.filter({ $0.storage == .removable }).isEmpty
+    }
+
+    /// Returns true if resources are present in internal memory.
+    var isInternalStorage: Bool {
+        return !resources.filter({ $0.storage == .internal }).isEmpty
+    }
 }
 
 /// Utility extension for `MediaItem.Resource`.

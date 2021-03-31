@@ -98,6 +98,8 @@ extension GalleryMediaViewModel: GalleryVideoCompatible {
         switch sourceType {
         case .droneSdCard:
             return sdCardViewModel
+        case .droneInternal:
+            return internalViewModel
         case .mobileDevice:
             return deviceViewModel
         default:
@@ -166,7 +168,6 @@ extension GalleryMediaViewModel: GalleryVideoCompatible {
 }
 
 extension GalleryMediaViewModel {
-
     /// Setup the video player for local video.
     ///
     /// - Parameters:
@@ -190,12 +191,21 @@ extension GalleryMediaViewModel {
     ///    - completion: completion block
     func videoSetStream(index: Int, completion: @escaping (_ replay: Replay?) -> Void) {
         guard let media = getMedia(index: index),
-            let firstResource = media.mediaItem?.resources.first else {
-                return
+              let firstResource = media.mediaItem?.resources.first else {
+            return
         }
 
-        sdCardViewModel?.setStreamFromResource(firstResource) { replay in
-            completion(replay)
+        switch sourceType {
+        case .droneSdCard:
+            sdCardViewModel?.setStreamFromResource(firstResource) { replay in
+                completion(replay)
+            }
+        case .droneInternal:
+            internalViewModel?.setStreamFromResource(firstResource) { replay in
+                completion(replay)
+            }
+        default:
+            return
         }
     }
 }

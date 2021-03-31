@@ -38,6 +38,8 @@ final class FlightPlanPanelState: DeviceConnectionState {
     fileprivate(set) var missionMode: MissionMode = FlightPlanMissionMode.standard.missionMode
     /// Flight plan id.
     fileprivate(set) var flightPlanID: String?
+    /// Flight plan has WayPoint.
+    fileprivate(set) var hasWayPoints: Bool = false
     /// Flight plan estimations.
     fileprivate(set) var flightPlanEstimations: FlightPlanEstimationsModel?
     /// Run Flight plan state.
@@ -57,15 +59,18 @@ final class FlightPlanPanelState: DeviceConnectionState {
     ///
     /// - Parameters:
     ///    - connectionState: drone connection state
-    ///    - flightPlanViewModel: Flight Plan view model
+    ///    - flightPlanID: Flight Plan Id
+    ///    - hasWayPoints: has wayPoints
     ///    - flightPlanEstimations: estimations for Flight Plan
     ///    - runFlightPlanState: run Flight Plan state
     init(connectionState: DeviceState.ConnectionState,
          flightPlanID: String?,
+         hasWayPoints: Bool,
          flightPlanEstimations: FlightPlanEstimationsModel?,
          runFlightPlanState: RunFlightPlanState?) {
         super.init(connectionState: connectionState)
         self.flightPlanID = flightPlanID
+        self.hasWayPoints = hasWayPoints
         self.flightPlanEstimations = flightPlanEstimations
         self.runFlightPlanState = runFlightPlanState
     }
@@ -78,6 +83,7 @@ final class FlightPlanPanelState: DeviceConnectionState {
         return super.isEqual(to: other)
             && self.missionMode.key == other.missionMode.key
             && self.flightPlanID == other.flightPlanID
+            && self.hasWayPoints == other.hasWayPoints
             && self.flightPlanEstimations == other.flightPlanEstimations
             && self.runFlightPlanState == other.runFlightPlanState
     }
@@ -85,6 +91,7 @@ final class FlightPlanPanelState: DeviceConnectionState {
     override func copy() -> FlightPlanPanelState {
         let copy = FlightPlanPanelState(connectionState: self.connectionState,
                                         flightPlanID: self.flightPlanID,
+                                        hasWayPoints: self.hasWayPoints,
                                         flightPlanEstimations: self.flightPlanEstimations,
                                         runFlightPlanState: self.runFlightPlanState)
         copy.missionMode = missionMode
@@ -117,6 +124,7 @@ final class FlightPlanPanelViewModel: DroneStateViewModel<FlightPlanPanelState> 
 
             let copy = self?.state.value.copy()
             copy?.flightPlanID = flightPlanViewModel?.state.value.uuid
+            copy?.hasWayPoints = !(flightPlanViewModel?.flightPlan?.plan.wayPoints.isEmpty ?? true)
             copy?.flightPlanEstimations = flightPlanViewModel?.estimations
             self?.state.set(copy)
 

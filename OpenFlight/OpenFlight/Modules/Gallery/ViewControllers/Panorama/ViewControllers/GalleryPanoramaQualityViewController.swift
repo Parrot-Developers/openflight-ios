@@ -107,7 +107,7 @@ final class GalleryPanoramaQualityViewController: UIViewController {
 private extension GalleryPanoramaQualityViewController {
     /// Redirect to the previous screen.
     @IBAction func backButtonTouchedUpInside() {
-        coordinator?.dismissPanoramaGenerationScreen()
+        coordinator?.back()
     }
 
     /// Function called when a choice view is clicked.

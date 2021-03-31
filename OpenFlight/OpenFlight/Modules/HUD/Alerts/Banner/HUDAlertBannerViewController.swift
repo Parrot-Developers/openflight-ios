@@ -46,13 +46,13 @@ final class HUDAlertBannerViewController: UIViewController {
         }
     }
 
+    // MARK: - Private Properties
+    private var viewModel = HUDAlertBannerViewModel()
+
     // MARK: - Private Enums
     private enum Constants {
         static let delayBetweenTwoCriticalVibrations: TimeInterval = 0.6
     }
-
-    // MARK: - Private Properties
-    private var viewModel = HUDAlertBannerViewModel()
 
     // MARK: - Override Funcs
     override func viewDidLoad() {

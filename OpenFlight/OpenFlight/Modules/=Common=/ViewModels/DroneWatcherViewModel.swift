@@ -32,7 +32,6 @@ import UIKit
 import GroundSdk
 
 /// ViewModel that listen a drone by default.
-
 open class DroneWatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     // MARK: - Public Properties
     /// Property which provides the current drone using currentDroneWatcher.
@@ -44,8 +43,17 @@ open class DroneWatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     private var currentDroneWatcher = CurrentDroneWatcher()
 
     // MARK: - Init
-    public override init(stateDidUpdate: ((T) -> Void)? = nil) {
+    public override init(stateDidUpdate: ((T) -> Void)?) {
         super.init(stateDidUpdate: stateDidUpdate)
+
+        currentDroneWatcher.start { [weak self] drone in
+            self?.listenDrone(drone: drone)
+        }
+    }
+
+    public override init() {
+        super.init()
+
         currentDroneWatcher.start { [weak self] drone in
             self?.listenDrone(drone: drone)
         }

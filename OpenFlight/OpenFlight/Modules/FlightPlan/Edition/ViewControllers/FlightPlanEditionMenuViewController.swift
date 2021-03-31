@@ -38,9 +38,10 @@ public protocol FlightPlanEditionMenuDelegate: class {
     /// Undos action.
     func undoAction()
     /// Shows flight plan settings.
-    func showSettings()
-    /// Shows flight plan camera settings.
-    func showImageSettings()
+    ///
+    /// - Parameters
+    ///     - category: setting category
+    func showSettings(category: FlightPlanSettingCategory)
     /// Shows flight plan project manager.
     func showProjectManager()
     /// Shows flight plan history.
@@ -74,7 +75,8 @@ final class FlightPlanEditionMenuViewController: UIViewController {
             tableView?.reloadData()
         }
     }
-    public weak var delegate: FlightPlanEditionMenuDelegate?
+    public weak var menuDelegate: FlightPlanEditionMenuDelegate?
+    public weak var settingsDelegate: EditionSettingsDelegate?
     /// Provider used to get the settings of the flight plan provider.
     public var settingsProvider: FlightPlanSettingsProvider?
 
@@ -94,19 +96,60 @@ final class FlightPlanEditionMenuViewController: UIViewController {
             return 0.0
         }
     }
+    /// Build data source regarding setting categories.
+    private var dataSource: [SectionsType] {
+        let categories = settingsProvider?.settingsCategories
+        var sections: [SectionsType] = [.project]
+        if settingsProvider?.hasCustomType == true {
+            // Optional section mode.
+            sections.append(.mode)
+        }
+        if categories?.contains(.image) == true {
+            // Image has it own section.
+            sections.append(.image)
+        }
+        if let categories = categories?.filter({ $0 != .image}) {
+            categories.forEach { category in
+                // displatch categories in dedicated sections.
+                sections.append(.settings(category))
+            }
+        } else {
+            sections.append(.settings(.common))
+        }
+        return sections
+    }
 
     // MARK: - Private Enums
-    enum SectionsType: Int, CaseIterable {
+    private enum SectionsType {
         case project
+        case mode
         case image
-        case settings
-        case estimations
+        case settings(FlightPlanSettingCategory)
+
+        var title: String {
+            switch self {
+            case .project:
+                return L10n.flightPlanMenuProject.uppercased()
+            case .mode:
+                return L10n.commonMode.uppercased()
+            case .image:
+                return L10n.flightPlanMenuImage.uppercased()
+            case .settings(let category):
+                switch category {
+                case .custom(let title):
+                    return title.uppercased()
+                default:
+                    return L10n.flightPlanSettingsTitle.uppercased()
+                }
+            }
+        }
     }
 
     // MARK: - Private Enums
     private enum Constants {
-        static let settingsCellheight: CGFloat = 80.0
         static let cellheight: CGFloat = 70.0
+        static let headerHeight: CGFloat = 24.0
+        static let footerHeight: CGFloat = 1.0
     }
 
     // MARK: - Override Funcs
@@ -127,7 +170,7 @@ final class FlightPlanEditionMenuViewController: UIViewController {
     }
 
     // MARK: - Public Funcs
-    /// Refreshes table view data.
+    /// Refreshes view data.
     public func refreshContent() {
         self.tableView.reloadData()
         undoButton.isEnabled = FlightPlanManager.shared.canUndo()
@@ -146,11 +189,11 @@ final class FlightPlanEditionMenuViewController: UIViewController {
 // MARK: - Actions
 private extension FlightPlanEditionMenuViewController {
     @IBAction func doneTouchUpInside(_ sender: Any) {
-        delegate?.doneEdition()
+        menuDelegate?.doneEdition()
     }
 
     @IBAction func undoTouchUpInside(_ sender: Any) {
-        delegate?.undoAction()
+        menuDelegate?.undoAction()
         refreshContent()
     }
 }
@@ -159,16 +202,19 @@ private extension FlightPlanEditionMenuViewController {
 private extension FlightPlanEditionMenuViewController {
     /// Inits the view.
     func initView() {
-        tableView.contentInsetAdjustmentBehavior = .always
+        tableView.insetsContentViewsToSafeArea = false // Safe area is handled in this VC, not in content
         tableViewTrailingConstraint.constant = trailingMargin
-        tableView.backgroundColor = .clear
-        tableView.tableFooterView = UIView()
         tableView.register(cellType: SettingsMenuTableViewCell.self)
         tableView.register(cellType: ProjectMenuTableViewCell.self)
-        tableView.register(cellType: EstimationsMenuTableViewCell.self)
         tableView.register(cellType: ImageMenuTableViewCell.self)
+        tableView.register(cellType: ModesChoiceTableViewCell.self)
+        tableView.register(headerFooterViewType: HeaderMenuTableViewCell.self)
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.estimatedRowHeight = Constants.cellheight
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.makeUp(backgroundColor: .clear)
+        tableView.tableHeaderView = UIView() // Prevents from extra top space
     }
 
     /// Sets up observer for orientation change.
@@ -188,36 +234,44 @@ private extension FlightPlanEditionMenuViewController {
 // MARK: - UITableViewDataSource
 extension FlightPlanEditionMenuViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return SectionsType.allCases.count
+        return dataSource.count
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        let type = dataSource[section]
+        switch type {
+        case .settings(let category):
+            return fpSettings?.filter({ $0.category == category }).count ?? 0
+        case .mode,
+             .image,
+             .project:
+            return 1
+        }
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let type = SectionsType(rawValue: indexPath.section)
+        let type = dataSource[indexPath.section]
         switch type {
-        case .settings:
+        case .settings(let category):
             let cell = tableView.dequeueReusableCell(for: indexPath) as SettingsMenuTableViewCell
-            cell.setup(settings: fpSettings ?? [])
+            if let categorizedSettings = fpSettings?.filter({ $0.category == category }) {
+                let setting = categorizedSettings[indexPath.row]
+                let showArrow = indexPath.row == (categorizedSettings.count / 2)
+                cell.setup(setting: setting, showArrow: showArrow)
+            }
             return cell
         case .image:
             return tableView.dequeueReusableCell(for: indexPath) as ImageMenuTableViewCell
+        case .mode:
+            let cell = tableView.dequeueReusableCell(for: indexPath) as ModesChoiceTableViewCell
+            cell.fill(with: settingsProvider)
+            cell.delegate = self
+            return cell
         case .project:
             let cell = tableView.dequeueReusableCell(for: indexPath) as ProjectMenuTableViewCell
             cell.setup(name: flightPlanViewModel?.state.value.title,
                        hasHistory: flightPlanViewModel?.executions.isEmpty == false,
                        delegate: self)
-            return cell
-        case .estimations:
-            let cell = tableView.dequeueReusableCell(for: indexPath) as EstimationsMenuTableViewCell
-            let estimations = flightPlanViewModel?.estimations ?? FlightPlanEstimationsModel()
-            cell.setup(estimations: estimations)
-            return cell
-        default:
-            let cell = UITableViewCell()
-            cell.backgroundColor = .clear
             return cell
         }
     }
@@ -226,33 +280,62 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension FlightPlanEditionMenuViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let type = SectionsType(rawValue: indexPath.section)
+        let type = dataSource[indexPath.section]
         switch type {
-        case .settings:
-            delegate?.showSettings()
+        case .settings(let category):
+            menuDelegate?.showSettings(category: category)
         case .image:
-            delegate?.showImageSettings()
+            menuDelegate?.showSettings(category: .image)
         case .project:
-            delegate?.showProjectManager()
+            menuDelegate?.showProjectManager()
         default:
             break
         }
     }
 
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        let type = SectionsType(rawValue: indexPath.section)
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let type = dataSource[section]
         switch type {
-        case .settings:
-            return Constants.settingsCellheight
+        case .mode:
+            return nil
         default:
-            return Constants.cellheight
+            let view = tableView.dequeueReusableHeaderFooterView(HeaderMenuTableViewCell.self)
+            view?.setup(with: type.title)
+            return view
         }
+    }
+
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        let type = dataSource[section]
+        switch type {
+        case .mode:
+            return CGFloat.leastNormalMagnitude
+        default:
+            return Constants.headerHeight
+        }
+    }
+
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let view = UIView()
+        view.backgroundColor = ColorName.white10.color
+        return view
+    }
+
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return Constants.footerHeight
     }
 }
 
 // MARK: - ProjectMenuTableViewCellDelegate
 extension FlightPlanEditionMenuViewController: ProjectMenuTableViewCellDelegate {
     func didSelectHistory() {
-        self.delegate?.showHistory()
+        self.menuDelegate?.showHistory()
+    }
+}
+
+// MARK: - ModesChoiceTableViewCell
+extension FlightPlanEditionMenuViewController: ModesChoiceTableViewCellDelegate {
+    func updateMode(tag: Int) {
+        settingsDelegate?.updateMode(tag: tag)
     }
 }

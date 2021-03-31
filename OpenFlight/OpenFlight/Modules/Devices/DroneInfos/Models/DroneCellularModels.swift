@@ -176,15 +176,17 @@ extension DetailsCellularStatus {
 /// Stores states which occurs during drone unpairing.
 enum UnpairDroneState: Equatable {
     case notStarted
-    case noInternet
+    case noInternet(context: UnpairDroneStateContext)
     case forgetError(context: UnpairDroneStateContext)
     case done
 
     /// Title of the state.
     var title: String? {
         switch self {
-        case .noInternet:
-            return L10n.commonNoInternetConnection
+        case .noInternet(.details):
+            return L10n.cellularErrorInternetTryAgain
+        case .noInternet(.discover):
+            return L10n.cellularErrorInternetUnpair
         case .forgetError(.details):
             return L10n.cellularPairingDetailsForgotError
         case .forgetError(.discover):

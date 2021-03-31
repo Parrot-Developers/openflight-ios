@@ -124,14 +124,15 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
         }
 
         // Update user defaults for Timer and Panorama modes that both use single photo mode.
-        Defaults.isPhotoTimerActivated = cameraMode == .timer
         Defaults.isPanoramaModeActivated = cameraMode == .panorama
 
         let currentEditor = camera.currentEditor
 
         switch cameraMode {
-        case .photo, .bracketing, .burst, .gpslapse, .timelapse, .timer, .panorama:
+        case .photo, .bracketing, .burst, .gpslapse, .timelapse, .panorama:
             currentEditor[Camera2Params.mode]?.value = .photo
+            // Always use CONTINUOUS mode for photo streaming mode.
+            currentEditor[Camera2Params.photoStreamingMode]?.value = .continuous
             if let photoMode = cameraMode.photoMode {
                 currentEditor[Camera2Params.photoMode]?.value = photoMode
             }
@@ -152,9 +153,11 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
             camera.gpsLapseMode == nil,
             let value = GpsLapseMode.preset.value {
             currentEditor[Camera2Params.photoGpslapseInterval]?.value = Double(value)
+        } else if cameraMode == .burst {
+            currentEditor[Camera2Params.photoBurst]?.value = .burst10Over1s
         }
 
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 
     /// Update camera sub-mode.
@@ -191,7 +194,7 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
             break
         }
 
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 
     // MARK: - Deinit
@@ -232,12 +235,6 @@ private extension CameraCaptureModeViewModel {
 
     /// Listen updates on user defaults to detect photo mode changes.
     func listenDefaults() {
-        defaultsDisposables.append(Defaults.observe(\.isPhotoTimerActivated, options: [.new]) { [weak self] _ in
-            DispatchQueue.userDefaults.async {
-                self?.updateState()
-            }
-        })
-
         defaultsDisposables.append(Defaults.observe(\.isPanoramaModeActivated, options: [.new]) { [weak self] _ in
             DispatchQueue.userDefaults.async {
                 self?.updateState()
@@ -245,12 +242,6 @@ private extension CameraCaptureModeViewModel {
         })
 
         defaultsDisposables.append(Defaults.observe(\.userPanoramaSetting, options: [.new]) { [weak self] _ in
-            DispatchQueue.userDefaults.async {
-                self?.updateState()
-            }
-        })
-
-        defaultsDisposables.append(Defaults.observe(\.userPhotoTimerDelaySetting, options: [.new]) { [weak self] _ in
             DispatchQueue.userDefaults.async {
                 self?.updateState()
             }

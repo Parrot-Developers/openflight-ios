@@ -97,7 +97,7 @@ public protocol Coordinator: class {
     /// Start next view controller thanks to navigation controller.
     ///
     /// - Parameters:
-    ///    - vc: View Controller which will be pushed
+    ///    - viewController: View Controller which will be pushed
     ///    - animated: Animate the back coordinator action. Default value is true
     func push(_ viewController: UIViewController, animated: Bool)
 
@@ -112,7 +112,9 @@ public protocol Coordinator: class {
     ///
     /// - Parameters:
     ///     - animationDirection: direction of the animation
-    func dismissCoordinatorWithAnimation(animationDirection: CATransitionSubtype)
+    ///     - completion: completion when dismiss is done
+    func dismissCoordinatorWithAnimation(animationDirection: CATransitionSubtype,
+                                         completion: (() -> Void)?)
 }
 
 // MARK: - Default Implementation
@@ -129,6 +131,7 @@ public extension Coordinator {
                  overFullScreen: Bool = false,
                  completion: (() -> Void)? = nil) {
         guard let coordinatorNavController = coordinator.navigationController else { return }
+
         childCoordinators.append(coordinator)
         coordinatorNavController.modalPresentationStyle = overFullScreen ? .overFullScreen : .fullScreen
         self.navigationController?.present(coordinatorNavController, animated: animated, completion: completion)
@@ -195,7 +198,8 @@ public extension Coordinator {
                                            completion: nil)
     }
 
-    func dismissCoordinatorWithAnimation(animationDirection: CATransitionSubtype) {
+    func dismissCoordinatorWithAnimation(animationDirection: CATransitionSubtype,
+                                         completion: (() -> Void)? = nil) {
         let transition = CATransition()
         transition.duration = Style.shortAnimationDuration
         transition.type = CATransitionType.push
@@ -204,6 +208,6 @@ public extension Coordinator {
         self.navigationController?.view.window?.layer.add(transition,
                                                           forKey: kCATransition)
         parentCoordinator?.dismissChildCoordinator(animated: false,
-                                                   completion: nil)
+                                                   completion: completion)
     }
 }

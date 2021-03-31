@@ -120,7 +120,7 @@ private extension FlightPlanPanelEstimationView {
     func commonInitFlightPlanPanelEstimationView() {
         self.loadNibContent()
 
-        timeImage.image = Asset.BottomBar.CameraModes.icCameraModeTimer.image
+        timeImage.image = Asset.Common.Icons.icFlightPlanTimer.image
             .withRenderingMode(.alwaysTemplate)
         timeImage.tintColor = ColorName.white50.color
         timeLabel.makeUp()

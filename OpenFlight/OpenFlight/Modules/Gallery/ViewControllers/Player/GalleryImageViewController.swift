@@ -360,25 +360,28 @@ extension GalleryImageViewController: UIPickerViewDelegate {
            let media = viewModel.getMedia(index: index) {
             let title = viewModel.getMediaImagePickerTitle(media, index: row)
             let panoramaRelatedEntries = PanoramaMediaType.allCases.map({ $0.rawValue })
+
             if panoramaRelatedEntries.contains(title) {
                 let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.pickerRowSize, height: Constants.pickerRowSize))
                 imageView.contentMode = .center
-                switch title {
-                case PanoramaMediaType.sphere.rawValue:
-                    imageView.image = Asset.Gallery.Panorama.icSphere.image
-                case PanoramaMediaType.tinyPlanet.rawValue:
-                    imageView.image = Asset.Gallery.Panorama.icTinyPlanet.image
-                case PanoramaMediaType.tunnel.rawValue:
-                    imageView.image = Asset.Gallery.Panorama.icTunnel.image
-                case PanoramaMediaType.horizontal.rawValue:
-                    imageView.image = Asset.BottomBar.CameraSubModes.icPanoHorizontal.image
-                case PanoramaMediaType.vertical.rawValue:
+
+                switch PanoramaMediaType(rawValue: title) {
+                case .vertical:
                     imageView.image = Asset.BottomBar.CameraSubModes.icPanoVertical.image
-                case PanoramaMediaType.superWide.rawValue:
+                case .horizontal:
+                    imageView.image = Asset.BottomBar.CameraSubModes.icPanoHorizontal.image
+                case .superWide:
                     imageView.image = Asset.BottomBar.CameraSubModes.icPanoWide.image
-                default:
-                    imageView.image = Asset.Gallery.Panorama.customEdit.image
+                case .sphere:
+                    imageView.image = Asset.Gallery.Panorama.icSphere.image
+                case .tinyPlanet:
+                    imageView.image = Asset.Gallery.Panorama.icTinyPlanet.image
+                case .tunnel:
+                    imageView.image = Asset.Gallery.Panorama.icTunnel.image
+                case nil :
+                    break
                 }
+
                 return imageView
             } else {
                 let label = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.pickerRowSize, height: Constants.pickerRowSize))

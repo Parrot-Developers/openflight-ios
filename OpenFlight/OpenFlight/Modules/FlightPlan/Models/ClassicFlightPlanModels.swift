@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import Foundation
+import GroundSdk
 
 /// Provider for classic Flight Plan.
 struct ClassicFlightPlanProvider: FlightPlanProvider {
@@ -71,7 +72,10 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     case continueMode
     case lastPointRth
     case obstacleAvoidance
-    case estimations
+    // TODO: fix the following settings in next gerrit (values, display, etc.)
+    case imageMode
+    case resolution
+    case framerate
 
     // MARK: - Internal Properties
     public var title: String {
@@ -82,26 +86,39 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             return L10n.flightPlanSettingsRthOnLastPoint
         case .obstacleAvoidance:
             return L10n.flightPlanSettingsAvoidance
-        case .estimations:
-            return ""
+        case .imageMode:
+            return L10n.commonMode
+        case .resolution:
+            return L10n.flightPlanSettingsResolution
+        case .framerate:
+            return L10n.flightPlanSettingsFramerate
         }
     }
 
     public var shortTitle: String? {
         switch self {
         case .continueMode:
-            return L10n.flightPlanSettingsProgressiveRaceSort
+            return L10n.flightPlanSettingsProgressiveRaceShort
         case .lastPointRth:
             return L10n.flightPlanSettingsRthOnLastPointShort
         case .obstacleAvoidance:
             return L10n.flightPlanSettingsAvoidanceShort
-        case .estimations:
+        case .imageMode,
+             .resolution,
+             .framerate:
             return nil
         }
     }
 
     public var allValues: [Int] {
-        return [0, 1]
+        switch self {
+        case .framerate:
+            return Camera2RecordingFramerate.allValues.indices.map { $0 }
+        case .imageMode:
+            return [0, 1, 2]
+        default:
+            return [0, 1]
+        }
     }
 
     public var valueDescriptions: [String]? {
@@ -110,8 +127,13 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
              .lastPointRth,
              .obstacleAvoidance:
             return [L10n.commonYes, L10n.commonNo]
-        case .estimations:
-            return nil
+        case .framerate:
+            return Camera2RecordingFramerate.allValues.map { $0.title }
+        case .resolution:
+            return [L10n.videoSettingsResolution1080p, L10n.videoSettingsResolution4k]
+        case .imageMode:
+            return [L10n.cameraModeVideo, L10n.cameraModeTimelapse, L10n.cameraModeGpslapse]
+
         }
     }
 
@@ -126,8 +148,12 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             guard let oaSetting = currentFlightPlan?.obstacleAvoidanceActivated else { return 0 }
 
             return oaSetting == true ? 0 : 1
-        case .estimations:
-            return nil
+        case .framerate:
+            return allValues.first
+        case .resolution:
+            return 0
+        case .imageMode:
+            return 0
         }
     }
 
@@ -135,10 +161,12 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         switch self {
         case .continueMode,
              .lastPointRth,
-             .obstacleAvoidance:
+             .obstacleAvoidance,
+             .imageMode,
+             .resolution:
             return .choice
-        case .estimations:
-            return .estimations
+        case .framerate:
+            return .centeredRuler
         }
     }
 
@@ -155,7 +183,25 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     }
 
     public var isDisabled: Bool {
-        return false
+        switch self {
+        case .imageMode,
+             .resolution,
+             .framerate:
+            return true
+        default:
+            return false
+        }
+    }
+
+    public var category: FlightPlanSettingCategory {
+        switch self {
+        case .imageMode,
+             .resolution,
+             .framerate:
+            return .image
+        default:
+            return .common
+        }
     }
 
     // MARK: - Private Properties
@@ -177,6 +223,10 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
         guard let savedFlightPlan = currentFlightPlan else { return [] }
 
         return settings(for: savedFlightPlan)
+    }
+
+    var settingsCategories: [FlightPlanSettingCategory] {
+        return [.image, .common]
     }
 
     weak var delegate: FlightPlanSettingsProviderDelegate?
@@ -216,7 +266,9 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
         return [ClassicFlightPlanSettingType.continueMode.toFlightPlanSetting(),
                 ClassicFlightPlanSettingType.lastPointRth.toFlightPlanSetting(),
                 ClassicFlightPlanSettingType.obstacleAvoidance.toFlightPlanSetting(),
-                ClassicFlightPlanSettingType.estimations.toFlightPlanSetting()]
+                ClassicFlightPlanSettingType.imageMode.toFlightPlanSetting(),
+                ClassicFlightPlanSettingType.resolution.toFlightPlanSetting(),
+                ClassicFlightPlanSettingType.framerate.toFlightPlanSetting()]
     }
 
     func settings(for type: FlightPlanType) -> [FlightPlanSetting] {
@@ -237,6 +289,10 @@ final class WayPointSettingsProvider: FlightPlanSettingsProvider {
         guard let wayPoint = wayPoint else { return [] }
 
         return [AltitudeSettingType(altitude: Int(wayPoint.altitude)).toFlightPlanSetting()]
+    }
+
+    var settingsCategories: [FlightPlanSettingCategory] {
+        return []
     }
 
     weak var delegate: FlightPlanSettingsProviderDelegate?
@@ -290,6 +346,10 @@ final class WayPointSegmentSettingsProvider: FlightPlanSettingsProvider {
         return [SpeedSettingType(speed: Int(wayPoint.speed)).toFlightPlanSetting()]
     }
 
+    var settingsCategories: [FlightPlanSettingCategory] {
+        return []
+    }
+
     weak var delegate: FlightPlanSettingsProviderDelegate?
 
     // MARK: - Private Properties
@@ -312,7 +372,6 @@ final class WayPointSegmentSettingsProvider: FlightPlanSettingsProvider {
     func updateSettingValue(for key: String, value: Int) {
         if key == SpeedSettingType().key {
             self.wayPoint?.speed = Double(value)
-            FlightPlanManager.shared.currentFlightPlanViewModel?.didChangeCourse()
         }
     }
 
@@ -345,6 +404,10 @@ final class PoiPointSettingsProvider: FlightPlanSettingsProvider {
         guard let poiPoint = poiPoint else { return [] }
 
         return [AltitudeSettingType(altitude: Int(poiPoint.altitude)).toFlightPlanSetting()]
+    }
+
+    var settingsCategories: [FlightPlanSettingCategory] {
+        return []
     }
 
     weak var delegate: FlightPlanSettingsProviderDelegate?
@@ -421,6 +484,10 @@ final class AltitudeSettingType: FlightPlanSettingType {
         return false
     }
 
+    var category: FlightPlanSettingCategory {
+        return .custom(title)
+    }
+
     // MARK: - Init
     /// Init.
     ///
@@ -464,6 +531,10 @@ final class SpeedSettingType: FlightPlanSettingType {
 
     var isDisabled: Bool {
         return false
+    }
+
+    var category: FlightPlanSettingCategory {
+        return .custom(title)
     }
 
     // MARK: - Init

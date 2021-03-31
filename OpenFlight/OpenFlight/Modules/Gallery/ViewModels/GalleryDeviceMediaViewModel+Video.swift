@@ -37,27 +37,32 @@ extension GalleryDeviceMediaViewModel: GalleryVideoCompatible {
 
     func getVideoDuration() -> TimeInterval {
         guard let videoPlayer = videoPlayer else { return 0 }
+
         return videoPlayer.currentItem?.asset.duration.seconds ?? 0
     }
 
     func getVideoPosition() -> TimeInterval {
         guard let videoPlayer = videoPlayer else { return 0 }
+
         return videoPlayer.currentTime().seconds
     }
 
     func getVideoState() -> VideoState {
         guard videoPlayer != nil else { return .none }
+
         return videoIsPlaying() ? .playing : .paused
     }
 
     func videoPlay(index: Int) -> Bool {
         guard let videoPlayer = videoPlayer else { return false }
+
         videoPlayer.play()
         return true
     }
 
     func videoPause() -> Bool {
         guard let videoPlayer = videoPlayer else { return false }
+
         videoPlayer.pause()
         return true
     }
@@ -68,6 +73,7 @@ extension GalleryDeviceMediaViewModel: GalleryVideoCompatible {
 
     func videoIsPlaying() -> Bool {
         guard let videoPlayer = videoPlayer else { return false }
+
         return videoPlayer.rate != 0 && videoPlayer.error == nil
     }
 
@@ -77,8 +83,10 @@ extension GalleryDeviceMediaViewModel: GalleryVideoCompatible {
             else {
                 return false
         }
+
         let time = CMTimeMakeWithSeconds(position, preferredTimescale: asset.duration.timescale)
         videoPlayer.seek(to: time)
+
         return true
     }
 

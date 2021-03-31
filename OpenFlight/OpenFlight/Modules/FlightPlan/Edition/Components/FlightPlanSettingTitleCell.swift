@@ -35,7 +35,6 @@ import Reusable
 final class FlightPlanSettingTitleCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var trailingConstraint: NSLayoutConstraint!
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
@@ -51,13 +50,5 @@ final class FlightPlanSettingTitleCell: UITableViewCell, NibReusable {
     ///     - title: cell's title
     func fill(with title: String) {
         titleLabel.text = title
-    }
-
-    /// Updates the trailing constraint of the cell.
-    ///
-    /// - Parameters:
-    ///     - width: witdh of the trailing constraint
-    func updateTrailingConstraint(_ width: CGFloat) {
-        trailingConstraint.constant = width
     }
 }

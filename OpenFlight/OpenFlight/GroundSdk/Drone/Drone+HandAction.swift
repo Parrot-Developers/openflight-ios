@@ -30,38 +30,37 @@
 import GroundSdk
 
 /// Utility extension for Drone Hand Launch and Hand Land actions.
-
 extension Drone {
     // MARK: - Internal Properties
     /// Returns true if drone can Hand Land.
     var canHandLand: Bool {
-        guard let manualPiloting = self.getPilotingItf(PilotingItfs.manualCopter) else {
-            return false
-        }
+        guard let manualPiloting = self.getPilotingItf(PilotingItfs.manualCopter) else { return false }
+
         return manualPiloting.canHandLand
     }
 
     /// Returns true if Hand Launch is available.
     var isHandLaunchAvailable: Bool {
         guard let manualPiloting = self.getPilotingItf(PilotingItfs.manualCopter),
-            let flyingIndicators = self.getInstrument(Instruments.flyingIndicators),
-            self.isStateLanded,
-            manualPiloting.smartTakeOffLandAction == .thrownTakeOff,
-            flyingIndicators.landedState == .idle
-            else {
-                return false
+              let flyingIndicators = self.getInstrument(Instruments.flyingIndicators),
+              self.isStateLanded,
+              manualPiloting.smartTakeOffLandAction == .thrownTakeOff,
+              flyingIndicators.landedState == .idle else {
+            return false
         }
+
         return true
     }
 
     /// Returns true if Hand Launch is ready.
     var isHandLaunchReady: Bool {
         guard let manualPiloting = self.getPilotingItf(PilotingItfs.manualCopter),
-            self.isStateLanded,
-            self.landedState == .waitingUserAction,
-            manualPiloting.smartTakeOffLandAction == .land else {
-                return false
+              self.isStateLanded,
+              self.landedState == .waitingUserAction,
+              manualPiloting.smartTakeOffLandAction == .land else {
+            return false
         }
+
         return true
     }
 

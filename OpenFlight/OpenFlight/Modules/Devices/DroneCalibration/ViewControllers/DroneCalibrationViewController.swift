@@ -45,6 +45,12 @@ final class DroneCalibrationViewController: UIViewController {
     private weak var coordinator: DroneCalibrationCoordinator?
     private var viewModel = DroneCalibrationViewModel()
 
+    // MARK: - Private Enums
+    private enum Constants {
+        static let defaultSubtextColor: ColorName = .white50
+        static let defaultBackgroundColor: ColorName = .white10
+    }
+
     // MARK: - Setup
     static func instantiate(coordinator: DroneCalibrationCoordinator) -> DroneCalibrationViewController {
         let viewController = StoryboardScene.DroneCalibration.initialScene.instantiate()
@@ -137,26 +143,6 @@ private extension DroneCalibrationViewController {
                                                         .layerMaxXMinYCorner])
     }
 
-    /// Updates the gimbal UI for the specified state.
-    ///
-    /// - Parameters:
-    ///    - gimbalState: state of the gimbal.
-    func updateGimbalUI(gimbalState: GimbalCalibrationState) {
-        switch gimbalState {
-        case .gimbalNotCalibrated:
-            // TODO: Update text for none calibrated gimbal.
-            self.gimbalCalibrationChoiceView.viewModel?.subText = ""
-            self.gimbalCalibrationChoiceView.isUserInteractionEnabled = true
-        case .gimbalError:
-            // TODO: Update text for gimbal errors.
-            self.gimbalCalibrationChoiceView.viewModel?.subText = ""
-            self.gimbalCalibrationChoiceView.isUserInteractionEnabled = false
-        case .gimbalOk:
-            self.gimbalCalibrationChoiceView.viewModel?.subText = nil
-            self.gimbalCalibrationChoiceView.isUserInteractionEnabled = true
-        }
-    }
-
     /// Sets up view models associated with the view.
     func setupViewModels() {
         self.gimbalCalibrationChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icGimbal.image,
@@ -175,10 +161,6 @@ private extension DroneCalibrationViewController {
                 self?.coordinator?.dismissDroneCalibration()
             }
 
-            if let gimbalState = state.gimbalState {
-                self?.updateGimbalUI(gimbalState: gimbalState)
-            }
-
             if let flyingState = state.flyingState, flyingState == .flying {
                 self?.coordinator?.dismissDroneCalibration()
             }
@@ -192,10 +174,15 @@ private extension DroneCalibrationViewController {
     ///    - state: current state
     func updateView(state: DroneCalibrationState) {
         // Calibration button.
-        obstacleDetectionChoiceView.viewModel?.subText = state.calibrationText
-        obstacleDetectionChoiceView.viewModel?.subTextColor = state.stereoVisionSensorCalibrationNeeded ? .redTorch : .white50
-        obstacleDetectionChoiceView.viewModel?.backgroundColor = state.stereoVisionSensorCalibrationNeeded ? .redTorch25 : .white10
+        gimbalCalibrationChoiceView.viewModel?.update(state: viewModel.state.value)
 
+        magnetometerChoiceView.viewModel?.subText = state.magnetometerState?.description
+        magnetometerChoiceView.viewModel?.subTextColor = state.magnetometerState?.subtextColor ?? Constants.defaultSubtextColor
+        magnetometerChoiceView.viewModel?.backgroundColor = state.magnetometerState?.backgroundColor ?? Constants.defaultBackgroundColor
+
+        obstacleDetectionChoiceView.viewModel?.subText = state.stereoVisionSensorsState?.description
+        obstacleDetectionChoiceView.viewModel?.subTextColor = state.stereoVisionSensorsState?.subtextColor ?? Constants.defaultSubtextColor
+        obstacleDetectionChoiceView.viewModel?.backgroundColor = state.stereoVisionSensorsState?.backgroundColor ?? Constants.defaultBackgroundColor
     }
 
     /// Called when the view needs to be dismissed.

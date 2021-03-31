@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nnz-5N-GYs">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Remote Details Buttons View Controller-->
+        <scene sceneID="AhA-69-upf">
+            <objects>
+                <viewController storyboardIdentifier="RemoteDetailsButtons" id="nnz-5N-GYs" customClass="RemoteDetailsButtonsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="sLO-kH-5zP">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="cIi-if-hIQ">
+                                <rect key="frame" x="0.0" y="348" width="414" height="200"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zBX-Da-tCs" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="414" height="61.5"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <connections>
+                                            <action selector="droneButtonTouchedUpInside:" destination="nnz-5N-GYs" eventType="touchUpInside" id="SNw-ms-amx"/>
+                                        </connections>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nuo-jJ-2vi" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="69.5" width="414" height="61"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <connections>
+                                            <action selector="calibrationButtonTouchedUpInside:" destination="nnz-5N-GYs" eventType="touchUpInside" id="hOk-jx-kxs"/>
+                                        </connections>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tHM-SM-dwd" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="138.5" width="414" height="61.5"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <connections>
+                                            <action selector="softwareVersionButtonTouchedUpInside:" destination="nnz-5N-GYs" eventType="touchUpInside" id="h4P-Tt-fRa"/>
+                                        </connections>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" priority="750" constant="200" id="FVl-Qu-8d5"/>
+                                </constraints>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="OGt-P7-BRB"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="cIi-if-hIQ" secondAttribute="bottom" id="2Ka-Kg-C0w"/>
+                            <constraint firstItem="cIi-if-hIQ" firstAttribute="top" relation="greaterThanOrEqual" secondItem="sLO-kH-5zP" secondAttribute="top" id="E33-x6-IMF"/>
+                            <constraint firstAttribute="trailing" secondItem="cIi-if-hIQ" secondAttribute="trailing" id="Lev-CW-GhH"/>
+                            <constraint firstItem="cIi-if-hIQ" firstAttribute="width" secondItem="sLO-kH-5zP" secondAttribute="width" multiplier="0.9" id="X0Q-Pe-oN6"/>
+                            <constraint firstItem="cIi-if-hIQ" firstAttribute="centerY" secondItem="sLO-kH-5zP" secondAttribute="centerY" id="lR6-I7-vop"/>
+                            <constraint firstItem="cIi-if-hIQ" firstAttribute="leading" secondItem="sLO-kH-5zP" secondAttribute="leading" id="zP3-g3-9aa"/>
+                        </constraints>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="zP3-g3-9aa"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=compact">
+                            <mask key="constraints">
+                                <exclude reference="X0Q-Pe-oN6"/>
+                                <include reference="zP3-g3-9aa"/>
+                            </mask>
+                        </variation>
+                    </view>
+                    <connections>
+                        <outlet property="calibrationButtonView" destination="nuo-jJ-2vi" id="kcE-Qs-huZ"/>
+                        <outlet property="currentDroneButtonView" destination="zBX-Da-tCs" id="9Kc-be-yUg"/>
+                        <outlet property="softwareVersionButtonView" destination="tHM-SM-dwd" id="XqX-cJ-N2T"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="l2c-1c-cTO" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1504" y="2519"/>
+        </scene>
+    </scenes>
+</document>

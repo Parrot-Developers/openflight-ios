@@ -65,6 +65,10 @@ public extension MapViewController {
     /// - Parameters:
     ///     - state: Mission Mode State
     func setupFlightPlanListener(for state: MissionProviderState) {
+        // Remove potential old Flight Plan first.
+        FlightPlanManager.shared.currentFlightPlanViewModel = nil
+        FlightPlanManager.shared.unregister(flightPlanListener)
+
         // Load last edited Flight Plan
         if state.mode?.isFlightPlanPanelRequired ?? false {
             self.setMapMode(.flightPlan)
@@ -72,10 +76,6 @@ public extension MapViewController {
                 self?.flightPlanViewModel = flightPlan
             })
             FlightPlanManager.shared.loadLastOpenedFlightPlan(state: state)
-        } else {
-            // Remove potential old Flight Plan first.
-            FlightPlanManager.shared.currentFlightPlanViewModel = nil
-            FlightPlanManager.shared.unregister(flightPlanListener)
         }
     }
 
@@ -154,6 +154,28 @@ public extension MapViewController {
         }
     }
 
+    /// Removes a waypoint to Flight Plan.
+    ///
+    /// - Parameters:
+    ///    - index: waypoint index
+    func removeWayPoint(at index: Int) {
+        flightPlanViewModel?.flightPlan?.plan.removeWaypoint(at: index)
+        flightPlanOverlay?.removeWayPoint(at: index)
+        flightPlanLabelsOverlay?.removeWayPoint(at: index)
+        flightPlanViewModel?.didChangeCourse()
+    }
+
+    /// Removes a point of interest to Flight Plan.
+    ///
+    /// - Parameters:
+    ///    - index: point of interest index
+    func removePOI(at index: Int) {
+        flightPlanViewModel?.flightPlan?.plan.removePoiPoint(at: index)
+        flightPlanOverlay?.removePoiPoint(at: index)
+        flightPlanLabelsOverlay?.removePoiPoint(at: index)
+        flightPlanViewModel?.didChangePointOfView()
+    }
+
     // MARK: - Helpers
     /// Computes screen angle between two map points.
     ///
@@ -194,6 +216,20 @@ public extension MapViewController {
             return nil
         }
     }
+
+    /// Restore selected item after a flight plan reload.
+    ///
+    /// - Parameters:
+    ///     - graphic: graphic to select
+    ///     - index: graphic index
+    func restoreSelectedItem(_ graphic: FlightPlanGraphic, at index: Int?) {
+        if let wpIndex = index,
+           let newGraphic = self.flightPlanOverlay?.graphicForIndex(wpIndex, type: graphic.itemType) {
+            flightPlanViewModel?.didTapGraphicalItem(newGraphic)
+        } else {
+            flightPlanViewModel?.didTapGraphicalItem(graphic)
+        }
+    }
 }
 
 // MARK: - Map Gestures
@@ -219,6 +255,8 @@ extension MapViewController {
                 self?.addWaypoint(atLocation: mapPoint)
                 self?.updateArrows()
                 self?.flightPlanViewModel?.didChangeCourse()
+            } else {
+                self?.flightPlanViewModel?.didTapGraphicalItem(nil)
             }
         }
     }
@@ -341,17 +379,18 @@ extension MapViewController {
                 resetDraggedGraphics()
                 return
         }
-        // If something is selected, items shouldn't be dragged.
-        if flightPlanOverlay?.hasSelection == true {
-            if self.flightPlanViewModel?.state.value.wayPointOrientationEditionObservable.value == true,
-                let wpIndex = self.flightPlanOverlay?.selectedWayPointIndex {
-                let wayPointLocation = self.flightPlanViewModel?.flightPlan?.plan.wayPoints.elementAt(index: wpIndex)?.coordinate
-                let touchLocation = self.sceneView.screen(toBaseSurface: screenPoint).toCLLocationCoordinate2D()
+        // Check if WP orientation is selected.
+        if flightPlanOverlay?.hasSelection == true,
+           self.flightPlanViewModel?.state.value.wayPointOrientationEditionObservable.value == true {
+            if let wpIndex = self.flightPlanOverlay?.selectedWayPointIndex {
+                let wayPointLocation = self.flightPlanViewModel?.flightPlan?.plan.wayPoints.elementAt(index: wpIndex)?.agsPoint
+                let touchLocation = self.sceneView.screen(toBaseSurface: screenPoint)
 
                 if let wpLoc = wayPointLocation {
-                    let newYaw = GeometryUtils.yaw(fromLocation: wpLoc,
-                                                   toLocation: touchLocation).toBoundedDegrees()
-                    self.flightPlanViewModel?.flightPlan?.plan.wayPoints.elementAt(index: wpIndex)?.setCustomYaw(newYaw)
+                    let newYaw = AGSGeometryEngine.standardGeodeticDistance(between: wpLoc,
+                                                                            and: touchLocation,
+                                                                            azimuthUnit: .degrees())?.azimuth1 ?? 0.0
+                    self.flightPlanViewModel?.flightPlan?.plan.wayPoints.elementAt(index: wpIndex)?.setCustomYaw(newYaw.asPositiveDegrees)
                     self.updateFlightPlanOverlaysIfNeeded()
                 }
 
@@ -365,7 +404,9 @@ extension MapViewController {
             if flightPlanOverlay?.draggedGraphic is FlightPlanWayPointGraphic {
                 flightPlanViewModel?.didChangeCourse()
             } else if flightPlanOverlay?.draggedGraphic is FlightPlanPoiPointGraphic {
-                flightPlanViewModel?.didChangePOI()
+                flightPlanViewModel?.didChangePointOfView()
+            } else if flightPlanOverlay?.draggedGraphic is FlightPlanWayPointArrowGraphic {
+                flightPlanViewModel?.didChangePointOfView()
             }
 
             resetDraggedGraphics()
@@ -411,9 +452,9 @@ private extension MapViewController {
                                 actions: nil)
         flightPlan.plan.addWaypoint(wayPoint)
         let index = flightPlan.plan.wayPoints.count - 1
-        let graphics = wayPoint.markerGraphic(index: index)
+        let wayPointGraphic = wayPoint.markerGraphic(index: index)
         let labelGraphics = wayPoint.labelsGraphic(index: index)
-        flightPlanOverlay?.graphics.add(graphics)
+        flightPlanOverlay?.graphics.add(wayPointGraphic)
         flightPlanLabelsOverlay?.graphics.add(labelGraphics)
 
         let angle = getScreenAngleBetween(wayPoint.agsPoint,
@@ -426,6 +467,8 @@ private extension MapViewController {
         if let lineGraphic = flightPlan.plan.lastLineGraphic {
             flightPlanOverlay?.graphics.add(lineGraphic)
         }
+
+        flightPlanViewModel?.didTapGraphicalItem(wayPointGraphic)
     }
 
     /// Adds a point of interest to Flight Plan.
@@ -442,11 +485,12 @@ private extension MapViewController {
                            color: 0)
         flightPlan.plan.addPoiPoint(poi)
         let index = flightPlan.plan.pois.count - 1
-        let graphic = poi.markerGraphic(index: index)
+        let poiGraphic = poi.markerGraphic(index: index)
         let labelGraphic = poi.labelGraphic(index: index)
-        flightPlanOverlay?.graphics.add(graphic)
+        flightPlanOverlay?.graphics.add(poiGraphic)
         flightPlanLabelsOverlay?.graphics.add(labelGraphic)
-        flightPlanViewModel?.didChangePOI()
+        flightPlanViewModel?.didChangePointOfView()
+        flightPlanViewModel?.didTapGraphicalItem(poiGraphic)
     }
 
     /// Resets currently dragged graphic on overlays.
@@ -455,4 +499,22 @@ private extension MapViewController {
         flightPlanOverlay?.startDragTimeStamp = 0.0
         flightPlanLabelsOverlay?.draggedGraphic = nil
     }
+}
+
+// MARK: - FlightPlanEditionViewControllerDelegate
+extension MapViewController: EditionSettingsDelegate {
+    public func updateMode(tag: Int) {
+        self.updateFlightPlanType(tag: tag)
+    }
+
+    public func updateSettingValue(for key: String?, value: Int) {
+        self.updateSetting(for: key, value: value)
+    }
+
+    public func updateChoiceSetting(for key: String?, value: Bool) {
+        self.updateSetting(for: key, value: value == true ? 0 : 1)
+    }
+
+    public func didTapCloseButton() {}
+    public func didTapDeleteButton() {}
 }

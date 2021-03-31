@@ -56,7 +56,7 @@ final class SettingsNetworkSelectionCell: UITableViewCell, NibReusable {
     weak var delegate: SettingsNetworkSelectionDelegate?
 
     // MARK: - Private Properties
-    private var viewModel: SettingsNetworkSelectionViewModel?
+    private let viewModel = SettingsNetworkSelectionViewModel()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -77,7 +77,7 @@ final class SettingsNetworkSelectionCell: UITableViewCell, NibReusable {
 // MARK: - Actions
 private extension SettingsNetworkSelectionCell {
     @IBAction func segmentDidChange(_ sender: UISegmentedControl) {
-        viewModel?.switchSelectionMode()
+        viewModel.switchSelectionMode()
     }
 }
 
@@ -114,24 +114,29 @@ private extension SettingsNetworkSelectionCell {
 
     /// Inits the view model.
     func initViewModel() {
-        viewModel = SettingsNetworkSelectionViewModel(stateDidUpdate: { [weak self] _ in
+        viewModel.state.valueChanged = { [weak self] _ in
             self?.delegate?.networkSelectionDidChange()
             self?.updateView()
-        })
+        }
         updateView()
     }
 
     /// Updates the view.
     func updateView() {
-        accessNameTextField.text = viewModel?.state.value.networkUrl
-        usernameTextField.text = viewModel?.state.value.username
-        passwordTextField.text = viewModel?.state.value.password
+        accessNameTextField.text = viewModel.state.value.networkUrl
+        usernameTextField.text = viewModel.state.value.username
+        passwordTextField.text = viewModel.state.value.password
         segmentedControl.removeAllSegments()
-        titleLabel.text = viewModel?.settingEntry.title
-        self.manualSelectionView.isHidden = viewModel?.state.value.selectionMode == .auto
-        segmentedControl.isEnabled = viewModel?.state.value.isSelectionUpdating == false
+        titleLabel.text = viewModel.settingEntry.title
+        self.manualSelectionView.isHidden = viewModel.state.value.selectionMode == .auto
 
-        guard let segmentModel = viewModel?.settingEntry.segmentModel else { return }
+        self.isUserInteractionEnabled = viewModel.state.value.isSimCardInserted ?? false
+        for view in contentView.subviews {
+            view.alphaWithEnabledState(viewModel.state.value.isSimCardInserted ?? false)
+        }
+        self.segmentedControl.isEnabled = viewModel.state.value.isSelectionUpdating == false
+
+        guard let segmentModel = viewModel.settingEntry.segmentModel else { return }
 
         for segmentItem: SettingsSegment in segmentModel.segments {
             segmentedControl.insertSegment(withTitle: segmentItem.title,
@@ -158,14 +163,14 @@ extension SettingsNetworkSelectionCell: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         switch textField {
         case accessNameTextField:
-            viewModel?.updateManualValue(value: accessNameTextField.text,
-                                         manualSelectionField: .apnUrl)
+            viewModel.updateManualValue(value: accessNameTextField.text,
+                                        manualSelectionField: .apnUrl)
         case usernameTextField:
-            viewModel?.updateManualValue(value: usernameTextField.text,
-                                         manualSelectionField: .username)
+            viewModel.updateManualValue(value: usernameTextField.text,
+                                        manualSelectionField: .username)
         case passwordTextField:
-            viewModel?.updateManualValue(value: passwordTextField.text,
-                                         manualSelectionField: .password)
+            viewModel.updateManualValue(value: passwordTextField.text,
+                                        manualSelectionField: .password)
         default:
             break
         }

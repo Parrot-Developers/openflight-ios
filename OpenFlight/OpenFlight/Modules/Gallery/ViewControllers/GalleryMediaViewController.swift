@@ -269,7 +269,7 @@ extension GalleryMediaViewController: UICollectionViewDelegate {
             collectionView.reloadData()
             selectionView.setAllowDownload(viewModel.sourceType != .mobileDevice)
             selectionView.setCountAndSizeOfItems(selectedMedias.count, selectedMediasSize)
-            selectionView.updateButtons(isMediasSelected: selectedMedias.isEmpty)
+            selectionView.updateButtons(selectedMedias: selectedMedias)
         } else if let index = viewModel.getMediaIndex(media) {
             self.coordinator?.showMediaPlayer(viewModel: viewModel, index: index)
         }
@@ -340,7 +340,7 @@ extension GalleryMediaViewController: GalleryViewDelegate {
         collection.allowsMultipleSelection = enabled
         selectionView.setAllowDownload(viewModel?.sourceType != .mobileDevice)
         selectionView.setCountAndSizeOfItems(selectedMedias.count, selectedMediasSize)
-        selectionView.updateButtons(isMediasSelected: selectedMedias.isEmpty)
+        selectionView.updateButtons(selectedMedias: selectedMedias)
         selectionView.isHidden = !enabled
         if !collection.allowsMultipleSelection {
             selectedMedias.removeAll()

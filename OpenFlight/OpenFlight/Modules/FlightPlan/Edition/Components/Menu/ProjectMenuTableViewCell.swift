@@ -40,7 +40,6 @@ protocol ProjectMenuTableViewCellDelegate: class {
 /// Project Menu TableView Cell.
 final class ProjectMenuTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
-    @IBOutlet private weak var cellTitle: UILabel!
     @IBOutlet private weak var projectName: UILabel!
     @IBOutlet private weak var historyButton: UIButton!
 
@@ -51,8 +50,6 @@ final class ProjectMenuTableViewCell: UITableViewCell, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        cellTitle.makeUp(with: .small, and: .white50)
-        cellTitle.text = L10n.flightPlanMenuProject.uppercased()
         projectName.makeUp()
     }
 }

@@ -37,11 +37,6 @@ public final class DashboardCoordinator: Coordinator {
     public var childCoordinators = [Coordinator]()
     public var parentCoordinator: Coordinator?
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let conditionsURL: String = "https://app.airmap.com"
-    }
-
     // MARK: - Public Funcs
     public func start() {
         let viewController = DashboardViewController.instantiate(coordinator: self)
@@ -105,24 +100,10 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
         self.push(viewController)
     }
 
-    /// Starts marketing.
-    func startMarketing() {
-        let viewController = MarketingViewController.instantiate(coordinator: self)
-        self.push(viewController)
-    }
-
     /// Starts flights details.
     func startFlightDetails(viewModel: FlightDataViewModel) {
         let viewController = FlightDetailsViewController.instantiate(coordinator: self, viewModel: viewModel)
         self.push(viewController)
-    }
-
-    /// Starts flight conditions.
-    func startFlightConditions() {
-        guard let fullUrl = URL(string: Constants.conditionsURL) else { return }
-
-        let safariVC = SFSafariViewController(url: fullUrl)
-        self.navigationController?.present(safariVC, animated: true, completion: nil)
     }
 
     /// Starts suggestions screen
@@ -135,10 +116,6 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
 
     /// Starts support infos
     func startSupport() {
-    }
-
-    /// Starts about screen.
-    func startAbout() {
     }
 
     /// Starts Confidentiality screen.
@@ -185,8 +162,11 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
     }
 
     /// Dismisses the dashboard.
-    func dismissDashboard() {
-        self.dismissCoordinatorWithAnimation(animationDirection: .fromRight)
+    ///
+    /// - Parameters:
+    ///     - completion: completion when dismiss is completed
+    func dismissDashboard(completion: (() -> Void)? = nil) {
+        self.dismissCoordinatorWithAnimation(animationDirection: .fromRight, completion: completion)
     }
 
     /// Function used to handle navigation after clicking on MyFlightsAccountView.
@@ -218,11 +198,20 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
     func showFlightPlan(viewModel: FlightPlanViewModel?) {
         guard let type = viewModel?.state.value.type else { return }
 
-        dismissDashboard()
-        // Setup MissionProvider and MissionMode as a Flight Plan mission (may be custom).
-        Defaults.userMissionProvider = FlightPlanTypeManager.shared.missionKey(for: type)
-        Defaults.userMissionMode = FlightPlanTypeManager.shared.missionModeKey(for: type)
         // Set Flight Plan as last used to be automatically open.
         viewModel?.setAsLastUsed()
+
+        dismissDashboard {
+            // Setup Mission as a Flight Plan mission (may be custom).
+            let modeKey = FlightPlanTypeManager.shared.missionModeKey(for: type)
+            if let mode = MissionsManager.shared.missionSubModeFor(key: modeKey) {
+                Defaults.userMissionProvider = FlightPlanTypeManager.shared.missionKey(for: type)
+                let missionModeViewModel = MissionLauncherViewModel()
+                if let provider = MissionsManager.shared.allMissions.first(where: { $0.mission.key == modeKey}) {
+                    missionModeViewModel.update(provider: provider)
+                }
+                missionModeViewModel.update(mode: mode)
+            }
+        }
     }
 }

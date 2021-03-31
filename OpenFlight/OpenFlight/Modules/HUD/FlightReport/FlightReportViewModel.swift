@@ -84,6 +84,13 @@ final class FlightReportViewModel: DroneWatcherViewModel<FlightReportState> {
     override func listenDrone(drone: Drone) {
         listenFlyingIndicators(drone: drone)
     }
+
+    /// Reset state.
+    func resetFlightReport() {
+        let copy = state.value.copy()
+        copy.displayFlightReport = nil
+        state.set(copy)
+    }
 }
 
 // MARK: - Private Funcs
@@ -103,9 +110,7 @@ private extension FlightReportViewModel {
                 break
             }
             if flyingIndicators.flyingState == .takingOff {
-                let copy = self?.state.value.copy()
-                copy?.displayFlightReport = nil
-                self?.state.set(copy)
+                self?.resetFlightReport()
             }
             self?.oldFlyingIndicatorsState = flyingIndicators.state
         }

@@ -81,11 +81,6 @@ final class FlightPlansListViewController: UIViewController {
         static let cellWidthRatio: CGFloat = 0.9
     }
 
-    /// Enum which stores messages to log.
-    private enum EventLoggerConstants {
-        static let screenMessage: String = "FlightPlanList"
-    }
-
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()

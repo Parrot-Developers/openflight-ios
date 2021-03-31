@@ -37,4 +37,16 @@ extension RemoteControl {
     var isConnected: Bool {
         return state.connectionState == .connected
     }
+
+    /// Returns model public name.
+    var publicName: String {
+        switch self.model {
+        case .skyCtrl3:
+            return "Parrot Skycontroller 3"
+        case .skyCtrl4:
+            return "Parrot Skycontroller 4"
+        case .skyCtrlUA:
+            return "Parrot Skycontroller UA"
+        }
+    }
 }

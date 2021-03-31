@@ -123,6 +123,16 @@ extension HUDCoordinator {
         self.present(childCoordinator: remoteCoordinator)
     }
 
+    /// Starts drone calibration.
+    func startDroneCalibration() {
+        let droneCoordinator = DroneCoordinator()
+        droneCoordinator.parentCoordinator = self
+        droneCoordinator.start()
+        self.present(childCoordinator: droneCoordinator, completion: {
+            droneCoordinator.startCalibration()
+        })
+    }
+
     /// Starts flight plan edition coordinator.
     ///
     /// - Parameters:
@@ -140,11 +150,6 @@ extension HUDCoordinator {
         flightPlanEditionCoordinator.start(mapViewController: mapViewController,
                                            mapViewRestorer: mapViewRestorer)
         self.present(childCoordinator: flightPlanEditionCoordinator, animated: false)
-    }
-
-    /// Displays a live streaming panel on the HUD.
-    func displayLiveStreaming() {
-        presentModal(viewController: LiveStreamingViewController.instantiate(coordinator: self))
     }
 
     /// Displays cellular pairing available screen.
@@ -214,16 +219,14 @@ extension HUDCoordinator: HUDCriticalAlertDelegate {
     func performAlertAction(alert: HUDCriticalAlertType?) {
         switch alert {
         case .droneAndRemoteUpdateRequired,
-             .droneUpdateRequired,
-             .droneCalibrationRequired:
+             .droneUpdateRequired:
             dismiss()
             startDroneInfos()
-        case .verticalCameraFailure:
-            guard let url = URL(string: ParrotURLConstants.parrotSupportUrl) else { return }
-
-            UIApplication.shared.open(url)
+        case .droneCalibrationRequired:
+            dismiss()
+            startDroneCalibration()
         default:
-            break
+            dismiss()
         }
     }
 }

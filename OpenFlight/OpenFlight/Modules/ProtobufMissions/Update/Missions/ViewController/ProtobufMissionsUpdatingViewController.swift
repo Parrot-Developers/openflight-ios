@@ -46,6 +46,7 @@ final class ProtobufMissionsUpdatingViewController: UIViewController {
     private weak var coordinator: ProtobufMissionUpdateCoordinator?
     private var dataSource = ProtobufMissionsUpdatingDataSource(manualRebootState: .waiting)
     private var manualRebootStarted: Bool = false
+    private var shouldRestartProcesses: Bool = false
     private var processIsFinished: Bool = false
     private var droneStateViewModel = DroneStateViewModel()
     private let missionsUpdaterManager = ProtobufMissionsUpdaterManager.shared
@@ -76,8 +77,18 @@ final class ProtobufMissionsUpdatingViewController: UIViewController {
         super.viewDidLoad()
 
         initUI()
+        listenToMissionsUpdaterManager()
         startProcesses()
         listenToDroneReconnection()
+
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(cancelProcesses),
+                                               name: UIApplication.didEnterBackgroundNotification,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(restartProcesses),
+                                               name: UIApplication.willEnterForegroundNotification,
+                                               object: nil)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -127,7 +138,7 @@ private extension ProtobufMissionsUpdatingViewController {
         if manualRebootStarted == false {
             presentCancelAlertViewController()
         } else {
-            quitProcesses()
+            presentQuitRebootAlertViewController()
         }
     }
 }
@@ -137,7 +148,6 @@ private extension ProtobufMissionsUpdatingViewController {
     /// Starts the update processes.
     func startProcesses() {
         RemoteControlGrabManager.shared.disableRemoteControl()
-        listenToMissionsUpdaterManager()
         missionsUpdaterManager.startMissionsUpdateProcess()
     }
 
@@ -145,7 +155,12 @@ private extension ProtobufMissionsUpdatingViewController {
     func listenToMissionsUpdaterManager() {
         missionsUpdaterManager
             .registerGlobalListener(allMissionToUpdateCallback: { [weak self] (missionsGlobalUpdatingState) in
-                self?.finalizeMissionsProcesses(missionsGlobalUpdatingState: missionsGlobalUpdatingState)
+                guard let strongSelf = self,
+                      strongSelf.droneStateViewModel.state.value.isConnected() == false else {
+                    return
+                }
+
+                strongSelf.finalizeMissionsProcesses(missionsGlobalUpdatingState: missionsGlobalUpdatingState)
             })
     }
 
@@ -185,33 +200,77 @@ private extension ProtobufMissionsUpdatingViewController {
     func listenToDroneReconnection() {
         droneStateViewModel.state.valueChanged = { [weak self] state in
             guard let strongSelf = self,
-                  strongSelf.manualRebootStarted,
                   state.connectionState == .connected,
                   !strongSelf.processIsFinished
             else {
                 return
             }
 
-            ULog.d(.missionUpdateTag, "Missions Update drone reconnected")
-            strongSelf.dataSource = ProtobufMissionsUpdatingDataSource(manualRebootState: .succeeded)
-            strongSelf.tableView.reloadData()
-            strongSelf.displayFinalUI()
+            if strongSelf.shouldRestartProcesses {
+                strongSelf.restartProcesses()
+            } else if strongSelf.manualRebootStarted {
+                ULog.d(.missionUpdateTag, "Missions Update drone reconnected")
+                strongSelf.dataSource = ProtobufMissionsUpdatingDataSource(manualRebootState: .succeeded)
+                strongSelf.tableView.reloadData()
+                strongSelf.displayFinalUI()
+            }
         }
     }
 
-    /// Shows an alert view.
+    /// Cancel operation in progress.
+    @objc func cancelProcesses() {
+        guard !manualRebootStarted else { return }
+
+        let cancelSucceeded = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
+        self.cancelButton.isHidden = cancelSucceeded
+    }
+
+    /// Restart operation in progress.
+    @objc func restartProcesses() {
+        guard !manualRebootStarted else { return }
+
+        resetUI()
+        // Drone must be connected to restart mission update.
+        guard droneStateViewModel.state.value.isConnected() else {
+            shouldRestartProcesses = true
+            return
+        }
+
+        shouldRestartProcesses = false
+        startProcesses()
+    }
+
+    /// Shows an alert view when user tries to cancel update.
     func presentCancelAlertViewController() {
         let validateAction = AlertAction(
-            title: L10n.firmwareMissionUpdateAlertQuitInstallationValidateAction,
-            actionHandler: {
-                let cancelsSucceed = FirmwareAndMissionsInteractor.shared.cancelMissionsProcesses(removeData: false)
-                self.cancelButton.isHidden = cancelsSucceed
+            title: L10n.firmwareMissionUpdateQuitInstallationValidateAction,
+            actionHandler: { [weak self] in
+                self?.cancelProcesses()
+                self?.quitProcesses()
             })
         let cancelAction = AlertAction(title: L10n.cancel, actionHandler: nil)
 
         let alert = AlertViewController.instantiate(
-            title: L10n.firmwareMissionUpdateAlertQuitInstallationTitle,
-            message: L10n.firmwareMissionUpdateAlertQuitInstallationMessage,
+            title: L10n.firmwareMissionUpdateQuitInstallationTitle,
+            message: L10n.firmwareMissionUpdateQuitInstallationDroneMessage,
+            cancelAction: cancelAction,
+            validateAction: validateAction)
+        present(alert, animated: true, completion: nil)
+    }
+
+    /// Shows an alert view when user tries to quit drone reboot.
+    func presentQuitRebootAlertViewController() {
+        let validateAction = AlertAction(
+            title: L10n.firmwareAndMissionQuitRebootValidateAction,
+            actionHandler: {
+                self.quitProcesses()
+            })
+        let cancelAction = AlertAction(title: L10n.firmwareMissionUpdateQuitInstallationCancelAction,
+                                       actionHandler: nil)
+
+        let alert = AlertViewController.instantiate(
+            title: L10n.firmwareAndMissionQuitRebootTitle,
+            message: L10n.firmwareAndMissionQuitRebootDroneMessage,
             cancelAction: cancelAction,
             validateAction: validateAction)
         present(alert, animated: true, completion: nil)
@@ -232,11 +291,16 @@ private extension ProtobufMissionsUpdatingViewController {
                                         borderColor: .clear,
                                         radius: 0.0,
                                         borderWidth: 0.0)
-        progressView.update(currentProgress: Constants.minProgress)
-        reportView.setup(with: .waiting)
-        continueView.setup(delegate: self, state: .waiting)
-
         setupTableView()
+        resetUI()
+    }
+
+    /// Reset the dynamic UI part.
+    func resetUI() {
+        progressView.update(currentProgress: Constants.minProgress)
+        continueView.setup(delegate: self, state: .waiting)
+        reportView.setup(with: .waiting)
+        cancelButton.isHidden = false
         tableView.reloadData()
     }
 
@@ -257,6 +321,8 @@ private extension ProtobufMissionsUpdatingViewController {
         continueView.setup(delegate: self, state: .success)
         progressView.setFakeSuccessOrErrorProgress()
         cancelButton.isHidden = true
+        // Unregister to prevent from issues when app goes in background.
+        missionsUpdaterManager.unregisterGlobalListener()
     }
 
     /// Displays error UI.
@@ -272,14 +338,9 @@ private extension ProtobufMissionsUpdatingViewController {
         tableView.allowsSelection = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.showsVerticalScrollIndicator = false
-        tableView.separatorInset = UIEdgeInsets.zero
-
-        tableView.tableFooterView = UIView()
+        tableView.makeUp(backgroundColor: ColorName.greyShark.color)
         tableView.tableHeaderView = UIView()
-
         tableView.separatorColor = .clear
-        tableView.backgroundColor = ColorName.greyShark.color
         tableView.register(cellType: ProtobufMissionUpdatingTableViewCell.self)
     }
 }

@@ -64,3 +64,14 @@ public extension Array where Element == Int {
         return self.filter { $0 % step == 0 }
     }
 }
+
+/// Utility extension for `Array`.
+extension Array {
+    /// Returns true if an element T is in the current Array.
+    ///
+    /// - Parameters:
+    ///     - element: array element to compare
+    public func contains<T>(_ element: T) -> Bool where T: Equatable {
+        return !self.filter({$0 as? T == element}).isEmpty
+    }
+}

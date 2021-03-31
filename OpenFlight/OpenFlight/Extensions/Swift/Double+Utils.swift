@@ -36,6 +36,12 @@ extension Double {
         return self * self
     }
 
+    /// Returns current value as a positive degree value.
+    /// Should be used to convert [-180, 180] angles to [0, 360].
+    var asPositiveDegrees: Double {
+        return self > 0 ? self : self + 360.0
+    }
+
     /// Rounds the double to decimal places value.
     ///
     /// - Parameters:

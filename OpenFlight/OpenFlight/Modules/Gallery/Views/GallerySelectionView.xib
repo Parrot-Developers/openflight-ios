@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -19,21 +19,21 @@
             <rect key="frame" x="0.0" y="0.0" width="530" height="50"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kZg-lD-KvI">
-                    <rect key="frame" x="244" y="15" width="42" height="20.5"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.90000000000000002" translatesAutoresizingMaskIntoConstraints="NO" id="kZg-lD-KvI">
+                    <rect key="frame" x="244.5" y="15" width="41.5" height="20.5"/>
                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pef-qk-j1f">
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pef-qk-j1f">
                     <rect key="frame" x="20" y="10" width="46" height="30"/>
                     <state key="normal" title="Button"/>
                     <connections>
                         <action selector="deleteButtonDidTouchUpInside:" destination="-1" eventType="touchUpInside" id="wee-VX-rzP"/>
                     </connections>
                 </button>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OrJ-HM-xak">
-                    <rect key="frame" x="464" y="10" width="46" height="30"/>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="trailing" contentVerticalAlignment="center" buttonType="system" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OrJ-HM-xak">
+                    <rect key="frame" x="404" y="10" width="106" height="30"/>
                     <state key="normal" title="Button"/>
                     <connections>
                         <action selector="downloadButtonDidTouchUpInside:" destination="-1" eventType="touchUpInside" id="rzy-qM-Spt"/>
@@ -44,6 +44,7 @@
             <constraints>
                 <constraint firstItem="kZg-lD-KvI" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="1ps-V3-lvq"/>
                 <constraint firstItem="kZg-lD-KvI" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="9c3-8p-C4r"/>
+                <constraint firstItem="OrJ-HM-xak" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" multiplier="0.2" id="Yk5-lj-wa1"/>
                 <constraint firstAttribute="trailing" secondItem="OrJ-HM-xak" secondAttribute="trailing" constant="20" id="fHy-Qp-e8g"/>
                 <constraint firstItem="pef-qk-j1f" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="20" id="gTy-qx-auh"/>
                 <constraint firstItem="OrJ-HM-xak" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="iEP-C0-ZQd"/>

@@ -64,7 +64,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
         static let defaultColor: UIColor = ColorName.blueDodger.color
         static let selectedColor: UIColor = ColorName.greenSpring.color
         static let lineWidth: CGFloat = 5.0
-        static let invisibleLineWidth: CGFloat = 28.0
+        static let invisibleLineWidth: CGFloat = 40.0
     }
 
     // MARK: - Init

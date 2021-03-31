@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Fj7-S8-J2m">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Remote Details Device View Controller-->
+        <scene sceneID="vPe-Wt-Tpp">
+            <objects>
+                <viewController storyboardIdentifier="RemoteDetailsDevice" id="Fj7-S8-J2m" customClass="RemoteDetailsDeviceViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="rcI-ep-H5Q">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lbB-f5-cVT" userLabel="DroneView">
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="eM9-EJ-iTt">
+                                        <rect key="frame" x="20" y="0.0" width="856" height="45"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="248" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="UgA-7t-Zde">
+                                                <rect key="frame" x="0.0" y="0.0" width="856" height="19.5"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="248" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.60000002384185791" translatesAutoresizingMaskIntoConstraints="NO" id="bFL-1n-7vG">
+                                                <rect key="frame" x="0.0" y="25.5" width="856" height="19.5"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="45" id="T1S-m6-F8J"/>
+                                        </constraints>
+                                    </stackView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gMi-dU-eby" userLabel="SkyControllerView">
+                                        <rect key="frame" x="134.5" y="83" width="627" height="248"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRemoteBigConnected" translatesAutoresizingMaskIntoConstraints="NO" id="Qq0-ZS-5a9">
+                                                <rect key="frame" x="0.0" y="54" width="627" height="140"/>
+                                            </imageView>
+                                            <stackView opaque="NO" contentMode="center" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="ypY-Qu-BHy">
+                                                <rect key="frame" x="286" y="218" width="55.5" height="30"/>
+                                                <subviews>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBattery" translatesAutoresizingMaskIntoConstraints="NO" id="FRO-eG-xMa">
+                                                        <rect key="frame" x="0.0" y="8" width="9" height="14"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="9" id="uiB-Kr-JfZ"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fas-08-hIX">
+                                                        <rect key="frame" x="14" y="5" width="41.5" height="20.5"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="30" id="noK-wU-LJM"/>
+                                                </constraints>
+                                            </stackView>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="ypY-Qu-BHy" firstAttribute="top" relation="greaterThanOrEqual" secondItem="Qq0-ZS-5a9" secondAttribute="bottom" id="4X7-bp-wgY"/>
+                                            <constraint firstAttribute="bottom" secondItem="ypY-Qu-BHy" secondAttribute="bottom" id="BGB-0f-LFF"/>
+                                            <constraint firstItem="Qq0-ZS-5a9" firstAttribute="leading" secondItem="gMi-dU-eby" secondAttribute="leading" id="CtE-GY-0gS"/>
+                                            <constraint firstItem="Qq0-ZS-5a9" firstAttribute="top" relation="greaterThanOrEqual" secondItem="gMi-dU-eby" secondAttribute="top" id="UlP-Sv-TcG"/>
+                                            <constraint firstItem="ypY-Qu-BHy" firstAttribute="centerX" secondItem="Qq0-ZS-5a9" secondAttribute="centerX" id="iL5-4m-ymC"/>
+                                            <constraint firstItem="Qq0-ZS-5a9" firstAttribute="centerY" secondItem="gMi-dU-eby" secondAttribute="centerY" id="io7-wr-Ce9"/>
+                                            <constraint firstAttribute="trailing" secondItem="Qq0-ZS-5a9" secondAttribute="trailing" id="wBS-AW-eLz"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="eM9-EJ-iTt" firstAttribute="top" secondItem="lbB-f5-cVT" secondAttribute="top" id="9Xq-0Y-tOl"/>
+                                    <constraint firstItem="gMi-dU-eby" firstAttribute="centerX" secondItem="lbB-f5-cVT" secondAttribute="centerX" id="Elr-JY-cxc"/>
+                                    <constraint firstAttribute="trailing" secondItem="eM9-EJ-iTt" secondAttribute="trailing" constant="20" id="Fl2-d4-0vO"/>
+                                    <constraint firstItem="gMi-dU-eby" firstAttribute="width" secondItem="lbB-f5-cVT" secondAttribute="width" multiplier="0.7" id="gaV-a3-63b"/>
+                                    <constraint firstItem="gMi-dU-eby" firstAttribute="height" secondItem="lbB-f5-cVT" secondAttribute="height" multiplier="0.6" id="oQb-0z-YYJ"/>
+                                    <constraint firstItem="eM9-EJ-iTt" firstAttribute="leading" secondItem="lbB-f5-cVT" secondAttribute="leading" constant="20" id="tTE-hG-vfT"/>
+                                    <constraint firstItem="gMi-dU-eby" firstAttribute="centerY" secondItem="lbB-f5-cVT" secondAttribute="centerY" id="y7Y-dz-jdm"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="1Mh-2G-TvS"/>
+                        <constraints>
+                            <constraint firstItem="lbB-f5-cVT" firstAttribute="top" secondItem="1Mh-2G-TvS" secondAttribute="top" id="0jT-uf-OhS"/>
+                            <constraint firstItem="lbB-f5-cVT" firstAttribute="leading" secondItem="rcI-ep-H5Q" secondAttribute="leading" id="2Tc-Cc-Kgh"/>
+                            <constraint firstAttribute="bottom" secondItem="lbB-f5-cVT" secondAttribute="bottom" id="aar-po-Z0P"/>
+                            <constraint firstAttribute="trailing" secondItem="lbB-f5-cVT" secondAttribute="trailing" id="zzZ-Fi-CJf"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="batteryImageView" destination="FRO-eG-xMa" id="WUy-81-2AX"/>
+                        <outlet property="batteryValueLabel" destination="fas-08-hIX" id="vo7-52-jrI"/>
+                        <outlet property="modelLabel" destination="UgA-7t-Zde" id="aPN-FD-ExM"/>
+                        <outlet property="nameLabel" destination="bFL-1n-7vG" id="ZE1-1g-hlH"/>
+                        <outlet property="remoteImageView" destination="Qq0-ZS-5a9" id="3g2-vg-bKi"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="odx-RM-GQZ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1504" y="1009"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="icBattery" width="7" height="14"/>
+        <image name="icRemoteBigConnected" width="200" height="140"/>
+    </resources>
+</document>

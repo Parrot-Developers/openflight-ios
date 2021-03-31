@@ -162,7 +162,7 @@ private extension FlightPlanDashboardViewController {
         openButton.applyCornerRadius(Style.largeCornerRadius)
         openButton.backgroundColor = ColorName.white12.color
         openButton.makeup(with: .large, color: ColorName.white)
-        openButton.setTitle(L10n.flightPlanOpen, for: .normal)
+        openButton.setTitle(L10n.flightPlanOpenLabel, for: .normal)
         durationTitleLabel.text = Style.dash
         durationTitleLabel.makeUp()
         durationTimeLabel.text = ""

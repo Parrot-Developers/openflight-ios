@@ -84,8 +84,14 @@ final class DeviceUpdateViewController: UIViewController {
         case .remote:
             initRemoteViewModel()
         case .drone:
-            initDroneViewModel()
+            // TODO: remove "model" logic to handle only remote update.
+            break
         }
+
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(cancelProcess),
+                                               name: UIApplication.didEnterBackgroundNotification,
+                                               object: nil)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -114,7 +120,7 @@ private extension DeviceUpdateViewController {
         // Can't cancel the process in the final step of the update.
         switch viewModel?.state.value.deviceUpdateStep.value {
         case .rebooting:
-            self.showAlertInfo(title: L10n.error, message: viewModel?.rebootingErrorMessage ?? "" )
+            self.presentCancelAlert()
         default:
             back()
         }
@@ -256,8 +262,8 @@ private extension DeviceUpdateViewController {
     /// Updates button view.
     func updateButtonView() {
         continueButton.setTitle(isUpdateFinished
-            ? L10n.commonContinue
-            : L10n.commonRetry,
+                                    ? L10n.commonContinue
+                                    : L10n.commonRetry,
                                 for: .normal)
         continueButton.isHidden = false
     }
@@ -293,21 +299,14 @@ private extension DeviceUpdateViewController {
 
     /// Init the ViewModel for remote update.
     func initRemoteViewModel() {
-        viewModel = RemoteUpdateViewModel(stateDidUpdate: { [weak self] state in
-            self?.observeDeviceUpdateState(state) },
-                                          deviceUpdateStepDidUpdate: { [weak self] step in
-                                            self?.updateStepView(step)
-        })
-        initViewModel()
-    }
+        viewModel = RemoteUpdateViewModel()
+        viewModel?.state.valueChanged = { [weak self] state in
+            self?.updateDeviceUpdateState(state)
+        }
+        viewModel?.state.value.deviceUpdateStep.valueChanged = { [weak self] step in
+            self?.updateStepView(step)
+        }
 
-    /// Init the ViewModel for drone update.
-    func initDroneViewModel() {
-        // FIXME: Will be remove with new firmware and missions architecture ?
-    }
-
-    /// Init view model.
-    func initViewModel() {
         // Check if we can start the update.
         if viewModel?.canStartUpdate() == true {
             viewModel?.startUpdateProcess()
@@ -323,18 +322,47 @@ private extension DeviceUpdateViewController {
         }
     }
 
-    /// Observes current update state.
+    /// Updates current update state.
     ///
     /// - Parameters:
     ///     - state: state of the update
-    func observeDeviceUpdateState(_ state: DeviceUpdateState) {
+    func updateDeviceUpdateState(_ state: DeviceUpdateState) {
         if !isFirmwareAlreadyDownloaded,
-            state.isNetworkReachable == false {
+           state.isNetworkReachable == false {
             // Display connection error alerts.
             showConnectionUnreachableAlert()
         }
+
         updateProgressView(step: state.deviceUpdateStep.value,
                            progress: state.currentProgress)
         listenErrorEvents(state.deviceUpdateEvent)
+    }
+
+    /// Shows an alert view when user tries to quit remote update during rebooting.
+    func presentCancelAlert() {
+        let validateAction = AlertAction(
+            title: L10n.firmwareMissionUpdateQuitInstallationCancelAction,
+            actionHandler: {
+                self.coordinator?.dismissDeviceUpdate()
+            })
+        let cancelAction = AlertAction(title: L10n.firmwareAndMissionQuitRebootValidateAction,
+                                       actionHandler: nil)
+
+        let alert = AlertViewController.instantiate(
+            title: L10n.firmwareAndMissionQuitRebootTitle,
+            message: L10n.remoteUpdateRebootingError,
+            cancelAction: cancelAction,
+            validateAction: validateAction)
+        present(alert, animated: true, completion: nil)
+    }
+
+    /// Cancel current update process and leave screen.
+    @objc func cancelProcess() {
+        guard viewModel?.state.value.deviceUpdateStep.value.canCancelProcess == true else {
+            return
+        }
+
+        viewModel?.cancelUpdateProcess()
+        coordinator?.dismissDeviceUpdate()
     }
 }

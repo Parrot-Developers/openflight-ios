@@ -31,23 +31,24 @@
 import GroundSdk
 
 /// Class that manages remote control grabs, allowing multiple grabs and avoiding conflicts.
-
-final class RemoteControlGrabManager {
+final class RemoteControlGrabManager: RemoteControlStateViewModel<DeviceConnectionState> {
     // MARK: - Shared Instance
     static let shared = RemoteControlGrabManager()
 
     // MARK: - Private Properties
-    private var currentRemoteControlWatcher = CurrentRemoteControlWatcher()
-    private var remoteControlStateRef: Ref<DeviceState>?
     private var grabbedButtons = [SkyCtrl3Button]()
     private var grabbedAxis = [SkyCtrl3Axis]()
     private var eventsForButton: [SkyCtrl3ButtonEvent: [String: ((SkyCtrl3ButtonEventState) -> Void)]] = [:]
     private var eventsForAxis: [SkyCtrl3AxisEvent: [String: ((Int) -> Void)]] = [:]
     private var isRemoteControlDisabled: Bool = false
 
-    // MARK: - Init
-    private init() {
-        listenRemoteControl()
+    // MARK: - Override Funcs
+    override func remoteControlStateDidChange(state: DeviceState) {
+        super.remoteControlStateDidChange(state: state)
+
+        if remoteControl?.isConnected == true {
+            updateGrabRemoteControl()
+        }
     }
 }
 
@@ -116,6 +117,7 @@ extension RemoteControlGrabManager {
         if eventsForAxis[axisEvent] == nil {
             eventsForAxis[axisEvent] = [:]
         }
+
         eventsForAxis[axisEvent]?[key] = action
     }
 
@@ -139,6 +141,7 @@ extension RemoteControlGrabManager {
         if eventsForButton[buttonEvent] == nil {
             eventsForButton[buttonEvent] = [:]
         }
+
         eventsForButton[buttonEvent]?[key] = action
     }
 
@@ -154,40 +157,23 @@ extension RemoteControlGrabManager {
 
 // MARK: - Private Funcs
 private extension RemoteControlGrabManager {
-    /// Starts watcher for remote control.
-    func listenRemoteControl() {
-        currentRemoteControlWatcher.start { [weak self] remoteControl in
-            self?.listenState(remoteControl: remoteControl)
-        }
-    }
-
-    /// Starts watcher for remote control's state.
-    func listenState(remoteControl: RemoteControl) {
-        remoteControlStateRef = remoteControl.getState { [weak self] _ in
-            if remoteControl.isConnected {
-                self?.updateGrabRemoteControl()
-            }
-        }
-    }
-
     /// Updates grab RemoteControl with current properties.
     func updateGrabRemoteControl() {
-        guard let remoteControl = currentRemoteControlWatcher.remoteControl,
-            remoteControl.isConnected,
-            let skyCtrl3 = remoteControl.getPeripheral(Peripherals.skyCtrl3Gamepad) else {
-                return
+        guard remoteControl?.isConnected == true,
+              let skyController = remoteControl?.getPeripheral(Peripherals.skyCtrl3Gamepad) else {
+            return
         }
 
         if isRemoteControlDisabled {
-            skyCtrl3.grab(buttons: SkyCtrl3Button.allCases, axes: SkyCtrl3Axis.allCases)
-            skyCtrl3.axisEventListener = nil
-            skyCtrl3.buttonEventListener = nil
+            skyController.grab(buttons: SkyCtrl3Button.allCases, axes: SkyCtrl3Axis.allCases)
+            skyController.axisEventListener = nil
+            skyController.buttonEventListener = nil
         } else {
-            skyCtrl3.grab(buttons: Set(grabbedButtons), axes: Set(grabbedAxis))
-            skyCtrl3.axisEventListener = { [weak self] newEvent, newState in
+            skyController.grab(buttons: Set(grabbedButtons), axes: Set(grabbedAxis))
+            skyController.axisEventListener = { [weak self] newEvent, newState in
                 self?.eventsForAxis[newEvent]?.forEach { $0.value(newState) }
             }
-            skyCtrl3.buttonEventListener = { [weak self] newEvent, newState in
+            skyController.buttonEventListener = { [weak self] newEvent, newState in
                 self?.eventsForButton[newEvent]?.forEach { $0.value(newState) }
             }
         }

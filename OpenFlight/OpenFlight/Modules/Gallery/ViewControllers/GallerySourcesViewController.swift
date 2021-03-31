@@ -47,8 +47,10 @@ final class GallerySourcesViewController: UIViewController {
     private weak var coordinator: GalleryCoordinator?
     private weak var viewModel: GalleryMediaViewModel?
     private var gallerySDMediaViewModel: GallerySDMediaViewModel? = GallerySDMediaViewModel.shared
+    private var galleryInternalMediaViewModel: GalleryInternalMediaViewModel? = GalleryInternalMediaViewModel.shared
     private var galleryDeviceMediaViewModel: GalleryDeviceMediaViewModel? = GalleryDeviceMediaViewModel.shared
     private var sdCardListener: GallerySdMediaListener?
+    private var internalListener: GalleryInternalMediaListener?
     private var deviceListener: GalleryDeviceMediaListener?
 
     // MARK: - Internal Properties
@@ -80,6 +82,7 @@ final class GallerySourcesViewController: UIViewController {
     // MARK: - Deinit
     deinit {
         gallerySDMediaViewModel?.unregisterListener(sdCardListener)
+        galleryInternalMediaViewModel?.unregisterListener(internalListener)
         galleryDeviceMediaViewModel?.unregisterListener(deviceListener)
     }
 
@@ -95,6 +98,17 @@ final class GallerySourcesViewController: UIViewController {
             guard let strongSelf = self else { return }
 
             if let previousStorage = strongSelf.dataSource.first(where: { $0.type == .droneSdCard }),
+                previousStorage.storageUsed.rounded(toPlaces: 1) == state.storageUsed.rounded(toPlaces: 1) {
+                return
+            }
+
+            strongSelf.updateDataSource()
+        })
+
+        internalListener = galleryInternalMediaViewModel?.registerListener(didChange: { [weak self] state in
+            guard let strongSelf = self else { return }
+
+            if let previousStorage = strongSelf.dataSource.first(where: { $0.type == .droneInternal }),
                 previousStorage.storageUsed.rounded(toPlaces: 1) == state.storageUsed.rounded(toPlaces: 1) {
                 return
             }
@@ -171,7 +185,11 @@ private extension GallerySourcesViewController {
                     isOffline = !(sdState.isConnected() && sdState.physicalStorageState == .available)
                 }
             case .droneInternal:
-                isOffline = true
+                if let internalState = galleryInternalMediaViewModel?.state.value {
+                    storageUsed = internalState.storageUsed
+                    storageCapacity = internalState.capacity
+                    isOffline = !(internalState.isConnected() && internalState.physicalStorageState == .available)
+                }
             case .mobileDevice:
                 storageUsed = UIDevice.current.usedStorageAsDouble
                 storageCapacity = UIDevice.current.capacityAsDouble

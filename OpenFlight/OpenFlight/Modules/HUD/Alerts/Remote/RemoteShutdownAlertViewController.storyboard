@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina4_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -183,7 +183,7 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="alertInfosLabel" destination="XWG-3C-jp5" id="YaV-uh-ru3"/>
+                        <outlet property="alertInstructionLabel" destination="XWG-3C-jp5" id="3AP-JG-Y0G"/>
                         <outlet property="bgSlider" destination="bBx-5V-okk" id="b4j-8f-6Ts"/>
                         <outlet property="panelView" destination="dUi-9S-9it" id="kc4-ZQ-Q3e"/>
                         <outlet property="remoteShutdownProcessDoneImage" destination="LJw-r4-iTA" id="FPv-Vh-V6O"/>

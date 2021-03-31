@@ -34,12 +34,12 @@ import UIKit
 final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Outlets
     @IBOutlet private weak var panelView: UIView!
-    @IBOutlet private weak var alertInfosLabel: UILabel!
     @IBOutlet private weak var bgSlider: UIView!
     @IBOutlet private weak var sliderStepView: UIView!
     @IBOutlet private weak var sliderStepLabel: UILabel!
     @IBOutlet private weak var sliderShutdownImage: UIImageView!
     @IBOutlet private weak var remoteShutdownProcessDoneImage: UIImageView!
+    @IBOutlet private weak var alertInstructionLabel: UILabel!
     @IBOutlet private weak var sliderStepViewDefaultConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
@@ -116,8 +116,8 @@ private extension RemoteShutdownAlertViewController {
 private extension RemoteShutdownAlertViewController {
     /// Inits panel view.
     func initView() {
-        alertInfosLabel.makeUp()
-        alertInfosLabel.text = L10n.mpp4AlertShutdown
+        alertInstructionLabel.makeUp()
+        alertInstructionLabel.text = L10n.remoteAlertShutdownInstruction
         sliderStepLabel.text = String(Constants.timer)
         panelView.addBlurEffect()
         bgSlider.roundCorneredWith(backgroundColor: OpenFlight.ColorName.redTorch.color)
@@ -188,6 +188,9 @@ private extension RemoteShutdownAlertViewController {
     func updateView(shouldHide: Bool) {
         self.sliderStepView.center.x = (self.sliderStepView.bounds.width / 2.0)
             + self.sliderStepViewDefaultConstraint.constant
+        self.alertInstructionLabel.text  = shouldHide
+            ? L10n.remoteAlertShutdownSuccess
+            : L10n.remoteAlertShutdownInstruction
         self.sliderStepView.isHidden = shouldHide
         self.sliderShutdownImage.isHidden = shouldHide
         self.bgSlider.isHidden = shouldHide

@@ -39,7 +39,7 @@ class ParrotDebugViewController: UIViewController {
     @IBOutlet private weak var filesTableView: UITableView!
     @IBOutlet private weak var switchLog: UISwitch!
     @IBOutlet private weak var enableStreamRecord: UIButton!
-    @IBOutlet private weak var cameraSelectionSegmented: UISegmentedControl!
+    @IBOutlet private weak var recordDisparitySwitch: UISwitch!
     @IBOutlet private weak var sendDebugTagButton: UIButton!
     @IBOutlet private weak var sendDebugTagTextField: UITextField!
 
@@ -54,7 +54,6 @@ class ParrotDebugViewController: UIViewController {
     private var refreshControl = UIRefreshControl()
     private var activeFileName: String?
     private var devToolboxRef: Ref<DevToolbox>?
-    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
 
     // MARK: - Private Enums
     private enum Constants {
@@ -62,8 +61,7 @@ class ParrotDebugViewController: UIViewController {
         static let usCountryCode = "US"
         static let defaultShareUti = "public.data, public.content"
         static let bundleVersionKey = "CFBundleVersion"
-        static let streamServerConfName = "stream_server_conf"
-        static let segmentTitles = ["front", "vertical", "stereo-left", "stereo-right", "disparity"]
+        static let oaRecordStartConfName = "oarecord_start"
     }
 
     // MARK: - Override Funcs
@@ -78,19 +76,14 @@ class ParrotDebugViewController: UIViewController {
         filesTableView.tableFooterView = UIView()
         filesTableView.refreshControl = refreshControl
         refreshControl.addTarget(self, action: #selector(refreshFileList(_:)), for: .valueChanged)
-        setupSegmented()
 
         currentDroneWatcher.start { [weak self] drone in
             self?.drone = drone
             self?.devToolboxRef = drone.getPeripheral(Peripherals.devToolbox) { [weak self] devToolbox in
                 if let debugSettings = devToolbox?.debugSettings,
-                    let cameraConf = debugSettings.first(where: { $0.name == Constants.streamServerConfName }) as? TextDebugSetting,
-                    let index = Constants.segmentTitles.firstIndex(of: cameraConf.value) {
-                    self?.cameraSelectionSegmented.selectedSegmentIndex = index
+                    let cameraConf = debugSettings.first(where: { $0.name == Constants.oaRecordStartConfName }) as? BoolDebugSetting {
+                    self?.recordDisparitySwitch.isOn = cameraConf.value
                 }
-            }
-            self?.flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicators in
-                self?.cameraSelectionSegmented.isEnabled = flyingIndicators?.state != .flying
             }
         }
     }
@@ -155,14 +148,10 @@ private extension ParrotDebugViewController {
         displayInformations()
     }
 
-    @IBAction func cameraSelectionValueChanged(_ sender: Any) {
-        guard drone?.isStateFlying == false else {
-            return
-        }
-        let index = cameraSelectionSegmented.selectedSegmentIndex
+    @IBAction private func recordDisparityTouchedUpInside(_ sender: UISwitch) {
         let devToolBox = drone?.getPeripheral(Peripherals.devToolbox)
-        let cameraConf = devToolBox?.debugSettings.first(where: { $0.name == Constants.streamServerConfName }) as? TextDebugSetting
-        cameraConf?.value = Constants.segmentTitles[index]
+        let cameraConf = devToolBox?.debugSettings.first(where: { $0.name == Constants.oaRecordStartConfName }) as? BoolDebugSetting
+        cameraConf?.value = sender.isOn
     }
 
     @IBAction private func sendDebugTagTouchedUpInside(_ sender: AnyObject) {
@@ -278,22 +267,6 @@ private extension ParrotDebugViewController {
     @objc func refreshFileList(_ sender: AnyObject) {
         loadFileList()
         refreshControl.endRefreshing()
-    }
-
-    func setupSegmented() {
-        cameraSelectionSegmented.removeAllSegments()
-        Constants.segmentTitles
-            .enumerated()
-            .forEach { (index, title) in
-                self.cameraSelectionSegmented.insertSegment(withTitle: title, at: index, animated: false)
-        }
-        cameraSelectionSegmented.selectedSegmentIndex = 0
-
-        if #available(iOS 13.0, *) {
-            cameraSelectionSegmented.selectedSegmentTintColor = ColorName.greenSpring.color
-            cameraSelectionSegmented.makeup(with: .regular, color: .greenSpring)
-            cameraSelectionSegmented.makeup(with: .regular, color: .black, and: .selected)
-        }
     }
 }
 

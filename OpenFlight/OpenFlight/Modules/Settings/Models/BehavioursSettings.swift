@@ -212,7 +212,12 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
     }
 
     var logKey: String {
-        return LogEvent.LogKeyAdvancedSettings.behavior
+        switch self {
+        case .video:
+            return LogEvent.LogKeyAdvancedSettings.filmMode
+        case .sport:
+            return LogEvent.LogKeyAdvancedSettings.sportMode
+        }
     }
 }
 

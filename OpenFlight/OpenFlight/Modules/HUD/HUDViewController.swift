@@ -40,7 +40,6 @@ final class HUDViewController: UIViewController, DelayedTaskProvider {
 
     // MARK: - Private Outlets
     @IBOutlet private weak var joysticksView: JoysticksView!
-    @IBOutlet private weak var liveStreamingWidgetView: LiveStreamingWidgetView!
     @IBOutlet private weak var alertPanelContainerView: UIView!
     @IBOutlet private weak var customValidationView: UIView!
     @IBOutlet private weak var AELockContainerView: UIView!
@@ -56,9 +55,9 @@ final class HUDViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Private Properties
     private var defaultMapViewController: MapViewController?
     private var missionModeViewModel = MissionLauncherViewModel()
+    private var lastMissionLauncherState: MissionLauncherState?
     private var joysticksViewModel = JoysticksViewModel()
     private var flightReportViewModel = FlightReportViewModel()
-    private var liveStreamingWidgetViewModel = LiveStreamingWidgetViewModel()
     private var takeOffAlertViewModel = TakeOffAlertViewModel()
     private var cellularPairingViewModel = CellularPairingViewModel()
     private var lockAETargetZoneViewController: LockAETargetZoneViewController?
@@ -102,7 +101,6 @@ final class HUDViewController: UIViewController, DelayedTaskProvider {
         setupMap()
         setupAlertPanel()
         coordinator?.hudCriticalAlertDelegate = self
-        liveStreamingWidgetView.delegate = self
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -220,21 +218,11 @@ private extension HUDViewController {
         joysticksView.isHidden = state?.shouldHideJoysticks == true
     }
 
-    /// Changes live streaming widget visibility regarding view model state.
-    ///
-    /// - Parameters:
-    ///     - state: current streaming state
-    func updateLiveStreamingWidgetVisibility(with state: LiveStreamingWidgetState?) {
-        liveStreamingWidgetView.isHidden = !(state?.shouldShowWidget ?? false)
-    }
-
     /// Changes take off unavailability alert modal visibility regarding view model state.
     ///
     /// - Parameters:
     ///     - state: The alert state
     func updateTakeOffAlertVisibility(with state: TakeOffAlertState?) {
-        takeOffAlertViewModel.updateTakeOffStatus()
-
         guard state?.canShowAlert == true else { return }
 
         coordinator?.displayTakeOffAlert(alert: state?.currentAlert)
@@ -257,45 +245,68 @@ private extension HUDViewController {
     /// Setup all view models.
     func setupViewModels() {
         missionModeViewModel.state.valueChanged = { [weak self] state in
-            self?.setupMap(with: state)
-            self?.coordinator?.presentModeEntryCoordinatorIfNeeded(state: state)
+            self?.handleNewMissionState(state)
         }
-        joysticksViewModel.state.valueChanged = { [weak self] state in
-            self?.updateJoysticksVisibility(with: state)
-        }
-        flightReportViewModel.state.valueChanged = { [weak self] state in
-            if let flightState = state.displayFlightReport {
-                self?.coordinator?.displayFlightReport(flightState: flightState)
-            }
-        }
-        liveStreamingWidgetViewModel.state.valueChanged = { [weak self] state in
-            self?.updateLiveStreamingWidgetVisibility(with: state)
-        }
-        takeOffAlertViewModel.state.valueChanged = { [weak self] state in
-            self?.updateTakeOffAlertVisibility(with: state)
-        }
-        cellularPairingViewModel.state.valueChanged = { [weak self] _ in
-            self?.showCellularPairingIfNeeded()
-        }
+        handleNewMissionState(missionModeViewModel.state.value)
+
         remoteShutdownAlertViewModel.state.valueChanged = { [weak self] _ in
             self?.showRemoteShutdownAlert()
         }
+        showRemoteShutdownAlert()
+
         helloWorldViewModel?.state.valueChanged = { [weak self] state in
             self?.showHelloWorldIfNeeded(state: state)
         }
+        if let state = helloWorldViewModel?.state.value {
+            showHelloWorldIfNeeded(state: state)
+        }
+
+        flightReportViewModel.state.valueChanged = { [weak self] state in
+            if let flightState = state.displayFlightReport {
+                self?.coordinator?.displayFlightReport(flightState: flightState)
+                self?.flightReportViewModel.resetFlightReport()
+            }
+        }
+        if let flightState = flightReportViewModel.state.value.displayFlightReport {
+            coordinator?.displayFlightReport(flightState: flightState)
+        }
+
+        joysticksViewModel.state.valueChanged = { [weak self] state in
+            self?.updateJoysticksVisibility(with: state)
+        }
+        updateJoysticksVisibility(with: joysticksViewModel.state.value)
+
+        takeOffAlertViewModel.state.valueChanged = { [weak self] state in
+            self?.updateTakeOffAlertVisibility(with: state)
+        }
+        updateTakeOffAlertVisibility(with: takeOffAlertViewModel.state.value)
+
+        cellularPairingViewModel.state.valueChanged = { [weak self] _ in
+            self?.showCellularPairingIfNeeded()
+        }
+        showCellularPairingIfNeeded()
+
         cellularIndicatorViewModel.state.valueChanged = { [weak self] state in
             self?.updateCellularIndicatorView(with: state)
         }
+        updateCellularIndicatorView(with: cellularIndicatorViewModel.state.value)
+
         landingViewModel.state.valueChanged = { [weak self] state in
             self?.updateLandingView(with: state)
         }
-
-        updateLiveStreamingWidgetVisibility(with: liveStreamingWidgetViewModel.state.value)
-        updateJoysticksVisibility(with: joysticksViewModel.state.value)
-        updateTakeOffAlertVisibility(with: takeOffAlertViewModel.state.value)
-        showCellularPairingIfNeeded()
-        updateCellularIndicatorView(with: cellularIndicatorViewModel.state.value)
         updateLandingView(with: landingViewModel.state.value)
+    }
+
+    /// Handle new mission state.
+    ///
+    /// - Parameters:
+    ///     - state: Mission launcher state
+    func handleNewMissionState(_ state: MissionLauncherState) {
+        if state != lastMissionLauncherState {
+            setupMap(with: state)
+            coordinator?.presentModeEntryCoordinatorIfNeeded(state: state)
+            lastMissionLauncherState = state
+        }
     }
 
     /// Removes each view model value changed.
@@ -303,7 +314,6 @@ private extension HUDViewController {
         missionModeViewModel.state.valueChanged = nil
         joysticksViewModel.state.valueChanged = nil
         flightReportViewModel.state.valueChanged = nil
-        liveStreamingWidgetViewModel.state.valueChanged = nil
         takeOffAlertViewModel.state.valueChanged = nil
         cellularPairingViewModel.state.valueChanged = nil
         remoteShutdownAlertViewModel.state.valueChanged = nil
@@ -322,13 +332,6 @@ private extension HUDViewController {
         if isTaskPending(key: Constants.cellularIndicatorTaskKey) {
             cancelDelayedTask(key: Constants.cellularIndicatorTaskKey)
         }
-    }
-}
-
-// MARK: - LiveStreamingDelegate
-extension HUDViewController: LiveStreamingDelegate {
-    func displayLiveStreamingPanel() {
-        coordinator?.displayLiveStreaming()
     }
 }
 

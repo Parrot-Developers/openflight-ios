@@ -81,8 +81,9 @@ final class HelloWorldMissionViewModel: BaseViewModel<HelloWorldMissionState> {
     private var helloWorldMissionSignature = HelloWorldMissionSignature()
 
     // MARK: - Init
-    init() {
+    override init() {
         super.init()
+
         listenMission()
     }
 

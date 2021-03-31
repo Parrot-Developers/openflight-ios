@@ -33,14 +33,14 @@ import GroundSdk
 // MARK: - Internal Enums
 /// Enum describing UserLocation gps strength/state.
 enum UserLocationGpsStrength {
-    case unauthorized
+    case unavailable
     case gpsKo
     case gpsWeak
     case gpsFixed
 
     var image: UIImage {
         switch self {
-        case .unauthorized:
+        case .unavailable:
             return Asset.Gps.Controller.icGpsNone.image
         case .gpsKo:
             return Asset.Gps.Controller.icGpsKo.image
@@ -66,7 +66,7 @@ extension UserLocation {
     /// Returns current user gps strength.
     var gpsStrength: UserLocationGpsStrength {
         guard authorized else {
-            return .unauthorized
+            return .unavailable
         }
         guard let location = location else {
             return .gpsKo
@@ -88,7 +88,7 @@ extension UserLocation {
         switch strength {
         case .gpsWeak, .gpsFixed:
             return true
-        case .unauthorized, .gpsKo:
+        case .unavailable, .gpsKo:
             return false
         }
     }

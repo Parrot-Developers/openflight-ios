@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -22,7 +22,7 @@
                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Opk-XW-K3E">
                     <rect key="frame" x="1" y="1" width="98" height="38"/>
                     <subviews>
-                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icCameraModeTimer" translatesAutoresizingMaskIntoConstraints="NO" id="Q6d-Fz-KSF">
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icFlightPlanTime" translatesAutoresizingMaskIntoConstraints="NO" id="Q6d-Fz-KSF">
                             <rect key="frame" x="0.0" y="0.0" width="35" height="38"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="35" id="j5f-c1-zUm"/>
@@ -74,6 +74,6 @@
         </view>
     </objects>
     <resources>
-        <image name="icCameraModeTimer" width="18" height="18"/>
+        <image name="icFlightPlanTime" width="18" height="18"/>
     </resources>
 </document>

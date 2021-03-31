@@ -56,16 +56,13 @@ final class HUDControllerInfoViewController: UIViewController {
     weak var navigationDelegate: HUDControllerInfoViewControllerNavigation?
 
     // MARK: - Private Properties
-    private var controllerInfosViewModel: ControllerInfosViewModel?
+    private let viewModel = ControllerInfosViewModel()
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        controllerInfosViewModel = ControllerInfosViewModel(userLocationManager: UserLocationManager(),
-                                                            controllerDidChange: self.onControllerChanged,
-                                                            batteryLevelDidChange: self.onBatteryLevelChanged,
-                                                            gpsStrengthDidChange: self.onGpsStrengthChanged)
+        setupViewModel()
     }
 }
 
@@ -73,7 +70,7 @@ final class HUDControllerInfoViewController: UIViewController {
 private extension HUDControllerInfoViewController {
     /// Called when user taps the view.
     @IBAction func controllerInfoTouchedUpInside(_ sender: Any) {
-        if controllerInfosViewModel?.state.value.currentController.value == .remoteControl {
+        if viewModel.state.value.currentController == .remoteControl {
             LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDTopBarButton.remoteControlDetails,
                                  logType: .simpleButton)
             navigationDelegate?.openRemoteControlInfos()
@@ -83,26 +80,28 @@ private extension HUDControllerInfoViewController {
 
 // MARK: - Private Funcs
 private extension HUDControllerInfoViewController {
-    /// Called when current controller changes.
-    ///
-    /// - Parameters:
-    ///     - controller: current controller updated
-    func onControllerChanged(_ controller: Controller) {
-        controllerImageView.image = controller.batteryImage
+    /// Sets up view model.
+    func setupViewModel() {
+        viewModel.state.valueChanged = { [weak self] state in
+            self?.updateState(state)
+        }
+        updateState(viewModel.state.value)
     }
 
-    /// Called when current controller battery level changes.
-    func onBatteryLevelChanged(_ batteryLevel: BatteryValueModel) {
+    /// Updates current controller state.
+    func updateState(_ state: ControllerInfosState) {
+        controllerImageView.image = state.currentController.batteryImage
+        gpsImageView.image = state.gpsStrength.image
+        updateBatteryLevel(state.batteryLevel)
+    }
+
+    /// Updates battery level display.
+    func updateBatteryLevel(_ batteryLevel: BatteryValueModel) {
         if let level = batteryLevel.currentValue {
             batteryLevelLabel.attributedText = NSMutableAttributedString(withBatteryLevel: level)
         } else {
             batteryLevelLabel.text = Style.dash
         }
         batteryAlertBackgroundView.backgroundColor = batteryLevel.alertLevel.color
-    }
-
-    /// Called when user gps signal strength changes.
-    func onGpsStrengthChanged(_ gpsStrength: UserLocationGpsStrength) {
-        gpsImageView.image = gpsStrength.image
     }
 }

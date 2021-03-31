@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// Class that grabs a specific axis of the remote control with button event.
-
 final class RemoteControlAxisButtonGrabber {
     // MARK: - Private Properties
     private var axis: SkyCtrl3Axis
@@ -50,7 +49,10 @@ final class RemoteControlAxisButtonGrabber {
     ///    - event: event for which a custom action is defined
     ///    - key: unique key (e.g. class description concatenated with event description)
     ///    - action: custom action block
-    init(axis: SkyCtrl3Axis, event: SkyCtrl3ButtonEvent, key: String, action: ((SkyCtrl3ButtonEventState) -> Void)? = nil) {
+    init(axis: SkyCtrl3Axis,
+         event: SkyCtrl3ButtonEvent,
+         key: String,
+         action: ((SkyCtrl3ButtonEventState) -> Void)? = nil) {
         self.axis = axis
         self.event = event
         self.key = key
@@ -60,21 +62,20 @@ final class RemoteControlAxisButtonGrabber {
     // MARK: - Internal Funcs
     /// Called when remote control axis should be grabbed.
     func grab() {
-        guard !isRemoteControlGrabbed else {
-            return
-        }
+        guard !isRemoteControlGrabbed else { return }
+
         RemoteControlGrabManager.shared.grabAxis(axis)
         if let action = action {
             RemoteControlGrabManager.shared.addAction(for: event, key: key, action: action)
         }
+
         isRemoteControlGrabbed = true
     }
 
     /// Called when remote control axis should be ungrabbed.
     func ungrab() {
-        guard isRemoteControlGrabbed else {
-            return
-        }
+        guard isRemoteControlGrabbed else { return }
+
         RemoteControlGrabManager.shared.ungrabAxis(axis)
         RemoteControlGrabManager.shared.removeAction(for: event, key: key)
         isRemoteControlGrabbed = false

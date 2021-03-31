@@ -102,22 +102,20 @@ private extension DroneGimbalCalibrationViewController {
     }
 
     @IBAction func startButtonTouchedUpInside(_ sender: Any) {
-        switch self.viewModel.gimbalCalibrationState.value {
-        case .gimbalOk:
-            if self.viewModel.frontStereoGimbalCalibrationState.value == .calibrated {
-                dismissView()
-            }
-        default:
+        if self.viewModel.state.value.gimbalState != .calibrated ||
+            self.viewModel.state.value.frontStereoGimbalState != .calibrated {
             self.descriptionLabel.text = L10n.gimbalCalibrationMainCamMessage
             self.gimbalImageView.image = Asset.Drone.icGimbalCamera.image
             self.synchronisationImageView.isHidden = isLoading
             self.synchronisationImageView.startRotate()
             self.startButton.isEnabled = isLoading
             self.viewModel.startGimbalCalibration()
+        } else {
+            dismissView()
         }
 
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyDroneDetailsCalibrationButton.gimbalCalibrationStart,
-                             newValue: self.viewModel.gimbalCalibrationState.value.description,
+                             newValue: self.viewModel.state.value.gimbalCalibrationDescription,
                              logType: .button)
     }
 }
@@ -151,7 +149,7 @@ private extension DroneGimbalCalibrationViewController {
     func setupViewModels() {
         self.viewModel.gimbalCalibrationState.valueChanged = { [weak self] state in
             switch state {
-            case .gimbalOk:
+            case .calibrated:
                 self?.viewModel.frontStereoGimbalCalibrationState.set(.calibrating)
                 self?.descriptionLabel.text = L10n.gimbalCalibrationSensorMessage
                 self?.gimbalImageView.image = Asset.Drone.icLoveCamera.image

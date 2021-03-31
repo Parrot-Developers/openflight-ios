@@ -38,7 +38,19 @@ extension Cellular {
             && modemStatus == .online
             && mode.value == .data
             && isRegistered
-            && isNetworkAvailable
+            && networkStatus == .activated
+    }
+
+    /// Returns true if 4G is activated.
+    var isActivated: Bool {
+        return cellularAvailability == .cellularOn
+    }
+
+    /// Returns true if sim card is inserted.
+    var isSimCardInserted: Bool {
+        return simStatus == .initializing
+            || simStatus == .locked
+            || simStatus == .ready
     }
 }
 
@@ -48,11 +60,5 @@ private extension Cellular {
     var isRegistered: Bool {
         return registrationStatus != .denied
             && registrationStatus != .notRegistered
-    }
-
-    /// Returns true if network is available.
-    var isNetworkAvailable: Bool {
-        return networkStatus == .activated
-            || networkStatus == .deactivated
     }
 }

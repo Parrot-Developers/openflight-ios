@@ -189,12 +189,11 @@ private extension HUDCellularIndicatorViewModel {
         let networkControl = drone.getPeripheral(Peripherals.networkControl)
         let cellularLink = networkControl?.links.first(where: { $0.type == .cellular })
 
+        let isCellularAvailable = cellular.isAvailable
+            && cellular.mode.value == .data
         if cellularLink?.status == .running {
             updateCellularState(with: .cellularConnected)
-        } else if cellular.registrationStatus == .registeredHome
-                    || cellular.registrationStatus == .registeredRoaming
-                    || cellular.networkStatus == .activated
-                    || cellular.simStatus == .ready {
+        } else if isCellularAvailable {
             updateCellularState(with: .cellularConnecting)
         } else if networkControl?.currentLink == .wlan {
             // Returns if current link is not the cellular one.

@@ -112,13 +112,7 @@ final class TakeOffAlertViewModel: DevicesStateViewModel<TakeOffAlertState> {
     private var droneUpdaterRef: Ref<Updater>?
     private var magnetometerRef: Ref<Magnetometer>?
     private var takeOffRequestedObserver: Any?
-    private var remoteControlButtonGrabber: RemoteControlButtonGrabber?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
-
-    /// Defines a key when we grab the front bottom button of the remote.
-    private var actionKey: String {
-        return NSStringFromClass(type(of: self)) + SkyCtrl3ButtonEvent.frontBottomButton.description
-    }
 
     // MARK: - Init
     override init(stateDidUpdate: ((TakeOffAlertState) -> Void)? = nil) {
@@ -126,14 +120,12 @@ final class TakeOffAlertViewModel: DevicesStateViewModel<TakeOffAlertState> {
 
         observesAppContext()
         listenTakeOffRequestDidChange()
-        initGrabber()
     }
 
     // MARK: - Deinit
     deinit {
         NotificationCenter.default.remove(observer: takeOffRequestedObserver)
         takeOffRequestedObserver = nil
-        remoteControlButtonGrabber?.ungrab()
     }
 
     // MARK: - Override Funcs
@@ -153,12 +145,6 @@ final class TakeOffAlertViewModel: DevicesStateViewModel<TakeOffAlertState> {
         listenRemoteUpdater(remoteControl)
         updateAlertsState()
     }
-
-    override func remoteControlConnectionStateDidChange() {
-        super.remoteControlConnectionStateDidChange()
-
-        remoteControlButtonGrabber?.ungrab()
-    }
 }
 
 // MARK: - Internal Funcs
@@ -169,16 +155,10 @@ extension TakeOffAlertViewModel {
 
         let copy = state.value.copy()
         copy.alertStackDismissed.insert(alertToDismiss)
-        state.set(copy)
-    }
-
-    /// Updates both remote and app take off buttons.
-    func updateTakeOffStatus() {
-        if state.value.canTakeOff {
-            remoteControlButtonGrabber?.ungrab()
-        } else {
-            remoteControlButtonGrabber?.grab()
+        if alertToDismiss == .droneAndRemoteUpdateRequired {
+            copy.alertStackDismissed.insert(.droneUpdateRequired)
         }
+        state.set(copy)
     }
 }
 
@@ -280,18 +260,6 @@ private extension TakeOffAlertViewModel {
 
             self?.cleanDismissedAlerts()
         }
-    }
-
-    /// Inits remote control grabber.
-    func initGrabber() {
-        // TODO: Will be reworked with MPP4.
-        remoteControlButtonGrabber = RemoteControlButtonGrabber(button: .frontBottomButton,
-                                                                event: .frontBottomButton,
-                                                                key: actionKey,
-                                                                action: { [weak self] _ in
-                                                                    // We can show dismissed alert when user requests a take off.
-                                                                    self?.cleanDismissedAlerts()
-                                                                })
     }
 
     /// Cleans dismissed alerts when user wants to take off.

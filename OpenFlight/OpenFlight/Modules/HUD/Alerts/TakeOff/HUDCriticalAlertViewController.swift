@@ -142,6 +142,7 @@ private extension HUDCriticalAlertViewController {
     func setupView(alertModel: HUDCriticalAlertType) {
         titleLabel.text = alertModel.topTitle
         topImageView.image = alertModel.topIcon
+        topImageView.isHidden = alertModel.topIcon == nil
         alertTopView.backgroundColor = alertModel.topBackgroundColor?.color
         mainImageView.image = alertModel.mainImage
         descriptionLabel.text = alertModel.mainDescription

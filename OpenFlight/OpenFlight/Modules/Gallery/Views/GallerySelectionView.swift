@@ -79,7 +79,7 @@ private extension GallerySelectionView {
 
 // MARK: - Internal Funcs
 internal extension GallerySelectionView {
-    /// Set count and size of items.
+    /// Sets count and size of items.
     ///
     /// - Parameters:
     ///    - count: count
@@ -99,7 +99,7 @@ internal extension GallerySelectionView {
         }
     }
 
-    /// Set if download is allowed.
+    /// Sets if download is allowed.
     ///
     /// - Parameters:
     ///    - enabled: enabled
@@ -108,15 +108,30 @@ internal extension GallerySelectionView {
         downloadButton.isHidden = !enabled
     }
 
-    /// Lock delete button if there is no selected medias.
+    /// Checks if medias are downloaded.
     ///
     /// - Parameters:
-    ///    - isMediasSelected: tells if medias is selected
-    func updateButtons(isMediasSelected: Bool) {
-        downloadButton.makeup(with: .largeMedium, color: isMediasSelected ? ColorName.greenSpring20 : ColorName.greenSpring)
-        deleteButton.makeup(with: .largeMedium, color: isMediasSelected ? ColorName.redTorch25 : ColorName.redTorch)
-        downloadButton.isEnabled = !isMediasSelected
-        deleteButton.isEnabled = !isMediasSelected
+    ///    - selectedMedias: medias wich are selected
+    func areDownloadedMedias(selectedMedias: [GalleryMedia]) -> Bool {
+        return !selectedMedias.contains(where: { $0.downloadState != .downloaded })
+    }
+
+    /// Disables download button if selected medias are already downloaded.
+    ///
+    /// - Parameters:
+    ///    - selectedMedias: tells if medias are selected
+    func updateButtons(selectedMedias: [GalleryMedia]) {
+        let downloadedMedias = areDownloadedMedias(selectedMedias: selectedMedias)
+        let downloadColor = downloadedMedias ? ColorName.greenSpring20 : ColorName.greenSpring
+        downloadButton.makeup(with: .largeMedium, color: downloadColor)
+
+        let downloadTitle = downloadedMedias ? L10n.commonDownloaded : L10n.commonDownload
+        downloadButton.setTitle(downloadTitle, for: .normal)
+        downloadButton.isEnabled = !downloadedMedias
+
+        let deleteColor = selectedMedias.isEmpty ? ColorName.redTorch25 : ColorName.redTorch
+        deleteButton.makeup(with: .largeMedium, color: deleteColor)
+        deleteButton.isEnabled = !selectedMedias.isEmpty
     }
 }
 
@@ -131,7 +146,7 @@ private extension GallerySelectionView {
         deleteButton.setTitle(L10n.commonDelete, for: .normal)
         infoLabel.makeUp(with: .large)
         infoLabel.textColor = ColorName.white50.color
-        downloadButton.makeup(with: .largeMedium, color: ColorName.greenSpring)
-        downloadButton.setTitle(L10n.commonDownload, for: .normal)
+        downloadButton.makeup(with: .largeMedium, color: ColorName.greenSpring20)
+        downloadButton.setTitle(L10n.commonDownloaded, for: .normal)
     }
 }

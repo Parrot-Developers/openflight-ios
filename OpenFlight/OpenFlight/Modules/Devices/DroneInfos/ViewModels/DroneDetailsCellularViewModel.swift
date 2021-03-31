@@ -115,12 +115,12 @@ final class DroneDetailsCellularViewModel: DroneStateViewModel<DroneDetailsCellu
 }
 
 // MARK: - Internal Funcs
-extension DroneDetailsCellularViewModel {
+extension DroneDetailsCellularViewModel {
     /// Unpair the current drone.
     func forgetDrone() {
         let reachability = try? Reachability()
         guard reachability?.isConnected == true else {
-            self.updateResetStatus(with: .noInternet)
+            self.updateResetStatus(with: .noInternet(context: .details))
             return
         }
 
@@ -180,38 +180,32 @@ private extension DroneDetailsCellularViewModel {
         // Update the current cellular state.
         let networkControl = drone?.getPeripheral(Peripherals.networkControl)
         let cellularLink = networkControl?.links.first(where: { $0.type == .cellular })
-        let isReady = cellular.registrationStatus == .registeredHome
-            || cellular.registrationStatus == .registeredRoaming
-            || cellular.networkStatus == .activated
-            || cellular.simStatus == .ready
-            || cellularLink?.status == .up
+
         if cellularLink?.status == .running {
             status = .cellularConnected
-        } else if isReady {
-            status = .cellularConnecting
+        } else if cellular.mode.value == .nodata {
+            status = .noData
         } else if cellularLink?.status == .error || cellularLink?.error != nil {
             status = .connectionFailed
+        } else if cellular.modemStatus != .online {
+            status = .modemStatusOff
+        } else if cellular.simStatus == .absent {
+            status = .simNotDetected
+        } else if cellular.simStatus == .unknown {
+            status = .simNotRecognized
+        } else if cellular.simStatus == .locked
+                    && cellular.pinRemainingTries == 0 {
+            status = .simBlocked
+        } else if cellular.registrationStatus == .notRegistered {
+            status = .notRegistered
+        } else if cellular.networkStatus == .error {
+            status = .networkStatusError
+        } else if cellular.networkStatus == .denied {
+            status = .networkStatusDenied
+        } else if cellular.isAvailable {
+            status = .cellularConnecting
         } else {
-            if cellular.modemStatus != .online {
-                status = .modemStatusOff
-            } else if cellular.mode.value == .nodata {
-                status = .noData
-            } else if cellular.simStatus == .absent {
-                status = .simNotDetected
-            } else if cellular.simStatus == .unknown {
-                status = .simNotRecognized
-            } else if cellular.simStatus == .locked
-                        && cellular.pinRemainingTries == 0 {
-                status = .simBlocked
-            } else if cellular.registrationStatus == .notRegistered {
-                status = .notRegistered
-            } else if cellular.networkStatus == .error {
-                status = .networkStatusError
-            } else if cellular.networkStatus == .denied {
-                status = .networkStatusDenied
-            } else {
-                status = .noState
-            }
+            status = .noState
         }
 
         updateCellularStatus(with: status)

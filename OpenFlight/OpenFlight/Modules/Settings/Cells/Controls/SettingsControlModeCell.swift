@@ -33,7 +33,6 @@ import SwiftyUserDefaults
 
 /// Settings control mode cell manage all the control settings.
 /// All the control settings are handled here because there are all linked.
-
 final class SettingsControlModeCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var arcadeHelpLabel: UILabel! {
@@ -164,7 +163,7 @@ private extension SettingsControlModeCell {
 
     /// Tilt button touched.
     @IBAction func inverseTiltButtonTouchedUpInside(_ sender: AnyObject) {
-        let tiltReversedSetting = Defaults.arcadeTiltReversedSetting ?? false
+        let tiltReversedSetting = Defaults.arcadeTiltReversedSetting
         Defaults.arcadeTiltReversedSetting = !tiltReversedSetting
         deduceCurrentMode()
         updateJogsDisplay()
@@ -177,20 +176,19 @@ private extension SettingsControlModeCell {
                              newValue: String(!isSpecialMode),
                              logType: LogEvent.LogType.button)
 
-        isSpecialMode = !isSpecialMode
+        isSpecialMode.toggle()
         deduceCurrentMode()
         updateJogsDisplay()
     }
 
     /// EV trigger button touched.
     @IBAction func evTriggerButtonTouchedUpInside(_ sender: AnyObject) {
-        let evTriggerSetting = Defaults.evTriggerSetting ?? false
         LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls,
                              itemName: LogEvent.LogKeyControlsSettings.evTrigger,
-                             newValue: String(!evTriggerSetting),
+                             newValue: String(!Defaults.evTriggerSetting),
                              logType: LogEvent.LogType.button)
 
-        EVTriggerManager.shared.enableEvTriggerMode(!evTriggerSetting)
+        Defaults.evTriggerSetting.toggle()
         deduceCurrentMode()
         updateJogsDisplay()
     }
@@ -254,7 +252,7 @@ private extension SettingsControlModeCell {
     /// Update jogs display regarding current mode.
     func updateJogsDisplay() {
         updateEVTriggerButtonColor()
-        let tiltReversedSetting = Defaults.arcadeTiltReversedSetting ?? false
+        let tiltReversedSetting = Defaults.arcadeTiltReversedSetting
         let tiltColor = tiltReversedSetting ? ColorName.greenSpring.color : ColorName.white.color
         setButtonAndLabelColor(button: inverseTiltButton, label: inverseTiltLabel, color: tiltColor)
 
@@ -308,14 +306,14 @@ private extension SettingsControlModeCell {
 
     /// Update EV trigger button color regarding setting.
     func updateEVTriggerButtonColor() {
-        let evTriggerSetting = Defaults.evTriggerSetting ?? false
+        let evTriggerSetting = Defaults.evTriggerSetting
         let color = evTriggerSetting ? ColorName.greenSpring.color : ColorName.white.color
         setButtonAndLabelColor(button: evTriggerButton, label: evTriggerLabel, color: color)
     }
 
     /// Update joystick labels regarding the current mode.
     func updateJoystickLabels() {
-        let evTriggerSetting = Defaults.evTriggerSetting ?? false
+        let evTriggerSetting = Defaults.evTriggerSetting
         controllerZoomLabel.text = !evTriggerSetting ?
             L10n.settingsControlsMappingZoom :
             L10n.settingsControlsMappingEvShutter

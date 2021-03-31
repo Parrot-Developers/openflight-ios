@@ -17,10 +17,10 @@
                 <rect key="frame" x="0.0" y="0.0" width="320" height="46"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sf3-Qv-LN0">
-                        <rect key="frame" x="36" y="0.0" width="248" height="46"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="46"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="878-jI-BGy">
-                                <rect key="frame" x="5" y="8" width="238" height="30"/>
+                                <rect key="frame" x="5" y="8" width="310" height="30"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="m1a-mC-5GR"/>
                                 </constraints>
@@ -42,9 +42,9 @@
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
                     <constraint firstItem="sf3-Qv-LN0" firstAttribute="centerX" secondItem="H2p-sc-9uM" secondAttribute="centerX" id="GQi-Cz-l8U"/>
-                    <constraint firstItem="sf3-Qv-LN0" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="36" id="J24-oP-wLY"/>
+                    <constraint firstItem="sf3-Qv-LN0" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="J24-oP-wLY"/>
                     <constraint firstItem="sf3-Qv-LN0" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="o4Z-UY-oga"/>
-                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="sf3-Qv-LN0" secondAttribute="trailing" id="pMB-rS-21f"/>
+                    <constraint firstAttribute="trailing" secondItem="sf3-Qv-LN0" secondAttribute="trailing" id="pMB-rS-21f"/>
                     <constraint firstAttribute="bottom" secondItem="sf3-Qv-LN0" secondAttribute="bottom" id="pgw-5r-Pca"/>
                 </constraints>
             </tableViewCellContentView>
@@ -58,7 +58,6 @@
             </constraints>
             <connections>
                 <outlet property="titleLabel" destination="878-jI-BGy" id="wEc-LT-SjX"/>
-                <outlet property="trailingConstraint" destination="pMB-rS-21f" id="eOl-rZ-EsH"/>
             </connections>
             <point key="canvasLocation" x="-312" y="155"/>
         </tableViewCell>

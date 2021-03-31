@@ -41,6 +41,18 @@ enum DeviceUpdateStep {
     case processing
     case rebooting
     case updateCompleted
+
+    /// Returns true if operation can be cancelled.
+    var canCancelProcess: Bool {
+        switch self {
+        case .none,
+             .rebooting,
+             .updateCompleted:
+            return false
+        default:
+            return true
+        }
+    }
 }
 
 /// Type of event that could happen during a firmware update process.
@@ -100,21 +112,29 @@ public enum DeviceUpdateModel {
 /// Unavailability reasons for update.
 enum UpdateUnavailabilityReasons {
     case droneFlying
-    case notEnoughBattery
+    case notEnoughBattery(model: DeviceUpdateModel)
     case droneNotConnected
     case remoteControlNotConnected
 
+    // MARK: - Private Enums
     private enum Constants {
-        static let minimumBatteryLevel: Double = 40.0
+        static let droneMinimumBatteryLevel: Double = 40.0
+        static let remoteMinimumBatteryLevel: Double = 20.0
     }
 
+    // MARK: - Internal Properties
     /// Unavailability reason title.
     var title: String {
         switch self {
         case .droneFlying:
             return L10n.deviceUpdateImpossible
-        case .notEnoughBattery:
-            return L10n.droneUpdateInsufficientBatteryTitle
+        case .notEnoughBattery(let model):
+            switch model {
+            case .drone:
+                return L10n.droneUpdateInsufficientBatteryTitle
+            case .remote:
+                return L10n.remoteUpdateInsufficientBatteryTitle
+            }
         case .droneNotConnected,
              .remoteControlNotConnected:
             return L10n.error
@@ -126,8 +146,13 @@ enum UpdateUnavailabilityReasons {
         switch self {
         case .droneFlying:
             return L10n.deviceUpdateDroneFlying
-        case .notEnoughBattery:
-            return L10n.droneUpdateInsufficientBatteryDescription(Constants.minimumBatteryLevel.asPercent())
+        case .notEnoughBattery(let model):
+            switch model {
+            case .drone:
+                return L10n.droneUpdateInsufficientBatteryDescription(Constants.droneMinimumBatteryLevel.asPercent())
+            case .remote:
+                return L10n.remoteUpdateInsufficientBatteryDescription(Constants.remoteMinimumBatteryLevel.asPercent())
+            }
         case .droneNotConnected:
             return L10n.remoteDetailsConnectToADrone
         case .remoteControlNotConnected:

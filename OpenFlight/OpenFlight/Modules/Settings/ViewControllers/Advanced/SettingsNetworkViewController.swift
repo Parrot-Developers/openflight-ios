@@ -33,7 +33,7 @@ import UIKit
 /// Settings content sub class dedicated to network settings.
 final class SettingsNetworkViewController: SettingsContentViewController {
     // MARK: - Private Properties
-    private var networkViewModel: SettingsNetworkViewModel?
+    private let networkViewModel = SettingsNetworkViewModel()
     private var wifiNameIndex: Int?
     private var cellularSelectionIndex: Int?
 
@@ -56,14 +56,14 @@ final class SettingsNetworkViewController: SettingsContentViewController {
                                                name: UIResponder.keyboardWillHideNotification,
                                                object: nil)
         // Setup view model.
-        networkViewModel = SettingsNetworkViewModel(stateDidUpdate: { [weak self] state in
+        networkViewModel.state.valueChanged = { [weak self] state in
             // Lock refresh display while editing network name,
             // to prevent from keyboard dismissing (using tableview).
             if state.isEditing == false {
                 self?.updateDataSource(state)
             }
-        })
-        networkViewModel?.infoHandler = { _ in
+        }
+        networkViewModel.infoHandler = { _ in
             self.coordinator?.startDriInfoScreen()
         }
         // Inital data source update.
@@ -76,7 +76,7 @@ final class SettingsNetworkViewController: SettingsContentViewController {
                              newValue: nil,
                              logType: LogEvent.LogType.button)
 
-        networkViewModel?.resetSettings()
+        networkViewModel.resetSettings()
     }
 
     override func settingsSegmentedCellDidChange(selectedSegmentIndex: Int, atIndexPath indexPath: IndexPath) {
@@ -91,7 +91,7 @@ final class SettingsNetworkViewController: SettingsContentViewController {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         /// Update apn configuration when user change it.
-        networkViewModel?.updateApnConfigurationIfNeeded()
+        networkViewModel.updateApnConfigurationIfNeeded()
     }
 }
 
@@ -130,9 +130,7 @@ private extension SettingsNetworkViewController {
     /// - Returns: A table view cell.
     func configureNetworkNameCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsNetworkNameCell
-        guard let viewModel = self.networkViewModel else { return cell }
-
-        cell.configureCell(viewModel: viewModel, showInfo: { [weak self] in
+        cell.configureCell(viewModel: networkViewModel, showInfo: { [weak self] in
             self?.showPasswordEdition()
         })
         cell.delegate = self
@@ -147,9 +145,7 @@ private extension SettingsNetworkViewController {
     /// - Returns: A table view cell.
     func configureChannelCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsChooseChannelCell
-        guard let viewModel = self.networkViewModel else { return cell }
-
-        cell.configureCell(viewModel: viewModel)
+        cell.configureCell(viewModel: networkViewModel)
 
         return cell
     }
@@ -176,10 +172,8 @@ private extension SettingsNetworkViewController {
     /// - Parameters:
     ///     - state: Network state
     func updateDataSource(_ state: SettingsNetworkState) {
-        guard let updatedSettings = networkViewModel?.settingEntries else { return }
-
         resetCellLabel = state.isEnabled ? L10n.settingsConnectionReset : nil
-        settings = updatedSettings
+        settings = networkViewModel.settingEntries
     }
 }
 
@@ -187,12 +181,12 @@ private extension SettingsNetworkViewController {
 private extension SettingsNetworkViewController {
     /// Manages datasource update when keyboard will be displayed.
     @objc func keyboardWillShow(sender: NSNotification) {
-        networkViewModel?.isEditing(true)
+        networkViewModel.isEditing(true)
     }
 
     /// Manages datasource update when keyboard will be hidden.
     @objc func keyboardWillHide(sender: NSNotification) {
-        networkViewModel?.isEditing(false)
+        networkViewModel.isEditing(false)
     }
 }
 

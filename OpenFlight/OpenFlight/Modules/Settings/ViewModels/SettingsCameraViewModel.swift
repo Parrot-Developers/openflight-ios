@@ -93,7 +93,7 @@ final class SettingsCameraViewModel: DroneWatcherViewModel<DeviceConnectionState
             currentEditor[Camera2Params.videoRecordingCodec]?.value = CameraPreset.videoencoding
             currentEditor[Camera2Params.videoRecordingDynamicRange]?.value = CameraPreset.dynamicHdrRange
             currentEditor[Camera2Params.photoDigitalSignature]?.value = CameraPreset.photoSignature
-            currentEditor.saveSettings()
+            currentEditor.saveSettings(currentConfig: drone?.currentCamera?.config)
         }
 
         Defaults.overexposureSetting = CameraPreset.overexposure.rawValue
@@ -142,8 +142,9 @@ private extension SettingsCameraViewModel {
                                     guard let mode = mode as? Camera2ZoomVelocityControlQualityMode else { return }
 
                                     let currentEditor = self?.drone?.currentCamera?.currentEditor
+                                    let currentConfig = self?.drone?.currentCamera?.config
                                     currentEditor?[Camera2Params.zoomVelocityControlQualityMode]?.value = mode
-                                    currentEditor?.saveSettings()
+                                    currentEditor?.saveSettings(currentConfig: currentConfig)
         }
     }
 
@@ -157,8 +158,9 @@ private extension SettingsCameraViewModel {
                                     guard let mode = mode as? Camera2AutoRecordMode else { return }
 
                                     let currentEditor = self?.drone?.currentCamera?.currentEditor
+                                    let currentConfig = self?.drone?.currentCamera?.config
                                     currentEditor?[Camera2Params.autoRecordMode]?.value = mode
-                                    currentEditor?.saveSettings()
+                                    currentEditor?.saveSettings(currentConfig: currentConfig)
         }
     }
 
@@ -172,14 +174,15 @@ private extension SettingsCameraViewModel {
             guard let encodingMode = mode as? Camera2VideoCodec else { return }
 
             let currentEditor = self?.drone?.currentCamera?.currentEditor
+            let currentConfig = self?.drone?.currentCamera?.config
             currentEditor?[Camera2Params.videoRecordingCodec]?.value = encodingMode
             // If the current video dynamic range is HDR we update the drone value.
-            if self?.drone?.currentCamera?.config[Camera2Params.videoRecordingDynamicRange]?.value.isHdr == true {
+            if currentConfig?[Camera2Params.videoRecordingDynamicRange]?.value.isHdr == true {
                 if encodingMode == .h264 {
                     currentEditor?[Camera2Params.videoRecordingDynamicRange]?.value = .hdr8
                 }
             }
-            currentEditor?.saveSettings()
+            currentEditor?.saveSettings(currentConfig: currentConfig)
         }
     }
 
@@ -210,11 +213,13 @@ private extension SettingsCameraViewModel {
 
             Defaults.highDynamicRangeSetting = videoRange.rawValue
 
+            let currentConfig = self?.drone?.currentCamera?.config
+
             // If the current video dynamic range is HDR we update the drone value.
-            if self?.drone?.currentCamera?.config[Camera2Params.videoRecordingDynamicRange]?.value.isHdr == true {
+            if currentConfig?[Camera2Params.videoRecordingDynamicRange]?.value.isHdr == true {
                 let currentEditor = self?.drone?.currentCamera?.currentEditor
                 currentEditor?[Camera2Params.videoRecordingDynamicRange]?.value = videoRange
-                currentEditor?.saveSettings()
+                currentEditor?.saveSettings(currentConfig: currentConfig)
             }
         }
     }
@@ -229,8 +234,9 @@ private extension SettingsCameraViewModel {
                                     guard let digitalSignature = digitalSignature as? Camera2DigitalSignature else { return }
 
                                     let currentEditor = self?.drone?.currentCamera?.currentEditor
+                                    let currentConfig = self?.drone?.currentCamera?.config
                                     currentEditor?[Camera2Params.photoDigitalSignature]?.value = digitalSignature
-                                    currentEditor?.saveSettings()
+                                    currentEditor?.saveSettings(currentConfig: currentConfig)
         }
     }
 }

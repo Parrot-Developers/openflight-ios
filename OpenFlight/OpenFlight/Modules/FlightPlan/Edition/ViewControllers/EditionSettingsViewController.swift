@@ -44,6 +44,9 @@ public protocol EditionSettingsDelegate: EditionSettingsCellModelDelegate {
 
     /// User tapped settings delete button.
     func didTapDeleteButton()
+
+    /// User tapped undo button.
+    func didTapOnUndo()
 }
 
 /// Manages Flight Plan edition settings.
@@ -52,12 +55,9 @@ final class EditionSettingsViewController: UIViewController {
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var closeButton: UIButton!
     @IBOutlet private weak var deleteButton: UIButton!
+    @IBOutlet private weak var undoButton: UIButton!
     @IBOutlet private weak var tableViewTopConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var deleteButtonTrailingConstraint: NSLayoutConstraint! {
-        didSet {
-            handleTrailingDeleteButton()
-        }
-    }
+    @IBOutlet private weak var tableViewTrailingConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var delegate: EditionSettingsDelegate?
@@ -74,7 +74,16 @@ final class EditionSettingsViewController: UIViewController {
 
     // MARK: - Private Properties
     private var fpSettings: [FlightPlanSetting]?
-    private var trailingConstraint: CGFloat {
+    private var settingsCategoryFilter: FlightPlanSettingCategory?
+    private var dataSource: [FlightPlanSetting] {
+        let settings = self.fpSettings ?? self.settingsProvider?.settings ?? []
+        if let filter = settingsCategoryFilter {
+            return settings.filter({ $0.category == filter })
+        } else {
+            return settings
+        }
+    }
+    private var trailingMargin: CGFloat {
         if UIApplication.shared.statusBarOrientation == .landscapeLeft {
             return UIApplication.shared.keyWindow?.safeAreaInsets.right ?? 0.0
         } else {
@@ -83,11 +92,9 @@ final class EditionSettingsViewController: UIViewController {
     }
 
     // MARK: - Private Enums
-    private enum Constants {
-        static let sectionNumber: Int = 2
-        static let cellHeight: CGFloat = 80.0
-        static let titleCellHeight: CGFloat = 60.0
-        static let deleteButtonTrailing: CGFloat = 16.0
+    private enum SectionsType: Int, CaseIterable {
+        case header
+        case settings
     }
 
     // MARK: - Deinit
@@ -121,11 +128,14 @@ final class EditionSettingsViewController: UIViewController {
     /// - Parameters:
     ///     - settingsProvider: current settings provider
     ///     - savedFlightPlan: current flight plan
-    func updateDataSource(with settingsProvider: FlightPlanSettingsProvider?, savedFlightPlan: SavedFlightPlan?) {
+    ///     - selectedGraphic: selected graphic
+    func updateDataSource(with settingsProvider: FlightPlanSettingsProvider?,
+                          savedFlightPlan: SavedFlightPlan?,
+                          selectedGraphic: FlightPlanGraphic?) {
         self.settingsProvider = settingsProvider
         self.settingsProvider?.delegate = self
         self.savedFlightPlan = savedFlightPlan
-        self.deleteButton.isHidden = savedFlightPlan != nil || settingsProvider is WayPointSegmentSettingsProvider
+        self.deleteButton.isHidden = selectedGraphic == nil
 
         switch settingsProvider {
         case is WayPointSettingsProvider,
@@ -138,7 +148,7 @@ final class EditionSettingsViewController: UIViewController {
             break
         }
 
-        self.tableView.reloadData()
+        self.refreshContent(categoryFilter: settingsCategoryFilter)
     }
 
     /// Updates the top constraint of the tableview.
@@ -149,16 +159,24 @@ final class EditionSettingsViewController: UIViewController {
         self.tableViewTopConstraint.constant = value
     }
 
-    /// Refreshes table view data for Flight Plan estimation updates.
-    func refreshEstimationsIfNeeded() {
-        guard settingsProvider is ClassicFlightPlanSettingsProvider else { return }
-
+    /// Refreshes view data.
+    ///
+    /// - Parameters:
+    ///     - categoryFilter: allows to filter setting category
+    func refreshContent(categoryFilter: FlightPlanSettingCategory?) {
+        self.settingsCategoryFilter = categoryFilter
         self.tableView.reloadData()
+        updateUndoButton()
     }
 }
 
 // MARK: - Actions
 private extension EditionSettingsViewController {
+    @IBAction func undoButtonTouchedUpInside(_ sender: Any) {
+        delegate?.didTapOnUndo()
+        refreshContent(categoryFilter: settingsCategoryFilter)
+    }
+
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
         delegate?.didTapCloseButton()
     }
@@ -172,15 +190,11 @@ private extension EditionSettingsViewController {
 private extension EditionSettingsViewController {
     /// Inits the view.
     func initView() {
-        tableView.backgroundColor = .clear
         tableView.register(cellType: AdjustmentTableViewCell.self)
-        tableView.register(cellType: ModesChoiceTableViewCell.self)
         tableView.register(cellType: SettingValuesChoiceTableViewCell.self)
         tableView.register(cellType: CenteredRulerTableViewCell.self)
         tableView.register(cellType: FlightPlanSettingTitleCell.self)
-        tableView.register(cellType: FlightPlanEstimationsTableViewCell.self)
-        tableView.tableFooterView = UIView()
-        tableView.alwaysBounceVertical = false
+        tableView.makeUp(backgroundColor: .clear)
 
         deleteButton.cornerRadiusedWith(backgroundColor: ColorName.redTorch50.color,
                                         radius: Style.mediumCornerRadius)
@@ -188,12 +202,15 @@ private extension EditionSettingsViewController {
                             color: .white,
                             and: .normal)
         deleteButton.setTitle(L10n.commonDelete, for: .normal)
+
+        undoButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
+                                      radius: Style.largeCornerRadius)
     }
 
-    /// Handles the trailing constraint of the delete button.
-    func handleTrailingDeleteButton() {
-        let constraint = trailingConstraint
-        deleteButtonTrailingConstraint.constant = constraint == 0 ? Constants.deleteButtonTrailing : constraint
+    /// Updates undo button.
+    func updateUndoButton() {
+        undoButton.isEnabled = FlightPlanManager.shared.canUndo()
+        undoButton.alphaWithEnabledState(undoButton.isEnabled)
     }
 
     /// Sets up observer for orientation change.
@@ -206,79 +223,69 @@ private extension EditionSettingsViewController {
 
     /// Updates safe area constraints.
     @objc func updateSafeAreaConstraints() {
-        handleTrailingDeleteButton()
-        tableView.reloadData()
+        tableViewTrailingConstraint.constant = trailingMargin
     }
 }
 
 // MARK: - UITableViewDataSource
 extension EditionSettingsViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return Constants.sectionNumber
+        return SectionsType.allCases.count
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch section {
-        case 0:
-            return settingsProvider?.hasCustomType == true ? 2 : 1
-        case 1:
-            return fpSettings?.count ?? settingsProvider?.settings.count ?? 0
+        switch SectionsType(rawValue: section) {
+        case .header:
+            return 1
+        case .settings:
+            return dataSource.count
         default:
             return 0
         }
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if indexPath.section == 0 {
-            return cellForFirstSection(indexPath: indexPath)
-        } else {
-            return cellForSecondSection(indexPath: indexPath)
+        switch SectionsType(rawValue: indexPath.section) {
+        case .header:
+            return cellForHeaderSection(indexPath: indexPath)
+        default:
+            return cellForSettingsSection(indexPath: indexPath)
         }
     }
 
-    /// Returns cell for first section. Either a mode choice, or a simple title.
+    /// Returns cell for header section.
+    /// Setting(s) title is defined here.
     ///
     /// - Parameters:
     ///    - indexPath: the index path
     /// - Returns: cell to display
-    private func cellForFirstSection(indexPath: IndexPath) -> UITableViewCell {
-        if settingsProvider?.hasCustomType == true, indexPath.row == 1 {
-            let cell = tableView.dequeueReusableCell(for: indexPath) as ModesChoiceTableViewCell
-            cell.fill(with: settingsProvider)
-            cell.updateTrailingConstraint(trailingConstraint)
-            cell.delegate = self
-            cell.backgroundColor = .clear
-
-            return cell
-        } else {
-            let cell = tableView.dequeueReusableCell(for: indexPath) as FlightPlanSettingTitleCell
-            let title: String
-            switch settingsProvider {
-            case is WayPointSettingsProvider:
-                title = L10n.commonWaypoint
-            case is PoiPointSettingsProvider:
-                title = L10n.commonPoi
-            case is WayPointSegmentSettingsProvider,
-                 nil:
-                title = ""
-            default:
-                title = L10n.flightPlanSettingsTitle
-            }
-            cell.fill(with: title)
-            cell.updateTrailingConstraint(trailingConstraint)
-
-            return cell
+    private func cellForHeaderSection(indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(for: indexPath) as FlightPlanSettingTitleCell
+        let title: String
+        switch settingsProvider {
+        case is WayPointSettingsProvider:
+            title = L10n.commonWaypoint
+        case is PoiPointSettingsProvider:
+            title = L10n.commonPoi
+        case is WayPointSegmentSettingsProvider,
+             nil:
+            title = ""
+        default:
+            title = settingsCategoryFilter?.title ?? L10n.flightPlanSettingsTitle
         }
+        cell.fill(with: title)
+
+        return cell
     }
 
-    /// Returns cell for second section. Displays a setting.
+    /// Returns cell for settings section. Displays a setting.
     ///
     /// - Parameters:
     ///    - indexPath: the index path
     /// - Returns: cell to display
-    private func cellForSecondSection(indexPath: IndexPath) -> UITableViewCell {
+    private func cellForSettingsSection(indexPath: IndexPath) -> UITableViewCell {
         var cell: UITableViewCell & EditionSettingsCellModel
-        let setting: FlightPlanSettingType? = self.fpSettings?[indexPath.row] ?? self.settingsProvider?.settings[indexPath.row]
+        let setting: FlightPlanSettingType? = self.dataSource[indexPath.row]
 
         switch setting?.type {
         case .adjustement:
@@ -287,12 +294,6 @@ extension EditionSettingsViewController: UITableViewDataSource {
             cell = tableView.dequeueReusableCell(for: indexPath) as CenteredRulerTableViewCell
         case .choice:
             cell = tableView.dequeueReusableCell(for: indexPath) as SettingValuesChoiceTableViewCell
-        case .estimations:
-            let estimationsCell = tableView.dequeueReusableCell(for: indexPath) as FlightPlanEstimationsTableViewCell
-            estimationsCell.fill(with: savedFlightPlan?.plan.estimations)
-            estimationsCell.updateTrailingConstraint(trailingConstraint)
-
-            return estimationsCell
         default:
             fatalError("Unhandled cell type")
         }
@@ -300,17 +301,9 @@ extension EditionSettingsViewController: UITableViewDataSource {
         cell.backgroundColor = .clear
         cell.fill(with: setting)
         cell.disableCell(setting?.isDisabled == true)
-        cell.updateTrailingConstraint(trailingConstraint)
         cell.delegate = self
 
         return cell
-    }
-}
-
-// MARK: - ModesChoiceTableViewCell
-extension EditionSettingsViewController: ModesChoiceTableViewCellDelegate {
-    func updateMode(tag: Int) {
-        delegate?.updateMode(tag: tag)
     }
 }
 
@@ -328,6 +321,6 @@ extension EditionSettingsViewController: EditionSettingsCellModelDelegate {
 // MARK: - FlightPlanSettingsProviderDelegate
 extension EditionSettingsViewController: FlightPlanSettingsProviderDelegate {
     func didUpdateSettings() {
-        self.tableView.reloadData()
+        refreshContent(categoryFilter: settingsCategoryFilter)
     }
 }

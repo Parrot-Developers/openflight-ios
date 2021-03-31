@@ -45,12 +45,6 @@ protocol EditionSettingsCellModel {
     /// - Parameters:
     ///     - mustDisable: specify if we must disable the cell or not
     func disableCell(_ mustDisable: Bool)
-
-    /// Updates the trailing constraint of the cell.
-    ///
-    /// - Parameters:
-    ///     - width: witdh of the trailing constraint
-    func updateTrailingConstraint(_ width: CGFloat)
 }
 
 /// Protocol describing setting cell delegate.

@@ -33,7 +33,7 @@ import UIKit
 /// Settings content sub class dedicated to controls settings.
 final class SettingsControlsViewController: SettingsContentViewController {
     // MARK: - Private Properties
-    private var controlsViewModel: ControlsViewModel?
+    private let controlsViewModel = ControlsViewModel()
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
@@ -41,11 +41,11 @@ final class SettingsControlsViewController: SettingsContentViewController {
 
         resetCellLabel = L10n.settingsControlsMappingReset
         // Setup view model.
-        controlsViewModel = ControlsViewModel(stateDidUpdate: { [weak self] state in
+        controlsViewModel.state.valueChanged = { [weak self] state in
             self?.updateDataSource(state)
-        })
+        }
         // Inital data source update.
-        self.updateDataSource(ControlsState())
+        self.updateDataSource(controlsViewModel.state.value)
     }
 
     /// Reset to default settings.
@@ -55,7 +55,7 @@ final class SettingsControlsViewController: SettingsContentViewController {
                              newValue: nil,
                              logType: LogEvent.LogType.button)
 
-        controlsViewModel?.resetSettings()
+        controlsViewModel.resetSettings()
     }
 }
 
@@ -89,8 +89,6 @@ private extension SettingsControlsViewController {
     /// - Returns:
     ///     - UITableViewCell
     func configureControlModeCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
-        guard let controlsViewModel = self.controlsViewModel else { return UITableViewCell() }
-
         let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsControlModeCell
         cell.configureCell(viewModel: controlsViewModel)
 
@@ -102,9 +100,7 @@ private extension SettingsControlsViewController {
     /// - Parameters:
     ///     - state: controls state
     func updateDataSource(_ state: ControlsState = ControlsState()) {
-        guard let updatedSettings = controlsViewModel?.settingEntries else { return }
-
-        settings = updatedSettings
+        settings = controlsViewModel.settingEntries
     }
 
     /// Configure Reset All Button Cell.

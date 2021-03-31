@@ -183,7 +183,7 @@ private extension BottomBarViewController {
     }
 
     @IBAction func cameraShutterButtonTouchedUpInside(_ sender: Any) {
-        cameraShutterButtonViewModel.startStopCapture()
+        cameraShutterButtonViewModel.toggleCapture()
         logEvent(with: LogEvent.LogKeyHUDBottomBarButton.cameraShutter.name, and: cameraShutterButtonViewModel.state.value.cameraCaptureMode.description)
     }
 }

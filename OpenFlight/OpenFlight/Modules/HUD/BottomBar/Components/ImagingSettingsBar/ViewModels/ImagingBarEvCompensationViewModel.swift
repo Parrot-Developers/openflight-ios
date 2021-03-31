@@ -50,7 +50,7 @@ final class ImagingBarEvCompensationViewModel: BarButtonViewModel<ImagingBarStat
         }
         let currentEditor = camera.currentEditor
         currentEditor[Camera2Params.exposureCompensation]?.value = evCompensation
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 }
 

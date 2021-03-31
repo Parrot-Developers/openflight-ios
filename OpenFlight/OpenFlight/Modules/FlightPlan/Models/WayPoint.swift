@@ -31,6 +31,7 @@
 import UIKit
 import CoreLocation
 import GroundSdk
+import ArcGIS
 
 /// Class representing a Flight Plan waypoint.
 public final class WayPoint: Codable {
@@ -55,24 +56,29 @@ public final class WayPoint: Codable {
     }
 
     /// Navigate to waypoint MAVLink command.
-    var wayPointMavlinkCommand: NavigateToWaypointCommand {
-        return NavigateToWaypointCommand(latitude: latitude, longitude: longitude, altitude: altitude, yaw: yaw)
+    var wayPointMavlinkCommand: MavlinkStandard.NavigateToWaypointCommand {
+        return MavlinkStandard.NavigateToWaypointCommand(latitude: latitude,
+                                                         longitude: longitude,
+                                                         altitude: altitude,
+                                                         yaw: yaw)
     }
 
     /// Waypoint speed MAVLink command.
-    var speedMavlinkCommand: ChangeSpeedCommand {
-        return ChangeSpeedCommand(speedType: .airSpeed, speed: speed)
+    var speedMavlinkCommand: MavlinkStandard.ChangeSpeedCommand {
+        return MavlinkStandard.ChangeSpeedCommand(speedType: .airSpeed,
+                                                  speed: speed)
     }
 
     /// View mode MAVLink command.
-    var viewModeCommand: SetViewModeCommand {
+    var viewModeCommand: MavlinkStandard.SetViewModeCommand {
         if shouldFollowPOI ?? false {
-            return SetViewModeCommand(mode: .roi, roiIndex: poiIndex ?? Constants.defaultPoiIndex)
+            return MavlinkStandard.SetViewModeCommand(mode: .roi,
+                                                      roiIndex: poiIndex ?? Constants.defaultPoiIndex)
         }
         if shouldContinue {
-            return SetViewModeCommand(mode: .continue)
+            return MavlinkStandard.SetViewModeCommand(mode: .continue)
         }
-        return SetViewModeCommand(mode: .absolute)
+        return MavlinkStandard.SetViewModeCommand(mode: .absolute)
     }
 
     /// Returns altitude value with unit.
@@ -100,20 +106,26 @@ public final class WayPoint: Codable {
     // MARK: - Private Properties
     private var longitude: Double
     private var latitude: Double
-    /// Returns current automatic yaw.
+    /// Returns current automatic yaw, in degrees [0, 360].
     private var computedYaw: Double {
+        let computedYaw: Double
         if let poiPoint = poiPoint {
-            return GeometryUtils.yaw(fromLocation: coordinate,
-                                     toLocation: poiPoint.coordinate).toBoundedDegrees()
+            computedYaw = AGSGeometryEngine.standardGeodeticDistance(between: self.agsPoint,
+                                                                     and: poiPoint.agsPoint,
+                                                                     azimuthUnit: .degrees())?.azimuth1 ?? 0.0
         } else if let next = nextWayPoint {
-            return GeometryUtils.yaw(fromLocation: coordinate,
-                                     toLocation: next.coordinate).toBoundedDegrees()
+            computedYaw = AGSGeometryEngine.standardGeodeticDistance(between: self.agsPoint,
+                                                                     and: next.agsPoint,
+                                                                     azimuthUnit: .degrees())?.azimuth1 ?? 0.0
         } else if let previous = previousWayPoint {
-            return GeometryUtils.yaw(fromLocation: previous.coordinate,
-                                    toLocation: coordinate).toBoundedDegrees()
+            computedYaw = AGSGeometryEngine.standardGeodeticDistance(between: previous.agsPoint,
+                                                                     and: self.agsPoint,
+                                                                     azimuthUnit: .degrees())?.azimuth1 ?? 0.0
         } else {
-            return 0.0
+            computedYaw = 0.0
         }
+
+        return computedYaw.asPositiveDegrees
     }
     /// Returns true if a Rth action is set.
     private var hasRthAction: Bool {
@@ -180,9 +192,9 @@ public final class WayPoint: Codable {
     ///    - navigateToWaypointCommand: navigate to waypoint Mavlink command
     ///    - speedMavlinkCommand: speed Mavlink command
     ///    - viewModeCommand: view mode Mavlink command (absolute, continue, or ROI)
-    init(navigateToWaypointCommand: NavigateToWaypointCommand,
-         speedMavlinkCommand: ChangeSpeedCommand?,
-         viewModeCommand: SetViewModeCommand?) {
+    public init(navigateToWaypointCommand: MavlinkStandard.NavigateToWaypointCommand,
+                speedMavlinkCommand: MavlinkStandard.ChangeSpeedCommand?,
+                viewModeCommand: MavlinkStandard.SetViewModeCommand?) {
         latitude = navigateToWaypointCommand.latitude
         longitude = navigateToWaypointCommand.longitude
         altitude = navigateToWaypointCommand.altitude
@@ -231,15 +243,12 @@ public final class WayPoint: Codable {
         }
         actions?.append(action)
     }
-}
 
-// MARK: - Internal Funcs
-extension WayPoint {
     /// Updates WayPoint with view mode Mavlink command.
     ///
     /// - Parameters:
     ///    - viewModeCommand: view mode Mavlink command (absolute, continue, or ROI)
-    func update(viewModeCommand: SetViewModeCommand) {
+    public func update(viewModeCommand: MavlinkStandard.SetViewModeCommand) {
         switch viewModeCommand.mode {
         case .continue:
             updateViewMode(shouldContinue: true)
@@ -256,10 +265,13 @@ extension WayPoint {
     ///
     /// - Parameters:
     ///    - speedMavlinkCommand: speed Mavlink command
-    func update(speedMavlinkCommand: ChangeSpeedCommand) {
+    public func update(speedMavlinkCommand: MavlinkStandard.ChangeSpeedCommand) {
         speed = speedMavlinkCommand.speed
     }
+}
 
+// MARK: - Internal Funcs
+extension WayPoint {
     /// Updates RTH action.
     ///
     /// - Parameters:
@@ -289,7 +301,7 @@ extension WayPoint {
     /// value, `hasCustomYaw` is set back to false.
     ///
     /// - Parameters:
-    ///    - yaw: yaw to apply
+    ///    - yaw: yaw to apply, in degrees [0, 360]
     func setCustomYaw(_ yaw: Double) {
         hasCustomYaw = !yaw.isCloseTo(computedYaw,
                                       withDelta: Constants.customYawDelta)

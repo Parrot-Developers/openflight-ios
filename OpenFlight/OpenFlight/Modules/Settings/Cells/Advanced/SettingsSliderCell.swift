@@ -63,6 +63,10 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
         }
     }
     @IBOutlet private weak var slider: SettingsSlider!
+    /// Leading constraint used for the stack view.
+    @IBOutlet private weak var stackViewLeadingConstraint: NSLayoutConstraint!
+    /// Trailing constraint used for the slider.
+    @IBOutlet private weak var sliderTrailingConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var delegate: SettingsSliderCellDelegate?
@@ -70,35 +74,25 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
     // MARK: - Private Properties
     private weak var settingEntry: SettingEntry?
     private var currentUnit: UnitType?
-    private var sliderCurrentValue: Float {
-        get {
-            return slider.value
-        }
-        set(newValue) {
-            slider.value = newValue
-        }
-    }
     private var sliderOverLimitValue: Float?
     private var sliderDefaultValue: Float?
     private var indexPath: IndexPath!
     private var isEnabled: Bool = true {
         didSet {
             titleLabel.textColor = self.isEnabled ? ColorName.white.color : ColorName.white50.color
-            updateLabel()
+            updateSliderView()
             slider.isEnabled = self.isEnabled
         }
     }
+    /// Returns formated value according to setting unit.
     private var formattedValue: String {
         switch currentUnit {
         case .percent?:
-            return currentUnit?.value(withFloat: sliderCurrentValue.percentValue(min: slider.minimumValue, max: slider.maximumValue)) ?? ""
+            return currentUnit?.value(withFloat: slider.value.percentValue(min: slider.minimumValue, max: slider.maximumValue)) ?? ""
         default:
-            return currentUnit?.value(withFloat: sliderCurrentValue) ?? ""
+            return currentUnit?.value(withFloat: slider.value) ?? ""
         }
     }
-    /// Leading constraint used for the stack view.
-    @IBOutlet private weak var stackViewLeadingConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var sliderTrailingConstraint: NSLayoutConstraint!
 
     // MARK: - Private Enums
     private enum Constants {
@@ -111,6 +105,15 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
 
         // Add double tap on cell to reset slider to default value.
         self.addGestureRecognizer(doubleTapGestureRecognizer())
+    }
+
+    // MARK: - Override Funcs
+    override func prepareForReuse() {
+        super.prepareForReuse()
+
+        slider.value = 0.0
+        titleLabel.text = nil
+        percentLabel.text = nil
     }
 
     // MARK: - Internal Funcs
@@ -128,36 +131,39 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
         setupBackground(shouldShow: shouldShowBackground)
 
         self.settingEntry = settingEntry
-        self.titleLabel.text = settingEntry.title ?? ""
+        self.titleLabel.text = settingEntry.title
         self.currentUnit = settingEntry.unit ?? UnitType.none
         self.indexPath = indexPath
 
         self.sliderOverLimitValue = settingEntry.overLimitValue
         self.slider.overLimitValue = settingEntry.overLimitValue
         self.sliderDefaultValue = settingEntry.defaultValue
+        self.addImage(settingEntry.image)
         self.isEnabled = settingEntry.isEnabled
         self.slider.isEnabled = settingEntry.isEnabled
-        self.addImage(settingEntry.image)
 
-        guard let setting = settingEntry.setting as? DoubleSetting else { return }
+        if let setting = settingEntry.setting as? DoubleSetting {
+            self.slider.maximumValue = Float(setting.max)
+            self.slider.minimumValue = Float(setting.min)
+            self.slider.value = settingEntry.savedValue ?? Float(setting.value)
+        }
 
-        self.sliderCurrentValue = settingEntry.savedValue ?? Float(setting.value)
-        self.slider.maximumValue = Float(setting.max)
-        self.slider.minimumValue = Float(setting.min)
-        updateLabel()
         stackViewLeadingConstraint.constant = sideConstraint
         sliderTrailingConstraint.constant = sideConstraint
+        updateSliderView()
     }
 }
 
 // MARK: - Private Funcs
 private extension SettingsSliderCell {
-    /// Update label regarding unit.
-    func updateLabel() {
+    /// Update label and slider view.
+    func updateSliderView() {
         percentLabel.text = formattedValue
+
         if !isEnabled {
-            percentLabel.textColor = Color(white: 1.0, alpha: 0.5)
-        } else if let sliderOverLimitValue = sliderOverLimitValue, sliderCurrentValue >= sliderOverLimitValue {
+            percentLabel.textColor = ColorName.white50.color
+        } else if let sliderOverLimitValue = sliderOverLimitValue,
+                  slider.value >= sliderOverLimitValue {
             percentLabel.textColor = .orange
         } else {
             percentLabel.textColor = ColorName.greenSpring.color
@@ -169,7 +175,7 @@ private extension SettingsSliderCell {
     /// - Parameters:
     ///     - image: image to add
     func addImage(_ image: UIImage?) {
-        settingImage.isHidden = image == nil ? true : false
+        settingImage.isHidden = image == nil
         settingImage.image = image
     }
 
@@ -206,20 +212,17 @@ private extension SettingsSliderCell {
 private extension SettingsSliderCell {
     @IBAction func sliderValueChanged(_ sender: AnyObject) {
         delegate?.settingsSliderCellStartEditing()
-        updateLabel()
+        updateSliderView()
     }
 
     @IBAction func didFinishEditing(_ sender: AnyObject) {
-        let currentMode = SettingsBehavioursMode.current == SettingsBehavioursMode.video
-            ? LogEvent.LogKeyAdvancedSettings.filmMode
-            : LogEvent.LogKeyAdvancedSettings.sportMode
+        delegate?.settingsSliderCellSliderDidFinishEditing(value: slider.value,
+                                                           atIndexPath: indexPath)
 
         LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced,
-                             itemName: settingEntry?.itemLogKey ?? "" + currentMode,
+                             itemName: settingEntry?.itemLogKey ?? "" + SettingsBehavioursMode.current.logKey ,
                              newValue: formattedValue,
                              logType: LogEvent.LogType.button)
-
-        delegate?.settingsSliderCellSliderDidFinishEditing(value: sliderCurrentValue, atIndexPath: indexPath)
     }
 
     @IBAction func sliderTouchCancelled(_ sender: Any) {

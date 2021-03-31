@@ -86,7 +86,7 @@ final class ManagePlansViewController: UIViewController {
             openButton.makeup()
             openButton.cornerRadiusedWith(backgroundColor: ColorName.white50.color,
                                           radius: Style.largeCornerRadius)
-            openButton.setTitle(L10n.flightPlanOpen, for: .normal)
+            openButton.setTitle(L10n.flightPlanOpenLabel, for: .normal)
         }
     }
 

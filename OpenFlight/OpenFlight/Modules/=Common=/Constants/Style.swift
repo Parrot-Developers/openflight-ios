@@ -37,6 +37,7 @@ public enum Style {
     public static let dash: String = "-"
     public static let arrow: String = " ▸ "
     public static let dot: String = "."
+    public static let colon: String = ":"
     public static let multiplySign: String = "×"
     public static let pipe: String = "|"
     public static let comma: String = ","

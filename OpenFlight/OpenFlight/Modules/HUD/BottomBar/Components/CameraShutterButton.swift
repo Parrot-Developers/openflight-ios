@@ -71,7 +71,6 @@ final class CameraShutterButton: UIControl, NibOwnerLoadable {
         static let defaultBackgroundColor = ColorName.black.color
         static let defaultAnimationDuration: TimeInterval = 0.2
         static let defaultPhotoCaptureColor = ColorName.white.color
-        static let countdownPhotoCaptureColor = ColorName.white50.color
         static let takePhotoCaptureColor = ColorName.white20.color
         static let unavailablePhotoCaptureColor = ColorName.white20.color
         static let lapseInProgressPhotoCaptureColor = ColorName.black.color
@@ -129,7 +128,7 @@ private extension CameraShutterButton {
             applyRecordingUnavailableStyle(image: Asset.BottomBar.ShutterButtonIcons.Error.icSdError.image)
             return
         }
-        switch model.recordingFunctionState {
+        switch model.recordingTimeState.functionState {
         case .started:
             applyRecordingStartedStyle()
         case .stopping(reason: .errorInternal, savedMediaId: nil):
@@ -141,12 +140,12 @@ private extension CameraShutterButton {
         }
 
         // Show recording time if available.
-        if let recordingTime = model.recordingTime {
+        if let recordingTime = model.recordingTimeState.recordingTime {
             recordingTimeLabel.text = recordingTime.formattedString
         }
 
         // Show remaining time if available.
-        if let remainingRecordTime = model.remainingRecordTime {
+        if let remainingRecordTime = model.recordingTimeState.remainingRecordTime {
             remainingRecordTimeLabel.text = "-\(remainingRecordTime.formattedString)"
         }
     }
@@ -160,11 +159,24 @@ private extension CameraShutterButton {
             applyPhotoCaptureUnavailableStyle(image: model.userStorageState.shutterIcon)
             return
         }
+
         guard !model.userStorageState.hasStorageError else {
             applyPhotoCaptureUnavailableStyle(image: Asset.BottomBar.ShutterButtonIcons.Error.icSdError.image)
             return
         }
+
         switch (model.photoFunctionState, model.cameraCaptureMode) {
+        case (.stopping, .timelapse):
+            switch model.photoFunctionState {
+            case .stopping(let reason, _):
+                if reason == .captureDone {
+                    break
+                } else {
+                    applyPhotoCaptureUnavailableStyle()
+                }
+            default:
+                break
+            }
         case (_, .panorama):
             guard let state = model.panoramaModeState else {
                 applyPhotoCaptureUnavailableStyle()
@@ -179,16 +191,14 @@ private extension CameraShutterButton {
              (.stopped, .gpslapse):
             shutterButtonProgressView.isHidden = true
             applyLapseModeStyle(labelText: String(model.lapseModeState?.selectedValue ?? 0))
+            model.lapseModeState?.currentProgress = 0.0
+            currentProgress = 0.0
         case (.started, _):
             applyPhotoCaptureTakePhotoStyle()
         case (.stopping(reason: Camera2PhotoCaptureState.StopReason.errorInternal, savedMediaId: nil), _):
             applyPhotoCaptureUnavailableStyle(image: Asset.BottomBar.ShutterButtonIcons.Error.icError.image)
         case (.stopping, _):
             applyPhotoCaptureUnavailableStyle()
-        case (_, .timer):
-            if let countDown = model.timerModeState?.countDown {
-                applyPhotoCaptureTimerStyle(labelText: String(countDown), inProgress: model.timerModeState?.inProgress == true)
-            }
         default:
             shutterButtonProgressView.isHidden = true
             applyPhotoCaptureStyle(labelText: model.cameraCaptureSubMode?.shutterText)
@@ -330,19 +340,6 @@ private extension CameraShutterButton {
 
     }
 
-    /// Apply style for timer mode.
-    ///
-    /// - Parameters:
-    ///     - labelText: shutter button text
-    ///     - inProgress: tells if timer is in progress
-    func applyPhotoCaptureTimerStyle(labelText: String?, inProgress: Bool) {
-        updateStyle(innerBackgroundColor: inProgress
-            ? Constants.countdownPhotoCaptureColor
-            : Constants.defaultPhotoCaptureColor,
-                    labelText: labelText)
-        isBlinking = false
-    }
-
     /// Apply style for unavailable photo capture.
     ///
     /// - Parameters:
@@ -363,7 +360,7 @@ private extension CameraShutterButton {
     ///     - state: current gpslapse or timelapse state
     func updateLapseModeProgressView(with state: PhotoLapseState) {
         let progress = CGFloat(state.currentProgress) / CGFloat(state.selectedValue)
-        if progress > currentProgress {
+        if progress > currentProgress &&  currentProgress >= 0.0 {
             shutterButtonProgressView.resetProgress()
         }
         applyLapseModeInProgressStyle(progress: progress, photoCount: state.photosNumber)
@@ -391,7 +388,7 @@ private extension CameraShutterButton {
                     innerCornerRadius: Style.mediumCornerRadius,
                     innerBackgroundColor: Constants.defaultPhotoCaptureColor,
                     labelText: String(photoCount))
-        shutterButtonProgressView.setProgress(Float(progress))
+        shutterButtonProgressView.setProgress(Float(progress), duration: Style.mediumAnimationDuration)
         currentProgress = progress
     }
 }

@@ -57,8 +57,10 @@ final class SettingsPresetsView: UIView, NibOwnerLoadable {
     private enum Constants {
         static let buttonWidth: CGFloat = 96.0
         static let imageEdgeInsets: CGFloat = 8.0
-        static let activeColor: UIColor = ColorName.white10.color
-        static let normalColor: UIColor = .clear
+        static let activeBgColor: UIColor = ColorName.greenPea.color
+        static let normalBgColor: UIColor = .clear
+        static let activeTintColor: UIColor = ColorName.greenSpring.color
+        static let normalTintColor: UIColor = .white
     }
 
     // MARK: - Override Funcs
@@ -104,8 +106,9 @@ final class SettingsPresetsView: UIView, NibOwnerLoadable {
             button.tag = index
             index += 1
             button.addTarget(self, action: #selector(modeTouchedUpInside(sender:)), for: .touchUpInside)
-            button.makeup(with: .regular, color: .white)
-            button.backgroundColor = item == selectedMode ? Constants.activeColor : Constants.normalColor
+            button.makeup(with: .regular, color: item == selectedMode ? .greenSpring : .white)
+            button.tintColor = item == selectedMode ? Constants.activeTintColor : Constants.normalTintColor
+            button.backgroundColor = item == selectedMode ? Constants.activeBgColor : Constants.normalBgColor
             presetStackView.addArrangedSubview(button)
         }
     }
@@ -114,12 +117,18 @@ final class SettingsPresetsView: UIView, NibOwnerLoadable {
 private extension SettingsPresetsView {
     /// Called when user touch one of the preset stackview button.
     @objc func modeTouchedUpInside(sender: UIButton) {
-        // Reset buttons background color.
+        // Reset buttons colors.
         for view in presetStackView.arrangedSubviews {
-            view.backgroundColor = Constants.normalColor
+            guard let button = view as? UIButton else { break }
+
+            button.backgroundColor = Constants.normalBgColor
+            button.tintColor = Constants.normalTintColor
+            button.setTitleColor((button == sender ? ColorName.greenSpring.color : .white), for: .normal)
         }
         // Set selected button background color.
-        sender.backgroundColor = Constants.activeColor
+        sender.backgroundColor = Constants.activeBgColor
+        // Set selected button image tint color.
+        sender.tintColor = Constants.activeTintColor
         // Notify delegate.
         let index = sender.tag
         if index < items.count, index >= 0 {

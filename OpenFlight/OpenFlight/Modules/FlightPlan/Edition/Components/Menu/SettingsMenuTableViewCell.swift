@@ -34,29 +34,16 @@ import Reusable
 /// Settings menu table view cell.
 final class SettingsMenuTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
-    @IBOutlet private weak var cellTitle: UILabel!
-    @IBOutlet private weak var settings1Key: UILabel!
-    @IBOutlet private weak var settings1Value: UILabel!
-    @IBOutlet private weak var settings2Key: UILabel!
-    @IBOutlet private weak var settings2Value: UILabel!
-
-    // MARK: - Privates properties
-    private var labelsKeys: [UILabel] = []
-    private var labelsValues: [UILabel] = []
+    @IBOutlet private weak var settingsKey: UILabel!
+    @IBOutlet private weak var settingsValue: UILabel!
+    @IBOutlet private weak var arrowImage: UIImageView!
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        cellTitle.makeUp(with: .small, and: .white50)
-        cellTitle.text = L10n.flightPlanSettingsTitle.uppercased()
-        settings1Key.makeUp()
-        settings1Value.makeUp(and: .white20)
-        settings2Key.makeUp()
-        settings2Value.makeUp(and: .white20)
-
-        labelsKeys = [settings1Key, settings2Key]
-        labelsValues = [settings1Value, settings2Value]
+        settingsKey.makeUp()
+        settingsValue.makeUp(and: .white50)
     }
 }
 
@@ -65,36 +52,27 @@ internal extension SettingsMenuTableViewCell {
     /// Setup cell.
     ///
     /// - Parameters:
-    ///     - settings: flight plan settings
-    func setup(settings: [FlightPlanSetting]) {
-        for (index, setting) in settings.prefix(labelsKeys.count).enumerated() {
-            applySetting(setting,
-                         labelKey: labelsKeys[index],
-                         labelValue: labelsValues[index])
-        }
-    }
-}
-
-// MARK: - Private Funcs
-private extension SettingsMenuTableViewCell {
-    /// Apply setting on labels.
-    ///
-    /// - Parameters:
-    ///     - setting: setting
-    ///     - labelKey: label key
-    ///     - labelValue: label value
-    func applySetting(_ setting: FlightPlanSetting,
-                      labelKey: UILabel,
-                      labelValue: UILabel) {
-        labelKey.text = setting.shortTitle ?? setting.title
+    ///     - setting: flight plan setting
+    func setup(setting: FlightPlanSetting, showArrow: Bool) {
+        settingsKey.text = setting.shortTitle ?? setting.title
         if let descriptions = setting.valueDescriptions,
            let current = setting.currentValue,
            descriptions.count > current {
             // Use valueDescriptions if setting is custom.
-            labelValue.text = descriptions[current]
+            settingsValue.text = descriptions[current]
+        } else if setting.type == .choice {
+            settingsValue.text = setting.currentValue == 0 ? L10n.commonYes : L10n.commonNo
+        } else if let value = setting.currentValue {
+            settingsValue.text = "\(value)\(setting.unit.unit)"
         } else {
-            // Use bool setting by default.
-            labelValue.text = setting.currentValue == 0 ? L10n.commonYes : L10n.commonNo
+            settingsValue.text = Style.dash
         }
+
+        if settingsValue.text == L10n.commonYes {
+            settingsValue.textColor = ColorName.greenSpring.color
+        } else {
+            settingsValue.textColor = ColorName.white50.color
+        }
+        arrowImage.isHidden = !showArrow
     }
 }

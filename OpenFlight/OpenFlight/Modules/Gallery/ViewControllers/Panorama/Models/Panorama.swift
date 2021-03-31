@@ -84,8 +84,6 @@ enum PanoramaMediaType: String, CaseIterable {
     case sphere = "Sphere"
     case tinyPlanet = "TinyPlanet"
     case tunnel = "Tunnel"
-    case preview = "Preview"
-    case custom = "Custom"
 
     // MARK: - Internal Properties
     /// Returns image associated to type.
@@ -103,13 +101,11 @@ enum PanoramaMediaType: String, CaseIterable {
             return Asset.BottomBar.CameraSubModes.icPanoVertical.image
         case .superWide:
             return Asset.BottomBar.CameraSubModes.icPanoWide.image
-        default:
-            return Asset.Gallery.Panorama.customEdit.image
         }
     }
 
     // Returns highlighted image associated to type.
-    var highlightedImage: UIImage {
+    var highlightedImage: UIImage? {
         switch self {
         case .sphere:
             return Asset.Gallery.Panorama.icSphereHighlighted.image
@@ -117,8 +113,13 @@ enum PanoramaMediaType: String, CaseIterable {
             return Asset.Gallery.Panorama.icTinyPlanetHighlighted.image
         case .tunnel:
             return Asset.Gallery.Panorama.icTunnelHighlighted.image
-        default:
-            return Asset.Gallery.Panorama.customEdit.image
+        // TODO: add icon when design will be available
+        case .horizontal:
+            return nil
+        case .vertical:
+            return nil
+        case .superWide:
+            return nil
         }
     }
 
@@ -137,8 +138,6 @@ enum PanoramaMediaType: String, CaseIterable {
             return L10n.galleryPanoramaGeneratingHorizontal
         case .vertical:
             return L10n.galleryPanoramaGeneratingVertical
-        default:
-            return L10n.galleryPanoramaGeneratingCustom
         }
     }
 
@@ -155,10 +154,6 @@ enum PanoramaMediaType: String, CaseIterable {
             return .planet
         case .tunnel:
             return .tunnel
-        case .preview:
-            return .fastSphere
-        case .custom:
-            return .custom
         case .superWide:
             return .superWide
         }
@@ -191,41 +186,6 @@ enum PanoramaMediaType: String, CaseIterable {
             return isLowResolution ? 2112 : 3072
         case .vertical where quality == .excellent:
             return 4000
-        case .preview:
-            return 2000
-        default:
-            return 0
-        }
-    }
-
-    /// Returns panorama optimal width for a quality and an aspect ratio.
-    ///
-    /// - Parameters:
-    ///    - quality: quality.
-    ///    - aspectRatio: aspect ratio.
-    func width(forQuality quality: PanoramaQuality, aspectRatio: PanoRatio?) -> Int32 {
-        let isLowResolution = DeviceUtils.isLowPanoramaResolution
-        switch self {
-        case .custom where quality == .good && aspectRatio == .ratio2by1:
-            return isLowResolution ? 4224 : 6144
-        case .custom where quality == .good && aspectRatio == .ratio1by1:
-            return isLowResolution ? 3072 : 4224
-        case .custom where quality == .good && aspectRatio == .ratio4by3:
-            return isLowResolution ? 3456 : 4864
-        case .custom where quality == .good && aspectRatio == .ratio3by2:
-            return isLowResolution ? 3648 : 5184
-        case .custom where quality == .good && aspectRatio == .ratio16by9:
-            return isLowResolution ? 4096 : 5632
-        case .custom where quality == .excellent && aspectRatio == .ratio2by1:
-            return 8000
-        case .custom where quality == .excellent && aspectRatio == .ratio1by1:
-            return 5632
-        case .custom where quality == .excellent && aspectRatio == .ratio4by3:
-            return 6528
-        case .custom where quality == .excellent && aspectRatio == .ratio3by2:
-            return 6912
-        case .custom where quality == .excellent && aspectRatio == .ratio16by9:
-            return 7552
         default:
             return 0
         }
@@ -258,41 +218,6 @@ enum PanoramaMediaType: String, CaseIterable {
             return isLowResolution ? 4224 : 6144
         case .vertical where quality == .excellent:
             return 8000
-        case .preview:
-            return 1000
-        default:
-            return 0
-        }
-    }
-
-    /// Returns panorama optimal height for a quality and an aspect ratio.
-    ///
-    /// - Parameters:
-    ///    - quality: quality.
-    ///    - aspectRatio: aspect ratio.
-    func height(forQuality quality: PanoramaQuality, aspectRatio: PanoRatio?) -> Int32 {
-        let isLowResolution = DeviceUtils.isLowPanoramaResolution
-        switch self {
-        case .custom where quality == .good && aspectRatio == .ratio2by1:
-            return isLowResolution ? 2112 : 3072
-        case .custom where quality == .good && aspectRatio == .ratio1by1:
-            return isLowResolution ? 3072 : 4224
-        case .custom where quality == .good && aspectRatio == .ratio4by3:
-            return isLowResolution ? 2592 : 3648
-        case .custom where quality == .good && aspectRatio == .ratio3by2:
-            return isLowResolution ? 2432 : 3456
-        case .custom where quality == .good && aspectRatio == .ratio16by9:
-            return isLowResolution ? 2304 : 3168
-        case .custom where quality == .excellent && aspectRatio == .ratio2by1:
-            return 4000
-        case .custom where quality == .excellent && aspectRatio == .ratio1by1:
-            return 5632
-        case .custom where quality == .excellent && aspectRatio == .ratio4by3:
-            return 4896
-        case .custom where quality == .excellent && aspectRatio == .ratio3by2:
-            return 4608
-        case .custom where quality == .excellent && aspectRatio == .ratio16by9:
-            return 4248
         default:
             return 0
         }

@@ -52,8 +52,8 @@ final class BehavioursViewModel: DroneWatcherViewModel<DeviceConnectionState>, S
     }
 
     // MARK: - Init
-    override init(stateDidUpdate: ((DeviceConnectionState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
 
         // Init content regarding data.
         if Defaults.userPilotingPreset == nil {
@@ -134,26 +134,14 @@ final class BehavioursViewModel: DroneWatcherViewModel<DeviceConnectionState>, S
            let automaticMode = camera.config[Camera2Params.exposureMode]?.value.refreshAutomaticModeIfNeeded() {
             let currentEditor = camera.currentEditor
             currentEditor[Camera2Params.exposureMode]?.value = automaticMode
-            currentEditor.saveSettings()
+            currentEditor.saveSettings(currentConfig: camera.config)
         }
     }
 
     /// Returns behaviours settings entries.
     var settingEntries: [SettingEntry] {
         let overlimitPreset = SettingsBehavioursMode.current.maxRecommandedValues
-        var overlimitMaxPitchRollVelocity: Double?
-        if let percent = overlimitPreset?.horizontalAcceleration {
-            overlimitMaxPitchRollVelocity = manualPiloting?.maxPitchRollVelocityValueForPercent(percent)
-        }
-        let horizontalAcceleration = SettingsBehavioursMode.current.defaultValues.horizontalAcceleration
-        let defaultPitchRollVelocity = Float(manualPiloting?.maxPitchRollVelocityValueForPercent(horizontalAcceleration))
         return [
-            SettingEntry(setting: manualPiloting?.maxPitchRollVelocity,
-                         title: L10n.settingsBehaviourReactivity,
-                         unit: UnitType.percent,
-                         overLimitValue: Float(overlimitMaxPitchRollVelocity),
-                         defaultValue: defaultPitchRollVelocity,
-                         itemLogKey: LogEvent.LogKeyAdvancedSettings.globalReactivity),
             SettingEntry(setting: Asset.Settings.iconSettingsCamera.image,
                          title: L10n.settingsBehaviourSectionGimbal),
             SettingEntry(setting: gimbal?.maxSpeedSettings[.pitch],

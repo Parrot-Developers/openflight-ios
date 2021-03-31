@@ -44,8 +44,17 @@ class RemoteControlWatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     private var currentRemoteControlWatcher = CurrentRemoteControlWatcher()
 
     // MARK: - Init
-    override init(stateDidUpdate: ((T) -> Void)? = nil) {
+    override init(stateDidUpdate: ((T) -> Void)?) {
         super.init(stateDidUpdate: stateDidUpdate)
+
+        currentRemoteControlWatcher.start { [weak self] remoteControl in
+            self?.listenRemoteControl(remoteControl: remoteControl)
+        }
+    }
+
+    override init() {
+        super.init()
+
         currentRemoteControlWatcher.start { [weak self] remoteControl in
             self?.listenRemoteControl(remoteControl: remoteControl)
         }

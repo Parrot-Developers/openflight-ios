@@ -51,7 +51,7 @@ final class ImagingBarPhotoFormatViewModel: BarButtonViewModel<ImagingBarState> 
         let currentEditor = camera.currentEditor
         currentEditor[Camera2Params.photoFormat]?.value = photoFormat.format
         currentEditor[Camera2Params.photoFileFormat]?.value = photoFormat.fileFormat
-        currentEditor.saveSettings()
+        currentEditor.saveSettings(currentConfig: camera.config)
     }
 }
 

@@ -44,16 +44,15 @@ protocol SignalStrength {
     ///
     /// - Parameters:
     ///     - isLinkActive: tells if link is active
-    ///     - isBackgroundStyle: tells if we need to use background style
     /// - Returns: The signal image with quality.
-    func signalIcon(isLinkActive: Bool,
-                    isBackgroundStyle: Bool) -> UIImage
+    func signalIcon(isLinkActive: Bool) -> UIImage
 }
 
 // MARK: - Internal Enums
 /// Describes cellular link strength.
 enum CellularStrength: Int {
-    case none = -1
+    case offline = -2
+    case deactivated = -1
     case ko0On4 = 0
     case ok1On4 = 1
     case ok2On4 = 2
@@ -66,55 +65,57 @@ extension CellularStrength: SignalStrength {
     // MARK: - Internal Properties
     var backgroundColor: ColorName {
         switch self {
-        case .none:
+        case .deactivated,
+             .offline,
+             .ko0On4:
             return .clear
-        case .ko0On4:
-            return .redTorch
-        case .ok1On4, .ok2On4:
-            return .orangePeel20
-        case .ok3On4, .ok4On4:
+        case .ok1On4,
+             .ok2On4,
+             .ok3On4,
+             .ok4On4:
             return .greenSpring20
         }
     }
 
     var borderColor: ColorName {
         switch self {
-        case .none:
+        case .deactivated,
+             .offline,
+             .ko0On4:
             return .clear
-        case .ko0On4:
-            return .redTorch
-        case .ok1On4, .ok2On4:
-            return .orangePeel
-        case .ok3On4, .ok4On4:
+        case .ok1On4,
+             .ok2On4,
+             .ok3On4,
+             .ok4On4:
             return .greenSpring
         }
     }
 
-    func signalIcon(isLinkActive: Bool = false,
-                    isBackgroundStyle: Bool = false) -> UIImage {
-        let isInactiveStyle: Bool = (isLinkActive && isBackgroundStyle) || !isLinkActive
+    func signalIcon(isLinkActive: Bool = false) -> UIImage {
         switch self {
-        case .none:
-            return Asset.Cellular.ic4GNoSignal.image
+        case .deactivated:
+            return Asset.Cellular.ic4GDeactivated.image
+        case .offline:
+            return Asset.Cellular.icon4GOffline.image
         case .ko0On4:
-            return isInactiveStyle
+            return isLinkActive
                 ? Asset.Cellular.ic4GInactiveQuality1.image
-                : Asset.Cellular.ic4GQuality2.image
+                : Asset.Cellular.ic4GQuality1.image
         case .ok1On4:
-            return isInactiveStyle
+            return isLinkActive
                 ? Asset.Cellular.ic4GInactiveQuality2.image
-                : Asset.Cellular.ic4GQuality3.image
+                : Asset.Cellular.ic4GQuality2.image
         case .ok2On4:
-            return isInactiveStyle
+            return isLinkActive
                 ? Asset.Cellular.ic4GInactiveQuality3.image
-                : Asset.Cellular.ic4GQuality4.image
+                : Asset.Cellular.ic4GQuality3.image
         case .ok3On4:
             return isLinkActive
-                ? Asset.Cellular.ic4GQuality5.image
+                ? Asset.Cellular.ic4GQuality4.image
                 : Asset.Cellular.ic4GInactiveQuality4.image
         case .ok4On4:
             return isLinkActive
-                ? Asset.Cellular.ic4GQuality6.image
+                ? Asset.Cellular.ic4GQuality5.image
                 : Asset.Cellular.ic4GInactiveQuality5.image
         }
     }
@@ -125,6 +126,6 @@ extension NetworkControl {
     // MARK: - Internal Properties
     /// Returns current Cellular strength.
     var cellularStrength: CellularStrength {
-        return CellularStrength(rawValue: linkQuality ?? CellularStrength.none.rawValue) ?? .none
+        return CellularStrength(rawValue: linkQuality ?? CellularStrength.offline.rawValue) ?? .offline
     }
 }

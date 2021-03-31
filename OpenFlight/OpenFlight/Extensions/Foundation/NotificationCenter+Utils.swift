@@ -30,6 +30,7 @@
 
 import Foundation
 
+// MARK: - Public Funcs
 /// Utility extension for `NotificationCenter`.
 public extension NotificationCenter {
     /// Removes observer.
@@ -43,6 +44,7 @@ public extension NotificationCenter {
     }
 }
 
+// MARK: - Public Properties
 /// Utility extension for `Notification.Name` to list all custom notifications.
 public extension Notification.Name {
     static let splitModeDidChange = NSNotification.Name("splitModeDidChange")
@@ -53,4 +55,12 @@ public extension Notification.Name {
     static let handDetectedAlertModalPresentDidChange = NSNotification.Name("handDetectedAlertModalPresentDidChange")
     static let joysticksAvailabilityDidChange = NSNotification.Name("joysticksAvailabilityDidChange")
     static let takeOffRequestedDidChange = NSNotification.Name("takeOffRequestedDidChange")
+}
+
+// MARK: - Internal Properties
+/// Utility extension for `Notification.Name` to list notifications related to remote control grab.
+extension Notification.Name {
+    static let remoteControlDidOverZoom = NSNotification.Name("remoteControlDidOverZoom")
+    static let remoteControlDidOverTilt = NSNotification.Name("remoteControlDidOverTilt")
+    static let remoteControlShutterButtonPressed = NSNotification.Name("remoteControlShutterButtonPressed")
 }

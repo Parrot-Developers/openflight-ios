@@ -58,7 +58,7 @@ final class DownloadButton: UIButton {
     ///     - state: Gallery Media Download State
     ///     - title: button title
     func updateState(_ state: GalleryMediaDownloadState?,
-                     title: String? = L10n.commonDownload) {
+                     title: String?) {
         self.setImage(state?.icon, for: .normal)
         self.isHidden = state == nil
         let filtredTitle: String?
