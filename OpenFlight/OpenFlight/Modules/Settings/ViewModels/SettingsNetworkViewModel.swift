@@ -35,19 +35,18 @@ import SwiftyUserDefaults
 /// View model used in `SettingsNetworkViewModel`.
 final class SettingsNetworkState: DeviceConnectionState {
     // MARK: - Internal Properties
-    var channelsOccupations: [WifiChannel: Int] = [:]
-    var currentChannel: WifiChannel?
+    fileprivate(set) var channelsOccupations: [WifiChannel: Int] = [:]
+    fileprivate(set) var currentChannel: WifiChannel?
     /// Tells if user is editing 4G or wifi name settings textfield.
-    var isEditing: Bool = false
-    var ssidName: String?
-    var isLanded: Bool = false
-    var channelSelectionMode: SettingsWifiRange = SettingsWifiRangePreset.defaultWifiRange
-    var cellularAvailability: SettingsCellularAvailability = .cellularOff
-    var isUpdating: Bool = false
+    fileprivate(set) var isEditing: Bool = false
+    fileprivate(set) var ssidName: String?
+    fileprivate(set) var isLanded: Bool = false
+    fileprivate(set) var channelSelectionMode: SettingsWifiRange = SettingsWifiRangePreset.defaultWifiRange
+    fileprivate(set) var isUpdating: Bool = false
+
     var isEnabled: Bool {
         return channelsOccupations.isEmpty == false && isLanded
     }
-    var isCellularActivated: Bool = true
 
     // MARK: - Init
     required init() {
@@ -64,8 +63,6 @@ final class SettingsNetworkState: DeviceConnectionState {
             isEditing == other.isEditing &&
             isUpdating == other.isUpdating &&
             channelSelectionMode == other.channelSelectionMode &&
-            isCellularActivated == other.isCellularActivated &&
-            cellularAvailability == other.cellularAvailability &&
             // Compare channelsOccupations arrays.
             zip(channelsOccupations, other.channelsOccupations)
             .enumerated()
@@ -83,8 +80,6 @@ final class SettingsNetworkState: DeviceConnectionState {
         copy.isLanded = self.isLanded
         copy.isUpdating = self.isUpdating
         copy.channelSelectionMode = self.channelSelectionMode
-        copy.isCellularActivated = self.isCellularActivated
-        copy.cellularAvailability = self.cellularAvailability
 
         return copy
     }
@@ -101,56 +96,21 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
 
     // MARK: - Internal Properties
     var infoHandler: ((SettingMode.Type) -> Void)?
-    // TODO: Improve settingsEntries in the way we avoid having conditions that changes entries list.
     var settingEntries: [SettingEntry] {
         let isEnabled = self.state.value.isEnabled
         let wifiAccessPoint = drone?.getPeripheral(Peripherals.wifiAccessPoint)
         var entries: [SettingEntry] = []
 
-        if let cellular = drone?.getPeripheral(Peripherals.cellular) {
-            if state.value.isCellularActivated {
-                entries = [SettingEntry(setting: SettingsCellType.title,
-                                        title: L10n.settingsConnectionCellularData),
-                           SettingEntry(setting: cellularAvailabilityModel(with: cellular),
-                                        title: L10n.droneDetailsCellularAccess,
-                                        isEnabled: cellular.isSimCardInserted,
-                                        alpha: cellular.isSimCardInserted ? Constants.enabledAlpha : Constants.disabledAlpha,
-                                        itemLogKey: LogEvent.LogKeyAdvancedSettings.cellularAccess),
-                           SettingEntry(setting: networkModeModel(),
-                                        title: L10n.settingsConnectionNetworkMode,
-                                        isEnabled: cellular.isSimCardInserted,
-                                        alpha: cellular.isSimCardInserted ? Constants.enabledAlpha : Constants.disabledAlpha,
-                                        isSubMode: true,
-                                        itemLogKey: LogEvent.LogKeyAdvancedSettings.networkPreferences),
-                           SettingEntry(setting: SettingsCellType.networkSelection),
-                           SettingEntry(setting: SettingsCellType.title,
-                                        title: L10n.settingsConnectionWifiLabel),
-                           SettingEntry(setting: SettingsCellType.networkName),
-                           SettingEntry(setting: wifiRangeModeModel(wifiAccessPoint: wifiAccessPoint),
-                                        title: L10n.settingsConnectionWifiRange,
-                                        isEnabled: isEnabled,
-                                        itemLogKey: LogEvent.LogKeyAdvancedSettings.wifiBand)]
-            } else {
-                entries = [SettingEntry(setting: SettingsCellType.title,
-                                        title: L10n.settingsConnectionWifiLabel),
-                           SettingEntry(setting: cellularAvailabilityModel(with: cellular),
-                                        title: L10n.droneDetailsCellularAccess,
-                                        itemLogKey: LogEvent.LogKeyAdvancedSettings.cellularAccess),
-                           SettingEntry(setting: SettingsCellType.networkName),
-                           SettingEntry(setting: wifiRangeModeModel(wifiAccessPoint: wifiAccessPoint),
-                                        title: L10n.settingsConnectionWifiRange,
-                                        isEnabled: isEnabled,
-                                        itemLogKey: LogEvent.LogKeyAdvancedSettings.wifiBand)]
-            }
-        } else {
-            entries = [SettingEntry(setting: SettingsCellType.title,
-                                    title: L10n.settingsConnectionWifiLabel),
-                       SettingEntry(setting: SettingsCellType.networkName),
-                       SettingEntry(setting: wifiRangeModeModel(wifiAccessPoint: wifiAccessPoint),
-                                    title: L10n.settingsConnectionWifiRange,
-                                    isEnabled: isEnabled,
-                                    itemLogKey: LogEvent.LogKeyAdvancedSettings.wifiBand)]
-        }
+        entries = [SettingEntry(setting: SettingsCellType.title,
+                                title: L10n.settingsConnectionCellularData),
+                   SettingEntry(setting: SettingsCellType.cellularData),
+                   SettingEntry(setting: SettingsCellType.title,
+                                title: L10n.settingsConnectionWifiLabel),
+                   SettingEntry(setting: SettingsCellType.networkName),
+                   SettingEntry(setting: wifiRangeModeModel(wifiAccessPoint: wifiAccessPoint),
+                                title: L10n.settingsConnectionWifiRange,
+                                isEnabled: isEnabled,
+                                itemLogKey: LogEvent.LogKeyAdvancedSettings.wifiBand)]
 
         if isEnabled {
             entries.append(SettingEntry(setting: SettingsCellType.wifiChannels))
@@ -180,12 +140,6 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
         drone?.getPeripheral(Peripherals.wifiScanner)?.stopScan()
     }
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let enabledAlpha: CGFloat = 1.0
-        static let disabledAlpha: CGFloat = 0.3
-    }
-
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
@@ -193,7 +147,6 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
         listenFlyingIndicators(drone)
         listenWifiScanner(drone)
         listenWifiAccessPoint(drone)
-        listenCellular(drone)
     }
 
     // MARK: - Internal Funcs
@@ -246,94 +199,6 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
 
 // MARK: - Drone Setting Model helpers
 extension SettingsNetworkViewModel {
-    /// Dedicated Model to match SettingEntry.
-    ///
-    /// - Parameters:
-    ///     - wifiAccessPoint: WifiAccessPoint used to build occupation rate array
-    /// - Returns: Model for wifi range setting.
-    func wifiRangeModeModel(wifiAccessPoint: WifiAccessPoint?) -> DroneSettingModel? {
-        return DroneSettingModel(allValues: SettingsWifiRange.allValues,
-                                 supportedValues: SettingsWifiRange.allValues,
-                                 currentValue: self.state.value.channelSelectionMode,
-                                 isUpdating: wifiAccessPoint?.channel.updating ?? false) { [weak self] _ in
-            guard let mode = self?.state.value.channelSelectionMode else { return }
-
-            switch mode {
-            case .auto:
-                guard let channel = wifiAccessPoint?.channel.channel else { return }
-
-                wifiAccessPoint?.channel.select(channel: channel)
-            case .manual:
-                wifiAccessPoint?.channel.autoSelect()
-            }
-        }
-    }
-
-    /// Returns a setting model for 4G availability. User can disable cellular access with this setting.
-    ///
-    /// - Parameters:
-    ///     - cellular: current cellular
-    /// - Returns: Model for cellular availability setting.
-    func cellularAvailabilityModel(with cellular: Cellular?) -> DroneSettingModel {
-        return DroneSettingModel(allValues: SettingsCellularAvailability.allValues,
-                                 supportedValues: SettingsCellularAvailability.allValues,
-                                 currentValue: state.value.cellularAvailability,
-                                 isUpdating: cellular?.mode.updating) { mode in
-            guard let mode = mode as? SettingsCellularAvailability else { return }
-
-            switch mode {
-            case .cellularOn:
-                cellular?.mode.value = .data
-                guard let uid = self.drone?.uid,
-                      Defaults.dronesListPairingProcessHidden.contains(uid) else {
-                    return
-                }
-
-                Defaults.dronesListPairingProcessHidden.removeAll(where: { $0 == uid})
-            case .cellularOff:
-                cellular?.mode.value = .disabled
-            }
-        }
-    }
-
-    /// Returns a setting model for 4G network policy. It can be Auto, Cellular or Wi-fi priority.
-    func networkModeModel() -> DroneSettingModel {
-        guard let currentNetworkMode = drone?.getPeripheral(Peripherals.networkControl) else {
-            return DroneSettingModel(allValues: NetworkControlRoutingPolicy.allValues,
-                                     supportedValues: NetworkControlRoutingPolicy.allValues,
-                                     currentValue: NetworkControlRoutingPolicy.automatic,
-                                     isUpdating: false)
-        }
-
-        return DroneSettingModel(allValues: NetworkControlRoutingPolicy.allValues,
-                                 supportedValues: NetworkControlRoutingPolicy.allValues,
-                                 currentValue: currentNetworkMode.routingPolicy.policy,
-                                 isUpdating: currentNetworkMode.routingPolicy.updating) { policy in
-            guard let strongPolicy = policy as? NetworkControlRoutingPolicy else { return }
-
-            currentNetworkMode.routingPolicy.policy = strongPolicy
-        }
-    }
-
-    /// Returns a setting model for broadcast DRI. It can be ON showing drone PI, or OFF.
-    func driModeModel() -> DroneSettingModel {
-        guard let currentDri = drone?.getPeripheral(Peripherals.dri) else {
-            return DroneSettingModel(allValues: BroadcastDRISettings.allValues,
-                                     supportedValues: BroadcastDRISettings.allValues,
-                                     currentValue: BroadcastDRISettings.driOff,
-                                     isUpdating: false)
-        }
-
-        return DroneSettingModel(allValues: BroadcastDRISettings.allValues,
-                                 supportedValues: BroadcastDRISettings.allValues,
-                                 currentValue: currentDri.mode?.value == true ? BroadcastDRISettings.driOn : BroadcastDRISettings.driOff,
-                                 isUpdating: currentDri.mode?.updating) { dri in
-            guard let strongDRI = dri as? BroadcastDRISettings else { return }
-
-            currentDri.mode?.value = strongDRI == .driOn
-        }
-    }
-
     /// Updates manual selection with saved datas.
     func updateApnConfigurationIfNeeded() {
         guard Defaults.isManualApnRequested == true,
@@ -406,19 +271,50 @@ private extension SettingsNetworkViewModel {
         }
     }
 
-    /// Starts watcher for cellular.
-    func listenCellular(_ drone: Drone) {
-        cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] cellular in
-            guard let copy = self?.state.value.copy() else { return }
-
-            copy.isCellularActivated = cellular?.cellularAvailability.isCellularActivated == true
-            copy.cellularAvailability = cellular?.cellularAvailability ?? .cellularOff
-            self?.state.set(copy)
-        }
-    }
-
     /// Show explanatory DRI page.
     func showDRIPage() {
         self.infoHandler?(BroadcastDRISettings.self)
+    }
+
+    /// Dedicated Model to match SettingEntry.
+    ///
+    /// - Parameters:
+    ///     - wifiAccessPoint: WifiAccessPoint used to build occupation rate array
+    /// - Returns: Model for wifi range setting.
+    func wifiRangeModeModel(wifiAccessPoint: WifiAccessPoint?) -> DroneSettingModel? {
+        return DroneSettingModel(allValues: SettingsWifiRange.allValues,
+                                 supportedValues: SettingsWifiRange.allValues,
+                                 currentValue: self.state.value.channelSelectionMode,
+                                 isUpdating: wifiAccessPoint?.channel.updating ?? false) { [weak self] _ in
+            guard let mode = self?.state.value.channelSelectionMode else { return }
+
+            switch mode {
+            case .auto:
+                guard let channel = wifiAccessPoint?.channel.channel else { return }
+
+                wifiAccessPoint?.channel.select(channel: channel)
+            case .manual:
+                wifiAccessPoint?.channel.autoSelect()
+            }
+        }
+    }
+
+    /// Returns a setting model for broadcast DRI. It can be ON showing drone PI, or OFF.
+    func driModeModel() -> DroneSettingModel {
+        guard let currentDri = drone?.getPeripheral(Peripherals.dri) else {
+            return DroneSettingModel(allValues: BroadcastDRISettings.allValues,
+                                     supportedValues: BroadcastDRISettings.allValues,
+                                     currentValue: BroadcastDRISettings.driOff,
+                                     isUpdating: false)
+        }
+
+        return DroneSettingModel(allValues: BroadcastDRISettings.allValues,
+                                 supportedValues: BroadcastDRISettings.allValues,
+                                 currentValue: currentDri.mode?.value == true ? BroadcastDRISettings.driOn : BroadcastDRISettings.driOff,
+                                 isUpdating: currentDri.mode?.updating) { dri in
+            guard let strongDRI = dri as? BroadcastDRISettings else { return }
+
+            currentDri.mode?.value = strongDRI == .driOn
+        }
     }
 }

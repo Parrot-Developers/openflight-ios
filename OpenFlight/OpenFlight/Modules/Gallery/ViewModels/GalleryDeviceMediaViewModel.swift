@@ -135,7 +135,6 @@ final class GalleryDeviceMediaViewModel: DroneStateViewModel<GalleryDeviceMediaS
     private var mediaListRef: Ref<[MediaItem]>?
     private var mediaList: [MediaItem] = []
     private var deviceMediaListener: Set<GalleryDeviceMediaListener> = []
-    private var initialClosure: GalleryDeviceMediaListenerClosure?
 
     // MARK: - Internal Properties
     var availableSpace: Double {
@@ -154,17 +153,10 @@ final class GalleryDeviceMediaViewModel: DroneStateViewModel<GalleryDeviceMediaS
     var videoPlayer: AVPlayer?
 
     // MARK: - Init
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - stateDidUpdate: called when drone location changed
-    private override init(stateDidUpdate: ((GalleryDeviceMediaState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
-        // Keep initial closure to prevent from breaking BaseViewModel's stateDidUpdate behaviour.
-        initialClosure = stateDidUpdate
+    private override init() {
+        super.init()
+
         state.valueChanged = { [weak self] state in
-            // Run stateDidUpdate closure.
-            self?.initialClosure?(state)
             // Run listeners closure.
             self?.deviceMediaListener.forEach { listener in
                 listener.didChange(state)

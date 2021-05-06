@@ -37,10 +37,13 @@ enum DroneConstants {
 }
 
 /// Utility class that stores current drone uid to defaults.
-
 public final class CurrentDroneStore {
+    // MARK: - Internal Enums
+    enum NotificationKeys {
+        static let flightPlanRunningNotificationKey: String = "flightPlanRunningNotificationKey"
+    }
 
-    // MARK: - Constants
+    // MARK: - Private Enums
     private enum Constants {
         static let autoConnectionRestartDelay: TimeInterval = 1.0
     }
@@ -69,6 +72,8 @@ public final class CurrentDroneStore {
     private var stateRef: Ref<DeviceState>?
     /// Ref on current drone dri.
     private var driRef: Ref<Dri>?
+    private var mediaMetadataRef: Ref<Camera2MediaMetadata>?
+    private var isFlightPlanAlreadyShown: Bool = false
 
     // MARK: - Init
     public init() {
@@ -101,29 +106,103 @@ public final class CurrentDroneStore {
 
 // MARK: - Private Funcs
 private extension CurrentDroneStore {
+    /// Listens drone state.
     func listenState(_ drone: Drone) {
         stateRef = drone.getState { [weak self] state in
-            if let state = state, state.connectionState == .connected {
-                // Enable streaming by default.
-                if !drone.isUpdating {
-                    drone.getPeripheral(Peripherals.streamServer)?.enabled = true
-                }
+            guard state?.connectionState == .connected else { return }
 
-                // Store current drone.
-                Defaults.lastConnectedDroneUID = drone.uid
+            self?.updateDroneState(drone)
+            self?.resetMediaCustomIdIfNecessary(drone: drone)
+            self?.updateFlightPlanExecutionState(drone)
+        }
+    }
 
-                if let flightCameraRecorder = drone.getPeripheral(Peripherals.flightCameraRecorder) {
-                    flightCameraRecorder.activePipelines.value = flightCameraRecorder.activePipelines.supportedValues
-                }
+    /// Updates drone state.
+    func updateDroneState(_ drone: Drone) {
+        // Enable streaming by default.
+        if !drone.isUpdating {
+            drone.getPeripheral(Peripherals.streamServer)?.enabled = true
+        }
 
-                // Resets the media meta data customId if it is already set.
-                // Can happen if there is a crash/killing app during a flight plan execution.
-                if let customId = drone.getPeripheral(Peripherals.mainCamera2)?.mediaMetadata?.customId,
-                   !customId.isEmpty,
-                   self?.isDroneStillRunningFlightPlan(drone: drone, executionId: customId) == false {
-                    drone.getPeripheral(Peripherals.mainCamera2)?.mediaMetadata?.customId = ""
-                }
+        // Store current drone uid.
+        Defaults.lastConnectedDroneUID = drone.uid
+        if let flightCameraRecorder = drone.getPeripheral(Peripherals.flightCameraRecorder) {
+            flightCameraRecorder.activePipelines.value = flightCameraRecorder.activePipelines.supportedValues
+        }
+    }
+
+    /// Updates Flight Plan execution informations.
+    func updateFlightPlanExecutionState(_ drone: Drone) {
+        // Gets last flight plan information with recovery field.
+        // Database must be updated if recoveryInfo is not nil.
+        guard let pilotingItf = drone.getPilotingItf(PilotingItfs.flightPlan),
+              let recoveryInfo = pilotingItf.recoveryInfo else {
+            return
+        }
+
+        var currentFlightPlanId: String?
+
+        // Gets last execution of the recovered flight plan and update its last item executed.
+        let flightPlanExecution = CoreDataManager
+            .shared
+            .executions(forRecoveryId: recoveryInfo.id)
+            .first
+
+        guard flightPlanExecution?.state != .completed else {
+            pilotingItf.clearRecoveryInfo()
+            return
+        }
+
+        flightPlanExecution?.saveLatestItemExecuted(with: recoveryInfo.latestMissionItemExecuted)
+
+        if let path = flightPlanExecution?.mavlinkUrl?.path,
+           FileManager.default.fileExists(atPath: path),
+           let mavlinkCommands: [MavlinkStandard.MavlinkCommand] = (try? MavlinkStandard.MavlinkFiles.parse(filepath: path)) {
+            var lastItemIndex = mavlinkCommands.count - 1
+
+            // Decrease total item count if there is one Return to Home MavlinkCommand.
+            // RTH usually occurs at the end of the Flight plan.
+            if mavlinkCommands.first(where: {
+                $0 is MavlinkStandard.ReturnToLaunchCommand
+            }) != nil {
+                lastItemIndex -= 1
             }
+
+            // Updates execution status if Flight Plan is finish.
+            if lastItemIndex == recoveryInfo.latestMissionItemExecuted {
+                flightPlanExecution?.saveExecutionState(with: .completed)
+            }
+        }
+
+        // Save current flight plan Id.
+        currentFlightPlanId = flightPlanExecution?.flightPlanId
+
+        if pilotingItf.state == .active,
+           drone.isStateFlying,
+           !isFlightPlanAlreadyShown,
+           let flightPlanId = currentFlightPlanId {
+            NotificationCenter.default.post(name: .startFlightPlanAtLaunch,
+                                            object: nil,
+                                            userInfo: [NotificationKeys.flightPlanRunningNotificationKey: flightPlanId])
+            isFlightPlanAlreadyShown = true
+        } else {
+            // Clear recovery info after execution updates, only if a FP is not active.
+            pilotingItf.clearRecoveryInfo()
+        }
+    }
+
+    /// Resets the media customId if it is necessary.
+    /// Can happen if there is a crash/killing app during a flight plan execution.
+    func resetMediaCustomIdIfNecessary(drone: Drone) {
+        mediaMetadataRef = drone.getPeripheral(Peripherals.mainCamera2)?.getComponent(Camera2Components.mediaMetadata) { [weak self] mediaMetadata in
+            if let mediaCustomId = mediaMetadata?.customId,
+               !mediaCustomId.isEmpty,
+               self?.isDroneStillRunningFlightPlan(drone: drone, executionId: mediaCustomId) == false {
+                drone.getPeripheral(Peripherals.mainCamera2)?.mediaMetadata?.customId = ""
+            }
+
+            // Resets the media reference to avoid callback being called more than one time.
+            self?.mediaMetadataRef = nil
         }
     }
 

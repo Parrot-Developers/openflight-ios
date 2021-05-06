@@ -58,6 +58,13 @@ extension Camera2RecordingResolution: BarItemMode, Sortable {
         }
     }
 
+    public static var availableResolutions: [Camera2RecordingResolution] {
+        [.res1080p,
+         .res1080pSd,
+         .resDci4k,
+         .resUhd4k]
+    }
+
     public var image: UIImage? {
         return nil
     }
@@ -74,8 +81,13 @@ extension Camera2RecordingResolution: BarItemMode, Sortable {
         return nil
     }
 
+    /// Default value.
+    public static var defaultResolution: Camera2RecordingResolution {
+        availableResolutions[0]
+    }
+
     // MARK: - Sortable
-    static var sortedCases: [Camera2RecordingResolution] {
+    public static var sortedCases: [Camera2RecordingResolution] {
         return [.res480p, .res720pSd, .res720p, .res1080pSd, .res1080p,
                 .res2_7k, .resDci4k, .resUhd4k, .res5k, .resUhd8k]
     }

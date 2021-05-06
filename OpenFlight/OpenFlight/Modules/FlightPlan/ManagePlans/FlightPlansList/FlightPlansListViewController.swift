@@ -63,7 +63,7 @@ final class FlightPlansListViewController: UIViewController {
     }
 
     // MARK: - Private Properties
-    private var missionProviderViewModel: MissionProviderViewModel = MissionProviderViewModel()
+    private let missionProviderViewModel: MissionProviderViewModel = MissionProviderViewModel()
     private var flightPlansListViewModel: FlightPlansListViewModel?
     private weak var coordinator: Coordinator?
     private var allFlightPlans: [FlightPlanViewModel] = [FlightPlanViewModel]() {

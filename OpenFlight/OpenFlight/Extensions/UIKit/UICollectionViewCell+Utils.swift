@@ -84,4 +84,21 @@ extension UICollectionView {
         let lastRowIndex = self.numberOfItems(inSection: lastSectionIndex) - 1
         return indexPath == IndexPath(row: lastRowIndex, section: lastSectionIndex)
     }
+
+    /// Sets placeholder image when collectionView is empty.
+    func setEmptyPlaceholder() {
+        let placeholderImageView = UIImageView()
+        placeholderImageView.image = Asset.Dashboard.icGalleryEmpty.image
+        placeholderImageView.contentMode = .scaleAspectFit
+        self.backgroundView = placeholderImageView
+        // Auto Layout
+        placeholderImageView.translatesAutoresizingMaskIntoConstraints = false
+        placeholderImageView.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
+        placeholderImageView.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+    }
+
+    /// Restores collectionView background.
+    func restore() {
+        self.backgroundView = nil
+    }
 }

@@ -34,6 +34,7 @@ import Reusable
 /// Image menu table view cell.
 final class ImageMenuTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
+    @IBOutlet private weak var modeImage: UIImageView!
     @IBOutlet private weak var imageLabel: UILabel!
 
     // MARK: - Override Funcs
@@ -48,7 +49,49 @@ final class ImageMenuTableViewCell: UITableViewCell, NibReusable {
 // MARK: - Internal Funcs
 internal extension ImageMenuTableViewCell {
     /// Setup cell.
-    func setup() {
-        // TODO: in next gerrit
+    func setup(flightPlan: FlightPlanObject?, settings: [FlightPlanSetting]) {
+        guard let flightPlan = flightPlan else {
+            imageLabel.text = Style.dash
+            return
+        }
+
+        let captureMode = flightPlan.captureModeEnum
+        let hasModeImageSetting = settings.contains(where: {$0.key == ClassicFlightPlanSettingType.imageMode.key })
+        modeImage.isHidden = !hasModeImageSetting
+
+        var settingDescription: String = ""
+        // Add mode description.
+        if hasModeImageSetting {
+            modeImage.image = captureMode.image
+            switch captureMode {
+            case .gpsLapse:
+                if let value = flightPlan.gpsLapseDistance {
+                    settingDescription += Style.whiteSpace +  UnitHelper.stringDistanceWithDouble(Double(value))
+                }
+            case .timeLapse:
+                if let value = flightPlan.timeLapseCycle {
+                    settingDescription += Style.whiteSpace + "\(value)" + L10n.unitSecond
+                }
+            case .video:
+                settingDescription += Style.whiteSpace
+                    + flightPlan.resolution.title
+                    + Style.whiteSpace
+                    + flightPlan.framerate.title
+            }
+        }
+
+        // Add photo resolution description if needed.
+        if settings.contains(where: {$0.key == ClassicFlightPlanSettingType.photoResolution.key }) {
+            settingDescription += Style.whiteSpace + flightPlan.photoResolution.title
+        }
+
+        // Add exposure and white balance mode description if there is not mode description.
+        if !hasModeImageSetting {
+            settingDescription += String(format: " %@ %@",
+                                         flightPlan.exposure.title,
+                                         flightPlan.whiteBalanceMode.title)
+        }
+
+        imageLabel.text = settingDescription
     }
 }

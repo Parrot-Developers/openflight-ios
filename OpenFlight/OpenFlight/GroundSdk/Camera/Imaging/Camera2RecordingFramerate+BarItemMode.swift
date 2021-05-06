@@ -72,6 +72,17 @@ extension Camera2RecordingFramerate: BarItemMode, Sortable {
         }
     }
 
+    public static var availableFramerates: [Camera2RecordingFramerate] {
+        [.fps24,
+         .fps25,
+         .fps30,
+         .fps48,
+         .fps50,
+         .fps60,
+         .fps120,
+         .fps240]
+    }
+
     public var title: String {
         return value + " " + L10n.unitFps
     }
@@ -100,8 +111,13 @@ extension Camera2RecordingFramerate: BarItemMode, Sortable {
         return LogEvent.LogKeyHUDBottomBarButton.framerateSetting.name
     }
 
+    /// Default value.
+    public static var defaultFramerate: Camera2RecordingFramerate {
+        availableFramerates[0]
+    }
+
     // MARK: - Sortable
-    static var sortedCases: [Camera2RecordingFramerate] {
+    public static var sortedCases: [Camera2RecordingFramerate] {
         return [.fps9, .fps15, .fps20, .fps24, .fps25, .fps30, .fps48, .fps50,
                 .fps60, .fps96, .fps100, .fps120, .fps192, .fps200, .fps240]
     }

@@ -66,7 +66,6 @@ public extension MapViewController {
     ///     - state: Mission Mode State
     func setupFlightPlanListener(for state: MissionProviderState) {
         // Remove potential old Flight Plan first.
-        FlightPlanManager.shared.currentFlightPlanViewModel = nil
         FlightPlanManager.shared.unregister(flightPlanListener)
 
         // Load last edited Flight Plan
@@ -76,6 +75,8 @@ public extension MapViewController {
                 self?.flightPlanViewModel = flightPlan
             })
             FlightPlanManager.shared.loadLastOpenedFlightPlan(state: state)
+        } else {
+            FlightPlanManager.shared.currentFlightPlanViewModel = nil
         }
     }
 
@@ -423,6 +424,7 @@ private extension MapViewController {
     func setFlightPlanDraped() {
         flightPlanOverlay?.sceneProperties?.surfacePlacement = .drapedBillboarded
         flightPlanLabelsOverlay?.updateSurfacePlacement(isDraped: true)
+        sceneView?.scene?.baseSurface?.isEnabled = false
     }
 
     /// Updates flight plan so its points are set
@@ -430,6 +432,7 @@ private extension MapViewController {
     func setFlightPlanRelative() {
         flightPlanOverlay?.sceneProperties?.surfacePlacement = .relative
         flightPlanLabelsOverlay?.updateSurfacePlacement(isDraped: false)
+        sceneView?.scene?.baseSurface?.isEnabled = true
     }
 
     /// Adds a waypoint to Flight Plan.
@@ -443,13 +446,12 @@ private extension MapViewController {
         let lastWayPoint = flightPlan.plan.wayPoints.last
         let wayPoint = WayPoint(coordinate: CLLocationCoordinate2D(latitude: location.y,
                                                                    longitude: location.x),
-                                altitude: lastWayPoint?.altitude ?? Constants.defaultPointAltitude,
+                                altitude: lastWayPoint?.altitude,
                                 yaw: Constants.defaultWayPointYaw,
                                 speed: lastWayPoint?.speed,
-                                shouldContinue: true,
-                                shouldFollowPOI: false,
-                                poiIndex: nil,
-                                actions: nil)
+                                shouldContinue: flightPlan.plan.shouldContinue ?? true,
+                                tilt: lastWayPoint?.tilt)
+
         flightPlan.plan.addWaypoint(wayPoint)
         let index = flightPlan.plan.wayPoints.count - 1
         let wayPointGraphic = wayPoint.markerGraphic(index: index)

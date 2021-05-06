@@ -32,7 +32,6 @@ import GroundSdk
 import SwiftyUserDefaults
 
 /// State for `ReturnHomeBottomBarState`.
-
 final class ReturnHomeBottomBarState: ViewModelState, EquatableState, Copying {
     // MARK: - Internal Properties
     /// Provides rth type description. Depends on the mission mode.
@@ -61,7 +60,6 @@ final class ReturnHomeBottomBarState: ViewModelState, EquatableState, Copying {
 }
 
 /// View model which observes Return to Home state.
-
 final class ReturnHomeBottomBarViewModel: DroneWatcherViewModel<ReturnHomeBottomBarState> {
     // MARK: - Private Properties
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
@@ -80,7 +78,7 @@ final class ReturnHomeBottomBarViewModel: DroneWatcherViewModel<ReturnHomeBottom
     // MARK: - Internal Funcs
     /// Stops Return Home.
     func stopReturnHome() {
-        _ = drone?.getPilotingItf(PilotingItfs.returnHome)?.deactivate()
+        _ = drone?.cancelReturnHome()
     }
 }
 
@@ -100,6 +98,7 @@ private extension ReturnHomeBottomBarViewModel {
     func updateRthTypeDescription() {
         let currentMode = MissionsManager.shared.missionSubModeFor(key: Defaults.userMissionMode)
         guard let rthTitle = currentMode?.rthTypeTitle else { return }
+
         state.value.rthTypeDescription.set(rthTitle)
     }
 }

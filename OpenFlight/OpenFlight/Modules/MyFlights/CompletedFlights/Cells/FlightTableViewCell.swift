@@ -58,14 +58,14 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
             mapImage.applyCornerRadius()
         }
     }
-    @IBOutlet private weak var nameLabel: UILabel! {
-        didSet {
-            nameLabel.makeUp(with: .large)
-        }
-    }
     @IBOutlet private weak var dateLabel: UILabel! {
         didSet {
-            dateLabel.makeUp(and: .white50)
+            dateLabel.makeUp(with: .large)
+        }
+    }
+    @IBOutlet private weak var locationLabel: UILabel! {
+        didSet {
+            locationLabel.makeUp(and: .white50)
         }
     }
     @IBOutlet private weak var photoLabel: UILabel! {
@@ -104,7 +104,7 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
             yearLabel.text = date?.year
         }
         dateLabel.text = viewModel.state.value.formattedDate
-        nameLabel.text = viewModel.state.value.title
+        locationLabel.text = viewModel.state.value.flightLocationDescription
 
         warningStackView.isHidden = !viewModel.state.value.hasIssues
         if viewModel.state.value.hasIssues {
@@ -112,10 +112,10 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
             warningLabel.text = "Issue with this flight"
         }
 
-        self.mapImage.image = viewModel.state.value.thumbnail ?? Asset.MyFlights.mapPlaceHolder.image
+        self.updateMapImage(state: viewModel.state.value)
         viewModel.state.valueChanged = { [weak self] state in
-            self?.mapImage.image = state.thumbnail ?? Asset.MyFlights.mapPlaceHolder.image
-            self?.nameLabel.text = state.title
+            self?.updateMapImage(state: state)
+            self?.locationLabel.text = state.flightDescription
         }
         viewModel.requestThumbnail()
         viewModel.requestPlacemark()
@@ -127,5 +127,18 @@ private extension FlightTableViewCell {
     func initCell() {
         photoLabel.text = Style.dash
         videoLabel.text = Style.dash
+    }
+
+    /// Updates map image according to gps location validity.
+    ///
+    /// - Parameters:
+    ///     - state: Flight data state
+    func updateMapImage(state: FlightDataState) {
+        if state.isLocationValid,
+           let thumb = state.thumbnail {
+            self.mapImage.image = thumb
+        } else {
+            self.mapImage.image = Asset.MyFlights.mapPlaceHolder.image
+        }
     }
 }

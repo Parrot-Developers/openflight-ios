@@ -58,20 +58,7 @@ final class SettingValuesChoiceTableViewCell: UITableViewCell, NibReusable, Edit
     // MARK: - Internal Funcs
     func fill(with settingType: FlightPlanSettingType?) {
         self.settingType = settingType
-
-        // FIXME: This part is for upload 4G testing only.
-        // It will be remove when the feature is finished.
-        var valueToDisplay = settingType?.valueToDisplay() ?? ""
-
-        if let additionalInformation = settingType?.additionalInformation {
-            valueToDisplay = "\(valueToDisplay) (\(additionalInformation))"
-        }
-
-        titleLabel.text = valueToDisplay
-        // End of testing
-
-        // FIXME: Uncomment this line when testing is done.
-        // titleLabel.text = settingType?.valueToDisplay()
+        titleLabel.text = settingType?.valueToDisplay()
 
         settingType?.allValues.forEach { value in
             let button = UIButton(type: UIButton.ButtonType.custom)

@@ -94,9 +94,8 @@ final class OccupancyViewModel: DroneWatcherViewModel<OccupancyState> {
     /// Init.
     ///
     /// - Parameters:
-    ///     - stateDidUpdate: state callback
     ///     - worldStorage: voxel storage
-    init(stateDidUpdate: ((OccupancyState) -> Void)? = nil, worldStorage: VoxelStorageCore) {
+    init(worldStorage: VoxelStorageCore) {
         self.worldStorage = worldStorage
 
         let fileManager = FileManager.default
@@ -108,7 +107,7 @@ final class OccupancyViewModel: DroneWatcherViewModel<OccupancyState> {
             }
         }
 
-        super.init(stateDidUpdate: stateDidUpdate)
+        super.init()
     }
 
     // MARK: - Deinit

@@ -144,7 +144,7 @@ final class HUDAlertPanelHandLaunchViewModel: DroneStateViewModel<HUDAlertPanelH
     private var manualPilotingRef: Ref<ManualCopterPilotingItf>?
     private var timer: Timer?
     private var cancelTimer: Timer?
-    private var takeOffAlertViewModel: TakeOffAlertViewModel = TakeOffAlertViewModel()
+    private var criticalAlertViewModel: HUDCriticalAlertViewModel = HUDCriticalAlertViewModel()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -225,7 +225,7 @@ private extension HUDAlertPanelHandLaunchViewModel {
         NotificationCenter.default.post(name: .takeOffRequestedDidChange,
                                         object: nil,
                                         userInfo: [HUDCriticalAlertConstants.takeOffRequestedNotificationKey: true])
-        if takeOffAlertViewModel.state.value.canTakeOff {
+        if criticalAlertViewModel.state.value.canTakeOff {
             drone.startHandLaunch()
         }
     }

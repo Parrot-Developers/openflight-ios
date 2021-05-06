@@ -93,7 +93,6 @@ public extension DefaultsKeys {
     var lastShutterSpeedValue: DefaultsKey<String?> { .init("key_lastShutterSpeedValue") }
     var lastCameraIsoValue: DefaultsKey<String?> { .init("key_lastCameraIsoValue") }
     var highDynamicRangeSetting: DefaultsKey<String?> { .init("key_highDynamicRangeSetting") }
-    var isAutoExposureLocked: DefaultsKey<Bool> { .init("key_isAutoExposureLocked", defaultValue: false) }
 
     // MARK: - Last sync dates
     var profileLastSyncDate: DefaultsKey<Date?> { DefaultsKeys.profileLastSyncDateKey }
@@ -181,4 +180,5 @@ public extension DefaultsKeys {
     // MARK: - Cellular Access
     static let networkUsernameKey: DefaultsKey<String?> = DefaultsKey<String?>("key_networkUsername")
     static let networkPasswordKey: DefaultsKey<String?> = DefaultsKey<String?>("key_networkPassword")
-    static let networkUrlKey: DefaultsKey<String?> = DefaultsKey<String?>("key_networkUrl")}
+    static let networkUrlKey: DefaultsKey<String?> = DefaultsKey<String?>("key_networkUrl")
+}

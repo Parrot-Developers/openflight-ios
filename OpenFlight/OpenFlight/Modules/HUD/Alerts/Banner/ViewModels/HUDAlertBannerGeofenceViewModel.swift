@@ -41,8 +41,9 @@ final class HUDAlertBannerGeofenceViewModel: DroneWatcherViewModel<HUDAlertBanne
     private var userLocationRef: Ref<UserLocation>?
 
     // MARK: - Override Funcs
-    override init(stateDidUpdate: ((HUDAlertBannerSubState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenUserLocation()
     }
 

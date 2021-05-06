@@ -87,8 +87,9 @@ final class MissionProviderViewModel: BaseViewModel<MissionProviderState> {
     private var defaultsDisposable: DefaultsDisposable?
 
     // MARK: - Init
-    override init(stateDidUpdate: ((MissionProviderState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenDefaults()
     }
 

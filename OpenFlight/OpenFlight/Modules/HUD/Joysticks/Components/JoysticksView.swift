@@ -38,7 +38,7 @@ final class JoysticksView: UIView, NibOwnerLoadable {
     @IBOutlet private weak var rightJoystickView: JoystickView!
 
     // MARK: - Private Properties
-    private var viewModel: JoysticksTypeViewModel?
+    private let viewModel = JoysticksTypeViewModel()
 
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {
@@ -56,21 +56,18 @@ final class JoysticksView: UIView, NibOwnerLoadable {
 private extension JoysticksView {
     func commonInitJoysticks() {
         self.loadNibContent()
-        viewModel = JoysticksTypeViewModel(stateDidUpdate: { [weak self] state in
+        viewModel.state.valueChanged = { [weak self] state in
             self?.updateJoysticks(joysticksTypeState: state)
-        })
-        updateJoysticks(joysticksTypeState: viewModel?.state.value)
+        }
+        updateJoysticks(joysticksTypeState: viewModel.state.value)
     }
 
     /// Update each joystick's type regarding state.
     ///
     /// - Parameters:
     ///     - joysticksTypeState: type of joysticks
-    func updateJoysticks(joysticksTypeState: JoysticksTypeState?) {
-        guard let state = joysticksTypeState else {
-            return
-        }
-        leftJoystickView.joystickType = state.leftJoystickType
-        rightJoystickView.joystickType = state.rightJoystickType
+    func updateJoysticks(joysticksTypeState: JoysticksTypeState) {
+        leftJoystickView.joystickType = joysticksTypeState.leftJoystickType
+        rightJoystickView.joystickType = joysticksTypeState.rightJoystickType
     }
 }

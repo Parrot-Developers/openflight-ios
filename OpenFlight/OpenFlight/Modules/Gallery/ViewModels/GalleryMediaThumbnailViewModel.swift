@@ -61,9 +61,9 @@ final class GalleryMediaThumbnailViewModel: NSObject {
     func getThumbnail(completion: @escaping (UIImage?) -> Void) {
         guard let media = media else { return }
         if let mediaStore = mediaStore,
-            let mediaItem = media.mediaItem,
-            index < mediaItem.resources.count {
-            thumbnailReference = mediaStore.newThumbnailDownloader(resource: mediaItem.resources[index]) { image in
+           let mediaResources = media.mediaResources,
+           index < mediaResources.count {
+            thumbnailReference = mediaStore.newThumbnailDownloader(resource: mediaResources[index]) { image in
                 completion(image)
             }
         } else if let urls = media.urls,

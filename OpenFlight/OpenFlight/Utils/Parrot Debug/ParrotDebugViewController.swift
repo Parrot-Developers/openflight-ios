@@ -54,6 +54,7 @@ class ParrotDebugViewController: UIViewController {
     private var refreshControl = UIRefreshControl()
     private var activeFileName: String?
     private var devToolboxRef: Ref<DevToolbox>?
+    private weak var coordinator: ParrotDebugCoordinator?
 
     // MARK: - Private Enums
     private enum Constants {
@@ -62,6 +63,13 @@ class ParrotDebugViewController: UIViewController {
         static let defaultShareUti = "public.data, public.content"
         static let bundleVersionKey = "CFBundleVersion"
         static let oaRecordStartConfName = "oarecord_start"
+    }
+
+    // MARK: - Init
+    static func instantiate(coordinator: ParrotDebugCoordinator) -> ParrotDebugViewController {
+        let viewController = StoryboardScene.ParrotDebug.initialScene.instantiate()
+        viewController.coordinator = coordinator
+        return viewController
     }
 
     // MARK: - Override Funcs
@@ -90,6 +98,7 @@ class ParrotDebugViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.coordinator?.navigationController?.isNavigationBarHidden = true
 
         switchLog.isOn = ParrotDebug.activeLogFileName != nil
         loadFileList()
@@ -109,6 +118,10 @@ private extension ParrotDebugViewController {
     @IBAction func doneAction(_ sender: UIButton) {
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyDebugLogsButton.done, logType: .simpleButton)
         dismiss(animated: true)
+    }
+
+    @IBAction private func toolBoxButtonTouchedUpInside(_ sender: AnyObject) {
+        coordinator?.showDevToolbox()
     }
 
     @IBAction func enableStreamRecord(_ sender: UIButton) {

@@ -102,8 +102,9 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
     private var defaultsDisposables = [DefaultsDisposable]()
 
     // MARK: - Init
-    override init(stateDidUpdate: ((CameraBarButtonState) -> Void)? = nil) {
+    override init() {
         super.init()
+
         state.value.title = L10n.commonMode.uppercased()
         listenDefaults()
     }

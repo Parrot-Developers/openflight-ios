@@ -4,17 +4,17 @@
 <array>
 	<dict>
 		<key>embeddedPath</key>
-		<string>embedded_missions/com.parrot.missions.samples.hello_7.0.0-beta49.tar.gz</string>
+		<string>embedded_missions/com.parrot.missions.samples.hello_7.0.0-beta58.tar.gz</string>
 		<key>md5</key>
-		<string>ebc3a14e04f8422d0025bcdf988cae2f</string>
+		<string>73c924d152781d18e009507d57f70513</string>
 		<key>name</key>
 		<string>Hello mission</string>
 		<key>size</key>
-		<integer>37629</integer>
+		<integer>39472</integer>
 		<key>uid</key>
 		<string>com.parrot.missions.samples.hello</string>
 		<key>version</key>
-		<string>7.0.0-beta49</string>
+		<string>7.0.0-beta58</string>
 	</dict>
 </array>
 </plist>

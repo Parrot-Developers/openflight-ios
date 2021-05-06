@@ -31,19 +31,6 @@
 import UIKit
 import ArcGIS
 
-// MARK: - Protocols
-public protocol FlightPlanEditionViewControllerDelegate: class {
-    /// Starts flight plan edition mode.
-    func startFlightPlanEdition()
-
-    /// Starts a new flight plan.
-    ///
-    /// - Parameters:
-    ///    - flightPlanProvider: flight plan provider
-    ///    - completion: call back that returns if a flight plan have been created
-    func startNewFlightPlan(flightPlanProvider: FlightPlanProvider, creationCompletion: @escaping (_ createNewFp: Bool) -> Void)
-}
-
 /// Manages flight plan edition view.
 public class FlightPlanEditionViewController: UIViewController {
     // MARK: - Outlets
@@ -56,6 +43,7 @@ public class FlightPlanEditionViewController: UIViewController {
 
     // MARK: - Private Properties
     private weak var coordinator: FlightPlanEditionCoordinator?
+    private weak var panelCoordinator: FlightPlanPanelCoordinator?
     private weak var mapViewController: MapViewController?
     private weak var mapViewRestorer: MapViewRestorer?
     private var droneStateViewModel = DroneStateViewModel<DeviceConnectionState>()
@@ -98,6 +86,7 @@ public class FlightPlanEditionViewController: UIViewController {
     ///
     /// - Parameters:
     ///    - coordinator: flight plan edition coordinator
+    ///    - panelCoordinator: flight plan panel coordinator
     ///    - mapViewController: controller for the map
     ///    - mapViewRestorer: restorer for the map
     ///    - flightPlanProvider: flight plan provider
@@ -108,11 +97,13 @@ public class FlightPlanEditionViewController: UIViewController {
     /// view controller. Map is restored back to its original
     /// container afterwards with `MapViewRestorer` protocol.
     public static func instantiate(coordinator: FlightPlanEditionCoordinator,
+                                   panelCoordinator: FlightPlanPanelCoordinator,
                                    mapViewController: MapViewController?,
                                    mapViewRestorer: MapViewRestorer?,
                                    flightPlanProvider: FlightPlanProvider?) -> FlightPlanEditionViewController {
         let viewController = StoryboardScene.FlightPlanEdition.initialScene.instantiate()
         viewController.coordinator = coordinator
+        viewController.panelCoordinator = panelCoordinator
         viewController.mapViewController = mapViewController
         viewController.mapViewController?.setMapMode(.flightPlanEdition)
         viewController.mapViewRestorer = mapViewRestorer
@@ -162,7 +153,7 @@ public class FlightPlanEditionViewController: UIViewController {
                 FlightPlanManager.shared.appendUndoStack(with: flightPlanViewModel?.flightPlan)
                 self?.flightPlanEditionMenuViewController?.refreshContent()
                 if self?.settingsDisplayed == true {
-                    self?.editionSettingsViewController?.refreshContent(categoryFilter: nil)
+                    self?.editionSettingsViewController?.refreshContent()
                 }
             }
 
@@ -211,11 +202,14 @@ public class FlightPlanEditionViewController: UIViewController {
     }
 
     // MARK: - Public Funcs
-    /// Show corner item edition.
-    func showCornerEdition() {
+    /// Show custom graphic item edition.
+    ///
+    /// - Parameters:
+    ///    - graphic: graphic to display in edition
+    func showCustomGraphicEdition(_ graphic: EditableAGSGraphic) {
         editionSettingsViewController?.updateDataSource(with: nil,
                                                         savedFlightPlan: nil,
-                                                        selectedGraphic: FlightPlanGraphic())
+                                                        selectedGraphic: graphic)
         openSettings()
     }
 }
@@ -315,12 +309,14 @@ private extension FlightPlanEditionViewController {
             return
         }
 
+        // Deselect line.
+        deselectCurrentGraphic()
+
         // Update overlays.
         let wayPointGraphic = mapViewController?.flightPlanOverlay?.insertWayPoint(wayPoint,
                                                                                    at: index)
         mapViewController?.flightPlanLabelsOverlay?.insertWayPoint(wayPoint,
                                                                    at: index)
-        deselectCurrentGraphic()
         mapViewController?.updateArrows()
 
         // Close settings.
@@ -354,10 +350,10 @@ private extension FlightPlanEditionViewController {
     func openSettings(categoryFilter: FlightPlanSettingCategory? = nil) {
         guard !settingsDisplayed else { return }
 
-        self.editionSettingsViewController?.refreshContent(categoryFilter: categoryFilter)
         self.settingsLeadConstraint.constant = editionSettingsContainer.frame.width
-        self.settingsDisplayed = true
         self.view.layoutIfNeeded()
+        self.editionSettingsViewController?.refreshContent(categoryFilter: categoryFilter)
+        self.settingsDisplayed = true
     }
 
     /// Closes settings panel.
@@ -431,7 +427,8 @@ extension FlightPlanEditionViewController: EditionSettingsDelegate {
     public func updateSettingValue(for key: String?, value: Int) {
         guard let strongKey = key else { return }
 
-        if let selectedGraphic = selectedGraphic {
+        if let selectedGraphic = selectedGraphic,
+           key == AltitudeSettingType().key {
             let altitude = Double(value)
 
             switch selectedGraphic {
@@ -510,12 +507,7 @@ extension FlightPlanEditionViewController: FlightPlanEditionMenuDelegate {
     public func showProjectManager() {
         FlightPlanManager.shared.persistCurrentFlightPlan()
         updateInterfaceVisibility(isHidden: true)
-        coordinator?.startManagePlans()
-    }
-
-    public func showHistory() {
-        if let flightPlanViewModel = flightPlanViewModel {
-            coordinator?.startFlightPlanHistory(flightPlanViewModel: flightPlanViewModel)
-        }
+        // FIXME: not working
+        panelCoordinator?.startManagePlans()
     }
 }

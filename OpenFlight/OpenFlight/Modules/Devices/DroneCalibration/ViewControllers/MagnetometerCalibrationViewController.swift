@@ -44,7 +44,7 @@ final class MagnetometerCalibrationViewController: UIViewController {
 
     // MARK: - Private Properties
     private weak var coordinator: DroneCalibrationCoordinator?
-    private var viewModel = MagnetometerCalibrationViewModel()
+    private var viewModel = MagnetometerCalibrationProcessViewModel()
     private var isRequired: Bool = false
 
     // MARK: - Setup
@@ -239,6 +239,6 @@ private extension MagnetometerCalibrationViewController {
     /// Close the view controller.
     func closeCalibrationView() {
         self.viewModel.cancelCalibration()
-        coordinator?.back()
+        coordinator?.leave()
     }
 }

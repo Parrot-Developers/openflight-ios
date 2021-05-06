@@ -352,7 +352,7 @@ private extension AssetUtils {
 
         let galleryMedia = GalleryMedia(uid: String(mainMediaUrl.prefix),
                                         source: .mobileDevice,
-                                        mediaItem: nil,
+                                        mediaItems: nil,
                                         type: mediaType,
                                         downloadState: .downloaded,
                                         size: mediaSize,

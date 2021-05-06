@@ -22,25 +22,39 @@
                             <constraint firstAttribute="width" constant="8" id="y77-PV-O5L"/>
                         </constraints>
                     </imageView>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z8X-II-t1u">
-                        <rect key="frame" x="16" y="12" width="42" height="16"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                        <nil key="textColor"/>
-                        <nil key="highlightedColor"/>
-                    </label>
+                    <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="mSK-vE-Gkn">
+                        <rect key="frame" x="16" y="8" width="431" height="24"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="48d-QU-w9P">
+                                <rect key="frame" x="0.0" y="0.0" width="20" height="24"/>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="20" id="Fdt-7C-7OB"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z8X-II-t1u">
+                                <rect key="frame" x="28" y="0.0" width="403" height="24"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                    </stackView>
                 </subviews>
                 <constraints>
                     <constraint firstItem="yWB-Lg-OK5" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="0CS-nC-X77"/>
                     <constraint firstAttribute="bottom" secondItem="yWB-Lg-OK5" secondAttribute="bottom" id="6g1-7t-Fdz"/>
-                    <constraint firstItem="Z8X-II-t1u" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="12" id="81a-el-uzg"/>
-                    <constraint firstAttribute="bottom" secondItem="Z8X-II-t1u" secondAttribute="bottom" constant="12" id="GyS-qh-UXq"/>
-                    <constraint firstItem="Z8X-II-t1u" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="gzx-hy-Rwv"/>
+                    <constraint firstItem="mSK-vE-Gkn" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="QDM-lJ-xgo"/>
                     <constraint firstAttribute="trailing" secondItem="yWB-Lg-OK5" secondAttribute="trailing" constant="8" id="hUd-pp-mn2"/>
+                    <constraint firstAttribute="bottom" secondItem="mSK-vE-Gkn" secondAttribute="bottom" constant="8" id="r8I-cy-VOc"/>
+                    <constraint firstItem="yWB-Lg-OK5" firstAttribute="leading" secondItem="mSK-vE-Gkn" secondAttribute="trailing" constant="8" id="uiH-k2-SS9"/>
+                    <constraint firstItem="mSK-vE-Gkn" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="8" id="y4f-ux-vnO"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
                 <outlet property="imageLabel" destination="Z8X-II-t1u" id="VJT-qt-Xf9"/>
+                <outlet property="modeImage" destination="48d-QU-w9P" id="m7C-j3-vMb"/>
             </connections>
             <point key="canvasLocation" x="253.59999999999999" y="112.44377811094454"/>
         </tableViewCell>

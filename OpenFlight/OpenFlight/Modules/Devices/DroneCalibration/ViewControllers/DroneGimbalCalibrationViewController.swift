@@ -102,13 +102,12 @@ private extension DroneGimbalCalibrationViewController {
     }
 
     @IBAction func startButtonTouchedUpInside(_ sender: Any) {
-        if self.viewModel.state.value.gimbalState != .calibrated ||
-            self.viewModel.state.value.frontStereoGimbalState != .calibrated {
-            self.descriptionLabel.text = L10n.gimbalCalibrationMainCamMessage
-            self.gimbalImageView.image = Asset.Drone.icGimbalCamera.image
-            self.synchronisationImageView.isHidden = isLoading
-            self.synchronisationImageView.startRotate()
-            self.startButton.isEnabled = isLoading
+        self.descriptionLabel.text = L10n.gimbalCalibrationMainCamMessage
+        self.gimbalImageView.image = Asset.Drone.icGimbalCamera.image
+        self.synchronisationImageView.isHidden = isLoading
+        self.synchronisationImageView.startRotate()
+        self.startButton.isEnabled = isLoading
+        if viewModel.state.value.isCalibrationRequested {
             self.viewModel.startGimbalCalibration()
         } else {
             dismissView()

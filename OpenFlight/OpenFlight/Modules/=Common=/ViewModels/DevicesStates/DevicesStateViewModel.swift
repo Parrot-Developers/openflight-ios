@@ -32,7 +32,7 @@ import GroundSdk
 
 /// State for `DevicesStateViewModel`.
 open class DevicesConnectionState: ViewModelState, EquatableState, Copying {
-    // MARK: - Internal Properties
+    // MARK: - Public Properties
     /// Drone connection state.
     public fileprivate(set) var droneConnectionState: DeviceConnectionState?
     /// Remote control connection state.
@@ -77,7 +77,6 @@ open class DevicesConnectionState: ViewModelState, EquatableState, Copying {
 }
 
 /// ViewModel used to watch both drone and remote state.
-
 open class DevicesStateViewModel<T: DevicesConnectionState>: WatcherViewModel<T> {
     // MARK: - Private Properties
     private var droneStateRef: Ref<DeviceState>?
@@ -86,9 +85,8 @@ open class DevicesStateViewModel<T: DevicesConnectionState>: WatcherViewModel<T>
     // MARK: - Override Funcs
     open override func listenDrone(drone: Drone) {
         droneStateRef = drone.getState { [weak self] droneState in
-            guard let copyState = self?.state.value.copy() else {
-                return
-            }
+            guard let copyState = self?.state.value.copy() else { return }
+
             copyState.droneConnectionState = DeviceConnectionState(connectionState: droneState?.connectionState)
             self?.state.set(copyState)
             self?.droneConnectionStateDidChange()
@@ -97,9 +95,8 @@ open class DevicesStateViewModel<T: DevicesConnectionState>: WatcherViewModel<T>
 
     open override func listenRemoteControl(remoteControl: RemoteControl) {
         remoteControlStateRef = remoteControl.getState { [weak self] remoteControlState in
-            guard let copyState = self?.state.value.copy() else {
-                return
-            }
+            guard let copyState = self?.state.value.copy() else { return }
+
             copyState.remoteControlConnectionState = DeviceConnectionState(connectionState: remoteControlState?.connectionState)
             self?.state.set(copyState)
             self?.remoteControlConnectionStateDidChange()

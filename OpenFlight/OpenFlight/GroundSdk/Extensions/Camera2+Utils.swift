@@ -38,7 +38,7 @@ enum PhotoFormatMode: String, BarItemMode, CaseIterable {
 
     case rectilinearJpeg
     case fullFrameJpeg
-    case fullFrameDngRectJpeg
+    case rectilinearDngJpeg
     case fullFrameDngJpeg
 
     var title: String {
@@ -47,10 +47,10 @@ enum PhotoFormatMode: String, BarItemMode, CaseIterable {
             return L10n.photoSettingsFormatJpegRect
         case .fullFrameJpeg:
             return L10n.photoSettingsFormatJpegWide
+        case .rectilinearDngJpeg:
+            return L10n.photoSettingsFormatDngJpegRect
         case .fullFrameDngJpeg:
             return L10n.photoSettingsFormatDngJpeg
-        case .fullFrameDngRectJpeg:
-            return L10n.photoSettingsFormatDngJpegRect
         }
     }
 
@@ -80,7 +80,7 @@ extension PhotoFormatMode {
     /// Returns `CameraPhotoFormat` associated with current mode.
     var format: Camera2PhotoFormat {
         switch self {
-        case .rectilinearJpeg, .fullFrameDngRectJpeg:
+        case .rectilinearJpeg, .rectilinearDngJpeg:
             return .rectilinear
         case .fullFrameJpeg, .fullFrameDngJpeg:
             return .fullFrame
@@ -92,7 +92,7 @@ extension PhotoFormatMode {
         switch self {
         case .rectilinearJpeg, .fullFrameJpeg:
             return .jpeg
-        case .fullFrameDngJpeg, .fullFrameDngRectJpeg:
+        case .fullFrameDngJpeg, .rectilinearDngJpeg:
             return .dngAndJpeg
         }
     }
@@ -100,7 +100,7 @@ extension PhotoFormatMode {
     /// Returns `StartPhotoCaptureCommand.Format` associated with current mode.
     var photoCaptureCommandFormat: StartPhotoCaptureCommand.Format {
         switch self {
-        case .rectilinearJpeg, .fullFrameDngRectJpeg:
+        case .rectilinearJpeg, .rectilinearDngJpeg:
             return .rectilinear
         case .fullFrameJpeg:
             return .fullFrame
@@ -112,14 +112,13 @@ extension PhotoFormatMode {
 
 /// Utility extension for `StartPhotoCaptureCommand.Format`.
 extension StartPhotoCaptureCommand.Format {
-
     /// Returns `PhotoFormatMode` associated with current mode.
     var photoFormat: PhotoFormatMode {
         switch self {
-        case .rectilinear:
+        case .rectilinear,
+             .photogrammetry:
             return .rectilinearJpeg
-        case .fullFrame,
-             .fullFrameEIS:
+        case .fullFrame:
             return .fullFrameJpeg
         case .fullFrameDng:
             return .fullFrameDngJpeg
@@ -129,8 +128,8 @@ extension StartPhotoCaptureCommand.Format {
 
 /// Utility extension for `Camera2` which help to retrieve a PhotoFormatMode.
 extension Camera2 {
+    /// Returns photo format mode associated with current settings.
     var photoFormatMode: PhotoFormatMode? {
-        /// Returns photo format mode associated with current settings.
         let format = config[Camera2Params.photoFormat]?.value
         let fileFormat = config[Camera2Params.photoFileFormat]?.value
         switch (format, fileFormat) {
@@ -141,9 +140,87 @@ extension Camera2 {
         case (.fullFrame, .dngAndJpeg):
             return .fullFrameDngJpeg
         case (.rectilinear, .dngAndJpeg):
-            return .fullFrameDngRectJpeg
+            return .rectilinearDngJpeg
         default:
             return nil
         }
+    }
+
+    /// Returns photo format mode supported values for current settings.
+    var photoFormatModeSupportedValues: [PhotoFormatMode] {
+        let photoFormatSupportedValues = Array(config[Camera2Params.photoFormat]?.currentSupportedValues ?? [])
+        let photoFileFormatSupportedValues = Array(config[Camera2Params.photoFileFormat]?.currentSupportedValues ?? [])
+
+        guard !photoFormatSupportedValues.isEmpty,
+              !photoFileFormatSupportedValues.isEmpty else {
+            return []
+        }
+
+        var supportedValues: [PhotoFormatMode] = []
+        let photoFormatSupportRectilinear = photoFormatSupportedValues.contains(.rectilinear)
+        let photoFormatSupportFullFrame = photoFormatSupportedValues.contains(.fullFrame)
+        let photoFileFormatSupportJpeg = photoFileFormatSupportedValues.contains(.jpeg)
+        let photoFileFormatSupportDngAndJpeg = photoFileFormatSupportedValues.contains(.dngAndJpeg)
+
+        if photoFormatSupportRectilinear,
+           photoFileFormatSupportJpeg {
+            supportedValues.append(.rectilinearJpeg)
+        }
+
+        if photoFormatSupportFullFrame,
+           photoFileFormatSupportJpeg {
+            supportedValues.append(.fullFrameJpeg)
+        }
+
+        if photoFormatSupportRectilinear,
+           photoFileFormatSupportDngAndJpeg {
+            supportedValues.append(.rectilinearDngJpeg)
+        }
+
+        if photoFormatSupportFullFrame,
+           photoFileFormatSupportDngAndJpeg {
+            supportedValues.append(.fullFrameDngJpeg)
+        }
+
+        return supportedValues
+    }
+}
+
+/// Utility extension for `Camera2Params` which help to retrieve default camera supported values.
+extension Camera2Params {
+    /// Returns default camera editor.
+    private static func defaultCameraEditor() -> Camera2Editor? {
+        // Use default drone, a real one is not needed.
+        guard let defaultDrone = GroundSdk().getDrone(uid: DroneConstants.defaultDroneUid),
+              let camera = defaultDrone.currentCamera else {
+            return nil
+        }
+
+        // Open empty editor "fromScratch".
+        return camera.config.edit(fromScratch: true)
+    }
+
+    /// Returns supported recording framerates regarding resolution.
+    static func supportedRecordingFramerate(for resolution: Camera2RecordingResolution) -> [Camera2RecordingFramerate] {
+        guard let editor = defaultCameraEditor() else { return [] }
+
+        // Set desired resolution to the editor.
+        editor[Camera2Params.videoRecordingResolution]?.value = resolution
+        // Return available framerates.
+        guard let currentSupportedValues = editor[Camera2Params.videoRecordingFramerate]?.currentSupportedValues else { return [] }
+
+        let supportedValues = currentSupportedValues.intersection(Camera2RecordingFramerate.availableFramerates)
+        return Array(supportedValues).sorted()
+    }
+
+    /// Returns supported recording resolutions.
+    static func supportedRecordingResolution() -> [Camera2RecordingResolution] {
+        guard let editor = defaultCameraEditor(),
+              let currentSupportedValues = editor[Camera2Params.videoRecordingResolution]?.currentSupportedValues else {
+            return []
+        }
+
+        let supportedValues = currentSupportedValues.intersection(Camera2RecordingResolution.availableResolutions)
+        return Array(supportedValues).sorted()
     }
 }

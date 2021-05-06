@@ -108,8 +108,8 @@ final class BottomBarViewController: UIViewController {
     private let cameraWidgetViewModel = CameraWidgetViewModel()
     private let cameraCaptureModeViewModel = CameraCaptureModeViewModel()
     private let cameraShutterButtonViewModel = CameraShutterButtonViewModel()
-    private var bottomBarViewModel: BottomBarViewModel?
-    private var returnHomeViewModel: HUDLandingViewModel?
+    private let bottomBarViewModel = BottomBarViewModel()
+    private let returnHomeViewModel = HUDLandingViewModel()
     private var deselectableViewModels = [Deselectable]()
 
     // MARK: - Private Enums
@@ -132,8 +132,7 @@ final class BottomBarViewController: UIViewController {
         view.translatesAutoresizingMaskIntoConstraints = false
         initButtons()
 
-        guard let missionMode = self.bottomBarViewModel?.state.value.missionMode else { return }
-
+        let missionMode = self.bottomBarViewModel.state.value.missionMode
         self.updateView(for: missionMode)
     }
 
@@ -213,7 +212,7 @@ private extension BottomBarViewController {
 
         UIView.animate(withDuration: Constants.collapseAnimationDuration, animations: {
             let stackToLoad: [ImagingStackElement]? = isCollapsing ?
-                self.bottomBarViewModel?.state.value.missionMode.bottomBarRightStack :
+                self.bottomBarViewModel.state.value.missionMode.bottomBarRightStack :
                 [.collapseButton, .cameraMode, .cameraSettings, .shutterButton]
 
             self.loadRightStack(for: stackToLoad)
@@ -253,7 +252,7 @@ private extension BottomBarViewController {
         self.leftStackView.safelyRemoveArrangedSubviews()
 
         // Check if drone is returning to home.
-        let isReturningToHome = returnHomeViewModel?.state.value.isReturnHomeActive == true
+        let isReturningToHome = returnHomeViewModel.state.value.isReturnHomeActive == true
         if isReturningToHome {
             let view = ReturnHomeBottomBarView()
             view.addBlurEffect()
@@ -325,13 +324,13 @@ private extension BottomBarViewController {
 
     /// Observes View Models state changes.
     func observeViewModels() {
-        bottomBarViewModel = BottomBarViewModel(stateDidUpdate: { [weak self] state in
+        bottomBarViewModel.state.valueChanged = { [weak self] state in
             UIView.animate(withDuration: Constants.defaultAnimationDuration) {
                 self?.bottomBarView.alphaHidden(state.shouldHide)
             }
 
             self?.updateView(for: state.missionMode)
-        })
+        }
         missionLauncherButtonViewModel.state.valueChanged = { [weak self] state in
             self?.missionLauncherButton.model = state
         }
@@ -344,9 +343,9 @@ private extension BottomBarViewController {
         cameraShutterButtonViewModel.state.valueChanged = { [weak self] state in
             self?.cameraShutterButton.model = state
         }
-        returnHomeViewModel = HUDLandingViewModel(stateDidUpdate: { [weak self] _ in
-            self?.updateView(for: self?.bottomBarViewModel?.state.value.missionMode)
-        })
+        returnHomeViewModel.state.valueChanged = { [weak self] _ in
+            self?.updateView(for: self?.bottomBarViewModel.state.value.missionMode)
+        }
     }
 
     /// Inits View Models state.

@@ -46,20 +46,15 @@ final class VideoControls: NSObject {
     // MARK: - Internal Funcs
     /// Shows Lock AE target zone.
     func showAETargetZone(completion: ((Bool) -> Void)? = nil) {
-        guard aeLockContainerView.isHidden == true else { return }
-
         UIView.animate(withDuration: Constants.animationDuration, animations: {
-            self.aeLockContainerView.isHidden = false
+            self.lockAETargetZoneViewController?.shouldShowSampleFrame = true
             self.lockAETargetZoneViewController?.initTargetZone()
         }, completion: completion)
     }
 
     /// Hides Lock AE target zone.
     func hideAETargetZone() {
-        guard aeLockContainerView.isHidden == false else { return }
-
         UIView.animate(withDuration: Constants.animationDuration, animations: {
-            self.aeLockContainerView.isHidden = true
             self.lockAETargetZoneViewController?.hideTargetZone()
         }, completion: nil)
     }

@@ -39,6 +39,7 @@ extension FlightPlanExecutionDataModel {
     @NSManaged public var executionId: String
     @NSManaged public var flightPlanId: String
     @NSManaged public var flightId: String?
+    @NSManaged public var flightPlanRecoveryId: String?
     @NSManaged public var startDate: Date
     @NSManaged public var endDate: Date?
     @NSManaged public var latestItemExecuted: NSNumber? // Use number to use an Int as optional (Core data's Objc restriction)

@@ -85,8 +85,9 @@ final class SplitControlsViewModel: BaseViewModel<SplitControlsState> {
     private var joysticksAvailabilityObserver: Any?
 
     // MARK: - Init
-    override init(stateDidUpdate: ((SplitControlsState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenBottomBarModeChanges()
         listenJoysticksAvailabilityChanges()
     }

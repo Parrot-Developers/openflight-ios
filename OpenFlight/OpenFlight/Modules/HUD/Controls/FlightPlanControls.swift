@@ -34,13 +34,13 @@ import UIKit
 
 final class FlightPlanControls: NSObject {
     // MARK: - Outlets
-    @IBOutlet private weak var flightPlanPanelView: UIView!
+    @IBOutlet weak var flightPlanPanelView: UIView!
     @IBOutlet private weak var stackView: UIView!
     @IBOutlet private weak var flightPlanPanelWidthConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var flightPlanPanelViewController: FlightPlanPanelViewController?
-    var viewModel = FlightPlanControlsViewModel()
+    let viewModel = FlightPlanControlsViewModel()
 
     // MARK: - Private Properties
     private var missionModeViewModel = MissionLauncherViewModel()

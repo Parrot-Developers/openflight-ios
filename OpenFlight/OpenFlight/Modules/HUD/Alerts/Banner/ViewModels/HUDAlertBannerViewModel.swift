@@ -86,10 +86,10 @@ final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var alertList = AlertList()
     private var lastVibrationTimestamps = [AlertCategoryType: TimeInterval]()
-    private var geofenceViewModel = HUDAlertBannerGeofenceViewModel()
-    private var autoLandingViewModel = HUDAlertBannerAutoLandingViewModel()
-    private var userStorageViewModel = HUDAlertBannerUserStorageViewModel()
-    private var commonAlertViewModel = HUDAlertBannerProvider.shared.alertBannerCommonViewModel
+    private let geofenceViewModel = HUDAlertBannerGeofenceViewModel()
+    private let autoLandingViewModel = HUDAlertBannerAutoLandingViewModel()
+    private let userStorageViewModel = HUDAlertBannerUserStorageViewModel()
+    private let commonAlertViewModel = HUDAlertBannerProvider.shared.alertBannerCommonViewModel
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {

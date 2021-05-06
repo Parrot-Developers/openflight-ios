@@ -38,7 +38,7 @@ public protocol SettingValueRulerViewDelegate: class {
     ///
     /// - Parameters:
     ///     - value: current value
-    func valueDidChange(_ value: Int)
+    func valueDidChange(_ value: Double)
 }
 
 // MARK: - Public Enums
@@ -47,37 +47,105 @@ public enum RulerOrientation {
     case horizontal
     case vertical
 
+    public static var defaultValue: RulerOrientation {
+        return .vertical
+    }
+
     /// Returns true if the current orientation is the horizontal one.
     var isHorizontal: Bool {
         return self == .horizontal
     }
 }
 
+/// Describes ruler display.
+public enum RulerDisplayType {
+    case number
+    case string
+
+    public static var defaultValue: RulerDisplayType {
+        return .number
+    }
+
+    var bgColor: UIColor {
+        switch self {
+        case .number:
+            return ColorName.clear.color
+        case .string:
+            return ColorName.greyDark60.color
+        }
+    }
+
+    var selectedBgColor: UIColor {
+        switch self {
+        case .number:
+            return ColorName.clear.color
+        case .string:
+            return ColorName.greenPea50.color
+        }
+    }
+
+    var textColor: UIColor {
+        ColorName.white.color
+    }
+
+    var selectedTextColor: UIColor {
+        switch self {
+        case .number:
+            return ColorName.white.color
+        case .string:
+            return ColorName.greenSpring.color
+        }
+    }
+
+    var shouldDisplaySelector: Bool {
+        switch self {
+        case .number:
+            return true
+        case .string:
+            return false
+        }
+    }
+}
+
 // MARK: - Public Structs
 /// Model for `SettingValueRuler`.
 public struct SettingValueRulerModel {
-    var value: Int = 0
+    var value: Double = 0.0
     var title: String = ""
-    var range: [Int] = Array(0...0)
+    var range: [Double] = []
+    var rangeDescriptions: [String]
+    var rangeImages: [UIImage]
     var unit: UnitType = .distance
-    var orientation: RulerOrientation = .vertical
+    var orientation: RulerOrientation = .defaultValue
+    var displayType: RulerDisplayType = .defaultValue
 
     // MARK: - Init
-    public init(value: Int = 0,
+    public init(value: Double = 0.0,
                 title: String = "",
-                range: [Int] = Array(0...0),
+                range: [Double] = [],
+                rangeDescriptions: [String] = [],
+                rangeImages: [UIImage] = [],
                 unit: UnitType = .distance,
-                orientation: RulerOrientation = .vertical) {
+                orientation: RulerOrientation = RulerOrientation.defaultValue,
+                displayType: RulerDisplayType = RulerDisplayType.defaultValue) {
         self.value = value
         self.title = title
         self.range = range
+        self.rangeDescriptions = rangeDescriptions
+        self.rangeImages = rangeImages
         self.unit = unit
         self.orientation = orientation
+        self.displayType = displayType
     }
 
     // MARK: - Private Properties
-    fileprivate var values: [Int] {
-        return orientation.isHorizontal ? Array(range) : Array(range).reversed()
+    fileprivate var values: [Double] {
+        return orientation.isHorizontal ? range : range.reversed()
+    }
+    fileprivate var valuesDescription: [String]? {
+        guard rangeDescriptions.count == range.count else { return nil }
+
+        return orientation.isHorizontal ? rangeDescriptions : rangeDescriptions.reversed()
     }
 }
 
@@ -100,6 +168,13 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
                                             : .centeredVertically,
                                         animated: true)
             titleLabel.text = model.title
+            if model.displayType.shouldDisplaySelector == false {
+                horizontalSelectionView.isHidden = true
+                verticalSelectionView.isHidden = true
+            } else {
+                verticalSelectionView.isHidden = orientation.isHorizontal
+                horizontalSelectionView.isHidden = !verticalSelectionView.isHidden
+            }
         }
     }
     public weak var delegate: SettingValueRulerViewDelegate?
@@ -117,6 +192,8 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
         static let gradientCentralColor: CGColor = ColorName.white.color.cgColor
         static let gradientStartingPoint: CGPoint = CGPoint(x: 0.0, y: 0.5)
         static let gradientEndPoint: CGPoint = CGPoint(x: 1.0, y: 0.5)
+        static let largeCellSize: CGSize = CGSize(width: 66.0, height: 48.0)
+        static let cellSize: CGSize = CGSize(width: 44.0, height: 40.0)
     }
 
     // MARK: - Override Funcs
@@ -191,12 +268,14 @@ private extension SettingValueRulerView {
         }
         titleLabel.isHidden = orientation.isHorizontal
         titleLabel.makeUp()
-        horizontalSelectionView.isHidden = !orientation.isHorizontal
         verticalSelectionView.isHidden = orientation.isHorizontal
+        horizontalSelectionView.isHidden = !verticalSelectionView.isHidden
     }
 
     /// Adds gradient layer over collection.
     func addGradientLayer() {
+        guard model.displayType != .string else { return }
+
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = collectionContainerView.bounds
         gradientLayer.colors = [Constants.gradientBorderColor,
@@ -237,8 +316,28 @@ extension SettingValueRulerView: UICollectionViewDataSource {
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(for: indexPath) as SettingValueRulerCollectionViewCell
-        cell.unit = model.unit
-        cell.value = model.values[indexPath.row]
+        // Setup content.
+        if model.displayType == .string,
+           model.rangeDescriptions.count > indexPath.row {
+            let text = model.rangeDescriptions[indexPath.row]
+            let image: UIImage? = model.rangeImages.count > indexPath.row ? model.rangeImages[indexPath.row] : nil
+            cell.setup(text: text, image: image)
+        } else {
+            cell.setup(value: model.values[indexPath.row],
+                       unit: model.unit)
+        }
+
+        // Setup display.
+        if model.value == model.values[indexPath.row] {
+            // Selected.
+            cell.setupDisplay(textColor: model.displayType.selectedTextColor,
+                              backgroundColor: model.displayType.selectedBgColor)
+        } else {
+            // Not selected.
+            cell.setupDisplay(textColor: model.displayType.textColor,
+                              backgroundColor: model.displayType.bgColor)
+        }
+
         return cell
     }
 }
@@ -262,5 +361,18 @@ extension SettingValueRulerView: UICollectionViewDelegate {
             ? collectionView.closestToHorizontalCenterIndexPath
             : collectionView.closestToVerticalCenterIndexPath
         updateValue(indexPath: indexPath ?? self.indexPathForSelectedValue)
+    }
+}
+
+// MARK: - UICollectionViewDelegateFlowLayout
+extension SettingValueRulerView: UICollectionViewDelegateFlowLayout {
+    public func collectionView(_ collectionView: UICollectionView,
+                               layout collectionViewLayout: UICollectionViewLayout,
+                               sizeForItemAt indexPath: IndexPath) -> CGSize {
+        if model.displayType == .string {
+            return Constants.largeCellSize
+        } else {
+            return Constants.cellSize
+        }
     }
 }

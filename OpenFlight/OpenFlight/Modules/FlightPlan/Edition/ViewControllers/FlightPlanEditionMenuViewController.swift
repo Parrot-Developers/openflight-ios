@@ -44,8 +44,6 @@ public protocol FlightPlanEditionMenuDelegate: class {
     func showSettings(category: FlightPlanSettingCategory)
     /// Shows flight plan project manager.
     func showProjectManager()
-    /// Shows flight plan history.
-    func showHistory()
 }
 
 /// Flight plan's edition menu.
@@ -111,7 +109,9 @@ final class FlightPlanEditionMenuViewController: UIViewController {
         if let categories = categories?.filter({ $0 != .image}) {
             categories.forEach { category in
                 // displatch categories in dedicated sections.
-                sections.append(.settings(category))
+                if fpSettings?.contains(where: { $0.category == category }) == true {
+                    sections.append(.settings(category))
+                }
             }
         } else {
             sections.append(.settings(.common))
@@ -158,6 +158,7 @@ final class FlightPlanEditionMenuViewController: UIViewController {
 
         initView()
         setupOrientationObserver()
+        FlightPlanManager.shared.resetUndoStack()
         refreshContent()
     }
 
@@ -261,7 +262,10 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
             }
             return cell
         case .image:
-            return tableView.dequeueReusableCell(for: indexPath) as ImageMenuTableViewCell
+            let cell = tableView.dequeueReusableCell(for: indexPath) as ImageMenuTableViewCell
+            cell.setup(flightPlan: flightPlanViewModel?.flightPlan?.plan,
+                       settings: fpSettings?.filter({ $0.category == .image }) ?? [])
+            return cell
         case .mode:
             let cell = tableView.dequeueReusableCell(for: indexPath) as ModesChoiceTableViewCell
             cell.fill(with: settingsProvider)
@@ -269,9 +273,7 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
             return cell
         case .project:
             let cell = tableView.dequeueReusableCell(for: indexPath) as ProjectMenuTableViewCell
-            cell.setup(name: flightPlanViewModel?.state.value.title,
-                       hasHistory: flightPlanViewModel?.executions.isEmpty == false,
-                       delegate: self)
+            cell.setup(name: flightPlanViewModel?.state.value.title)
             return cell
         }
     }
@@ -323,13 +325,6 @@ extension FlightPlanEditionMenuViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return Constants.footerHeight
-    }
-}
-
-// MARK: - ProjectMenuTableViewCellDelegate
-extension FlightPlanEditionMenuViewController: ProjectMenuTableViewCellDelegate {
-    func didSelectHistory() {
-        self.menuDelegate?.showHistory()
     }
 }
 

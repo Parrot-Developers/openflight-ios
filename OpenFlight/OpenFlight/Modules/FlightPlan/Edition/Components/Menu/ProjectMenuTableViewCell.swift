@@ -31,20 +31,10 @@
 import UIKit
 import Reusable
 
-// MARK: - Protocols
-protocol ProjectMenuTableViewCellDelegate: class {
-    /// Did tap on history button.
-    func didSelectHistory()
-}
-
 /// Project Menu TableView Cell.
 final class ProjectMenuTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var projectName: UILabel!
-    @IBOutlet private weak var historyButton: UIButton!
-
-    // MARK: Internal properties
-    private weak var delegate: ProjectMenuTableViewCellDelegate?
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
@@ -54,26 +44,13 @@ final class ProjectMenuTableViewCell: UITableViewCell, NibReusable {
     }
 }
 
-// MARK: - Actions
-private extension ProjectMenuTableViewCell {
-    @IBAction func historyTouchUpInside(_ sender: Any) {
-        delegate?.didSelectHistory()
-    }
-}
-
 // MARK: - Internal Funcs
 extension ProjectMenuTableViewCell {
     /// Cell setup.
     ///
     /// - Parameters:
     ///     - name: project name
-    ///     - hasHistory: has history
-    ///     - delegate: delegate
-    func setup(name: String?,
-               hasHistory: Bool,
-               delegate: ProjectMenuTableViewCellDelegate) {
+    func setup(name: String?) {
         self.projectName.text = name
-        self.historyButton.isHidden = !hasHistory
-        self.delegate = delegate
     }
 }

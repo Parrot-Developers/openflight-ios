@@ -53,6 +53,7 @@ public final class FlightPlanEditionCoordinator: Coordinator {
     /// Starts the coordinator.
     ///
     /// - Parameters:
+    ///    - panelCoordinator: panel coordinator
     ///    - mapViewController: controller for the map
     ///    - mapViewRestorer: restorer for the map
     ///
@@ -60,13 +61,12 @@ public final class FlightPlanEditionCoordinator: Coordinator {
     /// Flight Plan edition, map view is transferred to the new
     /// view controller. Map is restored back to its original
     /// container afterwards with `MapViewRestorer` protocol.
-    func start(mapViewController: MapViewController?,
-               mapViewRestorer: MapViewRestorer?) {
-        guard let viewController = mapViewController?.editionProvider(coordinator: self,
-                                                                      mapViewRestorer: mapViewRestorer) else {
-            return
-        }
-
+    func start(panelCoordinator: FlightPlanPanelCoordinator,
+               mapViewController: MapViewController,
+               mapViewRestorer: MapViewRestorer) {
+        let viewController = mapViewController.editionProvider(coordinator: self,
+                                                               panelCoordinator: panelCoordinator,
+                                                               mapViewRestorer: mapViewRestorer)
         self.navigationController = NavigationController(rootViewController: viewController)
         self.navigationController?.isNavigationBarHidden = true
         self.overContextModalDelegate = viewController
@@ -75,17 +75,6 @@ public final class FlightPlanEditionCoordinator: Coordinator {
     /// Dismisses flight plan edition view.
     func dismissFlightPlanEdition() {
         self.parentCoordinator?.dismissChildCoordinator(animated: false)
-    }
-}
-
-// MARK: - FlightPlanManagerCoordinator
-extension FlightPlanEditionCoordinator: FlightPlanManagerCoordinator {
-    public func closeManagePlans() {
-        self.overContextModalDelegate?.willDismissModal()
-        self.dismiss(animated: false)
-        NotificationCenter.default.post(name: .modalPresentDidChange,
-                                        object: self,
-                                        userInfo: [BottomBarViewControllerNotifications.notificationKey: false])
     }
 }
 

@@ -87,7 +87,10 @@ final class OccupancyViewController: UIViewController {
 private extension OccupancyViewController {
     /// Sets up view models associated with the view.
     func setupViewModels() {
-        loveCameraStreamingViewModel = LoveCameraStreamingViewModel(stateDidUpdate: onStateUpdate)
+        loveCameraStreamingViewModel = LoveCameraStreamingViewModel()
+        loveCameraStreamingViewModel?.state.valueChanged = { [weak self] state in
+            self?.onStateUpdate(state)
+        }
         setupOccupancyViewModel()
     }
 

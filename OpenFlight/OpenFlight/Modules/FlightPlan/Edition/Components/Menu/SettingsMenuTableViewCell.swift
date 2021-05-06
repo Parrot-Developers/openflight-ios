@@ -62,8 +62,8 @@ internal extension SettingsMenuTableViewCell {
             settingsValue.text = descriptions[current]
         } else if setting.type == .choice {
             settingsValue.text = setting.currentValue == 0 ? L10n.commonYes : L10n.commonNo
-        } else if let value = setting.currentValue {
-            settingsValue.text = "\(value)\(setting.unit.unit)"
+        } else if let currentValueDescription = setting.currentValueDescription {
+            settingsValue.text = currentValueDescription
         } else {
             settingsValue.text = Style.dash
         }

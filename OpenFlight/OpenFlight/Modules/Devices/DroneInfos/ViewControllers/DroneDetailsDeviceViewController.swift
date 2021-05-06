@@ -45,7 +45,7 @@ final class DroneDetailsDeviceViewController: UIViewController {
     @IBOutlet private weak var separatorView: UIView!
 
     // MARK: - Private Properties
-    private var droneDetailsViewModel: DroneDetailsViewModel?
+    private let viewModel = DroneInfosViewModel()
     private weak var coordinator: Coordinator?
 
     // MARK: - Setup
@@ -89,28 +89,27 @@ private extension DroneDetailsDeviceViewController {
 
     /// Observes main view model.
     func observeViewModel() {
-        droneDetailsViewModel = DroneDetailsViewModel(stateDidUpdate: {[weak self] state in
+        viewModel.state.valueChanged = { [weak self] state in
             self?.stateDidUpdate(state)
-        }, batteryLevelDidChange: {[weak self] battery in
-            self?.batteryLevelChanged(battery)
-        }, gpsStrengthDidChange: {[weak self] gpsStrength in
-            self?.gpsStrengthChanged(gpsStrength)
-        }, nameDidChange: {[weak self] droneName in
-            self?.nameChanged(droneName)
-        }, connectionStateDidChange: { [weak self] connectionState in
-            self?.updateVisibility(connectionState == .connected)
-        }, cellularStrengthDidChange: { [weak self] cellularStrength in
-            let isActive = self?.droneDetailsViewModel?.state.value.currentLink.value == .cellular
-            self?.cellularIconChanged(cellularStrength.signalIcon(isLinkActive: isActive))
-        })
+            self?.batteryLevelChanged(state.batteryLevel)
+            self?.gpsStrengthChanged(state.gpsStrength)
+            self?.nameChanged(state.droneName)
+            self?.updateVisibility(state.isConnected())
+            self?.updateSatelliteCount()
 
-        if let state = droneDetailsViewModel?.state.value {
-            stateDidUpdate(state)
-            batteryLevelChanged(state.batteryLevel.value)
-            gpsStrengthChanged(state.gpsStrength.value)
-            nameChanged(state.droneName.value)
-            updateVisibility(state.droneConnectionState.value == .connected)
+            let isCellularActive = state.currentLink == .cellular
+            self?.cellularIconChanged(state.cellularStrength.signalIcon(isLinkActive: isCellularActive))
         }
+
+        let state = viewModel.state.value
+        stateDidUpdate(state)
+        batteryLevelChanged(state.batteryLevel)
+        gpsStrengthChanged(state.gpsStrength)
+        nameChanged(state.droneName)
+        updateVisibility(state.isConnected())
+        updateSatelliteCount()
+        let isCellularActive = state.currentLink == .cellular
+        cellularIconChanged(state.cellularStrength.signalIcon(isLinkActive: isCellularActive))
     }
 
     /// Listens battery changed.
@@ -154,11 +153,12 @@ private extension DroneDetailsDeviceViewController {
     ///
     /// - Parameters:
     ///     - state: drone details state
-    func stateDidUpdate(_ state: DroneDetailsState) {
-        componentsStatusView.model.droneGimbalStatus = state.gimbalState
-        componentsStatusView.model.stereoVisionStatus = state.stereoVisionState
-        componentsStatusView.model.update(with: state.copterMotorsError)
-        modelLabel.text = droneDetailsViewModel?.droneModel
+    func stateDidUpdate(_ state: DroneInfosState) {
+        componentsStatusView.model.droneGimbalStatus = state.gimbalStatus
+        componentsStatusView.model.frontStereoGimbalStatus = state.frontStereoGimbalStatus
+        componentsStatusView.model.stereoVisionStatus = state.stereoVisionStatus
+        componentsStatusView.model.update(with: state.copterMotorsErrors)
+        modelLabel.text = state.droneModel
     }
 
     /// Manages each item's visibility according to the connection state.
@@ -167,7 +167,12 @@ private extension DroneDetailsDeviceViewController {
     ///     - isConnected: drone connection state
     func updateVisibility(_ isConnected: Bool) {
         componentsStatusView.model.isDroneConnected = isConnected
-        nbSatelliteLabel.text = isConnected ? String(droneDetailsViewModel?.state.value.satelliteCount ?? 0) : Style.dash
+    }
+
+    /// Updates satellite count.
+    func updateSatelliteCount() {
+        let isConnected = viewModel.state.value.isConnected()
+        nbSatelliteLabel.text = isConnected ? String(viewModel.state.value.satelliteCount ?? 0) : Style.dash
         satelliteImageView.image = isConnected ? Asset.Drone.icSatellite.image : Asset.Drone.icSatelliteUnavailable.image
     }
 }

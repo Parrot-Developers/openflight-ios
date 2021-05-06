@@ -35,27 +35,62 @@ import Reusable
 
 final class SettingValueRulerCollectionViewCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
+    @IBOutlet private weak var bgView: UIView! {
+        didSet {
+            bgView.cornerRadiusedWith(backgroundColor: ColorName.greyDark60.color,
+                                      radius: Style.mediumCornerRadius)
+        }
+    }
     @IBOutlet private weak var valueLabel: UILabel! {
         didSet {
             valueLabel.makeUp()
+            valueLabel.adjustsFontSizeToFitWidth = true
         }
     }
-
-    // MARK: - Internal Properties
-    /// Value to display.
-    var value: Int = 0 {
+    @IBOutlet private weak var image: UIImageView! {
         didSet {
-            switch unit {
-            case .distance:
-                valueLabel.text = UnitHelper.stringDistanceWithDouble(Double(value), spacing: false)
-            case .speed:
-                valueLabel.text = UnitHelper.stringSpeedWithDouble(Double(value), spacing: false)
-            default:
-                valueLabel.text = "\(value)" + unit.unit
-            }
+            image.isHidden = true
         }
     }
 
-    /// Value's unit.
-    var unit: UnitType = .none
+    // MARK: - Internal Funcs
+    /// Setups cell with value and unit.
+    ///
+    /// - Parameters:
+    ///     - value: value
+    ///     - unit: unit
+    func setup(value: Double, unit: UnitType = .none) {
+        image.isHidden = true
+        switch unit {
+        case .distance:
+            valueLabel.text = UnitHelper.stringDistanceWithDouble(value,
+                                                                  spacing: false)
+        case .speed:
+            valueLabel.text = UnitHelper.stringSpeedWithDouble(value,
+                                                               spacing: false)
+        default:
+            valueLabel.text = "\(value)" + unit.unit
+        }
+    }
+
+    /// Setups cell with image and description.
+    ///
+    /// - Parameters:
+    ///     - text: description
+    ///     - image: image
+    func setup(text: String, image: UIImage? = nil) {
+        valueLabel.text = text
+        self.image.isHidden = image == nil
+        self.image.image = image
+    }
+
+    /// Setups display.
+    ///
+    /// - Parameters:
+    ///     - textColor: text color
+    ///     - backgroundColor: background color
+    func setupDisplay(textColor: UIColor, backgroundColor: UIColor) {
+        bgView.backgroundColor = backgroundColor
+        valueLabel.textColor = textColor
+    }
 }

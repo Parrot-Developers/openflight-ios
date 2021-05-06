@@ -188,14 +188,9 @@ extension FlightPlanManager {
     /// - Returns: array of MAVLink commands
     func generateMavlinkCommands(for flightPlan: SavedFlightPlan) -> [MavlinkStandard.MavlinkCommand] {
         var commands = [MavlinkStandard.MavlinkCommand]()
-        var currentSpeed: Double = 0.0
-        var currentViewMode = MavlinkStandard.SetViewModeCommand.Mode.absolute
-        var lastPoiIndex: Int = 0
-
-        // Insert all POI commands
-        flightPlan.plan.pois.forEach {
-            commands.append($0.mavlinkCommand)
-        }
+        var currentSpeed: Double?
+        var currentViewMode: MavlinkStandard.SetViewModeCommand.Mode?
+        var lastRoiCommand: MavlinkStandard.SetRoiLocationCommand?
 
         // Insert first speed command based on first waypoint speed.
         if let firstSpeedCommand = flightPlan.plan.wayPoints.first?.speedMavlinkCommand {
@@ -208,6 +203,7 @@ extension FlightPlanManager {
             commands.append($0.mavlinkCommand)
         }
 
+        var didAddStartCaptureCommand = false
         flightPlan.plan.wayPoints.forEach {
             let speed = $0.speedMavlinkCommand.speed
             if speed != currentSpeed {
@@ -216,25 +212,49 @@ extension FlightPlanManager {
                 currentSpeed = speed
             }
 
+            // Point of interest & View mode.
+            let viewMode = $0.viewModeCommand.mode
+            if $0.poiCommand != lastRoiCommand {
+                if let poiCommand = $0.poiCommand {
+                    commands.append(poiCommand)
+                } else {
+                    // Switching to no point of interest.
+                    commands.append(MavlinkStandard.SetRoiNoneCommand())
+                    commands.append($0.viewModeCommand)
+                    currentViewMode = viewMode
+                }
+
+                lastRoiCommand = $0.poiCommand
+            } else if $0.poiCommand == nil && viewMode != currentViewMode {
+                // Update view mode if needed when no point of interest is set.
+                commands.append($0.viewModeCommand)
+                currentViewMode = $0.viewModeCommand.mode
+            }
+
             // Insert navigate to waypoint command.
             commands.append($0.wayPointMavlinkCommand)
 
-            let viewMode = $0.viewModeCommand.mode
-            let poiIndex = $0.viewModeCommand.roiIndex
-
-            if viewMode != currentViewMode || lastPoiIndex != poiIndex {
-                // Insert new view mode command.
-                commands.append($0.viewModeCommand)
-                currentViewMode = viewMode
-                lastPoiIndex = poiIndex
-            }
-
             $0.actions?.forEach {
-                guard !(currentViewMode == MavlinkStandard.SetViewModeCommand.Mode.roi && $0.type == .tilt) else { return } // No tilt during poi
+                guard !(lastRoiCommand == nil && $0.type == .tilt) else { return } // No tilt during poi
                 // Insert all waypoint actions commands.
                 commands.append($0.mavlinkCommand)
             }
+
+            // Start capture if needed.
+            if !didAddStartCaptureCommand,
+               let captureCommand = flightPlan.plan.startCaptureCommand {
+                // Add delay command before starting capture.
+                let delay = Action.delayAction(delay: 0.0)
+                commands.append(delay.mavlinkCommand)
+
+                // Add start capture command.
+                commands.append(captureCommand)
+                didAddStartCaptureCommand = true
+            }
         }
+
+        // End capture.
+        commands.append(flightPlan.plan.endCaptureCommand)
 
         if let returnToLaunchCommand = flightPlan.plan.returnToLaunchCommand {
             // Insert return to launch command if FlightPlan is buckled.

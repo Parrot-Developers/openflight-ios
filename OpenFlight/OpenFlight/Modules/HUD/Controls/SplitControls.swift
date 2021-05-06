@@ -96,7 +96,7 @@ final class SplitControls: NSObject, DelayedTaskProvider {
     private var longPressGestureRecognizer: UILongPressGestureRecognizer!
     private var streamTapGestureRecognizer: UITapGestureRecognizer!
     private var secondaryViewTapGestureRecognizer: UITapGestureRecognizer!
-    private var viewModel = SplitControlsViewModel()
+    private let viewModel = SplitControlsViewModel()
     private var missionModeViewModel = MissionLauncherViewModel()
     private var currentStreamRatio: CGFloat?
     private var preferredSplitPosition: CGFloat {

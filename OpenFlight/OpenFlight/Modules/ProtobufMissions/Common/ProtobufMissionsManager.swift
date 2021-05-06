@@ -41,7 +41,7 @@ public final class ProtobufMissionsManager {
     // MARK: - Private Properties
     /// The current listeners.
     private var listeners: Set<ProtobufMissionListener> = []
-    private var missionLauncher = MissionLauncherViewModel()
+    private let missionLauncher = MissionLauncherViewModel()
 
     /// Missions to load at the drone connection.
     public var missionsToLoadAtDroneConnection: [ProtobufMissionSignature] = [
@@ -49,11 +49,14 @@ public final class ProtobufMissionsManager {
     ]
 
     /// The model that gets notified to GroundSDK Mission Manager updates.
-    private lazy var protobufMissionViewModel = ProtobufMissionsViewModel(
-        missionsToLoadAtDroneConnection: self.missionsToLoadAtDroneConnection,
-        stateDidUpdate: { (protobufMissionListState) in
+    private lazy var protobufMissionViewModel: ProtobufMissionsViewModel = {
+        let viewModel = ProtobufMissionsViewModel(missionsToLoadAtDroneConnection: self.missionsToLoadAtDroneConnection)
+        viewModel.state.valueChanged = { (protobufMissionListState) in
             self.protobufMissionCallback(protobufMissionState: protobufMissionListState)
-        })
+        }
+
+        return viewModel
+    }()
 
     // MARK: - Init
     private init() {}

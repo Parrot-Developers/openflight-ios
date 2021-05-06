@@ -55,7 +55,7 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Private Properties
     private var gimbalTiltViewModel: GimbalTiltViewModel!
     private var cameraZoomViewModel: CameraZoomViewModel!
-    private var joysticksAvailabilityViewModel: JoysticksAvailabilityViewModel?
+    private let joysticksAvailabilityViewModel = JoysticksAvailabilityViewModel()
 
     private var currentMaxTiltVerticalConstraint: NSLayoutConstraint {
         switch gimbalTiltViewModel.state.value.current {
@@ -103,7 +103,7 @@ private extension CameraSlidersViewController {
 
     /// Called when user touch jogs button.
     @IBAction func joysticksButtonTouchedUpInside(_ sender: Any) {
-        joysticksAvailabilityViewModel?.toggleJogsButtonVisibility()
+        joysticksAvailabilityViewModel.toggleJogsButtonVisibility()
     }
 }
 
@@ -124,21 +124,28 @@ private extension CameraSlidersViewController {
 
     /// Sets up view models associated with the view.
     func setupViewModels() {
-        gimbalTiltViewModel = GimbalTiltViewModel(stateDidUpdate: onGimbalTiltUpdate,
-                                                  sliderVisibilityDidUpdate: onTiltSliderVisibilityUpdate,
+        gimbalTiltViewModel = GimbalTiltViewModel(sliderVisibilityDidUpdate: onTiltSliderVisibilityUpdate,
                                                   isOverTiltingDidUpdate: onIsOvertiltingUpdate,
                                                   tiltVisibilityDidUpdate: tiltVisibilityDidUpdate)
-        cameraZoomViewModel = CameraZoomViewModel(stateDidUpdate: onCameraZoomUpdate,
-                                                  sliderVisibilityDidUpdate: onZoomSliderVisibilityUpdate,
+        cameraZoomViewModel = CameraZoomViewModel(sliderVisibilityDidUpdate: onZoomSliderVisibilityUpdate,
                                                   isOverzoomingDidUpdate: onIsOverzoomingUpdate,
                                                   zoomVisibilityDidUpdate: zoomVisibilityDidUpdate)
-        joysticksAvailabilityViewModel = JoysticksAvailabilityViewModel(stateDidUpdate: { [weak self] state in
+
+        // Setup callbacks.
+        gimbalTiltViewModel.state.valueChanged = { [weak self] state in
+            self?.onGimbalTiltUpdate(state)
+        }
+        cameraZoomViewModel.state.valueChanged = { [weak self] state in
+            self?.onCameraZoomUpdate(state)
+        }
+        joysticksAvailabilityViewModel.state.valueChanged = { [weak self] state in
             self?.onJoysticksUpdate(state)
-        })
+        }
+
         // Set inital view model state.
         onGimbalTiltUpdate(gimbalTiltViewModel.state.value)
         onCameraZoomUpdate(cameraZoomViewModel.state.value)
-        onJoysticksUpdate(joysticksAvailabilityViewModel?.state.value)
+        onJoysticksUpdate(joysticksAvailabilityViewModel.state.value)
     }
 
     /// Update jogs button view.

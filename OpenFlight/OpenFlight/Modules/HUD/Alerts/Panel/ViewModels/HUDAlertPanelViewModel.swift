@@ -128,8 +128,8 @@ open class HUDAlertPanelViewModel<T: HUDAlertPanelState>: BaseViewModel<T> {
     private var modalPresentationObserver: Any?
 
     // MARK: - Init
-    public init(stateDidUpdate: ((HUDAlertPanelState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    public override init() {
+        super.init()
 
         listenHandLaunch()
         listenHandLand()

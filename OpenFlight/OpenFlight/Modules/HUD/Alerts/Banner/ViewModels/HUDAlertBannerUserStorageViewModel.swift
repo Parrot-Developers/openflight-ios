@@ -35,8 +35,9 @@ final class HUDAlertBannerUserStorageViewModel: BaseViewModel<HUDAlertBannerSubS
     private var userStorageViewModel = GlobalUserStorageViewModel()
 
     // MARK: - Init
-    override init(stateDidUpdate: ((HUDAlertBannerSubState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenUserStorage()
     }
 }
@@ -51,6 +52,8 @@ private extension HUDAlertBannerUserStorageViewModel {
                 self?.state.set(HUDAlertBannerSubState(alerts: [HUDBannerCriticalAlertType.sdFull]))
             } else if state.hasInsufficientStorageSpeedError || state.isErrorState {
                 self?.state.set(HUDAlertBannerSubState(alerts: [HUDBannerCriticalAlertType.sdError]))
+            } else if state.isUserRemovableStorageTooSlow {
+                self?.state.set(HUDAlertBannerSubState(alerts: [HUDBannerCriticalAlertType.sdTooSlow]))
             } else {
                 self?.state.set(HUDAlertBannerSubState(alerts: []))
             }

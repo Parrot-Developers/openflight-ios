@@ -53,7 +53,7 @@ enum PairingDroneConnectionState {
     }
 }
 
-// MARK: - Structs
+// MARK: - Internal Structs
 /// Struct used to provide a model for drones list.
 struct RemoteConnectDroneModel: Equatable {
     // MARK: - Internal Properties
@@ -93,8 +93,9 @@ struct RemoteConnectDroneModel: Equatable {
     }
 }
 
-/// Paired drone object used to parse API reponse.
-struct PairedDroneListResponse: Codable {
+// MARK: - Public Structs
+/// Paired drone object used to parse API reponse to get drones list response..
+public struct PairedDroneListResponse: Codable {
     // MARK: - Internal Properties
     var serial: String?
     var modelId: String?
@@ -107,5 +108,16 @@ struct PairedDroneListResponse: Codable {
         case modelId = "model_id"
         case pairedFor4g = "paired_for_4g"
         case commonName = "common_name"
+    }
+}
+
+/// Paired drone object used to parse API reponse to get users count response.
+public struct PairedUsersCountResponse: Codable {
+    // MARK: - Internal Properties
+    var usersCount: Int
+
+    // MARK: - Internal Enums
+    enum CodingKeys: String, CodingKey {
+        case usersCount = "users_count"
     }
 }

@@ -118,7 +118,7 @@ enum UpdateUnavailabilityReasons {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let droneMinimumBatteryLevel: Double = 40.0
+        static let droneMinimumBatteryLevel: Double = 20.0
         static let remoteMinimumBatteryLevel: Double = 20.0
     }
 

@@ -55,6 +55,8 @@ public extension Notification.Name {
     static let handDetectedAlertModalPresentDidChange = NSNotification.Name("handDetectedAlertModalPresentDidChange")
     static let joysticksAvailabilityDidChange = NSNotification.Name("joysticksAvailabilityDidChange")
     static let takeOffRequestedDidChange = NSNotification.Name("takeOffRequestedDidChange")
+    static let startFlightPlanAtLaunch = NSNotification.Name("startFlightPlanAtLaunch")
+    static let requestCellularPairingProcess = NSNotification.Name("requestCellularPairingProcess")
 }
 
 // MARK: - Internal Properties

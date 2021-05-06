@@ -59,8 +59,8 @@ final class HUDCameraStreamingViewController: UIViewController {
     private var borderView: UIView?
     private var proposalAndTrackingView: ProposalAndTrackingView?
     // ViewModels.
-    private var cameraStreamingViewModel: HUDCameraStreamingViewModel?
-    private var missionLauncherViewModel: MissionLauncherViewModel?
+    private let cameraStreamingViewModel = HUDCameraStreamingViewModel()
+    private let missionLauncherViewModel = MissionLauncherViewModel()
     private var trackingViewModel: TrackingViewModel? {
         didSet {
             guard self.trackingViewModel == nil else { return }
@@ -156,17 +156,30 @@ private extension HUDCameraStreamingViewController {
 
     /// Sets up view models associated with the view.
     func setupViewModels() {
-        self.cameraStreamingViewModel = HUDCameraStreamingViewModel(stateDidUpdate: onStateUpdate,
-                                                                    cameraLiveDidUpdate: onCameraLiveUpdate)
+        self.cameraStreamingViewModel.state.valueChanged = { [weak self] state in
+            self?.onStateUpdate(state)
+        }
+        self.cameraStreamingViewModel.cameraLiveUpdateCallback = onCameraLiveUpdate
+        self.onStateUpdate(cameraStreamingViewModel.state.value)
 
-        self.missionLauncherViewModel = MissionLauncherViewModel(stateDidUpdate: { [weak self] state in
-            if state.mode?.isTrackingMode == true {
-                guard self?.trackingViewModel == nil else { return }
-                self?.setupTrackingViewModel()
-            } else {
-                self?.clearTracking()
-            }
-        })
+        self.missionLauncherViewModel.state.valueChanged = { [weak self] state in
+            self?.updateMissionLauncherState(state)
+        }
+        updateMissionLauncherState(missionLauncherViewModel.state.value)
+    }
+
+    /// Updates with current mission launcher state.
+    ///
+    /// - Parameters:
+    ///    - state: mission launcher state
+    func updateMissionLauncherState(_ state: MissionLauncherState) {
+        if state.mode?.isTrackingMode == true {
+            guard trackingViewModel == nil else { return }
+
+            setupTrackingViewModel()
+        } else {
+            clearTracking()
+        }
     }
 
     /// Sets up tracking view model.
@@ -192,7 +205,7 @@ private extension HUDCameraStreamingViewController {
     /// - Parameters:
     ///    - enabled: boolean that enable or disable monitoring.
     func enableMonitoring(_ enabled: Bool) {
-        self.cameraStreamingViewModel?.enableMonitoring(enabled)
+        self.cameraStreamingViewModel.enableMonitoring(enabled)
         self.trackingViewModel?.enableMonitoring(enabled)
     }
 
@@ -205,7 +218,7 @@ private extension HUDCameraStreamingViewController {
 
         if !state.streamEnabled {
             self.clearTracking()
-        } else if self.missionLauncherViewModel?.state.value.mode?.isTrackingMode == true,
+        } else if self.missionLauncherViewModel.state.value.mode?.isTrackingMode == true,
             self.trackingViewModel == nil {
             self.setupTrackingViewModel()
             self.proposalAndTrackingView?.updateFrame(self.contentZone)
@@ -223,9 +236,7 @@ private extension HUDCameraStreamingViewController {
 
     /// Updates the visibility of overexposure areas.
     func updateOverexposure() {
-        guard let overexposureSetting = cameraStreamingViewModel?.state.value.overexposureSetting else {
-            return
-        }
+        let overexposureSetting = cameraStreamingViewModel.state.value.overexposureSetting
         streamView.zebrasEnabled = overexposureSetting.boolValue
     }
 

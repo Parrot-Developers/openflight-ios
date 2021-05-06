@@ -121,8 +121,25 @@ extension Camera2EvCompensation: BarItemMode, RulerDisplayable, Sortable {
         return LogEvent.LogKeyHUDBottomBarButton.evCompensationSetting.name
     }
 
+    /// Returns compensation for an index, based on all compensations available.
+    public static func compensationForIndex(_ index: Int) -> Camera2EvCompensation {
+        guard index < self.sortedCases.count else { return defaultValue }
+
+        return self.availableValues[index]
+    }
+
+    /// List of available Values.
+    public static var availableValues: [Camera2EvCompensation] {
+        return sortedCases
+    }
+
+    /// Default value.
+    public static var defaultValue: Camera2EvCompensation {
+        .ev0_00
+    }
+
     // MARK: - Sortable
-    static var sortedCases: [Camera2EvCompensation] {
+    public static var sortedCases: [Camera2EvCompensation] {
         return [.evMinus3_00, .evMinus2_67, .evMinus2_33, .evMinus2_00, .evMinus1_67, .evMinus1_33,
                 .evMinus1_00, .evMinus0_67, .evMinus0_33, .ev0_00, .ev0_33, .ev0_67, .ev1_00,
                 .ev1_33, .ev1_67, .ev2_00, .ev2_33, .ev2_67, .ev3_00]

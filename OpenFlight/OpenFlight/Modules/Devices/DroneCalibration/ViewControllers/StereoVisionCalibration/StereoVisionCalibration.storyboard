@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina5_9" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17126"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -25,13 +25,13 @@
                                 <rect key="frame" x="500" y="0.0" width="268" height="375"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="3D sensor calibration" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xjK-gw-sk2">
-                                        <rect key="frame" x="34" y="34" width="163.66666666666666" height="19"/>
+                                        <rect key="frame" x="34" y="34" width="180" height="22.333333333333329"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                         <color key="textColor" red="0.0" green="1" blue="0.54117647058823526" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="k8Z-1m-gGy">
-                                        <rect key="frame" x="34" y="78" width="41" height="41"/>
+                                        <rect key="frame" x="34" y="81.333333333333329" width="41" height="41"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="41" id="GK5-eF-Qsk"/>
                                             <constraint firstAttribute="width" secondItem="k8Z-1m-gGy" secondAttribute="height" multiplier="1:1" id="R3r-zV-hfA"/>
@@ -41,13 +41,13 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Place the drone and tis device on a flat surface" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dcl-xX-K4S">
-                                        <rect key="frame" x="80" y="83.666666666666671" width="168" height="30"/>
+                                        <rect key="frame" x="80" y="84.333333333333329" width="168" height="35"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="2." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ONs-Cf-Lf0">
-                                        <rect key="frame" x="34" y="147" width="41" height="41"/>
+                                        <rect key="frame" x="34" y="150.33333333333334" width="41" height="41"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="41" id="qAm-US-vXk"/>
                                         </constraints>
@@ -56,13 +56,13 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hold the caliboard above the drone" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VLn-gN-RIn">
-                                        <rect key="frame" x="80" y="152.66666666666666" width="168" height="30"/>
+                                        <rect key="frame" x="80" y="153.33333333333334" width="168" height="35"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="3." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kPK-lv-fak">
-                                        <rect key="frame" x="34" y="213" width="41" height="41"/>
+                                        <rect key="frame" x="34" y="216.33333333333334" width="41" height="41.000000000000028"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="kPK-lv-fak" secondAttribute="height" multiplier="1:1" id="Mn2-SV-BjR"/>
                                             <constraint firstAttribute="height" constant="41" id="gFw-No-JR5"/>
@@ -72,13 +72,13 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tilt and rotate the cliboard to fill the frame" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hlt-Cb-wuM">
-                                        <rect key="frame" x="80" y="218.66666666666666" width="168" height="30"/>
+                                        <rect key="frame" x="80" y="219.33333333333334" width="168" height="35"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="B1r-RZ-Mdi" customClass="LoaderButton" customModule="FreeFlight7">
-                                        <rect key="frame" x="34" y="289" width="214" height="54"/>
+                                        <rect key="frame" x="34" y="292.33333333333331" width="214" height="54"/>
                                         <color key="backgroundColor" red="0.0" green="1" blue="0.54117647059999996" alpha="0.2023822623042254" colorSpace="custom" customColorSpace="sRGB"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                         <state key="normal" title="I'm ready">
@@ -205,7 +205,7 @@
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Move the board to fill the empty frame" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QTD-jx-U8f">
-                                <rect key="frame" x="199.33333333333334" y="30" width="413.66666666666663" height="26"/>
+                                <rect key="frame" x="184.33333333333334" y="30" width="443.66666666666663" height="30.333333333333329"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="26"/>
                                 <color key="textColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
@@ -264,13 +264,13 @@
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Calibration completed" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CWQ-pF-G6R">
-                                <rect key="frame" x="279.66666666666669" y="30" width="253.00000000000006" height="28"/>
+                                <rect key="frame" x="267.66666666666663" y="29.999999999999996" width="276.66666666666663" height="32.666666666666657"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="28"/>
                                 <color key="textColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Calibration completed" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8hq-7j-cq5">
-                                <rect key="frame" x="329.33333333333331" y="73" width="153.66666666666669" height="17"/>
+                                <rect key="frame" x="322" y="77.666666666666671" width="168" height="20"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                 <color key="textColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>

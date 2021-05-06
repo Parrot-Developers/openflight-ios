@@ -41,10 +41,26 @@ enum CalibratableGimbalState {
     case recommended
     case needed
     case error
+    case unavailable
 
     /// User interaction state for calibration view.
     var isUserInteractionEnabled: Bool {
         return self == .needed || self == .recommended
+    }
+
+    /// Image calibration according to gimbal and front stereo calibration state.
+    var calibrationImage: UIImage? {
+        switch self {
+        case .calibrated:
+            return Asset.Drone.icGimbalOk.image
+        case .recommended:
+            return Asset.Drone.icGimbalWarning.image
+        case .needed,
+             .error:
+            return Asset.Drone.icGimbalError.image
+        case .unavailable:
+            return nil
+        }
     }
 }
 
@@ -70,7 +86,8 @@ extension CalibratableGimbal {
         case .recommended:
             return .orangePeel
         case .needed,
-             .error:
+             .error,
+             .unavailable:
             return .redTorch
         }
     }
@@ -78,12 +95,28 @@ extension CalibratableGimbal {
     /// Color for gimbal calibration background.
     var backgroundColor: ColorName {
         switch self.state {
-        case .calibrated,
-             .recommended:
+        case .calibrated:
             return .white10
+        case .recommended:
+            return .orangePeel20
         case .needed,
-             .error:
+             .error,
+             .unavailable:
             return .redTorch25
+        }
+    }
+
+    /// Image for gimbal calibration.
+    var calibrationImage: UIImage {
+        switch self.state {
+        case .calibrated:
+            return Asset.Drone.icGimbalOk.image
+        case .recommended:
+            return Asset.Drone.icGimbalWarning.image
+        case .needed,
+             .error,
+             .unavailable:
+            return Asset.Drone.icGimbalError.image
         }
     }
 }
@@ -124,7 +157,8 @@ extension Gimbal {
     /// String describing gimbal calibration state.
     var calibrationStateDescription: String? {
         switch self.state {
-        case .calibrated:
+        case .calibrated,
+             .unavailable:
             return nil
         case .needed,
              .error:

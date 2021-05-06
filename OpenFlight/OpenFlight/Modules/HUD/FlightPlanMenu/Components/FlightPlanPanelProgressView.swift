@@ -113,11 +113,13 @@ public final class FlightPlanPanelProgressView: UIView, NibOwnerLoadable {
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
+
         self.commonInitFlightPlanPanelProgressView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+
         self.commonInitFlightPlanPanelProgressView()
     }
 
@@ -128,7 +130,7 @@ public final class FlightPlanPanelProgressView: UIView, NibOwnerLoadable {
     /// - Parameters:
     ///    - extraViews: array of views to add
     public func setExtraViews(_ extraViews: [UIView]) {
-        extraViewsStackView.safelyRemoveArrangedSubviews()
+        extraViewsStackView.safelyRemoveArrangedSubviews(deactivateConstraint: false)
         extraViews.forEach { extraViewsStackView.addArrangedSubview($0) }
     }
 }

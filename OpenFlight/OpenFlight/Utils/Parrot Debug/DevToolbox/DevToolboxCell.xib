@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevToolboxCell" rowHeight="84" id="kEf-1Y-neo" customClass="DevToolboxCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="84"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="kEf-1Y-neo" id="qgI-2h-Jtt">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="84"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="ZWb-Df-97G">
+                        <rect key="frame" x="20" y="11" width="335" height="31"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="6tJ-oI-Ngd" userLabel="NameValue">
+                                <rect key="frame" x="0.0" y="0.0" width="335" height="31"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Setting Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Kd-ID-lvD" userLabel="Name">
+                                        <rect key="frame" x="0.0" y="0.0" width="111.5" height="31"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Value" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="ecn-wm-1dF">
+                                        <rect key="frame" x="111.5" y="0.0" width="112" height="31"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                        <connections>
+                                            <outlet property="delegate" destination="kEf-1Y-neo" id="pK7-k2-Ir7"/>
+                                        </connections>
+                                    </textField>
+                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eGJ-Bi-RF7">
+                                        <rect key="frame" x="223.5" y="0.0" width="113.5" height="31"/>
+                                        <connections>
+                                            <action selector="switchDidChange:" destination="kEf-1Y-neo" eventType="valueChanged" id="pjd-Kf-bqc"/>
+                                        </connections>
+                                    </switch>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                    </stackView>
+                    <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="8c8-nM-LwD">
+                        <rect key="frame" x="14" y="42" width="347" height="30"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    </slider>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="ZWb-Df-97G" firstAttribute="top" secondItem="qgI-2h-Jtt" secondAttribute="topMargin" id="9Ar-Zc-I5u"/>
+                    <constraint firstItem="ZWb-Df-97G" firstAttribute="leading" secondItem="qgI-2h-Jtt" secondAttribute="leadingMargin" id="KCg-Ee-631"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="ZWb-Df-97G" secondAttribute="trailing" id="cvJ-sQ-yIa"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="boolSwitch" destination="eGJ-Bi-RF7" id="crn-75-jwX"/>
+                <outlet property="nameLabel" destination="5Kd-ID-lvD" id="gD7-6V-CET"/>
+                <outlet property="sliderView" destination="8c8-nM-LwD" id="72P-fx-Vu7"/>
+                <outlet property="textField" destination="ecn-wm-1dF" id="0Ds-LO-dBo"/>
+            </connections>
+            <point key="canvasLocation" x="69" y="80"/>
+        </tableViewCell>
+    </objects>
+</document>

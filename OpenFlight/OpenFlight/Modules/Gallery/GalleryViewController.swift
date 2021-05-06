@@ -84,6 +84,12 @@ final class GalleryViewController: UIViewController {
             selectButton.makeup(with: .large, color: .white)
         }
     }
+    @IBOutlet private weak var mediasInfosLabel: UILabel! {
+        didSet {
+            mediasInfosLabel.text = L10n.galleryNoMedia
+            mediasInfosLabel.makeUp()
+        }
+    }
     @IBOutlet private weak var leftSourcesContainer: UIView!
     @IBOutlet private weak var mediasContainer: UIView!
     @IBOutlet private weak var bottomSourcesContainer: UIView!
@@ -117,7 +123,7 @@ final class GalleryViewController: UIViewController {
         setupNavigationBar()
         setupViewModel()
         setupFormatButton()
-        setupSelectButton()
+        updateSelectButtonAndMediasInfoLabel()
         setupBottomContainerHeightConstraint()
 
         if let coordinator = coordinator, let viewModel = viewModel {
@@ -143,7 +149,9 @@ final class GalleryViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
+        viewModel?.refreshMedias()
         self.updateContainers()
+        updateSelectButtonAndMediasInfoLabel()
         LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.gallery,
                              logType: .screen)
     }
@@ -161,6 +169,7 @@ final class GalleryViewController: UIViewController {
         super.traitCollectionDidChange(previousTraitCollection)
 
         updateContainers()
+        updateSelectButtonAndMediasInfoLabel()
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -185,7 +194,7 @@ private extension GalleryViewController {
     /// Select button clicked.
     @IBAction func selectButtonTouchedUpInside(_ sender: AnyObject) {
         viewModel?.selectionModeEnabled.toggle()
-        setupSelectButton()
+        updateSelectButtonAndMediasInfoLabel()
         mediaViewController?.multipleSelectionDidChange(enabled: viewModel?.selectionModeEnabled ?? false)
     }
 }
@@ -215,8 +224,8 @@ private extension GalleryViewController {
     ///     - destinationContainerView: destination container view
     func addSourcesView(to destinationContainerView: UIView) {
         guard let sourceViewController = sourceViewController,
-            sourceViewController.view.superview != destinationContainerView else {
-                return
+              sourceViewController.view.superview != destinationContainerView else {
+            return
         }
 
         // Add child view controller first time.
@@ -289,9 +298,10 @@ private extension GalleryViewController {
 
     /// Sets up view model.
     func setupViewModel() {
-        viewModel = GalleryMediaViewModel(stateDidUpdate: { [weak self] state in
+        viewModel = GalleryMediaViewModel(onMediaStateUpdate: { [weak self] state in
             self?.filtersViewController?.stateDidChange(state: state)
             self?.mediaViewController?.stateDidChange(state: state)
+            self?.updateSelectButtonAndMediasInfoLabel()
         })
     }
 
@@ -303,8 +313,9 @@ private extension GalleryViewController {
         self.formatButton.setTitle(L10n.galleryFormat, for: .normal)
     }
 
-    /// Sets up select button.
-    func setupSelectButton() {
+    /// Updates select button and medias infos label.
+    func updateSelectButtonAndMediasInfoLabel() {
+        let numberOfMedias: Int = viewModel?.numberOfMedias ?? 0
         var buttonText = L10n.commonSelect
 
         if let selectionModeEnabled = viewModel?.selectionModeEnabled {
@@ -313,6 +324,14 @@ private extension GalleryViewController {
 
         self.navigationItem.rightBarButtonItem?.title = buttonText
         self.selectButton.setTitle(buttonText, for: .normal)
+
+        let titleColor: UIColor = numberOfMedias != 0
+            ? ColorName.white.color
+            : ColorName.white10.color
+        mediasInfosLabel.isHidden = numberOfMedias != 0
+        selectButton.isEnabled = numberOfMedias != 0
+        selectButton.setTitleColor(titleColor, for: .normal)
+        self.navigationItem.rightBarButtonItem?.isEnabled = numberOfMedias != 0
     }
 
     /// Sets up bottom container height constraint.
@@ -342,13 +361,13 @@ extension GalleryViewController: ContainterSizeDelegate {
 extension GalleryViewController: GalleryMediaViewDelegate {
     func multipleSelectionActionTriggered() {
         viewModel?.selectionModeEnabled = false
-        setupSelectButton()
+        updateSelectButtonAndMediasInfoLabel()
         mediaViewController?.multipleSelectionDidChange(enabled: viewModel?.selectionModeEnabled ?? false)
     }
 
     func multipleSelectionEnabled() {
         viewModel?.selectionModeEnabled = true
-        setupSelectButton()
+        updateSelectButtonAndMediasInfoLabel()
         mediaViewController?.multipleSelectionDidChange(enabled: viewModel?.selectionModeEnabled ?? false)
     }
 }
@@ -358,5 +377,6 @@ extension GalleryViewController: GallerySourcesViewDelegate {
     func sourceDidChange(source: GallerySourceType) {
         mediaViewController?.sourceDidChange(source: source)
         setupFormatButton()
+        updateSelectButtonAndMediasInfoLabel()
     }
 }

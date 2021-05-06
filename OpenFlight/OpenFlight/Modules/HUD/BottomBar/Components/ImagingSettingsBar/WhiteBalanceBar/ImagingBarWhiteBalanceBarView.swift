@@ -63,7 +63,7 @@ final class ImagingBarWhiteBalanceBarView: UIView, NibOwnerLoadable, BarItemMode
     private var segmentedBarView: SegmentedBarView<ImagingBarState>?
     private var centeredRulerBarView: CenteredRulerBarView<ImagingBarState>?
     /// Secondary view model used to update button state.
-    private var secondaryViewModel: ImagingBarWhiteBalanceViewModel?
+    private let secondaryViewModel = ImagingBarWhiteBalanceViewModel()
     private var customWhiteBalanceViewModel = ImagingBarWhiteBalanceCustomViewModel()
 
     // MARK: - Private Enums
@@ -103,10 +103,13 @@ private extension ImagingBarWhiteBalanceBarView {
     func commonInitImagingBarWhiteBalanceBarView() {
         self.loadNibContent()
         self.addBlurEffect()
-        secondaryViewModel = ImagingBarWhiteBalanceViewModel(stateDidUpdate: { [weak self] state in
+        secondaryViewModel.state.valueChanged = { [weak self] state in
             self?.updateAutomaticMode(isAutomatic: state.mode as? Camera2WhiteBalanceMode == .automatic)
             self?.segmentedBarView?.updateModels()
-        })
+        }
+
+        updateAutomaticMode(isAutomatic: secondaryViewModel.state.value.mode as? Camera2WhiteBalanceMode == .automatic)
+        segmentedBarView?.updateModels()
     }
 
     /// Add segmented bar displaying current mode values.

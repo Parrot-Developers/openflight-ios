@@ -124,7 +124,7 @@ private extension DynamicRangeBarViewModel {
             supportedModes.append(.hdrOn)
         }
 
-        if camera.config[Camera2Params.imageStyle]?.currentSupportedValues.contains(.plog) == true {
+        if camera.plogAvailable {
             supportedModes.append(.plog)
         }
 

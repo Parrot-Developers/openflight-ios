@@ -31,6 +31,14 @@
 import GroundSdk
 
 // MARK: - Protocols
+/// Defines a third party service user can log to.
+public protocol ThirdPartyService: class {
+    /// Returns `true` is user is currently connected to the service.
+    var isConnected: Bool { get }
+    /// Returns image to display for this service.
+    var image: UIImage { get }
+}
+
 /// AccountProvider protocol
 public protocol AccountProvider {
     /// Returns an image to show when needed (ie: on dashboard tile).
@@ -43,6 +51,8 @@ public protocol AccountProvider {
     var userName: String? { get }
     /// Returns if current user is connected or not.
     var isConnected: Bool { get }
+    /// Returns if current user is connected to third part account or not.
+    var thirdPartyServices: [ThirdPartyService] { get }
     /// Custom account view to display in MyFlightsVC.
     var myFlightsAccountView: MyFlightsAccountView? { get }
     /// Start disconnected view from coordinator.
@@ -53,6 +63,11 @@ public protocol AccountProvider {
     func startDataConfidentiality()
     /// Start a specific view from coordinator when clicking on MyFlightsAccountView.
     func startMyFlightsAccountView()
+    /// Start third-party account screen regarding the connection status.
+    ///
+    /// - Parameters:
+    ///    - service: third party service to start
+    func startThirdPartyProcess(service: ThirdPartyService)
     /// Remove flight, synchronized on the user's account.
     ///
     /// - Parameters:
@@ -100,9 +115,16 @@ public protocol FlightPlanProvider {
     var settingsProvider: FlightPlanSettingsProvider? { get }
     /// Indicate if the settings view is always visible in edition mode.
     var settingsAlwaysDisplayed: Bool { get }
-
     /// Returns custom coordinator to present screens in the flight plan.
     var flightPlanCoordinator: FlightPlanCoordinator? { get }
+
+    /// Returns a view controller to display at the end of a flight plan.
+    ///
+    /// - Parameters:
+    ///     - execution: Flight plan execution
+    ///     - coordinator: Flight Plan Panel Coordinator
+    /// - Returns: View controller
+    func executionSummaryVC(execution: FlightPlanExecution, coordinator: FlightPlanPanelCoordinator) -> UIViewController?
 
     /// Returns graphic items to diplay a Flight Plan.
     ///
@@ -119,12 +141,6 @@ public protocol FlightPlanProvider {
     func graphicsLabelsWithFlightPlan(_ flightPlanObject: FlightPlanObject) -> [FlightPlanLabelGraphic]
 }
 
-/// Delegate protocol for Flight Plan settings provider.
-public protocol FlightPlanSettingsProviderDelegate: class {
-    /// Called when settings need to be updated.
-    func didUpdateSettings()
-}
-
 /// Provides Flight Plan types.
 public protocol FlightPlanSettingsProvider {
     /// Get current type.
@@ -138,9 +154,6 @@ public protocol FlightPlanSettingsProvider {
 
     /// Returns all Flight Plan edition settings categories.
     var settingsCategories: [FlightPlanSettingCategory] { get }
-
-    /// Delegate triggered when the settings need to be updated.
-    var delegate: FlightPlanSettingsProviderDelegate? { get set }
 
     /// Update the current type.
     ///
@@ -201,6 +214,8 @@ public protocol FlightPlanSettingType {
     var allValues: [Int] { get }
     /// Provides custom descriptions for values.
     var valueDescriptions: [String]? { get }
+    /// Provides images for values.
+    var valueImages: [UIImage]? { get }
     /// Provides current flight plan setting value.
     var currentValue: Int? { get }
     /// Provides cell type of the current flight plan setting.
@@ -215,11 +230,6 @@ public protocol FlightPlanSettingType {
     var isDisabled: Bool { get }
     /// Provides cell category of the current flight plan setting.
     var category: FlightPlanSettingCategory { get }
-
-    // FIXME: This part is for upload 4G testing only.
-    // It will be remove when the feature is finished.
-    /// Provides flight plan setting additional information.
-    var additionalInformation: String? { get }
 }
 
 /// Flight plan settings type utility extension.
@@ -233,17 +243,48 @@ extension FlightPlanSettingType {
         return nil
     }
 
-    public var additionalInformation: String? {
-        return nil
+    var currentValueDescription: String? {
+        switch self.type {
+        case .choice:
+            return currentValue == 0 ? L10n.commonYes : L10n.commonNo
+        case .centeredRuler:
+            guard let value = currentValue else { return nil }
+
+            switch unit {
+            case .distance:
+                return UnitHelper.stringDistanceWithDouble(Double(value), spacing: false)
+            case .speed:
+                var doubleValue = Double(value)
+                if step <= 1.0 {
+                    doubleValue *= step
+                }
+
+                return UnitHelper.stringSpeedWithDouble(doubleValue, spacing: false)
+            default:
+                return "\(value)" + unit.unit
+            }
+        case .adjustement:
+            guard let value = currentValue else { return nil }
+
+            if step >= 1.0 {
+                return String(format: "%d %@",
+                              value,
+                              unit.unit)
+            } else {
+                return String(format: "%.1f %@",
+                              Double(value) * step,
+                              unit.unit)
+            }
+        }
     }
 
     /// Returns a Flight Plan Setting.
     public func toFlightPlanSetting() -> FlightPlanSetting {
         return FlightPlanSetting(title: title,
                                  shortTitle: shortTitle,
-                                 additionalInformation: additionalInformation,
                                  allValues: allValues,
                                  valueDescriptions: valueDescriptions,
+                                 valueImages: valueImages,
                                  currentValue: currentValue,
                                  type: type,
                                  key: key,
@@ -406,17 +447,19 @@ public struct MissionMode: Equatable {
     var rthTypeTitle: String
     /// Returns true if this mode is a tracking one.
     var isTrackingMode: Bool
+    /// Returns an array of elements to display in the right stack of the bottom bar.
+    var bottomBarRightStack: [ImagingStackElement]
+    /// Provides a mission status view.
+    var missionStatusView: UIView?
 
     // MARK: Completion handler properties
-    // Using completion handler properties to create variable only when they are called and not when instantiating the struct.
+    /// Using completion handler properties to create variable only when they are called and not when instantiating the struct.
     /// Returns map view controller to show for this mission mode.
     public var customMapProvider: (() -> UIViewController?)?
     /// Returns custom coordinator to present at mode entry.
     public var entryCoordinatorProvider: (() -> Coordinator)?
     /// Returns an array of views to display in the left stackView on the bottom bar.
     var bottomBarLeftStack: (() -> [UIView])?
-    /// Returns an array of element to display in the right stack of the bottom bar.
-    var bottomBarRightStack: [ImagingStackElement]
 
     /// Default struct init, as public.
     public init(configurator: MissionModeConfigurator,
@@ -425,7 +468,8 @@ public struct MissionMode: Equatable {
                 customMapProvider: (() -> UIViewController)? = nil,
                 entryCoordinatorProvider: (() -> Coordinator)? = nil,
                 bottomBarLeftStack: (() -> [UIView])?,
-                bottomBarRightStack: [ImagingStackElement]) {
+                bottomBarRightStack: [ImagingStackElement],
+                missionStatusView: UIView? = nil) {
         self.key = configurator.key
         self.name = configurator.name
         self.icon = configurator.icon
@@ -441,6 +485,7 @@ public struct MissionMode: Equatable {
         self.entryCoordinatorProvider = entryCoordinatorProvider
         self.bottomBarLeftStack = bottomBarLeftStack
         self.bottomBarRightStack = bottomBarRightStack
+        self.missionStatusView = missionStatusView
     }
 
     // MARK: - Equatable Implementation
@@ -464,6 +509,7 @@ public enum FlightPlanSettingCategory: Hashable {
     case image
     case custom(String)
 
+    /// Returns title category settings.
     var title: String {
         switch self {
         case .common:

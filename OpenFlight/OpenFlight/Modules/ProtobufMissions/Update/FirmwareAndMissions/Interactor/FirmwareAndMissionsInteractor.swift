@@ -44,16 +44,24 @@ public final class FirmwareAndMissionsInteractor {
     /// The `FirmwareAndMissionToUpdateModel` used in multiple views in the application.
     private var firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel = .notInitialized
     /// The `FirmwareUpdateInfoViewModel` that this interactor listens to in order to build its data.
-    private lazy var firmwareUpdateInfoViewModel = FirmwareUpdateInfoViewModel(
-        stateDidUpdate: { (firmwareUpdateInfoState) in
+    private lazy var firmwareUpdateInfoViewModel: FirmwareUpdateInfoViewModel = {
+        let viewModel = FirmwareUpdateInfoViewModel()
+        viewModel.state.valueChanged = { (firmwareUpdateInfoState) in
             self.firmwareUpdateInfoCallback(firmwareUpdateInfoState: firmwareUpdateInfoState)
-        })
+        }
+
+        return viewModel
+    }()
 
     /// The `ProtobufMissionsUpdaterWrapper` that this interactor listens to in order to build its data.
-    private lazy var protobufMissionsUpdaterWrapper = ProtobufMissionsUpdaterWrapper(
-        stateDidUpdate: { (protobufMissionUpdateState) in
+    private lazy var protobufMissionsUpdaterWrapper: ProtobufMissionsUpdaterWrapper = {
+        let wrapper = ProtobufMissionsUpdaterWrapper()
+        wrapper.state.valueChanged = { (protobufMissionUpdateState) in
             self.protobufMissionUpdateCallback(protobufMissionUpdateState: protobufMissionUpdateState)
-        })
+        }
+
+        return wrapper
+    }()
 
     /// The `ProtobufMissionsUpdaterManager` to achieve some operations before the update process.
     private let protobufMissionsUpdaterManager = ProtobufMissionsUpdaterManager.shared

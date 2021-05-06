@@ -130,7 +130,7 @@ final class CellularAccessCardPinViewModel: DroneStateViewModel<CellularAccessCa
     }
 
     // MARK: - Internal Funcs
-    /// Connect drone via cellular.
+    /// Connects drone via cellular.
     ///
     /// - Parameters:
     ///     - pinCode: code pin for cellular access
@@ -178,31 +178,14 @@ private extension CellularAccessCardPinViewModel {
         case(.locked, _) where cellular.isPinCodeInvalid:
             copy.cellularConnectionState = CellularConnectionState.denied
             switch cellular.pinRemainingTries {
-            case 0, 1:
+            case 0:
+                copy.descriptionTitle = L10n.pinErrorLocked
+            case 1:
                 copy.descriptionTitle = L10n.pinErrorRemainingAttemptsSingular(cellular.pinRemainingTries)
             default:
                 copy.descriptionTitle = L10n.pinErrorRemainingAttemptsPlural(cellular.pinRemainingTries)
             }
         default:
-            copy.cellularConnectionState = CellularConnectionState.none
-            copy.descriptionTitle = ""
-        }
-
-        if cellular.simStatus == .ready {
-            copy.cellularConnectionState = .ready
-        } else if cellular.registrationStatus == .searching {
-            copy.cellularConnectionState = .searching
-            copy.descriptionTitle = L10n.pinModalUnlocking
-        } else if cellular.isPinCodeInvalid,
-                  cellular.simStatus == .locked {
-            copy.cellularConnectionState = CellularConnectionState.denied
-            switch cellular.pinRemainingTries {
-            case 0, 1:
-                copy.descriptionTitle = L10n.pinErrorRemainingAttemptsSingular(cellular.pinRemainingTries)
-            default:
-                copy.descriptionTitle = L10n.pinErrorRemainingAttemptsPlural(cellular.pinRemainingTries)
-            }
-        } else {
             copy.cellularConnectionState = CellularConnectionState.none
             copy.descriptionTitle = ""
         }

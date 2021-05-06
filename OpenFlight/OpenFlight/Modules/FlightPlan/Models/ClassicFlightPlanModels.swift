@@ -58,6 +58,10 @@ struct ClassicFlightPlanProvider: FlightPlanProvider {
     }
 
     // MARK: - Internal Funcs
+    func executionSummaryVC(execution: FlightPlanExecution, coordinator: FlightPlanPanelCoordinator) -> UIViewController? {
+        return nil
+    }
+
     func graphicsWithFlightPlan(_ flightPlanObject: FlightPlanObject) -> [FlightPlanGraphic] {
         return flightPlanObject.allLinesAndMarkersGraphics
     }
@@ -72,10 +76,14 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     case continueMode
     case lastPointRth
     case obstacleAvoidance
-    // TODO: fix the following settings in next gerrit (values, display, etc.)
     case imageMode
     case resolution
     case framerate
+    case timeLapseCycle
+    case gpsLapseDistance
+    case exposure
+    case whiteBalance
+    case photoResolution
 
     // MARK: - Internal Properties
     public var title: String {
@@ -92,6 +100,16 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             return L10n.flightPlanSettingsResolution
         case .framerate:
             return L10n.flightPlanSettingsFramerate
+        case .timeLapseCycle:
+            return L10n.commonDuration
+        case .gpsLapseDistance:
+            return L10n.commonDistance
+        case .exposure:
+            return L10n.flightPlanSettingsExposure
+        case .photoResolution:
+            return L10n.flightPlanSettingsResolution
+        case .whiteBalance:
+            return L10n.flightPlanSettingsWhiteBalance
         }
     }
 
@@ -105,7 +123,12 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             return L10n.flightPlanSettingsAvoidanceShort
         case .imageMode,
              .resolution,
-             .framerate:
+             .framerate,
+             .timeLapseCycle,
+             .gpsLapseDistance,
+             .exposure,
+             .whiteBalance,
+             .photoResolution:
             return nil
         }
     }
@@ -113,9 +136,24 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     public var allValues: [Int] {
         switch self {
         case .framerate:
-            return Camera2RecordingFramerate.allValues.indices.map { $0 }
+            guard let currentFlightPlan = currentFlightPlan else { return [] }
+
+            let resolution = currentFlightPlan.plan.resolution
+            return Camera2Params.supportedRecordingFramerate(for: resolution).indices.map { $0 }
         case .imageMode:
-            return [0, 1, 2]
+            return FlightPlanCaptureMode.allCases.indices.map { $0 }
+        case .resolution:
+            return Camera2Params.supportedRecordingResolution().indices.map { $0 }
+        case .timeLapseCycle:
+            return TimeLapseMode.allValues.compactMap { ($0 as? TimeLapseMode)?.value }
+        case .gpsLapseDistance:
+            return GpsLapseMode.allValues.compactMap { ($0 as? GpsLapseMode)?.value }
+        case .whiteBalance:
+            return Camera2WhiteBalanceMode.availableModes.indices.map { $0 }
+        case .photoResolution:
+            return Camera2PhotoResolution.availableResolutions.indices.map { $0 }
+        case .exposure:
+            return Camera2EvCompensation.availableValues.indices.map { $0 }
         default:
             return [0, 1]
         }
@@ -128,32 +166,80 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
              .obstacleAvoidance:
             return [L10n.commonYes, L10n.commonNo]
         case .framerate:
-            return Camera2RecordingFramerate.allValues.map { $0.title }
-        case .resolution:
-            return [L10n.videoSettingsResolution1080p, L10n.videoSettingsResolution4k]
-        case .imageMode:
-            return [L10n.cameraModeVideo, L10n.cameraModeTimelapse, L10n.cameraModeGpslapse]
+            guard let currentFlightPlan = currentFlightPlan else { return nil }
 
+            let resolution = currentFlightPlan.plan.resolution
+            return Camera2Params.supportedRecordingFramerate(for: resolution).map { $0.title }
+        case .resolution:
+            return Camera2Params.supportedRecordingResolution().map { $0.title }
+        case .imageMode:
+            return FlightPlanCaptureMode.allCases.map { $0.title }
+        case .timeLapseCycle:
+            return TimeLapseMode.allValues.compactMap { ($0 as? TimeLapseMode)?.title }
+        case .gpsLapseDistance:
+            return GpsLapseMode.allValues.compactMap { ($0 as? GpsLapseMode)?.title }
+        case .whiteBalance:
+            return Camera2WhiteBalanceMode.availableModes.map { $0.title }
+        case .photoResolution:
+            return Camera2PhotoResolution.availableResolutions.map { $0.title }
+        case .exposure:
+            return Camera2EvCompensation.availableValues.map { $0.title }
+        }
+    }
+
+    public var valueImages: [UIImage]? {
+        switch self {
+        case .imageMode:
+            return FlightPlanCaptureMode.allCases.map { $0.image }
+        default:
+            return nil
         }
     }
 
     public var currentValue: Int? {
+        guard let currentFlightPlan = currentFlightPlan else { return nil }
+
         switch self {
         case .continueMode:
-            return currentFlightPlan?.plan.shouldContinue == true ? 0 : 1
+            return currentFlightPlan.plan.shouldContinue == true ? 0 : 1
         case .lastPointRth:
-            return currentFlightPlan?.plan.lastPointRth == true ? 0 : 1
+            return currentFlightPlan.plan.lastPointRth == true ? 0 : 1
         case .obstacleAvoidance:
             /// Obstacle avoidance enabled by default.
-            guard let oaSetting = currentFlightPlan?.obstacleAvoidanceActivated else { return 0 }
+            guard let oaSetting = currentFlightPlan.obstacleAvoidanceActivated else { return 0 }
 
             return oaSetting == true ? 0 : 1
         case .framerate:
-            return allValues.first
+            let resolution = currentFlightPlan.plan.resolution
+            let framerate = currentFlightPlan.plan.framerate
+            return Camera2Params.supportedRecordingFramerate(for: resolution).firstIndex(of: framerate)
         case .resolution:
-            return 0
+            let resolution = currentFlightPlan.plan.resolution
+            return Camera2Params.supportedRecordingResolution().firstIndex(of: resolution)
         case .imageMode:
-            return 0
+            let mode = currentFlightPlan.plan.captureModeEnum
+            return FlightPlanCaptureMode.allCases.firstIndex(where: { $0 == mode })
+        case .gpsLapseDistance:
+            guard let value = currentFlightPlan.plan.gpsLapseDistance else {
+                return allValues.first ?? 0
+            }
+
+            return Int(value)
+        case .timeLapseCycle:
+            guard let value = currentFlightPlan.plan.timeLapseCycle else {
+                return allValues.first ?? 0
+            }
+
+            return Int(value)
+        case .exposure:
+            let value = currentFlightPlan.plan.exposure
+            return Camera2EvCompensation.availableValues.firstIndex(where: { $0 == value })
+        case .photoResolution:
+            let value = currentFlightPlan.plan.photoResolution
+            return Camera2PhotoResolution.availableResolutions.firstIndex(where: { $0 == value })
+        case .whiteBalance:
+            let value = currentFlightPlan.plan.whiteBalanceMode
+            return Camera2WhiteBalanceMode.availableModes.firstIndex(where: { $0 == value })
         }
     }
 
@@ -161,11 +247,16 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         switch self {
         case .continueMode,
              .lastPointRth,
-             .obstacleAvoidance,
-             .imageMode,
-             .resolution:
+             .obstacleAvoidance:
             return .choice
-        case .framerate:
+        case .framerate,
+             .resolution,
+             .imageMode,
+             .gpsLapseDistance,
+             .timeLapseCycle,
+             .exposure,
+             .whiteBalance,
+             .photoResolution:
             return .centeredRuler
         }
     }
@@ -183,21 +274,19 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     }
 
     public var isDisabled: Bool {
-        switch self {
-        case .imageMode,
-             .resolution,
-             .framerate:
-            return true
-        default:
-            return false
-        }
+        return false
     }
 
     public var category: FlightPlanSettingCategory {
         switch self {
         case .imageMode,
              .resolution,
-             .framerate:
+             .framerate,
+             .gpsLapseDistance,
+             .timeLapseCycle,
+             .exposure,
+             .photoResolution,
+             .whiteBalance:
             return .image
         default:
             return .common
@@ -229,8 +318,6 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
         return [.image, .common]
     }
 
-    weak var delegate: FlightPlanSettingsProviderDelegate?
-
     // MARK: - Private Properties
     private var currentFlightPlan: SavedFlightPlan? {
         return FlightPlanManager.shared.currentFlightPlanViewModel?.flightPlan
@@ -246,7 +333,35 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
     }
 
     func updateSettingValue(for key: String, value: Int) {
-        // No value setting for classic Flight Plan.
+        guard let currentFlightPlan = currentFlightPlan else { return }
+
+        switch key {
+        case ClassicFlightPlanSettingType.gpsLapseDistance.key:
+            currentFlightPlan.plan.gpsLapseDistance = value
+        case ClassicFlightPlanSettingType.timeLapseCycle.key:
+            currentFlightPlan.plan.timeLapseCycle = value
+        case ClassicFlightPlanSettingType.framerate.key:
+            let currentResolution = currentFlightPlan.plan.resolution
+            let allValues = Camera2Params.supportedRecordingFramerate(for: currentResolution)
+            if value < allValues.count {
+                currentFlightPlan.plan.framerate = allValues[value]
+            }
+        case ClassicFlightPlanSettingType.resolution.key:
+            let allValues = Camera2Params.supportedRecordingResolution()
+            if value < allValues.count {
+                currentFlightPlan.plan.resolution = allValues[value]
+            }
+        case ClassicFlightPlanSettingType.imageMode.key where value < FlightPlanCaptureMode.allCases.count:
+            currentFlightPlan.plan.captureModeEnum = FlightPlanCaptureMode.allCases[value]
+        case ClassicFlightPlanSettingType.photoResolution.key where value < Camera2PhotoResolution.availableResolutions.count:
+            currentFlightPlan.plan.photoResolution =  Camera2PhotoResolution.resolutionForIndex(value)
+        case ClassicFlightPlanSettingType.exposure.key where value < Camera2EvCompensation.availableValues.count:
+            currentFlightPlan.plan.exposure =  Camera2EvCompensation.compensationForIndex(value)
+        case ClassicFlightPlanSettingType.whiteBalance.key where value < Camera2WhiteBalanceMode.availableModes.count:
+            currentFlightPlan.plan.whiteBalanceMode =  Camera2WhiteBalanceMode.modeForIndex(value)
+        default:
+            break
+        }
     }
 
     func updateChoiceSetting(for key: String, value: Bool) {
@@ -263,12 +378,28 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
     }
 
     func settings(for flightPlan: SavedFlightPlan) -> [FlightPlanSetting] {
-        return [ClassicFlightPlanSettingType.continueMode.toFlightPlanSetting(),
+        var planSettings: [FlightPlanSetting] = [ClassicFlightPlanSettingType.continueMode.toFlightPlanSetting(),
                 ClassicFlightPlanSettingType.lastPointRth.toFlightPlanSetting(),
                 ClassicFlightPlanSettingType.obstacleAvoidance.toFlightPlanSetting(),
-                ClassicFlightPlanSettingType.imageMode.toFlightPlanSetting(),
-                ClassicFlightPlanSettingType.resolution.toFlightPlanSetting(),
-                ClassicFlightPlanSettingType.framerate.toFlightPlanSetting()]
+                ClassicFlightPlanSettingType.imageMode.toFlightPlanSetting()]
+
+        switch flightPlan.plan.captureModeEnum {
+        case .video:
+            planSettings.append(ClassicFlightPlanSettingType.resolution.toFlightPlanSetting())
+            planSettings.append(ClassicFlightPlanSettingType.framerate.toFlightPlanSetting())
+        case .gpsLapse:
+            planSettings.append(ClassicFlightPlanSettingType.gpsLapseDistance.toFlightPlanSetting())
+            planSettings.append(ClassicFlightPlanSettingType.photoResolution.toFlightPlanSetting())
+        case .timeLapse:
+            planSettings.append(ClassicFlightPlanSettingType.timeLapseCycle.toFlightPlanSetting())
+            planSettings.append(ClassicFlightPlanSettingType.photoResolution.toFlightPlanSetting())
+        }
+
+        planSettings.append(ClassicFlightPlanSettingType.exposure.toFlightPlanSetting())
+        planSettings.append(ClassicFlightPlanSettingType.whiteBalance
+                                .toFlightPlanSetting())
+
+        return planSettings
     }
 
     func settings(for type: FlightPlanType) -> [FlightPlanSetting] {
@@ -288,14 +419,17 @@ final class WayPointSettingsProvider: FlightPlanSettingsProvider {
     var settings: [FlightPlanSetting] {
         guard let wayPoint = wayPoint else { return [] }
 
-        return [AltitudeSettingType(altitude: Int(wayPoint.altitude)).toFlightPlanSetting()]
+        let wayPointSetting = AltitudeSettingType(altitude: Int(wayPoint.altitude),
+                                                  range: FlightPlanObjectConstants.wayPointAltitudeRange)
+
+        return [wayPointSetting.toFlightPlanSetting(),
+                TiltAngleSettingType(tiltAngle: Int(wayPoint.tilt),
+                                     isDisabled: wayPoint.poiIndex != nil).toFlightPlanSetting()]
     }
 
     var settingsCategories: [FlightPlanSettingCategory] {
         return []
     }
-
-    weak var delegate: FlightPlanSettingsProviderDelegate?
 
     // MARK: - Private Properties
     private weak var wayPoint: WayPoint?
@@ -317,6 +451,8 @@ final class WayPointSettingsProvider: FlightPlanSettingsProvider {
     func updateSettingValue(for key: String, value: Int) {
         if key == AltitudeSettingType().key {
             self.wayPoint?.altitude = Double(value)
+        } else if key == TiltAngleSettingType().key {
+            self.wayPoint?.tilt = Double(value)
         }
     }
 
@@ -349,8 +485,6 @@ final class WayPointSegmentSettingsProvider: FlightPlanSettingsProvider {
     var settingsCategories: [FlightPlanSettingCategory] {
         return []
     }
-
-    weak var delegate: FlightPlanSettingsProviderDelegate?
 
     // MARK: - Private Properties
     private weak var wayPoint: WayPoint?
@@ -403,14 +537,15 @@ final class PoiPointSettingsProvider: FlightPlanSettingsProvider {
     var settings: [FlightPlanSetting] {
         guard let poiPoint = poiPoint else { return [] }
 
-        return [AltitudeSettingType(altitude: Int(poiPoint.altitude)).toFlightPlanSetting()]
+        let setting = AltitudeSettingType(altitude: Int(poiPoint.altitude),
+                                          range: FlightPlanObjectConstants.poiPointAltitudeRange)
+
+        return [setting.toFlightPlanSetting()]
     }
 
     var settingsCategories: [FlightPlanSettingCategory] {
         return []
     }
-
-    weak var delegate: FlightPlanSettingsProviderDelegate?
 
     // MARK: - Private Properties
     private weak var poiPoint: PoiPoint?
@@ -449,18 +584,18 @@ final class PoiPointSettingsProvider: FlightPlanSettingsProvider {
     }
 }
 
-/// Setting type for altitutde.
+/// Setting type for altitude.
 final class AltitudeSettingType: FlightPlanSettingType {
     // MARK: - Internal Properties
     var title: String {
         return L10n.flightPlanPointSettingsAltitude
     }
 
-    var allValues: [Int] {
-        return Array(3...150)
-    }
+    var allValues: [Int] = []
 
     var valueDescriptions: [String]?
+
+    var valueImages: [UIImage]?
 
     var currentValue: Int?
 
@@ -493,8 +628,61 @@ final class AltitudeSettingType: FlightPlanSettingType {
     ///
     /// - Parameters:
     ///    - altitude: the altitude
-    init(altitude: Int? = nil) {
+    init(altitude: Int? = nil, range: [Int] = FlightPlanObjectConstants.wayPointAltitudeRange) {
         self.currentValue = altitude
+        self.allValues = range
+    }
+}
+
+/// Setting type for tilt angle.
+final class TiltAngleSettingType: FlightPlanSettingType {
+    // MARK: - Internal Properties
+    var title: String {
+        return L10n.flightPlanPointSettingsCameraAngle
+    }
+
+    var allValues: [Int] {
+        return Array(-90...90)
+    }
+
+    var valueDescriptions: [String]?
+
+    var valueImages: [UIImage]?
+
+    var currentValue: Int?
+
+    var type: FlightPlanSettingCellType {
+        return .centeredRuler
+    }
+
+    var key: String {
+        return "flightPlanTiltAngleKey"
+    }
+
+    var unit: UnitType {
+        return .degree
+    }
+
+    var step: Double {
+        return 1.0
+    }
+
+    var isDisabled: Bool
+
+    var category: FlightPlanSettingCategory {
+        return .custom(title)
+    }
+
+    // MARK: - Init
+    /// Init.
+    ///
+    /// - Parameters:
+    ///    - tiltAngle: the tilt angle
+    ///    - isDisabled: whether setting is currently disabled
+    init(tiltAngle: Int? = nil,
+         isDisabled: Bool = false) {
+        self.currentValue = tiltAngle
+        self.isDisabled = isDisabled
     }
 }
 
@@ -506,10 +694,12 @@ final class SpeedSettingType: FlightPlanSettingType {
     }
 
     var allValues: [Int] {
-        return Array(1...15)
+        return Array(1...121)
     }
 
     var valueDescriptions: [String]?
+
+    var valueImages: [UIImage]?
 
     var currentValue: Int?
 
@@ -526,7 +716,8 @@ final class SpeedSettingType: FlightPlanSettingType {
     }
 
     var step: Double {
-        return 1.0
+        //FIXME: change values to Double and remove speed step hack.
+        return 0.1
     }
 
     var isDisabled: Bool {

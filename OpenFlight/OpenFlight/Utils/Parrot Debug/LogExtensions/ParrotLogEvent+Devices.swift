@@ -65,6 +65,7 @@ extension LogEvent {
     enum LogKeyDroneDetailsCellular {
         static let enterPinCode: String = "EnterPinCode"
         static let reinitialize: String = "Reinitialize"
+        static let pairDevice: String = "pairDevice"
     }
 }
 

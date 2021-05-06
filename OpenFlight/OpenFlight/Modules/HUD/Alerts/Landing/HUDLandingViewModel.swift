@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// State for `HUDLandingViewModel`.
-
 final class HUDLandingState: DeviceConnectionState {
     // MARK: - Internal Properties
     /// Tells if the drone is returning home.
@@ -67,15 +66,15 @@ final class HUDLandingState: DeviceConnectionState {
          isReturnHomeActive: Bool,
          isManualLanding: Bool) {
         super.init(connectionState: connectionState)
+
         self.isReturnHomeActive = isReturnHomeActive
         self.isLanding = isManualLanding
     }
 
     // MARK: - Override Funcs
     override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? HUDLandingState else {
-            return false
-        }
+        guard let other = other as? HUDLandingState else { return false }
+
         return super.isEqual(to: other)
             && self.isReturnHomeActive == other.isReturnHomeActive
             && self.isLanding == other.isLanding
@@ -130,14 +129,14 @@ private extension HUDLandingViewModel {
     /// Updates return home state.
     func updateReturnHomeState() {
         let copy = state.value.copy()
-        copy.isReturnHomeActive = returnHomeRef?.value?.state == .active
+        copy.isReturnHomeActive = drone?.isReturningHome == true
         state.set(copy)
     }
 
     /// Updates landing state.
     func updateLandingState() {
         let copy = state.value.copy()
-        copy.isLanding = flyingIndicatorsRef?.value?.flyingState == .landing
+        copy.isLanding = drone?.isLanding == true
         state.set(copy)
     }
 }

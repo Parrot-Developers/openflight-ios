@@ -46,7 +46,6 @@ final class MavlinkToFlightPlanParser {
     ///    - model: model of drone for generated FlightPlan
     ///
     /// - Returns: generated `SavedFlightPlan` is operation succeeded, `nil` otherwise
-    // swiftlint:disable:next function_parameter_count
     static func generateFlightPlanFromMavlinkLegacy(
         url: URL? = nil,
         mavlinkString: String? = nil,
@@ -153,6 +152,8 @@ final class MavlinkToFlightPlanParser {
             commands = (try? MavlinkStandard.MavlinkFiles.parse(mavlinkString: strongMavlinkString)) ?? []
         }
 
+        var captureModeEnum: FlightPlanCaptureMode = FlightPlanCaptureMode.defaultValue
+
         var takeOffActions = [Action]()
         var pois = [PoiPoint]()
         var waypoints = [WayPoint]()
@@ -163,6 +164,12 @@ final class MavlinkToFlightPlanParser {
 
         for command in commands {
             switch command {
+            case is MavlinkStandard.StartVideoCaptureCommand:
+                captureModeEnum = .video
+            case is MavlinkStandard.CameraTriggerDistanceCommand:
+                captureModeEnum = .gpsLapse
+            case is MavlinkStandard.CameraTriggerIntervalCommand:
+                captureModeEnum = .timeLapse
             case let roiCommand as MavlinkStandard.SetRoiLocationCommand:
                 let newPoi = PoiPoint(roiMavLinkCommand: roiCommand)
                 pois.append(newPoi)
@@ -195,6 +202,7 @@ final class MavlinkToFlightPlanParser {
         let flightPlanObject = FlightPlanObject(takeoffActions: takeOffActions,
                                                 pois: pois,
                                                 wayPoints: waypoints)
+        flightPlanObject.captureModeEnum = captureModeEnum
         let savedFlightPlan = SavedFlightPlan(version: version,
                                               title: title,
                                               type: type,

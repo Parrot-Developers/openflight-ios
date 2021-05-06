@@ -29,7 +29,7 @@
 //    SUCH DAMAGE.
 
 /// Protocol used to specify a sorting order of an item.
-protocol Sortable: Comparable {
+public protocol Sortable: Comparable {
     // Properties that specify the order of your item.
     static var sortedCases: [Self] { get }
 }

@@ -102,11 +102,11 @@ final class DroneActionViewModel: DroneStateViewModel<DroneActionState> {
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var handDetectedAlertObserver: Any?
     private var takeOffAvailabilityObserver: Any?
-    private var takeOffAlertViewModel: TakeOffAlertViewModel = TakeOffAlertViewModel()
+    private var criticalAlertViewModel: HUDCriticalAlertViewModel = HUDCriticalAlertViewModel()
 
     // MARK: - Init
-    override init(stateDidUpdate: ((DroneActionState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
 
         listenHandDetectedAlertPresented()
     }
@@ -148,7 +148,7 @@ extension DroneActionViewModel {
                                         userInfo: [HUDCriticalAlertConstants.takeOffRequestedNotificationKey: true])
 
         // Starts drone action only if the drone can take off or is currently flying.
-        if takeOffAlertViewModel.state.value.canTakeOff
+        if criticalAlertViewModel.state.value.canTakeOff
             || drone.getInstrument(Instruments.flyingIndicators)?.state == .flying {
             takeOffOrLandDrone()
         }
@@ -156,11 +156,11 @@ extension DroneActionViewModel {
 
     /// Starts action when user touch the Return Home button.
     func startReturnToHome() {
-        switch returnHomePilotingRef?.value?.state {
+        switch drone?.getPilotingItf(PilotingItfs.returnHome)?.state {
         case .active:
-            _ = returnHomePilotingRef?.value?.deactivate()
+            _ = drone?.cancelReturnHome()
         case .idle:
-            _ = returnHomePilotingRef?.value?.activate()
+            _ = drone?.performReturnHome()
         default:
             break
         }
@@ -210,11 +210,13 @@ private extension DroneActionViewModel {
 
     /// Activates manual piloting (stop Rth if needed).
     func activateManualPiloting() {
+        guard let drone = drone else { return }
+
         // Deactivate RTH if it is the current pilotingItf.
-        if returnHomePilotingRef?.value?.state == .active {
-            _ = returnHomePilotingRef?.value?.deactivate()
+        if drone.isReturningHome {
+            _ = drone.cancelReturnHome()
         } else {
-            _ = manualPilotingRef?.value?.activate()
+            _ = drone.activateManualPiloting()
         }
     }
 

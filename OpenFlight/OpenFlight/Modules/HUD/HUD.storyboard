@@ -104,9 +104,6 @@
                                                 <constraints>
                                                     <constraint firstAttribute="width" id="UWG-fO-w95"/>
                                                 </constraints>
-                                                <connections>
-                                                    <segue destination="u24-tr-tEj" kind="embed" id="zoR-sI-IMg"/>
-                                                </connections>
                                             </containerView>
                                         </subviews>
                                         <connections>
@@ -381,14 +378,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ZtE-Kr-dzp" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="38" y="730"/>
-        </scene>
-        <!--FlightPlanPanel-->
-        <scene sceneID="DuH-lq-sTU">
-            <objects>
-                <viewControllerPlaceholder storyboardName="FlightPlanPanel" id="u24-tr-tEj" sceneMemberID="viewController"/>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="ULO-xd-dUF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="159" y="732"/>
         </scene>
     </scenes>
 </document>

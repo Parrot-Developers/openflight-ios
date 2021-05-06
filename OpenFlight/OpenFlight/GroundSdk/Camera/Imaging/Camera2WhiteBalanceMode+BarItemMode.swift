@@ -47,6 +47,8 @@ extension Camera2WhiteBalanceMode: BarItemMode, Sortable {
             return L10n.cameraWhiteBalanceShaded
         case .custom:
             return L10n.cameraWhiteBalanceCustom
+        case .automatic:
+            return L10n.commonAuto
         default:
             return ""
         }
@@ -88,6 +90,24 @@ extension Camera2WhiteBalanceMode: BarItemMode, Sortable {
                 Camera2WhiteBalanceMode.custom]
     }
 
+    public static var availableModes: [Camera2WhiteBalanceMode] {
+        return [Camera2WhiteBalanceMode.automatic,
+                Camera2WhiteBalanceMode.sunny,
+                Camera2WhiteBalanceMode.cloudy]
+    }
+
+    /// Returns mode for an index, based on all modes available.
+    public static func modeForIndex(_ index: Int) -> Camera2WhiteBalanceMode {
+        guard index < self.availableModes.count else { return defaultMode }
+
+        return self.availableModes[index]
+    }
+
+    /// Default value.
+    public static var defaultMode: Camera2WhiteBalanceMode {
+        .automatic
+    }
+
     public var subModes: [BarItemSubMode]? {
         return nil
     }
@@ -108,7 +128,7 @@ extension Camera2WhiteBalanceMode: BarItemMode, Sortable {
     }
 
     // MARK: - Sortable
-    static var sortedCases: [Camera2WhiteBalanceMode] {
+    public static var sortedCases: [Camera2WhiteBalanceMode] {
         return [.automatic, .candle, .sunset, .incandescent, .warmWhiteFluorescent,
                 .halogen, .fluorescent, .coolWhiteFluorescent, .flash, .daylight,
                 .sunny, .cloudy, .snow, .hazy, .shaded, .greenFoliage, .blueSky, .custom]

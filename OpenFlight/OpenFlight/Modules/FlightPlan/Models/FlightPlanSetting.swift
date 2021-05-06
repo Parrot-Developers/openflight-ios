@@ -33,9 +33,9 @@ public class FlightPlanSetting: FlightPlanSettingType {
     // MARK: - Public Properties
     public var title: String
     public var shortTitle: String?
-    public var additionalInformation: String?
     public var allValues: [Int]
     public var valueDescriptions: [String]?
+    public var valueImages: [UIImage]?
     public var currentValue: Int?
     public var type: FlightPlanSettingCellType
     public var key: String
@@ -50,9 +50,9 @@ public class FlightPlanSetting: FlightPlanSettingType {
     /// - Parameters:
     ///    - title: title of the setting
     ///    - shortTitle: setting short title
-    ///    - additionalInformation: setting additional information
     ///    - allValues: array of edition setting values
     ///    - valueDescriptions: custom descriptions for values
+    ///    - valueImages: images for values
     ///    - currentValue: current value of the setting
     ///    - type: type of the setting
     ///    - key: key of the setting
@@ -62,9 +62,9 @@ public class FlightPlanSetting: FlightPlanSettingType {
     ///    - category: setting category
     init(title: String,
          shortTitle: String?,
-         additionalInformation: String?,
          allValues: [Int],
          valueDescriptions: [String]?,
+         valueImages: [UIImage]?,
          currentValue: Int?,
          type: FlightPlanSettingCellType,
          key: String,
@@ -74,9 +74,9 @@ public class FlightPlanSetting: FlightPlanSettingType {
          category: FlightPlanSettingCategory) {
         self.title = title
         self.shortTitle = shortTitle
-        self.additionalInformation = additionalInformation
         self.allValues = allValues
         self.valueDescriptions = valueDescriptions
+        self.valueImages = valueImages
         self.currentValue = currentValue
         self.type = type
         self.key = key

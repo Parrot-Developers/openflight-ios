@@ -32,10 +32,10 @@ import CoreData
 
 // MARK: - MyFlightsState
 /// State for for `MyFlightsViewModel`.
-final class MyFlightsState: ViewModelState, EquatableState, Copying {
+public final class MyFlightsState: ViewModelState, EquatableState, Copying {
     // MARK: - Internal Properties
     /// Number of flights.
-    fileprivate(set) var numberOfFlights: Int = 0
+    public fileprivate(set) var numberOfFlights: Int = 0
     /// Last flight date.
     fileprivate(set) var date: String?
     /// Last flight duration.
@@ -43,9 +43,9 @@ final class MyFlightsState: ViewModelState, EquatableState, Copying {
     /// Last flight distance.
     fileprivate(set) var distance: String?
     /// Total flights duration.
-    fileprivate(set) var totalFlightsDuration: String?
+    public fileprivate(set) var totalFlightsDuration: String?
     /// Total flights distance.
-    fileprivate(set) var totalFlightsDistance: String?
+    public fileprivate(set) var totalFlightsDistance: String?
     /// Last flight.
     fileprivate(set) var lastFlight: FlightDataState?
     /// Boolean describing whether last flight has issues.
@@ -55,7 +55,7 @@ final class MyFlightsState: ViewModelState, EquatableState, Copying {
     }
 
     // MARK: - Init
-    required init() {}
+    required public init() {}
 
     /// Init.
     ///
@@ -83,8 +83,8 @@ final class MyFlightsState: ViewModelState, EquatableState, Copying {
         self.lastFlight = lastFlight
     }
 
-    // MARK: - Internal Funcs
-    func isEqual(to other: MyFlightsState) -> Bool {
+    // MARK: - Public Funcs
+    public func isEqual(to other: MyFlightsState) -> Bool {
         return self.numberOfFlights == other.numberOfFlights
             && self.date == other.date
             && self.duration == other.duration
@@ -95,7 +95,7 @@ final class MyFlightsState: ViewModelState, EquatableState, Copying {
     }
 
     // MARK: - Copying Protocol
-    func copy() -> MyFlightsState {
+    public func copy() -> MyFlightsState {
         let copy = MyFlightsState(numberOfFlights: self.numberOfFlights,
                                   date: self.date,
                                   duration: self.duration,
@@ -109,7 +109,7 @@ final class MyFlightsState: ViewModelState, EquatableState, Copying {
 
 // MARK: - MyFlightsViewModel
 /// View Model for flights infos.
-final class MyFlightsViewModel: BaseViewModel<MyFlightsState> {
+public final class MyFlightsViewModel: BaseViewModel<MyFlightsState> {
     // MARK: - Private Properties
     private var lastFlightViewModel: FlightDataViewModel? = CoreDataManager.shared.lastFlight()
 
@@ -119,8 +119,9 @@ final class MyFlightsViewModel: BaseViewModel<MyFlightsState> {
     }
 
     // MARK: - Init
-    override init(stateDidUpdate: ((MyFlightsState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override public init() {
+        super.init()
+
         setupLastFlight()
         if let context = CoreDataManager.shared.currentContext {
             NotificationCenter.default

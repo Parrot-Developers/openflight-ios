@@ -32,6 +32,10 @@ import UIKit
 
 /// Settings content sub class dedicated to controls settings.
 final class SettingsControlsViewController: SettingsContentViewController {
+    // MARK: - Outlets
+    @IBOutlet private weak var tableViewTopConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var settingsControlTableView: UITableView!
+
     // MARK: - Private Properties
     private let controlsViewModel = ControlsViewModel()
 
@@ -46,6 +50,12 @@ final class SettingsControlsViewController: SettingsContentViewController {
         }
         // Inital data source update.
         self.updateDataSource(controlsViewModel.state.value)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        tableViewTopConstraint.constant = (self.view.bounds.height - (settingsControlTableView.bounds.height)) / 2.0
     }
 
     /// Reset to default settings.

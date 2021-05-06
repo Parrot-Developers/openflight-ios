@@ -1,23 +1,23 @@
 {
   "images" : [
     {
+      "filename" : "FlyButton0001.png",
       "idiom" : "universal",
-      "filename" : "FlyButton01.png",
       "scale" : "1x"
     },
     {
+      "filename" : "FlyButton0001@2x.png",
       "idiom" : "universal",
-      "filename" : "FlyButton01@2x.png",
       "scale" : "2x"
     },
     {
+      "filename" : "FlyButton0001@3x.png",
       "idiom" : "universal",
-      "filename" : "FlyButton01@3x.png",
       "scale" : "3x"
     }
   ],
   "info" : {
-    "version" : 1,
-    "author" : "xcode"
+    "author" : "xcode",
+    "version" : 1
   }
 }

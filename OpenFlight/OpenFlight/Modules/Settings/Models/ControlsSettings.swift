@@ -32,9 +32,9 @@ import GroundSdk
 
 /// Piloting presets.
 
-enum PilotingPreset {
+public enum PilotingPreset {
     static let controlMode = ControlsSettingsMode.defaultMode
-    static let thrownTakeOff = true
+    public static let thrownTakeOff = true
 }
 
 /// Piloting style settings control modes.

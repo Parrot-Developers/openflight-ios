@@ -35,7 +35,6 @@ import GroundSdk
 enum ActionType: String, Codable {
     case takeOff = "TakeOff"
     case landing = "Landing"
-    case rth = "RTH"
     case tilt = "Tilt"
     case delay = "Delay"
     // TODO: remove Image Start/Stop Capture commands and use CameraTrigger{Distance,Interval}Command if only Time/GPS lapse is needed.
@@ -141,8 +140,6 @@ public final class Action: Codable {
         switch type {
         case .takeOff:
             return MavlinkStandard.TakeOffCommand()
-        case .rth:
-            return MavlinkStandard.ReturnToLaunchCommand()
         case .landing:
             return MavlinkStandard.LandCommand()
         case .tilt:

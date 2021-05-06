@@ -94,8 +94,9 @@ public final class MissionLauncherViewModel: MissionLauncherButtonViewModel<Miss
     private var defaultsDisposables = [DefaultsDisposable]()
 
     // MARK: - Init
-    public override init(stateDidUpdate: ((MissionLauncherState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    public override init() {
+        super.init()
+
         listenDefaults()
     }
 

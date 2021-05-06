@@ -115,6 +115,12 @@ public protocol Coordinator: class {
     ///     - completion: completion when dismiss is done
     func dismissCoordinatorWithAnimation(animationDirection: CATransitionSubtype,
                                          completion: (() -> Void)?)
+
+    /// Pops to root coordinator.
+    ///
+    /// - Parameters:
+    ///     - coordinator: parent coordinator of self
+    func popToRootCoordinator(coordinator: Coordinator?)
 }
 
 // MARK: - Default Implementation
@@ -157,6 +163,17 @@ public extension Coordinator {
 
     func back(animated: Bool = true) {
         self.navigationController?.popViewController(animated: animated)
+    }
+
+    /// Back or dismiss according to parent and number of view controllers.
+    func leave(animated: Bool = true) {
+        let isTheOnlyViewController = (self.navigationController?.viewControllers.count == 1) == true
+
+        if isTheOnlyViewController {
+            parentCoordinator?.dismissChildCoordinator(animated: animated)
+        } else {
+            self.back(animated: animated)
+        }
     }
 
     func back(_ number: Int, animated: Bool = true) {
@@ -209,5 +226,14 @@ public extension Coordinator {
                                                           forKey: kCATransition)
         parentCoordinator?.dismissChildCoordinator(animated: false,
                                                    completion: completion)
+    }
+
+    func popToRootCoordinator(coordinator: Coordinator?) {
+        if let newParentCoordinator = coordinator?.parentCoordinator {
+            _ = childCoordinators.popLast()
+            popToRootCoordinator(coordinator: newParentCoordinator)
+        } else {
+            coordinator?.dismissChildCoordinator()
+        }
     }
 }

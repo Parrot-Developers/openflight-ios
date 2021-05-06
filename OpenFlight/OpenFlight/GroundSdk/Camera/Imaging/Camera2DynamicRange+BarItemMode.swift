@@ -62,7 +62,7 @@ extension Camera2DynamicRange: BarItemMode, Sortable {
     }
 
     // MARK: - Sortable
-    static var sortedCases: [Camera2DynamicRange] {
+    public static var sortedCases: [Camera2DynamicRange] {
         return [.sdr, .hdr8, .hdr10]
     }
 }

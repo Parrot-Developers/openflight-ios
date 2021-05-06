@@ -36,14 +36,15 @@ enum DetailsCellularStatus: Int {
     case cellularConnecting
     case simLocked
     case simBlocked
+    case simNotDetected
+    case simNotRecognized
+    case userNotPaired
     case notRegistered
     case networkStatusError
     case networkStatusDenied
     case airplaneMode
     case modemStatusOff
     case noData
-    case simNotDetected
-    case simNotRecognized
     case connectionFailed
 }
 
@@ -53,14 +54,22 @@ extension DetailsCellularStatus {
     /// Returns true if there is an error.
     var isStatusError: Bool {
         return self != .cellularConnecting
-            || self != .cellularConnected
+            && self != .cellularConnected
     }
 
     /// Returns the descrition on drone details tile.
     var droneDetailsTileDescription: String? {
         switch self {
         case .simBlocked:
-            return L10n.cellularDetailsSimBlocked
+            return L10n.drone4gSimBlocked
+        case .simNotDetected:
+            return L10n.cellularDetailsNoSimCard
+        case .simNotRecognized:
+            return L10n.cellularDetailsSimCardError
+        case .simLocked:
+            return L10n.drone4gSimLocked
+        case .userNotPaired:
+            return L10n.cellularDetailsNotPaired
         case .notRegistered,
              .networkStatusError,
              .networkStatusDenied,
@@ -72,12 +81,6 @@ extension DetailsCellularStatus {
             return L10n.cellularDetailsInternalError
         case .noData:
             return L10n.cellularDetailsDataDisabled
-        case .simNotDetected:
-            return L10n.cellularDetailsNoSimCard
-        case .simNotRecognized:
-            return L10n.cellularDetailsSimCardError
-        case .simLocked:
-            return L10n.drone4gSimLocked
         case .cellularConnected:
             return L10n.connected
         case .cellularConnecting:
@@ -92,6 +95,14 @@ extension DetailsCellularStatus {
         switch self {
         case .simBlocked:
             return L10n.cellularDetailsSimBlocked
+        case .simNotDetected:
+            return L10n.cellularDetailsNoSimCard
+        case .simNotRecognized:
+            return L10n.cellularDetailsSimCardError
+        case .simLocked:
+            return L10n.drone4gEnterPin
+        case .userNotPaired:
+            return L10n.cellularDetailsUserNotPaired
         case .notRegistered,
              .networkStatusError,
              .networkStatusDenied,
@@ -103,12 +114,6 @@ extension DetailsCellularStatus {
             return L10n.cellularDetailsInternalError
         case .noData:
             return L10n.cellularDetailsDataDisabled
-        case .simNotDetected:
-            return L10n.cellularDetailsNoSimCard
-        case .simNotRecognized:
-            return L10n.cellularDetailsSimCardError
-        case .simLocked:
-            return L10n.drone4gEnterPin
         case .cellularConnected:
             return L10n.connected
         case .cellularConnecting:
@@ -122,7 +127,15 @@ extension DetailsCellularStatus {
     var cellularDetailsDescription: String? {
         switch self {
         case .simBlocked:
-            return L10n.cellularDetailsSimBlocked
+            return L10n.cellularErrorSimBlockedMessage
+        case .simNotDetected:
+            return L10n.cellularDetailsInsertSimCard
+        case .simNotRecognized:
+            return L10n.cellularDetailsSimCardNotRecognized
+        case .simLocked:
+            return L10n.cellularDetailsEnterPin
+        case .userNotPaired:
+            return L10n.cellularDetailsPairDevice
         case .notRegistered,
              .networkStatusError,
              .networkStatusDenied:
@@ -133,12 +146,6 @@ extension DetailsCellularStatus {
             return L10n.cellularDetailsPleaseContact
         case .noData:
             return L10n.cellularDetailsDataDisabled
-        case .simNotDetected:
-            return L10n.cellularDetailsInsertSimCard
-        case .simNotRecognized:
-            return L10n.cellularDetailsSimCardNotRecognized
-        case .simLocked:
-            return L10n.cellularDetailsEnterPin
         case .connectionFailed:
             return L10n.cellularErrorConnectionFailedMessage
         case .cellularConnected,
@@ -154,6 +161,7 @@ extension DetailsCellularStatus {
         case .cellularConnected:
             return ColorName.greenSpring
         case .simBlocked,
+             .userNotPaired,
              .notRegistered,
              .networkStatusError,
              .networkStatusDenied,
@@ -169,6 +177,23 @@ extension DetailsCellularStatus {
         case .simNotDetected,
              .simLocked:
             return ColorName.orangePeel
+        }
+    }
+
+    /// Returns true if action button needs to be displayed.
+    var shouldShowActionButton: Bool {
+        return self == .simLocked || self == .userNotPaired
+    }
+
+    /// Returns action button title.
+    var actionButtonTitle: String {
+        switch self {
+        case .userNotPaired:
+            return L10n.cellularDetailsPairDevice
+        case .simLocked:
+            return L10n.drone4gEnterPin
+        default:
+            return ""
         }
     }
 }

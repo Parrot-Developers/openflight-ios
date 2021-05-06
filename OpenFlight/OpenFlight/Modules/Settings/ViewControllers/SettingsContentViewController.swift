@@ -147,7 +147,7 @@ private extension SettingsContentViewController {
         settingsTableView.register(cellType: SettingsRthCell.self)
         settingsTableView.register(cellType: SettingsTitleCell.self)
         settingsTableView.register(cellType: SettingsGridTableViewCell.self)
-        settingsTableView.register(cellType: SettingsNetworkSelectionCell.self)
+        settingsTableView.register(cellType: SettingsCellularDataCell.self)
         settingsTableView.register(cellType: SettingsEndHoveringCell.self)
         settingsTableView.estimatedRowHeight = Constants.estimatedRowHeight
         settingsTableView.delaysContentTouches = false

@@ -160,11 +160,11 @@ private extension QuickSettingsViewModel {
 
         return DroneSettingModel(allValues: ObstacleAvoidanceMode.allValues,
                                  supportedValues: ObstacleAvoidanceMode.allValues,
-                                 currentValue: obstacleAvoidance.mode.value,
+                                 currentValue: obstacleAvoidance.mode.preferredValue,
                                  isUpdating: obstacleAvoidance.mode.updating) { [weak obstacleAvoidance] mode in
             guard let strongMode = mode as? ObstacleAvoidanceMode else { return }
 
-            obstacleAvoidance?.mode.value = strongMode
+            obstacleAvoidance?.mode.preferredValue = strongMode
         }
     }
 

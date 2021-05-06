@@ -74,18 +74,46 @@ public extension Camera2 {
 
     /// Returns true if Hdr is available.
     var hdrAvailable: Bool {
-        guard let currentMode = self.mode else { return false }
+        guard let currentMode = mode else { return false }
         switch currentMode {
         case .photo:
-            let hdr8Available = self.config[Camera2Params.photoDynamicRange]?.currentSupportedValues.contains(.hdr8)
-
-            return hdr8Available == true
+            return photoHdrAvailable
         case .recording:
-            let hdr10Available = self.config[Camera2Params.videoRecordingDynamicRange]?.currentSupportedValues.contains(.hdr10)
-            let hdr8Available = self.config[Camera2Params.videoRecordingDynamicRange]?.currentSupportedValues.contains(.hdr8)
-
-            return hdr10Available == true || hdr8Available == true
+            return recordingHdrAvailable
         }
+    }
+
+    /// Returns true if photo Hdr is available for the current photo mode, format and file format.
+    var photoHdrAvailable: Bool {
+        let editor = config.edit(fromScratch: true)
+        editor[Camera2Params.photoResolution]?.value = config[Camera2Params.photoResolution]?.value
+        editor[Camera2Params.photoFormat]?.value = config[Camera2Params.photoFormat]?.value
+        editor[Camera2Params.photoFileFormat]?.value = config[Camera2Params.photoFileFormat]?.value
+
+        let hdr8Available = editor[Camera2Params.photoDynamicRange]?.currentSupportedValues.contains(.hdr8)
+
+        return hdr8Available == true
+    }
+
+    /// Returns true if video recording Hdr is available for the current recording resolution and framerate.
+    var recordingHdrAvailable: Bool {
+        let editor = config.edit(fromScratch: true)
+        editor[Camera2Params.videoRecordingResolution]?.value = config[Camera2Params.videoRecordingResolution]?.value
+        editor[Camera2Params.videoRecordingFramerate]?.value = config[Camera2Params.videoRecordingFramerate]?.value
+
+        let hdr10Available = editor[Camera2Params.videoRecordingDynamicRange]?.currentSupportedValues.contains(.hdr10)
+        let hdr8Available = editor[Camera2Params.videoRecordingDynamicRange]?.currentSupportedValues.contains(.hdr8)
+
+        return hdr10Available == true || hdr8Available == true
+    }
+
+    /// Returns true if PLog image style is available in the current configuration if HDR was disabled.
+    var plogAvailable: Bool {
+        let editor = config.edit(fromScratch: false)
+        editor[Camera2Params.photoDynamicRange]?.value = .sdr
+        editor[Camera2Params.videoRecordingDynamicRange]?.value = .sdr
+
+        return editor[Camera2Params.imageStyle]?.currentSupportedValues.contains(.plog) == true
     }
 
     /// Returns current camera mode.

@@ -53,7 +53,7 @@ private extension AcademyApiManager {
     enum AcademyEndPoints {
         static let getChallenge = "/apiv1/4g/pairing/challenge?operation=associate"
         static let getDroneList = "/apiv1/drone/list"
-        static let pairingAssociation = "/apiv1/4g/pairing"
+        static let commonPairingEndpoint = "/apiv1/4g/pairing"
     }
 }
 
@@ -83,7 +83,6 @@ private extension AcademyApiManager {
         var token: String = ""
         if UserInformation.current.token.isEmpty,
            !SecureKeyStorage.current.temporaryToken.isEmpty {
-            // Use a temporary token if there is one and no real MyParrot account.
             token = SecureKeyStorage.current.temporaryToken
         } else {
             token = UserInformation.current.token
@@ -200,6 +199,30 @@ public extension AcademyApiManager {
             completion(nil, AcademyApiManagerError.badData)
         }
     }
+
+    /// Gets paired drones list.
+    ///
+    /// - Parameters:
+    ///     - completion: callback which returns the paired drones list
+    func performPairedDroneListRequest(completion: @escaping (([PairedDroneListResponse]?) -> Void)) {
+        let session = self.authSession()
+
+        get(AcademyEndPoints.getDroneList, session: session) { data, error in
+            guard error == nil,
+                  let responseData = data else {
+                completion(nil)
+                return
+            }
+
+            let decoder = JSONDecoder()
+            do {
+                let response = try decoder.decode([PairedDroneListResponse].self, from: responseData)
+                completion(response)
+            } catch {
+                completion(nil)
+            }
+        }
+    }
 }
 
 // MARK: - Internal Funcs
@@ -240,7 +263,7 @@ extension AcademyApiManager {
             return
         }
 
-        post(AcademyEndPoints.pairingAssociation, params: body, session: session) { data, error in
+        post(AcademyEndPoints.commonPairingEndpoint, params: body, session: session) { data, error in
             guard error == nil,
                   data != nil else {
                 completion(false)
@@ -252,30 +275,6 @@ extension AcademyApiManager {
         }
     }
 
-    /// Get paired drones list.
-    ///
-    /// - Parameters:
-    ///     - completion: callback which returns the 4G paired drones list
-    func performPairedDroneListRequest(completion: @escaping (([PairedDroneListResponse]?) -> Void)) {
-        let session = self.authSession()
-
-        get(AcademyEndPoints.getDroneList, session: session) { data, error in
-            guard error == nil,
-                  let responseData = data else {
-                completion(nil)
-                return
-            }
-
-            let decoder = JSONDecoder()
-            do {
-                let response = try decoder.decode([PairedDroneListResponse].self, from: responseData)
-                completion(response)
-            } catch {
-                completion(nil)
-            }
-        }
-    }
-
     /// Unpairs current associated 4G drone.
     ///
     /// - Parameters:
@@ -284,7 +283,7 @@ extension AcademyApiManager {
     func unpairDrone(commonName: String, completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
         let session = self.authSession()
 
-        guard let url = URL(string: AcademyApiManager.baseURL + AcademyEndPoints.pairingAssociation + "/" + commonName) else {
+        guard let url = URL(string: AcademyApiManager.baseURL + AcademyEndPoints.commonPairingEndpoint + "/" + commonName) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }
@@ -295,6 +294,46 @@ extension AcademyApiManager {
 
         session.dataTask(with: request) { data, response, error in
             self.treatResponse(data: data, response: response, error: error, completion: completion)
+        }.resume()
+    }
+
+    /// Gets paired users count for a selected drone.
+    ///
+    /// - Parameters:
+    ///     - commonName: drone common name
+    ///     - completion: callback which returns number of paired users and a potential error
+    func pairedUsersCounts(commonName: String,
+                           completion: @escaping (_ usersCount: Int?, _ error: Error?) -> Void) {
+        let session = self.authSession()
+
+        guard let url = URL(string: AcademyApiManager.baseURL + AcademyEndPoints.commonPairingEndpoint + "/" + commonName) else {
+            completion(nil, AcademyApiManagerError.badURL)
+            return
+        }
+
+        var request: URLRequest = URLRequest(url: url)
+        request.httpMethod = RequestType.get
+        request.setValue(RequestHeaderFields.appJson,
+                         forHTTPHeaderField: RequestHeaderFields.contentType)
+
+        session.dataTask(with: request) { data, response, error in
+            guard error == nil else {
+                completion(nil, error)
+                return
+            }
+
+            guard let responseData = data else {
+                completion(nil, nil)
+                return
+            }
+
+            let decoder = JSONDecoder()
+            do {
+                let response = try decoder.decode(PairedUsersCountResponse.self, from: responseData)
+                completion(response.usersCount, nil)
+            } catch {
+                completion(nil, nil)
+            }
         }.resume()
     }
 }

@@ -35,11 +35,7 @@ final class ImagingBarVideoResolutionViewModel: BarButtonViewModel<ImagingBarSta
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
     /// List of available resolutions.
-    private let availableResolutions: [Camera2RecordingResolution] = [Camera2RecordingResolution.res1080p,
-                                                                      Camera2RecordingResolution.res1080pSd,
-                                                                      Camera2RecordingResolution.resDci4k,
-                                                                      Camera2RecordingResolution.resUhd4k,
-                                                                      Camera2RecordingResolution.resUhd8k]
+    private let availableResolutions: [Camera2RecordingResolution] = Camera2RecordingResolution.availableResolutions
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {

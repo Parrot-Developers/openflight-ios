@@ -108,6 +108,8 @@ public enum ParrotFontStyle {
     case big
     /// Rajdhani SemiBold 19.
     case huge
+    /// Rajdhani SemiBold 25.
+    case veryHuge
     /// Rajdhani SemiBold 34.
     case giant
     /// Rajdhani Bold 68.
@@ -129,6 +131,8 @@ public enum ParrotFontStyle {
             return UIFont.rajdhaniMedium(size: 17)
         case .huge:
             return UIFont.rajdhaniSemiBold(size: 19)
+        case .veryHuge:
+            return UIFont.rajdhaniSemiBold(size: 25)
         case .giant:
             return UIFont.rajdhaniSemiBold(size: 34)
         case .monumental:

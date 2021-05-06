@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// State for `FlightPlanPanelViewModel`.
-
 final class FlightPlanPanelState: DeviceConnectionState {
     // MARK: - Internal Properties
     /// Keeps current mission mode.
@@ -69,6 +68,7 @@ final class FlightPlanPanelState: DeviceConnectionState {
          flightPlanEstimations: FlightPlanEstimationsModel?,
          runFlightPlanState: RunFlightPlanState?) {
         super.init(connectionState: connectionState)
+
         self.flightPlanID = flightPlanID
         self.hasWayPoints = hasWayPoints
         self.flightPlanEstimations = flightPlanEstimations
@@ -77,9 +77,8 @@ final class FlightPlanPanelState: DeviceConnectionState {
 
     // MARK: - Override Funcs
     override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? FlightPlanPanelState else {
-            return false
-        }
+        guard let other = other as? FlightPlanPanelState else { return false }
+
         return super.isEqual(to: other)
             && self.missionMode.key == other.missionMode.key
             && self.flightPlanID == other.flightPlanID
@@ -95,47 +94,25 @@ final class FlightPlanPanelState: DeviceConnectionState {
                                         flightPlanEstimations: self.flightPlanEstimations,
                                         runFlightPlanState: self.runFlightPlanState)
         copy.missionMode = missionMode
+
         return copy
     }
 }
 
 /// View model for flight plan menu.
-
 final class FlightPlanPanelViewModel: DroneStateViewModel<FlightPlanPanelState> {
     // MARK: - Private Properties
-    private var missionLauncherViewModel = MissionLauncherViewModel()
+    private let missionLauncherViewModel = MissionLauncherViewModel()
     private var flightPlanListener: FlightPlanListener?
     private var runFlightPlanViewModelListener: RunFlightPlanListener?
     private var flightPlanViewModel: FlightPlanViewModel?
 
     // MARK: - Override Funcs
-    override init(stateDidUpdate: ((FlightPlanPanelState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
 
         listenMissionLauncherViewModel()
-
-        flightPlanListener = FlightPlanManager.shared.register(didChange: { [weak self] flightPlanViewModel in
-            // Stop previous Flight Plan if it has one.
-            if flightPlanViewModel?.state.value.uuid != self?.state.value.flightPlanID {
-                self?.flightPlanViewModel?.runFlightPlanViewModel.stop()
-            }
-            self?.flightPlanViewModel?.unregisterRunListener(self?.runFlightPlanViewModelListener)
-            self?.flightPlanViewModel = flightPlanViewModel
-
-            let copy = self?.state.value.copy()
-            copy?.flightPlanID = flightPlanViewModel?.state.value.uuid
-            copy?.hasWayPoints = !(flightPlanViewModel?.flightPlan?.plan.wayPoints.isEmpty ?? true)
-            copy?.flightPlanEstimations = flightPlanViewModel?.estimations
-            self?.state.set(copy)
-
-            self?.runFlightPlanViewModelListener = flightPlanViewModel?.registerRunListener(didChange: { [weak self] state in
-                let copy = self?.state.value.copy()
-                copy?.runFlightPlanState = nil
-                self?.state.set(copy)
-                copy?.runFlightPlanState = state
-                self?.state.set(copy)
-            })
-        })
+        initFlightPlanListener()
     }
 
     // MARK: - Internal Funcs
@@ -152,6 +129,33 @@ final class FlightPlanPanelViewModel: DroneStateViewModel<FlightPlanPanelState> 
 
 // MARK: - Private Funcs
 private extension FlightPlanPanelViewModel {
+    /// Inits flight plan listener.
+    func initFlightPlanListener() {
+        flightPlanListener = FlightPlanManager.shared.register(didChange: { [weak self] flightPlanViewModel in
+            // Stop previous Flight Plan if it has one.
+            if flightPlanViewModel?.state.value.uuid != self?.state.value.flightPlanID {
+                self?.flightPlanViewModel?.runFlightPlanViewModel.stop()
+            }
+
+            self?.flightPlanViewModel?.unregisterRunListener(self?.runFlightPlanViewModelListener)
+            self?.flightPlanViewModel = flightPlanViewModel
+
+            let copy = self?.state.value.copy()
+            copy?.flightPlanID = flightPlanViewModel?.state.value.uuid
+            copy?.hasWayPoints = flightPlanViewModel?.isEmpty == false
+            copy?.flightPlanEstimations = flightPlanViewModel?.estimations
+            self?.state.set(copy)
+
+            self?.runFlightPlanViewModelListener = flightPlanViewModel?.registerRunListener(didChange: { [weak self] state in
+                let copy = self?.state.value.copy()
+                copy?.runFlightPlanState = nil
+                self?.state.set(copy)
+                copy?.runFlightPlanState = state
+                self?.state.set(copy)
+            })
+        })
+    }
+
     /// Starts watcher for mission modes.
     func listenMissionLauncherViewModel() {
         self.updateState(with: missionLauncherViewModel.state.value)
@@ -160,10 +164,10 @@ private extension FlightPlanPanelViewModel {
         }
     }
 
-    /// Update state regarding mission mode.
+    /// Updates state regarding mission mode.
     ///
     /// - Parameters:
-    ///    - subMode: mission mode
+    ///    - missionLauncherState: mission launcher state
     func updateState(with missionLauncherState: MissionLauncherState?) {
         if let mode = missionLauncherState?.mode {
             let copy = self.state.value.copy()

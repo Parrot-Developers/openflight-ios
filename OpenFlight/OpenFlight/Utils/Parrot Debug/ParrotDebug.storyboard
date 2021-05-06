@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1UJ-SD-ecA">
     <device id="retina5_9" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
@@ -215,6 +215,22 @@
                                     <action selector="debugCheckCOff:" destination="1UJ-SD-ecA" eventType="valueChanged" id="1yB-4P-K8l"/>
                                 </connections>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yLa-Qb-dpq">
+                                <rect key="frame" x="68" y="14" width="63" height="28"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="28" id="6df-jD-4hE"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="20"/>
+                                <state key="normal" title="Toolbox">
+                                    <color key="titleColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <state key="disabled">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="toolBoxButtonTouchedUpInside:" destination="1UJ-SD-ecA" eventType="touchUpInside" id="JGh-Zy-1ej"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="3AP-nE-TqN"/>
                         <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
@@ -226,11 +242,13 @@
                             <constraint firstItem="tm9-1p-lAd" firstAttribute="top" secondItem="3AP-nE-TqN" secondAttribute="top" constant="17" id="RcD-XQ-gmY"/>
                             <constraint firstItem="Efy-Eh-zJ4" firstAttribute="top" secondItem="tm9-1p-lAd" secondAttribute="bottom" constant="10" id="USE-0G-J1c"/>
                             <constraint firstItem="iMv-rA-qgl" firstAttribute="centerY" secondItem="tm9-1p-lAd" secondAttribute="centerY" id="WcH-mB-2ie"/>
+                            <constraint firstItem="yLa-Qb-dpq" firstAttribute="leading" secondItem="3AP-nE-TqN" secondAttribute="leading" constant="24" id="Yjb-TA-WxW"/>
                             <constraint firstItem="DRv-9U-Hk4" firstAttribute="height" secondItem="wlx-zk-Hvx" secondAttribute="height" id="ZrV-JZ-ofd"/>
                             <constraint firstItem="tm9-1p-lAd" firstAttribute="centerX" secondItem="3AP-nE-TqN" secondAttribute="centerX" id="aih-ec-lhZ"/>
                             <constraint firstItem="jrj-Ag-IPT" firstAttribute="height" secondItem="DRv-9U-Hk4" secondAttribute="height" id="bZk-HW-R1y"/>
                             <constraint firstItem="Efy-Eh-zJ4" firstAttribute="leading" secondItem="wlx-zk-Hvx" secondAttribute="leadingMargin" constant="8" id="g7e-cg-q1B"/>
                             <constraint firstItem="3AP-nE-TqN" firstAttribute="bottom" secondItem="Efy-Eh-zJ4" secondAttribute="bottom" constant="5" id="guU-YW-B0Q"/>
+                            <constraint firstItem="yLa-Qb-dpq" firstAttribute="top" secondItem="3AP-nE-TqN" secondAttribute="top" constant="14" id="iv5-uJ-sYJ"/>
                             <constraint firstAttribute="trailingMargin" secondItem="Efy-Eh-zJ4" secondAttribute="trailing" constant="8" id="nMx-nv-WWe"/>
                             <constraint firstItem="DRv-9U-Hk4" firstAttribute="centerY" secondItem="wlx-zk-Hvx" secondAttribute="centerY" id="qFp-xl-TZZ"/>
                             <constraint firstItem="DRv-9U-Hk4" firstAttribute="width" secondItem="wlx-zk-Hvx" secondAttribute="width" multiplier="0.5" id="rf3-lH-ifj"/>

@@ -42,6 +42,6 @@ enum SettingsCellType {
     case title
     case grid
     case wifiChannels
-    case networkSelection
+    case cellularData
     case endHovering
 }

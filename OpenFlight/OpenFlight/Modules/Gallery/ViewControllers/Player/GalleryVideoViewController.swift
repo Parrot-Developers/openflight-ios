@@ -38,6 +38,7 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet private weak var streamView: StreamView!
     @IBOutlet private weak var videoView: MediaVideoView!
+    @IBOutlet private weak var thumbnailImageView: UIImageView!
     @IBOutlet private weak var playButton: UIButton!
     @IBOutlet private weak var fullscreenButton: UIButton!
     @IBOutlet private weak var bottomBarView: MediaVideoBottomBarView!
@@ -48,12 +49,16 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
     private weak var viewModel: GalleryMediaViewModel?
+    private var thumbnailViewModel: GalleryMediaThumbnailViewModel?
     private var timer: Timer?
     private var mediaListener: GalleryMediaListener?
 
     // MARK: - Private Enums
     private enum Constants {
         static let timerInterval: TimeInterval = 0.1
+        static let timeSeek: Double = 0.04
+        static let preferredTimescale: CMTimeScale = 100
+        static let fadeOut: Double = 1.0
     }
 
     // MARK: - Setup
@@ -103,6 +108,7 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
 
         updatePlayButton()
         updateBottomBar()
+        showThumbnail()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -122,12 +128,14 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
 private extension GalleryVideoViewController {
     @IBAction func playButtonTouchedUpInside(_ sender: AnyObject) {
         guard let viewModel = viewModel else { return }
+
         if !viewModel.videoIsPlaying(),
-            viewModel.getVideoPosition() == viewModel.getVideoDuration() {
+           viewModel.getVideoPosition() == viewModel.getVideoDuration() {
             // We should reset video position to the beginning
             stop()
             start(completion: {
                 viewModel.videoTogglePlayingStatus()
+                self.hideThumbnail()
             })
         } else {
             viewModel.videoTogglePlayingStatus()
@@ -136,6 +144,7 @@ private extension GalleryVideoViewController {
 
     @IBAction func fullscreenButtonTouchedUpInside(_ sender: AnyObject) {
         guard let viewModel = viewModel else { return }
+
         viewModel.toggleShouldHideControls()
     }
 }
@@ -211,6 +220,8 @@ private extension GalleryVideoViewController {
         viewModel?.videoSetVideo(index: self.index, completion: { layer in
             self.videoView.playerLayer = layer
             guard let playerLayer = self.videoView.playerLayer else { return }
+
+            playerLayer.player?.seek(to: CMTime(seconds: Constants.timeSeek, preferredTimescale: Constants.preferredTimescale))
             playerLayer.videoGravity = .resizeAspect
             playerLayer.needsDisplayOnBoundsChange = true
             playerLayer.frame = self.videoView.bounds
@@ -236,9 +247,9 @@ private extension GalleryVideoViewController {
     ///    - completion: completion block
     func start(completion: (() -> Void)? = nil) {
         guard let viewModel = viewModel,
-            viewModel.videoShouldReset(),
-            let currentMedia = viewModel.getMedia(index: index) else {
-                return
+              viewModel.videoShouldReset(),
+              let currentMedia = viewModel.getMedia(index: index) else {
+            return
         }
 
         if let mediaUrl = currentMedia.url {
@@ -265,11 +276,35 @@ private extension GalleryVideoViewController {
         timer = nil
     }
 
-    /// Scheduled timer to update
+    /// Scheduled timer to update.
     func scheduledTimerWithTimeInterval() {
         timer = Timer.scheduledTimer(withTimeInterval: Constants.timerInterval, repeats: true) { [weak self] _ in
             self?.viewModel?.videoUpdateState()
         }
+    }
+
+    /// Show  thumbnail.
+    func showThumbnail() {
+        guard let media = viewModel?.getMedia(index: index),
+              let mediaIndex = viewModel?.getMediaImageDefaultIndex(media),
+              let mediaStore = viewModel?.mediaStore else {
+            return
+        }
+
+        thumbnailViewModel = GalleryMediaThumbnailViewModel(media: media,
+                                                            mediaStore: mediaStore,
+                                                            index: mediaIndex)
+        thumbnailViewModel?.getThumbnail { [weak self] image in
+            self?.thumbnailImageView.image = image
+            self?.thumbnailImageView.isHidden = false
+        }
+    }
+
+    /// Hide  thumbnail.
+    func hideThumbnail() {
+        thumbnailImageView.fadeOut(Constants.fadeOut, completion: {
+            self.thumbnailImageView.isHidden = true
+        })
     }
 }
 

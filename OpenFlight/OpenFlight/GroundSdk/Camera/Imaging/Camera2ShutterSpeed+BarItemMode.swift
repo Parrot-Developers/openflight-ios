@@ -145,7 +145,7 @@ extension Camera2ShutterSpeed: BarItemMode, RulerDisplayable, Sortable {
     }
 
     // MARK: - Sortable
-    static var sortedCases: [Camera2ShutterSpeed] {
+    public static var sortedCases: [Camera2ShutterSpeed] {
         return [.oneOver10000, .oneOver8000, .oneOver6400, .oneOver5000, .oneOver4000, .oneOver3200,
                 .oneOver2500, .oneOver2000, .oneOver1600, .oneOver1250, .oneOver1000, .oneOver800, .oneOver640,
                 .oneOver500, .oneOver400, .oneOver320, .oneOver240, .oneOver200, .oneOver160, .oneOver120,

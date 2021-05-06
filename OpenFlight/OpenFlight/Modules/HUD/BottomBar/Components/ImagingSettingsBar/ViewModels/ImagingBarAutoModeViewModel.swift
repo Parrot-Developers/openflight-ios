@@ -69,8 +69,9 @@ final class ImagingBarAutoModeViewModel: DroneWatcherViewModel<ImagingBarAutoMod
     private var autoModeObserver: DefaultsDisposable?
 
     // MARK: - Init
-    override init(stateDidUpdate: ((ImagingBarAutoModeState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenDefault()
     }
 

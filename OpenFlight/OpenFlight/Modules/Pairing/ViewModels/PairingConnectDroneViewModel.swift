@@ -105,7 +105,6 @@ final class PairingConnectDroneViewModel: DevicesStateViewModel<PairingConnectDr
     // MARK: - Private Properties
     private let groundSdk = GroundSdk()
     private var droneFinderRef: Ref<DroneFinder>?
-    private var droneStateRef: Ref<DeviceState>?
     private var droneConnectionStateRef: Ref<DeviceState>?
     private var timer: Timer?
     private var academyApiManager: AcademyApiManager = AcademyApiManager()
@@ -116,23 +115,22 @@ final class PairingConnectDroneViewModel: DevicesStateViewModel<PairingConnectDr
     }
 
     // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-
-        listenDroneStateRef(for: drone)
-    }
-
     override func listenRemoteControl(remoteControl: RemoteControl) {
         super.listenRemoteControl(remoteControl: remoteControl)
 
-        refreshDroneFinder(remoteControl: remoteControl)
         listenDroneFinderRef(remoteControl: remoteControl)
     }
 
     override func droneConnectionStateDidChange() {
         super.droneConnectionStateDidChange()
 
-        refreshDroneList()
+        if state.value.connectionState == .connected {
+            let copy = state.value.copy()
+            copy.connectionState = .connected
+            state.set(copy)
+            refreshDroneList()
+            resetDroneConnectionStateRef()
+        }
     }
 
     // MARK: - Internal Funcs
@@ -157,7 +155,7 @@ final class PairingConnectDroneViewModel: DevicesStateViewModel<PairingConnectDr
         if let password = password {
             let copy = state.value.copy()
             guard WifiPasswordUtil.isValid(password),
-                  let drone = droneFinderRef?.value?.discoveredDrones.first(where: { $0.uid == uid }),
+                  let drone = remoteControl?.getPeripheral(Peripherals.droneFinder)?.discoveredDrones.first(where: { $0.uid == uid }),
                   remoteControl?.getPeripheral(Peripherals.droneFinder)?.connect(discoveredDrone: drone,
                                                                                  password: password) == true else {
                 copy.connectionState = .incorrectPassword
@@ -178,7 +176,7 @@ final class PairingConnectDroneViewModel: DevicesStateViewModel<PairingConnectDr
     /// - Parameters:
     ///    - uid: Uid of the selected drone
     func connectDroneWithoutPassword(uid: String) {
-        guard let drone = droneFinderRef?.value?.discoveredDrones.first(where: { $0.uid == uid }),
+        guard let drone = remoteControl?.getPeripheral(Peripherals.droneFinder)?.discoveredDrones.first(where: { $0.uid == uid }),
               (drone.connectionSecurity != .password || drone.known == true),
               remoteControl?.getPeripheral(Peripherals.droneFinder)?.connect(discoveredDrone: drone) == true else {
             return
@@ -195,7 +193,7 @@ final class PairingConnectDroneViewModel: DevicesStateViewModel<PairingConnectDr
     /// - Parameters:
     ///    - uid: Uid of the selected drone
     func needPassword(uid: String) -> Bool {
-        guard let drone = droneFinderRef?.value?.discoveredDrones.first(where: { $0.uid == uid }),
+        guard let drone = remoteControl?.getPeripheral(Peripherals.droneFinder)?.discoveredDrones.first(where: { $0.uid == uid }),
               (drone.connectionSecurity != .password || drone.known == true) else {
             return true
         }
@@ -233,6 +231,8 @@ final class PairingConnectDroneViewModel: DevicesStateViewModel<PairingConnectDr
 
                         self.updateUnpairStatus(with: .done)
                         self.removeFromPairedList(with: uid)
+                        self.resetPairingDroneListIfNeeded()
+
                         DispatchQueue.main.async { [weak self] in
                             _ = self?.groundSdk.forgetDrone(uid: drone.droneUid)
                         }
@@ -317,6 +317,18 @@ private extension PairingConnectDroneViewModel {
         }
     }
 
+    /// Removes current drone uid in the dismissed pairing list.
+    /// The pairing process for the current drone could be displayed again in the HUD.
+    func resetPairingDroneListIfNeeded() {
+        guard let uid = self.drone?.uid,
+              Defaults.dronesListPairingProcessHidden.contains(uid),
+              drone?.isAlreadyPaired == false else {
+            return
+        }
+
+        Defaults.dronesListPairingProcessHidden.removeAll(where: { $0 == uid })
+    }
+
     /// Start a timer which will refresh the list.
     func startTimer() {
         timer = Timer.scheduledTimer(withTimeInterval: Constants.timeInterval, repeats: false) { _ in
@@ -327,20 +339,6 @@ private extension PairingConnectDroneViewModel {
     /// Stop the timer when user want to refresh the list manually.
     func stopTimer() {
         timer?.invalidate()
-    }
-
-    /// Starts watcher for drone state.
-    func listenDroneStateRef(for drone: Drone) {
-        // We need to create a new Ref in order of listenning connection state.
-        // It is due to drone connection state ref. This observer is listenning several states but it does not work for "connected" state.
-        droneStateRef = drone.getState { [weak self] state in
-            let copy = self?.state.value.copy()
-            if state?.connectionState == .connected {
-                copy?.connectionState = .connected
-                self?.state.set(copy)
-                self?.resetDroneConnectionStateRef()
-            }
-        }
     }
 
     /// Starts watcher for drone connection state.
@@ -355,7 +353,6 @@ private extension PairingConnectDroneViewModel {
                 copy?.connectionState = .connecting
             case .connected:
                 copy?.connectionState = .connected
-                self?.refreshDroneList()
             case .disconnected:
                 if state?.connectionStateCause == DeviceState.ConnectionStateCause.badPassword {
                     copy?.connectionState = .incorrectPassword
@@ -366,19 +363,6 @@ private extension PairingConnectDroneViewModel {
                 break
             }
             self?.state.set(copy)
-        }
-    }
-
-    /// Refresh drone finder in order to get the list of drones.
-    ///
-    /// - Parameters:
-    ///    - remoteControl: Current Remote
-    func refreshDroneFinder(remoteControl: RemoteControl) {
-        guard let droneFinder = remoteControl.getPeripheral(Peripherals.droneFinder) else { return }
-
-        // Check if we are scanning available drones.
-        if droneFinder.state == .idle {
-            droneFinder.refresh()
         }
     }
 

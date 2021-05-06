@@ -41,7 +41,7 @@ final class FlyButton: UIControl, NibOwnerLoadable {
     @IBOutlet private weak var labelView: UIView!
 
     // MARK: - Private Properties
-    private var droneStateViewModel: DroneStateViewModel<DeviceConnectionState>?
+    private let droneStateViewModel = DroneStateViewModel<DeviceConnectionState>()
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
@@ -63,7 +63,7 @@ final class FlyButton: UIControl, NibOwnerLoadable {
     /// Updates fly button when the view is redraw.
     override func draw(_ rect: CGRect) {
         super.draw(rect)
-        updateFlyButton(state: droneStateViewModel?.state.value)
+        updateFlyButton(state: droneStateViewModel.state.value)
     }
 }
 
@@ -80,17 +80,18 @@ private extension FlyButton {
 
     /// Observes drone state update.
     func listenViewModel() {
-        droneStateViewModel = DroneStateViewModel(stateDidUpdate: { [weak self] state in
+        droneStateViewModel.state.valueChanged = { [weak self] state in
             self?.updateFlyButton(state: state)
-        })
+        }
+        updateFlyButton(state: droneStateViewModel.state.value)
     }
 
     /// Updates the view according to drone state.
     ///
     /// - Parameters:
     ///     - state: current drone state
-    func updateFlyButton(state: DeviceConnectionState?) {
-        state?.isConnected() == true ? activateFlyAnimation() : deactivateFlyAnimation()
+    func updateFlyButton(state: DeviceConnectionState) {
+        state.isConnected() == true ? activateFlyAnimation() : deactivateFlyAnimation()
     }
 
     /// Activates fly animation.
@@ -99,21 +100,21 @@ private extension FlyButton {
                                       radius: Style.largeCornerRadius)
         // Stop current animation if one.
         flyImageView.stopAnimating()
+        flyLabel.makeUp(with: .veryHuge, and: .greenSpring)
+        flyLabel.text = L10n.dashboardStartButtonFly.capitalized
         let flyAnimationImages: [UIImage] = Asset.Dashboard.Fly.allValues.map { $0.image }
         flyImageView.animationImages = flyAnimationImages
         flyImageView.animationDuration = Style.longAnimationDuration
         flyImageView.startAnimating()
-        flyLabel.makeUp(with: .big, and: .greenSpring)
-        flyLabel.text = L10n.dashboardStartButtonFly.capitalized
     }
 
     /// Deactivates fly animation.
     func deactivateFlyAnimation() {
         flyImageView.stopAnimating()
-        flyLabel.makeUp(with: .large, and: .white)
+        flyLabel.makeUp(with: .veryHuge)
         flyImageView.image = Asset.Common.Icons.icRightArrow.image
-        flyLabel.text = L10n.dashboardStartButtonPiloting.capitalized
-        globalView.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
+        flyLabel.text = L10n.dashboardStartButtonFly.capitalized
+        globalView.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
                                       radius: Style.largeCornerRadius)
     }
 }

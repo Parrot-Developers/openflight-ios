@@ -8,7 +8,7 @@ target 'OpenFlightApp' do
     pod 'GroundSdk', '~> 2.0.0-beta1'
     pod 'ArsdkEngine', '~> 2.0.0-beta1'
     pod 'SdkCore', '~> 2.0.0-beta1'
-    pod 'OpenFlightCore', '~> 7.0.0-beta17'
+    pod 'OpenFlightCore', '~> 7.0.0-beta25'
     pod 'Reusable'
     pod 'SwiftyUserDefaults'
     pod 'KeychainAccess'

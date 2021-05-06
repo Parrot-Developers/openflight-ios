@@ -133,8 +133,7 @@ private extension ImagingBarCameraIsoViewModel {
                     return
             }
 
-            // FIXME: Use camera.exposureSettings.currentSupportedManualIsoSensitivity
-            copy.supportedModes = isoSensitivity.overallSupportedValues.sorted()
+            copy.supportedModes = isoSensitivity.currentSupportedValues.sorted()
             copy.image = exposureMode.value.automaticIsoSensitivity ? Asset.BottomBar.Icons.iconAuto.image : nil
             copy.isAutomatic = exposureMode.value.automaticIsoSensitivity
             self?.state.set(copy)

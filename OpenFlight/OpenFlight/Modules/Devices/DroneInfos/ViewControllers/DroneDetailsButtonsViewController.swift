@@ -114,7 +114,7 @@ private extension DroneDetailsButtonsViewController {
                                                                   title: L10n.remoteDetailsSoftware)
         cellularAccessButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconCellularDatas.image,
                                                                   title: L10n.droneDetailsCellularAccess,
-                                                                  subtitle: viewModel.state.value.cellularStatus.droneDetailsTileDescription)
+                                                                  subtitle: viewModel.cellularButtonSubtitle)
         passwordButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.icDronePassword.image,
                                                             title: L10n.commonPassword,
                                                             subtitle: nil)
@@ -149,7 +149,7 @@ private extension DroneDetailsButtonsViewController {
         calibrationButtonView.isEnabled = state.isCalibrationButtonAvailable
 
         // Cellular button.
-        cellularAccessButtonView.model?.subtitle = state.cellularStatus.droneDetailsTileDescription
+        cellularAccessButtonView.model?.subtitle = viewModel.cellularButtonSubtitle
         cellularAccessButtonView.model?.subtitleColor = state.cellularStatus.detailsTextColor
         cellularAccessButtonView.isEnabled = viewModel.state.value.canShowCellular
 

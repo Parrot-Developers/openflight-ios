@@ -28,10 +28,7 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
-
 /// A class that encapsulates a value of generic type T and notify observer on value change.
-
 public class Observable<T> {
     // MARK: - Public Properties
     /// Public accessible value from private one.
@@ -55,13 +52,17 @@ public class Observable<T> {
     }
 
     // MARK: - Init
+    /// Inits.
+    ///
+    /// - Parameters:
+    ///     - value: current observable value
     public init(_ value: T) {
         self.privateValue = value
     }
 }
 
+// MARK: - Public Funcs
 public extension Observable where T: Equatable {
-    // MARK: - Public Funcs
     /// Sets up a new value for T. Value is changed only if
     /// it is not nil and different from currently stored value.
     ///
@@ -69,10 +70,10 @@ public extension Observable where T: Equatable {
     ///    - newValue: new value to set
     func set(_ newValue: T?) {
         guard let newValue = newValue,
-            newValue != self.value
-            else {
-                return
+              newValue != self.value else {
+            return
         }
+
         self.privateValue = newValue
     }
 }

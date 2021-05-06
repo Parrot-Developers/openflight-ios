@@ -71,8 +71,9 @@ final class BottomBarViewModel: BaseViewModel<GlobalBottomBarState> {
     private var missionLauncherViewModel: MissionLauncherViewModel = MissionLauncherViewModel()
 
     // MARK: - Init
-    override init(stateDidUpdate: ((GlobalBottomBarState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         observeModalPresentation()
         listenMissionMode()
     }

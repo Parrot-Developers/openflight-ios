@@ -265,6 +265,7 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
             return self.state.value.sourceType
         }
     }
+    /// Number of medias according to source type.
     public var numberOfMedias: Int {
         return self.state.value.medias.count
     }
@@ -282,11 +283,11 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
     /// Init.
     ///
     /// - Parameters:
-    ///    - stateDidUpdate: called when drone location changed
-    override init(stateDidUpdate: ((GalleryMediaState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
-        // Keep initial closure to prevent from breaking BaseViewModel's stateDidUpdate behaviour.
-        mediaInitialClosure = stateDidUpdate
+    ///    - onMediaStateUpdate: called when media state changes
+    init(onMediaStateUpdate: ((GalleryMediaState) -> Void)? = nil) {
+        super.init()
+
+        mediaInitialClosure = onMediaStateUpdate
         state.valueChanged = { [weak self] state in
             // Run stateDidUpdate closure.
             self?.mediaInitialClosure?(state)
@@ -349,7 +350,7 @@ extension GalleryMediaViewModel {
     ///    - medias: GalleryMedia array
     ///    - completion: completion block
     func downloadMedias(_ medias: [GalleryMedia], completion: @escaping (Bool) -> Void) {
-        let mediaItems = medias.compactMap({ $0.mediaItem })
+        let mediaItems = medias.compactMap({ $0.mainMediaItem })
         switch sourceType {
         case .droneSdCard:
             sdCardViewModel?.downloadMedias(mediasToDownload: mediaItems,
@@ -388,12 +389,12 @@ extension GalleryMediaViewModel {
     func deleteMedias(_ medias: [GalleryMedia], completion: @escaping (Bool) -> Void) {
         switch sourceType {
         case .droneSdCard:
-            let mediaItems = medias.compactMap({ $0.mediaItem })
+            let mediaItems = medias.compactMap({ $0.mainMediaItem })
             sdCardViewModel?.deleteMedias(mediaItems, completion: { success in
                 completion(success)
             })
         case .droneInternal:
-            let mediaItems = medias.compactMap({ $0.mediaItem })
+            let mediaItems = medias.compactMap({ $0.mainMediaItem })
             internalViewModel?.deleteMedias(mediaItems, completion: { success in
                 completion(success)
             })
@@ -435,7 +436,7 @@ extension GalleryMediaViewModel {
     func fetchMedia(_ media: GalleryMedia, _ index: Int = 0, completion: @escaping (URL?) -> Void) {
         switch media.source {
         case .droneSdCard:
-            guard let mediaItem = media.mediaItem,
+            guard let mediaItem = media.mainMediaItem,
                   mediaItem.resources.count > index else {
                 return
             }
@@ -446,16 +447,16 @@ extension GalleryMediaViewModel {
                                                 completion(url)
                                               })
         case .droneInternal:
-            guard let mediaItem = media.mediaItem,
+            guard let mediaItem = media.mainMediaItem,
                   mediaItem.resources.count > index else {
                 return
             }
 
             internalViewModel?.downloadResource(media: mediaItem,
-                                              resources: [mediaItem.resources[index]],
-                                              completion: { url in
-                                                completion(url)
-                                              })
+                                                resources: [mediaItem.resources[index]],
+                                                completion: { url in
+                                                    completion(url)
+                                                })
         case .mobileDevice:
             guard let urls = media.urls,
                   urls.count > index else {
@@ -505,9 +506,9 @@ extension GalleryMediaViewModel {
     func getMediaImageCount(_ media: GalleryMedia) -> Int {
         switch media.source {
         case .droneSdCard:
-            return media.mediaItem?.resources.count ?? 0
+            return media.mediaResources?.count ?? 0
         case .droneInternal:
-            return media.mediaItem?.resources.count ?? 0
+            return media.mediaResources?.count ?? 0
         case .mobileDevice:
             return media.urls?.count ?? 0
         default:
@@ -586,19 +587,19 @@ extension GalleryMediaViewModel {
         case .dng:
             switch media.source {
             case .droneSdCard:
-                guard let mediaItem = media.mediaItem,
-                      index < mediaItem.resources.count else {
+                guard let mediaResources = media.mediaResources,
+                      index < mediaResources.count else {
                     return "\(index + 1)"
                 }
 
-                return mediaItem.resources[index].format.description.uppercased()
+                return mediaResources[index].format.description.uppercased()
             case .droneInternal:
-                guard let mediaItem = media.mediaItem,
-                      index < mediaItem.resources.count else {
+                guard let mediaResources = media.mediaResources,
+                      index < mediaResources.count else {
                     return "\(index + 1)"
                 }
 
-                return mediaItem.resources[index].format.description.uppercased()
+                return mediaResources[index].format.description.uppercased()
             case .mobileDevice:
                 guard let urls = media.urls,
                       index < urls.count else {

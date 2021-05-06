@@ -174,6 +174,8 @@ private extension FlightPlanDashboardViewController {
         addCloseButton(onTapAction: #selector(closeButtonTouchUpInside),
                        targetView: headerView,
                        style: .cross)
+        //FIXME: Do not allow share for the moment...
+        shareButton.isHidden = true
     }
 
     /// Displays FlightPlan on the map.

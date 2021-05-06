@@ -46,14 +46,14 @@ final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProv
     var delayedTaskComponents = DelayedTaskComponents()
 
     // MARK: - Private Properties
-    private var viewModel: RemoteShutdownAlertViewModel?
+    private let viewModel = RemoteShutdownAlertViewModel()
     private weak var coordinator: Coordinator?
     private var firstTimeButtonPressed: Bool = true
     private var isShutdownProcessDone: Bool = false
     private var isShutdownButtonPressed: Bool {
-        return self.viewModel?.state.value.durationBeforeShutDown == 0.0
+        return self.viewModel.state.value.durationBeforeShutDown == 0.0
             && self.firstTimeButtonPressed == false
-            && self.viewModel?.state.value.isConnected() == true
+            && self.viewModel.state.value.isConnected() == true
     }
 
     // MARK: - Private Enums
@@ -126,31 +126,38 @@ private extension RemoteShutdownAlertViewController {
 
     /// Init remote shutdown alert ViewModel.
     func initViewModel() {
-        viewModel = RemoteShutdownAlertViewModel(stateDidUpdate: { [weak self] state in
-            guard let strongSelf = self else { return }
+        viewModel.state.valueChanged = { [weak self] state in
+            self?.updateRemoteShutdownState(state)
+        }
+        updateRemoteShutdownState(viewModel.state.value)
+    }
 
-            // Check if remote is disconnected or if remote shutdown button is unpressed.
-            if state.isConnected() == false || strongSelf.isShutdownButtonPressed {
-                if strongSelf.isShutdownProcessDone {
-                    strongSelf.updateView(shouldHide: true)
-                    strongSelf.setupDelayedTask(strongSelf.dismissRemoteAlertShutdown,
-                                                delay: Double(Constants.timer),
-                                                key: Constants.dismissRemoteShutdownAlertTaskKey)
-                } else {
-                    strongSelf.sliderStepView.layer.removeAllAnimations()
-                    strongSelf.updateView(shouldHide: false)
-                    strongSelf.dismissRemoteAlertShutdown()
-                }
-
-                return
+    /// Update with remote shutdown alert state.
+    ///
+    /// - Parameters:
+    ///    - state: remote shutdown alert state
+    func updateRemoteShutdownState(_ state: RemoteShutdownAlertState) {
+        // Check if remote is disconnected or if remote shutdown button is unpressed.
+        if state.isConnected() == false || isShutdownButtonPressed {
+            if isShutdownProcessDone {
+                updateView(shouldHide: true)
+                setupDelayedTask(dismissRemoteAlertShutdown,
+                                 delay: Double(Constants.timer),
+                                 key: Constants.dismissRemoteShutdownAlertTaskKey)
+            } else {
+                sliderStepView.layer.removeAllAnimations()
+                updateView(shouldHide: false)
+                dismissRemoteAlertShutdown()
             }
 
-            // Start animation.
-            if state.isConnected() == true && state.durationBeforeShutDown != 0.0 {
-                strongSelf.animateSlider(timer: Constants.timer)
-                strongSelf.firstTimeButtonPressed = false
-            }
-        })
+            return
+        }
+
+        // Start animation.
+        if state.isConnected() == true && state.durationBeforeShutDown != 0.0 {
+            animateSlider(timer: Constants.timer)
+            firstTimeButtonPressed = false
+        }
     }
 
     /// Animates remote slider shutdown view.

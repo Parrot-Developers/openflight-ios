@@ -81,15 +81,11 @@ struct CalibrationChoiceModel {
         if state.frontStereoGimbalState == .needed {
             subText = state.frontStereoGimbalState?.description ?? ""
             subTextColor = .redTorch
+            backgroundColor = .redTorch25
         } else {
             subText = state.gimbalCalibrationDescription
             subTextColor = state.gimbalCalibrationTextColor ?? .white50
-        }
-
-        if state.gimbalState == .needed || state.frontStereoGimbalState == .needed {
-            backgroundColor = .redTorch25
-        } else {
-            backgroundColor = .white10
+            backgroundColor = state.gimbalCalibrationBackgroundColor ?? .white50
         }
     }
 }

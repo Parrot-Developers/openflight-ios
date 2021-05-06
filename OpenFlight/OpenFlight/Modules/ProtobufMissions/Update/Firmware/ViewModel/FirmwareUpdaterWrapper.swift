@@ -100,15 +100,6 @@ final class FirmwareUpdaterWrapper: DroneStateViewModel<FirmwareUpdaterWrapperSt
     private var updaterRef: Ref<Updater>?
     private var updater: Updater?
 
-    // MARK: - Init
-    /// Inits the view model.
-    ///
-    /// - Parameters:
-    ///   - stateDidUpdate: the callback for any state updates
-    override init(stateDidUpdate: ((FirmwareUpdaterWrapperState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
-    }
-
     // MARK: - Deinit
     deinit {
         self.updaterRef = nil

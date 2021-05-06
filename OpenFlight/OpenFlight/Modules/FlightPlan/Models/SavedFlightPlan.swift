@@ -221,6 +221,7 @@ public final class SavedFlightPlan: Codable {
         self.tilt = try? container.decode(Double.self, forKey: .tilt)
         self.canGenerateMavlink = try? container.decode(Bool.self, forKey: .canGenerateMavlink)
         self.remoteFlightPlanId = try? container.decode(Int.self, forKey: .remoteFlightPlanId)
+        self.obstacleAvoidanceActivated = try? container.decode(Bool.self, forKey: .obstacleAvoidanceActivated)
 
         // Set Flight Plan object relations.
         self.plan.setRelations()

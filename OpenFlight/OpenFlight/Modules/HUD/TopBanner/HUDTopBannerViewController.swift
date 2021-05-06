@@ -71,7 +71,7 @@ private extension HUDTopBannerViewController {
                                                   text: L10n.cameraHdr,
                                                   backgroundColor: ColorName.yellowSea.color)
         lockAeInfoView.model = HUDTopBannerInfoModel(image: Asset.Common.Icons.iconLock.image,
-                                                     text: nil,
+                                                     text: L10n.lockAe,
                                                      backgroundColor: ColorName.yellowSea.color)
         homeInfoView.model = HUDTopBannerInfoModel(image: Asset.Common.Icons.iconHome.image,
                                                    text: nil,
@@ -100,7 +100,6 @@ private extension HUDTopBannerViewController {
 
         hdrInfoView.isHidden = !state.hdrOn
         lockAeInfoView.isHidden = !state.shouldDisplayAutoExposureLock
-        lockAeInfoView.model?.text = state.lockAeMode.displayText
         cameraLabelsContainer.isHidden = state.lockAeMode == .none && !state.hdrOn
         updateHomeInfo(homeState: state.homeState)
     }

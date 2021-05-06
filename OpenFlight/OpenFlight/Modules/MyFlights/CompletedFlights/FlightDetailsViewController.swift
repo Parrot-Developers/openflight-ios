@@ -167,7 +167,7 @@ private extension FlightDetailsViewController {
     /// Export button touched.
     @IBAction func exportButtonTouchedUpInside(_ sender: Any) {
         shareFile(data: self.viewModel?.gutma?.asData(),
-                  name: self.viewModel?.state.value.title,
+                  name: self.viewModel?.state.value.flightLocationDescription,
                   fileExtension: GutmaConstants.extensionName)
     }
 
@@ -210,7 +210,7 @@ private extension FlightDetailsViewController {
     /// - Parameters:
     ///    - state: flight data state
     func updateContent(_ state: FlightDataState? = nil) {
-        nameLabel.text = state?.title
+        nameLabel.text = state?.flightLocationDescription
         nameTextfield.text = nameLabel.text
         locationLabel.text = state?.formattedPosition
         dateLabel.text = state?.formattedDate

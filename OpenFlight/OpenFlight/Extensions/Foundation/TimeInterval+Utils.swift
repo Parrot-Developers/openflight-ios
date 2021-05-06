@@ -31,8 +31,7 @@
 import Foundation
 
 /// Utility extension for `TimeInterval`.
-
-extension TimeInterval {
+public extension TimeInterval {
     /// Returns a string containing current time interval with MM:SS format.
     var formattedString: String {
         let interval = Int(self)

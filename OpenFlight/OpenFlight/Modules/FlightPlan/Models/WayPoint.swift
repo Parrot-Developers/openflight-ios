@@ -37,13 +37,29 @@ import ArcGIS
 public final class WayPoint: Codable {
     // MARK: - Public Properties
     var altitude: Double
-    var yaw: Double
+    var yaw: Double?
     var hasCustomYaw: Bool?
     var speed: Double
     var shouldContinue: Bool
-    var shouldFollowPOI: Bool?
+    var shouldFollowPOI: Bool? = false
     var poiIndex: Int?
     var actions: [Action]?
+
+    var tilt: Double {
+        get {
+            return self.actions?
+                .first(where: { $0.type == .tilt })?.angle ?? 0.0
+        }
+        set {
+            if let tiltAction = self.actions?.first(where: { $0.type == .tilt }) {
+                tiltAction.angle = newValue
+            } else {
+                let tiltAction = Action(type: .tilt)
+                tiltAction.angle = newValue
+                self.addAction(tiltAction)
+            }
+        }
+    }
 
     var coordinate: CLLocationCoordinate2D {
         get {
@@ -57,28 +73,31 @@ public final class WayPoint: Codable {
 
     /// Navigate to waypoint MAVLink command.
     var wayPointMavlinkCommand: MavlinkStandard.NavigateToWaypointCommand {
+        // If yaw is nil, Not a Number is returned in mavlink command.
         return MavlinkStandard.NavigateToWaypointCommand(latitude: latitude,
                                                          longitude: longitude,
                                                          altitude: altitude,
-                                                         yaw: yaw)
+                                                         yaw: yaw ?? Double.nan)
     }
 
     /// Waypoint speed MAVLink command.
     var speedMavlinkCommand: MavlinkStandard.ChangeSpeedCommand {
         return MavlinkStandard.ChangeSpeedCommand(speedType: .airSpeed,
-                                                  speed: speed)
+                                                  speed: speed * SpeedSettingType().step)
     }
 
     /// View mode MAVLink command.
     var viewModeCommand: MavlinkStandard.SetViewModeCommand {
-        if shouldFollowPOI ?? false {
-            return MavlinkStandard.SetViewModeCommand(mode: .roi,
-                                                      roiIndex: poiIndex ?? Constants.defaultPoiIndex)
-        }
         if shouldContinue {
             return MavlinkStandard.SetViewModeCommand(mode: .continue)
+        } else {
+            return MavlinkStandard.SetViewModeCommand(mode: .absolute)
         }
-        return MavlinkStandard.SetViewModeCommand(mode: .absolute)
+    }
+
+    /// POI MAVLink command.
+    var poiCommand: MavlinkStandard.SetRoiLocationCommand? {
+        return poiPoint?.mavlinkCommand
     }
 
     /// Returns altitude value with unit.
@@ -127,10 +146,6 @@ public final class WayPoint: Codable {
 
         return computedYaw.asPositiveDegrees
     }
-    /// Returns true if a Rth action is set.
-    private var hasRthAction: Bool {
-        return actions?.contains(where: { $0.type == .rth }) == true
-    }
 
     // MARK: - Private Enums
     private enum CodingKeys: String, CodingKey {
@@ -149,6 +164,8 @@ public final class WayPoint: Codable {
     private enum Constants {
         static let defaultPoiIndex: Int = -1
         static let defaultSpeed: Double = 5.0
+        static let defaultAltitude: Double = 5.0
+        static let defaultTilt: Double = 0.0
         static let customYawDelta: Double = 5.0
     }
 
@@ -156,34 +173,28 @@ public final class WayPoint: Codable {
     /// Init.
     ///
     /// - Parameters:
-    ///    - coordinate: waypoint GPS coordinate
-    ///    - altitude: waypoint altitude (in meters)
-    ///    - yaw: waypoint yaw for drone
+    ///    - coordinate: waypoint's GPS coordinate
+    ///    - altitude: waypoint's altitude (in meters)
+    ///    - yaw: waypoint's yaw for drone
     ///    - hasCustomYaw: whether waypoint has a custom yaw defined
     ///    - speed: drone target speed at waypoint, if nil default speed is used
     ///    - shouldContinue: determine if drone should continue
-    ///    - shouldFollowPOI: determine if drone should follow POI for is orientation
-    ///    - poiIndex: POI index
-    ///    - actions: action to start on waypoint
+    ///    - tilt: waypoint's camera tilt
     public init(coordinate: CLLocationCoordinate2D,
-                altitude: Double,
+                altitude: Double?,
                 yaw: Double = 0.0,
                 hasCustomYaw: Bool = false,
                 speed: Double? = nil,
                 shouldContinue: Bool,
-                shouldFollowPOI: Bool,
-                poiIndex: Int?,
-                actions: [Action]?) {
+                tilt: Double?) {
         self.latitude = coordinate.latitude
         self.longitude = coordinate.longitude
-        self.altitude = altitude
+        self.altitude = altitude ?? Constants.defaultAltitude
         self.yaw = yaw
         self.hasCustomYaw = hasCustomYaw
-        self.speed = speed ?? Constants.defaultSpeed
+        self.speed = speed ?? (Constants.defaultSpeed / SpeedSettingType().step)
         self.shouldContinue = shouldContinue
-        self.shouldFollowPOI = shouldFollowPOI
-        self.poiIndex = poiIndex
-        self.actions = actions
+        self.tilt = tilt ?? Constants.defaultTilt
     }
 
     /// Init WayPoint with Mavlink commands.
@@ -198,7 +209,11 @@ public final class WayPoint: Codable {
         latitude = navigateToWaypointCommand.latitude
         longitude = navigateToWaypointCommand.longitude
         altitude = navigateToWaypointCommand.altitude
-        yaw = navigateToWaypointCommand.yaw
+        // NaN means previous point pointing.
+        // This value is not stored to prevent from serialisation issue.
+        if !navigateToWaypointCommand.yaw.isNaN {
+            yaw = navigateToWaypointCommand.yaw
+        }
         speed = 0
         shouldContinue = false
         shouldFollowPOI = false
@@ -223,14 +238,6 @@ public final class WayPoint: Codable {
         self.shouldContinue = shouldContinue
         self.shouldFollowPOI = shouldFollowPOI
         self.poiIndex = poiIndex
-    }
-
-    /// Updates waypoint's speed with given parameter.
-    ///
-    /// - Parameters:
-    ///    - speed: target speed
-    public func updateSpeed(_ speed: Double) {
-        self.speed = speed
     }
 
     /// Add action to waypoint actions.
@@ -266,27 +273,12 @@ public final class WayPoint: Codable {
     /// - Parameters:
     ///    - speedMavlinkCommand: speed Mavlink command
     public func update(speedMavlinkCommand: MavlinkStandard.ChangeSpeedCommand) {
-        speed = speedMavlinkCommand.speed
+        speed = speedMavlinkCommand.speed / SpeedSettingType().step
     }
 }
 
 // MARK: - Internal Funcs
 extension WayPoint {
-    /// Updates RTH action.
-    ///
-    /// - Parameters:
-    ///    - shouldRth: whether drone should perform a RTH on this point
-    func updateRTHAction(_ shouldRth: Bool) {
-        switch (shouldRth, hasRthAction) {
-        case (true, false):
-            addAction(Action(type: .rth))
-        case (false, true):
-            actions?.removeAll(where: { $0.type == .rth })
-        default:
-            break
-        }
-    }
-
     /// Sets coordinate of waypoint. This will
     /// trigger automatic yaw updates.
     ///

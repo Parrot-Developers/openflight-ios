@@ -52,6 +52,7 @@ final class CameraShutterButton: UIControl, NibOwnerLoadable {
         }
     }
     @IBOutlet private weak var shutterButtonProgressView: ShutterButtonProgressView!
+    @IBOutlet private weak var circleProgressView: CircleProgressView!
 
     // MARK: - Internal Properties
     var model: CameraShutterButtonState? {
@@ -61,7 +62,7 @@ final class CameraShutterButton: UIControl, NibOwnerLoadable {
     }
 
     // MARK: - Private Properties
-    private var isBlinking = false
+    private var isBlinking: Bool = false
     private var currentProgress: CGFloat = 0.0
 
     // MARK: - Private Enums
@@ -77,6 +78,11 @@ final class CameraShutterButton: UIControl, NibOwnerLoadable {
         static let defaultRecordingColor = ColorName.redTorch.color
         static let activeRecordingColor = ColorName.redTorch50.color
         static let unavailableRecordingColor = ColorName.redTorch25.color
+        static let restartRecordingBackgroundColor = ColorName.redTorch25.color
+        static let countDownRestartRecordingColor = ColorName.white.color
+        static let countDownLapseColor = ColorName.black.color
+        static let maxCountdown: Float = 5.0
+        static let maxAnimationProgress: Float = 1.0
     }
 
     // MARK: - Override Funcs
@@ -101,6 +107,8 @@ private extension CameraShutterButton {
         shutterButtonProgressView.clipsToBounds = true
         self.clipsToBounds = true
         shutterButtonProgressView.applyCornerRadius(Style.largeCornerRadius)
+        circleProgressView.strokeColor = .white
+        circleProgressView.borderWidth = Style.largeBorderWidth
     }
 
     /// Updates button with current model.
@@ -124,19 +132,30 @@ private extension CameraShutterButton {
             applyRecordingUnavailableStyle(image: model.userStorageState.shutterIcon)
             return
         }
+
         guard !model.userStorageState.hasStorageError else {
             applyRecordingUnavailableStyle(image: Asset.BottomBar.ShutterButtonIcons.Error.icSdError.image)
             return
         }
+
+        // Applies reset recording style when camera configuration changed.
+        if let countDown = model.timeBeforeRestartRecord {
+            applyRestartRecordingTimerStyle(labelText: String(countDown))
+            updateCircleProgressView(inProgress: countDown != 0, countDown: Float(countDown))
+            return
+        }
+
         switch model.recordingTimeState.functionState {
         case .started:
             applyRecordingStartedStyle()
+            circleProgressView.isHidden = true
+            circleProgressView.resetProgress()
         case .stopping(reason: .errorInternal, savedMediaId: nil):
             applyRecordingUnavailableStyle(image: Asset.BottomBar.ShutterButtonIcons.Error.icError.image)
+        case .stopped:
+            applyRecordingStoppedStyle(labelText: model.cameraCaptureSubMode?.shutterText)
         case .starting, .stopping:
             applyRecordingUnavailableStyle()
-        default:
-            applyRecordingStoppedStyle(labelText: model.cameraCaptureSubMode?.shutterText)
         }
 
         // Show recording time if available.
@@ -201,6 +220,7 @@ private extension CameraShutterButton {
             applyPhotoCaptureUnavailableStyle()
         default:
             shutterButtonProgressView.isHidden = true
+            circleProgressView.isHidden = true
             applyPhotoCaptureStyle(labelText: model.cameraCaptureSubMode?.shutterText)
         }
     }
@@ -240,7 +260,7 @@ private extension CameraShutterButton {
             guard let model = self.model else { return }
             let canShowProgressView = model.photoFunctionState.isStarted
                 && (model.cameraCaptureMode == .timelapse
-                    || model.cameraCaptureMode == .gpslapse)
+                        || model.cameraCaptureMode == .gpslapse)
             self.shutterButtonProgressView.isHidden = !canShowProgressView
             self.innerView.setBorder(borderColor: canShowProgressView ? .black : .clear,
                                      borderWidth: canShowProgressView ? Style.mediumBorderWidth : 0.0)
@@ -259,7 +279,7 @@ private extension CameraShutterButton {
                        animations: {
                         self.innerView.backgroundColor = firstColor
                         self.innerView.backgroundColor = secondColor
-        })
+                       })
         isBlinking = true
     }
 }
@@ -297,6 +317,28 @@ private extension CameraShutterButton {
         updateStyle(innerBackgroundColor: Constants.unavailableRecordingColor,
                     image: image)
         isBlinking = false
+    }
+
+    /// Apply style for restart timer recording mode.
+    ///
+    /// - Parameters:
+    ///     - labelText: shutter button text
+    func applyRestartRecordingTimerStyle(labelText: String?) {
+        updateStyle(innerBackgroundColor: Constants.restartRecordingBackgroundColor,
+                    labelText: labelText)
+        centerLabel.textColor = Constants.countDownRestartRecordingColor
+    }
+
+    /// Update circle progress view for restart recording.
+    ///
+    /// - Parameters:
+    ///     - inProgress: current circle progress view state
+    ///     - countDown: circle progress view animation countDown
+    func updateCircleProgressView(inProgress: Bool, countDown: Float) {
+        let animationStep = Constants.maxAnimationProgress / (Constants.maxCountdown - 1.0)
+        let animationProgress = animationStep * (Constants.maxCountdown - countDown)
+        circleProgressView.isHidden = false
+        circleProgressView.setProgress(animationProgress, duration: 1.0)
     }
 }
 
@@ -375,6 +417,7 @@ private extension CameraShutterButton {
         updateStyle(innerBackgroundColor: Constants.defaultPhotoCaptureColor,
                     labelText: labelText)
         shutterButtonProgressView.resetProgress()
+        centerLabel.textColor = Constants.countDownLapseColor
     }
 
     /// Apply style for timelapse and gpslapse mode.

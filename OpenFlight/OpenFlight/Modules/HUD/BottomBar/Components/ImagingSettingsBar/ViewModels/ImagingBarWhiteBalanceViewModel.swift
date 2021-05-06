@@ -37,8 +37,9 @@ final class ImagingBarWhiteBalanceViewModel: BarButtonViewModel<ImagingBarState>
     private var cameraRef: Ref<MainCamera2>?
 
     // MARK: - Override Funcs
-    override init(stateDidUpdate: ((ImagingBarState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         let copy = self.state.value.copy()
         copy.showUnsupportedModes = true
         self.state.set(copy)

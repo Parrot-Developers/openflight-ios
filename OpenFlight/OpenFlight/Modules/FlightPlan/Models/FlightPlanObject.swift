@@ -32,27 +32,203 @@ import UIKit
 import GroundSdk
 import CoreLocation
 
+public enum FlightPlanCaptureMode: String, CaseIterable {
+    case video
+    case timeLapse
+    case gpsLapse
+
+    static var defaultValue: FlightPlanCaptureMode {
+        return .video
+    }
+
+    var title: String {
+        switch self {
+        case .video:
+            return L10n.cameraModeVideo
+        case .timeLapse:
+            return L10n.cameraModeTimelapse
+        case .gpsLapse:
+            return L10n.cameraModeGpslapse
+        }
+    }
+
+    var image: UIImage {
+        switch self {
+        case .video:
+            return Asset.Common.Icons.iconCamera.image
+        case .timeLapse:
+            return Asset.BottomBar.CameraModes.icCameraModeTimeLapse.image
+        case .gpsLapse:
+            return Asset.BottomBar.CameraModes.icCameraModeGpsLapse.image
+        }
+    }
+}
+
 /// Class representing a FlightPlan structure including waypoints, POIs, etc.
 public final class FlightPlanObject: Codable {
     // MARK: - Public Properties
     public var takeoffActions: [Action]
     public var pois: [PoiPoint]
     public var wayPoints: [WayPoint]
+    // FIXME: unsused for now, check if it might get relevant at some point.
     public var isBuckled: Bool?
     public var shouldContinue: Bool? = true
     public var lastPointRth: Bool? = true
+    public var captureMode: String?
+    public var captureSettings: [String: String]?
 
-    // MARK: - Internal Properties
-    /// Return to launch MAVLink command, if FlightPlan is buckled.
-    var returnToLaunchCommand: MavlinkStandard.ReturnToLaunchCommand? {
-        guard isBuckled == true else { return nil }
-        return MavlinkStandard.ReturnToLaunchCommand()
+    public var captureModeEnum: FlightPlanCaptureMode {
+        get {
+            guard let mode = captureMode,
+                  let enumValue = FlightPlanCaptureMode(rawValue: mode) else { return FlightPlanCaptureMode.defaultValue }
+
+            return enumValue
+        }
+        set { captureMode = newValue.rawValue }
     }
 
-    /// Returns true if drone should land on last waypoint.
-    var shouldRthOnLastPoint: Bool {
-        return lastPointRth == true
-            && isBuckled != true
+    var framerate: Camera2RecordingFramerate {
+        get {
+            guard let value = captureSettings?[ClassicFlightPlanSettingType.framerate.rawValue],
+                  let framerateSetting = Camera2RecordingFramerate(rawValue: value) else {
+                return Camera2RecordingFramerate.defaultFramerate
+            }
+
+            return framerateSetting
+        }
+        set {
+            updateCaptureSetting(type: .framerate,
+                                 value: newValue.rawValue)
+        }
+    }
+
+    var resolution: Camera2RecordingResolution {
+        get {
+            guard let value = captureSettings?[ClassicFlightPlanSettingType.resolution.rawValue],
+                  let resolutionSetting = Camera2RecordingResolution(rawValue: value) else {
+                return Camera2RecordingResolution.defaultResolution
+            }
+
+            return resolutionSetting
+        }
+        set {
+            updateCaptureSetting(type: .resolution,
+                                 value: newValue.rawValue)
+        }
+    }
+
+    public var photoResolution: Camera2PhotoResolution {
+        get {
+            guard let value = captureSettings?[ClassicFlightPlanSettingType.photoResolution.rawValue],
+                  let resolutionSetting = Camera2PhotoResolution(rawValue: value) else {
+                return Camera2PhotoResolution.defaultResolution
+            }
+
+            return resolutionSetting
+        }
+        set {
+            updateCaptureSetting(type: .photoResolution,
+                                 value: newValue.rawValue)
+        }
+    }
+
+    public var exposure: Camera2EvCompensation {
+        get {
+            guard let value = captureSettings?[ClassicFlightPlanSettingType.exposure.rawValue],
+                  let exposureSetting = Camera2EvCompensation(rawValue: value) else {
+                return Camera2EvCompensation.defaultValue
+            }
+
+            return exposureSetting
+        }
+        set {
+            updateCaptureSetting(type: .exposure,
+                                 value: newValue.rawValue)
+        }
+    }
+
+    public var whiteBalanceMode: Camera2WhiteBalanceMode {
+        get {
+            guard let value = captureSettings?[ClassicFlightPlanSettingType.whiteBalance.rawValue],
+                  let whiteBalanceModeSetting = Camera2WhiteBalanceMode(rawValue: value) else {
+                return Camera2WhiteBalanceMode.defaultMode
+            }
+
+            return whiteBalanceModeSetting
+        }
+        set {
+            updateCaptureSetting(type: .whiteBalance,
+                                 value: newValue.rawValue)
+        }
+    }
+
+    var timeLapseCycle: Int? {
+        get {
+            guard let value = captureSettings?[ClassicFlightPlanSettingType.timeLapseCycle.rawValue] else {
+                return TimeLapseMode.preset.value
+            }
+
+            return Int(value)
+        }
+        set {
+            if let value = newValue {
+                updateCaptureSetting(type: .timeLapseCycle,
+                                     value: "\(value)")
+            }
+        }
+    }
+
+    var gpsLapseDistance: Int? {
+        get {
+            guard let value = captureSettings?[ClassicFlightPlanSettingType.gpsLapseDistance.rawValue] else {
+                return GpsLapseMode.preset.value
+            }
+
+            return Int(value)
+        }
+        set {
+            if let value = newValue {
+                updateCaptureSetting(type: .gpsLapseDistance,
+                                     value: "\(value)")
+            }
+        }
+    }
+
+    // MARK: - Internal Properties
+    /// Capture MAVLink command.
+    var startCaptureCommand: MavlinkStandard.MavlinkCommand? {
+        switch captureModeEnum {
+        case .video:
+            return MavlinkStandard.StartVideoCaptureCommand()
+        case .timeLapse:
+            guard let triggerCycle = timeLapseCycle else { return nil }
+
+            // Set triggerCycle in milliseconds.
+            return MavlinkStandard.CameraTriggerIntervalCommand(triggerCycle: triggerCycle * 1000)
+        case .gpsLapse:
+            guard let distance = gpsLapseDistance else { return nil }
+
+            return MavlinkStandard.CameraTriggerDistanceCommand(distance: Double(distance),
+                                                                triggerOnceImmediately: true)
+        }
+    }
+
+    /// End capture MAVLink command.
+    var endCaptureCommand: MavlinkStandard.MavlinkCommand {
+        switch captureModeEnum {
+        case .video:
+            return MavlinkStandard.StopVideoCaptureCommand()
+        case .timeLapse,
+             .gpsLapse:
+            return MavlinkStandard.StopPhotoCaptureCommand()
+        }
+    }
+
+    /// Return to launch MAVLink command, if FlightPlan is buckled.
+    var returnToLaunchCommand: MavlinkStandard.ReturnToLaunchCommand? {
+        guard lastPointRth == true else { return nil }
+
+        return MavlinkStandard.ReturnToLaunchCommand()
     }
 
     /// Returns Flight Plan photo count.
@@ -81,6 +257,8 @@ public final class FlightPlanObject: Codable {
         case isBuckled = "buckled"
         case shouldContinue = "continue"
         case lastPointRth = "RTH"
+        case captureMode
+        case captureSettings
     }
 
     // MARK: - Init
@@ -122,7 +300,6 @@ public final class FlightPlanObject: Codable {
     ///    - lastPointRth: whether drone should land on last waypoint
     func setLastPointRth(_ lastPointRth: Bool) {
         self.lastPointRth = lastPointRth
-        self.wayPoints.last?.updateRTHAction(shouldRthOnLastPoint)
     }
 
     /// Adds a waypoint at the end of the Flight Plan.
@@ -131,8 +308,6 @@ public final class FlightPlanObject: Codable {
         self.wayPoints.append(wayPoint)
         wayPoint.previousWayPoint = previous
         previous?.nextWayPoint = wayPoint
-        previous?.updateRTHAction(false)
-        wayPoint.updateRTHAction(shouldRthOnLastPoint)
         wayPoint.updateYawAndRelations()
     }
 
@@ -150,7 +325,6 @@ public final class FlightPlanObject: Codable {
     func removeWaypoint(at index: Int) -> WayPoint? {
         guard index < self.wayPoints.count else { return nil }
 
-        let isLastPoint = index == self.wayPoints.count - 1
         let wayPoint = self.wayPoints.remove(at: index)
         // Update previous and next waypoint yaw.
         let previous = wayPoint.previousWayPoint
@@ -159,10 +333,7 @@ public final class FlightPlanObject: Codable {
         next?.previousWayPoint = previous
         previous?.updateYaw()
         next?.updateYaw()
-        // Update previous point if it is the new last point.
-        if isLastPoint {
-            previous?.updateRTHAction(shouldRthOnLastPoint)
-        }
+
         return wayPoint
     }
 
@@ -204,5 +375,28 @@ public final class FlightPlanObject: Codable {
             previousWayPoint?.nextWayPoint = wayPoint
             previousWayPoint = wayPoint
         }
+    }
+
+    /// Clear all waypoints and points of interest.
+    func clearPoints() {
+        self.wayPoints.removeAll()
+        self.pois.removeAll()
+    }
+}
+
+// MARK: - Privates Funcs
+private extension FlightPlanObject {
+    /// Updates capture setting.
+    ///
+    /// - Parameters:
+    ///     - type: setting's type
+    ///     - value: setting's value
+    func updateCaptureSetting(type: ClassicFlightPlanSettingType, value: String?) {
+        guard let value = value else { return }
+
+        // Init captureSettings if needed.
+        if captureSettings == nil { captureSettings = [:] }
+        // Save value.
+        captureSettings?[type.rawValue] = value
     }
 }

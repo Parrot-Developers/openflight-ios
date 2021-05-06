@@ -47,4 +47,14 @@ public extension UIView {
     func stopRotate() {
         self.layer.removeAnimation(forKey: "rotationAnimation")
     }
+
+    // Fade out animation on a UIView.
+    func fadeOut(_ duration: TimeInterval?, completion: (() -> Void)? = nil) {
+        UIView.animate(withDuration: duration ?? 0.0,
+                       animations: { self.alpha = 0.0 },
+                       completion: {_ in
+                        self.isHidden = true
+                        if let complete = completion { complete() }
+                       })
+    }
 }

@@ -28,8 +28,6 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
-
 // MARK: - Protocols
 /// Base model state protocol.
 public protocol ViewModelState {
@@ -46,6 +44,7 @@ public protocol EquatableState: Equatable {
     func isEqual(to other: Self) -> Bool
 }
 
+// MARK: - Public Funcs
 extension EquatableState {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.isEqual(to: rhs)
@@ -54,21 +53,12 @@ extension EquatableState {
 
 /// Base ViewModel with a private state.
 open class BaseViewModel<T: ViewModelState> {
-    // MARK: - Internal Enums
-    /// State object to represent model. Setter must be private.
+    // MARK: - Public Properties
+    /// State object to represent model.
     /// `state` object is `Observable` and so can be observed.
-    public var state: Observable<T>
+    public private(set) var state: Observable<T>
 
     // MARK: - Init
-    /// Init
-    ///
-    /// - Parameter stateDidUpdate: completion block to notify state changes.
-    @available(*, deprecated, message: "Use init without parameters")
-    public init(stateDidUpdate: ((T) -> Void)?) {
-        state = Observable(T())
-        state.valueChanged = stateDidUpdate
-    }
-
     /// Init.
     public init() {
         state = Observable(T())

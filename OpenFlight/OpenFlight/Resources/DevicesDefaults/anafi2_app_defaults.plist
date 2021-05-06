@@ -3308,7 +3308,7 @@
 				</array>
 			</dict>
 			<key>name</key>
-			<string>Anafi 2</string>
+			<string>Anafi Ai</string>
 			<key>preset</key>
 			<string>anafi2-default</string>
 			<key>type</key>
@@ -3461,7 +3461,7 @@
 				<key>maxDistance</key>
 				<real>100</real>
 				<key>mode</key>
-				<string>altitude</string>
+				<string>cylinder</string>
 			</dict>
 			<key>PreciseHome</key>
 			<dict>

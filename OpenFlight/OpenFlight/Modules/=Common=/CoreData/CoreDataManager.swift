@@ -31,7 +31,6 @@ import UIKit
 import CoreData
 
 /// CoreData Helper.
-
 public class CoreDataManager {
     // MARK: - Public Properties
     public static var shared = CoreDataManager()

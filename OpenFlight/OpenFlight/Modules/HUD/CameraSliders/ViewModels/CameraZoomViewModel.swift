@@ -150,11 +150,10 @@ final class CameraZoomViewModel: DroneWatcherViewModel<CameraZoomState> {
     }
 
     // MARK: - Init
-    init(stateDidUpdate: ((CameraZoomState) -> Void)? = nil,
-         sliderVisibilityDidUpdate: ((Bool) -> Void)? = nil,
+    init(sliderVisibilityDidUpdate: ((Bool) -> Void)? = nil,
          isOverzoomingDidUpdate: ((Bool) -> Void)? = nil,
          zoomVisibilityDidUpdate: ((Bool) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+        super.init()
 
         self.state.value.shouldOpenSlider.valueChanged = sliderVisibilityDidUpdate
         self.state.value.isOverzooming.valueChanged = isOverzoomingDidUpdate

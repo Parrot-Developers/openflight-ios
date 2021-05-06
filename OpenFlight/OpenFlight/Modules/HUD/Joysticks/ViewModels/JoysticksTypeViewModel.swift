@@ -100,12 +100,9 @@ final class JoysticksTypeViewModel: BaseViewModel<JoysticksTypeState> {
     private var disposable: DefaultsDisposable?
 
     // MARK: - Init
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - stateDidUpdate: called when Joysticks type state change
-    override init(stateDidUpdate: ((JoysticksTypeState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenControlsMode()
     }
 

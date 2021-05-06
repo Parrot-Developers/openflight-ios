@@ -96,8 +96,9 @@ final class PanoramaModeViewModel: DroneWatcherViewModel<PanoramaModeState> {
     }
 
     // MARK: - Init
-    override init(stateDidUpdate: ((PanoramaModeState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenDefault()
     }
 

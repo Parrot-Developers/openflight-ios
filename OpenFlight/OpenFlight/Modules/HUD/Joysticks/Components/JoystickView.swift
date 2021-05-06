@@ -46,7 +46,7 @@ final class JoystickView: UIView, NibOwnerLoadable {
             backgroundImageView?.image = joystickType.backgroundImage
         }
     }
-    var pilotingViewModel: JoysticksPilotingViewModel = JoysticksPilotingViewModel()
+    let pilotingViewModel: JoysticksPilotingViewModel = JoysticksPilotingViewModel()
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {

@@ -31,27 +31,7 @@
 import UIKit
 
 // MARK: - Internal Enums
-/// Type of event that could happen to the gimbal.
-
-enum DroneGimbalStatus {
-    case ready
-    case warning
-    case critical
-
-    var image: UIImage {
-        switch self {
-        case .ready:
-            return Asset.Drone.icGimbalOk.image
-        case .warning:
-            return Asset.Drone.icGimbalWarning.image
-        case .critical:
-            return Asset.Drone.icGimbalError.image
-        }
-    }
-}
-
 /// Type of event that could happen to drone stereo vision.
-
 enum DroneStereoVisionStatus {
     case ready
     case warning
@@ -67,7 +47,6 @@ enum DroneStereoVisionStatus {
 }
 
 /// Type of event that could happen to drone motors.
-
 enum DroneMotorStatus {
     case ready
     case error

@@ -45,6 +45,9 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     override var itemType: FlightPlanGraphicItemType {
         return .poi
     }
+    public override var deletable: Bool {
+        return true
+    }
 
     // MARK: - Private Enums
     private enum Constants {

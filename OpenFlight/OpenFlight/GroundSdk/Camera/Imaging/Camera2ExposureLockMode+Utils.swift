@@ -37,10 +37,9 @@ extension Camera2ExposureLockMode {
         switch self {
         case .none:
             return nil
-        case .currentValues:
+        case .currentValues,
+             .region:
             return L10n.lockAe.uppercased()
-        case .region:
-            return L10n.ae
         }
     }
 }

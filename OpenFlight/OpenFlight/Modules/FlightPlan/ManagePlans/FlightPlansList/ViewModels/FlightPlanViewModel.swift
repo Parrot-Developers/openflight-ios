@@ -223,6 +223,7 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     }()
 
     lazy var runFlightPlanViewModel: RunFlightPlanViewModel = {
+        hasRunViewModel = true
         let runFlightPlanViewModel = RunFlightPlanViewModel(flightPlanViewModel: self)
         runFlightPlanViewModel.state.valueChanged = { [weak self] state in
             self?.runFlightPlanListeners.forEach { $0.didChange(state) }
@@ -253,6 +254,10 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
 
     var points: [CLLocationCoordinate2D] = []
 
+    var isEmpty: Bool {
+        return self.state.value.polygonPoints.isEmpty && points.isEmpty
+    }
+
     public var executions: [FlightPlanExecution] {
         guard let flightPlanId = self.state.value.uuid else { return [] }
 
@@ -264,6 +269,8 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     public var estimations = FlightPlanEstimationsModel()
 
     // MARK: - Private Properties
+    // Prevent from useless RunViewModel extra use.
+    private var hasRunViewModel: Bool = false
     private var runFlightPlanListeners: Set<RunFlightPlanListener> = []
     private var graphicTapListeners: Set<GraphicTapListener> = []
     private var courseModificationListeners: Set<FlightPlanCourseModificationListener> = []
@@ -313,13 +320,34 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
         self.state.set(finalCopy)
         // Save Flight Plan.
         CoreDataManager.shared.saveOrUpdate(state: self.state.value, flightPlan: self.flightPlan)
-        // Reset MAVLink commands on Flight Plan update.
-        runFlightPlanViewModel.resetMavlinkCommands()
+        if hasRunViewModel {
+            // Reset MAVLink commands on Flight Plan update.
+            runFlightPlanViewModel.resetMavlinkCommands()
+        }
     }
 
     /// Set Flight Plan as last used.
     public func setAsLastUsed() {
         save()
+    }
+
+    /// Tells if flight Plan should be cleared.
+    public func shouldClearFlightPlan() -> Bool {
+        return self.flightPlan?.plan.wayPoints.isEmpty == false ||
+            self.flightPlan?.plan.pois.isEmpty == false
+    }
+
+    /// Clears Flight Plan, removing MAVLink file if
+    /// any and deleting all waypoints and points of interest.
+    ///
+    /// - Note: calling this preserves uuid & settings.
+    public func clearFlightPlan() {
+        self.flightPlan?.plan.clearPoints()
+
+        if let mavlinkPath = self.flightPlan?.mavlinkDefaultUrl?.path,
+           FileManager.default.fileExists(atPath: mavlinkPath) {
+            try? FileManager.default.removeItem(atPath: mavlinkPath)
+        }
     }
 
     /// Add or update flight plan execution.
@@ -441,6 +469,11 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
         flightPlan?.type = type
         let copy = self.state.value.copy()
         copy.type = type
+
+        // Clear points from Flight Plan to avoid issues if
+        // new type doesn't trigger a generation immediately.
+        clearFlightPlan()
+
         self.save(copy)
     }
 

@@ -32,7 +32,7 @@
 /// Global constants for Flight Plan.
 enum FlightPlanObjectConstants {
     /// Range of available altitudes for waypoint.
-    static let wayPointAltitudeRange: [Int] = Array(3...150)
+    static let wayPointAltitudeRange: [Int] = Array(3...500)
     /// Range of available altitudes for point of interest.
-    static let poiPointAltitudeRange: [Int] = Array(0...150)
+    static let poiPointAltitudeRange: [Int] = Array(0...500)
 }

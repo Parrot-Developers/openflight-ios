@@ -93,7 +93,7 @@ final class PairingConnectDroneCell: UITableViewCell, NibReusable {
             errorLabel.textColor = UIColor(named: .greenSpring)
         }
 
-        forgetButton.isHidden = !droneModel.isDroneConnected
+        forgetButton.isHidden = !droneModel.isKnown
         cellularAvailableImageView.isHidden = !droneModel.isDronePaired
         nameLabel.text = droneModel.droneName
         wifiImageView.image = droneModel.rssiImage

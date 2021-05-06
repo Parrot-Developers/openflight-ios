@@ -179,7 +179,7 @@ private extension HUDCellularIndicatorViewModel {
         // Checks if cellular is available.
         // It also checks if current drone is paired.
         guard drone.isConnected,
-              Defaults.cellularPairedDronesList.contains(drone.uid),
+              drone.isAlreadyPaired,
               let cellular = drone.getPeripheral(Peripherals.cellular) else {
             resetInfosStack()
             return
@@ -188,9 +188,8 @@ private extension HUDCellularIndicatorViewModel {
         // Update current state.
         let networkControl = drone.getPeripheral(Peripherals.networkControl)
         let cellularLink = networkControl?.links.first(where: { $0.type == .cellular })
+        let isCellularAvailable: Bool = cellular.isAvailable && cellular.mode.value == .data
 
-        let isCellularAvailable = cellular.isAvailable
-            && cellular.mode.value == .data
         if cellularLink?.status == .running {
             updateCellularState(with: .cellularConnected)
         } else if isCellularAvailable {

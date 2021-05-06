@@ -108,11 +108,10 @@ final class GimbalTiltViewModel: DroneWatcherViewModel<GimbalTiltState> {
     }
 
     // MARK: - Init
-    init(stateDidUpdate: ((GimbalTiltState) -> Void)? = nil,
-         sliderVisibilityDidUpdate: ((Bool) -> Void)? = nil,
+    init(sliderVisibilityDidUpdate: ((Bool) -> Void)? = nil,
          isOverTiltingDidUpdate: ((Bool) -> Void)? = nil,
          tiltVisibilityDidUpdate: ((Bool) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+        super.init()
 
         self.state.value.shouldOpenSlider.valueChanged = sliderVisibilityDidUpdate
         self.state.value.isOvertilting.valueChanged = isOverTiltingDidUpdate

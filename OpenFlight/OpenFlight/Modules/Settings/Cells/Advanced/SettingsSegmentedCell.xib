@@ -15,14 +15,14 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <tableViewCell opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="SettingsSegmentedCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsSegmentedCell" rowHeight="80" id="RIC-UX-aqk" customClass="SettingsSegmentedCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="601" height="89"/>
+            <rect key="frame" x="0.0" y="0.0" width="601" height="81"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="RIC-UX-aqk" id="Dsm-W2-s55">
-                <rect key="frame" x="0.0" y="0.0" width="601" height="89"/>
+                <rect key="frame" x="0.0" y="0.0" width="601" height="81"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PFX-pe-4V0">
-                        <rect key="frame" x="0.0" y="8" width="585" height="73"/>
+                        <rect key="frame" x="0.0" y="4" width="585" height="73"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="NSB-10-X62">
                                 <rect key="frame" x="0.0" y="7" width="236.5" height="38"/>
@@ -102,8 +102,8 @@
                 <constraints>
                     <constraint firstItem="PFX-pe-4V0" firstAttribute="leading" secondItem="Dsm-W2-s55" secondAttribute="leading" id="iEQ-tm-Fg2"/>
                     <constraint firstAttribute="trailing" secondItem="PFX-pe-4V0" secondAttribute="trailing" constant="16" id="oVe-pN-sK0"/>
-                    <constraint firstItem="PFX-pe-4V0" firstAttribute="top" secondItem="Dsm-W2-s55" secondAttribute="top" constant="8" id="sKF-eI-PpZ"/>
-                    <constraint firstAttribute="bottom" secondItem="PFX-pe-4V0" secondAttribute="bottom" constant="8" id="yhI-2b-e5X"/>
+                    <constraint firstItem="PFX-pe-4V0" firstAttribute="top" secondItem="Dsm-W2-s55" secondAttribute="top" constant="4" id="sKF-eI-PpZ"/>
+                    <constraint firstAttribute="bottom" secondItem="PFX-pe-4V0" secondAttribute="bottom" constant="4" id="yhI-2b-e5X"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>

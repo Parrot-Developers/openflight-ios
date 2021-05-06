@@ -60,7 +60,7 @@ final class BottomBarContainerViewController: UIViewController {
     // MARK: - Private Properties
     private var levelOneViewController: BottomBarLevelViewController!
     private var levelTwoViewController: BottomBarLevelTwoViewController!
-    private var panoramaModeViewModel = PanoramaModeViewModel()
+    private let panoramaModeViewModel = PanoramaModeViewModel()
     private var isPanoramaInProgress: Bool = false {
         didSet {
             self.bottomBarContainerView.isHidden = isPanoramaInProgress
@@ -142,6 +142,7 @@ extension BottomBarContainerViewController: BottomBarContainerDelegate {
         switch viewModel {
         case is CameraWidgetViewModel:
             levelOneViewController.addImagingSettingsBar(delegate: self)
+            bottomBarDelegate?.showAETargetZone()
         default:
             levelOneViewController.addSegmentedBar(viewModel: viewModel)
         }
@@ -157,10 +158,10 @@ extension BottomBarContainerViewController: BottomBarContainerDelegate {
 
     func hideLevelOne<T: BarButtonState>(viewModel: BarButtonViewModel<T>) {
         guard levelOneContainerView.isHidden == false
-                && levelOneViewController.isSameBarDisplayed(viewModel: viewModel)
-        else {
+                && levelOneViewController.isSameBarDisplayed(viewModel: viewModel) else {
             return
         }
+
         UIView.animate(withDuration: Constants.animationDuration,
                        animations: {
                         self.levelOneContainerView.isHidden = true
@@ -169,6 +170,7 @@ extension BottomBarContainerViewController: BottomBarContainerDelegate {
                         switch viewModel {
                         case is CameraWidgetViewModel:
                             self.levelOneViewController.removeImagingSettingsBar()
+                            self.bottomBarDelegate?.hideAETargetZone()
                         default:
                             self.levelOneViewController.removeLevelView()
                         }

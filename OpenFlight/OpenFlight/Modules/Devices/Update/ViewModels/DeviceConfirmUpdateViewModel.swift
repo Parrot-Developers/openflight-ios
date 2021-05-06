@@ -101,7 +101,7 @@ final class DeviceConfirmUpdateViewModel: DevicesStateViewModel<DeviceConfirmUpd
             return .remoteControlNotConnected
         } else if drone?.isStateFlying == true {
             return .droneFlying
-        } else if remoteControlUpdaterRef?.value?.updateUnavailabilityReasons.contains(.notEnoughBattery) == true {
+        } else if remoteControl?.getPeripheral(Peripherals.updater)?.updateUnavailabilityReasons.contains(.notEnoughBattery) == true {
             return .notEnoughBattery(model: .remote)
         } else {
             return nil
@@ -114,7 +114,7 @@ final class DeviceConfirmUpdateViewModel: DevicesStateViewModel<DeviceConfirmUpd
             return .droneNotConnected
         } else if drone?.isStateFlying == true {
             return .droneFlying
-        } else if droneUpdaterRef?.value?.updateUnavailabilityReasons.contains(.notEnoughBattery) == true {
+        } else if drone?.getPeripheral(Peripherals.updater)?.updateUnavailabilityReasons.contains(.notEnoughBattery) == true {
             return .notEnoughBattery(model: .drone)
         } else {
             return nil

@@ -36,14 +36,7 @@ final class ImagingBarFramerateViewModel: BarButtonViewModel<ImagingBarState> {
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
     /// List of available framerates.
-    private let availableFramerates: [Camera2RecordingFramerate] = [Camera2RecordingFramerate.fps24,
-                                                                    Camera2RecordingFramerate.fps25,
-                                                                    Camera2RecordingFramerate.fps30,
-                                                                    Camera2RecordingFramerate.fps48,
-                                                                    Camera2RecordingFramerate.fps50,
-                                                                    Camera2RecordingFramerate.fps60,
-                                                                    Camera2RecordingFramerate.fps120,
-                                                                    Camera2RecordingFramerate.fps240]
+    private let availableFramerates: [Camera2RecordingFramerate] = Camera2RecordingFramerate.availableFramerates
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         listenCamera(drone: drone)

@@ -44,7 +44,7 @@ enum FirmwareAndMissionUpdateRequirements: Int {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let minimumBatteryLevel: Double = 50.0
+        static let minimumBatteryLevel: Double = 20.0
     }
 
     // MARK: - Init

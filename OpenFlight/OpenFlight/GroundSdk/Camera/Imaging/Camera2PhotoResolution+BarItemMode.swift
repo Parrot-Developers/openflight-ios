@@ -64,8 +64,26 @@ extension Camera2PhotoResolution: BarItemMode, Sortable {
         return LogEvent.LogKeyHUDBottomBarButton.photoResolutionSetting.name
     }
 
+    /// List of available resolutions.
+    public static var availableResolutions: [Camera2PhotoResolution] {
+        [.res12MegaPixels,
+         .res48MegaPixels]
+    }
+
+    /// Default value.
+    public static var defaultResolution: Camera2PhotoResolution {
+        .res48MegaPixels
+    }
+
+    /// Returns resolution for an index, based on all resolutions available.
+    public static func resolutionForIndex(_ index: Int) -> Camera2PhotoResolution {
+        guard index < self.availableResolutions.count else { return defaultResolution }
+
+        return self.availableResolutions[index]
+    }
+
     // MARK: - Sortable
-    static var sortedCases: [Camera2PhotoResolution] {
+    public static var sortedCases: [Camera2PhotoResolution] {
         return [.res12MegaPixels, .res21MegaPixels, .res48MegaPixels]
     }
 }

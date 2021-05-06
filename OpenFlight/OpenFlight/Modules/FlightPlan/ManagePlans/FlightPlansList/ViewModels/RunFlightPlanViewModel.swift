@@ -64,6 +64,13 @@ enum FlightPlanRunningState {
     }
 }
 
+/// Defines flight plan running state.
+enum FlightPlanExecutionEndingState: Equatable {
+    /// When the case is ended, you must add the execution id in the string parameter.
+    case ended(String)
+    case notEnded
+}
+
 /// State for `RunFlightPlanViewModel`.
 
 final class RunFlightPlanState: DeviceConnectionState {
@@ -118,6 +125,8 @@ final class RunFlightPlanState: DeviceConnectionState {
     fileprivate(set) var progress: Double = 0.0
     /// Traveled distance.
     fileprivate(set) var distance: Double = 0.0
+    /// Ending state of an execution.
+    fileprivate(set) var flightPlanExecutionEndingState: FlightPlanExecutionEndingState?
 
     /// Returns last passed waypoint index.
     fileprivate var lastPassedWayPointIndex: Int? {
@@ -151,6 +160,7 @@ final class RunFlightPlanState: DeviceConnectionState {
     ///     - completed: whether Flight Plan is completed
     ///     - progress: current completion progress
     ///     - distance: traveled distance
+    ///     - flightPlanExecutionEndingState: State for the end of a flight Plan execution
     init(connectionState: DeviceState.ConnectionState,
          runState: FlightPlanRunningState,
          activationError: FlightPlanActivationError,
@@ -164,7 +174,8 @@ final class RunFlightPlanState: DeviceConnectionState {
          mavlinkCommands: [MavlinkStandard.MavlinkCommand],
          completed: Bool,
          progress: Double,
-         distance: Double) {
+         distance: Double,
+         flightPlanExecutionEndingState: FlightPlanExecutionEndingState?) {
         super.init(connectionState: connectionState)
 
         self.runState = runState
@@ -180,6 +191,7 @@ final class RunFlightPlanState: DeviceConnectionState {
         self.completed = completed
         self.progress = progress
         self.distance = distance
+        self.flightPlanExecutionEndingState = flightPlanExecutionEndingState
     }
 
     // MARK: - Override Funcs
@@ -200,6 +212,7 @@ final class RunFlightPlanState: DeviceConnectionState {
             && self.completed == other.completed
             && self.progress == other.progress
             && self.distance == other.distance
+            && self.flightPlanExecutionEndingState == other.flightPlanExecutionEndingState
     }
 
     override func copy() -> RunFlightPlanState {
@@ -216,20 +229,27 @@ final class RunFlightPlanState: DeviceConnectionState {
                                   mavlinkCommands: self.mavlinkCommands,
                                   completed: self.completed,
                                   progress: self.progress,
-                                  distance: self.distance)
+                                  distance: self.distance,
+                                  flightPlanExecutionEndingState: self.flightPlanExecutionEndingState)
     }
 }
 
 /// RunFlightPlanViewModel is used to run a Flight Plan on the drone.
-
 final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
     // MARK: - Private Properties
     private var flightPlanPilotingRef: Ref<FlightPlanPilotingItf>?
     private weak var flightPlanViewModel: FlightPlanViewModel?
+    private var flightPlanSettingsHandler: FlightPlanSettingsHandler
     private var runningTimer: Timer?
-    private var flightPlanExecution: FlightPlanExecution?
     private var didStartExecution: Bool = false
-    private var initialObstacleAvoidance: ObstacleAvoidanceMode?
+    private var lastExecutionId: String?
+    private var flightPlanExecution: FlightPlanExecution? {
+        didSet {
+            if let strongFlightPlanExecution = flightPlanExecution {
+                lastExecutionId = strongFlightPlanExecution.executionId
+            }
+        }
+    }
 
     // MARK: - Private Enums
     private enum Constants {
@@ -243,16 +263,18 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
     /// - Parameters:
     ///     - flightPlanViewModel: Flight Plan view model
     init(flightPlanViewModel: FlightPlanViewModel) {
-        super.init()
-
         self.flightPlanViewModel = flightPlanViewModel
+        flightPlanSettingsHandler = FlightPlanSettingsHandler(flightPlanViewModel: flightPlanViewModel)
+
+        super.init()
     }
 
     // MARK: - Deinit
     deinit {
         flightPlanPilotingRef = nil
+        flightPlanExecution?.state = .stopped
         stopRunningTimer()
-        restoreObstacleAvoidanceSetting()
+        handleFlightEnds()
     }
 
     // MARK: - Override Funcs
@@ -260,26 +282,25 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
         super.listenDrone(drone: drone)
 
         listenFlightPlanPiloting(drone: drone)
-        initObstacleAvoidance(drone: drone)
+        flightPlanSettingsHandler.saveDroneSettings(drone: drone)
     }
 
     override func droneConnectionStateDidChange() {
         if state.value.isConnected(),
            let drone = self.drone {
-            initObstacleAvoidance(drone: drone)
+            flightPlanSettingsHandler.saveDroneSettings(drone: drone)
         }
     }
 
     // MARK: - Internal Funcs
     /// Toggle play/pause.
     func togglePlayPause() {
-        guard self.state.value.runState != .uploading,
-              self.state.value.isConnected()
+        let state = self.state.value
+        guard state.runState != .uploading,
+              state.isConnected()
         else { return }
 
-        let copy = self.state.value.copy()
-        copy.runState == .playing ? pause() : play()
-        self.state.set(copy)
+        state.runState == .playing ? pause() : play()
     }
 
     /// Resume execution.
@@ -308,7 +329,11 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
         // So when transitioning from a paused state to a stopped one always update the state so
         // that it reflects on the User Interface.
         if deactivationSucceeded || copy.runState == .paused {
-            self.flightPlanExecution?.state = FlightPlanExecutionState.stopped
+            if copy.runState == .paused {
+                // Prevents from missing case pause, then stop.
+                handleFlightEnds()
+            }
+            self.flightPlanExecution?.state = .stopped
             copy.runState = .userStopped
             self.state.set(copy)
         }
@@ -326,43 +351,6 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
 
 // MARK: - Private Funcs
 private extension RunFlightPlanViewModel {
-    // MARK: - Obstacle Avoidance
-    /// Save initial obstacle avoidance drone setting.
-    ///
-    /// - Parameters:
-    ///     - drone: drone
-    func initObstacleAvoidance(drone: Drone) {
-        if initialObstacleAvoidance == nil,
-           let obstacleAvoidance = drone.getPeripheral(Peripherals.obstacleAvoidance)?.mode.value {
-            initialObstacleAvoidance = obstacleAvoidance
-        }
-    }
-
-    /// Set obstacle avoidance mode.
-    ///
-    /// - Parameters:
-    ///     - mode: obstacle avoidance mode
-    func setObstacleAvoidanceMode(_ mode: ObstacleAvoidanceMode) {
-        drone?.getPeripheral(Peripherals.obstacleAvoidance)?.mode.value = mode
-    }
-
-    /// Restore drone's obstacle avoidance to its setting.
-    /// Should be called when flight plan run is done.
-    func restoreObstacleAvoidanceSetting() {
-        guard let oaMode = initialObstacleAvoidance else { return }
-
-        setObstacleAvoidanceMode(oaMode)
-    }
-
-    /// Apply obstacle avoidance setting.
-    /// Should be called on flight plan's activation.
-    func applyObstacleAvoidanceSetting() {
-        if let obstacleAvoidanceActivated = flightPlanViewModel?.flightPlan?.obstacleAvoidanceActivated {
-            let mode: ObstacleAvoidanceMode = obstacleAvoidanceActivated ? .standard : .disabled
-            setObstacleAvoidanceMode(mode)
-        }
-    }
-
     // MARK: - Listen Flight Plan piloting interface
     /// Listen FlightPlan Piloting Interface.
     func listenFlightPlanPiloting(drone: Drone) {
@@ -370,6 +358,7 @@ private extension RunFlightPlanViewModel {
             guard let strongSelf = self,
                   let pilotingItf = flightPlanPiloting else { return }
 
+            var shouldHandleResuming: Bool = false
             let copy = strongSelf.state.value.copy()
             copy.activationError = pilotingItf.latestActivationError
             copy.pilotingState = pilotingItf.state
@@ -380,9 +369,8 @@ private extension RunFlightPlanViewModel {
 
             strongSelf.updateFlightPlanItemExecution(pilotingItf.latestMissionItemExecuted)
 
-            // If a flight plan is active and reach the first way point, we start a new execution.
+            // If a flight plan is active, we start a new execution.
             if pilotingItf.state == .active,
-               (pilotingItf.latestMissionItemExecuted ?? 0) > 0,
                strongSelf.state.value.runState == .playing,
                strongSelf.didStartExecution == false {
                 strongSelf.startFlightPlanExecution()
@@ -397,18 +385,12 @@ private extension RunFlightPlanViewModel {
                 copy.runState = .stopped
             case .idle where self?.state.value.runState == .playing:
                 // Ends Flight Plan.
-                strongSelf.handleFlightEnds()
                 copy.runState = .stopped
                 copy.completed = true
-                DispatchQueue.main.async { [weak self] in
-                    let copy = self?.state.value.copy()
-                    copy?.completed = false
-                    self?.state.set(copy)
-                }
             case .active where self?.state.value.runState == .stopped:
                 // Handle stop, then start case.
                 copy.runState = .playing
-                strongSelf.startRunningTimer(resetStartDate: true)
+                shouldHandleResuming = true
             default:
                 break
             }
@@ -422,8 +404,8 @@ private extension RunFlightPlanViewModel {
                 if copy.pilotingState == .idle {
                     // Ends upload: start fight plan.
                     copy.runState = .playing
-                    if self?.activate(isPaused: false ) ?? false {
-                        self?.startRunningTimer(resetStartDate: true)
+                    if strongSelf.activate(isPaused: false ) {
+                        strongSelf.startRunningTimer(resetStartDate: true)
                     }
                 }
             case .failed:
@@ -436,6 +418,13 @@ private extension RunFlightPlanViewModel {
             }
 
             strongSelf.state.set(copy)
+
+            if strongSelf.state.value.completed {
+                strongSelf.handleFlightEnds()
+            } else if shouldHandleResuming {
+                strongSelf.startRunningTimer(resetStartDate: true)
+                strongSelf.handleAppResumeWhileFlightPlanRunning()
+            }
         }
     }
 
@@ -454,6 +443,7 @@ private extension RunFlightPlanViewModel {
     func activate(isPaused: Bool) -> Bool {
         guard let interface = self.getPilotingItf() else { return false }
 
+        // Check interpreter.
         var interpreter: FlightPlanInterpreter = .standard
         if let flightPlan = self.flightPlanViewModel?.flightPlan,
            let fpStringType = flightPlan.type,
@@ -461,23 +451,23 @@ private extension RunFlightPlanViewModel {
             interpreter = flightPlanType.mavLinkType
         }
 
+        // Start run.
         let activationSuccess: Bool
-        // Restart if missionItem > 1 because if missionItem == 1 means restart FP.
         if let missionItem = flightPlanExecution?.latestItemExecuted,
-           missionItem > 1,
            interface.activateAtMissionItemSupported {
-            // FIXME: latestItemExecuted has currently one increment more (SDK related).
+            // Resume flight plan at missionItem.
             activationSuccess = interface.activate(restart: !isPaused,
                                                    interpreter: interpreter,
-                                                   missionItem: missionItem - 1)
+                                                   missionItem: missionItem)
         } else {
+            // Start flight plan from its begining.
             activationSuccess = interface.activate(restart: !isPaused,
                                                    interpreter: interpreter)
         }
 
         if activationSuccess {
-            // Apply OA setting when FP was activated.
-            applyObstacleAvoidanceSetting()
+            // Apply settings when FP was activated.
+            flightPlanSettingsHandler.applyFlightPlanSetting()
         }
 
         return activationSuccess
@@ -486,18 +476,68 @@ private extension RunFlightPlanViewModel {
     // MARK: - Controls
     /// Plays or uploads Flight Plan regarding state.
     func play() {
+        // Reset ending execution state and completed state.
+        let copy = self.state.value.copy()
+        copy.flightPlanExecutionEndingState = .notEnded
+        copy.completed = false
+        self.state.set(copy)
+
         let state = self.state.value
         if state.isFileKnownByDrone,
            state.isFileUpToDate {
             let isPaused = state.runState == .paused
             if activate(isPaused: isPaused) {
                 let copy = self.state.value.copy()
-                copy.runState = .playing
+                // When resuming an execution, we specify that the run state is stopped
+                // to prevent bad behaviours in the listener of the flightPlan piloting interface.
+                copy.runState = .stopped
                 self.state.set(copy)
                 startRunningTimer(resetStartDate: !isPaused)
             }
         } else if state.isAvailable {
+            // When starting an execution, we specify that the run state is stopped
+            // to prevent bad behaviours in the listener of the flightPlan piloting interface.
+            let copy = self.state.value.copy()
+            copy.runState = .stopped
+            self.state.set(copy)
             self.sendMavlinkToDevice()
+        }
+    }
+
+    /// Handles special case when app just resuming and a flight plan is runnning.
+    func handleAppResumeWhileFlightPlanRunning() {
+        // Check the flightPlanExecution to be sur the FP was not run by self
+        // Check flight plan is running
+        // Get recovery if and deduce execution object if exists.
+        guard self.flightPlanExecution == nil,
+              self.state.value.runState.isActive,
+              let flightPlanRecoveryId = drone?.getPilotingItf(PilotingItfs.flightPlan)?.recoveryInfo?.id,
+              let execution = CoreDataManager.shared.executions(forRecoveryId: flightPlanRecoveryId).first else {
+            return
+        }
+
+        // Set the previously created execution to self
+        self.flightPlanExecution = execution
+
+        let copy = self.state.value.copy()
+        // Get commands back.
+        if let path = flightPlanExecution?.mavlinkUrl?.path,
+           FileManager.default.fileExists(atPath: path),
+           let mavlinkCommands: [MavlinkStandard.MavlinkCommand] = (try? MavlinkStandard.MavlinkFiles.parse(filepath: path)) {
+            copy.mavlinkCommands = mavlinkCommands
+        }
+
+        // Update latestItemExecuted if needed (case segment was not finished).
+        if copy.latestItemExecuted == nil {
+            copy.latestItemExecuted = execution.latestItemExecuted
+        }
+        // Update running timer.
+        copy.duration = execution.startDate.timeIntervalSinceNow * -1
+        self.state.set(copy)
+
+        // Start timer if needed.
+        if self.state.value.runState == .playing {
+            self.startRunningTimer(resetStartDate: false)
         }
     }
 
@@ -574,7 +614,7 @@ private extension RunFlightPlanViewModel {
     func updateDuration() {
         switch self.state.value.runState {
         // Start timer when the first item is reached.
-        case .playing where self.state.value.latestItemExecuted ?? 0 > 0:
+        case .playing:
             let copy = self.state.value.copy()
             copy.duration += Constants.timerDelay
             self.state.set(copy)
@@ -608,32 +648,32 @@ private extension RunFlightPlanViewModel {
     ///     - item: last item executed
     func updateFlightPlanItemExecution(_ item: Int?) {
         guard let execution = self.flightPlanExecution,
-              let newItem = item else { return }
-
-        // Save last item executed if it changed.
-        if execution.latestItemExecuted != newItem {
-            execution.latestItemExecuted = item
-            self.flightPlanViewModel?.saveExecution(execution)
+              let newItem = item else {
+            return
         }
+
+        // Save last item executed and update database with the updated execution.
+        execution.saveLatestItemExecuted(with: newItem)
     }
 
     /// Starts flight plan execution.
     func startFlightPlanExecution() {
         didStartExecution = true
-        guard let flightPlanId = flightPlanViewModel?.flightPlan?.uuid else {
-            return
-        }
+        guard let flightPlanId = flightPlanViewModel?.flightPlan?.uuid else { return }
 
+        // RecoveryId is a flight plan Id generated by the drone.
+        let flightPlanRecoveryId = drone?.getPilotingItf(PilotingItfs.flightPlan)?.flightPlanId
         let flightId = self.drone?.getInstrument(Instruments.flightInfo)?.flightId
         let settings = flightPlanViewModel?.flightPlan?.settings
         if self.flightPlanExecution == nil {
-            // Start new execution.
+            // Starts new execution.
             self.flightPlanExecution = FlightPlanExecution(flightPlanId: flightPlanId,
-                                                flightId: flightId,
-                                                startDate: Date(),
-                                                settings: settings)
+                                                           flightId: flightId,
+                                                           startDate: Date(),
+                                                           settings: settings,
+                                                           flightPlanRecoveryId: flightPlanRecoveryId)
         } else {
-            // Resume execution: Update settings and dates.
+            // Resumes execution: Updates settings and dates.
             self.flightPlanExecution?.state = .initialized
             self.flightPlanExecution?.settings = settings
             self.flightPlanExecution?.flightId = flightId
@@ -663,11 +703,10 @@ private extension RunFlightPlanViewModel {
 
         guard let strongFpExecution = self.flightPlanExecution else { return }
 
-        if strongFpExecution.state == .initialized {
-            strongFpExecution.state = FlightPlanExecutionState.completed
-            // Reset latestItemExecuted if flight was completed.
-            strongFpExecution.latestItemExecuted = nil
+        if self.state.value.completed {
+            strongFpExecution.state = .completed
         }
+
         strongFpExecution.endDate = Date()
         flightPlanViewModel?.saveExecution(strongFpExecution)
         self.flightPlanExecution = nil
@@ -675,9 +714,20 @@ private extension RunFlightPlanViewModel {
         didStartExecution = false
     }
 
+    /// Updates flight Plan execution ending state.
+    func updateExecutionEnds() {
+        guard let strongLastExecutionId = lastExecutionId else { return }
+
+        let copy = self.state.value.copy()
+        copy.flightPlanExecutionEndingState = .ended(strongLastExecutionId)
+        self.state.set(copy)
+    }
+
     /// Handle flight ends.
     func handleFlightEnds() {
-        restoreObstacleAvoidanceSetting()
+        flightPlanSettingsHandler.restoreSettings()
         saveFlightPlanExecution()
+        updateExecutionEnds()
+        drone?.getPilotingItf(PilotingItfs.flightPlan)?.clearRecoveryInfo()
     }
 }

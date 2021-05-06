@@ -145,6 +145,7 @@ private extension GalleryMediaViewController {
     ///     - medias: list of medias to download
     func handleDownload(_ medias: [GalleryMedia]) {
         guard viewModel?.state.value.downloadStatus != .running else { return }
+
         loadingMedias = medias
         viewModel?.downloadMedias(loadingMedias, completion: { [weak self] success in
             guard success else { return }
@@ -155,9 +156,16 @@ private extension GalleryMediaViewController {
 
     /// Handle download end.
     func handleDownloadEnd() {
-        let medias = loadingMedias.compactMap({ $0.mediaItem })
+        let medias = loadingMedias.compactMap({ $0.mainMediaItem })
         guard medias.first(where: { $0.isDownloaded == false }) == nil else { return }
 
+        medias.forEach { media in
+            if let index = selectedMedias.firstIndex(where: { $0.uid == media.uid }) {
+                selectedMedias[index].downloadState = .downloaded
+            }
+        }
+
+        selectionView.updateButtons(selectedMedias: selectedMedias)
         let deleteAction = AlertAction(title: L10n.commonDelete,
                                        style: .destructive,
                                        actionHandler: { [weak self] in
@@ -167,15 +175,16 @@ private extension GalleryMediaViewController {
                                         self?.viewModel?.deleteMedias(medias, completion: { _ in
                                             self?.loadingMedias.removeAll()
                                             self?.viewModel?.refreshMedias()
+                                            self?.selectionView.setCountAndSizeOfItems(0, 0)
                                         })
-        })
+                                       })
         let keepAction = AlertAction(title: L10n.commonKeep,
                                      style: .default,
                                      actionHandler: { [weak self] in
                                         // Remove loading files.
                                         self?.loadingMedias.removeAll()
                                         self?.viewModel?.refreshMedias()
-        })
+                                     })
         let message = loadingMedias.count == 1 ? L10n.galleryDownloadKeep : L10n.galleryDownloadKeepPlural
         showAlert(title: L10n.galleryDownloadComplete,
                   message: message,
@@ -189,11 +198,20 @@ private extension GalleryMediaViewController {
     ///     - medias: list of medias to delete
     func handleDelete(_ medias: [GalleryMedia]) {
         guard viewModel?.state.value.downloadStatus != .running else { return }
+
         viewModel?.deleteMedias(medias, completion: { [weak self] success in
             guard success else { return }
 
             self?.viewModel?.refreshMedias()
+            self?.selectionView.setCountAndSizeOfItems(0, 0)
         })
+    }
+
+    /// Handle delete media selection.
+    func deleteSelection() {
+        let medias = selectedMedias
+        delegate?.multipleSelectionActionTriggered()
+        handleDelete(medias)
     }
 
     /// Handle long press on collection view cell.
@@ -202,8 +220,8 @@ private extension GalleryMediaViewController {
     ///     - longPress: reference to the gesture recognizer
     @objc func handleLongPress(longPress: UILongPressGestureRecognizer) {
         guard collection.allowsMultipleSelection == false,
-            let delegate = delegate,
-            let indexPath = collection.indexPathForItem(at: longPress.location(in: collection)) else {
+              let delegate = delegate,
+              let indexPath = collection.indexPathForItem(at: longPress.location(in: collection)) else {
             return
         }
 
@@ -231,7 +249,7 @@ extension GalleryMediaViewController: UICollectionViewDataSource {
                    mediaStore: viewModel.mediaStore,
                    index: viewModel.getMediaImageDefaultIndex(media),
                    delegate: self,
-                   selected: selectedMedias.contains(media))
+                   selected: selectedMedias.first(where: { $0.uid == media.uid }) != nil)
 
         return cell
     }
@@ -260,8 +278,8 @@ extension GalleryMediaViewController: UICollectionViewDelegate {
         let media = dataSource[indexPath.section].medias[indexPath.row]
 
         if collectionView.allowsMultipleSelection {
-            if selectedMedias.contains(media) {
-                selectedMedias.removeAll(where: {$0 == media})
+            if let index = selectedMedias.firstIndex(where: { $0.uid == media.uid }) {
+                selectedMedias.remove(at: index)
             } else {
                 selectedMedias.append(media)
             }
@@ -365,9 +383,20 @@ extension GalleryMediaViewController: GalleryViewDelegate {
 // MARK: - Gallery Selection View Delegate.
 extension GalleryMediaViewController: GallerySelectionDelegate {
     func mustDeleteSelection() {
-        let medias = selectedMedias
-        delegate?.multipleSelectionActionTriggered()
-        handleDelete(medias)
+        let deleteAction = AlertAction(title: L10n.commonDelete,
+                                       style: .destructive,
+                                       actionHandler: { [weak self] in
+                                        self?.deleteSelection()
+                                       })
+        let cancelAction = AlertAction(title: L10n.cancel,
+                                       style: .cancel,
+                                       actionHandler: {})
+        // TODO: handle this properly when working on delete / download actions
+        let message: String = ""
+        showAlert(title: L10n.commonDelete,
+                  message: message,
+                  cancelAction: cancelAction,
+                  validateAction: deleteAction)
     }
 
     func mustDownloadSelection() {

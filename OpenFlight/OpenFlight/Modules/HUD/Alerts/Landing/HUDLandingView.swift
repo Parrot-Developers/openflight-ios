@@ -38,7 +38,7 @@ final class HUDLandingView: UIView, NibOwnerLoadable {
     @IBOutlet private weak var rthImageView: UIImageView!
 
     // MARK: - Private Properties
-    private var viewModel: HUDLandingViewModel?
+    private let viewModel = HUDLandingViewModel()
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
@@ -62,20 +62,20 @@ private extension HUDLandingView {
 
     /// Init the view model.
     func setupViewModel() {
-        viewModel = HUDLandingViewModel(stateDidUpdate: { [weak self] state in
+        viewModel.state.valueChanged = { [weak self] state in
             self?.updateView(with: state)
-        })
-        updateView(with: viewModel?.state.value)
+        }
+        updateView(with: viewModel.state.value)
     }
 
     /// Updates the view.
     ///
     /// - Parameters:
     ///     - state: current landing state
-    func updateView(with state: HUDLandingState?) {
-        rthImageView.image = state?.image
-        rthImageView.isHidden = state?.isLandingOrRth == false
-        if state?.isLandingOrRth == true {
+    func updateView(with state: HUDLandingState) {
+        rthImageView.image = state.image
+        rthImageView.isHidden = state.isLandingOrRth == false
+        if state.isLandingOrRth == true {
             UIView.animate(withDuration: Style.longAnimationDuration,
                            delay: 0.0,
                            options: [.repeat, .autoreverse],

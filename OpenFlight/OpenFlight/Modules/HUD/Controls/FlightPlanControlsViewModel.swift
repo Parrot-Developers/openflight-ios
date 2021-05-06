@@ -51,7 +51,6 @@ final class FlightPlanControlsState: ViewModelState, EquatableState, Copying {
             && missionLauncherMode == .closed
             && alertPanelMode == .closed
             && !forceHidePanel
-            && !isOverContextModalPresented
     }
 
     // MARK: - Init
@@ -106,8 +105,9 @@ final class FlightPlanControlsViewModel: BaseViewModel<FlightPlanControlsState> 
     private var missionLauncherViewModel = MissionLauncherViewModel()
 
     // MARK: - Init
-    override init(stateDidUpdate: ((FlightPlanControlsState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenMissionLauncherMode()
         listenAlertPanelMode()
         listenMissionLauncherViewModel()

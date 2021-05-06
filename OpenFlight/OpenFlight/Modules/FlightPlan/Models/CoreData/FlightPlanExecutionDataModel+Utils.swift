@@ -34,13 +34,15 @@ import Foundation
 extension FlightPlanExecutionDataModel {
     /// Returns FlightPlanExecution object.
     public var asFlightPlanExecution: FlightPlanExecution {
-        let execution = FlightPlanExecution(flightPlanId: self.flightPlanId,
+        let execution = FlightPlanExecution(executionId: self.executionId,
+                                            flightPlanId: self.flightPlanId,
                                             flightId: self.flightId,
                                             startDate: self.startDate,
                                             endDate: self.endDate,
                                             state: self.stateEnum,
                                             settings: self.lightSettings,
-                                            latestItemExecuted: self.latestItemExecutedAsInt)
+                                            latestItemExecuted: self.latestItemExecutedAsInt,
+                                            flightPlanRecoveryId: self.flightPlanRecoveryId)
         return execution
     }
 

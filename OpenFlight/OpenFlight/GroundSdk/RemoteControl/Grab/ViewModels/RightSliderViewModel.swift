@@ -45,7 +45,7 @@ extension RightSliderViewModel {
     ///
     /// - Parameters:
     ///     - state: sky controller event state
-    func actionUp(_ state: SkyCtrl3ButtonEventState) {
+    func actionUp(_ state: SkyCtrl4ButtonEventState) {
         if isEvTriggerSettingEnabled {
             increaseExposureValue(state)
         }
@@ -55,7 +55,7 @@ extension RightSliderViewModel {
     ///
     /// - Parameters:
     ///     - state: sky controller event state
-    func actionDown(_ state: SkyCtrl3ButtonEventState) {
+    func actionDown(_ state: SkyCtrl4ButtonEventState) {
         if isEvTriggerSettingEnabled {
             decreaseExposureValue(state)
         }
@@ -78,7 +78,7 @@ private extension RightSliderViewModel {
     ///
     /// - Parameters:
     ///     - state: sky controller event state
-    func increaseExposureValue(_ state: SkyCtrl3ButtonEventState) {
+    func increaseExposureValue(_ state: SkyCtrl4ButtonEventState) {
         guard state == .pressed,
               let camera = drone?.currentCamera,
               let evSetting = camera.config[Camera2Params.exposureCompensation] else {
@@ -113,7 +113,7 @@ private extension RightSliderViewModel {
     ///
     /// - Parameters:
     ///     - state: sky controller event state
-    func decreaseExposureValue(_ state: SkyCtrl3ButtonEventState) {
+    func decreaseExposureValue(_ state: SkyCtrl4ButtonEventState) {
         guard state == .pressed,
               let camera = drone?.currentCamera,
               let evSetting = camera.config[Camera2Params.exposureCompensation] else {
@@ -152,7 +152,7 @@ private extension RightSliderViewModel {
     /// - Parameters:
     ///     - state: Sky controller event state
     ///     - newValue: new zoom velocity value
-    func updateZoomVelocity(_ state: SkyCtrl3ButtonEventState = .pressed, newValue: Double) {
+    func updateZoomVelocity(_ state: SkyCtrl4ButtonEventState = .pressed, newValue: Double) {
         guard state == .pressed,
               let zoom = drone?.currentCamera?.zoom,
               let camera = drone?.currentCamera else {

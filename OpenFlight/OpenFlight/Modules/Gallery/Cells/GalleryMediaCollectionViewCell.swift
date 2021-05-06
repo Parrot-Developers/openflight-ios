@@ -137,7 +137,6 @@ internal extension GalleryMediaCollectionViewCell {
         self.media = media
         self.delegate = delegate
         selectionView.backgroundColor = ColorName.black40.color
-        selectionCheckmarkView.backgroundColor = ColorName.greenPea.color
         selectionCheckmarkView.layer.cornerRadius = selectionCheckmarkView.frame.size.width / 2.0
         downloadButton.isSelected = selected
         downloadButton.isHidden = media.source == .mobileDevice

@@ -85,13 +85,13 @@ extension Alarms {
 
         // Checks alert for no gps, environnement too dark.
         if getAlarm(kind: Alarm.Kind.hoveringDifficultiesNoGpsTooDark).hasError
-            && drone.getPeripheral(Peripherals.obstacleAvoidance)?.mode.value == .standard {
+            && drone.getPeripheral(Peripherals.obstacleAvoidance)?.mode.preferredValue == .standard {
             alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceNoGpsTooDark)
         }
 
         // Checks alert for no gps, drone too high.
         if getAlarm(kind: Alarm.Kind.hoveringDifficultiesNoGpsTooHigh).hasError
-            && drone.getPeripheral(Peripherals.obstacleAvoidance)?.mode.value == .standard {
+            && drone.getPeripheral(Peripherals.obstacleAvoidance)?.mode.preferredValue == .standard {
             alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceNoGpsTooHigh)
         }
 

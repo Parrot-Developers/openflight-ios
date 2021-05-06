@@ -136,15 +136,16 @@ final class HUDTopBannerViewModel: DroneStateViewModel<HUDTopBannerState> {
     private var preciseHomeRef: Ref<PreciseHome>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
-    private var alertBannerViewModel: HUDAlertBannerViewModel?
+    private let alertBannerViewModel = HUDAlertBannerViewModel()
     private var lastPreciseHomeState: PreciseHomeState?
     private var shouldShowHomeSetInfo: Bool = true
     private var isAutoModeActive: Bool = false
-    private var autoModeViewModel = ImagingBarAutoModeViewModel()
+    private let autoModeViewModel = ImagingBarAutoModeViewModel()
 
     // MARK: - Override Funcs
-    override init(stateDidUpdate: ((HUDTopBannerState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenAlertBannerViewModel()
     }
 
@@ -154,11 +155,11 @@ final class HUDTopBannerViewModel: DroneStateViewModel<HUDTopBannerState> {
         if drone.isStateFlying {
             shouldShowHomeSetInfo = false
         }
+        listenAutoModeViewModel()
         listenCamera(drone: drone)
         listenPreciseHome(drone: drone)
         listenFlyingIndicators(drone: drone)
         listenReturnHome(drone: drone)
-        listenAutoModeViewModel()
     }
 }
 
@@ -178,6 +179,7 @@ private extension HUDTopBannerViewModel {
     func listenAutoModeViewModel() {
         autoModeViewModel.state.valueChanged = { [weak self] state in
             let camera = self?.drone?.getPeripheral(Peripherals.mainCamera2)
+            self?.isAutoModeActive = state.isActive
             self?.updateState(camera: camera, isAutoModeActive: state.isActive)
         }
     }
@@ -209,11 +211,20 @@ private extension HUDTopBannerViewModel {
 
     /// Starts watcher for banner alerts.
     func listenAlertBannerViewModel() {
-        alertBannerViewModel = HUDAlertBannerViewModel { [weak self] state in
-            let copy = self?.state.value.copy()
-            copy?.isDisplayingAlert = state.alert != nil
-            self?.state.set(copy)
+        alertBannerViewModel.state.valueChanged = { [weak self] state in
+            self?.updateAlertDisplay(state)
         }
+        updateAlertDisplay(alertBannerViewModel.state.value)
+    }
+
+    /// Update alert display state.
+    ///
+    /// - Parameters:
+    ///    - alertBannerState: current alert banner state
+    func updateAlertDisplay(_ alertBannerState: HUDAlertBannerState) {
+        let copy = self.state.value.copy()
+        copy.isDisplayingAlert = alertBannerState.alert != nil
+        self.state.set(copy)
     }
 
     /// Method that update auto mode state.
@@ -223,15 +234,17 @@ private extension HUDTopBannerViewModel {
     ///    - camera: Main camera.
     func updateState(camera: MainCamera2?, isAutoModeActive: Bool) {
         self.isAutoModeActive = isAutoModeActive
-        guard let camera = camera else { return }
+        guard let camera = camera,
+              let aeMode = camera.getComponent(Camera2Components.exposureLock)?.mode else {
+            return
+        }
 
         let copy = state.value.copy()
         copy.hdrOn = camera.isHdrOn == true
-        copy.lockAeMode = camera.getComponent(Camera2Components.exposureLock)?.mode ?? .none
-        copy.shouldDisplayAutoExposureLock = camera.getComponent(Camera2Components.exposureLock)?.mode == .region
+        copy.lockAeMode = aeMode
+        copy.shouldDisplayAutoExposureLock = aeMode != .none
             && camera.isHdrOn == false
-            && self.isAutoModeActive == true
-            && Defaults.isAutoExposureLocked == true
+            && isAutoModeActive == true
         state.set(copy)
     }
 

@@ -42,12 +42,17 @@ extension WayPoint {
     }
 
     // MARK: - Internal Properties
-    /// Returns a target point for current waypoint yaw.
+    /// Returns target point for current waypoint.
     var target: AGSPoint? {
-        return AGSGeometryEngine.standardGeodeticMove(agsPoint,
-                                                      distance: Constants.targetDistance,
-                                                      azimuth: yaw,
-                                                      azimuthUnit: .degrees())
+        if hasCustomYaw == false,
+           let nextWayPoint = nextWayPoint {
+            return nextWayPoint.agsPoint
+        } else {
+            return AGSGeometryEngine.standardGeodeticMove(agsPoint,
+                                                          distance: Constants.targetDistance,
+                                                          azimuth: yaw ?? 0.0,
+                                                          azimuthUnit: .degrees())
+        }
     }
 
     /// Returns duration to get to next waypoint, 0.0 if no next waypoint or inconsistent data.
@@ -105,7 +110,7 @@ extension WayPoint {
                                               wayPointIndex: index,
                                               poiPoint: poiPoint,
                                               poiIndex: poiIndex,
-                                              angle: Float(yaw))
+                                              angle: Float(yaw ?? 0.0))
     }
 
     /// Computes label graphic for waypoint.

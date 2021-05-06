@@ -31,6 +31,7 @@
 import GroundSdk
 import SwiftProtobuf
 import Reachability
+import SwiftyUserDefaults
 
 // MARK: - FirmwareUpdateInfoState
 /// The states for `FirmwareUpdateInfoViewModel`.
@@ -102,15 +103,6 @@ final class FirmwareUpdateInfoViewModel: DroneStateViewModel<FirmwareUpdateInfoS
     private var internalUserStorageRef: Ref<InternalUserStorage>?
     private var reachability: Reachability?
 
-    // MARK: - Init
-    /// Inits the view model.
-    ///
-    /// - Parameters:
-    ///   - stateDidUpdate: the callback for any state updates
-    override init(stateDidUpdate: ((FirmwareUpdateInfoState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
-    }
-
     // MARK: - Deinit
     deinit {
         reachability?.stopNotifier()
@@ -160,7 +152,7 @@ final class FirmwareUpdateInfoViewModel: DroneStateViewModel<FirmwareUpdateInfoS
             return state.value.isNetworkReachable ? .readyForUpdate : .noInternetConnection
         }
 
-        if let updateUnavailabilityReason = updaterRef?.value?.updateUnavailabilityReasons,
+        if let updateUnavailabilityReason = drone?.getPeripheral(Peripherals.updater)?.updateUnavailabilityReasons,
            let firstReason = updateUnavailabilityReason.first {
             return FirmwareAndMissionUpdateRequirements(unavailabilityReason: firstReason)
         } else if hasFirmwareToUpdate

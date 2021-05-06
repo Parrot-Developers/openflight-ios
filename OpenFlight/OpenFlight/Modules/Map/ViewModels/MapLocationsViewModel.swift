@@ -181,12 +181,9 @@ final class MapLocationsViewModel: DevicesStateViewModel<MapLocationsState> {
     }
 
     // MARK: - Init
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - stateDidUpdate: called when drone location changed
-    override init(stateDidUpdate: ((MapLocationsState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenUserLocation()
         listenUserHeading()
     }

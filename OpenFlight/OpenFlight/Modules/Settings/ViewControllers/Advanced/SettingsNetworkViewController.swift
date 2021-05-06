@@ -35,7 +35,7 @@ final class SettingsNetworkViewController: SettingsContentViewController {
     // MARK: - Private Properties
     private let networkViewModel = SettingsNetworkViewModel()
     private var wifiNameIndex: Int?
-    private var cellularSelectionIndex: Int?
+    private var cellularDataIndex: Int?
 
     // MARK: - Deinit
     deinit {
@@ -107,9 +107,9 @@ extension SettingsNetworkViewController {
             wifiNameIndex = indexPath.row
         case .wifiChannels:
             cell = configureChannelCell(atIndexPath: indexPath)
-        case .networkSelection:
-            cell = configureNetworkSelectionCell(atIndexPath: indexPath)
-            cellularSelectionIndex = indexPath.row
+        case .cellularData:
+            cell = configureCellularDataCell(atIndexPath: indexPath)
+            cellularDataIndex = indexPath.row
         default:
             cell = super.tableView(tableView, cellForRowAt: indexPath)
         }
@@ -150,13 +150,13 @@ private extension SettingsNetworkViewController {
         return cell
     }
 
-    /// Configure network selection cell.
+    /// Configure cellular data cell.
     ///
     /// - Parameters:
     ///     - indexPath: cell indexPath
     /// - Returns: A table view cell.
-    func configureNetworkSelectionCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
-        let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsNetworkSelectionCell
+    func configureCellularDataCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsCellularDataCell
         cell.delegate = self
 
         return cell
@@ -190,14 +190,20 @@ private extension SettingsNetworkViewController {
     }
 }
 
-// MARK: - SettingsNetworkSelectionDelegate
-extension SettingsNetworkViewController: SettingsNetworkSelectionDelegate {
-    func networkSelectionDidChange() {
+// MARK: - SettingsCellularDataDelegate
+extension SettingsNetworkViewController: SettingsCellularDataDelegate {
+    func cellularDataDidChange() {
+        self.updateDataSource(networkViewModel.state.value)
         settingsTableView?.reloadData()
     }
 
     func didStartSelectionEditing() {
-        settingsTableView.scrollTo(at: cellularSelectionIndex)
+        guard let strongCellularDataIndex = cellularDataIndex else { return }
+
+        let indexPath = IndexPath(row: strongCellularDataIndex, section: 0)
+        let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsCellularDataCell
+        let height = cell.bounds.height
+        settingsTableView.contentOffset = CGPoint(x: 0.0, y: height)
     }
 }
 

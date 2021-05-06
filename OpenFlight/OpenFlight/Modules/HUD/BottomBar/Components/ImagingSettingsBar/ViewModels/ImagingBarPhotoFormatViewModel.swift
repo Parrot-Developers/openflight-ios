@@ -60,13 +60,11 @@ private extension ImagingBarPhotoFormatViewModel {
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
         cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
-            guard let photoFormat = camera?.photoFormatMode,
-                let copy = self?.state.value.copy()
-                else {
-                    return
-            }
+            guard let strongSelf = self else { return }
 
-            copy.mode = photoFormat
+            let copy = strongSelf.state.value.copy()
+            copy.mode = camera?.photoFormatMode
+            copy.supportedModes = camera?.photoFormatModeSupportedValues
             self?.state.set(copy)
         }
     }

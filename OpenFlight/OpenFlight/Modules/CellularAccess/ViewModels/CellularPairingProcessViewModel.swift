@@ -101,8 +101,8 @@ final class CellularPairingProcessState: ViewModelState, EquatableState, Copying
 final class CellularPairingProcessViewModel: DroneWatcherViewModel<CellularPairingProcessState> {
     // MARK: - Internal Properties
     /// Returns true if a pin code is needed.
-    var isPinCodeRequested: Bool? {
-        return drone?.getPeripheral(Peripherals.cellular)?.isPinCodeRequested
+    var isPinCodeRequested: Bool {
+        return drone?.getPeripheral(Peripherals.cellular)?.isPinCodeRequested == true
     }
 
     // MARK: - Private Properties
@@ -111,20 +111,23 @@ final class CellularPairingProcessViewModel: DroneWatcherViewModel<CellularPairi
     private var reachability: Reachability?
     private var academyAPIManager = AcademyApiManager()
     private var apcAPIManager = APCApiManager()
+    private var pairingRequestObserver: Any?
 
     // MARK: - Init
-    override init(stateDidUpdate: ((CellularPairingProcessState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
 
         listenReachability()
         updateLoggingState()
-        startPairingProcess()
+        listenPairingProcessRequest()
     }
 
     // MARK: - Deinit
     deinit {
         cellularRef = nil
         secureElementRef = nil
+        pairingRequestObserver = nil
+        NotificationCenter.default.remove(observer: pairingRequestObserver)
     }
 
     // MARK: - Override Funcs
@@ -168,6 +171,15 @@ final class CellularPairingProcessViewModel: DroneWatcherViewModel<CellularPairi
 
 // MARK: - Private Funcs
 private extension CellularPairingProcessViewModel {
+    /// Observes notification on pairing process request.
+    func listenPairingProcessRequest() {
+        pairingRequestObserver = NotificationCenter.default.addObserver(forName: .requestCellularPairingProcess,
+                                                                        object: nil,
+                                                                        queue: nil) { [weak self] _ in
+            self?.startPairingProcess()
+        }
+    }
+
     /// Starts the entire pairing process.
     func startPairingProcess() {
         guard reachability?.isConnected == true else {

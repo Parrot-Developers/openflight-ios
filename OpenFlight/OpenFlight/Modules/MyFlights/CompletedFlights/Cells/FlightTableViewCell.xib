@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -188,12 +188,12 @@
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
                 <outlet property="bgView" destination="W30-xE-Xge" id="jbv-zw-yAO"/>
-                <outlet property="dateLabel" destination="acQ-sZ-lMo" id="Yfx-nn-Yoo"/>
+                <outlet property="dateLabel" destination="xfY-d0-hbO" id="96Z-vW-62g"/>
                 <outlet property="dateStackView" destination="q9l-Z6-2zv" id="guK-5Y-3OM"/>
                 <outlet property="dateView" destination="rcV-EJ-kEr" id="qdJ-Sm-dHb"/>
+                <outlet property="locationLabel" destination="acQ-sZ-lMo" id="sBH-34-VQ9"/>
                 <outlet property="mapImage" destination="UVu-g0-3yV" id="kwI-gu-MjF"/>
                 <outlet property="monthLabel" destination="Tbw-F1-SEw" id="HhG-TV-lQT"/>
-                <outlet property="nameLabel" destination="xfY-d0-hbO" id="bTJ-q1-4SW"/>
                 <outlet property="photoLabel" destination="I1R-yy-eql" id="TUV-t7-1y5"/>
                 <outlet property="videoLabel" destination="5Nf-G6-e6D" id="b7N-HB-q6a"/>
                 <outlet property="warningLabel" destination="bUr-C8-g1H" id="Zmu-lG-mX7"/>

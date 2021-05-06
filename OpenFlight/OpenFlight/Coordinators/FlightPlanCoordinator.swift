@@ -28,13 +28,14 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-// MARK: - FlightPlanCoordinator
+// MARK: - Protocols
 /// FlightPlanCoordinator protocol, dedicated to provide coordinator with possible actions.
 public protocol FlightPlanCoordinator: Coordinator {
     /// Functions called when a new flight plan is clicked.
     ///
     /// - Parameters:
     ///    - flightPlanProvider: flight plan provider
-    ///    - completion: call back that returns if a flight plan have been created
-    func startNewFlightPlan(flightPlanProvider: FlightPlanProvider, creationCompletion: @escaping (_ createNewFp: Bool) -> Void)
+    ///    - creationCompletion: call back that returns if a flight plan has been created
+    func startNewFlightPlan(flightPlanProvider: FlightPlanProvider,
+                            creationCompletion: @escaping (_ createNewFp: Bool) -> Void)
 }

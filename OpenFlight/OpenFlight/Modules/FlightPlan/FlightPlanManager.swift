@@ -173,7 +173,8 @@ public final class FlightPlanManager {
     ///     - state: mission state
     func loadLastOpenedFlightPlan(state: MissionProviderState) {
         let predicate = state.mode?.flightPlanProvider?.filterPredicate
-        if let flightPlan = CoreDataManager.shared.loadLastFlightPlan(predicate: predicate) {
+        if let flightPlan = CoreDataManager.shared.loadLastFlightPlan(predicate: predicate),
+           flightPlan.state.value.uuid != self.currentFlightPlanViewModel?.state.value.uuid {
             self.currentFlightPlanViewModel = flightPlan
         }
     }
@@ -238,6 +239,14 @@ public extension FlightPlanManager {
         if type.canGenerateMavlink == false {
             flightPlanData?.copyMavlink(from: url)
         }
+
+        // Backup OA settings.
+        flightPlanData?.obstacleAvoidanceActivated = currentFlightPlanViewModel?.flightPlan?.obstacleAvoidanceActivated
+
+        // Backup capture settings.
+        let captureSettings = currentFlightPlanViewModel?.flightPlan?.plan.captureSettings
+        flightPlanData?.plan.captureSettings = captureSettings
+
         // Update FP data.
         currentFlightPlanViewModel?.flightPlan = flightPlanData
     }

@@ -31,8 +31,7 @@
 import ArcGIS
 
 /// Base class for Flight Plan graphical items.
-
-open class FlightPlanGraphic: AGSGraphic {
+open class FlightPlanGraphic: EditableAGSGraphic {
     // MARK: - Public Properties
     /// Type of graphical item.
     var itemType: FlightPlanGraphicItemType {

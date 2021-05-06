@@ -183,26 +183,22 @@ extension FlightPlanObject {
     func insertWayPoint(with mapPoint: AGSPoint,
                         at index: Int) -> WayPoint? {
         guard index > 0,
-              index < wayPoints.count else {
-            return nil
-        }
+              index < wayPoints.count,
+              let previousWayPoint = wayPoints.elementAt(index: index - 1),
+              let nextWayPoint = wayPoints.elementAt(index: index) else { return nil }
 
-        // Get related waypoints.
-        let previousWayPoint = wayPoints.elementAt(index: index - 1)
-        let nextWayPoint = wayPoints.elementAt(index: index)
+        let tilt = (previousWayPoint.tilt + nextWayPoint.tilt) / 2.0
 
         // Create new waypoint.
         let wayPoint = WayPoint(coordinate: mapPoint.toCLLocationCoordinate2D(),
                                 altitude: mapPoint.z,
-                                speed: nextWayPoint?.speed,
-                                shouldContinue: true,
-                                shouldFollowPOI: false,
-                                poiIndex: nil,
-                                actions: nil)
+                                speed: nextWayPoint.speed,
+                                shouldContinue: self.shouldContinue ?? true,
+                                tilt: tilt.rounded())
 
         // Associate waypoints.
-        previousWayPoint?.nextWayPoint = wayPoint
-        nextWayPoint?.previousWayPoint = wayPoint
+        previousWayPoint.nextWayPoint = wayPoint
+        nextWayPoint.previousWayPoint = wayPoint
         wayPoint.previousWayPoint = previousWayPoint
         wayPoint.nextWayPoint = nextWayPoint
 
@@ -210,8 +206,8 @@ extension FlightPlanObject {
         self.wayPoints.insert(wayPoint, at: index)
 
         // Update yaws.
-        previousWayPoint?.updateYaw()
-        nextWayPoint?.updateYaw()
+        previousWayPoint.updateYaw()
+        nextWayPoint.updateYaw()
         wayPoint.updateYaw()
 
         return wayPoint
@@ -224,7 +220,8 @@ extension FlightPlanObject {
     ///    - lastWayPointIndex: index of the last passed waypoint
     /// - Returns: global Flight Plan progress, from 0.0 to 1.0.
     func completionProgress(with currentLocation: AGSPoint, lastWayPointIndex: Int) -> Double {
-        guard (0...wayPoints.count-1).contains(lastWayPointIndex) else { return 0.0 }
+        guard !wayPoints.isEmpty,
+              (0...wayPoints.count-1).contains(lastWayPointIndex) else { return 0.0 }
 
         let currentSegmentProgress = self.wayPoints[lastWayPointIndex].navigateToNextProgress(with: currentLocation)
         let progressAtWayPoint = self.segmentWeights

@@ -52,8 +52,10 @@ public final class DashboardCoordinator: Coordinator {
 extension DashboardCoordinator: DashboardCoordinatorNavigation {
     /// Starts Parrot Debug screen.
     func startParrotDebug() {
-        let parrotDebugViewController = StoryboardScene.ParrotDebug.parrotDebugViewController.instantiate()
-        self.navigationController?.present(parrotDebugViewController, animated: true, completion: nil)
+        let debugCoordinator = ParrotDebugCoordinator()
+        debugCoordinator.parentCoordinator = self
+        debugCoordinator.start()
+        self.present(childCoordinator: debugCoordinator)
     }
 
     /// Starts Drone infos.
@@ -106,16 +108,19 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
         self.push(viewController)
     }
 
-    /// Starts suggestions screen
-    func startSuggestions() {
-    }
+    /// Starts third-party process.
+    ///
+    /// - Parameters:
+    ///    - service: third party service to start
+    func startThirdPartyProcess(service: ThirdPartyService) {
+        guard let currentAccount = AccountManager.shared.currentAccount,
+              let loginCoordinator = currentAccount.destinationCoordinator else {
+            return
+        }
 
-    /// Starts all tutorials of the app.
-    func startTutorials() {
-    }
-
-    /// Starts support infos
-    func startSupport() {
+        loginCoordinator.parentCoordinator = self
+        currentAccount.startThirdPartyProcess(service: service)
+        self.present(childCoordinator: loginCoordinator, animated: true, completion: nil)
     }
 
     /// Starts Confidentiality screen.

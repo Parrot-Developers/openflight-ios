@@ -95,7 +95,7 @@ final class ManagePlansViewController: UIViewController {
     private var flightPlanListener: FlightPlanListener?
     private var flightPlanViewModel: FlightPlanViewModel?
     private var flightPlansListViewController: FlightPlansListViewController?
-    private var missionProviderViewModel: MissionProviderViewModel = MissionProviderViewModel()
+    private let missionProviderViewModel: MissionProviderViewModel = MissionProviderViewModel()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -166,11 +166,11 @@ private extension ManagePlansViewController {
     @IBAction func openButtonTouchedUpInside(_ sender: Any) {
         self.flightPlanViewModel?.setAsLastUsed()
         FlightPlanManager.shared.currentFlightPlanViewModel = self.flightPlanViewModel
-        coordinator?.closeManagePlans()
+        coordinator?.closeManagePlans(shouldStartEdition: false)
     }
 
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
-        coordinator?.closeManagePlans()
+        coordinator?.closeManagePlans(shouldStartEdition: false)
     }
 
     @IBAction func duplicateTouchUpInside(_ sender: Any) {
@@ -203,7 +203,7 @@ private extension ManagePlansViewController {
         guard let flightPlanProvider = missionProviderViewModel.state.value.mode?.flightPlanProvider else { return }
 
         FlightPlanManager.shared.new(flightPlanProvider: flightPlanProvider)
-        coordinator?.closeManagePlans()
+        coordinator?.closeManagePlans(shouldStartEdition: true)
     }
 }
 

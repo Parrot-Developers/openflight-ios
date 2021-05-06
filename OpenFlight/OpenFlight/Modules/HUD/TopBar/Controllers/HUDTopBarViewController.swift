@@ -68,8 +68,8 @@ final class HUDTopBarViewController: UIViewController {
     var context: HUDTopBarContext = .standard
 
     // MARK: - Private Properties
-    private var radarViewModel: HUDRadarViewModel?
-    private var topBarViewModel: TopBarViewModel?
+    private let radarViewModel = HUDRadarViewModel()
+    private let topBarViewModel = TopBarViewModel()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -87,14 +87,14 @@ final class HUDTopBarViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        topBarViewModel = TopBarViewModel(stateDidUpdate: { [weak self] state in
+        topBarViewModel.state.valueChanged = { [weak self] state in
             UIView.animate(withDuration: Constants.defaultAnimationDuration) {
                 self?.topBarView.alphaHidden(state.shouldHide)
             }
             self?.updateRadarViewVisibility()
             self?.updateDroneActionViewVisibility()
             self?.updateTelemetryVisibility()
-        })
+        }
         updateRadarViewVisibility()
         updateDroneActionViewVisibility()
         updateTelemetryVisibility()
@@ -159,30 +159,27 @@ private extension HUDTopBarViewController {
     /// Removes it otherwise.
     func updateRadarViewVisibility() {
         if view.frame.width >= Constants.minimumViewWidthForRadar {
-            radarViewModel = HUDRadarViewModel(stateDidUpdate: { [weak self] state in
+            radarViewModel.state.valueChanged = { [weak self] state in
                 self?.radarView.state = state
-            })
+            }
             // Set initial state.
-            radarView.state = radarViewModel?.state.value
-            radarView.isHidden = topBarViewModel?.state.value.shouldHideRadar == true
+            radarView.state = radarViewModel.state.value
+            radarView.isHidden = topBarViewModel.state.value.shouldHideRadar == true
         } else {
-            radarViewModel = nil
+            radarViewModel.state.valueChanged = nil
             radarView.isHidden = true
         }
     }
 
     /// Update Drone action buttons visibility.
     func updateDroneActionViewVisibility() {
-        guard let state = topBarViewModel?.state.value else {
-            droneActionView.isHidden = false
-            return
-        }
+        let state = topBarViewModel.state.value
         droneActionView.isHidden = state.shouldHideDroneAction == true
     }
 
     /// Update telemetry bar visibility.
     func updateTelemetryVisibility() {
-        telemetryBarViewController.isHidden = topBarViewModel?.state.value.shouldHideTelemetry == true
+        telemetryBarViewController.isHidden = topBarViewModel.state.value.shouldHideTelemetry == true
     }
 }
 

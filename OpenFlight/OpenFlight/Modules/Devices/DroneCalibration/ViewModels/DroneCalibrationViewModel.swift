@@ -51,6 +51,8 @@ final class DroneCalibrationState: ViewModelState, EquatableState, Copying {
     fileprivate(set) var gimbalCalibrationTextColor: ColorName?
     /// Gimbal calibration description background.
     fileprivate(set) var gimbalCalibrationBackgroundColor: ColorName?
+    /// Tells if a gimbal calibration has been requested.
+    fileprivate(set) var isCalibrationRequested: Bool = true
 
     // MARK: - Init
     required init() { }
@@ -67,6 +69,7 @@ final class DroneCalibrationState: ViewModelState, EquatableState, Copying {
     ///    - gimbalCalibrationDescription: gimbal calibration text.
     ///    - gimbalCalibrationTextColor: gimbal calibraton text color.
     ///    - gimbalCalibrationBackgroundColor: gimbal calibration background cell color.
+    ///    - isCalibrationRequested: Tells if a gimbal calibration has been requested.
     init(droneState: DeviceState.ConnectionState?,
          calibratableGimbalState: CalibratableGimbalState?,
          frontStereoGimbalState: FrontStereoGimbalCalibrationState?,
@@ -75,7 +78,8 @@ final class DroneCalibrationState: ViewModelState, EquatableState, Copying {
          flyingState: FlyingIndicatorsState?,
          gimbalCalibrationDescription: String?,
          gimbalCalibrationTextColor: ColorName?,
-         gimbalCalibrationBackgroundColor: ColorName?) {
+         gimbalCalibrationBackgroundColor: ColorName?,
+         isCalibrationRequested: Bool) {
         self.droneState = droneState
         self.gimbalState = calibratableGimbalState
         self.frontStereoGimbalState = frontStereoGimbalState
@@ -85,6 +89,7 @@ final class DroneCalibrationState: ViewModelState, EquatableState, Copying {
         self.gimbalCalibrationDescription = gimbalCalibrationDescription
         self.gimbalCalibrationTextColor = gimbalCalibrationTextColor
         self.gimbalCalibrationBackgroundColor = gimbalCalibrationBackgroundColor
+        self.isCalibrationRequested = isCalibrationRequested
     }
 
     // MARK: - Internal Funcs
@@ -96,6 +101,7 @@ final class DroneCalibrationState: ViewModelState, EquatableState, Copying {
             && self.magnetometerState == other.magnetometerState
             && self.flyingState == other.flyingState
             && self.gimbalCalibrationDescription == other.gimbalCalibrationDescription
+            && self.isCalibrationRequested == other.isCalibrationRequested
     }
 
     /// Returns a copy of the object.
@@ -108,7 +114,8 @@ final class DroneCalibrationState: ViewModelState, EquatableState, Copying {
                                          flyingState: self.flyingState,
                                          gimbalCalibrationDescription: self.gimbalCalibrationDescription,
                                          gimbalCalibrationTextColor: self.gimbalCalibrationTextColor,
-                                         gimbalCalibrationBackgroundColor: self.gimbalCalibrationBackgroundColor)
+                                         gimbalCalibrationBackgroundColor: self.gimbalCalibrationBackgroundColor,
+                                         isCalibrationRequested: self.isCalibrationRequested)
         return copy
     }
 }
@@ -240,16 +247,19 @@ extension DroneCalibrationViewModel {
         copy.gimbalCalibrationDescription = gimbal.calibrationStateDescription
         copy.gimbalCalibrationTextColor = gimbal.subtextColor
         copy.gimbalCalibrationBackgroundColor = gimbal.backgroundColor
-        self.state.set(copy)
 
         switch gimbal.calibrationProcessState {
         case .success:
+            copy.isCalibrationRequested = false
             self.gimbalCalibrationState.set(.calibrated)
         case .failure:
+            copy.isCalibrationRequested = true
             self.gimbalCalibrationState.set(.needed)
         default :
             break
         }
+
+        self.state.set(copy)
     }
 
     /// Updates stereo vision sensor calibration state.
@@ -309,13 +319,17 @@ extension DroneCalibrationViewModel {
 
         switch frontStereoGimbal.calibrationProcessState {
         case .success:
+            copy.isCalibrationRequested = false
             self.frontStereoGimbalCalibrationState.set(.calibrated)
         case .failure:
+            copy.isCalibrationRequested = true
             self.frontStereoGimbalCalibrationState.set(.needed)
         case .calibrating:
             self.frontStereoGimbalCalibrationState.set(.calibrating)
         default :
             break
         }
+
+        state.set(copy)
     }
 }

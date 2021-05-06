@@ -40,7 +40,7 @@ extension Set {
     /// - Parameters:
     ///     - element: current element to update
     ///     - shouldAdd: tells if we insert or remove the element
-    mutating func update(_ element: Element, shouldAdd: Bool) {
+    public mutating func update(_ element: Element, shouldAdd: Bool) {
         if shouldAdd {
             self.insert(element)
         } else {

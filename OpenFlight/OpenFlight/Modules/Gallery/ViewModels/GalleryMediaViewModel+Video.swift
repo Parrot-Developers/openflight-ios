@@ -191,7 +191,7 @@ extension GalleryMediaViewModel {
     ///    - completion: completion block
     func videoSetStream(index: Int, completion: @escaping (_ replay: Replay?) -> Void) {
         guard let media = getMedia(index: index),
-              let firstResource = media.mediaItem?.resources.first else {
+              let firstResource = media.mediaResources?.first else {
             return
         }
 

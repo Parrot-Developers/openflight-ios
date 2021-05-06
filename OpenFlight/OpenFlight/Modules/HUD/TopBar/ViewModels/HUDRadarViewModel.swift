@@ -127,8 +127,9 @@ final class HUDRadarViewModel: DevicesStateViewModel<HUDRadarState> {
     }
 
     // MARK: - Init
-    override init(stateDidUpdate: ((HUDRadarState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenUserLocation()
         startDeviceMotionIfNeeded()
     }

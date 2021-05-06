@@ -46,10 +46,14 @@ final class FirmwareUpdaterManager {
     /// The current listeners.
     private var listeners: Set<FirmwareUpdaterListener> = []
     /// The model that gets notified to GroundSDK `Updater` .
-    private lazy var firmwareUpdaterWrapper = FirmwareUpdaterWrapper(
-        stateDidUpdate: { (firmwareUpdaterWrapperState) in
+    private lazy var firmwareUpdaterWrapper: FirmwareUpdaterWrapper = {
+        let wrapper = FirmwareUpdaterWrapper()
+        wrapper.state.valueChanged = { (firmwareUpdaterWrapperState) in
             self.firmwareToUpdateCallback(firmwareUpdaterWrapperState: firmwareUpdaterWrapperState)
-        })
+        }
+
+        return wrapper
+    }()
 
     // MARK: - Init
     private init() {}

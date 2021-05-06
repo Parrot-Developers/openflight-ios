@@ -28,11 +28,9 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
 import GroundSdk
 
 /// ViewModel that listen a drone and a remote control by default.
-
 open class WatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     // MARK: - Public Properties
     /// Property which provides the current drone using currentDroneWatcher.
@@ -49,17 +47,6 @@ open class WatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     private var currentRemoteControlWatcher = CurrentRemoteControlWatcher()
 
     // MARK: - Init
-    public override init(stateDidUpdate: ((T) -> Void)?) {
-        super.init(stateDidUpdate: stateDidUpdate)
-
-        currentDroneWatcher.start { [weak self] drone in
-            self?.listenDrone(drone: drone)
-        }
-        currentRemoteControlWatcher.start { [weak self] remoteControl in
-            self?.listenRemoteControl(remoteControl: remoteControl)
-        }
-    }
-
     public override init() {
         super.init()
 

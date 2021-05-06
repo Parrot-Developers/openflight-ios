@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import SwiftyUserDefaults
 
 /// State for `DroneDetailsInformationsViewModel`.
 final class DroneDetailsInformationsState: DeviceConnectionState {
@@ -99,6 +100,10 @@ final class DroneDetailsInformationsViewModel: DroneStateViewModel<DroneDetailsI
     // MARK: - Internal Funcs
     /// Resets the drone to factory state.
     func resetDrone() {
+        if let uid = self.drone?.uid {
+            Defaults.dronesListPairingProcessHidden.removeAll(where: { $0 == uid })
+        }
+
         _ = drone?.getPeripheral(Peripherals.systemInfo)?.factoryReset()
     }
 }

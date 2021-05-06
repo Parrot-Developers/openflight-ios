@@ -35,14 +35,14 @@ final class DroneDetailsCellularViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var mainView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var enterPinButton: UIButton!
+    @IBOutlet private weak var actionButton: UIButton!
     @IBOutlet private weak var connectionSubtitleLabel: UILabel!
     @IBOutlet private weak var reinitializeButton: UIButton!
     @IBOutlet private weak var connectionStateLabel: UILabel!
     @IBOutlet private weak var connectionStateDescriptionLabel: UILabel!
     @IBOutlet private weak var accessSubtitleLabel: UILabel!
-    @IBOutlet private weak var userNumberLabel: UILabel!
-    @IBOutlet private weak var userNumberDescriptionLabel: UILabel!
+    @IBOutlet private weak var usersCountLabel: UILabel!
+    @IBOutlet private weak var usersCountDescriptionLabel: UILabel!
     @IBOutlet private weak var forgotErrorLabel: UILabel!
 
     // MARK: - Private Properties
@@ -88,11 +88,19 @@ private extension DroneDetailsCellularViewController {
         closeView()
     }
 
-    @IBAction func pinCodeButtonTouchedUpInside(_ sender: Any) {
-        logEvent(with: LogEvent.LogKeyDroneDetailsCellular.enterPinCode)
-        if viewModel.state.value.cellularStatus == .simLocked {
-            closeView()
-            coordinator?.displayCellularPinCode()
+    @IBAction func actionButtonTouchedUpInside(_ sender: Any) {
+        switch viewModel.state.value.cellularStatus {
+        case .simLocked:
+            logEvent(with: LogEvent.LogKeyDroneDetailsCellular.enterPinCode)
+            self.view.backgroundColor = .clear
+            coordinator?.dismiss {
+                self.coordinator?.displayCellularPinCode()
+            }
+        case .userNotPaired:
+            logEvent(with: LogEvent.LogKeyDroneDetailsCellular.pairDevice)
+            coordinator?.pairUser()
+        default:
+            break
         }
     }
 
@@ -118,20 +126,19 @@ private extension DroneDetailsCellularViewController {
         connectionSubtitleLabel.makeUp(and: .white50)
         accessSubtitleLabel.makeUp(and: .white50)
         connectionStateLabel.makeUp(with: .huge)
-        userNumberLabel.makeUp(with: .huge)
+        usersCountLabel.makeUp(with: .huge)
         connectionStateDescriptionLabel.makeUp()
-        userNumberDescriptionLabel.makeUp()
-        userNumberLabel.text = "\(0)" // TODO: Add connected user number
-        userNumberDescriptionLabel.text = L10n.drone4gUserAccessSingular(0)
+        usersCountDescriptionLabel.makeUp()
+        usersCountDescriptionLabel.text = L10n.drone4gUserAccessSingular(0)
 
         // Buttons.
-        enterPinButton.makeup(with: .regular, color: .white)
+        actionButton.makeup()
         reinitializeButton.setTitle(L10n.drone4gReinitializeConnections, for: .normal)
-        enterPinButton.setTitle(L10n.drone4gEnterPin, for: .normal)
-        enterPinButton.cornerRadiusedWith(backgroundColor: .clear,
-                                          borderColor: .white ,
-                                          radius: Style.largeCornerRadius,
-                                          borderWidth: Style.mediumBorderWidth)
+        actionButton.titleLabel?.textAlignment = .center
+        actionButton.cornerRadiusedWith(backgroundColor: .clear,
+                                        borderColor: .white ,
+                                        radius: Style.largeCornerRadius,
+                                        borderWidth: Style.mediumBorderWidth)
     }
 
     /// Inits the view model.
@@ -139,6 +146,7 @@ private extension DroneDetailsCellularViewController {
         viewModel.state.valueChanged = { [weak self] _ in
             self?.updateView()
         }
+        viewModel.updatesPairedUsersCount()
         updateView()
     }
 
@@ -159,35 +167,36 @@ private extension DroneDetailsCellularViewController {
             forgotErrorLabel.isHidden = true
         }
 
-        enterPinButton.isHidden = state.cellularStatus != .simLocked
+        actionButton.isHidden = !state.cellularStatus.shouldShowActionButton
         reinitializeButton.isEnabled = state.cellularStatus == .cellularConnected
         connectionStateLabel.text = state.cellularStatus.cellularDetailsTitle
         connectionStateLabel.textColor = state.cellularStatus.detailsTextColor.color
 
-        if !state.cellularStatus.isStatusError {
-            reinitializeButton.makeup(with: .regular, color: .white)
+        if state.cellularStatus.isStatusError {
+            connectionStateDescriptionLabel.text = state.cellularStatus.cellularDetailsDescription
+            usersCountDescriptionLabel.text = Style.dash
+            reinitializeButton.cornerRadiusedWith(backgroundColor: .clear,
+                                                  borderColor: ColorName.white20.color ,
+                                                  radius: Style.largeCornerRadius,
+                                                  borderWidth: Style.mediumBorderWidth)
+            reinitializeButton.makeup(color: .white50)
+        } else {
+            reinitializeButton.makeup()
             reinitializeButton.cornerRadiusedWith(backgroundColor: .clear,
                                                   borderColor: .white ,
                                                   radius: Style.largeCornerRadius,
                                                   borderWidth: Style.mediumBorderWidth)
             connectionStateDescriptionLabel.text = state.operatorName
             // Description text depends of the number of connected user.
-            if state.userNumber > 1 {
-                userNumberDescriptionLabel.text = L10n.drone4gUserAccessPlural(state.userNumber)
+            if state.usersCount > 1 {
+                usersCountDescriptionLabel.text = L10n.drone4gUserAccessPlural(state.usersCount)
             } else {
-                userNumberDescriptionLabel.text = L10n.drone4gUserAccessSingular(state.userNumber)
+                usersCountDescriptionLabel.text = L10n.drone4gUserAccessSingular(state.usersCount)
             }
-        } else {
-            connectionStateDescriptionLabel.text = state.cellularStatus.cellularDetailsDescription
-            userNumberDescriptionLabel.text = Style.dash
-            reinitializeButton.cornerRadiusedWith(backgroundColor: .clear,
-                                                  borderColor: ColorName.white20.color ,
-                                                  radius: Style.largeCornerRadius,
-                                                  borderWidth: Style.mediumBorderWidth)
-            reinitializeButton.makeup(with: .regular, color: .white50)
         }
 
-        userNumberLabel.text = "\(state.userNumber)"
+        usersCountLabel.text = "\(state.usersCount)"
+        actionButton.setTitle(state.cellularStatus.actionButtonTitle, for: .normal)
     }
 
     /// Calls log event.

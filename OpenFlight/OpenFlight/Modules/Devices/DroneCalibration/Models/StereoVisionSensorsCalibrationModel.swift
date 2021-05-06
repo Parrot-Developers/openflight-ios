@@ -33,25 +33,39 @@
 enum StereoVisionSensorsCalibrationState {
     case calibrated
     case needed
+    case unavailable
 
     /// String describing front stereo vision sensors calibration state.
     var description: String {
         switch self {
-        case .calibrated:
+        case .calibrated,
+             .unavailable:
             return ""
         case .needed:
             return L10n.commonRequired
         }
     }
 
-    /// Color for obstacle avoidance calibration subtext cell.
+    /// Color for stereo vision sensors calibration subtext cell.
     var subtextColor: ColorName {
         return self == .needed ? .redTorch : .white50
     }
 
-    /// Background color for obstacle avoidance calibration cell.
+    /// Background color for stereo vision sensors calibration cell.
     var backgroundColor: ColorName {
         return self == .needed ? .redTorch25 : .white10
+    }
+
+    /// Image for stereo vision sensors calibration.
+    var calibrationImage: UIImage? {
+        switch self {
+        case .calibrated:
+            return Asset.Drone.icDroneStereoVisionOk.image
+        case .needed:
+            return Asset.Drone.icDroneStereoVisionWarning.image
+        case .unavailable:
+            return nil
+        }
     }
 
     /// User interaction state for calibration view.

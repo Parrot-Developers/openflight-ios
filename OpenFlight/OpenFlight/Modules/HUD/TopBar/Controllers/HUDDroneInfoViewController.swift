@@ -60,7 +60,7 @@ final class HUDDroneInfoViewController: UIViewController {
     weak var navigationDelegate: HUDDroneInfoViewControllerNavigation?
 
     // MARK: - Private Properties
-    private var droneInfosViewModel: DroneInfosViewModel<DroneInfosState>?
+    private let droneInfosViewModel = DroneInfosViewModel()
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
@@ -83,22 +83,15 @@ private extension HUDDroneInfoViewController {
 private extension HUDDroneInfoViewController {
     /// Sets up view model and initial state.
     func setupViewModel() {
-        droneInfosViewModel = DroneInfosViewModel(batteryLevelDidChange: { [weak self] batteryLevel in
-            self?.onBatteryLevelChanged(batteryLevel)
-        }, wifiStrengthDidChange: { [weak self] _ in
-            self?.updateNetworkIcons()
-        }, gpsStrengthDidChange: { [weak self] gpsStrength in
-            self?.onGpsStrengthChanged(gpsStrength)
-        }, cellularStrengthDidChange: { [weak self] _ in
-            self?.updateNetworkIcons()
-        }, currentLinkDidChange: { [weak self] _ in
-            self?.updateNetworkIcons()
-        })
-
-        if let state = droneInfosViewModel?.state.value {
-            onGpsStrengthChanged(state.gpsStrength.value)
+        droneInfosViewModel.state.valueChanged = { [weak self] state in
+            self?.onBatteryLevelChanged(state.batteryLevel)
+            self?.updateNetworkIcons(state)
+            self?.onGpsStrengthChanged(state.gpsStrength)
         }
-        updateNetworkIcons()
+
+        onBatteryLevelChanged(droneInfosViewModel.state.value.batteryLevel)
+        updateNetworkIcons(droneInfosViewModel.state.value)
+        onGpsStrengthChanged(droneInfosViewModel.state.value.gpsStrength)
     }
 
     /// Called when current battery level changes.
@@ -151,12 +144,10 @@ private extension HUDDroneInfoViewController {
     }
 
     /// Update network icons when link did change.
-    func updateNetworkIcons() {
-        if let state = droneInfosViewModel?.state.value {
-            onCellularStrengthChanged(state.cellularStrength.value,
-                                      isCellularActive: state.currentLink.value == .cellular)
-            onWifiStrengthChanged(state.wifiStrength.value,
-                                  isWlanActive: state.currentLink.value == .wlan)
-        }
+    func updateNetworkIcons(_ state: DroneInfosState) {
+        onCellularStrengthChanged(state.cellularStrength,
+                                  isCellularActive: state.currentLink == .cellular)
+        onWifiStrengthChanged(state.wifiStrength,
+                              isWlanActive: state.currentLink == .wlan)
     }
 }

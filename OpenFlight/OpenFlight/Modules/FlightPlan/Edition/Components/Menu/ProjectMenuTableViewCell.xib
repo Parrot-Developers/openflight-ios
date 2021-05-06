@@ -23,46 +23,31 @@
                         </constraints>
                     </imageView>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" text="Project name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oTq-3p-YN2">
-                        <rect key="frame" x="16" y="12" width="268" height="26"/>
+                        <rect key="frame" x="16" y="12" width="306" height="26"/>
                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cex-dB-uwJ">
-                        <rect key="frame" x="292" y="10" width="30" height="30"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="30" id="CK7-ck-2N6"/>
-                            <constraint firstAttribute="height" constant="30" id="p8J-a1-NBO"/>
-                        </constraints>
-                        <state key="normal" image="history"/>
-                        <connections>
-                            <action selector="historyTouchUpInside:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="IDz-j9-dxr"/>
-                        </connections>
-                    </button>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
                     <constraint firstAttribute="bottom" secondItem="oTq-3p-YN2" secondAttribute="bottom" constant="12" id="6HE-4f-rCC"/>
                     <constraint firstAttribute="bottom" secondItem="5Gw-NX-C3S" secondAttribute="bottom" id="Bl5-BZ-CWY"/>
-                    <constraint firstItem="cex-dB-uwJ" firstAttribute="leading" secondItem="oTq-3p-YN2" secondAttribute="trailing" constant="8" id="EK6-8n-WXm"/>
                     <constraint firstItem="5Gw-NX-C3S" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="J6I-O0-vh6"/>
-                    <constraint firstItem="oTq-3p-YN2" firstAttribute="centerY" secondItem="cex-dB-uwJ" secondAttribute="centerY" id="NeN-Qg-ng0"/>
+                    <constraint firstItem="5Gw-NX-C3S" firstAttribute="leading" secondItem="oTq-3p-YN2" secondAttribute="trailing" constant="8" id="OWq-fB-pT3"/>
                     <constraint firstItem="oTq-3p-YN2" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="12" id="d93-8D-lD3"/>
                     <constraint firstAttribute="trailing" secondItem="5Gw-NX-C3S" secondAttribute="trailing" constant="8" id="k3L-cF-JKg"/>
-                    <constraint firstItem="5Gw-NX-C3S" firstAttribute="leading" secondItem="cex-dB-uwJ" secondAttribute="trailing" constant="8" id="wb7-e9-Jot"/>
                     <constraint firstItem="oTq-3p-YN2" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="x3c-Vx-Yvy"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
-                <outlet property="historyButton" destination="cex-dB-uwJ" id="FCY-Hi-I5g"/>
                 <outlet property="projectName" destination="oTq-3p-YN2" id="gW6-Nu-DRN"/>
             </connections>
             <point key="canvasLocation" x="1.6000000000000001" y="97.151424287856074"/>
         </tableViewCell>
     </objects>
     <resources>
-        <image name="history" width="18" height="18"/>
         <image name="icRightArrow" width="9" height="16"/>
     </resources>
 </document>

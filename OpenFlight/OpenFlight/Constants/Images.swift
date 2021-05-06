@@ -330,6 +330,12 @@ public enum Asset {
         icRefreshAlert,
       ]
     }
+    public enum TooMuchAngle {
+      public static let icDroneOpenYourDrone = ImageAsset(name: "icDroneOpenYourDrone")
+      public static let allValues: [ImageAsset] = [
+        icDroneOpenYourDrone,
+      ]
+    }
     public static let icPanelActionButton = ImageAsset(name: "icPanelActionButton")
     public static let allValues: [ImageAsset] = [
       icPanelActionButton,
@@ -402,8 +408,8 @@ public enum Asset {
       ]
     }
     public enum Icons {
-      public static let aeTargetZone = ImageAsset(name: "AETargetZone")
       public static let aeTargetZoneLocked = ImageAsset(name: "AETargetZoneLocked")
+      public static let aeTargetZoneWithClose = ImageAsset(name: "AETargetZoneWithClose")
       public static let iconAuto = ImageAsset(name: "iconAuto")
       public static let iconAutoLarge = ImageAsset(name: "iconAutoLarge")
       public static let iconManualAutoAuto = ImageAsset(name: "iconManualAutoAuto")
@@ -411,8 +417,8 @@ public enum Asset {
       public static let lockAEEnabled = ImageAsset(name: "lockAEEnabled")
       public static let lockAElocked = ImageAsset(name: "lockAElocked")
       public static let allValues: [ImageAsset] = [
-        aeTargetZone,
         aeTargetZoneLocked,
+        aeTargetZoneWithClose,
         iconAuto,
         iconAutoLarge,
         iconManualAutoAuto,
@@ -536,7 +542,6 @@ public enum Asset {
       public static let icBack = ImageAsset(name: "ic_back")
       public static let iconCamera = ImageAsset(name: "iconCamera")
       public static let iconDash = ImageAsset(name: "iconDash")
-      public static let iconDroneOriented = ImageAsset(name: "iconDroneOriented")
       public static let iconHome = ImageAsset(name: "iconHome")
       public static let iconLock = ImageAsset(name: "iconLock")
       public static let iconTrashWhite = ImageAsset(name: "iconTrashWhite")
@@ -583,7 +588,6 @@ public enum Asset {
         icBack,
         iconCamera,
         iconDash,
-        iconDroneOriented,
         iconHome,
         iconLock,
         iconTrashWhite,
@@ -661,10 +665,15 @@ public enum Asset {
     public static let icCardMini = ImageAsset(name: "icCardMini")
     public static let icController = ImageAsset(name: "icController")
     public static let icDrone = ImageAsset(name: "icDrone")
+    public static let icDroneWhite = ImageAsset(name: "icDroneWhite")
+    public static let icGalleryEmpty = ImageAsset(name: "icGalleryEmpty")
+    public static let icParrotFreeFlight7 = ImageAsset(name: "icParrotFreeFlight7")
     public static let icPhone = ImageAsset(name: "icPhone")
+    public static let icPhoneLight = ImageAsset(name: "icPhoneLight")
     public static let icPhoneMini = ImageAsset(name: "icPhoneMini")
     public static let icPhotoMini = ImageAsset(name: "icPhotoMini")
     public static let icRemote = ImageAsset(name: "icRemote")
+    public static let icSkywardDashboard = ImageAsset(name: "icSkywardDashboard")
     public static let icTimePassedMini = ImageAsset(name: "icTimePassedMini")
     public static let icTotalDistance = ImageAsset(name: "icTotalDistance")
     public static let icUpdate = ImageAsset(name: "icUpdate")
@@ -673,10 +682,15 @@ public enum Asset {
       icCardMini,
       icController,
       icDrone,
+      icDroneWhite,
+      icGalleryEmpty,
+      icParrotFreeFlight7,
       icPhone,
+      icPhoneLight,
       icPhoneMini,
       icPhotoMini,
       icRemote,
+      icSkywardDashboard,
       icTimePassedMini,
       icTotalDistance,
       icUpdate,
@@ -1037,6 +1051,7 @@ public enum Asset {
     public static let dng = ImageAsset(name: "dng")
     public static let droneInternalMemory = ImageAsset(name: "droneInternalMemory")
     public static let droneSd = ImageAsset(name: "droneSd")
+    public static let iconSelected = ImageAsset(name: "iconSelected")
     public static let mediaCorrupted = ImageAsset(name: "mediaCorrupted")
     public static let mediaDownload = ImageAsset(name: "mediaDownload")
     public static let mediaDownloaded = ImageAsset(name: "mediaDownloaded")
@@ -1046,6 +1061,7 @@ public enum Asset {
       dng,
       droneInternalMemory,
       droneSd,
+      iconSelected,
       mediaCorrupted,
       mediaDownload,
       mediaDownloaded,
@@ -1154,6 +1170,7 @@ public enum Asset {
 
     public static let cloudNotStored = ImageAsset(name: "cloudNotStored")
     public static let distance = ImageAsset(name: "distance")
+    public static let folder = ImageAsset(name: "folder")
     public static let history = ImageAsset(name: "history")
     public static let iconEdit = ImageAsset(name: "iconEdit")
     public static let mapPlaceHolder = ImageAsset(name: "mapPlaceHolder")
@@ -1161,6 +1178,7 @@ public enum Asset {
     public static let allValues: [ImageAsset] = [
       cloudNotStored,
       distance,
+      folder,
       history,
       iconEdit,
       mapPlaceHolder,

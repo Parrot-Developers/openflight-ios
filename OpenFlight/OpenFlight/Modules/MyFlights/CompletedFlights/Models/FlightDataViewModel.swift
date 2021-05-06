@@ -32,7 +32,6 @@ import MapKit
 import CoreData
 
 /// State for `FlightDataViewModel`.
-
 final public class FlightDataState: ViewModelState, EquatableState, Copying, FlightStateProtocol {
     // MARK: - Internal Properties
     /// Flight placemark.
@@ -52,7 +51,7 @@ final public class FlightDataState: ViewModelState, EquatableState, Copying, Fli
     /// Flight last modification date.
     fileprivate(set) var lastModified: Date?
     /// Flight duration.
-    public fileprivate(set) var duration: TimeInterval = 0.0
+    fileprivate(set) var duration: TimeInterval = 0.0
     /// Flight battery consumption.
     public fileprivate(set) var batteryConsumption: String = Style.dash
     /// Flight distance.
@@ -67,7 +66,7 @@ final public class FlightDataState: ViewModelState, EquatableState, Copying, Fli
     fileprivate(set) var checked: Bool = false
 
     // MARK: - Public Properties
-    var title: String? {
+    var flightLocationDescription: String? {
         if let desc = flightDescription {
             return desc
         } else {
@@ -82,7 +81,15 @@ final public class FlightDataState: ViewModelState, EquatableState, Copying, Fli
     }
     /// Returns position as string.
     public var formattedPosition: String {
-        return location?.coordinate.coordinatesDescription ?? CLLocationCoordinate2D().coordinatesDescription
+        guard let location = location, location.coordinate.isValid else {
+            return L10n.dashboardMyFlightUnknownLocation
+        }
+
+        return location.coordinate.coordinatesDescription
+    }
+    /// Returns if location is valid or not.
+    var isLocationValid: Bool {
+        return location?.coordinate.isValid == true
     }
     /// Returns duration as string.
     public var formattedDuration: String {
@@ -130,7 +137,7 @@ final public class FlightDataState: ViewModelState, EquatableState, Copying, Fli
     ///    - location: flight location
     ///    - date: flight date
     ///    - duration: flight duration
-    ///    - batteryConsumption: flight batteryConsumption
+    ///    - batteryConsumption: flight batteryConsumptionMapLocationsViewModel
     ///    - distance: flight distance
     ///    - gutmaFileKey: gutma file url
     ///    - thumbnail: flight thumbnail
@@ -257,9 +264,9 @@ public final class FlightDataViewModel: BaseViewModel<FlightDataState>, FlightVi
     ///
     /// - Parameters:
     ///     - gutmaData: flight data as Gutma
-    ///     - stateDidUpdate: completion block to notify state changes
-    init(gutmaData: Gutma?, stateDidUpdate: ((FlightDataState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    init(gutmaData: Gutma?) {
+        super.init()
+
         if let data = gutmaData {
             self.gutma = data
             self.state.set(FlightDataState(gutmaData: data))
@@ -272,7 +279,8 @@ public final class FlightDataViewModel: BaseViewModel<FlightDataState>, FlightVi
     /// - Parameters:
     ///     - state: flight data state
     public init(state: FlightDataState) {
-        super.init(stateDidUpdate: nil)
+        super.init()
+
         self.state.set(state)
     }
 

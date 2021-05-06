@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
@@ -19,23 +19,32 @@
             <rect key="frame" x="0.0" y="0.0" width="160" height="30"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="HmF-7L-Dq1">
+                <stackView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="HmF-7L-Dq1">
                     <rect key="frame" x="0.0" y="0.0" width="160" height="30"/>
                     <subviews>
-                        <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="aMM-pF-wOW">
-                            <rect key="frame" x="0.0" y="0.0" width="160" height="26"/>
+                        <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="38T-h9-Niv">
+                            <rect key="frame" x="0.0" y="0.0" width="160" height="24"/>
                             <subviews>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.59999999999999998" translatesAutoresizingMaskIntoConstraints="NO" id="42X-Ic-tn1">
-                                    <rect key="frame" x="0.0" y="0.0" width="102" height="26"/>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="1" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1" text="Label" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.59999999999999998" translatesAutoresizingMaskIntoConstraints="NO" id="42X-Ic-tn1">
+                                    <rect key="frame" x="0.0" y="3.5" width="41.5" height="20.5"/>
                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                     <nil key="textColor"/>
                                     <nil key="highlightedColor"/>
                                 </label>
-                                <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="h9h-HA-h4r">
-                                    <rect key="frame" x="110" y="0.0" width="50" height="26"/>
+                                <stackView opaque="NO" contentMode="scaleAspectFit" distribution="fillProportionally" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="h9h-HA-h4r">
+                                    <rect key="frame" x="49.5" y="0.0" width="110.5" height="24"/>
                                 </stackView>
                             </subviews>
-                        </stackView>
+                            <constraints>
+                                <constraint firstItem="42X-Ic-tn1" firstAttribute="top" relation="greaterThanOrEqual" secondItem="38T-h9-Niv" secondAttribute="top" id="0sX-7e-18l"/>
+                                <constraint firstAttribute="bottom" secondItem="h9h-HA-h4r" secondAttribute="bottom" id="3CW-V5-zvg"/>
+                                <constraint firstItem="h9h-HA-h4r" firstAttribute="top" secondItem="38T-h9-Niv" secondAttribute="top" id="8CU-Tw-Et4"/>
+                                <constraint firstAttribute="bottom" secondItem="42X-Ic-tn1" secondAttribute="bottom" id="HNf-0l-Bhd"/>
+                                <constraint firstItem="h9h-HA-h4r" firstAttribute="leading" secondItem="42X-Ic-tn1" secondAttribute="trailing" constant="8" id="Krq-Ap-6G1"/>
+                                <constraint firstAttribute="trailing" secondItem="h9h-HA-h4r" secondAttribute="trailing" id="dkW-ho-Qp5"/>
+                                <constraint firstItem="42X-Ic-tn1" firstAttribute="leading" secondItem="38T-h9-Niv" secondAttribute="leading" id="ixv-Qd-IZQ"/>
+                            </constraints>
+                        </view>
                         <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progressViewStyle="bar" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="sfv-EC-XGF">
                             <rect key="frame" x="0.0" y="26" width="160" height="5"/>
                             <constraints>

@@ -152,8 +152,10 @@ extension FlightPlanWayPointArrowGraphic {
     ///    - mapPoint: touch location
     /// - Returns: boolean indicating result
     func isOrientationEditionAllowed(_ mapPoint: AGSPoint) -> Bool {
+        // Assuming arrow is not editable if yaw is nil.
         guard poiPoint == nil,
-              let wayPoint = wayPoint else {
+              let wayPoint = wayPoint,
+              let yaw = wayPoint.yaw else {
             return false
         }
 
@@ -163,7 +165,7 @@ extension FlightPlanWayPointArrowGraphic {
                                                                 and: mapPoint,
                                                                 azimuthUnit: .degrees())?.azimuth1 ?? 0.0
 
-        return newYaw.asPositiveDegrees.isCloseTo(wayPoint.yaw,
+        return newYaw.asPositiveDegrees.isCloseTo(yaw,
                                                   withDelta: Constants.yawEditionTolerance)
     }
 }

@@ -101,7 +101,7 @@ private extension MissionProviderSelectorViewController {
         models = MissionsManager.shared.allMissions.map {
             let itemState = MissionLauncherState(provider: $0,
                                                  isSelected: Observable(provider.mission.key == $0.mission.key))
-            itemState.isSelected.valueChanged = { [weak self] isSelected in
+            itemState.isSelected.valueChanged = { [weak self, unowned itemState] isSelected in
                 if isSelected, let provider = itemState.provider {
                     if provider.mission.modes.count == 1,
                        let mode = provider.mission.modes.first {

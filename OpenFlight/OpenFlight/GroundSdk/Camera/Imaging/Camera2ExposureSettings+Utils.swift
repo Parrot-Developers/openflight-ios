@@ -109,12 +109,4 @@ extension Camera2ImmutableParam where T == Camera2ExposureMode {
     var manualShutterSpeedAvailable: Bool {
         return !currentSupportedValues.intersection([.manual, .manualShutterSpeed]).isEmpty
     }
-
-    /// Returns current supported manual iso sensitivities.
-    /// Empty if manual monitoring is not available.
-    var currentSupportedManualIsoSensitivity: Set<Camera2ExposureMode> {
-        return manualIsoSensitivityAvailable
-            ? currentSupportedValues
-            : Set<Camera2ExposureMode>()
-    }
 }

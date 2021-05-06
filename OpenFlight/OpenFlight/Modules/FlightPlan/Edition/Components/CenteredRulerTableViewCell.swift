@@ -85,11 +85,27 @@ private extension CenteredRulerTableViewCell {
     func addRulerBar() {
         centeredRulerBarView?.removeFromSuperview()
         let ruler = SettingValueRulerView(orientation: .horizontal)
-
-        ruler.model = SettingValueRulerModel(value: settingType?.currentValue ?? 0,
-                                             range: settingType?.allValues ?? Array(0...0),
+        let displayType: RulerDisplayType = settingType?.category != .image ? .number : .string
+        let allValues: [Double]
+        let currentValue: Double
+        if let step = settingType?.step, step < 1.0,
+           let first: Int = settingType?.allValues.first,
+           let last: Int = settingType?.allValues.last {
+            allValues = Array(stride(from: Double(first) * step,
+                                     to: Double(last) * step,
+                                     by: step))
+            currentValue = Double(settingType?.currentValue ?? 0) * step
+        } else {
+            allValues = settingType?.allValues.map({Double($0)}) ?? []
+            currentValue = Double(settingType?.currentValue ?? 0)
+        }
+        ruler.model = SettingValueRulerModel(value: Double(currentValue),
+                                             range: allValues,
+                                             rangeDescriptions: settingType?.valueDescriptions ?? [],
+                                             rangeImages: settingType?.valueImages ?? [],
                                              unit: settingType?.unit ?? .distance,
-                                             orientation: .horizontal)
+                                             orientation: .horizontal,
+                                             displayType: displayType)
         ruler.delegate = self
         settingValueRulerViewContainer.addWithConstraints(subview: ruler)
         centeredRulerBarView = ruler
@@ -98,7 +114,12 @@ private extension CenteredRulerTableViewCell {
 
 // MARK: - SettingValueRulerViewDelegate
 extension CenteredRulerTableViewCell: SettingValueRulerViewDelegate {
-    func valueDidChange(_ value: Int) {
-        delegate?.updateSettingValue(for: settingType?.key, value: value)
+    func valueDidChange(_ value: Double) {
+        var finalValue = Int(value)
+        if let step = settingType?.step, step < 1.0 {
+            finalValue = Int(value / step)
+        }
+        delegate?.updateSettingValue(for: settingType?.key,
+                                     value: finalValue)
     }
 }

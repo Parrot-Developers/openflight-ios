@@ -46,10 +46,14 @@ final class ProtobufMissionsUpdaterManager {
     /// The current listeners.
     private var listeners: Set<ProtobufMissionUpdaterListener> = []
     /// The model that gets notified to GroundSDK `MissionUpdater` updates.
-    private lazy var protobufMissionsUpdaterWrapper = ProtobufMissionsUpdaterWrapper(
-        stateDidUpdate: { (protobufMissionUpdateState) in
+    private lazy var protobufMissionsUpdaterWrapper: ProtobufMissionsUpdaterWrapper = {
+        let wrapper = ProtobufMissionsUpdaterWrapper()
+        wrapper.state.valueChanged = { (protobufMissionUpdateState) in
             self.protobufMissionUpdateCallback(protobufMissionUpdateState: protobufMissionUpdateState)
-        })
+        }
+
+        return wrapper
+    }()
 
     // MARK: - Init
     private init() {}

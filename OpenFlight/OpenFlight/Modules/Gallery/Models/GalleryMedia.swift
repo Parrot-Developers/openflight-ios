@@ -75,7 +75,7 @@ struct GalleryMedia: Equatable {
     // MARK: - Internal Properties
     var uid: String
     var source: GallerySourceType
-    var mediaItem: MediaItem?
+    var mediaItems: [MediaItem]?
     var type: GalleryMediaType
     var downloadState: GalleryMediaDownloadState?
     var size: UInt64
@@ -94,6 +94,16 @@ struct GalleryMedia: Equatable {
         guard let url = url else { return nil }
 
         return url.prefix
+    }
+    var mainMediaItem: MediaItem? {
+        guard let mediaItems = mediaItems else { return nil }
+
+        return mediaItems.first
+    }
+    var mediaResources: [MediaItem.Resource]? {
+        guard let mediaItems = mediaItems else { return nil }
+
+        return mediaItems.reduce([]) { $0 + $1.resources }
     }
 
     // MARK: - Equatable Protocol

@@ -81,7 +81,7 @@ final class MyFlightsViewController: UIViewController {
     @IBOutlet private weak var containerView: UIView!
     @IBOutlet private weak var segmentedControl: UISegmentedControl!
     @IBOutlet private weak var topBar: UIView!
-    @IBOutlet private weak var accountView: UIView!
+    @IBOutlet private weak var accountImageView: UIImageView!
 
     // MARK: - Private Properties
     private var flightsViewController: FlightsViewController?
@@ -173,16 +173,9 @@ private extension MyFlightsViewController {
 
     /// Setup account view.
     func setupAccountView() {
-        if let currentAccount = AccountManager.shared.currentAccount,
-            let myFlightsAccountView = currentAccount.myFlightsAccountView {
-            self.accountView.removeSubViews()
-            myFlightsAccountView.frame = self.accountView.bounds
-            // Correct frame size issue when the device orientation is updated.
-            myFlightsAccountView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            myFlightsAccountView.delegate = self
-            self.accountView.addSubview(myFlightsAccountView)
-        } else {
-            self.accountView.isHidden = true
+        if let currentAccount = AccountManager.shared.currentAccount {
+            accountImageView.image = currentAccount.userAvatar
+            accountImageView.layer.cornerRadius = Style.smallCornerRadius
         }
     }
 

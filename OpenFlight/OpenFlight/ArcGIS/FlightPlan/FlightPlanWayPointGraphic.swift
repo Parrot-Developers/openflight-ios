@@ -53,6 +53,9 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     override var altitude: Double? {
         return mapPoint?.z
     }
+    public override var deletable: Bool {
+        return true
+    }
 
     // MARK: - Private Constants
     private enum Constants {

@@ -49,6 +49,8 @@ final class CameraShutterButtonState: DeviceConnectionState {
     fileprivate(set) weak var panoramaModeState: PanoramaModeState?
     /// Current state for timelapse and gpslapse mode.
     fileprivate(set) weak var lapseModeState: PhotoLapseState?
+    /// Time before restart record.
+    fileprivate(set) var timeBeforeRestartRecord: Int?
 
     // MARK: - Public Properties
     /// Returns if storage is ready.
@@ -74,6 +76,7 @@ final class CameraShutterButtonState: DeviceConnectionState {
     ///    - recordingTimeState: current recording time state
     ///    - panoramaModeState: current state for panorama mode
     ///    - lapseModeState: current state for lapse capture mode
+    ///    - timeBeforeRestartRecord: time before restart record
     init(connectionState: DeviceState.ConnectionState,
          cameraMode: Camera2Mode,
          cameraCaptureMode: CameraCaptureMode,
@@ -82,7 +85,8 @@ final class CameraShutterButtonState: DeviceConnectionState {
          userStorageState: GlobalUserStorageState,
          recordingTimeState: RecordingTimeState,
          panoramaModeState: PanoramaModeState?,
-         lapseModeState: PhotoLapseState?) {
+         lapseModeState: PhotoLapseState?,
+         timeBeforeRestartRecord: Int?) {
         super.init(connectionState: connectionState)
 
         self.cameraMode = cameraMode
@@ -93,6 +97,7 @@ final class CameraShutterButtonState: DeviceConnectionState {
         self.recordingTimeState = recordingTimeState
         self.panoramaModeState = panoramaModeState
         self.lapseModeState = lapseModeState
+        self.timeBeforeRestartRecord = timeBeforeRestartRecord
     }
 
     // MARK: - Override Funcs
@@ -108,6 +113,7 @@ final class CameraShutterButtonState: DeviceConnectionState {
             && self.recordingTimeState == other.recordingTimeState
             && self.panoramaModeState == other.panoramaModeState
             && self.lapseModeState == other.lapseModeState
+            && self.timeBeforeRestartRecord == other.timeBeforeRestartRecord
     }
 
     override func copy() -> CameraShutterButtonState {
@@ -119,7 +125,8 @@ final class CameraShutterButtonState: DeviceConnectionState {
                                             userStorageState: self.userStorageState,
                                             recordingTimeState: self.recordingTimeState,
                                             panoramaModeState: self.panoramaModeState,
-                                            lapseModeState: self.lapseModeState)
+                                            lapseModeState: self.lapseModeState,
+                                            timeBeforeRestartRecord: self.timeBeforeRestartRecord)
         return copy
     }
 }
@@ -130,16 +137,24 @@ final class CameraShutterButtonViewModel: DroneStateViewModel<CameraShutterButto
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
     private var photoCaptureRef: Ref<Camera2PhotoCapture>?
-    private var cameraCaptureModeViewModel = CameraCaptureModeViewModel()
-    private var panoramaModeViewModel = PanoramaModeViewModel()
+    private var recordingRef: Ref<Camera2Recording>?
+    private let cameraCaptureModeViewModel = CameraCaptureModeViewModel()
+    private let panoramaModeViewModel = PanoramaModeViewModel()
     private var userStorageViewModel = GlobalUserStorageViewModel()
     private var photoLapseModeViewModel = PhotoLapseModeViewModel()
     private var recordingTimeViewModel = RecordingTimeViewModel()
     private var remoteControlRecordObserver: Any?
+    private var countDownTimer: Timer?
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let countDownInterval: TimeInterval = 1.0
+        static let timerBeforeRestartRecord: Int = 5
+    }
 
     // MARK: - Init
-    override init(stateDidUpdate: ((CameraShutterButtonState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
 
         listenCameraCaptureMode()
         listenPanoramaMode()
@@ -153,6 +168,8 @@ final class CameraShutterButtonViewModel: DroneStateViewModel<CameraShutterButto
     deinit {
         NotificationCenter.default.remove(observer: remoteControlRecordObserver)
         remoteControlRecordObserver = nil
+        countDownTimer?.invalidate()
+        countDownTimer = nil
     }
 
     // MARK: - Override Funcs
@@ -191,10 +208,57 @@ private extension CameraShutterButtonViewModel {
             }
 
             self?.listenPhotoCapture(camera)
+            self?.listenCameraConfiguration(camera)
             let copy = self?.state.value.copy()
             copy?.cameraMode = cameraMode
             self?.state.set(copy)
         }
+    }
+
+    /// Starts watcher for camera configuration.
+    func listenCameraConfiguration(_ camera: MainCamera2) {
+        recordingRef = camera.getComponent(Camera2Components.recording) { [weak self] recording in
+            guard let recordingState = recording?.state else { return }
+
+            let copy = self?.state.value.copy()
+            // Reset timer before restart record
+            if case .stopping(reason: .configurationChange, _) = recordingState {
+                copy?.timeBeforeRestartRecord = Constants.timerBeforeRestartRecord
+            }
+
+            self?.state.set(copy)
+            // Prevents for multiple copy call
+            if self?.state.value.timeBeforeRestartRecord != nil,
+               case .stopping(reason: .configurationChange, _) = recordingState {
+                self?.restartRecording()
+            }
+        }
+    }
+
+    /// Restart recording when camera configuration changes.
+    func restartRecording() {
+        countDownTimer = Timer.scheduledTimer(withTimeInterval: Constants.countDownInterval, repeats: true) { [weak self] _ in
+            if let countDown = self?.state.value.timeBeforeRestartRecord {
+                let interval = Int(Constants.countDownInterval)
+                if countDown > interval {
+                    let copy = self?.state.value.copy()
+                    copy?.timeBeforeRestartRecord = countDown - interval
+                    self?.state.set(copy)
+                } else {
+                    self?.cancelRestartRecording()
+                    self?.recordingRef?.value?.start()
+                }
+            }
+        }
+    }
+
+    /// Cancels previously restart recording.
+    func cancelRestartRecording() {
+        countDownTimer?.invalidate()
+        countDownTimer = nil
+        let copy = self.state.value.copy()
+        copy.timeBeforeRestartRecord = nil
+        self.state.set(copy)
     }
 
     /// Starts watcher for photo capture.

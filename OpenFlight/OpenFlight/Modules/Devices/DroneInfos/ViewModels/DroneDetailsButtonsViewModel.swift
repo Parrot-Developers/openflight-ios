@@ -176,11 +176,16 @@ final class DroneDetailsButtonsState: DeviceConnectionState {
 /// View model for drone details buttons.
 final class DroneDetailsButtonsViewModel: DroneStateViewModel<DroneDetailsButtonsState> {
     // MARK: - Internal Properties
-    /// Returns true if the drone is already paired to MyParrot.
-    var isDronePaired: Bool? {
-        guard let uid = drone?.uid else { return false }
+    /// Returns custom cellular button subtitle.
+    var cellularButtonSubtitle: String {
+        var subtitle: String = state.value.cellularStatus.droneDetailsTileDescription ?? ""
 
-        return Defaults.cellularPairedDronesList.contains(uid)
+        if state.value.cellularStatus == .cellularConnected,
+           let provider = drone?.getPeripheral(Peripherals.cellular)?.operator {
+            subtitle.append(Style.colon + Style.whiteSpace + provider)
+        }
+
+        return subtitle
     }
 
     // MARK: - Helper
@@ -194,7 +199,8 @@ final class DroneDetailsButtonsViewModel: DroneStateViewModel<DroneDetailsButton
             }
 
             switch gimbal.state {
-            case .calibrated:
+            case .calibrated,
+                 .unavailable:
                 return L10n.droneDetailsCalibrationOk
             case .needed,
                  .error:
@@ -264,7 +270,7 @@ final class DroneDetailsButtonsViewModel: DroneStateViewModel<DroneDetailsButton
     func resetPairingDroneListIfNeeded() {
         guard let uid = self.drone?.uid,
               Defaults.dronesListPairingProcessHidden.contains(uid),
-              !Defaults.cellularPairedDronesList.contains(uid) else {
+              drone?.isAlreadyPaired == false else {
             return
         }
 

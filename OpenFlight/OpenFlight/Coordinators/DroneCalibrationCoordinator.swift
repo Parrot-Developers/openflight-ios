@@ -41,6 +41,13 @@ public final class DroneCalibrationCoordinator: Coordinator {
         self.navigationController = NavigationController(rootViewController: viewController)
         self.navigationController?.isNavigationBarHidden = true
     }
+
+    /// Start magnetometer calibration.
+    public func startWithMagnetometerCalibration() {
+        let viewController = MagnetometerCalibrationViewController.instantiate(coordinator: self)
+        self.navigationController = NavigationController(rootViewController: viewController)
+        self.navigationController?.isNavigationBarHidden = true
+    }
 }
 
 // MARK: - Drone Details Navigation

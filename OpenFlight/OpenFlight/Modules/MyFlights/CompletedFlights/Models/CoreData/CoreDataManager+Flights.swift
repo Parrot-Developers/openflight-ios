@@ -182,7 +182,7 @@ extension CoreDataManager: MyFlightProtocol {
                         try managedContext.save()
                     } catch let error {
                         print("""
-                            Error saving flight \(String(describing: state.title))
+                            Error saving flight \(String(describing: state.flightLocationDescription))
                             with GutmaFileKey \(String(describing: state.gutmaFileKey))
                             => \(error.localizedDescription)
                             """)

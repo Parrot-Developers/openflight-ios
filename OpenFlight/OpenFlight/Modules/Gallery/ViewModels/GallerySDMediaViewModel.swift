@@ -240,7 +240,6 @@ final class GallerySDMediaViewModel: DroneStateViewModel<GallerySDMediaState> {
     private var mediaListRef: Ref<[MediaItem]>?
     private var mediaList: [MediaItem] = []
     private var sdMediaListener: Set<GallerySdMediaListener> = []
-    private var initialClosure: GallerySdMediaListenerClosure?
 
     // MARK: - Internal Properties
     var availableSpace: Double {
@@ -265,18 +264,10 @@ final class GallerySDMediaViewModel: DroneStateViewModel<GallerySDMediaState> {
     var streamingDefaultTrack: MediaItem.Track = .defaultVideo
 
     // MARK: - Init
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - stateDidUpdate: called when drone location changed
-    private override init(stateDidUpdate: ((GallerySDMediaState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    private override init() {
+        super.init()
 
-        // Keep initial closure to prevent from breaking BaseViewModel's stateDidUpdate behaviour.
-        initialClosure = stateDidUpdate
         state.valueChanged = { [weak self] state in
-            // Run stateDidUpdate closure.
-            self?.initialClosure?(state)
             // Run listeners closure.
             self?.sdMediaListener.forEach { listener in
                 listener.didChange(state)
@@ -363,13 +354,13 @@ extension GallerySDMediaViewModel {
     ///    - completion: completion block
     func getMediaPreviewImageUrl(_ media: GalleryMedia, _ index: Int = 0, completion: @escaping (URL?) -> Void) {
         if let galleryURL = ressourceGalleryURL(media, index),
-            isResourceDownloaded(media, index) {
+           isResourceDownloaded(media, index) {
             completion(galleryURL)
         } else if let droneId = state.value.droneUid,
-            let mediaItem = media.mediaItem,
-            mediaItem.resources.count > index,
-            let cachedImgUrl = mediaItem.resources[index].cachedImgUrl(droneId: droneId),
-            mediaItem.resources[index].cachedImgUrlExist(droneId: droneId) {
+                  let mediaResources = media.mediaResources,
+                  mediaResources.count > index,
+                  let cachedImgUrl = mediaResources[index].cachedImgUrl(droneId: droneId),
+                  mediaResources[index].cachedImgUrlExist(droneId: droneId) {
             completion(cachedImgUrl)
         } else {
             completion(nil)
@@ -413,8 +404,8 @@ private extension GallerySDMediaViewModel {
     func listenSDCard(drone: Drone) {
         sdCardRef = drone.getPeripheral(Peripherals.removableUserStorage) { [weak self] storage in
             guard let storage = storage,
-                let copy = self?.state.value.copy() else {
-                    return
+                  let copy = self?.state.value.copy() else {
+                return
             }
 
             // Turn storage in mega bytes.
@@ -446,28 +437,60 @@ private extension GallerySDMediaViewModel {
     func loadMedia(drone: Drone) {
         mediaListRef = self.mediaStore?.newList { [weak self] droneMediaList in
             guard let strongSelf = self,
-                let droneMediaList = droneMediaList,
-                let copy = self?.state.value.copy() else {
-                    return
+                  let droneMediaList = droneMediaList else {
+                return
             }
 
+            let copy = strongSelf.state.value.copy()
             copy.sourceType = .droneSdCard
             copy.referenceDate = Date()
-            let filteredMediaResources = droneMediaList.filter({ $0.isSdStorage })
-            let allMedias = filteredMediaResources.compactMap({ strongSelf.convertToGalleryMedia(mediaItem: $0, drone: drone) })
+            let filteredMediaResources: [MediaItem] = droneMediaList.filter({ $0.isSdStorage })
+            let allMedias: [GalleryMedia] = strongSelf.mergeMedias(medias: filteredMediaResources)
             copy.medias = allMedias.sorted(by: { $0.date > $1.date })
             strongSelf.state.set(copy)
         }
     }
 
-    /// Convert MediaItem to GalleryMedia.
+    /// Merge medias with or without customID.
     ///
     /// - Parameters:
-    ///    - mediaItem: MediaItem object
-    ///    - drone: Current drone
+    ///     - medias: Stores media items
     ///
-    /// - Returns: GalleryMedia object for MediaItem in parameter.
-    func convertToGalleryMedia(mediaItem: MediaItem, drone: Drone) -> GalleryMedia? {
+    /// - Returns: The new merged gallery medias.
+    func mergeMedias(medias: [MediaItem]) -> [GalleryMedia] {
+        var mediasWithoutCustomId: [MediaItem] = []
+        var mediasWithCustomId: [String: [MediaItem]] = [:]
+
+        for media in medias {
+            // Group timelapse or gpslapse FP Photogrammetry medias by custom_id.
+            if let customID = media.customId,
+               !customID.isEmpty,
+               media.mediaType == .gpsLapse || media.mediaType == .timeLapse {
+                if let mediasWithCustomID = mediasWithCustomId[customID] {
+                    mediasWithCustomId[customID] = mediasWithCustomID + [media]
+                } else {
+                    mediasWithCustomId[customID] = [media]
+                }
+            } else {
+                mediasWithoutCustomId.append(media)
+            }
+        }
+
+        let galleryMediasWithoutCustomID = mediasWithoutCustomId.compactMap({ return convertToGalleryMedia(mediaItems: [$0]) })
+        let galleryMediasWithCustomID = mediasWithCustomId.compactMap({ return convertToGalleryMedia(mediaItems: $1) })
+
+        return galleryMediasWithoutCustomID + galleryMediasWithCustomID
+    }
+
+    /// Convert MediaItems to GalleryMedia.
+    ///
+    /// - Parameters:
+    ///    - mediaItems: Stores media items
+    ///
+    /// - Returns: GalleryMedia object for mediaItems in parameter.
+    func convertToGalleryMedia(mediaItems: [MediaItem]) -> GalleryMedia? {
+        guard let mediaItem = mediaItems.first else { return nil }
+
         let downloadState: GalleryMediaDownloadState
         if self.state.value.downloadingItem?.uid == mediaItem.uid {
             downloadState = .downloading
@@ -476,9 +499,10 @@ private extension GallerySDMediaViewModel {
         } else {
             downloadState = .toDownload
         }
+
         return GalleryMedia(uid: mediaItem.uid,
                             source: .droneSdCard,
-                            mediaItem: mediaItem,
+                            mediaItems: mediaItems,
                             type: mediaItem.mediaType,
                             downloadState: downloadState,
                             size: self.size(for: mediaItem),
@@ -506,8 +530,8 @@ private extension GallerySDMediaViewModel {
 
         let isError = state.downloadStatus == .error
         var allMedia = self.state.value.medias
-        if let index = state.medias.firstIndex(where: { $0.mediaItem?.uid == loadingMedia.uid }),
-            state.medias[index].downloadState != .downloading {
+        if let index = state.medias.firstIndex(where: { $0.mainMediaItem?.uid == loadingMedia.uid }),
+           state.medias[index].downloadState != .downloading {
             // Update item downloadState if necessary.
             var mediaToUpdate = allMedia.remove(at: index)
             mediaToUpdate.downloadState = isError ? .error : .downloading
@@ -525,9 +549,9 @@ private extension GallerySDMediaViewModel {
     /// - Returns: gallery url for this media
     func ressourceGalleryURL(_ media: GalleryMedia?, _ index: Int = 0) -> URL? {
         guard let media = media,
-            let mediaItem = media.mediaItem,
-            mediaItem.resources.count > index else {
-                return nil
+              let mediaItem = media.mainMediaItem,
+              mediaItem.resources.count > index else {
+            return nil
         }
 
         return mediaItem.resources[index].galleryURL(droneId: self.state.value.droneUid,
@@ -542,9 +566,9 @@ private extension GallerySDMediaViewModel {
     /// - Returns: boolean determining if the media is downloaded
     func isResourceDownloaded(_ media: GalleryMedia?, _ index: Int = 0) -> Bool {
         guard let media = media,
-            let mediaItem = media.mediaItem,
-            mediaItem.resources.count > index else {
-                return false
+              let mediaItem = media.mainMediaItem,
+              mediaItem.resources.count > index else {
+            return false
         }
 
         return mediaItem.resources[index].isDownloaded(droneId: self.state.value.droneUid,

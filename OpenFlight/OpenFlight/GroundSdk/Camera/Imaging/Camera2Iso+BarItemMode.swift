@@ -132,7 +132,7 @@ extension Camera2Iso: BarItemMode, RulerDisplayable, Sortable {
     }
 
     // MARK: - Sortable
-    static var sortedCases: [Camera2Iso] {
+    public static var sortedCases: [Camera2Iso] {
         return [.iso25, .iso50, .iso64, .iso80, .iso100, .iso125, .iso160, .iso200, .iso250, .iso320, .iso400, .iso500,
                 .iso640, .iso800, .iso1000, .iso1200, .iso1600, .iso2000, .iso2500, .iso3200, .iso4000, .iso5000,
                 .iso6400, .iso8000, .iso10000, .iso12800, .iso16000, .iso20000, .iso25600, .iso32000, .iso40000, .iso51200]

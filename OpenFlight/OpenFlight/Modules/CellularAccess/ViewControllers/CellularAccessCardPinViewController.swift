@@ -45,16 +45,13 @@ final class CellularAccessCardPinViewController: UIViewController {
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
-    private var viewModel: CellularAccessCardPinViewModel?
+    private let viewModel = CellularAccessCardPinViewModel()
     private var pinCode: String = ""
 
     // MARK: - Private Enums
     private enum Constants {
-        /// Number of sections.
         static let sectionNumber: Int = 1
-        /// Pin required number.
         static let requiredPinNumber: Int = 4
-        /// Pin maximum number.
         static let maxPinNumber: Int = 8
         static let cellsPerRowLandscape: Int = 5
         static let cellsPerRowPortrait: Int = 3
@@ -115,7 +112,7 @@ final class CellularAccessCardPinViewController: UIViewController {
 private extension CellularAccessCardPinViewController {
     @IBAction func okButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyCellularAccessCardPin.confirmPin, and: pinCode.description)
-        viewModel?.connect(pinCode: pinCode)
+        viewModel.connect(pinCode: pinCode)
     }
 
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
@@ -138,7 +135,7 @@ private extension CellularAccessCardPinViewController {
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyCellularAccessCardPin.close)
         self.view.backgroundColor = .clear
-        viewModel?.dismissCellularModal()
+        viewModel.dismissCellularModal()
         coordinator?.dismiss()
     }
 }
@@ -171,24 +168,26 @@ private extension CellularAccessCardPinViewController {
 
     /// Inits the view model.
     func initViewModel() {
-        viewModel = CellularAccessCardPinViewModel(stateDidUpdate: { [weak self] _ in
+        viewModel.state.valueChanged = { [weak self] _ in
             self?.updateView()
-        })
+        }
         updateView()
     }
 
     /// Updates the view.
     func updateView() {
-        let state = viewModel?.state.value
-        if state?.cellularConnectionState == .ready {
-            coordinator?.dismiss()
+        let state = viewModel.state.value
+        if state.cellularConnectionState == .ready {
+            coordinator?.dismiss {
+                (self.coordinator as? HUDCoordinator)?.displayPairingSuccess()
+            }
         } else {
-            descriptionLabel.isHidden = state?.canShowLabel == true
-            descriptionLabel.text = state?.descriptionTitle
-            descriptionLabel.textColor = state?.cellularConnectionState?.descriptionColor
+            descriptionLabel.isHidden = state.canShowLabel == true
+            descriptionLabel.text = state.descriptionTitle
+            descriptionLabel.textColor = state.cellularConnectionState?.descriptionColor
         }
 
-        updateLoaderView(shouldShow: state?.shouldShowLoader == true)
+        updateLoaderView(shouldShow: state.shouldShowLoader == true)
     }
 
     /// Updates loader image view.
@@ -235,7 +234,7 @@ private extension CellularAccessCardPinViewController {
 // MARK: - UICollectionViewDataSource
 extension CellularAccessCardPinViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel?.dataSource.count ?? 0
+        return viewModel.dataSource.count
     }
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -244,7 +243,7 @@ extension CellularAccessCardPinViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(for: indexPath) as PinNumberCollectionViewCell
-        cell.fill(with: viewModel?.dataSource[indexPath.row] ?? 0)
+        cell.fill(with: viewModel.dataSource[indexPath.row])
         cell.delegate = self
 
         return cell
@@ -261,7 +260,7 @@ extension CellularAccessCardPinViewController: UICollectionViewDelegateFlowLayou
             return Constants.standardCellSize
         }
 
-        if viewModel?.dataSource[indexPath.row] == viewModel?.dataSource.last && !UIApplication.isLandscape {
+        if indexPath.row == viewModel.dataSource.count - 1 && !UIApplication.isLandscape {
             // Center last item of the datasource in portrait mode.
             return CGSize(width: collectionView.frame.width, height: Constants.standardCellSize.height)
         } else {

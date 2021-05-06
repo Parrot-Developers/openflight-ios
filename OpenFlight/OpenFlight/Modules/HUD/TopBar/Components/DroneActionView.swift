@@ -49,7 +49,7 @@ final class DroneActionView: UIView, NibOwnerLoadable {
     }
 
     // MARK: - Private Properties
-    private var viewModel: DroneActionViewModel?
+    private let viewModel = DroneActionViewModel()
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
@@ -66,11 +66,11 @@ final class DroneActionView: UIView, NibOwnerLoadable {
 // MARK: - Actions
 private extension DroneActionView {
     @IBAction func actionButtonTouchedUpInside(_ sender: Any) {
-        viewModel?.startAction()
+        viewModel.startAction()
     }
 
     @IBAction func returnHomeButtonTouchedUpInside(_ sender: Any) {
-        viewModel?.startReturnToHome()
+        viewModel.startReturnToHome()
     }
 }
 
@@ -84,9 +84,10 @@ private extension DroneActionView {
 
     /// Observes drone action view model.
     func observeViewModel() {
-        viewModel = DroneActionViewModel(stateDidUpdate: { [weak self] _ in
+        viewModel.state.valueChanged = { [weak self] _ in
             self?.updateDroneActionButtons()
-        })
+        }
+        updateDroneActionButtons()
     }
 
     /// Updates drone action buttons.
@@ -97,21 +98,21 @@ private extension DroneActionView {
 
     /// Updates return to home button view.
     func updateReturnHomeButton() {
-        let state = viewModel?.state.value
-        let image = state?.isRthAvailable == true
+        let state = viewModel.state.value
+        let image = state.isRthAvailable == true
             ? Asset.DroneAction.icRthAvailableIndicator.image
             : Asset.DroneAction.icRthUnavailableIndicator.image
         returnHomeButton.setImage(image, for: .normal)
-        returnHomeButton.isEnabled = state?.isRthAvailable == true
+        returnHomeButton.isEnabled = state.isRthAvailable == true
     }
 
     /// Updates takeoff button view.
     func updateTakeOffButton() {
-        let state = viewModel?.state.value
-        actionButton.backgroundColor = state?.backgroundColor
-        actionButton.setImage(state?.buttonImage, for: .normal)
-        actionButton.isEnabled = state?.connectionState == .connected
-            && state?.isTakeOffButtonEnabled == true
-        actionButton.isHidden = state?.shouldHideActionButton == true
+        let state = viewModel.state.value
+        actionButton.backgroundColor = state.backgroundColor
+        actionButton.setImage(state.buttonImage, for: .normal)
+        actionButton.isEnabled = state.connectionState == .connected
+            && state.isTakeOffButtonEnabled == true
+        actionButton.isHidden = state.shouldHideActionButton == true
     }
 }

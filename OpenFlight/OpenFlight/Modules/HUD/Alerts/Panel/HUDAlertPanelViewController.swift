@@ -50,7 +50,7 @@ final class HUDAlertPanelViewController: AlertPanelViewController {
     @IBOutlet private weak var startView: UIView!
 
     // MARK: - Private Properties
-    private var alertViewModel: HUDAlertPanelViewModel<HUDAlertPanelState>?
+    private let alertViewModel = HUDAlertPanelViewModel<HUDAlertPanelState>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -78,7 +78,7 @@ final class HUDAlertPanelViewController: AlertPanelViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        alertViewModel = nil
+        alertViewModel.state.valueChanged = nil
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -93,7 +93,7 @@ final class HUDAlertPanelViewController: AlertPanelViewController {
 // MARK: - Actions
 private extension HUDAlertPanelViewController {
     @IBAction func actionButtonTouchedUpInside(_ sender: Any) {
-        alertViewModel?.startAction()
+        alertViewModel.startAction()
     }
 }
 
@@ -114,13 +114,10 @@ private extension HUDAlertPanelViewController {
 
     /// Inits the alert view model.
     func initViewModel() {
-        alertViewModel = HUDAlertPanelViewModel(stateDidUpdate: { [weak self] state in
+        alertViewModel.state.valueChanged = { [weak self] state in
             self?.updatePanel(state: state)
-        })
-
-        guard let state = alertViewModel?.state else { return }
-
-        updatePanel(state: state.value)
+        }
+        updatePanel(state: alertViewModel.state.value)
     }
 
     /// Updates panel for given state and notifies delegate to update display.
@@ -195,13 +192,13 @@ private extension HUDAlertPanelViewController {
 // MARK: - StopViewDelegate
 extension HUDAlertPanelViewController: StopViewDelegate {
     func didClickOnStop() {
-        alertViewModel?.cancelAction()
+        alertViewModel.cancelAction()
     }
 }
 
 // MARK: - HUDAlertPanelActionButtonDelegate
 extension HUDAlertPanelViewController: HUDAlertPanelActionButtonDelegate {
     func startAction() {
-        alertViewModel?.startAction()
+        alertViewModel.startAction()
     }
 }

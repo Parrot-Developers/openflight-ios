@@ -78,13 +78,15 @@ final class HUDCameraStreamingState: ViewModelState, EquatableState, Copying {
 /// ViewModel for HUDCameraStreaming, notifies on stream server, camera live and secondary screen setting changes.
 
 final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamingState> {
+    // MARK: - Internal Properties
+    var cameraLiveUpdateCallback: ((CameraLive?) -> Void)?
+
     // MARK: - Private Properties
     private var overexposureSettingObserver: DefaultsDisposable?
     private var streamServerRef: Ref<StreamServer>?
     private var cameraLiveRef: Ref<CameraLive>?
     private var cameraRef: Ref<MainCamera2>?
     private var playStreamRetryTimer: Timer?
-    private var cameraLiveUpdateCallback: ((CameraLive?) -> Void)?
     private var isMonitoring: Bool = false
 
     // MARK: - Private Enums
@@ -93,15 +95,9 @@ final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamin
     }
 
     // MARK: - Init
-    /// Init.
-    ///
-    /// - Parameters:
-    ///     - stateDidUpdate: Camera streaming state callback
-    ///     - cameraLiveDidUpdate: Camera live callback
-    init(stateDidUpdate: ((HUDCameraStreamingState) -> Void)? = nil,
-         cameraLiveDidUpdate: ((CameraLive?) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
-        self.cameraLiveUpdateCallback = cameraLiveDidUpdate
+    override init() {
+        super.init()
+
         listenDefaults()
     }
 

@@ -66,7 +66,7 @@ enum FlightPlanMissionMode: String, CaseIterable {
                            bottomBarLeftStack: {
                             self.bottomBarViews
                            },
-                           bottomBarRightStack: [.expandButton, .cameraMode])
+                           bottomBarRightStack: [])
     }
 
     var icon: UIImage {

@@ -30,10 +30,9 @@
 
 import GroundSdk
 
-/// State used to watch DeviceState.
-
+/// State used to watch DeviceState for `DroneStateViewModel` or `RemoteControlStateViewModel`.
 open class DeviceConnectionState: ViewModelState, EquatableState, Copying {
-    // MARK: - Private Properties
+    // MARK: - Public Properties
     public fileprivate(set) var connectionState: DeviceState.ConnectionState = .disconnected
 
     // MARK: - Init
@@ -41,11 +40,17 @@ open class DeviceConnectionState: ViewModelState, EquatableState, Copying {
     public required init() { }
 
     /// Init with device state.
+    ///
+    /// - Parameters:
+    ///     - connectionState: current device connection state
     public init(connectionState: DeviceState.ConnectionState) {
         self.connectionState = connectionState
     }
 
     /// Failable init with device state.
+    ///
+    /// - Parameters:
+    ///     - connectionState: current device connection state
     public convenience init?(connectionState: DeviceState.ConnectionState?) {
         guard let connectionState = connectionState else { return nil }
 
@@ -58,7 +63,6 @@ open class DeviceConnectionState: ViewModelState, EquatableState, Copying {
     ///
     /// - Parameters:
     ///    - other: other state
-    ///
     open func isEqual(to other: DeviceConnectionState) -> Bool {
         return self.connectionState == other.connectionState
     }
@@ -73,14 +77,13 @@ open class DeviceConnectionState: ViewModelState, EquatableState, Copying {
         }
     }
 
-    /// Helper.
+    /// Returns true if device is connected.
     public func isConnected() -> Bool {
         return self.connectionState == .connected
     }
 }
 
 /// View model used to watch drone state.
-
 open class DroneStateViewModel<T: DeviceConnectionState>: DroneWatcherViewModel<T> {
     // MARK: - Private Properties
     private var droneStateRef: Ref<DeviceState>?
@@ -103,7 +106,6 @@ open class DroneStateViewModel<T: DeviceConnectionState>: DroneWatcherViewModel<
 }
 
 /// View model used to watch remote control state.
-
 class RemoteControlStateViewModel<T: DeviceConnectionState>: RemoteControlWatcherViewModel<T> {
     // MARK: - Private Properties
     private var remoteControleStateRef: Ref<DeviceState>?

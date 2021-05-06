@@ -33,6 +33,7 @@ import UIKit
 final class DashboardViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var collectionView: UICollectionView!
+    @IBOutlet private weak var backgroundView: UIView!
 
     // MARK: - Private Properties
     private weak var coordinator: DashboardCoordinator?
@@ -55,19 +56,19 @@ final class DashboardViewController: UIViewController {
     private enum SizeConstants {
         static let titleNavBarHeight: CGFloat = 40.0
         static let defaultWidth: CGFloat = 150.0
-        static let commonCellHeight: CGFloat = 140.0
+        static let commonCellHeight: CGFloat = 150.0
         static let portraitCellHeight: CGFloat = 100.0
         static let headerPortraitHeight: CGFloat = 50.0
-        static let headerLandscapeHeight: CGFloat = 34.0
-        static let footerHeight: CGFloat = 37.0
+        static let headerLandscapeHeight: CGFloat = 44.0
+        static let footerHeight: CGFloat = 60.0
         static let headerWidth: CGFloat = 50.0
         static let headerWidthDelta: CGFloat = 62.0
     }
     private enum MarginConstants {
-        static let defaultLanscapeMargin: CGFloat = 15.0
+        static let defaultLanscapeMargin: CGFloat = 20.0
         static let defaultPortraitMargin: CGFloat = 10.0
         static let topPortraitMargin: CGFloat = 22.0
-        static let topLandscapeMargin: CGFloat = 14.0
+        static let topLandscapeMargin: CGFloat = 15.0
         static let commonCellInset: CGFloat = 24.0
         static let globalInset: CGFloat = 12.0
     }
@@ -75,7 +76,9 @@ final class DashboardViewController: UIViewController {
         static let quarterScreen: CGFloat = 4.0
         static let oneThirdScreen: CGFloat = 3.0
         static let halfScreen: CGFloat = 2.0
+        static let wholeScreen: CGFloat = 1.0
         static let numberFooterItems: Int = 1
+        static let supportUrl: String = "https://support.parrot.com/"
     }
     private enum SectionType: Int, CaseIterable {
         case header
@@ -149,12 +152,6 @@ extension DashboardViewController: UICollectionViewDelegate {
         let sectionType = SectionType(rawValue: indexPath.section)
 
         switch sectionType {
-        case .header where collectionView.cellForItem(at: indexPath) is DashboardLoginCell:
-            logEvent(with: LogEventScreenManager.shared.logEventProvider?.logStringWithKey(logKey: .parrot) ?? "")
-            self.coordinator?.startLogin()
-        case .header where collectionView.cellForItem(at: indexPath) is DashboardProviderCell:
-            logEvent(with: LogEvent.LogKeyDashboardButton.pilot)
-            self.coordinator?.startProviderProfile()
         case .content:
             switch viewModel {
             case let myFlightsViewModel as MyFlightsViewModel:
@@ -163,7 +160,7 @@ extension DashboardViewController: UICollectionViewDelegate {
             case is RemoteInfosViewModel:
                 logEvent(with: LogEvent.LogKeyDashboardButton.controllerDetails)
                 self.coordinator?.startRemoteInfos()
-            case is DroneInfosViewModel<DroneInfosState>:
+            case is DroneInfosViewModel:
                 logEvent(with: LogEvent.LogKeyDashboardButton.droneDetails)
                 self.coordinator?.startDroneInfos()
             case is GalleryMediaViewModel:
@@ -191,17 +188,13 @@ extension DashboardViewController: UICollectionViewDataSource {
             switch headerItem.type {
             case .header:
                 cell = createHeaderCell(indexPath: indexPath)
-            case .provider:
-                cell = createProviderCell(indexPath: indexPath)
-            case .loginProvider:
-                cell = createLoginProviderCell(indexPath: indexPath)
             default:
-                assertionFailure("\(headerItem.self) not yet implemented")
+                cell = createDashboardLogoCell(indexPath: indexPath)
             }
         case .content:
             cell = createContentCell(indexPath)
         case .footer:
-            cell = createFooterCell(indexPath: indexPath)
+            cell = createFooterCell(DashboardFooterViewModel(), indexPath)
         }
 
         return cell
@@ -234,11 +227,13 @@ extension DashboardViewController: UICollectionViewDataSource {
     private func createContentCell(_ indexPath: IndexPath) -> UICollectionViewCell {
         let viewModel = dashboardViewModels[indexPath.row]
         switch viewModel {
+        case let dashboardProfileViewModel as DashboardProfileViewModel:
+            return createDashboardProfileCell(dashboardProfileViewModel, indexPath)
         case let userDeviceViewModel as UserDeviceViewModel:
             return createUserDeviceCell(userDeviceViewModel, indexPath)
         case let remoteViewModel as RemoteInfosViewModel:
             return createRemoteCell(remoteViewModel, indexPath)
-        case let droneViewModel as DroneInfosViewModel<DroneInfosState>:
+        case let droneViewModel as DroneInfosViewModel:
             return createDroneCell(droneViewModel, indexPath)
         case let galleryMediaViewModel as GalleryMediaViewModel:
             return createMediasCell(galleryMediaViewModel, indexPath)
@@ -249,27 +244,6 @@ extension DashboardViewController: UICollectionViewDataSource {
         }
 
         return UICollectionViewCell()
-    }
-
-    /// Return the corresponding identifier.
-    ///
-    /// - Parameters:
-    ///    - viewModel: View Model of a selected cell
-    ///
-    /// - Returns: Cell identifier
-    func getCellReuseIdentifier(_ viewModel: AnyObject) -> String {
-        switch viewModel {
-        case is UserDeviceViewModel,
-             is RemoteInfosViewModel,
-             is DroneInfosViewModel<DroneInfosState>:
-            return DashboardDeviceCell.reuseIdentifier
-        case is GalleryMediaViewModel:
-            return DashboardMediasCell.reuseIdentifier
-        case is MyFlightsViewModel:
-            return DashboardMyFlightsCell.reuseIdentifier
-        default:
-            return ""
-        }
     }
 }
 
@@ -288,7 +262,7 @@ extension DashboardViewController: UICollectionViewDelegateFlowLayout {
             case .header:
                 height = SizeConstants.headerLandscapeHeight
                 // Set content width to whole screen without inset and the margin.
-                width = (collectionView.frame.width - MarginConstants.defaultLanscapeMargin - MarginConstants.commonCellInset) / Constants.halfScreen
+                width = (collectionView.frame.width - MarginConstants.defaultLanscapeMargin - MarginConstants.commonCellInset) / Constants.oneThirdScreen
             case .content:
                 height = SizeConstants.commonCellHeight
                 switch viewModel {
@@ -296,6 +270,9 @@ extension DashboardViewController: UICollectionViewDelegateFlowLayout {
                     // Set content width to the half of the screen without inset and the margin.
                     width = (collectionView.frame.width - MarginConstants.defaultLanscapeMargin - MarginConstants.commonCellInset)
                         * (Constants.halfScreen / Constants.oneThirdScreen)
+                case is GalleryMediaViewModel:
+                    width = (collectionView.frame.width - MarginConstants.defaultLanscapeMargin - MarginConstants.commonCellInset)
+                        * (Constants.wholeScreen / Constants.oneThirdScreen)
                 default:
                     // Set content width to the quarter of the screen without inset and the 3 margins.
                     width = (collectionView.frame.width - 3 * MarginConstants.defaultLanscapeMargin - MarginConstants.commonCellInset) / Constants.quarterScreen
@@ -317,13 +294,14 @@ extension DashboardViewController: UICollectionViewDelegateFlowLayout {
             case .content:
                 height = SizeConstants.commonCellHeight
                 switch viewModel {
-                case is RemoteInfosViewModel,
-                     is DroneInfosViewModel<DroneInfosState>,
-                     is UserDeviceViewModel,
-                     is GalleryMediaViewModel:
+                case is DashboardProfileViewModel,
+                     is RemoteInfosViewModel,
+                     is DroneInfosViewModel,
+                     is UserDeviceViewModel:
                     // Set content width to the half of the screen without inset and the margin.
                     width = (collectionView.frame.width - MarginConstants.defaultPortraitMargin - MarginConstants.commonCellInset) / Constants.halfScreen
-                case is MyFlightsViewModel:
+                case is MyFlightsViewModel,
+                     is GalleryMediaViewModel:
                     height = SizeConstants.commonCellHeight
                     // Set content width to the whole screen.
                     width = collectionView.frame.width - MarginConstants.commonCellInset
@@ -396,35 +374,38 @@ private extension DashboardViewController {
         return dashboardHeaderCell
     }
 
-    /// Instantiate Login part to Provider in the Header Cell.
+    /// Instantiate dashboard logo Cell.
     ///
     /// - Parameters:
     ///    - indexPath: index of the cell
     ///
-    /// - Returns: DashboardLoginCell
-    func createLoginProviderCell(indexPath: IndexPath) -> DashboardLoginCell {
-        let dashboardLoginCell = self.collectionView.dequeueReusableCell(for: indexPath) as DashboardLoginCell
-        if let currentAccount = AccountManager.shared.currentAccount {
-            dashboardLoginCell.setLogo(currentAccount.icon)
-        }
+    /// - Returns: DashboardLogoCell
+    func createDashboardLogoCell(indexPath: IndexPath) -> DashboardLogoCell {
+        let dashboardLogoCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardLogoCell
 
-        return dashboardLoginCell
+        return dashboardLogoCell
     }
 
-    /// Instantiate Provider part of the Header Cell.
+    /// Instantiate dashboard profile cell.
     ///
     /// - Parameters:
+    ///    - viewModel: ViewModel for the cell
     ///    - indexPath: index of the cell
     ///
-    /// - Returns: DashboardProviderCell
-    func createProviderCell(indexPath: IndexPath) -> DashboardProviderCell {
-        let dashboardProviderCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardProviderCell
+    /// - Returns: DashboardProfileCell
+    func createDashboardProfileCell(_ viewModel: DashboardProfileViewModel, _ indexPath: IndexPath) -> DashboardProfileCell {
+        let dashboardProfileCell = self.collectionView.dequeueReusableCell(for: indexPath) as DashboardProfileCell
+
+        dashboardProfileCell.delegate = self
         if let currentAccount = AccountManager.shared.currentAccount,
-           let userName = currentAccount.userName {
-            dashboardProviderCell.setProfile(icon: currentAccount.userAvatar, name: userName)
+           let userName = currentAccount.userName,
+           let userPicture = currentAccount.userAvatar {
+            dashboardProfileCell.setProfile(icon: userPicture, name: userName)
+        } else {
+            dashboardProfileCell.setNotConnected()
         }
 
-        return dashboardProviderCell
+        return dashboardProfileCell
     }
 
     /// Instantiate the User Device Cell.
@@ -434,9 +415,7 @@ private extension DashboardViewController {
     ///
     /// - Returns: DashboardDeviceCell
     func createUserDeviceCell(_ viewModel: UserDeviceViewModel, _ indexPath: IndexPath) -> DashboardDeviceCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: getCellReuseIdentifier(viewModel), for: indexPath)
-        guard let userDeviceCell = cell as? DashboardDeviceCell else { return DashboardDeviceCell() }
-
+        let userDeviceCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardDeviceCell
         userDeviceCell.setup(state: viewModel.state.value)
 
         return userDeviceCell
@@ -449,9 +428,7 @@ private extension DashboardViewController {
     ///
     /// - Returns: DashboardDeviceCell
     func createRemoteCell(_ viewModel: RemoteInfosViewModel, _ indexPath: IndexPath) -> DashboardDeviceCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: getCellReuseIdentifier(viewModel), for: indexPath)
-        guard let remoteCell = cell as? DashboardDeviceCell else { return DashboardDeviceCell() }
-
+        let remoteCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardDeviceCell
         remoteCell.setup(state: viewModel.state.value)
         remoteCell.setup(delegate: self)
 
@@ -463,13 +440,12 @@ private extension DashboardViewController {
     /// - Parameters:
     ///    - viewModel: ViewModel for the cell
     ///
-    /// - Returns: DashboardDeviceCell
-    func createDroneCell(_ viewModel: DroneInfosViewModel<DroneInfosState>, _ indexPath: IndexPath) -> DashboardDeviceCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: getCellReuseIdentifier(viewModel), for: indexPath)
-        guard let droneCell = cell as? DashboardDeviceCell else { return DashboardDeviceCell() }
-
-        droneCell.setup(state: viewModel.state.value)
+    /// - Returns: DashboardDroneCell
+    func createDroneCell(_ viewModel: DroneInfosViewModel, _ indexPath: IndexPath) -> DashboardDroneCell {
+        let droneCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardDroneCell
+        droneCell.setup(viewModel)
         droneCell.setup(delegate: self)
+
         return droneCell
     }
 
@@ -480,9 +456,7 @@ private extension DashboardViewController {
     ///
     /// - Returns: DashboardMediasCell
     func createMediasCell(_ viewModel: GalleryMediaViewModel, _ indexPath: IndexPath) -> DashboardMediasCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: getCellReuseIdentifier(viewModel), for: indexPath)
-        guard let mediaCell = cell as? DashboardMediasCell else { return DashboardMediasCell() }
-
+        let mediaCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardMediasCell
         mediaCell.viewModel = viewModel
         mediaCell.setup(state: viewModel.state.value)
 
@@ -496,9 +470,7 @@ private extension DashboardViewController {
     ///
     /// - Returns: DashboardInfosCell
     func createMyFlightsCell(_ viewModel: MyFlightsViewModel, _ indexPath: IndexPath) -> DashboardMyFlightsCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: getCellReuseIdentifier(viewModel), for: indexPath)
-        guard let myFlightCell = cell as? DashboardMyFlightsCell else { return DashboardMyFlightsCell() }
-
+        let myFlightCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardMyFlightsCell
         myFlightCell.setup(state: viewModel.state.value)
 
         return myFlightCell
@@ -510,9 +482,11 @@ private extension DashboardViewController {
     ///    - indexPath: index of the cell
     ///
     /// - Returns: DashboardFooterCell
-    func createFooterCell(indexPath: IndexPath) -> DashboardFooterCell {
+    func createFooterCell(_ viewModel: DashboardFooterViewModel, _ indexPath: IndexPath) -> DashboardFooterCell {
         let dashboardFooterCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardFooterCell
-        dashboardFooterCell.coordinator = coordinator
+
+        dashboardFooterCell.delegate = self
+        dashboardFooterCell.setup(state: viewModel.state.value)
 
         return dashboardFooterCell
     }
@@ -525,11 +499,13 @@ private extension DashboardViewController {
 
     /// Inits the view.
     func initView() {
+        backgroundView.addBlurEffect(cornerRadius: 0.0)
         // Register cells which will be displayed in the collection view.
         collectionView.register(cellType: DashboardHeaderCell.self)
-        collectionView.register(cellType: DashboardLoginCell.self)
-        collectionView.register(cellType: DashboardProviderCell.self)
+        collectionView.register(cellType: DashboardLogoCell.self)
+        collectionView.register(cellType: DashboardProfileCell.self)
         collectionView.register(cellType: DashboardDeviceCell.self)
+        collectionView.register(cellType: DashboardDroneCell.self)
         collectionView.register(cellType: DashboardMyFlightsCell.self)
         collectionView.register(cellType: DashboardFooterCell.self)
         collectionView.register(cellType: DashboardMediasCell.self)
@@ -544,22 +520,24 @@ private extension DashboardViewController {
             self?.collectionView.reloadData()
         }
 
-        let galleryMediaViewModel = GalleryMediaViewModel(stateDidUpdate: { [weak self] _ in
+        let galleryMediaViewModel = GalleryMediaViewModel(onMediaStateUpdate: { [weak self] _ in
             self?.collectionView.reloadData()
         })
         galleryMediaViewModel.refreshMedias()
 
         // Fill the view model tab with all dashboard view model.
-        viewModelsLandscape = [UserDeviceViewModel(userLocationManager: UserLocationManager()),
+        viewModelsLandscape = [DashboardProfileViewModel(),
                                RemoteInfosViewModel(),
                                DroneInfosViewModel(),
-                               galleryMediaViewModel,
-                               myFlightsViewModel]
-        viewModelsPortrait = [UserDeviceViewModel(userLocationManager: UserLocationManager()),
+                               UserDeviceViewModel(userLocationManager: UserLocationManager()),
+                               myFlightsViewModel,
+                               galleryMediaViewModel]
+        viewModelsPortrait = [DashboardProfileViewModel(),
                               RemoteInfosViewModel(),
                               DroneInfosViewModel(),
-                              galleryMediaViewModel,
-                              myFlightsViewModel]
+                              UserDeviceViewModel(userLocationManager: UserLocationManager()),
+                              myFlightsViewModel,
+                              galleryMediaViewModel]
     }
 
     /// Calls log event.
@@ -592,5 +570,43 @@ extension DashboardViewController: DashboardHeaderCellDelegate {
     func dismissDasboard() {
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .button)
         coordinator?.dismissDashboard()
+    }
+}
+
+// MARK: - DashboardProfileCellDelegate
+extension DashboardViewController: DashboardProfileCellDelegate {
+    func startThirdPartyProcess(service: ThirdPartyService) {
+        self.coordinator?.startThirdPartyProcess(service: service)
+    }
+
+    func startLogin() {
+        logEvent(with: LogEventScreenManager.shared.logEventProvider?.logStringWithKey(logKey: .parrot) ?? "")
+        self.coordinator?.startLogin()
+    }
+
+    func startProviderProfile() {
+        logEvent(with: LogEvent.LogKeyDashboardButton.pilot)
+        self.coordinator?.startProviderProfile()
+    }
+}
+
+// MARK: - DashboardFooterCellDelegate
+extension DashboardViewController: DashboardFooterCellDelegate {
+    func startConfidentiality() {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyDashboardDataConfidentialityButton.dataConfidentiality.name,
+                             logType: .simpleButton)
+        coordinator?.startConfidentiality()
+    }
+
+    func startSupport() {
+        guard let url = URL(string: Constants.supportUrl) else { return }
+
+        UIApplication.shared.open(url)
+    }
+
+    func startParrotDebugScreen() {
+        LogEvent.logAppEvent(itemName: LogEvent.EventLoggerScreenConstants.debugLogs,
+                             logType: .simpleButton)
+        coordinator?.startParrotDebug()
     }
 }

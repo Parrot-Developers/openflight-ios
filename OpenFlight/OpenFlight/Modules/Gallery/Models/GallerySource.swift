@@ -63,7 +63,7 @@ struct GallerySource {
         case .droneInternal:
             return Asset.Gallery.droneInternalMemory.image
         case .mobileDevice:
-            return Asset.Dashboard.icPhone.image
+            return Asset.Dashboard.icPhoneLight.image
         default:
             return nil
         }

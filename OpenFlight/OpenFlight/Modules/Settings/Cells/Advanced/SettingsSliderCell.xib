@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -15,14 +15,14 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <tableViewCell opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="SettingsSliderCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsSliderCell" rowHeight="69" id="oyA-hu-LIV" customClass="SettingsSliderCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="607" height="70"/>
+            <rect key="frame" x="0.0" y="0.0" width="607" height="62"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="oyA-hu-LIV" id="zi0-Nr-yNC">
-                <rect key="frame" x="0.0" y="0.0" width="607" height="70"/>
+                <rect key="frame" x="0.0" y="0.0" width="607" height="62"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cR8-HG-kGi">
-                        <rect key="frame" x="16" y="8" width="575" height="54"/>
+                        <rect key="frame" x="16" y="4" width="575" height="54"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="eH4-cL-dm7">
                                 <rect key="frame" x="0.0" y="0.0" width="110" height="54"/>
@@ -78,10 +78,10 @@
                     </view>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="cR8-HG-kGi" firstAttribute="top" secondItem="zi0-Nr-yNC" secondAttribute="top" constant="8" id="1N3-qg-gbx"/>
+                    <constraint firstItem="cR8-HG-kGi" firstAttribute="top" secondItem="zi0-Nr-yNC" secondAttribute="top" constant="4" id="1N3-qg-gbx"/>
                     <constraint firstAttribute="trailing" secondItem="cR8-HG-kGi" secondAttribute="trailing" constant="16" id="N9T-89-lI6"/>
                     <constraint firstItem="cR8-HG-kGi" firstAttribute="leading" secondItem="zi0-Nr-yNC" secondAttribute="leading" constant="16" id="jsQ-go-YU3"/>
-                    <constraint firstAttribute="bottom" secondItem="cR8-HG-kGi" secondAttribute="bottom" constant="8" id="wd2-15-TaX"/>
+                    <constraint firstAttribute="bottom" secondItem="cR8-HG-kGi" secondAttribute="bottom" constant="4" id="wd2-15-TaX"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>

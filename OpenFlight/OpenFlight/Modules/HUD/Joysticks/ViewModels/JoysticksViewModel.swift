@@ -66,12 +66,9 @@ final class JoysticksViewModel: BaseViewModel<JoysticksState> {
     private var joysticksAvailabilityObserver: Any?
 
     // MARK: - Init
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - stateDidUpdate: called when Joysticks state change
-    override init(stateDidUpdate: ((JoysticksState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenJoysticksAvailabilityChanges()
     }
 

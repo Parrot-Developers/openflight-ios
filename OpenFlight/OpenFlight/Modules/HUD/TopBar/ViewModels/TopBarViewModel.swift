@@ -101,8 +101,9 @@ final class TopBarViewModel: DevicesStateViewModel<TopBarState> {
     private var missionLauncherPresentationObserver: Any?
 
     // MARK: - Init
-    override init(stateDidUpdate: ((TopBarState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         observeModalPresentation()
         observeMissionLauncherPresentation()
     }

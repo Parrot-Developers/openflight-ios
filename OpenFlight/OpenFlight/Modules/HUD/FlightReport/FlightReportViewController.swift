@@ -235,8 +235,8 @@ private extension FlightReportViewController {
             self?.batteryUsedInfoView.model?.value = state.batteryConsumption
             self?.dateLabel.text = state.formattedDate
             self?.locationLabel.text = state.formattedPosition
-            self?.flightNameLabel.text = state.title
-            self?.flightNameTextfield.text = state.title
+            self?.flightNameLabel.text = state.flightLocationDescription
+            self?.flightNameTextfield.text = state.flightLocationDescription
         }
     }
 }

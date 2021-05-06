@@ -88,16 +88,3 @@ extension HUDViewController: BottomBarViewControllerDelegate {
         videoControls.hideAETargetZone()
     }
 }
-
-// MARK: - FlightPlanPanelViewControllerDelegate
-extension HUDViewController: FlightPlanEditionViewControllerDelegate {
-    func startFlightPlanEdition() {
-        flightPlanControls.viewModel.forceHidePanel(true)
-        coordinator?.startFlightPlanEdition(mapViewController: splitControls.mapViewController,
-                                            mapViewRestorer: splitControls)
-    }
-
-    func startNewFlightPlan(flightPlanProvider: FlightPlanProvider, creationCompletion: @escaping (_ createNewFp: Bool) -> Void) {
-        coordinator?.presentNewFpCoordinatorIfNeeded(flightPlanProvider: flightPlanProvider, creationCompletion: creationCompletion)
-    }
-}

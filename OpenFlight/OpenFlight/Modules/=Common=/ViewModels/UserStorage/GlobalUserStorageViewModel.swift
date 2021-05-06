@@ -46,6 +46,8 @@ final class GlobalUserStorageState: ViewModelState, EquatableState, Copying {
     fileprivate(set) var hasInsufficientStorageSpaceError: Bool = false
     /// Boolean for insufficient storage speed error.
     fileprivate(set) var hasInsufficientStorageSpeedError: Bool = false
+    /// Boolean for sd card to slow.
+    fileprivate(set) var isUserRemovableStorageTooSlow: Bool = false
     /// Boolean for storage error.
     var hasStorageError: Bool {
         return hasInsufficientStorageSpaceError || hasInsufficientStorageSpeedError
@@ -73,18 +75,21 @@ final class GlobalUserStorageState: ViewModelState, EquatableState, Copying {
     ///    - internalUserStorageFileSystemState: current internal user file system storage state
     ///    - hasInsufficientStorageSpaceError: boolean for insufficient storage space error
     ///    - hasInsufficientStorageSpeedError: boolean for insufficient storage speed error
+    ///    - isUserRemovableStorageTooSlow: boolean for sd card too slow
     init(removableUserStoragePhysicalState: UserStoragePhysicalState,
          removableUserStorageFileSystemState: UserStorageFileSystemState,
          internalUserStoragePhysicalState: UserStoragePhysicalState,
          internalUserStorageFileSystemState: UserStorageFileSystemState,
          hasInsufficientStorageSpaceError: Bool,
-         hasInsufficientStorageSpeedError: Bool) {
+         hasInsufficientStorageSpeedError: Bool,
+         isUserRemovableStorageTooSlow: Bool) {
         self.removableUserStoragePhysicalState = removableUserStoragePhysicalState
         self.removableUserStorageFileSystemState = removableUserStorageFileSystemState
         self.internalUserStoragePhysicalState = internalUserStoragePhysicalState
         self.internalUserStorageFileSystemState = internalUserStorageFileSystemState
         self.hasInsufficientStorageSpaceError = hasInsufficientStorageSpaceError
         self.hasInsufficientStorageSpeedError = hasInsufficientStorageSpeedError
+        self.isUserRemovableStorageTooSlow = isUserRemovableStorageTooSlow
     }
 
     // MARK: - Equatable
@@ -95,6 +100,7 @@ final class GlobalUserStorageState: ViewModelState, EquatableState, Copying {
             && self.internalUserStorageFileSystemState == other.internalUserStorageFileSystemState
             && self.hasInsufficientStorageSpaceError == other.hasInsufficientStorageSpaceError
             && self.hasInsufficientStorageSpeedError == other.hasInsufficientStorageSpeedError
+            && self.isUserRemovableStorageTooSlow == other.isUserRemovableStorageTooSlow
     }
 
     // MARK: - Copying
@@ -104,7 +110,8 @@ final class GlobalUserStorageState: ViewModelState, EquatableState, Copying {
                                       internalUserStoragePhysicalState: self.internalUserStoragePhysicalState,
                                       internalUserStorageFileSystemState: self.internalUserStorageFileSystemState,
                                       hasInsufficientStorageSpaceError: self.hasInsufficientStorageSpaceError,
-                                      hasInsufficientStorageSpeedError: self.hasInsufficientStorageSpeedError)
+                                      hasInsufficientStorageSpeedError: self.hasInsufficientStorageSpeedError,
+                                      isUserRemovableStorageTooSlow: self.isUserRemovableStorageTooSlow)
     }
 }
 
@@ -188,6 +195,7 @@ private extension GlobalUserStorageViewModel {
             let copy = strongSelf.state.value.copy()
             copy.removableUserStoragePhysicalState = removableUserStorage.physicalState
             copy.removableUserStorageFileSystemState = removableUserStorage.fileSystemState
+            copy.isUserRemovableStorageTooSlow = removableUserStorage.physicalState == .mediaTooSlow
             strongSelf.state.set(copy)
 
             // Remove storage space error if space has increased.
@@ -195,6 +203,7 @@ private extension GlobalUserStorageViewModel {
                 removableUserStorage.availableSpace > oldAvailableSpace {
                 strongSelf.removeInsufficientStorageSpaceError()
             }
+
             strongSelf.oldRemovableStorageAvailableSpace = removableUserStorage.availableSpace
         }
     }

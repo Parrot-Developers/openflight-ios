@@ -100,20 +100,10 @@ private extension AdjustmentTableViewCell {
     /// Updates the view.
     func updateView() {
         guard let value = settingType?.currentValue,
-              let step = settingType?.step,
+              let description = settingType?.currentValueDescription,
               let currentValues = settingType?.allValues else { return }
 
-        // Display the value with a specific factor.
-        if settingType?.unit == .percent {
-            valueLabel?.text = String(format: "%d %@",
-                                      value,
-                                      settingType?.unit.unit ?? "")
-        } else {
-            valueLabel?.text = String(format: "%.1f %@",
-                                      Double(value) * step,
-                                      settingType?.unit.unit ?? "")
-        }
-
+        valueLabel?.text = description
         minusButton.isEnabled = currentValues.contains(value - 1)
         plusButton.isEnabled = currentValues.contains(value + 1)
     }

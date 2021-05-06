@@ -88,7 +88,7 @@ extension Camera2WhiteBalanceTemperature: BarItemSubMode, RulerDisplayable, Sort
     }
 
     // MARK: - Sortable
-    static var sortedCases: [Camera2WhiteBalanceTemperature] {
+    public static var sortedCases: [Camera2WhiteBalanceTemperature] {
         return [.k1500, .k1750, .k2000, .k2250, .k2500, .k2750, .k3000, .k3250, .k3500, .k3750, .k4000,
                 .k4250, .k4500, .k4750, .k5000, .k5250, .k5500, .k5750, .k6000, .k6250, .k6500, .k6750,
                 .k7000, .k7250, .k7500, .k7750, .k8000, .k8250, .k8500, .k8750, .k9000, .k9250, .k9500,

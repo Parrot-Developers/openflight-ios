@@ -49,8 +49,9 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     case tooMuchWind
     case strongImuVibration
     case internalMemoryFull
-    case sdFull
     case sdError
+    case sdFull
+    case sdTooSlow
     case geofenceAltitudeAndDistance
     case geofenceAltitude
     case geofenceDistance
@@ -89,8 +90,9 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
         case .strongImuVibration:
             return .componentsImu
         case .internalMemoryFull,
+             .sdError,
              .sdFull,
-             .sdError:
+             .sdTooSlow:
             return .sdCard
         case .geofenceAltitudeAndDistance,
              .geofenceAltitude,
@@ -142,10 +144,12 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return L10n.alertStrongImuVibrations
         case .internalMemoryFull:
             return L10n.alertInternalMemoryFull
-        case .sdFull:
-            return L10n.alertSdFullSwitchingInternal
         case .sdError:
             return L10n.alertSdErrorSwitchingInternal
+        case .sdFull:
+            return L10n.alertSdFullSwitchingInternal
+        case .sdTooSlow:
+            return L10n.alertSdcardTooSlow
         case .geofenceAltitudeAndDistance,
              .geofenceAltitude,
              .geofenceDistance:
@@ -183,10 +187,10 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return Asset.Common.Icons.icWind.image
         case .internalMemoryFull:
             return Asset.Common.Icons.icSdSmall.image
-        case .sdFull,
-             .sdError:
-            // TODO: replace with internal memory icon when available.
-            return Asset.Common.Icons.icSdSmall.image
+        case .sdError,
+             .sdFull,
+             .sdTooSlow:
+            return Asset.Gallery.droneInternalMemory.image
         case .geofenceAltitudeAndDistance:
             return Asset.Telemetry.icDistance.image
         case .geofenceAltitude:

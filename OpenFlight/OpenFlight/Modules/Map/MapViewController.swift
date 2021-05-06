@@ -56,7 +56,7 @@ open class MapViewController: UIViewController {
         }
     }
     public var droneLocation: CLLocationCoordinate2D? {
-        return locationsViewModel?.state.value.droneLocation.coordinates
+        return locationsViewModel.state.value.droneLocation.coordinates
     }
 
     // MARK: - Internal Properties
@@ -66,8 +66,8 @@ open class MapViewController: UIViewController {
 
     // MARK: - Private Properties
     private var currentMapType: SettingsMapDisplayType?
-    private var locationsViewModel: MapLocationsViewModel? = MapLocationsViewModel()
-    private var missionProviderViewModel: MissionProviderViewModel?
+    private let locationsViewModel = MapLocationsViewModel()
+    private let missionProviderViewModel = MissionProviderViewModel()
     public var droneLocationGraphic: AGSGraphic?
     private var userLocationGraphic: AGSGraphic?
     private var ignoreCameraAdjustments: Bool = false
@@ -136,14 +136,14 @@ open class MapViewController: UIViewController {
         super.viewDidLoad()
 
         configureMapView()
-        locationsViewModel?.state.valueChanged = { [weak self] state in
+        locationsViewModel.state.valueChanged = { [weak self] state in
             self?.locationsDidChange(state)
             self?.updateCenterButtonStatus(state)
         }
         if currentMapMode.isHudMode {
             setupMissionProviderViewModel()
         }
-        updateCenterButtonStatus(locationsViewModel?.state.value)
+        updateCenterButtonStatus(locationsViewModel.state.value)
         setCameraHandler()
         configureMapOptions()
     }
@@ -218,13 +218,16 @@ open class MapViewController: UIViewController {
     /// Returns flight plan edition screen with a selected edition mode.
     ///
     /// - Parameters:
-    ///     - coordinator: flight plan coordinator
+    ///     - coordinator: flight plan edition coordinator
+    ///     - panelCoordinator: flight plan panel coordinator
     ///     - mapViewRestorer: protocol in charge of restoring MapViewController
     /// - Returns: FlightPlanEditionViewController
     open func editionProvider(coordinator: FlightPlanEditionCoordinator,
+                              panelCoordinator: FlightPlanPanelCoordinator,
                               mapViewRestorer: MapViewRestorer?) -> FlightPlanEditionViewController {
         let flightPlanProvider = currentMissionProviderState?.mode?.flightPlanProvider
         let viewController = FlightPlanEditionViewController.instantiate(coordinator: coordinator,
+                                                                         panelCoordinator: panelCoordinator,
                                                                          mapViewController: self,
                                                                          mapViewRestorer: mapViewRestorer,
                                                                          flightPlanProvider: flightPlanProvider)
@@ -285,10 +288,10 @@ open class MapViewController: UIViewController {
     ///    - isDisabled: True if user interaction should be disabled and center button hidden
     func disableUserInteraction(_ isDisabled: Bool) {
         sceneView.isUserInteractionEnabled = !isDisabled
-        locationsViewModel?.forceHideCenterButton(isDisabled)
+        locationsViewModel.forceHideCenterButton(isDisabled)
         // Map with disabled interaction always autocenters on drone/user location.
         if isDisabled {
-            locationsViewModel?.disableAutoCenter(false)
+            locationsViewModel.disableAutoCenter(false)
         }
     }
 
@@ -358,8 +361,11 @@ open class MapViewController: UIViewController {
     }
 
     /// Show the item edition panel.
-    public func showEditionItemPanel() {
-        flightPlanEditionViewController?.showCornerEdition()
+    ///
+    /// - Parameters:
+    ///    - graphic: graphic to display in edition
+    public func showEditionItemPanel(_ graphic: EditableAGSGraphic) {
+        flightPlanEditionViewController?.showCustomGraphicEdition(graphic)
     }
 
     /// Returns max camera pitch as Double.
@@ -417,7 +423,7 @@ open class MapViewController: UIViewController {
 // MARK: - Actions
 private extension MapViewController {
     @IBAction func centerButtonTouchedUpInside(_ sender: AnyObject) {
-        locationsViewModel?.disableAutoCenter(false)
+        locationsViewModel.disableAutoCenter(false)
     }
 }
 
@@ -425,9 +431,6 @@ private extension MapViewController {
 extension MapViewController {
     /// Center Map on Drone or User.
     func centerMapOnDroneOrUser() {
-        guard let locationsViewModel = locationsViewModel else {
-            return
-        }
         let currentCamera = sceneView.currentViewpointCamera()
         let camera = currentCamera.hasValidLocation ? currentCamera : defaultCamera
 
@@ -446,17 +449,26 @@ private extension MapViewController {
         addDefaultCamera()
         sceneView.touchDelegate = self
         sceneView.isAttributionTextVisible = false
+        setupMapElevation()
+    }
+
+    /// Sets up map elevation (extrusion).
+    func setupMapElevation() {
+        guard let elevationUrl = URL(string: MapConstants.elevationURL) else { return }
+
+        let elevationSource = AGSArcGISTiledElevationSource(url: elevationUrl)
+        sceneView.scene?.baseSurface?.elevationSources.append(elevationSource)
+        sceneView.scene?.baseSurface?.isEnabled = true
     }
 
     /// Sets up mission provider view model.
     func setupMissionProviderViewModel() {
-        missionProviderViewModel = MissionProviderViewModel(stateDidUpdate: { [weak self] state in
+        missionProviderViewModel.state.valueChanged = { [weak self] state in
             self?.missionProviderDidChange(state)
-        })
-        // Set initial mission provider state.
-        if let state = missionProviderViewModel?.state.value {
-            self.missionProviderDidChange(state)
         }
+        // Set initial mission provider state.
+        let state = missionProviderViewModel.state.value
+        self.missionProviderDidChange(state)
     }
 
     /// Configure ArcGIS license.
@@ -531,19 +543,19 @@ private extension MapViewController {
             disableLocations()
             updateMapType(.hybrid)
         case .standard:
-            locationsViewModel?.forceHideCenterButton(false)
+            locationsViewModel.forceHideCenterButton(false)
             centerMapOnDroneOrUserIfNeeded()
         case .droneDetails:
             shouldUpdateMapType = false
-            locationsViewModel?.forceHideCenterButton(true)
-            locationsViewModel?.alwaysCenterOnDroneLocation(true)
+            locationsViewModel.forceHideCenterButton(true)
+            locationsViewModel.alwaysCenterOnDroneLocation(true)
             updateMapType(.satellite)
         case .flightPlan:
-            locationsViewModel?.forceHideCenterButton(true)
-            locationsViewModel?.disableAutoCenter(true)
+            locationsViewModel.forceHideCenterButton(true)
+            locationsViewModel.disableAutoCenter(true)
         case .flightPlanEdition:
-            locationsViewModel?.forceHideCenterButton(true)
-            locationsViewModel?.disableAutoCenter(true)
+            locationsViewModel.forceHideCenterButton(true)
+            locationsViewModel.disableAutoCenter(true)
             self.removeCameraPitch(camera: self.sceneView.currentViewpointCamera())
         }
     }
@@ -573,7 +585,7 @@ private extension MapViewController {
 private extension MapViewController {
     /// Completely disable user & drone locations.
     func disableLocations() {
-        locationsViewModel = nil
+        locationsViewModel.state.valueChanged = nil
         removeGraphicOverlay(forKey: MapConstants.locationsOverlayKey)
     }
 
@@ -643,7 +655,7 @@ private extension MapViewController {
 private extension MapViewController {
     /// Center map to drone location. If drone location is unavailable, use the user's location instead (if available).
     func centerMapOnDroneOrUserIfNeeded() {
-        guard locationsViewModel?.state.value.disabledAutoCenter == false else {
+        guard locationsViewModel.state.value.disabledAutoCenter == false else {
             return
         }
         centerMapOnDroneOrUser()
@@ -677,7 +689,7 @@ extension MapViewController: AGSGeoViewTouchDelegate {
                       didTouchDownAtScreenPoint screenPoint: CGPoint,
                       mapPoint: AGSPoint,
                       completion: @escaping (Bool) -> Void) {
-        locationsViewModel?.disableAutoCenter(true)
+        locationsViewModel.disableAutoCenter(true)
         if currentMapMode == .flightPlanEdition {
             flightPlanHandleTouchDown(geoView,
                                       didTouchDownAtScreenPoint: screenPoint,

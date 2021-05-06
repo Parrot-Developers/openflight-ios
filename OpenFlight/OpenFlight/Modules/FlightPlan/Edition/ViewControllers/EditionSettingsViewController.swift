@@ -131,11 +131,11 @@ final class EditionSettingsViewController: UIViewController {
     ///     - selectedGraphic: selected graphic
     func updateDataSource(with settingsProvider: FlightPlanSettingsProvider?,
                           savedFlightPlan: SavedFlightPlan?,
-                          selectedGraphic: FlightPlanGraphic?) {
+                          selectedGraphic: EditableAGSGraphic?) {
         self.settingsProvider = settingsProvider
-        self.settingsProvider?.delegate = self
         self.savedFlightPlan = savedFlightPlan
-        self.deleteButton.isHidden = selectedGraphic == nil
+        // Delete button is hidden if selected graphic can't be deleted or if no graphic is selected.
+        self.deleteButton.isHidden = selectedGraphic?.deletable != true
 
         switch settingsProvider {
         case is WayPointSettingsProvider,
@@ -167,6 +167,11 @@ final class EditionSettingsViewController: UIViewController {
         self.settingsCategoryFilter = categoryFilter
         self.tableView.reloadData()
         updateUndoButton()
+    }
+
+    /// Refreshes view data.
+    func refreshContent() {
+        refreshContent(categoryFilter: self.settingsCategoryFilter)
     }
 }
 
@@ -269,7 +274,7 @@ extension EditionSettingsViewController: UITableViewDataSource {
             title = L10n.commonPoi
         case is WayPointSegmentSettingsProvider,
              nil:
-            title = ""
+            title = L10n.flightPlanSegmentSettingsTitle
         default:
             title = settingsCategoryFilter?.title ?? L10n.flightPlanSettingsTitle
         }
@@ -315,12 +320,5 @@ extension EditionSettingsViewController: EditionSettingsCellModelDelegate {
 
     func updateChoiceSetting(for key: String?, value: Bool) {
         delegate?.updateChoiceSetting(for: key, value: value)
-    }
-}
-
-// MARK: - FlightPlanSettingsProviderDelegate
-extension EditionSettingsViewController: FlightPlanSettingsProviderDelegate {
-    func didUpdateSettings() {
-        refreshContent(categoryFilter: settingsCategoryFilter)
     }
 }

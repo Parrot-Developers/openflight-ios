@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" translatesAutoresizingMaskIntoConstraints="NO" id="gTV-IL-0wX" customClass="DashboardFooterCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="500" height="80"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="500" height="80"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FSy-7P-qsp">
+                        <rect key="frame" x="395" y="0.0" width="105" height="29"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="105" id="kes-WT-h1x">
+                                <variation key="heightClass=regular-widthClass=compact" constant="60"/>
+                            </constraint>
+                        </constraints>
+                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                        <state key="normal" title="Data confidentiality">
+                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </state>
+                        <connections>
+                            <action selector="dataConfidentialityButtonTouchedUpInside:" destination="gTV-IL-0wX" eventType="touchUpInside" id="Ger-Vr-SXW"/>
+                        </connections>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k1w-dx-cXM">
+                        <rect key="frame" x="332" y="0.0" width="43" height="29"/>
+                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                        <state key="normal" title="Support">
+                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </state>
+                        <connections>
+                            <action selector="supportButtonTouchedUpInside:" destination="gTV-IL-0wX" eventType="touchUpInside" id="ucd-fp-2QJ"/>
+                        </connections>
+                    </button>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dxX-xu-4ml">
+                        <rect key="frame" x="0.0" y="0.0" width="272" height="60"/>
+                        <subviews>
+                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="B1J-xC-GGG">
+                                <rect key="frame" x="0.0" y="17" width="33" height="12"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="12"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Gq0-6j-hme">
+                                <rect key="frame" x="41" y="17" width="65" height="12"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="12"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Controller" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dx4-gi-Xtr">
+                                <rect key="frame" x="41" y="0.0" width="53" height="13"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="App" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cne-ai-XYQ">
+                                <rect key="frame" x="0.0" y="0.0" width="21" height="13"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Drone" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KyW-Gs-jae">
+                                <rect key="frame" x="114" y="0.0" width="31.5" height="13"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0UK-Sb-8tW">
+                                <rect key="frame" x="114" y="17" width="26.5" height="12"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="12"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="Cne-ai-XYQ" firstAttribute="top" secondItem="dxX-xu-4ml" secondAttribute="top" id="1Qe-wx-CEe"/>
+                            <constraint firstItem="B1J-xC-GGG" firstAttribute="leading" secondItem="dxX-xu-4ml" secondAttribute="leading" id="Llb-Ij-cWY"/>
+                            <constraint firstItem="0UK-Sb-8tW" firstAttribute="top" secondItem="KyW-Gs-jae" secondAttribute="bottom" constant="4" id="Tiw-Rf-bBW"/>
+                            <constraint firstItem="dx4-gi-Xtr" firstAttribute="top" secondItem="dxX-xu-4ml" secondAttribute="top" id="Wqx-Qt-wjQ"/>
+                            <constraint firstItem="Gq0-6j-hme" firstAttribute="leading" secondItem="dx4-gi-Xtr" secondAttribute="leading" id="bdA-qS-gFj"/>
+                            <constraint firstItem="0UK-Sb-8tW" firstAttribute="leading" secondItem="Gq0-6j-hme" secondAttribute="trailing" constant="8" id="cjs-yL-yrb"/>
+                            <constraint firstItem="0UK-Sb-8tW" firstAttribute="leading" secondItem="KyW-Gs-jae" secondAttribute="leading" id="coS-kz-QSz"/>
+                            <constraint firstItem="KyW-Gs-jae" firstAttribute="top" secondItem="dxX-xu-4ml" secondAttribute="top" id="dg5-OD-Pae"/>
+                            <constraint firstItem="B1J-xC-GGG" firstAttribute="top" secondItem="Cne-ai-XYQ" secondAttribute="bottom" constant="4" id="fF6-ok-48m"/>
+                            <constraint firstItem="Gq0-6j-hme" firstAttribute="leading" secondItem="B1J-xC-GGG" secondAttribute="trailing" constant="8" id="fFb-y9-JGE"/>
+                            <constraint firstItem="dx4-gi-Xtr" firstAttribute="leading" secondItem="Cne-ai-XYQ" secondAttribute="trailing" constant="20" id="mPb-0Q-GFl">
+                                <variation key="heightClass=regular-widthClass=compact" constant="10"/>
+                            </constraint>
+                            <constraint firstItem="Gq0-6j-hme" firstAttribute="top" secondItem="dx4-gi-Xtr" secondAttribute="bottom" constant="4" id="qs5-OR-25h"/>
+                            <constraint firstItem="KyW-Gs-jae" firstAttribute="leading" secondItem="dx4-gi-Xtr" secondAttribute="trailing" constant="20" id="vNm-zH-6w4">
+                                <variation key="heightClass=regular-widthClass=compact" constant="10"/>
+                            </constraint>
+                            <constraint firstItem="Cne-ai-XYQ" firstAttribute="leading" secondItem="dxX-xu-4ml" secondAttribute="leading" id="zkk-Xh-ZdP"/>
+                        </constraints>
+                    </view>
+                </subviews>
+            </view>
+            <constraints>
+                <constraint firstItem="dxX-xu-4ml" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="0LA-Y6-Bgd"/>
+                <constraint firstItem="FSy-7P-qsp" firstAttribute="leading" secondItem="k1w-dx-cXM" secondAttribute="trailing" constant="20" id="DpR-VV-Dc7">
+                    <variation key="heightClass=regular-widthClass=compact" constant="10"/>
+                </constraint>
+                <constraint firstItem="FSy-7P-qsp" firstAttribute="bottom" secondItem="k1w-dx-cXM" secondAttribute="bottom" id="HBj-8B-Z1g"/>
+                <constraint firstItem="k1w-dx-cXM" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="MH6-uG-hz8"/>
+                <constraint firstItem="k1w-dx-cXM" firstAttribute="bottom" secondItem="0UK-Sb-8tW" secondAttribute="bottom" id="N7z-rI-WJS"/>
+                <constraint firstItem="dxX-xu-4ml" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="U7A-U9-4rN"/>
+                <constraint firstAttribute="bottom" secondItem="dxX-xu-4ml" secondAttribute="bottom" constant="20" id="YdX-Eb-gdQ"/>
+                <constraint firstItem="k1w-dx-cXM" firstAttribute="leading" secondItem="dxX-xu-4ml" secondAttribute="trailing" constant="60" id="qFM-CQ-wck"/>
+                <constraint firstItem="FSy-7P-qsp" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="qoS-2n-VXH"/>
+                <constraint firstAttribute="trailing" secondItem="FSy-7P-qsp" secondAttribute="trailing" id="rOo-QR-udA"/>
+            </constraints>
+            <connections>
+                <outlet property="controllerTitleLabel" destination="dx4-gi-Xtr" id="PX8-R2-soH"/>
+                <outlet property="controllerVersionLabel" destination="Gq0-6j-hme" id="XZf-fU-NZ3"/>
+                <outlet property="dataConfidentialityButton" destination="FSy-7P-qsp" id="vET-LE-0MG"/>
+                <outlet property="droneTitleLabel" destination="KyW-Gs-jae" id="B9s-g0-SEH"/>
+                <outlet property="droneVersionLabel" destination="0UK-Sb-8tW" id="LgM-rI-Hxg"/>
+                <outlet property="supportButton" destination="k1w-dx-cXM" id="xMJ-II-6KT"/>
+                <outlet property="versionLabel" destination="B1J-xC-GGG" id="YLz-W6-duD"/>
+                <outlet property="versionTitleLabel" destination="Cne-ai-XYQ" id="41r-g0-k88"/>
+                <outlet property="versionsView" destination="dxX-xu-4ml" id="4fH-rC-G5b"/>
+            </connections>
+            <point key="canvasLocation" x="137.27678571428569" y="153.62318840579712"/>
+        </collectionViewCell>
+    </objects>
+</document>

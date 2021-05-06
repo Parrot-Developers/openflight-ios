@@ -36,8 +36,9 @@ import GroundSdk
 /// Model for `DroneComponentsStatusView`.
 struct DroneComponentsStatusModel {
     var isDroneConnected: Bool = false
-    var droneGimbalStatus: DroneGimbalStatus?
-    var stereoVisionStatus: DroneStereoVisionStatus?
+    var droneGimbalStatus: CalibratableGimbalState?
+    var frontStereoGimbalStatus: FrontStereoGimbalState?
+    var stereoVisionStatus: StereoVisionSensorsCalibrationState?
     var frontLeftMotorStatus: DroneMotorStatus?
     var frontRightMotorStatus: DroneMotorStatus?
     var rearLeftMotorStatus: DroneMotorStatus?
@@ -97,8 +98,10 @@ private extension DroneComponentsStatusView {
     func fill(with model: DroneComponentsStatusModel) {
         droneImageView.image = model.isDroneConnected ? Asset.Drone.icDroneDetailsAvailable.image : Asset.Drone.icDroneDetailsUnavailable.image
         allStatusView.forEach { $0.isHidden = !model.isDroneConnected }
-        gimbalImageView.image = model.droneGimbalStatus?.image
-        stereoVisionImageView.image = model.stereoVisionStatus?.image
+        gimbalImageView.image = model.frontStereoGimbalStatus != .calibrated
+            ? model.frontStereoGimbalStatus?.calibrationImage
+            : model.droneGimbalStatus?.calibrationImage
+        stereoVisionImageView.image = model.stereoVisionStatus?.calibrationImage
         frontLeftMotorImageView.image = model.frontLeftMotorStatus?.image
         frontRightMotorImageView.image = model.frontRightMotorStatus?.image
         rearLeftMotorImageView.image = model.rearLeftMotorStatus?.image

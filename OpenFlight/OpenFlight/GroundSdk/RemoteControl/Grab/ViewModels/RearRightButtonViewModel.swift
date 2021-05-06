@@ -34,7 +34,7 @@ import GroundSdk
 final class RearRightButtonViewModel {
     // MARK: - Internal Funcs
     /// Called when Rear Right button is pressed. It corresponds to photo/video capture.
-    func rearRightButtonPressed(_ state: SkyCtrl3ButtonEventState) {
+    func rearRightButtonPressed(_ state: SkyCtrl4ButtonEventState) {
         guard state == .pressed else { return }
 
         NotificationCenter.default.post(.init(name: .remoteControlShutterButtonPressed))

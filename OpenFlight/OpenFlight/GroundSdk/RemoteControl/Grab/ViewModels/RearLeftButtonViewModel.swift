@@ -42,7 +42,7 @@ final class RearLeftButtonViewModel: DroneStateViewModel<DeviceConnectionState> 
 // MARK: - Internal Funcs
 extension RearLeftButtonViewModel {
     /// Rear Left button is touched up.
-    func rearLeftButtonTouchedUp(_ state: SkyCtrl3ButtonEventState) {
+    func rearLeftButtonTouchedUp(_ state: SkyCtrl4ButtonEventState) {
         guard state == .pressed else { return }
 
         resetTilt()

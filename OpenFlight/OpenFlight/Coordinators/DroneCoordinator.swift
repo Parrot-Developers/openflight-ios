@@ -88,6 +88,11 @@ extension DroneCoordinator {
         parentCoordinator?.dismissChildCoordinator()
     }
 
+    /// Pops to root coordinator in order to display pairing process.
+    func pairUser() {
+        self.popToRootCoordinator(coordinator: parentCoordinator)
+    }
+
     /// Displays drone password edition setting.
     func displayDronePasswordEdition() {
         let viewController = SettingsPasswordEditionViewController.instantiate(coordinator: self,

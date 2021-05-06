@@ -153,6 +153,8 @@
 		6A3CCB3523E1E2BA00D3DF19 /* FlightPlanModel+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A3CCB3423E1E2BA00D3DF19 /* FlightPlanModel+Utils.swift */; };
 		6A3CCB3823E2E7BD00D3DF19 /* sample_rennes.json in Resources */ = {isa = PBXBuildFile; fileRef = 6A3CCB3623E2E7BD00D3DF19 /* sample_rennes.json */; };
 		6A3CCB3923E2E7BD00D3DF19 /* sample_jemmapes.json in Resources */ = {isa = PBXBuildFile; fileRef = 6A3CCB3723E2E7BD00D3DF19 /* sample_jemmapes.json */; };
+		6A49009026306213008EAFC1 /* FlightPlanSettingsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A49008F26306213008EAFC1 /* FlightPlanSettingsHandler.swift */; };
+		6A49009126306213008EAFC1 /* FlightPlanSettingsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A49008F26306213008EAFC1 /* FlightPlanSettingsHandler.swift */; };
 		6A4C324523856B8B00F54F8A /* RemoteControlAxisButtonGrabber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A4C324423856B8B00F54F8A /* RemoteControlAxisButtonGrabber.swift */; };
 		6A4C324B2386CA4300F54F8A /* PilotingModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A4C32492386CA4300F54F8A /* PilotingModeView.swift */; };
 		6A4C324C2386CA4300F54F8A /* PilotingModeView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6A4C324A2386CA4300F54F8A /* PilotingModeView.xib */; };
@@ -175,8 +177,6 @@
 		6A66263D25D1386C006037CD /* ImageMenuTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A66263A25D1386C006037CD /* ImageMenuTableViewCell.swift */; };
 		6A66263E25D1386C006037CD /* ImageMenuTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6A66263B25D1386C006037CD /* ImageMenuTableViewCell.xib */; };
 		6A66263F25D1386C006037CD /* ImageMenuTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6A66263B25D1386C006037CD /* ImageMenuTableViewCell.xib */; };
-		6A66265B25D1A5F0006037CD /* Coordinator+FlightPlanManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A66265A25D1A5F0006037CD /* Coordinator+FlightPlanManager.swift */; };
-		6A66265C25D1A5F0006037CD /* Coordinator+FlightPlanManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A66265A25D1A5F0006037CD /* Coordinator+FlightPlanManager.swift */; };
 		6A6C94C7236B34760027842D /* SettingsQuickCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A6C94C5236B34760027842D /* SettingsQuickCollectionViewCell.swift */; };
 		6A6C94C8236B34760027842D /* SettingsQuickCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6A6C94C6236B34760027842D /* SettingsQuickCollectionViewCell.xib */; };
 		6A6C94CB236B347E0027842D /* SettingsQuickViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A6C94C9236B347E0027842D /* SettingsQuickViewController.swift */; };
@@ -342,6 +342,7 @@
 		70603AD124B8834D00663E02 /* BeamEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70603ACF24B8834C00663E02 /* BeamEntity.swift */; };
 		70603AD324B88A7300663E02 /* BeamComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70603AD224B88A7300663E02 /* BeamComponent.swift */; };
 		70603AD424B88A7300663E02 /* BeamComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70603AD224B88A7300663E02 /* BeamComponent.swift */; };
+		70639D002628B91700B20641 /* DashboardFooterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F81A5A1C2628499000C7B063 /* DashboardFooterViewModel.swift */; };
 		70699D7125B199BA00AA7DF8 /* OpenFlightCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70F1A10525B185B3008BA38A /* OpenFlightCore.framework */; };
 		709888A2250929D8007155FF /* OGFollowingCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 709888A1250929D8007155FF /* OGFollowingCamera.swift */; };
 		709888A3250929D8007155FF /* OGFollowingCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 709888A1250929D8007155FF /* OGFollowingCamera.swift */; };
@@ -413,6 +414,8 @@
 		7CFB360E23AA2D610014D1E0 /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CFB360D23AA2D610014D1E0 /* Action.swift */; };
 		7CFFF71523980A19004E22C8 /* MissionSelectorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CFFF71423980A18004E22C8 /* MissionSelectorViewController.swift */; };
 		7DB97C6DA64EEB7641035A4A /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79D5F0A6967947466EFC07E0 /* AppCoordinator.swift */; };
+		840A95DF2625CEC800E7A552 /* FlightPlanPanelCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840A95DE2625CEC800E7A552 /* FlightPlanPanelCoordinator.swift */; };
+		840A95E02625CEC800E7A552 /* FlightPlanPanelCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840A95DE2625CEC800E7A552 /* FlightPlanPanelCoordinator.swift */; };
 		840E7A922433A4AF0031962F /* StopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840E7A902433A4AF0031962F /* StopView.swift */; };
 		840E7A932433A4AF0031962F /* StopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840E7A902433A4AF0031962F /* StopView.swift */; };
 		840E7A942433A4AF0031962F /* StopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840E7A902433A4AF0031962F /* StopView.swift */; };
@@ -503,8 +506,6 @@
 		84AB351225384BB8002FEAE2 /* ImagingBarPhotoResolutionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AB351025384BB8002FEAE2 /* ImagingBarPhotoResolutionViewModel.swift */; };
 		84AB351A25384D3A002FEAE2 /* Camera2PhotoResolution+BarItemMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AB351925384D3A002FEAE2 /* Camera2PhotoResolution+BarItemMode.swift */; };
 		84AB351B25384D3A002FEAE2 /* Camera2PhotoResolution+BarItemMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AB351925384D3A002FEAE2 /* Camera2PhotoResolution+BarItemMode.swift */; };
-		84B0DD1B23CF5CB20089EF0C /* DashboardLoginCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B0DD1923CF5CB20089EF0C /* DashboardLoginCell.swift */; };
-		84B0DD1C23CF5CB20089EF0C /* DashboardLoginCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 84B0DD1A23CF5CB20089EF0C /* DashboardLoginCell.xib */; };
 		84B25ADA23EACF7200CE3764 /* UIImageView+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B25AD923EACF7200CE3764 /* UIImageView+Utils.swift */; };
 		84B3ED0024AF5E8700A02153 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3ECFF24AF5E8700A02153 /* Constants.swift */; };
 		84B3ED0124AF612D00A02153 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3ECFF24AF5E8700A02153 /* Constants.swift */; };
@@ -532,9 +533,9 @@
 		84BCB4EE244710AE00179179 /* MagnetometerCalibrationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BCB4ED244710AE00179179 /* MagnetometerCalibrationViewController.swift */; };
 		84BCB4EF244710AE00179179 /* MagnetometerCalibrationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BCB4ED244710AE00179179 /* MagnetometerCalibrationViewController.swift */; };
 		84BCB4F0244710AE00179179 /* MagnetometerCalibrationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BCB4ED244710AE00179179 /* MagnetometerCalibrationViewController.swift */; };
-		84BCB4F4244712D700179179 /* MagnetometerCalibrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BCB4F3244712D700179179 /* MagnetometerCalibrationViewModel.swift */; };
-		84BCB4F5244712D700179179 /* MagnetometerCalibrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BCB4F3244712D700179179 /* MagnetometerCalibrationViewModel.swift */; };
-		84BCB4F6244712D700179179 /* MagnetometerCalibrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BCB4F3244712D700179179 /* MagnetometerCalibrationViewModel.swift */; };
+		84BCB4F4244712D700179179 /* MagnetometerCalibrationProcessViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BCB4F3244712D700179179 /* MagnetometerCalibrationProcessViewModel.swift */; };
+		84BCB4F5244712D700179179 /* MagnetometerCalibrationProcessViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BCB4F3244712D700179179 /* MagnetometerCalibrationProcessViewModel.swift */; };
+		84BCB4F6244712D700179179 /* MagnetometerCalibrationProcessViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BCB4F3244712D700179179 /* MagnetometerCalibrationProcessViewModel.swift */; };
 		84C8278E23D9A122002E52CD /* String+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C8278D23D9A122002E52CD /* String+Validation.swift */; };
 		84C827AE23D9EC2A002E52CD /* DateTime+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C827AD23D9EC2A002E52CD /* DateTime+Utils.swift */; };
 		84C827B123D9F72F002E52CD /* Data+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C827B023D9F72F002E52CD /* Data+Utils.swift */; };
@@ -589,6 +590,8 @@
 		9B46CF88256D531B00F1C54E /* ParrotLogEvent+Mission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B46CF86256D531B00F1C54E /* ParrotLogEvent+Mission.swift */; };
 		9B51EFD525B582A600B03229 /* ParrotLogEvent+Dashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B51EFD425B582A600B03229 /* ParrotLogEvent+Dashboard.swift */; };
 		9B51EFD625B582A600B03229 /* ParrotLogEvent+Dashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B51EFD425B582A600B03229 /* ParrotLogEvent+Dashboard.swift */; };
+		9B5B5F9126134B1600029D74 /* FrontStereoGimbal+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5B5F9026134B1600029D74 /* FrontStereoGimbal+Utils.swift */; };
+		9B5B5F9226134B1600029D74 /* FrontStereoGimbal+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5B5F9026134B1600029D74 /* FrontStereoGimbal+Utils.swift */; };
 		9B5FB934254712E3004BED3C /* DashboardMyFlightsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5FB932254712E3004BED3C /* DashboardMyFlightsCell.swift */; };
 		9B5FB935254712E3004BED3C /* DashboardMyFlightsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5FB932254712E3004BED3C /* DashboardMyFlightsCell.swift */; };
 		9B5FB936254712E3004BED3C /* DashboardMyFlightsCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5FB933254712E3004BED3C /* DashboardMyFlightsCell.xib */; };
@@ -961,10 +964,6 @@
 		E3024D552406BFA2003A2B87 /* DashboardMediasCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4D7D38B2368A7300000D55B /* DashboardMediasCell.xib */; };
 		E3024D562406BFA2003A2B87 /* DashboardHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D7D3912368A7300000D55B /* DashboardHeaderCell.swift */; };
 		E3024D572406BFA2003A2B87 /* DashboardHeaderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4D7D3922368A7300000D55B /* DashboardHeaderCell.xib */; };
-		E3024D582406BFA2003A2B87 /* DashboardProviderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D7D3932368A7300000D55B /* DashboardProviderCell.swift */; };
-		E3024D592406BFA2003A2B87 /* DashboardProviderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4D7D3942368A7300000D55B /* DashboardProviderCell.xib */; };
-		E3024D5A2406BFA2003A2B87 /* DashboardLoginCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B0DD1923CF5CB20089EF0C /* DashboardLoginCell.swift */; };
-		E3024D5B2406BFA2003A2B87 /* DashboardLoginCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 84B0DD1A23CF5CB20089EF0C /* DashboardLoginCell.xib */; };
 		E3024D5C2406BFA2003A2B87 /* DashboardItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4598AD0237AFD6700C9A32F /* DashboardItemModel.swift */; };
 		E3024D5D2406BFC8003A2B87 /* DeviceImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49F4EC823BE473300737D2D /* DeviceImageView.swift */; };
 		E3024D5E2406BFC8003A2B87 /* DeviceImageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = E49F4EC923BE473300737D2D /* DeviceImageView.xib */; };
@@ -979,7 +978,6 @@
 		E3024D682406BFCD003A2B87 /* DeviceUpdateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49F4EC123BE360200737D2D /* DeviceUpdateViewController.swift */; };
 		E3024D692406BFD5003A2B87 /* DroneStatusModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4ECD59423CCB40A00A81264 /* DroneStatusModels.swift */; };
 		E3024D6A2406BFD5003A2B87 /* DroneDetailsInformationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4ECD59023CC9EB700A81264 /* DroneDetailsInformationsViewModel.swift */; };
-		E3024D6B2406BFD5003A2B87 /* DroneDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4ECD58A23CC832500A81264 /* DroneDetailsViewModel.swift */; };
 		E3024D6C2406BFD5003A2B87 /* DroneDetailsMapViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E44DF2DD23D209CB00BFE467 /* DroneDetailsMapViewModel.swift */; };
 		E3024D6D2406BFD5003A2B87 /* DroneDetails.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E4ECD58123CC7FD100A81264 /* DroneDetails.storyboard */; };
 		E3024D6E2406BFD5003A2B87 /* DroneDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4ECD58223CC7FD100A81264 /* DroneDetailsViewController.swift */; };
@@ -1361,8 +1359,6 @@
 		E39968E5241A4D5D00F22F22 /* DashboardMediasSubCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D7D38A2368A7300000D55B /* DashboardMediasSubCell.swift */; };
 		E39968E7241A4D5D00F22F22 /* DashboardMediasCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D7D38C2368A7300000D55B /* DashboardMediasCell.swift */; };
 		E39968E9241A4D5D00F22F22 /* DashboardHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D7D3912368A7300000D55B /* DashboardHeaderCell.swift */; };
-		E39968EB241A4D5D00F22F22 /* DashboardProviderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D7D3932368A7300000D55B /* DashboardProviderCell.swift */; };
-		E39968ED241A4D5D00F22F22 /* DashboardLoginCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B0DD1923CF5CB20089EF0C /* DashboardLoginCell.swift */; };
 		E39968EF241A4D5D00F22F22 /* DashboardItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4598AD0237AFD6700C9A32F /* DashboardItemModel.swift */; };
 		E39968F0241A4D5D00F22F22 /* DeviceImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49F4EC823BE473300737D2D /* DeviceImageView.swift */; };
 		E39968F2241A4D5D00F22F22 /* UpdateStepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49F4ECE23BE51CC00737D2D /* UpdateStepView.swift */; };
@@ -1372,7 +1368,6 @@
 		E39968F8241A4D5D00F22F22 /* DeviceConfirmUpdateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E489215F23E9BCE400794D49 /* DeviceConfirmUpdateViewModel.swift */; };
 		E39968FC241A4D5D00F22F22 /* DroneStatusModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4ECD59423CCB40A00A81264 /* DroneStatusModels.swift */; };
 		E39968FD241A4D5E00F22F22 /* DroneDetailsInformationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4ECD59023CC9EB700A81264 /* DroneDetailsInformationsViewModel.swift */; };
-		E39968FE241A4D5E00F22F22 /* DroneDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4ECD58A23CC832500A81264 /* DroneDetailsViewModel.swift */; };
 		E39968FF241A4D5E00F22F22 /* DroneDetailsMapViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E44DF2DD23D209CB00BFE467 /* DroneDetailsMapViewModel.swift */; };
 		E3996904241A4D5E00F22F22 /* RemoteCalibrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E455D52623B0C2CC00D53020 /* RemoteCalibrationViewModel.swift */; };
 		E3996906241A4D5E00F22F22 /* RemoteCalibrationAxesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E455D51D23B0AA3A00D53020 /* RemoteCalibrationAxesView.swift */; };
@@ -1540,6 +1535,8 @@
 		E3C79625253D95EF00F34772 /* StereoVisionCalibViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3F584FB24C7137600E522B7 /* StereoVisionCalibViewController.swift */; };
 		E3CF8C7A243632B7006AC563 /* GalleryVideoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3CF8C79243632B7006AC563 /* GalleryVideoViewController.swift */; };
 		E3CF8C7B243632B7006AC563 /* GalleryVideoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3CF8C79243632B7006AC563 /* GalleryVideoViewController.swift */; };
+		E3D32E5B2627103700F8E3FC /* ParrotDebugCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D32E5A2627103700F8E3FC /* ParrotDebugCoordinator.swift */; };
+		E3D32E5C2627103700F8E3FC /* ParrotDebugCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D32E5A2627103700F8E3FC /* ParrotDebugCoordinator.swift */; };
 		E3D9248E2551BE4B00B37FCC /* DispatchQueue+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D9248D2551BE4B00B37FCC /* DispatchQueue+Utils.swift */; };
 		E3D9248F2551BE4B00B37FCC /* DispatchQueue+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D9248D2551BE4B00B37FCC /* DispatchQueue+Utils.swift */; };
 		E3DDBB81244DF20600BDE3F8 /* Occupancy.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E3DDBB7F244DF20600BDE3F8 /* Occupancy.storyboard */; };
@@ -1550,6 +1547,16 @@
 		E3E71DFD2369D815005D07CF /* UIView+Subviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3E71DFC2369D815005D07CF /* UIView+Subviews.swift */; };
 		E3ED97FD242D042500C6770E /* GallerySDMediaViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3ED97FC242D042500C6770E /* GallerySDMediaViewModel.swift */; };
 		E3ED97FE242D042500C6770E /* GallerySDMediaViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3ED97FC242D042500C6770E /* GallerySDMediaViewModel.swift */; };
+		E3EE468F2625EEFA00CB69A0 /* DevToolboxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3EE468E2625EEFA00CB69A0 /* DevToolboxViewController.swift */; };
+		E3EE46902625EEFA00CB69A0 /* DevToolboxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3EE468E2625EEFA00CB69A0 /* DevToolboxViewController.swift */; };
+		E3EE46942625EF0F00CB69A0 /* DevToolboxCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3EE46932625EF0F00CB69A0 /* DevToolboxCell.swift */; };
+		E3EE46952625EF0F00CB69A0 /* DevToolboxCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3EE46932625EF0F00CB69A0 /* DevToolboxCell.swift */; };
+		E3EE46992625EF4900CB69A0 /* DevToolbox.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E3EE46982625EF4900CB69A0 /* DevToolbox.storyboard */; };
+		E3EE469A2625EF4900CB69A0 /* DevToolbox.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E3EE46982625EF4900CB69A0 /* DevToolbox.storyboard */; };
+		E3EE46AC2625F24600CB69A0 /* SettingsFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3EE46AB2625F24600CB69A0 /* SettingsFormatter.swift */; };
+		E3EE46AD2625F24600CB69A0 /* SettingsFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3EE46AB2625F24600CB69A0 /* SettingsFormatter.swift */; };
+		E3EE46B52626005400CB69A0 /* DevToolboxCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E3EE46B42626005400CB69A0 /* DevToolboxCell.xib */; };
+		E3EE46B62626005400CB69A0 /* DevToolboxCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E3EE46B42626005400CB69A0 /* DevToolboxCell.xib */; };
 		E3F117FA2473D3BA00DDCA96 /* FlightPlanMission.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F117F92473D3BA00DDCA96 /* FlightPlanMission.swift */; };
 		E3F117FB2473D3BA00DDCA96 /* FlightPlanMission.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F117F92473D3BA00DDCA96 /* FlightPlanMission.swift */; };
 		E3F74273243F460100921711 /* MediaVideoBottomBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F74271243F460100921711 /* MediaVideoBottomBarView.swift */; };
@@ -1580,18 +1587,17 @@
 		E4246537243C7BDD0068D718 /* JoysticksViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4246536243C7BDD0068D718 /* JoysticksViewModel.swift */; };
 		E424653A243C87660068D718 /* JoysticksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4246538243C87660068D718 /* JoysticksView.swift */; };
 		E424653B243C87660068D718 /* JoysticksView.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4246539243C87660068D718 /* JoysticksView.xib */; };
-		E426A75E2547041000E8BA19 /* HUDTakeOffAlert.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E426A75C2547041000E8BA19 /* HUDTakeOffAlert.storyboard */; };
-		E426A75F2547041000E8BA19 /* HUDTakeOffAlert.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E426A75C2547041000E8BA19 /* HUDTakeOffAlert.storyboard */; };
+		E426A75F2547041000E8BA19 /* HUDCriticalAlert.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E426A75C2547041000E8BA19 /* HUDCriticalAlert.storyboard */; };
 		E426A7602547041000E8BA19 /* HUDCriticalAlertViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426A75D2547041000E8BA19 /* HUDCriticalAlertViewController.swift */; };
 		E426A7612547041000E8BA19 /* HUDCriticalAlertViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426A75D2547041000E8BA19 /* HUDCriticalAlertViewController.swift */; };
-		E426A76C2547046A00E8BA19 /* TakeOffAlertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426A76B2547046A00E8BA19 /* TakeOffAlertViewModel.swift */; };
-		E426A76D2547046A00E8BA19 /* TakeOffAlertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426A76B2547046A00E8BA19 /* TakeOffAlertViewModel.swift */; };
-		E426A774254704A300E8BA19 /* TakeOffAlertModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426A773254704A300E8BA19 /* TakeOffAlertModel.swift */; };
-		E426A775254704A300E8BA19 /* TakeOffAlertModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426A773254704A300E8BA19 /* TakeOffAlertModel.swift */; };
-		E426B37624EC063700038B66 /* SettingsNetworkSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426B37424EC063700038B66 /* SettingsNetworkSelectionCell.swift */; };
-		E426B37724EC063700038B66 /* SettingsNetworkSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426B37424EC063700038B66 /* SettingsNetworkSelectionCell.swift */; };
-		E426B37824EC063700038B66 /* SettingsNetworkSelectionCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E426B37524EC063700038B66 /* SettingsNetworkSelectionCell.xib */; };
-		E426B37924EC063700038B66 /* SettingsNetworkSelectionCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E426B37524EC063700038B66 /* SettingsNetworkSelectionCell.xib */; };
+		E426A76C2547046A00E8BA19 /* HUDCriticalAlertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426A76B2547046A00E8BA19 /* HUDCriticalAlertViewModel.swift */; };
+		E426A76D2547046A00E8BA19 /* HUDCriticalAlertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426A76B2547046A00E8BA19 /* HUDCriticalAlertViewModel.swift */; };
+		E426A774254704A300E8BA19 /* HUDCriticalAlertModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426A773254704A300E8BA19 /* HUDCriticalAlertModel.swift */; };
+		E426A775254704A300E8BA19 /* HUDCriticalAlertModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E426A773254704A300E8BA19 /* HUDCriticalAlertModel.swift */; };
+		E42AC25C261CB7DE00A77201 /* SettingsCellularDataCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E42AC25A261CB7DE00A77201 /* SettingsCellularDataCell.xib */; };
+		E42AC25D261CB7DE00A77201 /* SettingsCellularDataCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E42AC25A261CB7DE00A77201 /* SettingsCellularDataCell.xib */; };
+		E42AC25E261CB7DE00A77201 /* SettingsCellularDataCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E42AC25B261CB7DE00A77201 /* SettingsCellularDataCell.swift */; };
+		E42AC25F261CB7DE00A77201 /* SettingsCellularDataCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E42AC25B261CB7DE00A77201 /* SettingsCellularDataCell.swift */; };
 		E42B4041256C100100CB17F5 /* StereoVisionIndication+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E42B4040256C100100CB17F5 /* StereoVisionIndication+Utils.swift */; };
 		E42B4042256C100100CB17F5 /* StereoVisionIndication+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E42B4040256C100100CB17F5 /* StereoVisionIndication+Utils.swift */; };
 		E42CBF0624C98C9A00B583F0 /* DroneDetailsFirmwareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E42CBF0424C98C9A00B583F0 /* DroneDetailsFirmwareViewController.swift */; };
@@ -1609,12 +1615,12 @@
 		E43AA4EC25D2743200AC8E3E /* HUDCellularIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43AA4E925D2743200AC8E3E /* HUDCellularIndicatorView.swift */; };
 		E43AA4ED25D2743200AC8E3E /* HUDCellularIndicatorView.xib in Resources */ = {isa = PBXBuildFile; fileRef = E43AA4EA25D2743200AC8E3E /* HUDCellularIndicatorView.xib */; };
 		E43AA4EE25D2743200AC8E3E /* HUDCellularIndicatorView.xib in Resources */ = {isa = PBXBuildFile; fileRef = E43AA4EA25D2743200AC8E3E /* HUDCellularIndicatorView.xib */; };
-		E43DF5CA2565340B00BDEF40 /* CellularAvailableViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43DF5C92565340A00BDEF40 /* CellularAvailableViewModel.swift */; };
-		E43DF5CB2565340B00BDEF40 /* CellularAvailableViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43DF5C92565340A00BDEF40 /* CellularAvailableViewModel.swift */; };
-		E43DF5D12565341800BDEF40 /* CellularAvailable.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E43DF5CF2565341700BDEF40 /* CellularAvailable.storyboard */; };
-		E43DF5D22565341800BDEF40 /* CellularAvailable.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E43DF5CF2565341700BDEF40 /* CellularAvailable.storyboard */; };
-		E43DF5D32565341800BDEF40 /* CellularAvailableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43DF5D02565341800BDEF40 /* CellularAvailableViewController.swift */; };
-		E43DF5D42565341800BDEF40 /* CellularAvailableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43DF5D02565341800BDEF40 /* CellularAvailableViewController.swift */; };
+		E43DF5CA2565340B00BDEF40 /* CellularConfigurationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43DF5C92565340A00BDEF40 /* CellularConfigurationViewModel.swift */; };
+		E43DF5CB2565340B00BDEF40 /* CellularConfigurationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43DF5C92565340A00BDEF40 /* CellularConfigurationViewModel.swift */; };
+		E43DF5D12565341800BDEF40 /* CellularConfiguration.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E43DF5CF2565341700BDEF40 /* CellularConfiguration.storyboard */; };
+		E43DF5D22565341800BDEF40 /* CellularConfiguration.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E43DF5CF2565341700BDEF40 /* CellularConfiguration.storyboard */; };
+		E43DF5D32565341800BDEF40 /* CellularConfigurationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43DF5D02565341800BDEF40 /* CellularConfigurationViewController.swift */; };
+		E43DF5D42565341800BDEF40 /* CellularConfigurationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43DF5D02565341800BDEF40 /* CellularConfigurationViewController.swift */; };
 		E43DF5D925654FD300BDEF40 /* APCApiManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43DF5D825654FD300BDEF40 /* APCApiManager.swift */; };
 		E43DF5DA25654FD300BDEF40 /* APCApiManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43DF5D825654FD300BDEF40 /* APCApiManager.swift */; };
 		E43DF5E12565500600BDEF40 /* AcademyApiManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43DF5E02565500600BDEF40 /* AcademyApiManager.swift */; };
@@ -1651,8 +1657,8 @@
 		E45305AF24A1E7BF006A5F28 /* ModesChoiceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E45305AC24A1E7BF006A5F28 /* ModesChoiceTableViewCell.swift */; };
 		E45305B024A1E7BF006A5F28 /* ModesChoiceTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E45305AD24A1E7BF006A5F28 /* ModesChoiceTableViewCell.xib */; };
 		E45305B124A1E7BF006A5F28 /* ModesChoiceTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E45305AD24A1E7BF006A5F28 /* ModesChoiceTableViewCell.xib */; };
-		E4550556260B7E68004160D6 /* FrontBottomButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4550555260B7E68004160D6 /* FrontBottomButtonViewModel.swift */; };
-		E4550557260B7E68004160D6 /* FrontBottomButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4550555260B7E68004160D6 /* FrontBottomButtonViewModel.swift */; };
+		E4550556260B7E68004160D6 /* FrontRightButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4550555260B7E68004160D6 /* FrontRightButtonViewModel.swift */; };
+		E4550557260B7E68004160D6 /* FrontRightButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4550555260B7E68004160D6 /* FrontRightButtonViewModel.swift */; };
 		E455D51C23B0AA0800D53020 /* RemoteCalibrationAxesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = E455D51B23B0AA0800D53020 /* RemoteCalibrationAxesView.xib */; };
 		E455D51E23B0AA3A00D53020 /* RemoteCalibrationAxesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E455D51D23B0AA3A00D53020 /* RemoteCalibrationAxesView.swift */; };
 		E455D52323B0AC8000D53020 /* RemoteCalibrationAxeProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E455D52123B0AC8000D53020 /* RemoteCalibrationAxeProgressView.swift */; };
@@ -1707,8 +1713,10 @@
 		E46AE455248E363300C9DCE3 /* HUDLandingView.xib in Resources */ = {isa = PBXBuildFile; fileRef = E46AE451248E363300C9DCE3 /* HUDLandingView.xib */; };
 		E46AE457248E364700C9DCE3 /* HUDLandingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46AE456248E364700C9DCE3 /* HUDLandingViewModel.swift */; };
 		E46AE458248E364700C9DCE3 /* HUDLandingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46AE456248E364700C9DCE3 /* HUDLandingViewModel.swift */; };
-		E46B2A67255AD324009EDADE /* CellularPairingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46B2A66255AD324009EDADE /* CellularPairingViewModel.swift */; };
-		E46B2A68255AD324009EDADE /* CellularPairingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46B2A66255AD324009EDADE /* CellularPairingViewModel.swift */; };
+		E46B2A67255AD324009EDADE /* CellularPairingAvailabilityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46B2A66255AD324009EDADE /* CellularPairingAvailabilityViewModel.swift */; };
+		E46B2A68255AD324009EDADE /* CellularPairingAvailabilityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46B2A66255AD324009EDADE /* CellularPairingAvailabilityViewModel.swift */; };
+		E46BEFBA263B09FC00777521 /* Drone+CellularPairing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46BEFB9263B09FC00777521 /* Drone+CellularPairing.swift */; };
+		E46BEFBB263B09FC00777521 /* Drone+CellularPairing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46BEFB9263B09FC00777521 /* Drone+CellularPairing.swift */; };
 		E470CEA22567ED6900C185A5 /* SecureKeyStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E470CEA12567ED6800C185A5 /* SecureKeyStorage.swift */; };
 		E470CEA32567ED6900C185A5 /* SecureKeyStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E470CEA12567ED6800C185A5 /* SecureKeyStorage.swift */; };
 		E47143AC24E57E6700985B56 /* DroneDetailsCellularViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E47143AB24E57E6700985B56 /* DroneDetailsCellularViewModel.swift */; };
@@ -1755,8 +1763,6 @@
 		E48B53FC241004E8009B1984 /* BottomBarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E48B53FB241004E8009B1984 /* BottomBarViewModel.swift */; };
 		E490D2B2260B3F1200A272F2 /* RearRightButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E490D2B1260B3F1200A272F2 /* RearRightButtonViewModel.swift */; };
 		E490D2B3260B3F1200A272F2 /* RearRightButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E490D2B1260B3F1200A272F2 /* RearRightButtonViewModel.swift */; };
-		E490D2BF260B53F500A272F2 /* FrontTopButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E490D2BE260B53F500A272F2 /* FrontTopButtonViewModel.swift */; };
-		E490D2C0260B53F500A272F2 /* FrontTopButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E490D2BE260B53F500A272F2 /* FrontTopButtonViewModel.swift */; };
 		E49146092608A39500A8CD64 /* RemoteControlGrabberViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49146082608A39500A8CD64 /* RemoteControlGrabberViewModel.swift */; };
 		E491460A2608A39500A8CD64 /* RemoteControlGrabberViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49146082608A39500A8CD64 /* RemoteControlGrabberViewModel.swift */; };
 		E49146112608D73000A8CD64 /* RightSliderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49146102608D73000A8CD64 /* RightSliderViewModel.swift */; };
@@ -1771,10 +1777,10 @@
 		E49B1CEE25667FC30085E7A8 /* PairingProcessModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49B1CEC25667FC30085E7A8 /* PairingProcessModel.swift */; };
 		E49B1CF325667FE20085E7A8 /* CellularPairingProcessViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49B1CF225667FE20085E7A8 /* CellularPairingProcessViewModel.swift */; };
 		E49B1CF425667FE20085E7A8 /* CellularPairingProcessViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49B1CF225667FE20085E7A8 /* CellularPairingProcessViewModel.swift */; };
-		E49B1CFA25667FF70085E7A8 /* CellularPairingProcessViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49B1CF825667FF70085E7A8 /* CellularPairingProcessViewController.swift */; };
-		E49B1CFB25667FF70085E7A8 /* CellularPairingProcessViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49B1CF825667FF70085E7A8 /* CellularPairingProcessViewController.swift */; };
-		E49B1CFC25667FF70085E7A8 /* CellularPairingProcess.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E49B1CF925667FF70085E7A8 /* CellularPairingProcess.storyboard */; };
-		E49B1CFD25667FF70085E7A8 /* CellularPairingProcess.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E49B1CF925667FF70085E7A8 /* CellularPairingProcess.storyboard */; };
+		E49B1CFA25667FF70085E7A8 /* CellularPairingSuccessViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49B1CF825667FF70085E7A8 /* CellularPairingSuccessViewController.swift */; };
+		E49B1CFB25667FF70085E7A8 /* CellularPairingSuccessViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49B1CF825667FF70085E7A8 /* CellularPairingSuccessViewController.swift */; };
+		E49B1CFC25667FF70085E7A8 /* CellularPairingSuccess.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E49B1CF925667FF70085E7A8 /* CellularPairingSuccess.storyboard */; };
+		E49B1CFD25667FF70085E7A8 /* CellularPairingSuccess.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E49B1CF925667FF70085E7A8 /* CellularPairingSuccess.storyboard */; };
 		E49F4EC023BE35EF00737D2D /* DeviceConfirmUpdateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49F4EBF23BE35EF00737D2D /* DeviceConfirmUpdateViewController.swift */; };
 		E49F4EC223BE360200737D2D /* DeviceUpdateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49F4EC123BE360200737D2D /* DeviceUpdateViewController.swift */; };
 		E49F4EC623BE3F3400737D2D /* RemoteUpdateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49F4EC523BE3F3400737D2D /* RemoteUpdateViewModel.swift */; };
@@ -1877,14 +1883,12 @@
 		E4D7D3A32368A7300000D55B /* DashboardFooterCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D7D38E2368A7300000D55B /* DashboardFooterCell.swift */; };
 		E4D7D3A52368A7300000D55B /* DashboardHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D7D3912368A7300000D55B /* DashboardHeaderCell.swift */; };
 		E4D7D3A62368A7300000D55B /* DashboardHeaderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4D7D3922368A7300000D55B /* DashboardHeaderCell.xib */; };
-		E4D7D3A72368A7300000D55B /* DashboardProviderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D7D3932368A7300000D55B /* DashboardProviderCell.swift */; };
-		E4D7D3A82368A7300000D55B /* DashboardProviderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4D7D3942368A7300000D55B /* DashboardProviderCell.xib */; };
 		E4D7D3A92368A7300000D55B /* DashboardFooterCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4D7D3952368A7300000D55B /* DashboardFooterCell.xib */; };
 		E4D7D3AA2368A7300000D55B /* DashboardDeviceCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4D7D3962368A7300000D55B /* DashboardDeviceCell.xib */; };
 		E4DA7D4D257F5ED700DAB0CA /* SettingsEndHoveringViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DA7D4C257F5ED700DAB0CA /* SettingsEndHoveringViewModel.swift */; };
 		E4DA7D4E257F5ED700DAB0CA /* SettingsEndHoveringViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DA7D4C257F5ED700DAB0CA /* SettingsEndHoveringViewModel.swift */; };
-		E4DEEA7124EE7F68004B6C0C /* SettingsNetworkSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DEEA7024EE7F68004B6C0C /* SettingsNetworkSelectionViewModel.swift */; };
-		E4DEEA7224EE7F68004B6C0C /* SettingsNetworkSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DEEA7024EE7F68004B6C0C /* SettingsNetworkSelectionViewModel.swift */; };
+		E4DEEA7124EE7F68004B6C0C /* SettingsCellularDataViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DEEA7024EE7F68004B6C0C /* SettingsCellularDataViewModel.swift */; };
+		E4DEEA7224EE7F68004B6C0C /* SettingsCellularDataViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DEEA7024EE7F68004B6C0C /* SettingsCellularDataViewModel.swift */; };
 		E4E228FD238D79B0007606B4 /* DeviceState+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E228FC238D79B0007606B4 /* DeviceState+Utils.swift */; };
 		E4E245632603487A00F4AB67 /* AlertBannerSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E245622603487A00F4AB67 /* AlertBannerSorter.swift */; };
 		E4E245642603487A00F4AB67 /* AlertBannerSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E245622603487A00F4AB67 /* AlertBannerSorter.swift */; };
@@ -1897,7 +1901,6 @@
 		E4EC745C2434973E0028664B /* DroneActionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4EC745B2434973E0028664B /* DroneActionViewModel.swift */; };
 		E4ECD58323CC7FD100A81264 /* DroneDetails.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E4ECD58123CC7FD100A81264 /* DroneDetails.storyboard */; };
 		E4ECD58423CC7FD100A81264 /* DroneDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4ECD58223CC7FD100A81264 /* DroneDetailsViewController.swift */; };
-		E4ECD58B23CC832500A81264 /* DroneDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4ECD58A23CC832500A81264 /* DroneDetailsViewModel.swift */; };
 		E4ECD59123CC9EB700A81264 /* DroneDetailsInformationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4ECD59023CC9EB700A81264 /* DroneDetailsInformationsViewModel.swift */; };
 		E4ECD59523CCB40A00A81264 /* DroneStatusModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4ECD59423CCB40A00A81264 /* DroneStatusModels.swift */; };
 		E4F2F788252F03A800172A28 /* ReturnHomeBottomBarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F2F787252F03A800172A28 /* ReturnHomeBottomBarViewModel.swift */; };
@@ -2036,6 +2039,25 @@
 		EBFC666D257E739A008EE869 /* ProtobufMissionMessageReceived.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFC6667257E72CA008EE869 /* ProtobufMissionMessageReceived.swift */; };
 		EBFC6671257E88A3008EE869 /* ProtobufMissionListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFC6670257E88A3008EE869 /* ProtobufMissionListener.swift */; };
 		EBFC6674257E88A6008EE869 /* ProtobufMissionListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFC6670257E88A3008EE869 /* ProtobufMissionListener.swift */; };
+		F81A5A1D2628499A00C7B063 /* DashboardFooterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F81A5A1C2628499000C7B063 /* DashboardFooterViewModel.swift */; };
+		F81A5ACF262DC15700C7B063 /* UITextView+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F81A5ACE262DC15700C7B063 /* UITextView+Utils.swift */; };
+		F81A5AD0262DC15800C7B063 /* UITextView+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F81A5ACE262DC15700C7B063 /* UITextView+Utils.swift */; };
+		F897DD95261744E1005B55B2 /* DashboardDroneCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F897DD93261744E1005B55B2 /* DashboardDroneCell.swift */; };
+		F897DD96261744E1005B55B2 /* DashboardDroneCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F897DD93261744E1005B55B2 /* DashboardDroneCell.swift */; };
+		F897DD97261744E1005B55B2 /* DashboardDroneCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = F897DD94261744E1005B55B2 /* DashboardDroneCell.xib */; };
+		F897DD98261744E1005B55B2 /* DashboardDroneCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = F897DD94261744E1005B55B2 /* DashboardDroneCell.xib */; };
+		F8BC29C42613592B00ED7850 /* DashboardLogoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC29C22613592B00ED7850 /* DashboardLogoCell.swift */; };
+		F8BC29C52613592B00ED7850 /* DashboardLogoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC29C22613592B00ED7850 /* DashboardLogoCell.swift */; };
+		F8BC29C62613592B00ED7850 /* DashboardLogoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = F8BC29C32613592B00ED7850 /* DashboardLogoCell.xib */; };
+		F8BC29C72613592B00ED7850 /* DashboardLogoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = F8BC29C32613592B00ED7850 /* DashboardLogoCell.xib */; };
+		F8BC29CE2614789400ED7850 /* DashboardProfileCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC29CC2614789400ED7850 /* DashboardProfileCell.swift */; };
+		F8BC29CF2614789400ED7850 /* DashboardProfileCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC29CC2614789400ED7850 /* DashboardProfileCell.swift */; };
+		F8BC29D02614789400ED7850 /* DashboardProfileCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = F8BC29CD2614789400ED7850 /* DashboardProfileCell.xib */; };
+		F8BC29D12614789400ED7850 /* DashboardProfileCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = F8BC29CD2614789400ED7850 /* DashboardProfileCell.xib */; };
+		F8BC29D726149BD100ED7850 /* DashboardProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC29D626149BD100ED7850 /* DashboardProfileViewModel.swift */; };
+		F8BC29D826149BD100ED7850 /* DashboardProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC29D626149BD100ED7850 /* DashboardProfileViewModel.swift */; };
+		F8D3F0E42631695F0043B5DA /* ImagingSettingsBarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8D3F0E32631695A0043B5DA /* ImagingSettingsBarViewModel.swift */; };
+		F8D3F0E52631695F0043B5DA /* ImagingSettingsBarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8D3F0E32631695A0043B5DA /* ImagingSettingsBarViewModel.swift */; };
 		FB02AAF42463064D00DB9E76 /* FlightDetailsDiagnosticView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02AAF22463064D00DB9E76 /* FlightDetailsDiagnosticView.swift */; };
 		FB02AAF52463064D00DB9E76 /* FlightDetailsDiagnosticView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02AAF22463064D00DB9E76 /* FlightDetailsDiagnosticView.swift */; };
 		FB02AAF62463064D00DB9E76 /* FlightDetailsDiagnosticView.xib in Resources */ = {isa = PBXBuildFile; fileRef = FB02AAF32463064D00DB9E76 /* FlightDetailsDiagnosticView.xib */; };
@@ -2110,6 +2132,8 @@
 		FB44FA40237C498D006DDB7C /* GraduatedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB44FA3D237C498C006DDB7C /* GraduatedView.swift */; };
 		FB44FA41237C498D006DDB7C /* CardinalDirectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB44FA3E237C498D006DDB7C /* CardinalDirectionsView.swift */; };
 		FB44FA42237C498D006DDB7C /* CardinalDirectionsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = FB44FA3F237C498D006DDB7C /* CardinalDirectionsView.xib */; };
+		FB473C3C261E151F007D9DD6 /* MavlinkStandard+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB473C3B261E151F007D9DD6 /* MavlinkStandard+Utils.swift */; };
+		FB473C3D261E151F007D9DD6 /* MavlinkStandard+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB473C3B261E151F007D9DD6 /* MavlinkStandard+Utils.swift */; };
 		FB49BB4D235EFE8600D15F0E /* HUD.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB49BB4C235EFE8600D15F0E /* HUD.storyboard */; };
 		FB49BB56235F00B400D15F0E /* HUDTopBar.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB49BB55235F00B400D15F0E /* HUDTopBar.storyboard */; };
 		FB49BB5C235F00F600D15F0E /* HUDTopBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB49BB58235F00F500D15F0E /* HUDTopBarViewController.swift */; };
@@ -2136,6 +2160,10 @@
 		FB4E8B0C237C0A5B00BA4B24 /* RemoteControlButtonGrabber.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4E8B0B237C0A5B00BA4B24 /* RemoteControlButtonGrabber.swift */; };
 		FB53F76F25794B8600D92E20 /* PoiPointRelatedGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB53F76E25794B8600D92E20 /* PoiPointRelatedGraphic.swift */; };
 		FB53F77025794B8600D92E20 /* PoiPointRelatedGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB53F76E25794B8600D92E20 /* PoiPointRelatedGraphic.swift */; };
+		FB59892B2614B65900BB296B /* Drone+Cellular.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB59892A2614B65900BB296B /* Drone+Cellular.swift */; };
+		FB59892C2614B65900BB296B /* Drone+Cellular.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB59892A2614B65900BB296B /* Drone+Cellular.swift */; };
+		FB5989322614B76200BB296B /* Drone+Wifi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5989312614B76200BB296B /* Drone+Wifi.swift */; };
+		FB5989332614B76200BB296B /* Drone+Wifi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5989312614B76200BB296B /* Drone+Wifi.swift */; };
 		FB5C22BC249A523C00A662AE /* CGFloat+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5C22BB249A523C00A662AE /* CGFloat+Utils.swift */; };
 		FB5C22BD249A523C00A662AE /* CGFloat+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5C22BB249A523C00A662AE /* CGFloat+Utils.swift */; };
 		FB5C22BE249A523C00A662AE /* CGFloat+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5C22BB249A523C00A662AE /* CGFloat+Utils.swift */; };
@@ -2357,6 +2385,9 @@
 		FBCE8F2C25DFFF23003DEA7F /* AGSGeometryEngine+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCE8F2A25DFFF23003DEA7F /* AGSGeometryEngine+Utils.swift */; };
 		FBDD9E6025E90759006E8281 /* FlightPlanUnavailabilityReason+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBDD9E5F25E90759006E8281 /* FlightPlanUnavailabilityReason+Utils.swift */; };
 		FBDD9E6125E90759006E8281 /* FlightPlanUnavailabilityReason+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBDD9E5F25E90759006E8281 /* FlightPlanUnavailabilityReason+Utils.swift */; };
+		FBDE6AD626400905009FABD9 /* EditableAGSGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBDE6AD526400905009FABD9 /* EditableAGSGraphic.swift */; };
+		FBDE6AD726400905009FABD9 /* EditableAGSGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBDE6AD526400905009FABD9 /* EditableAGSGraphic.swift */; };
+		FBDE6ADA2640090C009FABD9 /* EditableAGSGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBDE6AD526400905009FABD9 /* EditableAGSGraphic.swift */; };
 		FBDFDB4B238C257F00E05F67 /* CameraShutterButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBDFDB4A238C257F00E05F67 /* CameraShutterButtonViewModel.swift */; };
 		FBE033C3242B8DD800A71178 /* PointOfInterest+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE033C2242B8DD800A71178 /* PointOfInterest+Utils.swift */; };
 		FBE033C4242B8DD800A71178 /* PointOfInterest+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE033C2242B8DD800A71178 /* PointOfInterest+Utils.swift */; };
@@ -2514,6 +2545,7 @@
 		6A3CCB3623E2E7BD00D3DF19 /* sample_rennes.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = sample_rennes.json; sourceTree = "<group>"; };
 		6A3CCB3723E2E7BD00D3DF19 /* sample_jemmapes.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = sample_jemmapes.json; sourceTree = "<group>"; };
 		6A45F045241A7119003F6F66 /* ModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ModelV4.xcdatamodel; sourceTree = "<group>"; };
+		6A49008F26306213008EAFC1 /* FlightPlanSettingsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPlanSettingsHandler.swift; sourceTree = "<group>"; };
 		6A4C324423856B8B00F54F8A /* RemoteControlAxisButtonGrabber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteControlAxisButtonGrabber.swift; sourceTree = "<group>"; };
 		6A4C32492386CA4300F54F8A /* PilotingModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PilotingModeView.swift; sourceTree = "<group>"; };
 		6A4C324A2386CA4300F54F8A /* PilotingModeView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PilotingModeView.xib; sourceTree = "<group>"; };
@@ -2528,7 +2560,6 @@
 		6A66262B25CDAB49006037CD /* ProjectMenuTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProjectMenuTableViewCell.xib; sourceTree = "<group>"; };
 		6A66263A25D1386C006037CD /* ImageMenuTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageMenuTableViewCell.swift; sourceTree = "<group>"; };
 		6A66263B25D1386C006037CD /* ImageMenuTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ImageMenuTableViewCell.xib; sourceTree = "<group>"; };
-		6A66265A25D1A5F0006037CD /* Coordinator+FlightPlanManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coordinator+FlightPlanManager.swift"; sourceTree = "<group>"; };
 		6A6C94C5236B34760027842D /* SettingsQuickCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsQuickCollectionViewCell.swift; sourceTree = "<group>"; };
 		6A6C94C6236B34760027842D /* SettingsQuickCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SettingsQuickCollectionViewCell.xib; sourceTree = "<group>"; };
 		6A6C94C9236B347E0027842D /* SettingsQuickViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsQuickViewController.swift; sourceTree = "<group>"; };
@@ -2718,6 +2749,7 @@
 		7CFB360D23AA2D610014D1E0 /* Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
 		7CFFF71423980A18004E22C8 /* MissionSelectorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionSelectorViewController.swift; sourceTree = "<group>"; };
 		7F968660667332FA3CBDBCFC /* Images.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Images.swift; sourceTree = "<group>"; };
+		840A95DE2625CEC800E7A552 /* FlightPlanPanelCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPlanPanelCoordinator.swift; sourceTree = "<group>"; };
 		840E7A902433A4AF0031962F /* StopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopView.swift; sourceTree = "<group>"; };
 		840E7A912433A4AF0031962F /* StopView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = StopView.xib; sourceTree = "<group>"; };
 		8414B112243CAECE00520DB4 /* PanoramaProgressBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanoramaProgressBarView.swift; sourceTree = "<group>"; };
@@ -2757,8 +2789,6 @@
 		84A1E4682431F503000F72AD /* BottomBarButtonState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomBarButtonState.swift; sourceTree = "<group>"; };
 		84AB351025384BB8002FEAE2 /* ImagingBarPhotoResolutionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagingBarPhotoResolutionViewModel.swift; sourceTree = "<group>"; };
 		84AB351925384D3A002FEAE2 /* Camera2PhotoResolution+BarItemMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Camera2PhotoResolution+BarItemMode.swift"; sourceTree = "<group>"; };
-		84B0DD1923CF5CB20089EF0C /* DashboardLoginCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardLoginCell.swift; sourceTree = "<group>"; };
-		84B0DD1A23CF5CB20089EF0C /* DashboardLoginCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DashboardLoginCell.xib; sourceTree = "<group>"; };
 		84B25AD923EACF7200CE3764 /* UIImageView+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImageView+Utils.swift"; sourceTree = "<group>"; };
 		84B3ECFF24AF5E8700A02153 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		84B6F45A247404E300DBFDB8 /* MyFlightsAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyFlightsAccountView.swift; sourceTree = "<group>"; };
@@ -2769,7 +2799,7 @@
 		84BCB4E52445BF1000179179 /* DroneCalibration.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = DroneCalibration.storyboard; sourceTree = "<group>"; };
 		84BCB4E62445BF1000179179 /* DroneCalibrationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneCalibrationViewController.swift; sourceTree = "<group>"; };
 		84BCB4ED244710AE00179179 /* MagnetometerCalibrationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagnetometerCalibrationViewController.swift; sourceTree = "<group>"; };
-		84BCB4F3244712D700179179 /* MagnetometerCalibrationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagnetometerCalibrationViewModel.swift; sourceTree = "<group>"; };
+		84BCB4F3244712D700179179 /* MagnetometerCalibrationProcessViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagnetometerCalibrationProcessViewModel.swift; sourceTree = "<group>"; };
 		84C8278D23D9A122002E52CD /* String+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Validation.swift"; sourceTree = "<group>"; };
 		84C827AD23D9EC2A002E52CD /* DateTime+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DateTime+Utils.swift"; sourceTree = "<group>"; };
 		84C827B023D9F72F002E52CD /* Data+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Utils.swift"; sourceTree = "<group>"; };
@@ -2801,6 +2831,7 @@
 		9B3D14C725BEDEC000816B82 /* ParrotLogEvent+DataConfidentiality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ParrotLogEvent+DataConfidentiality.swift"; sourceTree = "<group>"; };
 		9B46CF86256D531B00F1C54E /* ParrotLogEvent+Mission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ParrotLogEvent+Mission.swift"; sourceTree = "<group>"; };
 		9B51EFD425B582A600B03229 /* ParrotLogEvent+Dashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ParrotLogEvent+Dashboard.swift"; sourceTree = "<group>"; };
+		9B5B5F9026134B1600029D74 /* FrontStereoGimbal+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FrontStereoGimbal+Utils.swift"; sourceTree = "<group>"; };
 		9B5FB932254712E3004BED3C /* DashboardMyFlightsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMyFlightsCell.swift; sourceTree = "<group>"; };
 		9B5FB933254712E3004BED3C /* DashboardMyFlightsCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DashboardMyFlightsCell.xib; sourceTree = "<group>"; };
 		9B67B2FD252F7115001EB4E0 /* GalleryPanoramaDownloadViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GalleryPanoramaDownloadViewController.swift; sourceTree = "<group>"; };
@@ -2888,6 +2919,7 @@
 		E3B568F224640C9A0035FAF2 /* BehaviourModeView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BehaviourModeView.xib; sourceTree = "<group>"; };
 		E3BC2EF7236AE41E0050B25A /* Services.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services.swift; sourceTree = "<group>"; };
 		E3CF8C79243632B7006AC563 /* GalleryVideoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryVideoViewController.swift; sourceTree = "<group>"; };
+		E3D32E5A2627103700F8E3FC /* ParrotDebugCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParrotDebugCoordinator.swift; sourceTree = "<group>"; };
 		E3D9248D2551BE4B00B37FCC /* DispatchQueue+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DispatchQueue+Utils.swift"; sourceTree = "<group>"; };
 		E3DDBB7F244DF20600BDE3F8 /* Occupancy.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Occupancy.storyboard; sourceTree = "<group>"; };
 		E3DDBB80244DF20600BDE3F8 /* OccupancyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OccupancyViewController.swift; sourceTree = "<group>"; };
@@ -2895,6 +2927,11 @@
 		E3E71DF82369A44D005D07CF /* Map.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Map.storyboard; sourceTree = "<group>"; };
 		E3E71DFC2369D815005D07CF /* UIView+Subviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Subviews.swift"; sourceTree = "<group>"; };
 		E3ED97FC242D042500C6770E /* GallerySDMediaViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GallerySDMediaViewModel.swift; sourceTree = "<group>"; };
+		E3EE468E2625EEFA00CB69A0 /* DevToolboxViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevToolboxViewController.swift; sourceTree = "<group>"; };
+		E3EE46932625EF0F00CB69A0 /* DevToolboxCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevToolboxCell.swift; sourceTree = "<group>"; };
+		E3EE46982625EF4900CB69A0 /* DevToolbox.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DevToolbox.storyboard; sourceTree = "<group>"; };
+		E3EE46AB2625F24600CB69A0 /* SettingsFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsFormatter.swift; sourceTree = "<group>"; };
+		E3EE46B42626005400CB69A0 /* DevToolboxCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DevToolboxCell.xib; sourceTree = "<group>"; };
 		E3F117F92473D3BA00DDCA96 /* FlightPlanMission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPlanMission.swift; sourceTree = "<group>"; };
 		E3F74271243F460100921711 /* MediaVideoBottomBarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaVideoBottomBarView.swift; sourceTree = "<group>"; };
 		E3F74272243F460100921711 /* MediaVideoBottomBarView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MediaVideoBottomBarView.xib; sourceTree = "<group>"; };
@@ -2913,12 +2950,12 @@
 		E4246536243C7BDD0068D718 /* JoysticksViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoysticksViewModel.swift; sourceTree = "<group>"; };
 		E4246538243C87660068D718 /* JoysticksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoysticksView.swift; sourceTree = "<group>"; };
 		E4246539243C87660068D718 /* JoysticksView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = JoysticksView.xib; sourceTree = "<group>"; };
-		E426A75C2547041000E8BA19 /* HUDTakeOffAlert.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = HUDTakeOffAlert.storyboard; sourceTree = "<group>"; };
+		E426A75C2547041000E8BA19 /* HUDCriticalAlert.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = HUDCriticalAlert.storyboard; sourceTree = "<group>"; };
 		E426A75D2547041000E8BA19 /* HUDCriticalAlertViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDCriticalAlertViewController.swift; sourceTree = "<group>"; };
-		E426A76B2547046A00E8BA19 /* TakeOffAlertViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TakeOffAlertViewModel.swift; sourceTree = "<group>"; };
-		E426A773254704A300E8BA19 /* TakeOffAlertModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TakeOffAlertModel.swift; sourceTree = "<group>"; };
-		E426B37424EC063700038B66 /* SettingsNetworkSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsNetworkSelectionCell.swift; sourceTree = "<group>"; };
-		E426B37524EC063700038B66 /* SettingsNetworkSelectionCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SettingsNetworkSelectionCell.xib; sourceTree = "<group>"; };
+		E426A76B2547046A00E8BA19 /* HUDCriticalAlertViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDCriticalAlertViewModel.swift; sourceTree = "<group>"; };
+		E426A773254704A300E8BA19 /* HUDCriticalAlertModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDCriticalAlertModel.swift; sourceTree = "<group>"; };
+		E42AC25A261CB7DE00A77201 /* SettingsCellularDataCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SettingsCellularDataCell.xib; sourceTree = "<group>"; };
+		E42AC25B261CB7DE00A77201 /* SettingsCellularDataCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsCellularDataCell.swift; sourceTree = "<group>"; };
 		E42B4040256C100100CB17F5 /* StereoVisionIndication+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StereoVisionIndication+Utils.swift"; sourceTree = "<group>"; };
 		E42CBF0424C98C9A00B583F0 /* DroneDetailsFirmwareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneDetailsFirmwareViewController.swift; sourceTree = "<group>"; };
 		E42F0A02239E973600875852 /* PairingConnectDroneDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingConnectDroneDetailViewController.swift; sourceTree = "<group>"; };
@@ -2931,9 +2968,9 @@
 		E4393A5223A7E61A000DC184 /* DeviceSystemInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSystemInfoModel.swift; sourceTree = "<group>"; };
 		E43AA4E925D2743200AC8E3E /* HUDCellularIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDCellularIndicatorView.swift; sourceTree = "<group>"; };
 		E43AA4EA25D2743200AC8E3E /* HUDCellularIndicatorView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HUDCellularIndicatorView.xib; sourceTree = "<group>"; };
-		E43DF5C92565340A00BDEF40 /* CellularAvailableViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellularAvailableViewModel.swift; sourceTree = "<group>"; };
-		E43DF5CF2565341700BDEF40 /* CellularAvailable.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CellularAvailable.storyboard; sourceTree = "<group>"; };
-		E43DF5D02565341800BDEF40 /* CellularAvailableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellularAvailableViewController.swift; sourceTree = "<group>"; };
+		E43DF5C92565340A00BDEF40 /* CellularConfigurationViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellularConfigurationViewModel.swift; sourceTree = "<group>"; };
+		E43DF5CF2565341700BDEF40 /* CellularConfiguration.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CellularConfiguration.storyboard; sourceTree = "<group>"; };
+		E43DF5D02565341800BDEF40 /* CellularConfigurationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellularConfigurationViewController.swift; sourceTree = "<group>"; };
 		E43DF5D825654FD300BDEF40 /* APCApiManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APCApiManager.swift; sourceTree = "<group>"; };
 		E43DF5E02565500600BDEF40 /* AcademyApiManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcademyApiManager.swift; sourceTree = "<group>"; };
 		E43DF5E5256552D300BDEF40 /* AuthenticationUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationUtils.swift; sourceTree = "<group>"; };
@@ -2956,7 +2993,7 @@
 		E45305A424A1DCC4006A5F28 /* CenteredRulerTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CenteredRulerTableViewCell.xib; sourceTree = "<group>"; };
 		E45305AC24A1E7BF006A5F28 /* ModesChoiceTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModesChoiceTableViewCell.swift; sourceTree = "<group>"; };
 		E45305AD24A1E7BF006A5F28 /* ModesChoiceTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ModesChoiceTableViewCell.xib; sourceTree = "<group>"; };
-		E4550555260B7E68004160D6 /* FrontBottomButtonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrontBottomButtonViewModel.swift; sourceTree = "<group>"; };
+		E4550555260B7E68004160D6 /* FrontRightButtonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrontRightButtonViewModel.swift; sourceTree = "<group>"; };
 		E455D51B23B0AA0800D53020 /* RemoteCalibrationAxesView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RemoteCalibrationAxesView.xib; sourceTree = "<group>"; };
 		E455D51D23B0AA3A00D53020 /* RemoteCalibrationAxesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCalibrationAxesView.swift; sourceTree = "<group>"; };
 		E455D52123B0AC8000D53020 /* RemoteCalibrationAxeProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCalibrationAxeProgressView.swift; sourceTree = "<group>"; };
@@ -2989,7 +3026,8 @@
 		E46AE450248E363300C9DCE3 /* HUDLandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDLandingView.swift; sourceTree = "<group>"; };
 		E46AE451248E363300C9DCE3 /* HUDLandingView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HUDLandingView.xib; sourceTree = "<group>"; };
 		E46AE456248E364700C9DCE3 /* HUDLandingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDLandingViewModel.swift; sourceTree = "<group>"; };
-		E46B2A66255AD324009EDADE /* CellularPairingViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellularPairingViewModel.swift; sourceTree = "<group>"; };
+		E46B2A66255AD324009EDADE /* CellularPairingAvailabilityViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellularPairingAvailabilityViewModel.swift; sourceTree = "<group>"; };
+		E46BEFB9263B09FC00777521 /* Drone+CellularPairing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Drone+CellularPairing.swift"; sourceTree = "<group>"; };
 		E470CEA12567ED6800C185A5 /* SecureKeyStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureKeyStorage.swift; sourceTree = "<group>"; };
 		E47143AB24E57E6700985B56 /* DroneDetailsCellularViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DroneDetailsCellularViewModel.swift; sourceTree = "<group>"; };
 		E476136A248E6B9100365339 /* ReturnHomeBottomBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnHomeBottomBarView.swift; sourceTree = "<group>"; };
@@ -3019,7 +3057,6 @@
 		E48B228C23D1A2C800FDA7B1 /* FlightMeter+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlightMeter+Utils.swift"; sourceTree = "<group>"; };
 		E48B53FB241004E8009B1984 /* BottomBarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomBarViewModel.swift; sourceTree = "<group>"; };
 		E490D2B1260B3F1200A272F2 /* RearRightButtonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RearRightButtonViewModel.swift; sourceTree = "<group>"; };
-		E490D2BE260B53F500A272F2 /* FrontTopButtonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrontTopButtonViewModel.swift; sourceTree = "<group>"; };
 		E49146082608A39500A8CD64 /* RemoteControlGrabberViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteControlGrabberViewModel.swift; sourceTree = "<group>"; };
 		E49146102608D73000A8CD64 /* RightSliderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RightSliderViewModel.swift; sourceTree = "<group>"; };
 		E496640A25E7DBBA00B2818A /* Cellular+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Cellular+Utils.swift"; sourceTree = "<group>"; };
@@ -3027,8 +3064,8 @@
 		E49B1CD825665E4E0085E7A8 /* API+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "API+Utils.swift"; sourceTree = "<group>"; };
 		E49B1CEC25667FC30085E7A8 /* PairingProcessModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PairingProcessModel.swift; sourceTree = "<group>"; };
 		E49B1CF225667FE20085E7A8 /* CellularPairingProcessViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellularPairingProcessViewModel.swift; sourceTree = "<group>"; };
-		E49B1CF825667FF70085E7A8 /* CellularPairingProcessViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellularPairingProcessViewController.swift; sourceTree = "<group>"; };
-		E49B1CF925667FF70085E7A8 /* CellularPairingProcess.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CellularPairingProcess.storyboard; sourceTree = "<group>"; };
+		E49B1CF825667FF70085E7A8 /* CellularPairingSuccessViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellularPairingSuccessViewController.swift; sourceTree = "<group>"; };
+		E49B1CF925667FF70085E7A8 /* CellularPairingSuccess.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CellularPairingSuccess.storyboard; sourceTree = "<group>"; };
 		E49F4EBF23BE35EF00737D2D /* DeviceConfirmUpdateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfirmUpdateViewController.swift; sourceTree = "<group>"; };
 		E49F4EC123BE360200737D2D /* DeviceUpdateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceUpdateViewController.swift; sourceTree = "<group>"; };
 		E49F4EC523BE3F3400737D2D /* RemoteUpdateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteUpdateViewModel.swift; sourceTree = "<group>"; };
@@ -3065,19 +3102,12 @@
 		E4B570C825FA699700BCEEC4 /* PairingDroneNotDetected.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = PairingDroneNotDetected.storyboard; sourceTree = "<group>"; };
 		E4B570CD25FA69B400BCEEC4 /* PairingConnectDroneDetails.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = PairingConnectDroneDetails.storyboard; sourceTree = "<group>"; };
 		E4B570D225FA69CB00BCEEC4 /* PairingConnectDrone.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = PairingConnectDrone.storyboard; sourceTree = "<group>"; };
-		E4B670092369839A00335AA5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		E4B6700B236983B800335AA5 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		E4B6700D236983D700335AA5 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E4B6700E236983DF00335AA5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E4B6700F236983DF00335AA5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		E4B67011236983E600335AA5 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E4B67012236983F800335AA5 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E4B67013236983F800335AA5 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		E4B670152369840100335AA5 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E4B670182369841D00335AA5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E4B670192369841D00335AA5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		E4B6701B2369842400335AA5 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		E4B6701D23698C7800335AA5 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E4B6701F2369C47700335AA5 /* UIApplication+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+Utils.swift"; sourceTree = "<group>"; };
 		E4B6C2BD25E3A84700710638 /* DeviceInformationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInformationsView.swift; sourceTree = "<group>"; };
 		E4B6C2BE25E3A84700710638 /* DeviceInformationsView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DeviceInformationsView.xib; sourceTree = "<group>"; };
@@ -3100,6 +3130,7 @@
 		E4D34FE425F7B3CC004B2BD8 /* RemoteDetailsInformations.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RemoteDetailsInformations.storyboard; sourceTree = "<group>"; };
 		E4D34FE925F7B3DE004B2BD8 /* RemoteDetailsButtons.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RemoteDetailsButtons.storyboard; sourceTree = "<group>"; };
 		E4D34FF025F7B4A2004B2BD8 /* RemoteCalibration.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RemoteCalibration.storyboard; sourceTree = "<group>"; };
+		E4D4E61F262F257D0021A74D /* ModelV10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ModelV10.xcdatamodel; sourceTree = "<group>"; };
 		E4D5A512237D6DCB000470D5 /* PairingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingCoordinator.swift; sourceTree = "<group>"; };
 		E4D7D37D2368A7270000D55B /* UpdateCustomButton.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = UpdateCustomButton.xib; sourceTree = "<group>"; };
 		E4D7D37E2368A7270000D55B /* UpdateCustomButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UpdateCustomButton.swift; sourceTree = "<group>"; };
@@ -3111,12 +3142,10 @@
 		E4D7D38E2368A7300000D55B /* DashboardFooterCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DashboardFooterCell.swift; sourceTree = "<group>"; };
 		E4D7D3912368A7300000D55B /* DashboardHeaderCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DashboardHeaderCell.swift; sourceTree = "<group>"; };
 		E4D7D3922368A7300000D55B /* DashboardHeaderCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DashboardHeaderCell.xib; sourceTree = "<group>"; };
-		E4D7D3932368A7300000D55B /* DashboardProviderCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DashboardProviderCell.swift; sourceTree = "<group>"; };
-		E4D7D3942368A7300000D55B /* DashboardProviderCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DashboardProviderCell.xib; sourceTree = "<group>"; };
 		E4D7D3952368A7300000D55B /* DashboardFooterCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DashboardFooterCell.xib; sourceTree = "<group>"; };
 		E4D7D3962368A7300000D55B /* DashboardDeviceCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DashboardDeviceCell.xib; sourceTree = "<group>"; };
 		E4DA7D4C257F5ED700DAB0CA /* SettingsEndHoveringViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsEndHoveringViewModel.swift; sourceTree = "<group>"; };
-		E4DEEA7024EE7F68004B6C0C /* SettingsNetworkSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsNetworkSelectionViewModel.swift; sourceTree = "<group>"; };
+		E4DEEA7024EE7F68004B6C0C /* SettingsCellularDataViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCellularDataViewModel.swift; sourceTree = "<group>"; };
 		E4E228FC238D79B0007606B4 /* DeviceState+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeviceState+Utils.swift"; sourceTree = "<group>"; };
 		E4E245622603487A00F4AB67 /* AlertBannerSorter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertBannerSorter.swift; sourceTree = "<group>"; };
 		E4E8FFD7250FA54300AF12BF /* Reachability+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Reachability+Utils.swift"; sourceTree = "<group>"; };
@@ -3126,7 +3155,6 @@
 		E4EC745B2434973E0028664B /* DroneActionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneActionViewModel.swift; sourceTree = "<group>"; };
 		E4ECD58123CC7FD100A81264 /* DroneDetails.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = DroneDetails.storyboard; sourceTree = "<group>"; };
 		E4ECD58223CC7FD100A81264 /* DroneDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneDetailsViewController.swift; sourceTree = "<group>"; };
-		E4ECD58A23CC832500A81264 /* DroneDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneDetailsViewModel.swift; sourceTree = "<group>"; };
 		E4ECD59023CC9EB700A81264 /* DroneDetailsInformationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneDetailsInformationsViewModel.swift; sourceTree = "<group>"; };
 		E4ECD59423CCB40A00A81264 /* DroneStatusModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneStatusModels.swift; sourceTree = "<group>"; };
 		E4F2F787252F03A800172A28 /* ReturnHomeBottomBarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnHomeBottomBarViewModel.swift; sourceTree = "<group>"; };
@@ -3199,6 +3227,16 @@
 		EBFC6670257E88A3008EE869 /* ProtobufMissionListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtobufMissionListener.swift; sourceTree = "<group>"; };
 		F1B5BB3A0316BA560BB384B7 /* LaunchScreen.xib */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.xib; path = LaunchScreen.xib; sourceTree = "<group>"; };
 		F1E9F0E13C5AD062971B28EE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS11.3.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		F81A5A1C2628499000C7B063 /* DashboardFooterViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DashboardFooterViewModel.swift; sourceTree = "<group>"; };
+		F81A5ACE262DC15700C7B063 /* UITextView+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextView+Utils.swift"; sourceTree = "<group>"; };
+		F897DD93261744E1005B55B2 /* DashboardDroneCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DashboardDroneCell.swift; sourceTree = "<group>"; };
+		F897DD94261744E1005B55B2 /* DashboardDroneCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DashboardDroneCell.xib; sourceTree = "<group>"; };
+		F8BC29C22613592B00ED7850 /* DashboardLogoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardLogoCell.swift; sourceTree = "<group>"; };
+		F8BC29C32613592B00ED7850 /* DashboardLogoCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DashboardLogoCell.xib; sourceTree = "<group>"; };
+		F8BC29CC2614789400ED7850 /* DashboardProfileCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardProfileCell.swift; sourceTree = "<group>"; };
+		F8BC29CD2614789400ED7850 /* DashboardProfileCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DashboardProfileCell.xib; sourceTree = "<group>"; };
+		F8BC29D626149BD100ED7850 /* DashboardProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardProfileViewModel.swift; sourceTree = "<group>"; };
+		F8D3F0E32631695A0043B5DA /* ImagingSettingsBarViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagingSettingsBarViewModel.swift; sourceTree = "<group>"; };
 		FB02AAF22463064D00DB9E76 /* FlightDetailsDiagnosticView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightDetailsDiagnosticView.swift; sourceTree = "<group>"; };
 		FB02AAF32463064D00DB9E76 /* FlightDetailsDiagnosticView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = FlightDetailsDiagnosticView.xib; sourceTree = "<group>"; };
 		FB0A2B2A2445BAA1009F7C81 /* FlightReportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightReportViewModel.swift; sourceTree = "<group>"; };
@@ -3258,6 +3296,7 @@
 		FB44FA3D237C498C006DDB7C /* GraduatedView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GraduatedView.swift; sourceTree = "<group>"; };
 		FB44FA3E237C498D006DDB7C /* CardinalDirectionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CardinalDirectionsView.swift; sourceTree = "<group>"; };
 		FB44FA3F237C498D006DDB7C /* CardinalDirectionsView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CardinalDirectionsView.xib; sourceTree = "<group>"; };
+		FB473C3B261E151F007D9DD6 /* MavlinkStandard+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MavlinkStandard+Utils.swift"; sourceTree = "<group>"; };
 		FB49BB4C235EFE8600D15F0E /* HUD.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = HUD.storyboard; sourceTree = "<group>"; };
 		FB49BB55235F00B400D15F0E /* HUDTopBar.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = HUDTopBar.storyboard; sourceTree = "<group>"; };
 		FB49BB58235F00F500D15F0E /* HUDTopBarViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HUDTopBarViewController.swift; sourceTree = "<group>"; };
@@ -3284,6 +3323,8 @@
 		FB4E8B09237C0A1A00BA4B24 /* RemoteControlAxisGrabber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteControlAxisGrabber.swift; sourceTree = "<group>"; };
 		FB4E8B0B237C0A5B00BA4B24 /* RemoteControlButtonGrabber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteControlButtonGrabber.swift; sourceTree = "<group>"; };
 		FB53F76E25794B8600D92E20 /* PoiPointRelatedGraphic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoiPointRelatedGraphic.swift; sourceTree = "<group>"; };
+		FB59892A2614B65900BB296B /* Drone+Cellular.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Drone+Cellular.swift"; sourceTree = "<group>"; };
+		FB5989312614B76200BB296B /* Drone+Wifi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Drone+Wifi.swift"; sourceTree = "<group>"; };
 		FB5C22BB249A523C00A662AE /* CGFloat+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGFloat+Utils.swift"; sourceTree = "<group>"; };
 		FB5C22C0249A538200A662AE /* CLLocationCoordinate2D+UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLLocationCoordinate2D+UserDefaults.swift"; sourceTree = "<group>"; };
 		FB5C22C4249A556900A662AE /* Double+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Double+Utils.swift"; sourceTree = "<group>"; };
@@ -3424,6 +3465,7 @@
 		FBCD2FE923BA54B700B87FA5 /* FlightPlanControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPlanControls.swift; sourceTree = "<group>"; };
 		FBCE8F2A25DFFF23003DEA7F /* AGSGeometryEngine+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AGSGeometryEngine+Utils.swift"; sourceTree = "<group>"; };
 		FBDD9E5F25E90759006E8281 /* FlightPlanUnavailabilityReason+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlightPlanUnavailabilityReason+Utils.swift"; sourceTree = "<group>"; };
+		FBDE6AD526400905009FABD9 /* EditableAGSGraphic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditableAGSGraphic.swift; sourceTree = "<group>"; };
 		FBDFDB4A238C257F00E05F67 /* CameraShutterButtonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraShutterButtonViewModel.swift; sourceTree = "<group>"; };
 		FBE033C2242B8DD800A71178 /* PointOfInterest+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PointOfInterest+Utils.swift"; sourceTree = "<group>"; };
 		FBE033C5242B905500A71178 /* Location3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Location3D.swift; sourceTree = "<group>"; };
@@ -3516,6 +3558,7 @@
 				A32C8029249A1FDE00396483 /* DroneGimbalCalibrationCoordinator.swift */,
 				84D04481257B9E5500554F40 /* FlightPlanCoordinator.swift */,
 				FB7D059523BF63AC0061D0A8 /* FlightPlanEditionCoordinator.swift */,
+				840A95DE2625CEC800E7A552 /* FlightPlanPanelCoordinator.swift */,
 				6AC34E4E242A196A00A9C40B /* GalleryCoordinator.swift */,
 				E34F8A992359FC0500F711D9 /* HUDCoordinator.swift */,
 				E4D5A512237D6DCB000470D5 /* PairingCoordinator.swift */,
@@ -3523,7 +3566,7 @@
 				E49F4ED223BF420A00737D2D /* RemoteCoordinator.swift */,
 				E35E4FB4235D97D500866AD4 /* SettingsCoordinator.swift */,
 				E462415923C77F8600815A66 /* UpdateCoordinator.swift */,
-				6A66265A25D1A5F0006037CD /* Coordinator+FlightPlanManager.swift */,
+				E3D32E5A2627103700F8E3FC /* ParrotDebugCoordinator.swift */,
 			);
 			path = Coordinators;
 			sourceTree = "<group>";
@@ -3721,6 +3764,7 @@
 			children = (
 				6A3CCB2423E185D200D3DF19 /* FlightPlanViewModel.swift */,
 				FB6D663E240D655F009737EA /* RunFlightPlanViewModel.swift */,
+				6A49008F26306213008EAFC1 /* FlightPlanSettingsHandler.swift */,
 			);
 			name = ViewModels;
 			path = ManagePlans/FlightPlansList/ViewModels;
@@ -3842,6 +3886,8 @@
 				6A6C9504236B3E500027842D /* SettingsButtonCell.swift */,
 				6A6C9500236B3E500027842D /* SettingsButtonCell.xib */,
 				6A6C94E9236B3C1D0027842D /* SettingsResetAllButtonCell.swift */,
+				E42AC25B261CB7DE00A77201 /* SettingsCellularDataCell.swift */,
+				E42AC25A261CB7DE00A77201 /* SettingsCellularDataCell.xib */,
 				6A6C94E6236B3C1D0027842D /* SettingsResetAllButtonCell.xib */,
 				6A6C94E5236B3C1C0027842D /* SettingsTitleCell.swift */,
 				6A6C94E7236B3C1D0027842D /* SettingsTitleCell.xib */,
@@ -3857,8 +3903,6 @@
 				6A271949239E89980079C67A /* SettingsNetworkNameCell.xib */,
 				6A271950239E8AAD0079C67A /* SettingsChooseChannelCell.swift */,
 				6A271951239E8AAD0079C67A /* SettingsChooseChannelCell.xib */,
-				E426B37424EC063700038B66 /* SettingsNetworkSelectionCell.swift */,
-				E426B37524EC063700038B66 /* SettingsNetworkSelectionCell.xib */,
 				E4B98F56257E851C00E24ED6 /* SettingsEndHoveringCell.swift */,
 				E4B98F57257E851C00E24ED6 /* SettingsEndHoveringCell.xib */,
 			);
@@ -3919,7 +3963,7 @@
 				6AE46578238ED1C6004FE818 /* GeofenceViewModel.swift */,
 				6AC03D1C2399087D00C64C0A /* SettingsRthViewModel.swift */,
 				6A271946239E85920079C67A /* SettingsNetworkViewModel.swift */,
-				E4DEEA7024EE7F68004B6C0C /* SettingsNetworkSelectionViewModel.swift */,
+				E4DEEA7024EE7F68004B6C0C /* SettingsCellularDataViewModel.swift */,
 				E4DA7D4C257F5ED700DAB0CA /* SettingsEndHoveringViewModel.swift */,
 				E499AA4E25CC2D09005391EC /* SettingsRthActionViewModel.swift */,
 			);
@@ -4218,6 +4262,7 @@
 				7C6DB59C23C4876A0068B4E9 /* ParrotDebug.swift */,
 				7C53ED8923C4C002001ABF35 /* SecretView.swift */,
 				9B0F5D672552F6A000B56646 /* ParrotLogEvent.swift */,
+				E3EE468D2625EEE400CB69A0 /* DevToolbox */,
 			);
 			path = "Parrot Debug";
 			sourceTree = "<group>";
@@ -4492,7 +4537,7 @@
 			children = (
 				84BCB4E12440DE2200179179 /* DroneCalibrationViewModel.swift */,
 				A3AF7D9724C9D22F00103610 /* StereoVisionSensorCalibrationViewModel.swift */,
-				84BCB4F3244712D700179179 /* MagnetometerCalibrationViewModel.swift */,
+				84BCB4F3244712D700179179 /* MagnetometerCalibrationProcessViewModel.swift */,
 				A397382125829FE300C41D87 /* HorizonCorrectionViewModel.swift */,
 			);
 			path = ViewModels;
@@ -4843,11 +4888,11 @@
 		E34F8A9F235A10B400F711D9 /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
+				F88B96072615348A00D6186D /* Cells */,
 				E401CEEC247567DA00F0A1B1 /* Views */,
+				E4D7D3812368A7300000D55B /* Collection */,
 				E35E4FB7235D9BBF00866AD4 /* DashboardViewController.swift */,
 				E35E4FB6235D9BBF00866AD4 /* Dashboard.storyboard */,
-				E4598AD0237AFD6700C9A32F /* DashboardItemModel.swift */,
-				E4D7D3812368A7300000D55B /* Collection */,
 			);
 			path = Dashboard;
 			sourceTree = "<group>";
@@ -4898,6 +4943,18 @@
 				E3024C202399048A004A73E4 /* ViewModels */,
 			);
 			path = Map;
+			sourceTree = "<group>";
+		};
+		E3EE468D2625EEE400CB69A0 /* DevToolbox */ = {
+			isa = PBXGroup;
+			children = (
+				E3EE46982625EF4900CB69A0 /* DevToolbox.storyboard */,
+				E3EE468E2625EEFA00CB69A0 /* DevToolboxViewController.swift */,
+				E3EE46B42626005400CB69A0 /* DevToolboxCell.xib */,
+				E3EE46932625EF0F00CB69A0 /* DevToolboxCell.swift */,
+				E3EE46AB2625F24600CB69A0 /* SettingsFormatter.swift */,
+			);
+			path = DevToolbox;
 			sourceTree = "<group>";
 		};
 		E3F74270243F460100921711 /* Components */ = {
@@ -4952,21 +5009,21 @@
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
-		E426A7592547037A00E8BA19 /* TakeOff */ = {
+		E426A7592547037A00E8BA19 /* Criticals */ = {
 			isa = PBXGroup;
 			children = (
 				E426A7702547047000E8BA19 /* Models */,
 				E426A7682547045500E8BA19 /* ViewModels */,
-				E426A75C2547041000E8BA19 /* HUDTakeOffAlert.storyboard */,
+				E426A75C2547041000E8BA19 /* HUDCriticalAlert.storyboard */,
 				E426A75D2547041000E8BA19 /* HUDCriticalAlertViewController.swift */,
 			);
-			path = TakeOff;
+			path = Criticals;
 			sourceTree = "<group>";
 		};
 		E426A7682547045500E8BA19 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				E426A76B2547046A00E8BA19 /* TakeOffAlertViewModel.swift */,
+				E426A76B2547046A00E8BA19 /* HUDCriticalAlertViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -4974,7 +5031,7 @@
 		E426A7702547047000E8BA19 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				E426A773254704A300E8BA19 /* TakeOffAlertModel.swift */,
+				E426A773254704A300E8BA19 /* HUDCriticalAlertModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -5010,6 +5067,17 @@
 			isa = PBXGroup;
 			children = (
 				E443219924A5FBD300ED9995 /* EditionSettingsModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E4521973261C616B00C9D983 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FB4E8B09237C0A1A00BA4B24 /* RemoteControlAxisGrabber.swift */,
+				FB4E8B0B237C0A5B00BA4B24 /* RemoteControlButtonGrabber.swift */,
+				FB3395C02375A4070099683F /* RemoteControlGrabManager.swift */,
+				6A4C324423856B8B00F54F8A /* RemoteControlAxisButtonGrabber.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -5236,12 +5304,12 @@
 		E491460D2608D70100A8CD64 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				E49146082608A39500A8CD64 /* RemoteControlGrabberViewModel.swift */,
 				E4CD6079260B21E600D8320D /* RearLeftButtonViewModel.swift */,
 				E49146102608D73000A8CD64 /* RightSliderViewModel.swift */,
 				E4CD6065260A2A6B00D8320D /* LeftSliderViewModel.swift */,
 				E490D2B1260B3F1200A272F2 /* RearRightButtonViewModel.swift */,
-				E490D2BE260B53F500A272F2 /* FrontTopButtonViewModel.swift */,
-				E4550555260B7E68004160D6 /* FrontBottomButtonViewModel.swift */,
+				E4550555260B7E68004160D6 /* FrontRightButtonViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -5314,10 +5382,10 @@
 		E4AC48BE24B329AF00E234E7 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
-				E49B1CF925667FF70085E7A8 /* CellularPairingProcess.storyboard */,
-				E49B1CF825667FF70085E7A8 /* CellularPairingProcessViewController.swift */,
-				E43DF5CF2565341700BDEF40 /* CellularAvailable.storyboard */,
-				E43DF5D02565341800BDEF40 /* CellularAvailableViewController.swift */,
+				E49B1CF925667FF70085E7A8 /* CellularPairingSuccess.storyboard */,
+				E49B1CF825667FF70085E7A8 /* CellularPairingSuccessViewController.swift */,
+				E43DF5CF2565341700BDEF40 /* CellularConfiguration.storyboard */,
+				E43DF5D02565341800BDEF40 /* CellularConfigurationViewController.swift */,
 				E4AC48C224B32A4800E234E7 /* CellularAccessCardPin.storyboard */,
 				E4AC48C324B32A4800E234E7 /* CellularAccessCardPinViewController.swift */,
 			);
@@ -5328,8 +5396,8 @@
 			isa = PBXGroup;
 			children = (
 				E49B1CF225667FE20085E7A8 /* CellularPairingProcessViewModel.swift */,
-				E43DF5C92565340A00BDEF40 /* CellularAvailableViewModel.swift */,
-				E46B2A66255AD324009EDADE /* CellularPairingViewModel.swift */,
+				E43DF5C92565340A00BDEF40 /* CellularConfigurationViewModel.swift */,
+				E46B2A66255AD324009EDADE /* CellularPairingAvailabilityViewModel.swift */,
 				E4AC48CE24B3428500E234E7 /* CellularAccessCardPinViewModel.swift */,
 			);
 			path = ViewModels;
@@ -5350,6 +5418,8 @@
 				E4AF3DE22375B8950077C8F2 /* MyFlightsViewModel.swift */,
 				E4AF3DE02375B8950077C8F2 /* RemoteInfosViewModel.swift */,
 				E4AF3DE12375B8950077C8F2 /* UserDeviceViewModel.swift */,
+				F8BC29D626149BD100ED7850 /* DashboardProfileViewModel.swift */,
+				F81A5A1C2628499000C7B063 /* DashboardFooterViewModel.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -5398,24 +5468,8 @@
 			children = (
 				E4AF3DD42375B85D0077C8F2 /* CellConfigurable.swift */,
 				E4AF3DDA2375B8950077C8F2 /* ViewModel */,
-				E4D7D3822368A7300000D55B /* Cells */,
 			);
 			path = Collection;
-			sourceTree = "<group>";
-		};
-		E4D7D3822368A7300000D55B /* Cells */ = {
-			isa = PBXGroup;
-			children = (
-				9B5FB932254712E3004BED3C /* DashboardMyFlightsCell.swift */,
-				9B5FB933254712E3004BED3C /* DashboardMyFlightsCell.xib */,
-				E4D7D3832368A7300000D55B /* DashboardDeviceCell.swift */,
-				E4D7D3962368A7300000D55B /* DashboardDeviceCell.xib */,
-				E4D7D38E2368A7300000D55B /* DashboardFooterCell.swift */,
-				E4D7D3952368A7300000D55B /* DashboardFooterCell.xib */,
-				E4D7D3882368A7300000D55B /* Medias Cell */,
-				E4D7D3902368A7300000D55B /* Header Cell */,
-			);
-			path = Cells;
 			sourceTree = "<group>";
 		};
 		E4D7D3882368A7300000D55B /* Medias Cell */ = {
@@ -5428,19 +5482,6 @@
 				3C1F652F247EC1D500D38B6B /* DashboardMediasCellFlowLayout.swift */,
 			);
 			path = "Medias Cell";
-			sourceTree = "<group>";
-		};
-		E4D7D3902368A7300000D55B /* Header Cell */ = {
-			isa = PBXGroup;
-			children = (
-				E4D7D3912368A7300000D55B /* DashboardHeaderCell.swift */,
-				E4D7D3922368A7300000D55B /* DashboardHeaderCell.xib */,
-				E4D7D3932368A7300000D55B /* DashboardProviderCell.swift */,
-				E4D7D3942368A7300000D55B /* DashboardProviderCell.xib */,
-				84B0DD1923CF5CB20089EF0C /* DashboardLoginCell.swift */,
-				84B0DD1A23CF5CB20089EF0C /* DashboardLoginCell.xib */,
-			);
-			path = "Header Cell";
 			sourceTree = "<group>";
 		};
 		E4ECD58023CC7F9800A81264 /* DroneInfos */ = {
@@ -5459,7 +5500,6 @@
 			children = (
 				E4ECD59023CC9EB700A81264 /* DroneDetailsInformationsViewModel.swift */,
 				E47143AB24E57E6700985B56 /* DroneDetailsCellularViewModel.swift */,
-				E4ECD58A23CC832500A81264 /* DroneDetailsViewModel.swift */,
 				E44DF2DD23D209CB00BFE467 /* DroneDetailsMapViewModel.swift */,
 				FB3600D5247FDFC800E8D7CF /* DroneDetailsButtonsViewModel.swift */,
 			);
@@ -5719,6 +5759,53 @@
 				EB1AA0FB2576452E00F3A141 /* HelloWorld */,
 			);
 			path = Common;
+			sourceTree = "<group>";
+		};
+		F88B96072615348A00D6186D /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				F8BC29B3261358EB00ED7850 /* Header */,
+				F8BC29B6261358F300ED7850 /* Content */,
+				F8BC29B9261358FE00ED7850 /* Footer */,
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
+		F8BC29B3261358EB00ED7850 /* Header */ = {
+			isa = PBXGroup;
+			children = (
+				E4598AD0237AFD6700C9A32F /* DashboardItemModel.swift */,
+				E4D7D3912368A7300000D55B /* DashboardHeaderCell.swift */,
+				E4D7D3922368A7300000D55B /* DashboardHeaderCell.xib */,
+				F8BC29C22613592B00ED7850 /* DashboardLogoCell.swift */,
+				F8BC29C32613592B00ED7850 /* DashboardLogoCell.xib */,
+			);
+			path = Header;
+			sourceTree = "<group>";
+		};
+		F8BC29B6261358F300ED7850 /* Content */ = {
+			isa = PBXGroup;
+			children = (
+				F8BC29CC2614789400ED7850 /* DashboardProfileCell.swift */,
+				F8BC29CD2614789400ED7850 /* DashboardProfileCell.xib */,
+				9B5FB932254712E3004BED3C /* DashboardMyFlightsCell.swift */,
+				9B5FB933254712E3004BED3C /* DashboardMyFlightsCell.xib */,
+				E4D7D3832368A7300000D55B /* DashboardDeviceCell.swift */,
+				E4D7D3962368A7300000D55B /* DashboardDeviceCell.xib */,
+				F897DD93261744E1005B55B2 /* DashboardDroneCell.swift */,
+				F897DD94261744E1005B55B2 /* DashboardDroneCell.xib */,
+				E4D7D3882368A7300000D55B /* Medias Cell */,
+			);
+			path = Content;
+			sourceTree = "<group>";
+		};
+		F8BC29B9261358FE00ED7850 /* Footer */ = {
+			isa = PBXGroup;
+			children = (
+				E4D7D38E2368A7300000D55B /* DashboardFooterCell.swift */,
+				E4D7D3952368A7300000D55B /* DashboardFooterCell.xib */,
+			);
+			path = Footer;
 			sourceTree = "<group>";
 		};
 		FB01477F23C6076D00F9BD98 /* ViewControllers */ = {
@@ -5993,12 +6080,8 @@
 		FB4E8B08237C09FF00BA4B24 /* Grab */ = {
 			isa = PBXGroup;
 			children = (
+				E4521973261C616B00C9D983 /* Models */,
 				E491460D2608D70100A8CD64 /* ViewModels */,
-				FB4E8B09237C0A1A00BA4B24 /* RemoteControlAxisGrabber.swift */,
-				FB4E8B0B237C0A5B00BA4B24 /* RemoteControlButtonGrabber.swift */,
-				FB3395C02375A4070099683F /* RemoteControlGrabManager.swift */,
-				6A4C324423856B8B00F54F8A /* RemoteControlAxisButtonGrabber.swift */,
-				E49146082608A39500A8CD64 /* RemoteControlGrabberViewModel.swift */,
 			);
 			path = Grab;
 			sourceTree = "<group>";
@@ -6103,6 +6186,7 @@
 				E376C035235F4AF7003C5914 /* UIViewController+SizeClass.swift */,
 				6A0460CF2433807400F4B828 /* UIViewController+Utils.swift */,
 				6A94CCAC2574E75E007E3B57 /* UIViewController+FileShare.swift */,
+				F81A5ACE262DC15700C7B063 /* UITextView+Utils.swift */,
 			);
 			path = UIKit;
 			sourceTree = "<group>";
@@ -6111,6 +6195,7 @@
 			isa = PBXGroup;
 			children = (
 				FB53F76B25794ABA00D92E20 /* Protocols */,
+				FBDE6AD526400905009FABD9 /* EditableAGSGraphic.swift */,
 				FBE2171F25B09A08006DFE46 /* FlightPlanInsertWayPointGraphic.swift */,
 				FB66492E23FFEE48005036F4 /* FlightPlanGraphic.swift */,
 				FB6F15F92404275500B37142 /* FlightPlanGraphicsOverlay.swift */,
@@ -6238,6 +6323,7 @@
 		FB855452238FD23F00FA7061 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				F8D3F0E32631695A0043B5DA /* ImagingSettingsBarViewModel.swift */,
 				FB38487923967EDA0048D8CB /* ImagingBarState.swift */,
 				FB757CE323A3937400763FD2 /* ImagingBarAutoModeViewModel.swift */,
 				FB85547C23900ABD00FA7061 /* ImagingBarCameraIsoViewModel.swift */,
@@ -6277,6 +6363,7 @@
 			isa = PBXGroup;
 			children = (
 				FBE6A3D023EC5E6800EED434 /* Drone+AutoLanding.swift */,
+				FB59892A2614B65900BB296B /* Drone+Cellular.swift */,
 				FB8DC754235F425F005C6378 /* Drone+Geofence.swift */,
 				E4F792E8249A159500D1FDDA /* Drone+HandAction.swift */,
 				6AF8133E2384240F00089878 /* Drone+Instruments.swift */,
@@ -6286,6 +6373,8 @@
 				6AF813402384249800089878 /* Drone+RTH.swift */,
 				FBCA70CF25F8DA3000E0382F /* Drone+Storage.swift */,
 				FB8DC750235F40A2005C6378 /* Drone+Utils.swift */,
+				FB5989312614B76200BB296B /* Drone+Wifi.swift */,
+				E46BEFB9263B09FC00777521 /* Drone+CellularPairing.swift */,
 			);
 			path = Drone;
 			sourceTree = "<group>";
@@ -6315,6 +6404,7 @@
 				6A27195E239FA1770079C67A /* WifiChannel+Utils.swift */,
 				EB6B006425BF1E78005ADA47 /* ULogTag+Utils.swift */,
 				E496640A25E7DBBA00B2818A /* Cellular+Utils.swift */,
+				9B5B5F9026134B1600029D74 /* FrontStereoGimbal+Utils.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -6458,6 +6548,7 @@
 			isa = PBXGroup;
 			children = (
 				FBDD9E5F25E90759006E8281 /* FlightPlanUnavailabilityReason+Utils.swift */,
+				FB473C3B261E151F007D9DD6 /* MavlinkStandard+Utils.swift */,
 			);
 			path = FlightPlan;
 			sourceTree = "<group>";
@@ -6467,7 +6558,7 @@
 			children = (
 				E4CD274425D14607006192CF /* CellularIndicator */,
 				9B2032642575964700A12924 /* Remote */,
-				E426A7592547037A00E8BA19 /* TakeOff */,
+				E426A7592547037A00E8BA19 /* Criticals */,
 				E46AE44F248E35F200C9DCE3 /* Landing */,
 				FBE6A3AE23E96E3900EED434 /* Banner */,
 				FB44D77823F186A300C311D1 /* Components */,
@@ -6601,16 +6692,9 @@
 				en,
 				Base,
 				fr,
-				"zh-Hans",
-				"zh-Hant",
-				nl,
 				de,
-				it,
 				ja,
-				ko,
 				es,
-				tr,
-				pt,
 			);
 			mainGroup = B1CAC93266301CCD432489A6;
 			productRefGroup = 74DBDC0777E690BD87F31529 /* Products */;
@@ -6647,7 +6731,7 @@
 				6A6C94ED236B3C1D0027842D /* SettingsTitleCell.xib in Resources */,
 				6A6C94C8236B34760027842D /* SettingsQuickCollectionViewCell.xib in Resources */,
 				E35E4FBC235D9BCF00866AD4 /* Settings.storyboard in Resources */,
-				E43DF5D12565341800BDEF40 /* CellularAvailable.storyboard in Resources */,
+				E43DF5D12565341800BDEF40 /* CellularConfiguration.storyboard in Resources */,
 				E376C04023603E06003C5914 /* Rajdhani-SemiBold.ttf in Resources */,
 				FB3600D2247F98DA00E8D7CF /* DeviceDetailsButtonView.xib in Resources */,
 				A3C4763925925346004FE614 /* SettingsDRIViewController.storyboard in Resources */,
@@ -6711,9 +6795,8 @@
 				E452907423A7875000B5B72A /* DeviceButtonView.xib in Resources */,
 				EB1AA12325764CC200F3A141 /* HelloWorldMessageView.xib in Resources */,
 				6A6C9516236B3FA80027842D /* SettingsInterfaceViewController.storyboard in Resources */,
-				E4D7D3A82368A7300000D55B /* DashboardProviderCell.xib in Resources */,
+				F8BC29D02614789400ED7850 /* DashboardProfileCell.xib in Resources */,
 				EB1AA12725764CC800F3A141 /* HelloWorldBottomView.xib in Resources */,
-				E426A75E2547041000E8BA19 /* HUDTakeOffAlert.storyboard in Resources */,
 				FB49BB64235F022E00D15F0E /* TelemetryItemView.xib in Resources */,
 				7C98609C238FDE5600BBBA8F /* MissionItemCell.xib in Resources */,
 				E4A190D825F8CAF9009F770D /* DroneDetailsDevice.storyboard in Resources */,
@@ -6759,6 +6842,7 @@
 				FB1833552399058C008363AA /* ImagingBarEvCompensationBarView.xib in Resources */,
 				6A6C94EC236B3C1D0027842D /* SettingsResetAllButtonCell.xib in Resources */,
 				A3808E4725850FCA005DA709 /* CorrectionRulerView.xib in Resources */,
+				F8BC29C62613592B00ED7850 /* DashboardLogoCell.xib in Resources */,
 				E4D34FE525F7B3CC004B2BD8 /* RemoteDetailsInformations.storyboard in Resources */,
 				FB95257423CDEBF400171F3D /* FlightPlanCollectionViewCell.xib in Resources */,
 				84BCB4E72445BF1000179179 /* DroneCalibration.storyboard in Resources */,
@@ -6768,6 +6852,7 @@
 				E4A190D025F8CAC2009F770D /* DroneDetailsInformations.storyboard in Resources */,
 				FB0A2B8924487BB7009F7C81 /* FlightReportInfoView.xib in Resources */,
 				FBBE5A31257FD5390088AEA5 /* FlightPlanSettingTitleCell.xib in Resources */,
+				E42AC25C261CB7DE00A77201 /* SettingsCellularDataCell.xib in Resources */,
 				3C2D70E624A24BEE003CB44D /* GalleryPanorama.storyboard in Resources */,
 				E376C03E23603E02003C5914 /* Rajdhani-Regular.ttf in Resources */,
 				FB37BC7A23C750E40026B055 /* ManagePlans.storyboard in Resources */,
@@ -6801,7 +6886,6 @@
 				E4D34FF125F7B4A2004B2BD8 /* RemoteCalibration.storyboard in Resources */,
 				6A6C94CC236B347E0027842D /* SettingsQuickViewController.storyboard in Resources */,
 				3C5C8429249A153400625CB9 /* GalleryFormatSDCardStepView.xib in Resources */,
-				84B0DD1C23CF5CB20089EF0C /* DashboardLoginCell.xib in Resources */,
 				E3E71DFA2369A44D005D07CF /* Map.storyboard in Resources */,
 				EB671D9E2590EAB2000B778B /* ProtobufMissionUpdatingTableViewCell.xib in Resources */,
 				6AA9A48B242A24BC00E98905 /* GalleryFilterCollectionViewCell.xib in Resources */,
@@ -6821,6 +6905,7 @@
 				3C87249F24A3A91D005373A9 /* GalleryPanoramaQualityChoiceView.xib in Resources */,
 				6A89919223AA6498000F83C0 /* FlightsViewController.storyboard in Resources */,
 				E4EC745A243494520028664B /* DroneActionView.xib in Resources */,
+				E3EE46B52626005400CB69A0 /* DevToolboxCell.xib in Resources */,
 				84F3FB6C2447412D0073F77A /* DroneCalibrationAxesView.xib in Resources */,
 				FB9F6961239E676800FCA02A /* ImagingBarAutomatableRulerBarView.xib in Resources */,
 				7CC58A5F237C09BB00F286B5 /* SegmentedBarItemView.xib in Resources */,
@@ -6830,7 +6915,6 @@
 				3C81764D24A3567E007FFDC7 /* GalleryPanoramaTypeChoiceView.xib in Resources */,
 				6AE46576238ED165004FE818 /* SettingsGeofenceViewController.storyboard in Resources */,
 				6AC802F825FF77130045BD42 /* HeaderMenuTableViewCell.xib in Resources */,
-				E426B37824EC063700038B66 /* SettingsNetworkSelectionCell.xib in Resources */,
 				6A89FD8C23A7759A009A9C3F /* AlertViewController.storyboard in Resources */,
 				E4A190C525F8CA8C009F770D /* DroneDetailsCellular.storyboard in Resources */,
 				E4AC48CC24B3300600E234E7 /* PinNumberCollectionViewCell.xib in Resources */,
@@ -6838,8 +6922,10 @@
 				6A6C950E236B3E510027842D /* SettingsButtonCell.xib in Resources */,
 				E4AC48C424B32A4800E234E7 /* CellularAccessCardPin.storyboard in Resources */,
 				6A6C94E0236B3A180027842D /* SettingsSegmentedCell.xib in Resources */,
+				F897DD97261744E1005B55B2 /* DashboardDroneCell.xib in Resources */,
 				E4B570CE25FA69B400BCEEC4 /* PairingConnectDroneDetails.storyboard in Resources */,
-				E49B1CFC25667FF70085E7A8 /* CellularPairingProcess.storyboard in Resources */,
+				E49B1CFC25667FF70085E7A8 /* CellularPairingSuccess.storyboard in Resources */,
+				E3EE46992625EF4900CB69A0 /* DevToolbox.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7032,7 +7118,7 @@
 				E4670FFF24EA7C8A003F5178 /* Camera2ExposureSettings+Utils.swift in Sources */,
 				6A3CCB3323E1E11200D3DF19 /* CoreDataManager+FlightPlan.swift in Sources */,
 				FBE6A3CF23EC4E6900EED434 /* HUDAlertBannerSubState.swift in Sources */,
-				E426A774254704A300E8BA19 /* TakeOffAlertModel.swift in Sources */,
+				E426A774254704A300E8BA19 /* HUDCriticalAlertModel.swift in Sources */,
 				7C18FC3E237EB8F500FF08CC /* DroneWatcherViewModel.swift in Sources */,
 				FBE6A3BC23E97C6300EED434 /* HUDAlertBannerModels.swift in Sources */,
 				FB7ABAFF24489F49003A9378 /* GalleryLoadingView.swift in Sources */,
@@ -7043,6 +7129,7 @@
 				FBCCA8232603B43400161348 /* FlightPlanPanelMediaCounterView.swift in Sources */,
 				9BE15D0225E7D68500E1DDC8 /* StereoVisionSensorsCalibrationModel.swift in Sources */,
 				FB1833592399087B008363AA /* CenteredRulerBarView.swift in Sources */,
+				F81A5ACF262DC15700C7B063 /* UITextView+Utils.swift in Sources */,
 				FBE6A3B923E96F9100EED434 /* HUDAlertModels.swift in Sources */,
 				E4360505259E067F001CF2CB /* FlightPlanHistorySyncManager.swift in Sources */,
 				FB4E8B0A237C0A1A00BA4B24 /* RemoteControlAxisGrabber.swift in Sources */,
@@ -7060,6 +7147,7 @@
 				FBA1763723E076B9006BBF6E /* MapModels.swift in Sources */,
 				84C827AE23D9EC2A002E52CD /* DateTime+Utils.swift in Sources */,
 				EB6B006525BF1E78005ADA47 /* ULogTag+Utils.swift in Sources */,
+				E3D32E5B2627103700F8E3FC /* ParrotDebugCoordinator.swift in Sources */,
 				FB49BB5D235F00F600D15F0E /* HUDControllerInfoViewController.swift in Sources */,
 				6A6C94D4236B35C40027842D /* DroneSetting.swift in Sources */,
 				6AA9A46E242A1F1700E98905 /* GalleryMediaViewController.swift in Sources */,
@@ -7067,7 +7155,7 @@
 				84C827B123D9F72F002E52CD /* Data+Utils.swift in Sources */,
 				FBE6A3CD23EC3C8300EED434 /* HUDAlertBannerGeofenceViewModel.swift in Sources */,
 				E476136C248E6B9100365339 /* ReturnHomeBottomBarView.swift in Sources */,
-				E426A76C2547046A00E8BA19 /* TakeOffAlertViewModel.swift in Sources */,
+				E426A76C2547046A00E8BA19 /* HUDCriticalAlertViewModel.swift in Sources */,
 				FB8DC761235F511D005C6378 /* SnowView.swift in Sources */,
 				FB7FC902238EA0AD00111361 /* Storage+Utils.swift in Sources */,
 				70C8AEB82462EC1000A0BE98 /* GalleryContentState.swift in Sources */,
@@ -7138,7 +7226,7 @@
 				9BB2F381252DC6A900B46239 /* GalleryPanoramaGenerationViewController.swift in Sources */,
 				E4AC48CA24B3300600E234E7 /* PinNumberCollectionViewCell.swift in Sources */,
 				FBBE5A82258776E20088AEA5 /* AGSGraphicsOverlay+Utils.swift in Sources */,
-				E4550556260B7E68004160D6 /* FrontBottomButtonViewModel.swift in Sources */,
+				E4550556260B7E68004160D6 /* FrontRightButtonViewModel.swift in Sources */,
 				EB671DA62590FDC9000B778B /* ProtobufMissionsUpdateDataSource.swift in Sources */,
 				E4393A5323A7E61A000DC184 /* DeviceSystemInfoModel.swift in Sources */,
 				6A66262C25CDAB49006037CD /* ProjectMenuTableViewCell.swift in Sources */,
@@ -7154,7 +7242,6 @@
 				843221EA24BF4CEB000BEB2E /* PolygonPoint.swift in Sources */,
 				6A05F1D923BE0035003A1EF1 /* Gutma+Utils.swift in Sources */,
 				E3CF8C7A243632B7006AC563 /* GalleryVideoViewController.swift in Sources */,
-				E4D7D3A72368A7300000D55B /* DashboardProviderCell.swift in Sources */,
 				8418F3D82459B75200DF7065 /* Data+CPointer.swift in Sources */,
 				E455D52723B0C2CC00D53020 /* RemoteCalibrationViewModel.swift in Sources */,
 				FBE6A3BF23E98A4500EED434 /* Alarm+Utils.swift in Sources */,
@@ -7201,6 +7288,7 @@
 				FB49BB76235F05D100D15F0E /* RemoteControl+Utils.swift in Sources */,
 				E49146092608A39500A8CD64 /* RemoteControlGrabberViewModel.swift in Sources */,
 				7CC58A53237B082700F286B5 /* CameraCaptureMode.swift in Sources */,
+				E3EE468F2625EEFA00CB69A0 /* DevToolboxViewController.swift in Sources */,
 				E41E9114258B9FCA00F47904 /* MediaDownloadViewModel.swift in Sources */,
 				6A3CCB3123E1D67400D3DF19 /* FlightPlanDataModel+CoreDataProperties.swift in Sources */,
 				6A89FD8E23A7759A009A9C3F /* AlertViewController.swift in Sources */,
@@ -7231,8 +7319,8 @@
 				A3AF7D9224C9A88300103610 /* StereoVisionCalibStepsViewController.swift in Sources */,
 				FBAE466123AB796900D98B64 /* PanoramaModeViewModel.swift in Sources */,
 				FB0B58E223FD8B6300923635 /* AGSIdentifyGraphicsOverlayResult+FlightPlan.swift in Sources */,
+				9B5B5F9126134B1600029D74 /* FrontStereoGimbal+Utils.swift in Sources */,
 				E34F8A9A2359FC0500F711D9 /* HUDCoordinator.swift in Sources */,
-				84B0DD1B23CF5CB20089EF0C /* DashboardLoginCell.swift in Sources */,
 				844883C62434E44F00C003A7 /* OnboardTracker+Utils.swift in Sources */,
 				E365B7702395691000438292 /* UIButton+Design.swift in Sources */,
 				6A6C94D1236B35580027842D /* UnitType.swift in Sources */,
@@ -7257,6 +7345,7 @@
 				84F3FB61244740740073F77A /* DroneCalibrationAxeTickBoxView.swift in Sources */,
 				E49B1CED25667FC30085E7A8 /* PairingProcessModel.swift in Sources */,
 				E453059F24A1DCB2006A5F28 /* AdjustmentTableViewCell.swift in Sources */,
+				FB5989322614B76200BB296B /* Drone+Wifi.swift in Sources */,
 				E47AE68A260211A300D2FA8F /* HUDAlertBannerCommonViewModel.swift in Sources */,
 				E499AA4F25CC2D09005391EC /* SettingsRthActionViewModel.swift in Sources */,
 				9BACF2402566809D00B82D20 /* ParrotLogEvent+Devices.swift in Sources */,
@@ -7273,8 +7362,8 @@
 				8418F3C72459B18A00DF7065 /* Anafi2Model.swift in Sources */,
 				E467100D24EA7C8A003F5178 /* Camera2ExposureMode+Utils.swift in Sources */,
 				E35E4FB5235D97D500866AD4 /* SettingsCoordinator.swift in Sources */,
+				F8BC29C42613592B00ED7850 /* DashboardLogoCell.swift in Sources */,
 				7CFFF71523980A19004E22C8 /* MissionSelectorViewController.swift in Sources */,
-				E426B37624EC063700038B66 /* SettingsNetworkSelectionCell.swift in Sources */,
 				C6939954BC0B8CEEC918116C /* AppDelegate.swift in Sources */,
 				3C81764724A35264007FFDC7 /* GalleryPanoramaTypeChoiceModel.swift in Sources */,
 				6A0460D02433807400F4B828 /* UIViewController+Utils.swift in Sources */,
@@ -7312,6 +7401,7 @@
 				84853D1F240EA7F100920E2C /* TrackingViewModel.swift in Sources */,
 				C57FF9A7F644B11E48C3FCA6 /* Storyboards.swift in Sources */,
 				FB3395A6237460A10099683F /* TiltButton.swift in Sources */,
+				6A49009026306213008EAFC1 /* FlightPlanSettingsHandler.swift in Sources */,
 				FB7D059623BF63AC0061D0A8 /* FlightPlanEditionCoordinator.swift in Sources */,
 				E43DF5E6256552D300BDEF40 /* AuthenticationUtils.swift in Sources */,
 				E416E78C237C4BBE00C61FBB /* HUDIndicatorViewModel.swift in Sources */,
@@ -7330,8 +7420,9 @@
 				E4AF3DEC2375B8950077C8F2 /* MyFlightsViewModel.swift in Sources */,
 				A3C47623258D23F5004FE614 /* LockAETargetZoneViewController.swift in Sources */,
 				6A89919423AA6498000F83C0 /* FlightsViewController.swift in Sources */,
-				84BCB4F4244712D700179179 /* MagnetometerCalibrationViewModel.swift in Sources */,
+				84BCB4F4244712D700179179 /* MagnetometerCalibrationProcessViewModel.swift in Sources */,
 				FB49BB63235F022E00D15F0E /* TelemetryItemView.swift in Sources */,
+				F897DD95261744E1005B55B2 /* DashboardDroneCell.swift in Sources */,
 				EB40000D258B68EE00C59C17 /* ProtobufMissionsUpdaterWrapper.swift in Sources */,
 				E443219A24A5FBD300ED9995 /* EditionSettingsModels.swift in Sources */,
 				FB66493123FFF518005036F4 /* FlightPlanWayPointGraphic.swift in Sources */,
@@ -7356,7 +7447,7 @@
 				E46A12A123900DCF008A0834 /* PairingConnectDroneViewController.swift in Sources */,
 				FB91B3E9236B14C800CEA232 /* DroneInfosViewModel.swift in Sources */,
 				A3C4763B25925346004FE614 /* SettingsDRIViewController.swift in Sources */,
-				E43DF5CA2565340B00BDEF40 /* CellularAvailableViewModel.swift in Sources */,
+				E43DF5CA2565340B00BDEF40 /* CellularConfigurationViewModel.swift in Sources */,
 				7C6DB59E23C4876A0068B4E9 /* ParrotDebug.swift in Sources */,
 				E3BDCCB62461B0EF00CC41EE /* UIImage+Utils.swift in Sources */,
 				6ACBF7932396B88D0006FEDC /* SettingsGridView.swift in Sources */,
@@ -7365,6 +7456,7 @@
 				EB400027258B7F2F00C59C17 /* ProtobufMissionToUpdateData.swift in Sources */,
 				84EA831E2487E64F00B9E640 /* SCNNode+Basics.swift in Sources */,
 				E43032DB23A7ED1500A0012A /* RemoteDetailsInformationsViewModel.swift in Sources */,
+				FB473C3C261E151F007D9DD6 /* MavlinkStandard+Utils.swift in Sources */,
 				3C87249324A3A374005373A9 /* GalleryPanoramaViewModel.swift in Sources */,
 				FB6AF1D8246D828400DFE3FA /* FlightPlanTypeManager.swift in Sources */,
 				84C827B523D9FE9F002E52CD /* Parser+Utils.swift in Sources */,
@@ -7378,6 +7470,8 @@
 				EB1AA15525767A7900F3A141 /* HelloWorldMission.swift in Sources */,
 				FB85548123900CFD00FA7061 /* ImagingBarEvCompensationViewModel.swift in Sources */,
 				FB5C22CD249A580200A662AE /* DateFormatter+Utils.swift in Sources */,
+				E3EE46942625EF0F00CB69A0 /* DevToolboxCell.swift in Sources */,
+				70639D002628B91700B20641 /* DashboardFooterViewModel.swift in Sources */,
 				7CC58A5E237C09BB00F286B5 /* SegmentedBarItemView.swift in Sources */,
 				FB7ABB092448A0A4003A9378 /* JoysticksTypeViewModel.swift in Sources */,
 				8418F3C22459B18A00DF7065 /* OGCamera.swift in Sources */,
@@ -7392,7 +7486,9 @@
 				6A27195B239FA05D0079C67A /* WifiChannelsOccupationGraphView.swift in Sources */,
 				E46AE457248E364700C9DCE3 /* HUDLandingViewModel.swift in Sources */,
 				7C312A7623969DA300CB8319 /* PassThroughStackView.swift in Sources */,
+				F8D3F0E42631695F0043B5DA /* ImagingSettingsBarViewModel.swift in Sources */,
 				6A6C94E4236B3BBC0027842D /* SettingsSliderCell.swift in Sources */,
+				F8BC29CE2614789400ED7850 /* DashboardProfileCell.swift in Sources */,
 				6A05893223AA80C900921A69 /* FlightDetailsViewController.swift in Sources */,
 				EB400035258BAE7E00C59C17 /* ProtobufMissionsUpdaterManager.swift in Sources */,
 				FB66493924000265005036F4 /* FlightPlanWayPointLabelsGraphic.swift in Sources */,
@@ -7401,7 +7497,8 @@
 				6A5DE01E23CDD1C8007523EF /* AGSMultipart+Utils.swift in Sources */,
 				E43080FD238FB7A600EB2D68 /* PairingWhereIsWifiViewController.swift in Sources */,
 				FB0A2B342445C40F009F7C81 /* FlightReportViewController.swift in Sources */,
-				E49B1CFA25667FF70085E7A8 /* CellularPairingProcessViewController.swift in Sources */,
+				E42AC25E261CB7DE00A77201 /* SettingsCellularDataCell.swift in Sources */,
+				E49B1CFA25667FF70085E7A8 /* CellularPairingSuccessViewController.swift in Sources */,
 				FBBD849823F156EA004F8ACC /* HUDAlertPanelViewController.swift in Sources */,
 				E47EEB27238E82B100F20387 /* PairingCell.swift in Sources */,
 				6A7763F92368857E00B01BA6 /* Style+Makeup.swift in Sources */,
@@ -7434,11 +7531,13 @@
 				3C81763F24A351AC007FFDC7 /* GalleryPanoramaTypeChoiceView.swift in Sources */,
 				FB66493724000214005036F4 /* FlightPlanPoiPointLabelGraphic.swift in Sources */,
 				7040265925DD045200714103 /* DroneCellularModels.swift in Sources */,
+				FB59892B2614B65900BB296B /* Drone+Cellular.swift in Sources */,
 				6AA9A46D242A1F1500E98905 /* GallerySourcesViewController.swift in Sources */,
 				6AE8FCF42382F8220028A2C8 /* Camera2Settings.swift in Sources */,
 				7CAFA043238EC5E800CC07B0 /* MissionLauncherButton.swift in Sources */,
 				E3A3B565242B698E0068E954 /* GalleryMediaViewModel.swift in Sources */,
 				9B2032732575995600A12924 /* RemoteShutdownAlertViewModel.swift in Sources */,
+				E46BEFBA263B09FC00777521 /* Drone+CellularPairing.swift in Sources */,
 				6ABE403423829ED6002D01E1 /* InterfaceViewModel.swift in Sources */,
 				7CC58A4F237AEFD000F286B5 /* BarButtonView.swift in Sources */,
 				FB95259F23D0888D00171F3D /* FlightPlanObject+ArcGIS.swift in Sources */,
@@ -7447,6 +7546,7 @@
 				3C53F0BC24938331007472FF /* GalleryFormatSDCardChoiceView.swift in Sources */,
 				6A8D5F8023D896F200465EDA /* CoreDataManager+Flights.swift in Sources */,
 				FBCC20DA23BB46F800B9CA14 /* FlightPlanPanelViewController.swift in Sources */,
+				FBDE6AD626400905009FABD9 /* EditableAGSGraphic.swift in Sources */,
 				709A115C24B5EC1500DC052D /* TransactionHistory.swift in Sources */,
 				FB79ACF42521D2E100FA6EA7 /* ObstacleAvoidanceSetting.swift in Sources */,
 				6A271955239E8CCF0079C67A /* NetworkSettings.swift in Sources */,
@@ -7455,6 +7555,7 @@
 				E448C89725EFD9B3000E4E18 /* RemoteDetailsButtonsViewController.swift in Sources */,
 				6A02D4DB256D3B6200975508 /* FlightPlanDashboardViewController.swift in Sources */,
 				E4646FA5236B2CBB00D1F553 /* CurrentRemoteControlWatcher.swift in Sources */,
+				E3EE46AC2625F24600CB69A0 /* SettingsFormatter.swift in Sources */,
 				848EC0D3245ACC7E00794226 /* Bool+Utils.swift in Sources */,
 				FB44FA40237C498D006DDB7C /* GraduatedView.swift in Sources */,
 				FB7ABAFD24489F2E003A9378 /* JoysticksViewModel.swift in Sources */,
@@ -7536,7 +7637,7 @@
 				FB6F0F5E248A4709008F54C6 /* PaddingButton.swift in Sources */,
 				EBFA461825A7485600FBCE06 /* FirmwareAndMissionProgressView.swift in Sources */,
 				E4D7D3A52368A7300000D55B /* DashboardHeaderCell.swift in Sources */,
-				E4DEEA7124EE7F68004B6C0C /* SettingsNetworkSelectionViewModel.swift in Sources */,
+				E4DEEA7124EE7F68004B6C0C /* SettingsCellularDataViewModel.swift in Sources */,
 				E44EDCF6249CB87A009503D0 /* Drone+PilotingItfs.swift in Sources */,
 				3C87249624A3A773005373A9 /* GalleryPanoramaQualityViewController.swift in Sources */,
 				6AF5657225B9B70600D4F2D9 /* FlightPlanExecutionDataModel+Utils.swift in Sources */,
@@ -7618,7 +7719,7 @@
 				84225AD9255307A9001CF57D /* ImportGroundSdk.swift in Sources */,
 				3C5C842C249A205E00625CB9 /* GalleryFormatSDCardStepModel.swift in Sources */,
 				E37480952385A019009DCA03 /* MapViewController+FlightPlan.swift in Sources */,
-				E46B2A67255AD324009EDADE /* CellularPairingViewModel.swift in Sources */,
+				E46B2A67255AD324009EDADE /* CellularPairingAvailabilityViewModel.swift in Sources */,
 				FBA6B7DA236896AD008A6E8A /* TelemetryViewModel.swift in Sources */,
 				6A6C94D2236B35580027842D /* SettingEnum.swift in Sources */,
 				FBE033C3242B8DD800A71178 /* PointOfInterest+Utils.swift in Sources */,
@@ -7633,14 +7734,12 @@
 				E4B670202369C47700335AA5 /* UIApplication+Utils.swift in Sources */,
 				E4B6C2BF25E3A84700710638 /* DeviceInformationsView.swift in Sources */,
 				3CB2E3E624AB67B50094279E /* GalleryPanoramaStepModel.swift in Sources */,
-				6A66265B25D1A5F0006037CD /* Coordinator+FlightPlanManager.swift in Sources */,
 				6A27195C239FA05D0079C67A /* WifiChannelsOccupationGridView.swift in Sources */,
 				E376C037235F4B30003C5914 /* UserDefaultsKeys.swift in Sources */,
 				FB8DC773236061BF005C6378 /* Gps+Utils.swift in Sources */,
 				6AC03D1B2398F70C00C64C0A /* Values.swift in Sources */,
 				A39738192582955D00C41D87 /* HorizonCorrectionViewController.swift in Sources */,
 				E46AE452248E363300C9DCE3 /* HUDLandingView.swift in Sources */,
-				E4ECD58B23CC832500A81264 /* DroneDetailsViewModel.swift in Sources */,
 				FB0CA00423DB41FC007063C6 /* MapLocationsViewModel.swift in Sources */,
 				FB6D663F240D655F009737EA /* RunFlightPlanViewModel.swift in Sources */,
 				6A6C9512236B3E510027842D /* SettingsButtonCell.swift in Sources */,
@@ -7679,7 +7778,6 @@
 				A37C01B625648B1900C0CFD1 /* ObstacleAvoidanceViewModel.swift in Sources */,
 				6A5D8B93243C86DB00066B80 /* GallerySDMediaViewModel+Download.swift in Sources */,
 				7C5F7F5D23673B28000F9766 /* BaseViewModel.swift in Sources */,
-				E490D2BF260B53F500A272F2 /* FrontTopButtonViewModel.swift in Sources */,
 				8418F3C32459B18A00DF7065 /* EntityManager.swift in Sources */,
 				E4F792E9249A159500D1FDDA /* Drone+HandAction.swift in Sources */,
 				E376C039235F4B51003C5914 /* Bundle+Utils.swift in Sources */,
@@ -7735,6 +7833,7 @@
 				6A0460DF2437618800F4B828 /* MediaItem+Utils.swift in Sources */,
 				E373D5EE23FEBDE200DA730B /* CacheUtils.swift in Sources */,
 				E49F4EC623BE3F3400737D2D /* RemoteUpdateViewModel.swift in Sources */,
+				840A95DF2625CEC800E7A552 /* FlightPlanPanelCoordinator.swift in Sources */,
 				6AA9A46C242A1F1300E98905 /* GalleryFiltersViewController.swift in Sources */,
 				FB0CA00023D5DE88007063C6 /* PoiPoint+ArcGIS.swift in Sources */,
 				6AE23C10237EDEF100699347 /* BehavioursViewController.swift in Sources */,
@@ -7752,7 +7851,7 @@
 				6A6E379423D09F2400872C2D /* Model.xcdatamodeld in Sources */,
 				EB671D782590B520000B778B /* ProtobufMissionUpdateStartView.swift in Sources */,
 				6A0460CD24324AD600F4B828 /* GalleryImageViewController.swift in Sources */,
-				E43DF5D32565341800BDEF40 /* CellularAvailableViewController.swift in Sources */,
+				E43DF5D32565341800BDEF40 /* CellularConfigurationViewController.swift in Sources */,
 				9BACF23B2566804000B82D20 /* ParrotLogEvent+Settings.swift in Sources */,
 				E4A5DA6E238FDFB2007BBFBE /* PairingDroneNotDetectedViewController.swift in Sources */,
 				6AE9655A23D0B94D00AD29C9 /* FlightDataModel+CoreDataClass.swift in Sources */,
@@ -7783,6 +7882,7 @@
 				84BCB4EE244710AE00179179 /* MagnetometerCalibrationViewController.swift in Sources */,
 				FB95259D23D07C1400171F3D /* AGSPoint+Utils.swift in Sources */,
 				FB02AAF42463064D00DB9E76 /* FlightDetailsDiagnosticView.swift in Sources */,
+				F8BC29D726149BD100ED7850 /* DashboardProfileViewModel.swift in Sources */,
 				8418F3C02459B18A00DF7065 /* SceneComponent.swift in Sources */,
 				6AF813412384249800089878 /* Drone+RTH.swift in Sources */,
 				9BACF24C2566817100B82D20 /* ParrotLogEvent+Screens.swift in Sources */,
@@ -7842,6 +7942,7 @@
 				E3996883241A4D5D00F22F22 /* RemoteControlButtonGrabber.swift in Sources */,
 				E3996884241A4D5D00F22F22 /* RemoteControlGrabManager.swift in Sources */,
 				E3996885241A4D5D00F22F22 /* RemoteControlAxisButtonGrabber.swift in Sources */,
+				FBDE6ADA2640090C009FABD9 /* EditableAGSGraphic.swift in Sources */,
 				E3996886241A4D5D00F22F22 /* RemoteControl+Utils.swift in Sources */,
 				E3996887241A4D5D00F22F22 /* CurrentDroneStore.swift in Sources */,
 				E3996889241A4D5D00F22F22 /* UserLocationManager.swift in Sources */,
@@ -7916,8 +8017,6 @@
 				E39968E5241A4D5D00F22F22 /* DashboardMediasSubCell.swift in Sources */,
 				E39968E7241A4D5D00F22F22 /* DashboardMediasCell.swift in Sources */,
 				E39968E9241A4D5D00F22F22 /* DashboardHeaderCell.swift in Sources */,
-				E39968EB241A4D5D00F22F22 /* DashboardProviderCell.swift in Sources */,
-				E39968ED241A4D5D00F22F22 /* DashboardLoginCell.swift in Sources */,
 				E39968EF241A4D5D00F22F22 /* DashboardItemModel.swift in Sources */,
 				FB5C22CB249A55A100A662AE /* Float+Utils.swift in Sources */,
 				E39968F0241A4D5D00F22F22 /* DeviceImageView.swift in Sources */,
@@ -7928,14 +8027,13 @@
 				E39968F8241A4D5D00F22F22 /* DeviceConfirmUpdateViewModel.swift in Sources */,
 				E39968FC241A4D5D00F22F22 /* DroneStatusModels.swift in Sources */,
 				E39968FD241A4D5E00F22F22 /* DroneDetailsInformationsViewModel.swift in Sources */,
-				E39968FE241A4D5E00F22F22 /* DroneDetailsViewModel.swift in Sources */,
 				E39968FF241A4D5E00F22F22 /* DroneDetailsMapViewModel.swift in Sources */,
 				E3996904241A4D5E00F22F22 /* RemoteCalibrationViewModel.swift in Sources */,
 				E3996906241A4D5E00F22F22 /* RemoteCalibrationAxesView.swift in Sources */,
 				E3996907241A4D5E00F22F22 /* RemoteCalibrationAxeProgressView.swift in Sources */,
 				E3996909241A4D5E00F22F22 /* RemoteDetailsInformationsViewModel.swift in Sources */,
 				E399690A241A4D5E00F22F22 /* RemoteDetailsButtonsViewModel.swift in Sources */,
-				84BCB4F6244712D700179179 /* MagnetometerCalibrationViewModel.swift in Sources */,
+				84BCB4F6244712D700179179 /* MagnetometerCalibrationProcessViewModel.swift in Sources */,
 				E399690B241A4D5E00F22F22 /* DeviceButtonView.swift in Sources */,
 				E399690F241A4D5E00F22F22 /* DeviceButtonModel.swift in Sources */,
 				E3996910241A4D5E00F22F22 /* DeviceSystemInfoModel.swift in Sources */,
@@ -8201,16 +8299,9 @@
 			children = (
 				E34F8A962359F78A00F711D9 /* fr */,
 				E34F8A982359F79000F711D9 /* en */,
-				E4B670092369839A00335AA5 /* zh-Hans */,
-				E4B6700B236983B800335AA5 /* zh-Hant */,
-				E4B6700D236983D700335AA5 /* nl */,
 				E4B6700F236983DF00335AA5 /* de */,
-				E4B67011236983E600335AA5 /* it */,
 				E4B67013236983F800335AA5 /* ja */,
-				E4B670152369840100335AA5 /* ko */,
 				E4B670192369841D00335AA5 /* es */,
-				E4B6701B2369842400335AA5 /* tr */,
-				E4B6701D23698C7800335AA5 /* pt */,
 			);
 			name = InfoPlist.strings;
 			path = InfoPlist;
@@ -8694,6 +8785,7 @@
 		6A6E379223D09F2400872C2D /* Model.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				E4D4E61F262F257D0021A74D /* ModelV10.xcdatamodel */,
 				6AFA18DC25C0014C003C414C /* ModelV9.xcdatamodel */,
 				6AF5654B25B96FE700D4F2D9 /* ModelV8.xcdatamodel */,
 				6A2B0A8625B0A21A00EAADD7 /* ModelV7.xcdatamodel */,
@@ -8704,7 +8796,7 @@
 				6A3CCB2823E1D0D100D3DF19 /* ModelV2.xcdatamodel */,
 				6A6E379323D09F2400872C2D /* Model.xcdatamodel */,
 			);
-			currentVersion = 6AFA18DC25C0014C003C414C /* ModelV9.xcdatamodel */;
+			currentVersion = E4D4E61F262F257D0021A74D /* ModelV10.xcdatamodel */;
 			path = Model.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

@@ -51,7 +51,7 @@ extension Drone.Model {
         case .anafi4k:
             return "Anafi"
         case .anafi2:
-            return "Anafi 2"
+            return "Anafi Ai"
         default:
             return self.description.capitalized
         }

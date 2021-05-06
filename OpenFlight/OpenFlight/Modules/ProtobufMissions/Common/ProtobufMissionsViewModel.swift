@@ -92,12 +92,10 @@ final class ProtobufMissionsViewModel: DroneStateViewModel<ProtobufMissionsState
     ///
     /// - Parameters:
     ///   - missionsToLoadAtDroneConnection: missions to load at the drone connection
-    ///   - stateDidUpdate: the callback for any state updates
-    init(missionsToLoadAtDroneConnection: [ProtobufMissionSignature],
-         stateDidUpdate: ((ProtobufMissionsState) -> Void)? = nil) {
+    init(missionsToLoadAtDroneConnection: [ProtobufMissionSignature]) {
         self.missionsToLoadAtDroneConnection = missionsToLoadAtDroneConnection
 
-        super.init(stateDidUpdate: stateDidUpdate)
+        super.init()
     }
 
     // MARK: - Deinit

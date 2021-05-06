@@ -80,7 +80,7 @@ public final class AlertViewController: UIViewController {
     }
     @IBOutlet private weak var cancelButton: UIButton! {
         didSet {
-            cancelButton.makeup(with: .large, color: .white)
+            cancelButton.makeup(with: .large)
             cancelButton.cornerRadiusedWith(backgroundColor: .clear,
                                             borderColor: ColorName.white.color,
                                             radius: Style.mediumCornerRadius,
@@ -90,8 +90,9 @@ public final class AlertViewController: UIViewController {
     }
     @IBOutlet private weak var validateButton: UIButton! {
         didSet {
-            validateButton.makeup(with: .large, color: .white)
+            validateButton.makeup(with: .large)
             validateButton.titleLabel?.adjustsFontSizeToFitWidth = true
+            validateButton.titleLabel?.minimumScaleFactor = Constants.minimumFontScale
             validateButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
                                               borderColor: ColorName.greenSpring20.color,
                                               radius: Style.mediumCornerRadius)
@@ -123,6 +124,7 @@ public final class AlertViewController: UIViewController {
         static let cornerRadius: CGFloat = 18.0
         static let horizontalSpacing: CGFloat = 40.0
         static let verticalSpacing: CGFloat = 16.0
+        static let minimumFontScale: CGFloat = 0.7
     }
 
     // MARK: - Setup
@@ -178,16 +180,15 @@ public final class AlertViewController: UIViewController {
         return .all
     }
 
-    /// Handle orientation.
+    /// Handles orientation.
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
 
-        buttonsStackView.axis = UIApplication.isLandscape ? .horizontal : .vertical
-        buttonsStackView.spacing = UIApplication.isLandscape ? Constants.horizontalSpacing : Constants.verticalSpacing
+        updateButtonsStackView()
     }
 
     // MARK: - Public Funcs
-    /// Dismiss alert.
+    /// Dismisses alert.
     ///
     /// - Parameters:
     ///     - animated: animated dismiss
@@ -259,17 +260,24 @@ private extension AlertViewController {
         }
 
         setupButton(validateButton, with: validateAction?.style ?? .default)
+        updateButtonsStackView()
     }
 
-    /// Cancel.
-    /// Call cancel handler only if it is a cancel action style.
+    /// Updates buttons stack view.
+    func updateButtonsStackView() {
+        buttonsStackView.axis = UIApplication.isLandscape ? .horizontal : .vertical
+        buttonsStackView.spacing = UIApplication.isLandscape ? Constants.horizontalSpacing : Constants.verticalSpacing
+    }
+
+    /// Cancels action.
     func cancel() {
+        // Call cancel handler only if it is a cancel action style.
         guard cancelAction?.style == .cancel else { return }
 
         cancelAction?.actionHandler?()
     }
 
-    /// Setup button regarding style.
+    /// Sets up button regarding style.
     ///
     /// - Parameters:
     ///    - button: button to customize

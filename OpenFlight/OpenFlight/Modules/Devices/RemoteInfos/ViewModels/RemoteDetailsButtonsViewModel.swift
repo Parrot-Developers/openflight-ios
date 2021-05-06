@@ -30,6 +30,7 @@
 
 import UIKit
 import GroundSdk
+import SwiftyUserDefaults
 
 /// State for `RemoteDetailsButtonsViewModel`.
 final class RemoteDetailsButtonsState: DevicesConnectionState {

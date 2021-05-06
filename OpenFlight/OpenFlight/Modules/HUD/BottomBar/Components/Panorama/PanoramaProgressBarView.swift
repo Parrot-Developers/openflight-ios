@@ -49,7 +49,7 @@ final class PanoramaProgressBarView: UIView, NibOwnerLoadable {
     }
 
     // MARK: - Private Properties
-    private var panoramaModeViewModel = PanoramaModeViewModel()
+    private let panoramaModeViewModel = PanoramaModeViewModel()
 
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {

@@ -90,8 +90,10 @@ private extension SettingsQuickViewController {
             flowLayout.scrollDirection = .vertical
             flowLayout.sectionInset.right = Constants.sideMargin
             flowLayout.sectionInset.left = Constants.sideMargin
-            flowLayout.sectionInset.top = Constants.sideMargin
-            flowLayout.sectionInset.bottom = Constants.sideMargin
+            let insetsTopBottom = (view.bounds.height - (collection.bounds.height))
+                / 2.0
+            flowLayout.sectionInset.top = insetsTopBottom
+            flowLayout.sectionInset.bottom = insetsTopBottom
             flowLayout.minimumLineSpacing = Constants.cellSpacing
         }
         collection.register(cellType: SettingsQuickCollectionViewCell.self)

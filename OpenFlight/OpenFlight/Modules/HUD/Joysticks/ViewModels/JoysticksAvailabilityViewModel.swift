@@ -106,12 +106,9 @@ final class JoysticksAvailabilityViewModel: DevicesStateViewModel<JoysticksAvail
     private var bottomBarModeObserver: Any?
 
     // MARK: - Init
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - stateDidUpdate: called when Joysticks availability change
-    override init(stateDidUpdate: ((JoysticksAvailabilityState) -> Void)? = nil) {
-        super.init(stateDidUpdate: stateDidUpdate)
+    override init() {
+        super.init()
+
         listenDefaults()
         listenBottomBarModeChanges()
         updateJoysticksAvailability()

@@ -32,40 +32,53 @@ import Foundation
 import GroundSdk
 import CoreData
 
+// MARK: - Protocols
 /// Helpers for Flight Plan data.
 protocol FlightPlanDataProtocol {
-    /// Returns all flight plan states.
-    func loadAllFlightPlanViewModels(predicate: NSPredicate?) -> [FlightPlanViewModel]
-    /// Removes flight plan regarding flight key.
-    func removeFlightPlans(for key: [String])
-    /// Provides flight plan object regarding key.
-    func savedFlightPlan(for key: String) -> SavedFlightPlan?
-    /// Persists flight plan file.
-    func saveOrUpdate(state: FlightPlanState, flightPlan: SavedFlightPlan?)
-    /// Returns last Flight Plan View Model.
-    func loadLastFlightPlan(predicate: NSPredicate?) -> FlightPlanViewModel?
-}
-
-extension CoreDataManager: FlightPlanDataProtocol {
     /// Returns all flight plan view models.
     ///
     /// - Parameters:
     ///     - predicate: predicate used to filter Flight Plan if needed
-    /// - Returns: All persisted Flight Plan States
-    public func loadAllFlightPlanViewModels(predicate: NSPredicate?) -> [FlightPlanViewModel] {
-        guard let managedContext = currentContext else { return [] }
+    /// - Returns: All persisted Flight Plan States.
+    func loadAllFlightPlanViewModels(predicate: NSPredicate?) -> [FlightPlanViewModel]
 
-        // Sort flight plans by date.
-        let fetchRequest: NSFetchRequest<FlightPlanModel> = FlightPlanModel.sortByDateRequest()
-        if let predicate = predicate {
-            fetchRequest.predicate = predicate
-        }
-        return (try? (managedContext.fetch(fetchRequest)))?
-            .compactMap({ object -> FlightPlanViewModel in
-                return FlightPlanViewModel(state: object.flightPlanState())
-            }) ?? []
-    }
+    /// Removes flight plans regarding keys.
+    ///
+    /// - Parameters:
+    ///     - keys: flight plans keys to delete
+    func removeFlightPlans(for keys: [String])
 
+    /// Provides saved flight plan object regarding key.
+    ///
+    /// - Parameters:
+    ///     - key: key to retrieve flightPlan
+    /// - Returns: SavedFlightPlan object.
+    func savedFlightPlan(for key: String) -> SavedFlightPlan?
+
+    /// Persists flight plan file.
+    ///
+    /// - Parameters:
+    ///     - state: flight plan state
+    ///     - flightPlan: optional flight plan
+    func saveOrUpdate(state: FlightPlanState, flightPlan: SavedFlightPlan?)
+
+    /// Provides last Flight Plan view model.
+    ///
+    /// - Parameters:
+    ///     - predicate: predicate used to filter Flight Plan if needed
+    /// - Returns: Last persisted Flight Plan view model.
+    func loadLastFlightPlan(predicate: NSPredicate?) -> FlightPlanViewModel?
+
+    /// Provides a Flight Plan view model.
+    ///
+    /// - Parameters:
+    ///     - uuid: flight plan id
+    /// - Returns: Flight plan view model.
+    func loadFlightPlan(for uuid: String) -> FlightPlanViewModel?
+}
+
+// MARK: - Public Funcs
+extension CoreDataManager {
     /// Returns all saved flight plans states.
     ///
     /// - Parameters:
@@ -123,11 +136,64 @@ extension CoreDataManager: FlightPlanDataProtocol {
         }
     }
 
-    /// Persists flight plan file.
+    /// Returns flight plan states regarding keys.
     ///
     /// - Parameters:
-    ///     - state: flight plan state.
-    ///     - flightPlan: optional flight plan.
+    ///     - keys: flight plans keys
+    public func flightPlanStates(for keys: [String]) -> [FlightPlanState] {
+        let flightPlanModels = self.flightPlans(for: keys)
+        return flightPlanModels.map { $0.flightPlanState() }
+    }
+}
+
+// MARK: - FlightPlanDataProtocol
+extension CoreDataManager: FlightPlanDataProtocol {
+    public func loadAllFlightPlanViewModels(predicate: NSPredicate?) -> [FlightPlanViewModel] {
+        guard let managedContext = currentContext else { return [] }
+
+        // Sort flight plans by date.
+        let fetchRequest: NSFetchRequest<FlightPlanModel> = FlightPlanModel.sortByDateRequest()
+        if let predicate = predicate {
+            fetchRequest.predicate = predicate
+        }
+        return (try? (managedContext.fetch(fetchRequest)))?
+            .compactMap({ object -> FlightPlanViewModel in
+                return FlightPlanViewModel(state: object.flightPlanState())
+            }) ?? []
+    }
+
+    func removeFlightPlans(for keys: [String]) {
+        guard let managedContext = currentContext else { return }
+
+        // Remove flight plans
+        let flightPlans = self.flightPlans(for: keys)
+        flightPlans.forEach { model in
+            if let flightPlanDataModel = model.flightPlanData {
+                managedContext.delete(flightPlanDataModel)
+            }
+            managedContext.delete(model)
+        }
+
+        // Remove related executions.
+        let relatedExecutions = self.executions(forFlightplanIds: keys)
+        self.delete(executions: relatedExecutions)
+
+        try? managedContext.save()
+    }
+
+    func savedFlightPlan(for key: String) -> SavedFlightPlan? {
+        guard let flightPlanModel: FlightPlanModel = flightPlan(for: key),
+              let flightPlanDataModel: FlightPlanDataModel = flightPlanModel.flightPlanData,
+              let flightPlanData: Data = flightPlanDataModel.flightPlanData,
+              let finalFlightPlan = flightPlanData.asFlightPlan else {
+            return nil
+        }
+
+        finalFlightPlan.lastModifiedDate = flightPlanModel.lastModified
+
+        return finalFlightPlan
+    }
+
     public func saveOrUpdate(state: FlightPlanState, flightPlan: SavedFlightPlan?) {
         // 1 - Prepare content to save.
         DispatchQueue.main.async {
@@ -214,60 +280,6 @@ extension CoreDataManager: FlightPlanDataProtocol {
         }
     }
 
-    /// Removes flight plans regarding keys.
-    ///
-    /// - Parameters:
-    ///     - keys: flight plans keys to delete
-    func removeFlightPlans(for keys: [String]) {
-        guard let managedContext = currentContext else { return }
-
-        // Remove flight plans
-        let flightPlans = self.flightPlans(for: keys)
-        flightPlans.forEach { model in
-            if let flightPlanDataModel = model.flightPlanData {
-                managedContext.delete(flightPlanDataModel)
-            }
-            managedContext.delete(model)
-        }
-
-        // Remove related executions.
-        let relatedExecutions = self.executions(forFlightplanIds: keys)
-        self.delete(executions: relatedExecutions)
-
-        try? managedContext.save()
-    }
-
-    /// Returns flight plan states regarding keys.
-    ///
-    /// - Parameters:
-    ///     - keys: flight plans keys
-    public func flightPlanStates(for keys: [String]) -> [FlightPlanState] {
-        let flightPlanModels = self.flightPlans(for: keys)
-        return flightPlanModels.map { $0.flightPlanState() }
-    }
-
-    /// Provides flight plan object regarding key.
-    ///
-    /// - Parameters:
-    ///     - key: key to retrieve flightPlan
-    /// - Returns: SavedFlightPlan object
-    func savedFlightPlan(for key: String) -> SavedFlightPlan? {
-        guard let flightPlanModel: FlightPlanModel = flightPlan(for: key),
-            let flightPlanDataModel: FlightPlanDataModel = flightPlanModel.flightPlanData,
-            let flightPlanData: Data = flightPlanDataModel.flightPlanData,
-            let finalFlightPlan = flightPlanData.asFlightPlan else {
-                return nil
-        }
-
-        finalFlightPlan.lastModifiedDate = flightPlanModel.lastModified
-        return finalFlightPlan
-    }
-
-    /// Provides last Flight Plan miew model.
-    ///
-    /// - Parameters:
-    ///     - predicate: predicate used to filter Flight Plan if needed
-    /// - Returns: Last persisted Flight Plan view model
     func loadLastFlightPlan(predicate: NSPredicate?) -> FlightPlanViewModel? {
         guard let managedContext = currentContext else { return nil }
 
@@ -283,19 +295,23 @@ extension CoreDataManager: FlightPlanDataProtocol {
             return nil
         }
     }
+
+    func loadFlightPlan(for uuid: String) -> FlightPlanViewModel? {
+        guard let state = flightPlan(for: uuid)?.flightPlanState() else { return nil }
+
+        return FlightPlanViewModel(state: state)
+    }
 }
 
 // MARK: - Private Funcs
 private extension CoreDataManager {
-
     /// Returns flight plan regarding key.
     ///
     /// - Parameters:
     ///     - key: key to retrieve flight
     func flightPlan(for key: String?) -> FlightPlanModel? {
         guard let managedContext = currentContext,
-              let key = key
-        else {
+              let key = key else {
             return nil
         }
 
@@ -315,10 +331,7 @@ private extension CoreDataManager {
     /// - Parameters:
     ///     - keys: keys to retrieve flight plans
     func flightPlans(for keys: [String]) -> [FlightPlanModel] {
-        guard let managedContext = currentContext
-        else {
-            return []
-        }
+        guard let managedContext = currentContext else { return [] }
 
         let fetchRequest: NSFetchRequest<FlightPlanModel> = FlightPlanModel.fetchRequest()
         let predicate = NSPredicate(format: "%K IN %@",

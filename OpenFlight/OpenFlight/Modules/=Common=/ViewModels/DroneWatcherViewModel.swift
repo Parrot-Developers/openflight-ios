@@ -28,7 +28,6 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
 import GroundSdk
 
 /// ViewModel that listen a drone by default.
@@ -43,14 +42,6 @@ open class DroneWatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     private var currentDroneWatcher = CurrentDroneWatcher()
 
     // MARK: - Init
-    public override init(stateDidUpdate: ((T) -> Void)?) {
-        super.init(stateDidUpdate: stateDidUpdate)
-
-        currentDroneWatcher.start { [weak self] drone in
-            self?.listenDrone(drone: drone)
-        }
-    }
-
     public override init() {
         super.init()
 
@@ -59,7 +50,7 @@ open class DroneWatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
         }
     }
 
-    // MARK: - Internal Funcs
+    // MARK: - Public Funcs
     /// Method to override in subclass in order to listen drone instruments, piloting interfaces, etc.
     open func listenDrone(drone: Drone) {
         assert(false) // Must Override

@@ -36,7 +36,7 @@ final class LockAETargeZoneState: ViewModelState, EquatableState, Copying {
     // MARK: - Internal Properties
     fileprivate(set) var lockAEMode: Camera2ExposureLockMode?
     fileprivate(set) var camera: MainCamera2?
-    fileprivate(set) var isLockAutoExposureEnabled: Bool = false
+    fileprivate(set) var isAutoExposureLocked: Bool = false
 
     // MARK: - Init
     required init() { }
@@ -46,31 +46,31 @@ final class LockAETargeZoneState: ViewModelState, EquatableState, Copying {
     /// - Parameters:
     ///    - lockAEMode: Camera exposure lock mode.
     ///    - camera: Drone main camera.
-    ///    - isLockAutoExposureEnabled: Bool that indicates if lock Auto exposure is enabled.
+    ///    - isAutoExposureLocked: Boolean that indicates if lock Auto exposure is locked.
     init(lockAEMode: Camera2ExposureLockMode?,
          camera: MainCamera2?,
-         isLockAutoExposureEnabled: Bool) {
+         isAutoExposureLocked: Bool) {
         self.lockAEMode = lockAEMode
         self.camera = camera
-        self.isLockAutoExposureEnabled = isLockAutoExposureEnabled
+        self.isAutoExposureLocked = isAutoExposureLocked
     }
 
     // MARK: - Internal Funcs
     func isEqual(to other: LockAETargeZoneState) -> Bool {
         return self.lockAEMode == other.lockAEMode
-            && self.isLockAutoExposureEnabled == other.isLockAutoExposureEnabled
+            && self.isAutoExposureLocked == other.isAutoExposureLocked
     }
 
     /// Returns a copy of the object.
     func copy() -> LockAETargeZoneState {
         let copy = LockAETargeZoneState(lockAEMode: self.lockAEMode,
                                         camera: self.camera,
-                                        isLockAutoExposureEnabled: self.isLockAutoExposureEnabled)
+                                        isAutoExposureLocked: self.isAutoExposureLocked)
         return copy
     }
 }
 
-/// ViewModel for calibration.
+/// ViewModel for LockAE Target zone.
 final class LockAETargetZoneViewModel: DroneWatcherViewModel<LockAETargeZoneState> {
 
     // MARK: - Private Properties
@@ -83,20 +83,39 @@ final class LockAETargetZoneViewModel: DroneWatcherViewModel<LockAETargeZoneStat
 
     /// Unlocks exposure.
     func unlock() {
-        guard let exposureLock = drone?.getPeripheral(Peripherals.mainCamera2)?.getComponent(Camera2Components.exposureLock) else {
+        guard let camera = drone?.getPeripheral(Peripherals.mainCamera2),
+              let exposureLock = camera.getComponent(Camera2Components.exposureLock) else {
             return
         }
 
         exposureLock.unlock()
+        updateCurrentAutoExposure(with: camera)
     }
 
     /// Locks exposure on current exposure values.
     func lockOnCurrentValues() {
-        guard let exposureLock = drone?.getPeripheral(Peripherals.mainCamera2)?.getComponent(Camera2Components.exposureLock) else {
+        guard let camera = drone?.getPeripheral(Peripherals.mainCamera2),
+              let exposureLock = camera.getComponent(Camera2Components.exposureLock) else {
             return
         }
 
         exposureLock.lockOnCurrentValues()
+        updateCurrentAutoExposure(with: camera)
+    }
+
+    /// Locks exposure on region according to selection values in stream screen.
+    ///
+    /// - Parameters:
+    ///   - centerX: horizontal position in the video (relative position, from left (0.0) to right (1.0))
+    ///   - centerY: vertical position in the video (relative position, from bottom (0.0) to top (1.0))
+    func lockOnRegion(centerX: Double, centerY: Double) {
+        guard let camera = drone?.getPeripheral(Peripherals.mainCamera2),
+              let exposureLock = camera.getComponent(Camera2Components.exposureLock) else {
+            return
+        }
+
+        exposureLock.lockOnRegion(centerX: centerX, centerY: centerY)
+        updateCurrentAutoExposure(with: camera)
     }
 }
 
@@ -105,17 +124,32 @@ private extension LockAETargetZoneViewModel {
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
         cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
-            guard let exposureLockMode = camera?.getComponent(Camera2Components.exposureLock)?.mode,
-                  let exposureSettings = camera?.currentEditor[Camera2Params.exposureMode]?.value,
-                  camera?.getComponent(Camera2Components.exposureLock)?.updating == false,
-                  let copy = self?.state.value.copy() else {
-                return
-            }
+            guard let camera = camera else { return }
 
-            copy.camera = camera
-            copy.lockAEMode = exposureLockMode
-            copy.isLockAutoExposureEnabled = camera?.isHdrOn == false || exposureSettings != .manual
-            self?.state.set(copy)
+            self?.updateCurrentAutoExposure(with: camera)
         }
+
+        if let camera = drone.getPeripheral(Peripherals.mainCamera2) {
+            updateCurrentAutoExposure(with: camera)
+        }
+    }
+
+    /// Updates current auto exposure value.
+    ///
+    /// - Parameters:
+    ///     - camera: current camera
+    func updateCurrentAutoExposure(with camera: MainCamera2) {
+        guard let exposureLockMode = camera.getComponent(Camera2Components.exposureLock)?.mode,
+              let exposureSettings = camera.currentEditor[Camera2Params.exposureMode]?.value else {
+            return
+        }
+
+        let copy = state.value.copy()
+        copy.camera = camera
+        copy.lockAEMode = exposureLockMode
+        copy.isAutoExposureLocked = camera.isHdrOn == false
+            && exposureSettings != .manual
+            && exposureLockMode != .none
+        state.set(copy)
     }
 }

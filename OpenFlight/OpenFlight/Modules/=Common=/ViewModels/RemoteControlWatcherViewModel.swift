@@ -28,11 +28,9 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
 import GroundSdk
 
 /// ViewModel that listen a remote control by default.
-
 class RemoteControlWatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     // MARK: - Public Properties
     /// Property which provides the current remote control using currentRemoteControlWatcher.
@@ -44,14 +42,6 @@ class RemoteControlWatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     private var currentRemoteControlWatcher = CurrentRemoteControlWatcher()
 
     // MARK: - Init
-    override init(stateDidUpdate: ((T) -> Void)?) {
-        super.init(stateDidUpdate: stateDidUpdate)
-
-        currentRemoteControlWatcher.start { [weak self] remoteControl in
-            self?.listenRemoteControl(remoteControl: remoteControl)
-        }
-    }
-
     override init() {
         super.init()
 

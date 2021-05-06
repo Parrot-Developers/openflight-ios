@@ -161,7 +161,7 @@ private extension ObstacleAvoidanceViewModel {
             return
         }
 
-        copy.obstacleAvoidanceActivated = strongObstacleAvoidance.mode.value == .standard
+        copy.obstacleAvoidanceActivated = strongObstacleAvoidance.mode.preferredValue == .standard
         self.state.set(copy)
     }
 
