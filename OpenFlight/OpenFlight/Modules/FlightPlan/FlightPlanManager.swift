@@ -29,6 +29,7 @@
 
 import CoreLocation
 import GroundSdk
+import SwiftyUserDefaults
 
 // MARK: - Public Enums
 public enum FlightPlanConstants {
@@ -63,7 +64,14 @@ public final class FlightPlanManager {
     // MARK: - Private Properties
     private var listeners: Set<FlightPlanListener> = []
     /// SavedFlightPlan stack used for undo actions.
+    // FIXME: do not stack whole flight plan, just the changes done.
     private var undoStack: [Data] = []
+
+    // MARK: - Private Enums
+    private enum Constants {
+        // Maximum items in undo stack.
+        static let maximumUndoStack: Int = 30
+    }
 
     // MARK: - Public Properties
     public var currentFlightPlanViewModel: FlightPlanViewModel? {
@@ -130,7 +138,12 @@ public final class FlightPlanManager {
         flightPlan.removeFlightPlan()
 
         if uuid == currentFlightPlanViewModel?.state.value.uuid {
-            currentFlightPlanViewModel = nil
+            let currentMissionMode = Services.hub.currentMissionManager.mode
+            if let predicate = currentMissionMode.flightPlanProvider?.filterPredicate {
+                currentFlightPlanViewModel = CoreDataManager.shared.lastFlightPlan(predicate: predicate)
+            } else {
+                currentFlightPlanViewModel = nil
+            }
         }
     }
 
@@ -173,10 +186,21 @@ public final class FlightPlanManager {
     ///     - state: mission state
     func loadLastOpenedFlightPlan(state: MissionProviderState) {
         let predicate = state.mode?.flightPlanProvider?.filterPredicate
-        if let flightPlan = CoreDataManager.shared.loadLastFlightPlan(predicate: predicate),
-           flightPlan.state.value.uuid != self.currentFlightPlanViewModel?.state.value.uuid {
-            self.currentFlightPlanViewModel = flightPlan
-        }
+        CoreDataManager.shared.loadLastFlightPlan(predicate: predicate,
+                                                  completion: { [weak self] flightPlan in
+            if flightPlan?.state.value.uuid != self?.currentFlightPlanViewModel?.state.value.uuid {
+                self?.currentFlightPlanViewModel = flightPlan
+            }
+        })
+    }
+
+    /// Setup title from renamed title and old title
+    ///
+    /// - Parameters:
+    ///     - title: new title
+    ///     - oldTitle: current title
+    func setupTitle(_ title: String?, oldTitle: String) -> String {
+        titleFromRenameTitle(title, oldTitle: oldTitle)
     }
 }
 
@@ -227,7 +251,7 @@ public extension FlightPlanManager {
         let flightPlanData = type.mavLinkType.generateFlightPlanFromMavlink(url: url,
                                                                             mavlinkString: nil,
                                                                             title: title,
-                                                                            type: currentType,
+                                                                            type: currentType?.key,
                                                                             uuid: nil,
                                                                             settings: settings,
                                                                             polygonPoints: polygonPoints,
@@ -246,6 +270,9 @@ public extension FlightPlanManager {
         // Backup capture settings.
         let captureSettings = currentFlightPlanViewModel?.flightPlan?.plan.captureSettings
         flightPlanData?.plan.captureSettings = captureSettings
+
+        // Update flight plan view model points.
+        currentFlightPlanViewModel?.points = flightPlanData?.plan.wayPoints.compactMap({ $0.coordinate }) ?? []
 
         // Update FP data.
         currentFlightPlanViewModel?.flightPlan = flightPlanData
@@ -269,6 +296,10 @@ extension FlightPlanManager {
 
         // Store flight plan as data to make a copy.
         // FlightPlan's currentFlightPlanViewModel must not point on undo stack.
+        if undoStack.count >= Constants.maximumUndoStack {
+            undoStack.removeFirst()
+        }
+
         undoStack.append(flightPlanData)
     }
 
@@ -281,21 +312,98 @@ extension FlightPlanManager {
     func undo() {
         guard canUndo() else { return }
 
+        // get setting from last and apply them.
+        let oldFlightPlan = undoStack.last?.asFlightPlan
         // Dump last.
         undoStack.removeLast()
 
         // Restore flight plan from data to make another copy.
         // FlightPlan's currentFlightPlanViewModel must not point on undo stack.
-        if let flightPlan = undoStack.last?.asFlightPlan {
-            let state = FlightPlanState(flightPlan: flightPlan)
+        if var flightPlan = undoStack.last?.asFlightPlan,
+           // TODO missing injection
+           let fpType = Services.hub.flightPlanTypeStore.typeForKey(flightPlan.type) {
+            // copying all the settings from last in undostack
+            if let oldFlightPlan = oldFlightPlan {
+                // copy settings of the deleted flight plan in the new one.
+                flightPlan = copySettings(oldFlightPlan: oldFlightPlan, flightPlan: flightPlan)
+
+                // replace flight plan in stack.
+                if let flightPlanData = flightPlan.asData {
+                    undoStack.removeLast()
+                    undoStack.append(flightPlanData)
+                }
+            }
+            let state = FlightPlanState(flightPlan: flightPlan, type: fpType)
             currentFlightPlanViewModel?.flightPlan = flightPlan
             currentFlightPlanViewModel?.state.set(state)
         }
+    }
+
+    /// Copy settings from an old flight plan to another one.
+    ///
+    /// - Parameters:
+    ///     - oldFlightPlan: flight plan  to copy.
+    ///     - flightPlan: flight plan  to update.
+    /// - Returns flight plan updated.
+    private func copySettings(oldFlightPlan: SavedFlightPlan, flightPlan: SavedFlightPlan) -> SavedFlightPlan {
+        flightPlan.plan.isBuckled = oldFlightPlan.plan.isBuckled
+        flightPlan.plan.shouldContinue = oldFlightPlan.plan.shouldContinue
+        flightPlan.plan.lastPointRth = oldFlightPlan.plan.lastPointRth
+        flightPlan.plan.captureMode = oldFlightPlan.plan.captureMode
+        flightPlan.plan.captureSettings = oldFlightPlan.plan.captureSettings
+        flightPlan.plan.captureModeEnum = oldFlightPlan.plan.captureModeEnum
+        flightPlan.plan.resolution = oldFlightPlan.plan.resolution
+        flightPlan.plan.whiteBalanceMode = oldFlightPlan.plan.whiteBalanceMode
+        flightPlan.plan.framerate = oldFlightPlan.plan.framerate
+        flightPlan.plan.photoResolution = oldFlightPlan.plan.photoResolution
+        flightPlan.plan.exposure = oldFlightPlan.plan.exposure
+        flightPlan.plan.timeLapseCycle = oldFlightPlan.plan.timeLapseCycle
+        flightPlan.plan.gpsLapseDistance = oldFlightPlan.plan.gpsLapseDistance
+        flightPlan.obstacleAvoidanceActivated = oldFlightPlan.obstacleAvoidanceActivated
+        flightPlan.settings = oldFlightPlan.settings
+
+        return flightPlan
+    }
+
+    /// Update only global settings of current flight plan and replace it in stack
+    ///
+    /// - Parameters:
+    ///     - flightPlan: flight plan  to update.
+    func updateGlobalSettings(with flightPlan: SavedFlightPlan?) {
+
+        guard let flightPlanData = flightPlan?.asData else { return }
+        if !undoStack.isEmpty {
+            undoStack.removeLast()
+        }
+        undoStack.append(flightPlanData)
     }
 }
 
 // MARK: - Private Funcs
 private extension FlightPlanManager {
+    /// Returns new title from an original and old titles.
+    ///
+    /// - Parameters:
+    ///     - title: original title
+    ///     - oldTitle: current title
+    /// - Returns: new title
+    func titleFromRenameTitle(_ title: String?, oldTitle: String) -> String {
+        guard let title = title else { return L10n.flightPlanNewProject }
+        let titleWithoutSuffix = textWithoutSuffix(title)
+        // 1 - Find similar titles.
+        let similarTitles: [String] = CoreDataManager.shared.loadAllFlightPlanViewModels(predicate: nil)
+            .compactMap(\.state.value.title)
+            .filter({ oldTitle != $0 && titleWithoutSuffix == textWithoutSuffix($0) })
+
+        guard !similarTitles.isEmpty else {
+            return title
+        }
+        // 2 - Find higher suffix increment.
+        let highestInc = highestIncrement(on: similarTitles)
+        // 3 - Add incremented suffix.
+        return String(format: "%@ (%d)", titleWithoutSuffix, highestInc + 1)
+    }
+
     /// Returns new title from an original title.
     ///
     /// - Parameters:
@@ -306,20 +414,26 @@ private extension FlightPlanManager {
         let titleWithoutSuffix = textWithoutSuffix(title)
         // 1 - Find similar titles.
         let similarTitles: [String] = CoreDataManager.shared.loadAllFlightPlanViewModels(predicate: nil)
-            .compactMap({
-                guard let aTitle = $0.state.value.title,
-                      titleWithoutSuffix == textWithoutSuffix(aTitle)
-                else {
-                    return nil
-                }
-                return aTitle
-            })
+            .compactMap(\.state.value.title)
+            .filter({ titleWithoutSuffix == textWithoutSuffix($0) })
+
         guard !similarTitles.isEmpty else {
             return title
         }
         // 2 - Find higher suffix increment.
+        let highestInc = highestIncrement(on: similarTitles)
+        // 3 - Add incremented suffix.
+        return String(format: "%@ (%d)", titleWithoutSuffix, highestInc + 1)
+    }
+
+    /// Returns highest Increment from an arry of titles.
+    ///
+    /// - Parameters:
+    ///     - titles: array of titles
+    /// - Returns: highest Increment Integer
+    func highestIncrement(on titles: [String]) -> Int {
         var highestIncrement = 1
-        similarTitles.forEach { text in
+        titles.forEach { text in
             // Find suffix.
             if let subString = matching(regexString: FlightPlanConstants.regexNameSuffix, text: text),
                // Find integer in suffix.
@@ -328,8 +442,7 @@ private extension FlightPlanManager {
                 highestIncrement = increment > highestIncrement ? increment : highestIncrement
             }
         }
-        // 3 - Add incremented suffix.
-        return String(format: "%@ (%d)", titleWithoutSuffix, highestIncrement + 1)
+        return highestIncrement
     }
 
     /// Returns last regex matching string from text.

@@ -49,6 +49,7 @@ final class BehaviourModeButtonState: BarButtonState, EquatableState, Copying {
     var subMode: BarItemSubMode?
     var subtitle: String?
     var enabled: Bool = true
+    var unavailableReason: [String: String] = [:]
 
     // MARK: - Init
     required init() { }

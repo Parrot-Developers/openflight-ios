@@ -40,5 +40,6 @@ public class CoreDataManager {
     // MARK: - Public Funcs
     public func setup(with persistentContainer: PersistentContainer) {
         currentContext = persistentContainer.viewContext
+        currentContext?.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
     }
 }

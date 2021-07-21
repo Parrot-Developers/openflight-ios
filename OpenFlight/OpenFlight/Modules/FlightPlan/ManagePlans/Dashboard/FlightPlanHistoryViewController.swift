@@ -40,7 +40,7 @@ public enum HistoryTableType {
 }
 
 // MARK: - Protocols
-protocol FlightPlanHistoryDelegate: class {
+protocol FlightPlanHistoryDelegate: AnyObject {
     /// Called when user taps the medias view in a selected cell.
     ///
     /// - Parameters:

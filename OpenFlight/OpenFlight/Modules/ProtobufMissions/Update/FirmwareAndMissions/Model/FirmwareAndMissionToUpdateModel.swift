@@ -114,23 +114,22 @@ extension FirmwareAndMissionToUpdateModel {
         switch self {
         case .upToDate,
              .notInitialized:
-            return .white10
+            return .greenMediumSea
         case .firmware,
              .missions,
              .singleMission:
-            return .greenSpring20
+            return .tomato
         }
     }
 }
 
 // MARK: - Internal Funcs
 extension FirmwareAndMissionToUpdateModel {
-    /// `DashboardDeviceCell` stateDeviceLabel text
-    func stateDeviceLabelText(deviceConnectionState: DeviceState.ConnectionState) -> String {
+    /// `DashboardDeviceCell` stateDeviceButton title
+    func stateDeviceButtonTitle(deviceConnectionState: DeviceState.ConnectionState) -> String {
         switch self {
         case .upToDate:
-            return deviceConnectionState == .disconnected ?
-                deviceConnectionState.title : ""
+            return deviceConnectionState.title
         case let .firmware(currentVersion: _, versionToUpdate: versionToUpdate):
             return versionToUpdate
         case let .singleMission(missionName: missionName):
@@ -143,17 +142,18 @@ extension FirmwareAndMissionToUpdateModel {
     }
 
     /// `DashboardDeviceCell` stateDeviceLabel textColor.
-    func stateDeviceLabelTextColor(deviceConnectionState: DeviceState.ConnectionState) -> UIColor {
+    func stateDeviceButtonStatus(
+        deviceConnectionState: DeviceState.ConnectionState
+    ) -> DeviceStateButton.Status {
         switch self {
-        case .upToDate:
-            return deviceConnectionState == .disconnected ?
-                ColorName.white50.color : ColorName.greenSpring.color
         case .firmware,
              .singleMission,
              .missions:
-            return ColorName.greenSpring20.color
-        case .notInitialized:
-            return ColorName.white50.color
+            return DeviceStateButton.Status.updateAvailable
+        default:
+            return deviceConnectionState == .disconnected
+                ? DeviceStateButton.Status.disconnected
+                : DeviceStateButton.Status.notDisconnected
         }
     }
 }

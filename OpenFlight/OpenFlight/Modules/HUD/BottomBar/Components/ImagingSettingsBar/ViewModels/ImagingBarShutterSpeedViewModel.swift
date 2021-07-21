@@ -133,7 +133,7 @@ private extension ImagingBarShutterSpeedViewModel {
                 ? shutterSpeed.currentSupportedValues.sorted()
                 : [Camera2ShutterSpeed]()
             copy.mode = shutterSpeed.value
-            copy.image = exposureMode.value.automaticShutterSpeed ? Asset.BottomBar.Icons.iconAuto.image : nil
+            copy.image = exposureMode.value == .manualIsoSensitivity ? Asset.BottomBar.Icons.iconAuto.image : nil
             copy.isAutomatic = exposureMode.value.automaticShutterSpeed
             self?.state.set(copy)
             self?.state.value.exposureSettingsMode.set(exposureMode.value)

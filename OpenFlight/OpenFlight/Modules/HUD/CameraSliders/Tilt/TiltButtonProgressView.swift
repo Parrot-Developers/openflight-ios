@@ -34,8 +34,8 @@ import UIKit
 
 final class TiltButtonProgressView: UIView {
     // MARK: - Internal Properties
-    /// State containing current tilt information.
-    weak var tiltState: GimbalTiltState? {
+    /// Tilt value
+    var value: Double = 0 {
         didSet {
             drawProgress()
         }
@@ -60,9 +60,6 @@ private extension TiltButtonProgressView {
         backgroundLayer?.removeFromSuperlayer()
         borderLayer?.removeFromSuperlayer()
 
-        guard let value = tiltState?.current else {
-            return
-        }
         // Draw border.
         let path = UIBezierPath(arcCenter: self.bounds.center,
                                 radius: self.frame.width / 2,

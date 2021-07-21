@@ -31,6 +31,7 @@
 import GroundSdk
 import SwiftyUserDefaults
 import UIKit
+import Combine
 
 // MARK: - Internal Enums
 /// Describes different cellular connection state.
@@ -44,89 +45,63 @@ enum CellularConnectionState {
     var descriptionColor: UIColor? {
         switch self {
         case .searching:
-            return ColorName.greenSpring.color
+            return ColorName.greenMediumSea.color
         case .denied:
             return ColorName.redTorch.color
         case .none:
-            return ColorName.white.color
+            return ColorName.sambuca.color
         default:
             return nil
         }
     }
 }
 
-/// State for `CellularAccessCardPinViewModel`.
-final class CellularAccessCardPinState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    /// Current cellular connection state.
-    fileprivate(set) var cellularConnectionState: CellularConnectionState?
-    /// Description title.
-    fileprivate(set) var descriptionTitle: String?
-    /// Tells if we can show the loader view.
-    fileprivate(set) var shouldShowLoader: Bool = false
-
-    /// Tells if we need to show the description label.
-    var canShowLabel: Bool {
-        return cellularConnectionState == .denied
-            && cellularConnectionState == .searching
-    }
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///     - connectionState: drone connection state
-    ///     - cellularConnectionState: current connection state for cellular acces
-    ///     - descriptionTitle: description text
-    ///     - shouldShowLoader: tells if loader view can be shown
-    init(connectionState: DeviceState.ConnectionState,
-         cellularConnectionState: CellularConnectionState?,
-         descriptionTitle: String?,
-         shouldShowLoader: Bool) {
-        super.init(connectionState: connectionState)
-
-        self.cellularConnectionState = cellularConnectionState
-        self.descriptionTitle = descriptionTitle
-        self.shouldShowLoader = shouldShowLoader
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? CellularAccessCardPinState else { return false }
-        return super.isEqual(to: other)
-            && self.cellularConnectionState == other.cellularConnectionState
-            && self.descriptionTitle == other.descriptionTitle
-            && self.shouldShowLoader == other.shouldShowLoader
-    }
-
-    override func copy() -> CellularAccessCardPinState {
-        let copy = CellularAccessCardPinState(connectionState: connectionState,
-                                              cellularConnectionState: cellularConnectionState,
-                                              descriptionTitle: descriptionTitle,
-                                              shouldShowLoader: shouldShowLoader)
-        return copy
-    }
-}
-
 /// View Model in charge of drone cellular connection.
-final class CellularAccessCardPinViewModel: DroneStateViewModel<CellularAccessCardPinState> {
+final class CellularAccessCardPinViewModel {
+
     // MARK: - Internal Properties
     /// Data source provided to the view controller.
     var dataSource: [Int] = [1, 2, 3, 4, 5,
                              6, 7, 8, 9, 0]
 
+    /// Current cellular connection state.
+    @Published private(set) var cellularConnectionState: CellularConnectionState?
+    /// Description title.
+    @Published private(set) var descriptionTitle: String?
+    /// Tells if we can show the loader view.
+    @Published private(set) var shouldShowLoader: Bool = false
+    /// Connection state of the device
+    @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
+
+    /// Tells if we need to show the description label.
+    var hideLabel: AnyPublisher<Bool, Never> {
+        $cellularConnectionState.map { (cellularConnectionState: CellularConnectionState?) -> Bool in
+            guard let state = cellularConnectionState else { return true }
+            switch state {
+            case .denied, .searching:
+                return false
+            default:
+                return true
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
     // MARK: - Private Properties
     private var cellularRef: Ref<Cellular>?
+    private var cancellables = Set<AnyCancellable>()
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
+    // TODO - Wrong injection
+    private let currentDroneHolder = Services.hub.currentDroneHolder
 
-        listenCellular(drone: drone)
+    // MARK: - Init
+
+    init() {
+        currentDroneHolder.dronePublisher
+            .sink { [unowned self] drone in
+                listenCellular(drone: drone)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Internal Funcs
@@ -135,7 +110,7 @@ final class CellularAccessCardPinViewModel: DroneStateViewModel<CellularAccessCa
     /// - Parameters:
     ///     - pinCode: code pin for cellular access
     func connect(pinCode: String) {
-        guard let cellular = drone?.getPeripheral(Peripherals.cellular) else { return }
+        guard let cellular = currentDroneHolder.drone.getPeripheral(Peripherals.cellular) else { return }
 
         updateLoaderState(shouldShow: true)
         _ = cellular.enterPinCode(pincode: pinCode)
@@ -144,53 +119,54 @@ final class CellularAccessCardPinViewModel: DroneStateViewModel<CellularAccessCa
     /// Dismisses the cellular access modal.
     /// We can show it again if the application restarts or if the drone is connected again.
     func dismissCellularModal() {
+        guard let cellular = currentDroneHolder.drone.getPeripheral(Peripherals.cellular) else { return }
+
+        cellular.mode.value = .disabled
         updateLoaderState(shouldShow: false)
     }
 }
 
 private extension CellularAccessCardPinViewModel {
+
     /// Starts watcher for Cellular.
     func listenCellular(drone: Drone) {
         cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] _ in
-            self?.updateState()
+            self?.updateState(drone: drone)
         }
-        updateState()
+        updateState(drone: drone)
     }
 
     /// Updates the state according to cellular values.
-    func updateState() {
+    func updateState(drone: Drone) {
         updateLoaderState(shouldShow: false)
 
-        let copy = state.value.copy()
-
-        guard let cellular = drone?.getPeripheral(Peripherals.cellular) else {
-            copy.cellularConnectionState = CellularConnectionState.none
-            state.set(copy)
+        guard let cellular = drone.getPeripheral(Peripherals.cellular) else {
+            cellularConnectionState = CellularConnectionState.none
             return
         }
 
         switch (cellular.simStatus, cellular.registrationStatus) {
         case (.ready, _):
-            copy.cellularConnectionState = .ready
+            cellularConnectionState = .ready
         case(_, .searching):
-            copy.cellularConnectionState = .searching
-            copy.descriptionTitle = L10n.pinModalUnlocking
-        case(.locked, _) where cellular.isPinCodeInvalid:
-            copy.cellularConnectionState = CellularConnectionState.denied
+            cellularConnectionState = .searching
+            descriptionTitle = L10n.pinModalUnlocking
+        case(.locked, _):
+            cellularConnectionState = CellularConnectionState.denied
             switch cellular.pinRemainingTries {
             case 0:
-                copy.descriptionTitle = L10n.pinErrorLocked
+                descriptionTitle = L10n.pinErrorLocked
             case 1:
-                copy.descriptionTitle = L10n.pinErrorRemainingAttemptsSingular(cellular.pinRemainingTries)
+                descriptionTitle = L10n.pinErrorRemainingAttemptsSingular(cellular.pinRemainingTries)
+            case 2:
+                descriptionTitle = L10n.pinErrorRemainingAttemptsPlural(cellular.pinRemainingTries)
             default:
-                copy.descriptionTitle = L10n.pinErrorRemainingAttemptsPlural(cellular.pinRemainingTries)
+                descriptionTitle = ""
             }
         default:
-            copy.cellularConnectionState = CellularConnectionState.none
-            copy.descriptionTitle = ""
+            cellularConnectionState = CellularConnectionState.none
+            descriptionTitle = ""
         }
-
-        state.set(copy)
     }
 
     /// Updates loader state.
@@ -198,8 +174,6 @@ private extension CellularAccessCardPinViewModel {
     /// - Parameters:
     ///     - shouldShow: tells if if we need to show the loader
     func updateLoaderState(shouldShow: Bool) {
-        let copy = state.value.copy()
-        copy.shouldShowLoader = shouldShow
-        state.set(copy)
+        shouldShowLoader = shouldShow
     }
 }

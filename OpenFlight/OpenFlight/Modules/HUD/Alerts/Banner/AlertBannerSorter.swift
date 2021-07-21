@@ -37,44 +37,80 @@ open class AlertBannerSorter {
     /// Returns only critical alerts.
     public var sortedCriticalAlerts: [HUDBannerCriticalAlertType] = [
         .motorCutout,
+        // Components_Motor    Motors cutout    The engines of the drone have cut out.
         .motorCutoutTemperature,
+        // Components_Motor    Motors cutout temperature issue    The engines of the drone have cut out.
         .motorCutoutPowerSupply,
+        // Components_Motor    Motors cutout power supply issue    The engines of the drone have cut out.
         .forceLandingFlyAway,
-        .forceLandingLowBattery,
+        // Auto landing    Force Landing fly away    Auto Landing
         .forceLandingTemperature,
+        // Auto landing    Force Landing High/Low °C    Auto Landing
+        .forceLandingLowBattery,
+        // Auto landing    Force Landing Low battery    Auto Landing
         .veryLowBatteryLanding,
+        // RTH    Too Low Battery will Autoland    %s before auto landing
         .veryLowBattery,
-        .noGpsTooDark,
-        .noGpsTooHigh,
-        .noGps,
-        .headingLockedKo,
-        .noGpsLapse,
-        .tooMuchWind,
-        .strongImuVibration,
-        .internalMemoryFull,
-        .sdError,
-        .sdFull,
-        .sdTooSlow,
-        .geofenceAltitudeAndDistance,
-        .geofenceAltitude,
-        .geofenceDistance,
-        .obstacleAvoidanceDroneStucked,
-        .obstacleAvoidanceNoGpsTooHigh,
-        .obstacleAvoidanceNoGpsTooDark,
-        .obstacleAvoidanceTooDark,
+        //        RTH    Very Low Battery will RTH    %s before auto return home
+        //        RTH    Very Low Battery Will Autoland    The drone will soon land
+        //        RTH    Returning Home Too Low Battery    Very low battery. Drone will land automatically.
+        //        RTH    Returning Home Very Low Battery    Very low battery. Drone will return home soon.
+        //        RTH    Very Low Battery will RTH    Can’t reach Home
         .obstacleAvoidanceSensorsFailure,
+        // Obstacle avoidance    Stereo images unavailable + OA activated    Obstacle avoidance disabled - Stereo camera failure.
+        .obstacleAvoidanceTooDark,
+        // Obstacle avoidance    Too dark + OA activated    Obstacle avoidance disabled - Environment too dark
         .obstacleAvoidanceSensorsNotCalibrated,
-        .obstacleAvoidanceDeteriorated]
+        // Obstacle avoidance    Stereo calibration requiresd    Obstacle avoidance disabled - Stereo sensors calibration required
+        .obstacleAvoidanceDeteriorated,
+        // Obstacle avoidance    Manual piloting + No GPS    Obstacle avoidance deteriorated – Poor GPS quality
+        .cameraError,
+        // Components_Camera    Camera critical alert    Check that nothing is blocking the camera.
+        .noGpsTooDark,
+        // Conditions    No GPS + Too dark    Flight quality is not optimal – environment is too dark.
+        .noGpsTooHigh,
+        // Conditions    No GPS + Too high    Flight quality is not optimal - decrease the drone's altitude.
+        .noGps,
+        // Conditions    No GPS    Poor GPS quality - autonomous flights are unavailable.
+        .headingLockedKo,
+        // Conditions    Heading Locked KO    Magnetic perturbations - autonomous flights are unavailable.
+        .noGpsLapse,
+        // Conditions    No GPS - GPS lapse    Flight quality is not optimal - GPS lapse is unavailable.
+        .tooMuchWind,
+        // Conditions_Wind    Too much wind    Strong winds
+        .strongImuVibration,
+        // Components_IMU    Strong IMU Vibration    Strong vibrations detected . Check that propellers are tightly screwed.
+        .internalMemoryFull,
+        // SD card    Internal memory full    Internal memory full
+        .sdError,
+        // SD card    SD error    SD Error - Switching to internal memory
+        .sdFull,
+        // SD card    SD full     SD Full - Switching to internal memory
+        .sdTooSlow,
+        // SD card    SD too slow    SD too slow - Switching to internal memory
+        .geofenceAltitudeAndDistance,
+        // Geofence    Geofencing altitude et distance    Geofence reached
+        .geofenceAltitude,
+        // Geofence    Geofencing altitude    Geofence reached
+        .geofenceDistance]
+        // Geofence    Geofencing distance    Geofence reached
 
     /// Returns only warning alerts.
     public var sortedWarningAlerts: [HUDBannerWarningAlertType] = [
-        .cameraError,
         .lowAndPerturbedWifi,
+        // Wi-Fi    No 4G - Low and Perturbed Wi-Fi    Weak Wi-Fi signal. Strong interferences
         .obstacleAvoidanceDroneStucked,
+        // Obstacle avoidance    Drone stuck    Obstacle avoidance  - Drone was not able to find a path.
+        .highDeviation,
+        // Obstacle avoidance    High deviation    Obstacle avoidance - High deviation
         .imuVibration,
+        // Components_IMU    IMU Saturation    Vibrations detected . Check that propellers are tightly screwed.
         .targetLost,
+        // Animations    Target lost    Subject lost
         .droneGpsKo,
+        // Animations    Drone GPS KO    GPS tracking connection lost
         .userDeviceGpsKo,
+        // Animations    Smartphone GPS KO    GPS tracking connection lost
         .unauthorizedFlightZone,
         .unauthorizedFlightZoneWithMission]
 

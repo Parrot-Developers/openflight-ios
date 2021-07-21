@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "icon4G46.png",
+      "filename" : "ic4GQuality3.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "icon4G46@2x.png",
+      "filename" : "ic4GQuality3@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "icon4G46@3x.png",
+      "filename" : "ic4GQuality3@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

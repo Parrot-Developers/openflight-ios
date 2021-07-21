@@ -33,30 +33,14 @@ import ArcGIS
 /// Graphic class for Flight Plan's waypoint arrow.
 final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRelatedGraphic, PoiPointRelatedGraphic {
     // MARK: - Internal Properties
-    /// Graphic's orientation (in degrees).
-    var angle: Float? {
-        get {
-            guard let angle = arrowSymbol?.angle else { return nil }
-
-            return angle - Constants.arcGisAngleOffset
-        }
-        set {
-            arrowSymbol?.angle = (newValue ?? 0.0) + Constants.arcGisAngleOffset
-        }
-    }
     /// Associated waypoint.
     private(set) weak var wayPoint: WayPoint?
     /// Target point of interest, if any.
     private(set) weak var poiPoint: PoiPoint?
 
-    // MARK: - Private Properties
-    private var arrowSymbol: AGSSimpleMarkerSymbol? {
-        guard let compositeSymbol = symbol as? AGSCompositeSymbol else { return nil }
-
-        return compositeSymbol.symbols
-            .compactMap { $0 as? AGSSimpleMarkerSymbol }
-            .first(where: { $0.style == .triangle })
-    }
+    /// Symbols
+    private var arrow: AGSPictureMarkerSymbol?
+    private var selectionCircle: AGSSimpleMarkerSymbol?
 
     // MARK: - Override Properties
     override var itemType: FlightPlanGraphicItemType {
@@ -65,14 +49,13 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
 
     // MARK: - Private Enums
     private enum Constants {
-        /// Angle for ArcGIS symbols are defined with a 90 degrees offset compared to cartesian angles.
-        static let arcGisAngleOffset: Float = 90.0
         static let selectedColor: UIColor = ColorName.greenSpring.color
-        static let arrowSize: CGFloat = 22.0
+        static let arrowSizeHeight: CGFloat = 15.0
+        static let arrowSizeWidth: CGFloat = 20.0
         static let outlineWidth: CGFloat = 2.0
         static let outlineColor: UIColor = ColorName.white.color
-        static let arrowOffset: CGFloat = 40.0
-        static let selectionCircleSize: CGFloat = arrowOffset * 2.0 + arrowSize / 2.0
+        static let arrowOffset: CGFloat = 36.0
+        static let selectionCircleSize: CGFloat = arrowOffset * 2.0 + arrowSizeHeight / 2.0
         static let yawEditionTolerance: Double = 30.0
     }
 
@@ -90,41 +73,59 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
          poiPoint: PoiPoint? = nil,
          poiIndex: Int? = nil,
          angle: Float) {
-        let innerColor = FlightPlanWayPointArrowGraphic.innerColor(poiIndex: poiIndex,
-                                                                   isSelected: false)
-        let arrow = AGSSimpleMarkerSymbol(style: .triangle,
-                                          color: innerColor,
-                                          size: Constants.arrowSize)
-        arrow.outline = AGSSimpleLineSymbol(style: .solid,
-                                            color: Constants.outlineColor,
-                                            width: Constants.outlineWidth)
-        arrow.offsetY = Constants.arrowOffset
-        arrow.angle = angle + Constants.arcGisAngleOffset
 
-        let selectionCircle = AGSSimpleMarkerSymbol(style: .circle,
-                                                    color: .clear,
-                                                    size: Constants.selectionCircleSize)
-
-        let compositeSymbol = AGSCompositeSymbol(symbols: [arrow, selectionCircle])
+        selectionCircle = AGSSimpleMarkerSymbol(style: .circle,
+                                                color: .clear,
+                                                size: Constants.selectionCircleSize)
 
         super.init(geometry: wayPoint.agsPoint,
-                   symbol: compositeSymbol,
+                   symbol: nil,
                    attributes: nil)
 
+        zIndex = Int(wayPoint.altitude)
         self.wayPoint = wayPoint
         self.poiPoint = poiPoint
         self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = wayPointIndex
         self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiIndex
+        refreshArrow()
+        symbol = getSymbol()
+    }
+
+    /// Get symbol
+    ///
+    /// - Returns: symbol
+    private func getSymbol() -> AGSCompositeSymbol {
+        var array = [AGSSymbol]()
+        if let arrow = arrow {
+            array.append(arrow)
+        }
+        if isSelected, let selectionCircle = selectionCircle {
+            array.append(selectionCircle)
+        }
+        return AGSCompositeSymbol(symbols: array)
+    }
+
+    /// Refresh position and color of the arrow.
+    private func refreshArrow() {
+        let innerColor = FlightPlanWayPointArrowGraphic.innerColor(poiIndex: poiIndex,
+                                                                   isSelected: self.isSelected)
+        let triangleView = TriangleView(frame: CGRect(x: 0, y: 0, width: Constants.arrowSizeWidth,
+                                                      height: Constants.arrowSizeHeight), color: innerColor)
+        arrow = AGSPictureMarkerSymbol(image: triangleView.asImage())
+        arrow?.offsetY = Constants.arrowOffset
+        arrow?.angle = FlightPlanGraphic.Constants.rotationFactor * Float(self.wayPoint?.yaw ?? 0.0)
+        arrow?.angleAlignment = .map
+        self.symbol = getSymbol()
     }
 
     // MARK: - Override Funcs
     override func updateColors(isSelected: Bool) {
-        arrowSymbol?.color = FlightPlanWayPointArrowGraphic.innerColor(poiIndex: poiIndex,
-                                                                       isSelected: isSelected)
+        refreshArrow()
     }
 
     override func updateAltitude(_ altitude: Double) {
         self.geometry = mapPoint?.withAltitude(altitude)
+        zIndex = Int(altitude)
     }
 }
 
@@ -137,6 +138,7 @@ extension FlightPlanWayPointArrowGraphic {
     func addPoiPoint(_ poiPointGraphic: FlightPlanPoiPointGraphic) {
         self.poiPoint = poiPointGraphic.poiPoint
         self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiPointGraphic.poiIndex
+        self.refreshOrientation()
     }
 
     /// Removes relation with point of interest.
@@ -144,6 +146,7 @@ extension FlightPlanWayPointArrowGraphic {
         self.poiPoint = nil
         self.attributes.removeObject(forKey: FlightPlanAGSConstants.poiIndexAttributeKey)
         self.isSelected = false
+        self.refreshOrientation()
     }
 
     /// Returns whether arrow orientation can be edited when touching given point.
@@ -168,6 +171,11 @@ extension FlightPlanWayPointArrowGraphic {
         return newYaw.asPositiveDegrees.isCloseTo(yaw,
                                                   withDelta: Constants.yawEditionTolerance)
     }
+
+    /// Refreshes arrow orientation with associated `WayPoint` object.
+    func refreshOrientation() {
+        refreshArrow()
+    }
 }
 
 // MARK: - Private Funcs
@@ -185,6 +193,51 @@ private extension FlightPlanWayPointArrowGraphic {
             return FlightPlanAGSConstants.colorForPoiIndex(poiIndex)
         } else {
             return Constants.outlineColor
+        }
+    }
+}
+
+// Generate a triangle view to add to waypoint
+private class TriangleView: UIView {
+    private var color: UIColor = .white
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let borderSize: CGFloat = 2.0
+    }
+
+    init(frame: CGRect, color: UIColor) {
+        self.color = color
+        super.init(frame: frame)
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
+    override func draw(_ rect: CGRect) {
+        let drawSize = CGSize(width: rect.width, height: rect.height)
+        let trianglePath = UIBezierPath()
+        trianglePath.move(to: CGPoint(x: drawSize.width / 2, y: Constants.borderSize))
+        trianglePath.addLine(to: CGPoint(x: Constants.borderSize, y: drawSize.height - Constants.borderSize))
+        trianglePath.addLine(to: CGPoint(x: drawSize.width - Constants.borderSize,
+                                         y: drawSize.height - Constants.borderSize))
+
+        trianglePath.lineWidth = Constants.borderSize
+        trianglePath.close()
+        color.setFill()
+        UIColor.white.setStroke()
+        trianglePath.stroke()
+        trianglePath.fill()
+    }
+
+    func asImage() -> UIImage {
+        self.isOpaque = false
+        self.layer.isOpaque = false
+        self.layer.backgroundColor = UIColor.clear.cgColor
+        let renderer = UIGraphicsImageRenderer(bounds: bounds)
+        return renderer.image { rendererContext in
+            layer.render(in: rendererContext.cgContext)
         }
     }
 }

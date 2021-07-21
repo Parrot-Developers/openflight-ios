@@ -48,11 +48,7 @@ final class ExecutionTableViewCell: UITableViewCell, NibLoadable {
         super.awakeFromNib()
 
         // Setup UI.
-        backgroundColor = ColorName.white12.color
         applyCornerRadius()
-        titleLabel.makeUp()
-        dateLabel.makeUp(and: .white50)
-        completionLabel.makeUp()
         titleLabel.text = ""
         dateLabel.text = ""
         completionLabel.text = ""
@@ -80,10 +76,10 @@ extension ExecutionTableViewCell {
                                                                 timeStyle: .medium) ?? Style.dash
         if fpExecution?.state != .completed {
             completionLabel.text = L10n.flightPlanRunStopped
-            completionLabel.textColor = ColorName.redTorch.color
+            completionLabel.textColor = ColorName.tomato.color
         } else {
             completionLabel.text = L10n.flightPlanRunCompleted
-            completionLabel.textColor = ColorName.greenSpring.color
+            completionLabel.textColor = ColorName.greenMediumSea.color
         }
     }
 }

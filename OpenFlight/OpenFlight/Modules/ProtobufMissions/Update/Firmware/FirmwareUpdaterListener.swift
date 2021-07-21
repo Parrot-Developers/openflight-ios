@@ -35,8 +35,10 @@ import GroundSdk
 enum FirmwareGlobalUpdatingState {
     case notInitialized
     case ongoing
-    case success
+    case downloading
+    case uploading
     case waitingForReboot
+    case success
     case error
 }
 

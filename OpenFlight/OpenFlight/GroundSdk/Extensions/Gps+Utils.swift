@@ -47,17 +47,17 @@ enum GpsStrength {
         case .none:
             return Asset.Gps.Drone.icGpsDisabled.image
         case .notFixed:
-            return Asset.Gps.Drone.icGps05.image
+            return Asset.Gps.Drone.icGpsQuality1.image
         case .fixed1on5:
-            return Asset.Gps.Drone.icGps15.image
+            return Asset.Gps.Drone.icGpsQuality2.image
         case .fixed2on5:
-            return Asset.Gps.Drone.icGps25.image
+            return Asset.Gps.Drone.icGpsQuality3.image
         case .fixed3on5:
-            return Asset.Gps.Drone.icGps35.image
+            return Asset.Gps.Drone.icGpsQuality4.image
         case .fixed4on5:
-            return Asset.Gps.Drone.icGps45.image
+            return Asset.Gps.Drone.icGpsQuality5.image
         case .fixed5on5:
-            return Asset.Gps.Drone.icGps55.image
+            return Asset.Gps.Drone.icGpsQuality6.image
         }
     }
 }

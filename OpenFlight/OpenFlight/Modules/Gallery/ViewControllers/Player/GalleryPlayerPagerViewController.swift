@@ -32,7 +32,7 @@ import UIKit
 
 // MARK: - Protocols
 /// Gallery Player Pager ViewController Delegate.
-protocol GalleryPlayerPagerDelegate: class {
+protocol GalleryPlayerPagerDelegate: AnyObject {
     /// Notify delegate when media changes.
     ///
     /// - Parameters:

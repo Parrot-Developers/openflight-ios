@@ -239,6 +239,136 @@ extension Vmeta_FlyingState: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+enum Vmeta_LinkType: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+
+  /// Unknown 
+  case unknown // = 0
+
+  /// Reserved 
+  case lo // = 1
+
+  /// Reserved 
+  case lan // = 2
+
+  /// Wlan (Wi-Fi) interface 
+  case wlan // = 3
+
+  /// Cellular (4G) interface 
+  case cellular // = 4
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .unknown
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unknown
+    case 1: self = .lo
+    case 2: self = .lan
+    case 3: self = .wlan
+    case 4: self = .cellular
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .unknown: return 0
+    case .lo: return 1
+    case .lan: return 2
+    case .wlan: return 3
+    case .cellular: return 4
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension Vmeta_LinkType: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Vmeta_LinkType] = [
+    .unknown,
+    .lo,
+    .lan,
+    .wlan,
+    .cellular,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+enum Vmeta_LinkStatus: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+
+  /// Interface is down 
+  case down // = 0
+
+  /// Interface is up with IP connectivity 
+  case up // = 1
+
+  /// Starfish session established on the link 
+  case running // = 2
+
+  /// Link is ready to connect or accept connections 
+  case ready // = 3
+
+  /// Connection in progress 
+  case connecting // = 4
+
+  /// Link error 
+  case error // = 5
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .down
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .down
+    case 1: self = .up
+    case 2: self = .running
+    case 3: self = .ready
+    case 4: self = .connecting
+    case 5: self = .error
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .down: return 0
+    case .up: return 1
+    case .running: return 2
+    case .ready: return 3
+    case .connecting: return 4
+    case .error: return 5
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension Vmeta_LinkStatus: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Vmeta_LinkStatus] = [
+    .down,
+    .up,
+    .running,
+    .ready,
+    .connecting,
+    .error,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
 /// Unit quaternion 
 struct Vmeta_Quaternion {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -280,6 +410,23 @@ struct Vmeta_Location {
   /// GPS Satellite vehicle count, only set if location comes at least
   /// partially from a GPS sensor 
   var svCount: UInt32 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// Generic 3 component vector 
+struct Vmeta_Vector3 {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var x: Float = 0
+
+  var y: Float = 0
+
+  var z: Float = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -378,6 +525,22 @@ struct Vmeta_DroneMetadata {
   var hasPosition: Bool {return _storage._position != nil}
   /// Clears the value of `position`. Subsequent reads from it will return its default value.
   mutating func clearPosition() {_uniqueStorage()._position = nil}
+
+  /// Estimated position of the drone in the local frame (m).
+  /// The local frame is not NED: X and Y axis are arbitrary, but the Z
+  /// axis is guaranteed to point down.
+  /// The position is initialized at first take off. This position is
+  /// guaranteed not to jump, even when a new absolute position (usually
+  /// GPS) is avaiable. Instead, the origin of the local frame jumps in
+  /// order to ensure the continuity of the local position.
+  var localPosition: Vmeta_Vector3 {
+    get {return _storage._localPosition ?? Vmeta_Vector3()}
+    set {_uniqueStorage()._localPosition = newValue}
+  }
+  /// Returns true if `localPosition` has been explicitly set.
+  var hasLocalPosition: Bool {return _storage._localPosition != nil}
+  /// Clears the value of `localPosition`. Subsequent reads from it will return its default value.
+  mutating func clearLocalPosition() {_uniqueStorage()._localPosition = nil}
 
   /// Speed vector in NED (North-East-Down) (m/s) 
   var speed: Vmeta_NED {
@@ -566,6 +729,46 @@ struct Vmeta_WifiLinkMetadata {
   init() {}
 }
 
+struct Vmeta_StarfishLinkInfo {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Type of link 
+  var type: Vmeta_LinkType = .unknown
+
+  /// Link status 
+  var status: Vmeta_LinkStatus = .down
+
+  /// Link quality indication: 1 (lower) to 5 (better),
+  /// 0 if not available 
+  var quality: Int32 = 0
+
+  /// Link active status 
+  var active: Bool = false
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct Vmeta_StarfishLinkMetadata {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Links 
+  var links: [Vmeta_StarfishLinkInfo] = []
+
+  /// Global link quality indication: 1 (lower) to 5 (better),
+  /// 0 if not available 
+  var quality: Int32 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct Vmeta_LinkMetadata {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -582,11 +785,22 @@ struct Vmeta_LinkMetadata {
     set {`protocol` = .wifi(newValue)}
   }
 
+  /// Starfish link metadata 
+  var starfish: Vmeta_StarfishLinkMetadata {
+    get {
+      if case .starfish(let v)? = `protocol` {return v}
+      return Vmeta_StarfishLinkMetadata()
+    }
+    set {`protocol` = .starfish(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_Protocol: Equatable {
     /// Wifi link metadata 
     case wifi(Vmeta_WifiLinkMetadata)
+    /// Starfish link metadata 
+    case starfish(Vmeta_StarfishLinkMetadata)
 
   #if !swift(>=4.1)
     static func ==(lhs: Vmeta_LinkMetadata.OneOf_Protocol, rhs: Vmeta_LinkMetadata.OneOf_Protocol) -> Bool {
@@ -598,6 +812,11 @@ struct Vmeta_LinkMetadata {
         guard case .wifi(let l) = lhs, case .wifi(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.starfish, .starfish): return {
+        guard case .starfish(let l) = lhs, case .starfish(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      default: return false
       }
     }
   #endif
@@ -696,6 +915,27 @@ extension Vmeta_FlyingState: SwiftProtobuf._ProtoNameProviding {
     3: .same(proto: "FS_FLYING"),
     4: .same(proto: "FS_LANDING"),
     5: .same(proto: "FS_EMERGENCY"),
+  ]
+}
+
+extension Vmeta_LinkType: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "LINK_TYPE_UNKNOWN"),
+    1: .same(proto: "LINK_TYPE_LO"),
+    2: .same(proto: "LINK_TYPE_LAN"),
+    3: .same(proto: "LINK_TYPE_WLAN"),
+    4: .same(proto: "LINK_TYPE_CELLULAR"),
+  ]
+}
+
+extension Vmeta_LinkStatus: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "LINK_STATUS_DOWN"),
+    1: .same(proto: "LINK_STATUS_UP"),
+    2: .same(proto: "LINK_STATUS_RUNNING"),
+    3: .same(proto: "LINK_STATUS_READY"),
+    4: .same(proto: "LINK_STATUS_CONNECTING"),
+    5: .same(proto: "LINK_STATUS_ERROR"),
   ]
 }
 
@@ -806,6 +1046,50 @@ extension Vmeta_Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.horizontalAccuracy != rhs.horizontalAccuracy {return false}
     if lhs.verticalAccuracy != rhs.verticalAccuracy {return false}
     if lhs.svCount != rhs.svCount {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Vmeta_Vector3: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Vector3"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "x"),
+    2: .same(proto: "y"),
+    3: .same(proto: "z"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularFloatField(value: &self.x) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self.y) }()
+      case 3: try { try decoder.decodeSingularFloatField(value: &self.z) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.x != 0 {
+      try visitor.visitSingularFloatField(value: self.x, fieldNumber: 1)
+    }
+    if self.y != 0 {
+      try visitor.visitSingularFloatField(value: self.y, fieldNumber: 2)
+    }
+    if self.z != 0 {
+      try visitor.visitSingularFloatField(value: self.z, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Vmeta_Vector3, rhs: Vmeta_Vector3) -> Bool {
+    if lhs.x != rhs.x {return false}
+    if lhs.y != rhs.y {return false}
+    if lhs.z != rhs.z {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -930,6 +1214,7 @@ extension Vmeta_DroneMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     2: .same(proto: "location"),
     3: .standard(proto: "ground_distance"),
     9: .same(proto: "position"),
+    10: .standard(proto: "local_position"),
     4: .same(proto: "speed"),
     5: .standard(proto: "battery_percentage"),
     7: .standard(proto: "flying_state"),
@@ -940,6 +1225,7 @@ extension Vmeta_DroneMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     var _location: Vmeta_Location? = nil
     var _groundDistance: Double = 0
     var _position: Vmeta_NED? = nil
+    var _localPosition: Vmeta_Vector3? = nil
     var _speed: Vmeta_NED? = nil
     var _batteryPercentage: Int32 = 0
     var _flyingState: Vmeta_FlyingState = .fsLanded
@@ -953,6 +1239,7 @@ extension Vmeta_DroneMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       _location = source._location
       _groundDistance = source._groundDistance
       _position = source._position
+      _localPosition = source._localPosition
       _speed = source._speed
       _batteryPercentage = source._batteryPercentage
       _flyingState = source._flyingState
@@ -981,6 +1268,7 @@ extension Vmeta_DroneMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
         case 5: try { try decoder.decodeSingularSInt32Field(value: &_storage._batteryPercentage) }()
         case 7: try { try decoder.decodeSingularEnumField(value: &_storage._flyingState) }()
         case 9: try { try decoder.decodeSingularMessageField(value: &_storage._position) }()
+        case 10: try { try decoder.decodeSingularMessageField(value: &_storage._localPosition) }()
         default: break
         }
       }
@@ -1010,6 +1298,9 @@ extension Vmeta_DroneMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       if let v = _storage._position {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
       }
+      if let v = _storage._localPosition {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1023,6 +1314,7 @@ extension Vmeta_DroneMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
         if _storage._location != rhs_storage._location {return false}
         if _storage._groundDistance != rhs_storage._groundDistance {return false}
         if _storage._position != rhs_storage._position {return false}
+        if _storage._localPosition != rhs_storage._localPosition {return false}
         if _storage._speed != rhs_storage._speed {return false}
         if _storage._batteryPercentage != rhs_storage._batteryPercentage {return false}
         if _storage._flyingState != rhs_storage._flyingState {return false}
@@ -1317,10 +1609,99 @@ extension Vmeta_WifiLinkMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 }
 
+extension Vmeta_StarfishLinkInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".StarfishLinkInfo"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "type"),
+    2: .same(proto: "status"),
+    3: .same(proto: "quality"),
+    4: .same(proto: "active"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.type) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self.quality) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.active) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.type != .unknown {
+      try visitor.visitSingularEnumField(value: self.type, fieldNumber: 1)
+    }
+    if self.status != .down {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 2)
+    }
+    if self.quality != 0 {
+      try visitor.visitSingularInt32Field(value: self.quality, fieldNumber: 3)
+    }
+    if self.active != false {
+      try visitor.visitSingularBoolField(value: self.active, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Vmeta_StarfishLinkInfo, rhs: Vmeta_StarfishLinkInfo) -> Bool {
+    if lhs.type != rhs.type {return false}
+    if lhs.status != rhs.status {return false}
+    if lhs.quality != rhs.quality {return false}
+    if lhs.active != rhs.active {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Vmeta_StarfishLinkMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".StarfishLinkMetadata"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "links"),
+    2: .same(proto: "quality"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.links) }()
+      case 2: try { try decoder.decodeSingularInt32Field(value: &self.quality) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.links.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.links, fieldNumber: 1)
+    }
+    if self.quality != 0 {
+      try visitor.visitSingularInt32Field(value: self.quality, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Vmeta_StarfishLinkMetadata, rhs: Vmeta_StarfishLinkMetadata) -> Bool {
+    if lhs.links != rhs.links {return false}
+    if lhs.quality != rhs.quality {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Vmeta_LinkMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".LinkMetadata"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "wifi"),
+    2: .same(proto: "starfish"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1331,12 +1712,29 @@ extension Vmeta_LinkMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       switch fieldNumber {
       case 1: try {
         var v: Vmeta_WifiLinkMetadata?
+        var hadOneofValue = false
         if let current = self.`protocol` {
-          try decoder.handleConflictingOneOf()
+          hadOneofValue = true
           if case .wifi(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {self.`protocol` = .wifi(v)}
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.`protocol` = .wifi(v)
+        }
+      }()
+      case 2: try {
+        var v: Vmeta_StarfishLinkMetadata?
+        var hadOneofValue = false
+        if let current = self.`protocol` {
+          hadOneofValue = true
+          if case .starfish(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.`protocol` = .starfish(v)
+        }
       }()
       default: break
       }
@@ -1344,8 +1742,19 @@ extension Vmeta_LinkMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if case .wifi(let v)? = self.`protocol` {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every case branch when no optimizations are
+    // enabled. https://github.com/apple/swift-protobuf/issues/1034
+    switch self.`protocol` {
+    case .wifi?: try {
+      guard case .wifi(let v)? = self.`protocol` else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }()
+    case .starfish?: try {
+      guard case .starfish(let v)? = self.`protocol` else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case nil: break
     }
     try unknownFields.traverse(visitor: &visitor)
   }

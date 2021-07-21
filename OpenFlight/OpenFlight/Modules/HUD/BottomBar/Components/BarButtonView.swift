@@ -37,17 +37,17 @@ public class BarButtonView: UIControl, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var title: UILabel! {
         didSet {
-            title.makeUp(with: .small, and: .white)
+            title.makeUp(with: .small, and: .sambuca)
         }
     }
     @IBOutlet public weak var currentMode: UILabel! {
         didSet {
-            currentMode.makeUp()
+            currentMode.makeUp(and: .sambuca)
         }
     }
     @IBOutlet private weak var subTitle: UILabel! {
         didSet {
-            subTitle.makeUp()
+            subTitle.makeUp(and: .sambuca)
         }
     }
     @IBOutlet private weak var modeView: UIView!
@@ -80,12 +80,6 @@ public class BarButtonView: UIControl, NibOwnerLoadable {
             updateBackgroundColor()
         }
     }
-
-    open override var isHighlighted: Bool {
-        didSet {
-            alpha = isHighlighted ? 0.7 : 1
-        }
-    }
 }
 
 // MARK: - Private Funcs
@@ -99,34 +93,46 @@ private extension BarButtonView {
     ///
     /// - Parameters:
     ///    - model: model representing the contents
-    func fill(with model: BarButtonState) {
-        title.text = model.title
-        currentMode.text = model.subtext
-        subTitle.text = model.subtitle
-        modeView.isHidden = model.title == "" && model.subtext == "" && model.subtitle == ""
-        imageView.image = model.subMode?.image ?? model.image
-        imageView.isHidden = model.image == nil
+    func fill(with viewModel: BarButtonState) {
+        title.text = viewModel.title
+        currentMode.text = viewModel.subtext
+        subTitle.text = viewModel.subtitle
+        modeView.isHidden = viewModel.title?.isEmpty == true && viewModel.subtext?.isEmpty == true && viewModel.subtitle?.isEmpty == true
+        updateAlpha()
+        updateIcon()
+        updateTextColor()
+        updateBackgroundColor()
+        isUserInteractionEnabled = viewModel.enabled
+    }
+
+    func updateAlpha() {
         let alpha: CGFloat = model.enabled ? 1 : 0.5
         title.alpha = alpha / 2
         currentMode.alpha = alpha
         subTitle.alpha = alpha
         imageView.alpha = alpha
-        DispatchQueue.main.async {
-            self.updateBackgroundColor()
-        }
-        isUserInteractionEnabled = model.enabled
+    }
+
+    func updateIcon() {
+        imageView.image = model.subMode?.image ?? model.image
+        imageView.isHidden = model.image == nil
+        imageView.tintColor = model.isSelected.value ? .white : ColorName.sambuca.color
+    }
+
+    func updateTextColor() {
+        let textColor = model.isSelected.value ? .white : ColorName.sambuca.color
+        title.textColor = textColor
+        currentMode.textColor = textColor
+        subTitle.textColor = textColor
     }
 
     func updateBackgroundColor() {
-        if model != nil {
-            let isSelected = model?.isSelected.value == true
-            let backgroundColor = isSelected ? ColorName.greenSpring20.color : .clear
-            let borderColor = isSelected ? ColorName.greenSpring.color : .clear
-            customCornered(corners: roundedCorners,
-                           radius: Style.largeCornerRadius,
-                           backgroundColor: backgroundColor,
-                           borderColor: borderColor,
-                           borderWidth: 4.0)
-        }
+        let isSelected = model.isSelected.value == true
+        let backgroundColor = isSelected ? ColorName.greenMediumSea.color : ColorName.white90.color
+        customCornered(corners: roundedCorners,
+                       radius: Style.largeCornerRadius,
+                       backgroundColor: backgroundColor,
+                       borderColor: .clear,
+                       borderWidth: 0.0)
     }
 }

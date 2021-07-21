@@ -30,7 +30,7 @@
 import UIKit
 
 /// Share file with the UIActivity ViewController.
-protocol FileShare: class {
+protocol FileShare: AnyObject {
     /// Temporary shared file url.
     var temporaryShareUrl: URL? { get set }
     /// Share file.

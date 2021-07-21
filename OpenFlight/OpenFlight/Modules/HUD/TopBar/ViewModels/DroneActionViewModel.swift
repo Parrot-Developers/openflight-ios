@@ -257,10 +257,9 @@ private extension DroneActionViewModel {
     func takeOffOrLandDrone() {
         guard let drone = drone else { return }
 
-        if drone.isManualPilotingActive {
-            drone.getPilotingItf(PilotingItfs.manualCopter)?.smartTakeOffLand()
-        } else {
+        if !drone.isManualPilotingActive {
             activateManualPiloting()
         }
+        drone.getPilotingItf(PilotingItfs.manualCopter)?.smartTakeOffLand()
     }
 }

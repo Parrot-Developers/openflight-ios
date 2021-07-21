@@ -1,141 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="sdU-5K-DkE">
-    <device id="retina6_1" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Hiy-MS-qF2">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--Remote Details Informations View Controller-->
-        <scene sceneID="peg-u7-kgS">
+        <scene sceneID="wfv-sH-IK8">
             <objects>
-                <viewController storyboardIdentifier="RemoteDetailsInformations" useStoryboardIdentifierAsRestorationIdentifier="YES" id="sdU-5K-DkE" customClass="RemoteDetailsInformationsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="AMI-hn-0Ur">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                <viewController storyboardIdentifier="RemoteDetailsInformations" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Hiy-MS-qF2" customClass="RemoteDetailsInformationsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="APM-4l-0ws">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ML2-AP-Add">
-                                <rect key="frame" x="24" y="0.0" width="366" height="896"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yO1-p2-TMW">
+                                <rect key="frame" x="0.0" y="0.0" width="200" height="414"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="4if-k9-aKL">
-                                        <rect key="frame" x="0.0" y="89.5" width="366" height="717"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="FOF-Fh-hPz">
+                                        <rect key="frame" x="0.0" y="83" width="200" height="248"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="EqD-aP-jZZ">
-                                                <rect key="frame" x="0.0" y="0.0" width="366" height="661"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="wW4-A6-DaI">
+                                                <rect key="frame" x="0.0" y="0.0" width="200" height="114.5"/>
                                                 <subviews>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="u1W-R9-0su" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="179" height="661"/>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GFf-x6-SMF" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="200" height="47"/>
                                                     </view>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0Qd-Fk-o9K" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="187" y="0.0" width="179" height="661"/>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iWr-Cy-YoU" userLabel="Firmware Version Container View" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="67" width="200" height="47.5"/>
                                                     </view>
                                                 </subviews>
-                                                <variation key="heightClass=compact-widthClass=compact" spacing="8"/>
-                                                <variation key="heightClass=regular-widthClass=compact" axis="horizontal" spacing="8"/>
+                                                <variation key="heightClass=compact-widthClass=compact" spacing="6"/>
                                             </stackView>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cXu-Go-lTZ">
-                                                <rect key="frame" x="0.0" y="677" width="366" height="40"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="C39-eC-OqH">
+                                                <rect key="frame" x="0.0" y="134.5" width="200" height="113.5"/>
                                                 <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KKx-zM-Qa3">
-                                                        <rect key="frame" x="103" y="0.0" width="160" height="40"/>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2fj-uR-yxm" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="200" height="47"/>
+                                                    </view>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1TF-4r-HqB">
+                                                        <rect key="frame" x="0.0" y="67" width="200" height="46.5"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" constant="160" id="Kqo-NB-mwS"/>
-                                                            <constraint firstAttribute="height" constant="40" id="jpD-d9-iuk"/>
+                                                            <constraint firstAttribute="width" relation="lessThanOrEqual" constant="200" id="AvX-L3-TTH"/>
                                                         </constraints>
-                                                        <variation key="heightClass=regular-widthClass=compact">
-                                                            <mask key="constraints">
-                                                                <include reference="Kqo-NB-mwS"/>
-                                                            </mask>
-                                                        </variation>
                                                         <connections>
-                                                            <action selector="resetButtonTouchedUpInside:" destination="sdU-5K-DkE" eventType="touchUpInside" id="9Xe-OU-bIM"/>
+                                                            <action selector="resetButtonTouchedUpInside:" destination="Hiy-MS-qF2" eventType="touchUpInside" id="W8X-Io-Pl9"/>
                                                         </connections>
                                                     </button>
                                                 </subviews>
-                                                <constraints>
-                                                    <constraint firstItem="KKx-zM-Qa3" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="cXu-Go-lTZ" secondAttribute="leading" id="6CD-Te-skG"/>
-                                                    <constraint firstItem="KKx-zM-Qa3" firstAttribute="centerX" secondItem="cXu-Go-lTZ" secondAttribute="centerX" id="hxU-bQ-R2W"/>
-                                                    <constraint firstItem="KKx-zM-Qa3" firstAttribute="leading" secondItem="cXu-Go-lTZ" secondAttribute="leading" id="kL3-ya-r0u"/>
-                                                    <constraint firstAttribute="trailing" secondItem="KKx-zM-Qa3" secondAttribute="trailing" id="ksU-6E-yXW"/>
-                                                    <constraint firstAttribute="bottom" secondItem="KKx-zM-Qa3" secondAttribute="bottom" id="qmw-dR-KYg"/>
-                                                    <constraint firstItem="KKx-zM-Qa3" firstAttribute="top" secondItem="cXu-Go-lTZ" secondAttribute="top" id="v9z-My-dEf"/>
-                                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="KKx-zM-Qa3" secondAttribute="trailing" id="zgm-HW-AXM"/>
-                                                </constraints>
-                                                <variation key="default">
-                                                    <mask key="constraints">
-                                                        <exclude reference="6CD-Te-skG"/>
-                                                        <exclude reference="zgm-HW-AXM"/>
-                                                        <exclude reference="hxU-bQ-R2W"/>
-                                                    </mask>
-                                                </variation>
-                                                <variation key="heightClass=regular-widthClass=compact">
-                                                    <mask key="constraints">
-                                                        <exclude reference="kL3-ya-r0u"/>
-                                                        <exclude reference="ksU-6E-yXW"/>
-                                                        <include reference="6CD-Te-skG"/>
-                                                        <include reference="zgm-HW-AXM"/>
-                                                        <include reference="hxU-bQ-R2W"/>
-                                                    </mask>
-                                                </variation>
-                                            </view>
+                                                <variation key="heightClass=compact-widthClass=compact" spacing="6"/>
+                                            </stackView>
                                         </subviews>
-                                        <variation key="heightClass=compact-widthClass=compact" spacing="8"/>
+                                        <variation key="heightClass=compact-widthClass=compact" spacing="6"/>
+                                        <variation key="heightClass=regular-widthClass=compact" axis="horizontal"/>
                                     </stackView>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="4if-k9-aKL" secondAttribute="trailing" id="ab9-Ei-cPO"/>
-                                    <constraint firstItem="4if-k9-aKL" firstAttribute="centerY" secondItem="ML2-AP-Add" secondAttribute="centerY" id="ilU-93-akQ"/>
-                                    <constraint firstItem="4if-k9-aKL" firstAttribute="leading" secondItem="ML2-AP-Add" secondAttribute="leading" id="r3o-xL-0Ub"/>
-                                    <constraint firstItem="4if-k9-aKL" firstAttribute="height" secondItem="ML2-AP-Add" secondAttribute="height" multiplier="0.6" id="vTi-5n-05g"/>
-                                    <constraint firstItem="4if-k9-aKL" firstAttribute="height" secondItem="ML2-AP-Add" secondAttribute="height" multiplier="0.8" id="xdK-FO-8Ha"/>
+                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="centerY" secondItem="yO1-p2-TMW" secondAttribute="centerY" id="PSC-mx-4r3"/>
+                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="height" secondItem="yO1-p2-TMW" secondAttribute="height" multiplier="0.9" id="RAT-he-YlY"/>
+                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="leading" secondItem="yO1-p2-TMW" secondAttribute="leading" id="jaH-0M-Wxt"/>
+                                    <constraint firstAttribute="trailing" secondItem="FOF-Fh-hPz" secondAttribute="trailing" id="nSx-6B-laf"/>
+                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="height" secondItem="yO1-p2-TMW" secondAttribute="height" multiplier="0.6" id="ogn-5r-ESg"/>
                                 </constraints>
                                 <variation key="default">
                                     <mask key="constraints">
-                                        <exclude reference="xdK-FO-8Ha"/>
+                                        <exclude reference="RAT-he-YlY"/>
                                     </mask>
                                 </variation>
                                 <variation key="heightClass=regular-widthClass=compact">
                                     <mask key="constraints">
-                                        <exclude reference="vTi-5n-05g"/>
-                                        <include reference="xdK-FO-8Ha"/>
+                                        <include reference="RAT-he-YlY"/>
+                                        <exclude reference="ogn-5r-ESg"/>
                                     </mask>
                                 </variation>
                             </view>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="ylm-35-rmO"/>
+                        <viewLayoutGuide key="safeArea" id="sJo-EM-Tmm"/>
                         <constraints>
-                            <constraint firstAttribute="bottom" secondItem="ML2-AP-Add" secondAttribute="bottom" id="X5Y-dm-b6F"/>
-                            <constraint firstAttribute="trailing" secondItem="ML2-AP-Add" secondAttribute="trailing" constant="24" id="b8t-x5-4AM"/>
-                            <constraint firstItem="ML2-AP-Add" firstAttribute="leading" secondItem="AMI-hn-0Ur" secondAttribute="leading" id="cw8-F2-pVn">
-                                <variation key="heightClass=regular-widthClass=compact" constant="24"/>
-                            </constraint>
-                            <constraint firstItem="ML2-AP-Add" firstAttribute="centerX" secondItem="AMI-hn-0Ur" secondAttribute="centerX" id="jbl-Rm-A4f"/>
-                            <constraint firstItem="ML2-AP-Add" firstAttribute="top" secondItem="AMI-hn-0Ur" secondAttribute="top" id="sP5-JC-4ON"/>
+                            <constraint firstItem="yO1-p2-TMW" firstAttribute="centerY" secondItem="APM-4l-0ws" secondAttribute="centerY" id="0ot-VG-6Y2"/>
+                            <constraint firstItem="yO1-p2-TMW" firstAttribute="top" secondItem="APM-4l-0ws" secondAttribute="top" id="Emh-fD-xBx"/>
+                            <constraint firstAttribute="trailing" secondItem="yO1-p2-TMW" secondAttribute="trailing" id="NF2-Y3-YkT"/>
+                            <constraint firstItem="yO1-p2-TMW" firstAttribute="centerX" secondItem="APM-4l-0ws" secondAttribute="centerX" id="XdH-XM-kqr"/>
+                            <constraint firstAttribute="bottom" secondItem="yO1-p2-TMW" secondAttribute="bottom" id="Za5-mV-qoC"/>
+                            <constraint firstItem="yO1-p2-TMW" firstAttribute="leading" secondItem="APM-4l-0ws" secondAttribute="leading" id="s0n-Kt-oDq"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
-                                <exclude reference="b8t-x5-4AM"/>
-                                <exclude reference="jbl-Rm-A4f"/>
+                                <exclude reference="NF2-Y3-YkT"/>
+                                <exclude reference="XdH-XM-kqr"/>
                             </mask>
                         </variation>
                         <variation key="heightClass=regular-widthClass=compact">
                             <mask key="constraints">
-                                <include reference="b8t-x5-4AM"/>
-                                <include reference="jbl-Rm-A4f"/>
+                                <include reference="NF2-Y3-YkT"/>
+                                <include reference="XdH-XM-kqr"/>
                             </mask>
                         </variation>
                     </view>
                     <connections>
-                        <outlet property="hardwareVersionView" destination="0Qd-Fk-o9K" id="dKy-gl-gBv"/>
-                        <outlet property="resetButton" destination="KKx-zM-Qa3" id="Jc6-TY-Gdj"/>
-                        <outlet property="serialNumberView" destination="u1W-R9-0su" id="uYS-xt-gV8"/>
+                        <outlet property="firmwareVersionView" destination="iWr-Cy-YoU" id="3E1-eV-ehG"/>
+                        <outlet property="hardwareVersionView" destination="2fj-uR-yxm" id="UJx-GK-egD"/>
+                        <outlet property="resetButton" destination="1TF-4r-HqB" id="Vzu-61-les"/>
+                        <outlet property="serialNumberView" destination="GFf-x6-SMF" id="nFx-wq-O1T"/>
                     </connections>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="EzN-K7-Hhf" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Dfl-2i-D2q" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1504" y="1722"/>
+            <point key="canvasLocation" x="-1368" y="1772"/>
         </scene>
     </scenes>
 </document>

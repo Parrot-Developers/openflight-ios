@@ -1,35 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
-    <device id="retina4_7" orientation="landscape" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina4_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
     <scenes>
         <!--Cellular Pairing Success View Controller-->
         <scene sceneID="gAF-Wg-Bhz">
             <objects>
                 <viewController storyboardIdentifier="CellularPairingSuccess" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="CellularPairingSuccessViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="YGE-bN-Zi8">
-                        <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dN7-wP-wKN" userLabel="invisibleButton">
-                                <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <connections>
                                     <action selector="backgroundButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="xUC-3P-zLK"/>
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3Ka-vY-chT" userLabel="Panel View">
-                                <rect key="frame" x="8" y="125.5" width="651" height="255.5"/>
+                                <rect key="frame" x="37" y="32" width="494" height="294"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="GnM-WJ-M1v">
-                                        <rect key="frame" x="0.0" y="8" width="651" height="207.5"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="25" translatesAutoresizingMaskIntoConstraints="NO" id="GnM-WJ-M1v">
+                                        <rect key="frame" x="0.0" y="8" width="494" height="246"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2FW-Mt-ThO" userLabel="TopView">
-                                                <rect key="frame" x="0.0" y="0.0" width="651" height="40"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="494" height="40"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="B1s-ca-lfB">
                                                         <rect key="frame" x="12" y="11.5" width="17" height="17"/>
@@ -37,15 +43,16 @@
                                                             <constraint firstAttribute="width" secondItem="B1s-ca-lfB" secondAttribute="height" multiplier="1:1" id="5yl-IH-0zW"/>
                                                             <constraint firstAttribute="width" constant="17" id="BPu-Ut-2Z5"/>
                                                         </constraints>
+                                                        <color key="tintColor" name="sambuca"/>
                                                         <state key="normal" image="icClose"/>
                                                         <connections>
                                                             <action selector="closeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="qAE-1y-EiY"/>
                                                         </connections>
                                                     </button>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="blJ-f5-Pk2">
-                                                        <rect key="frame" x="305" y="10" width="41.5" height="20.5"/>
-                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                        <nil key="textColor"/>
+                                                        <rect key="frame" x="224" y="9" width="46.5" height="22.5"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                        <color key="textColor" name="sambuca"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                 </subviews>
@@ -57,23 +64,34 @@
                                                     <constraint firstItem="B1s-ca-lfB" firstAttribute="leading" secondItem="2FW-Mt-ThO" secondAttribute="leading" constant="12" id="jwp-PJ-4Ac"/>
                                                 </constraints>
                                             </view>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="ZgN-6O-NWr">
-                                                <rect key="frame" x="0.0" y="52" width="651" height="20.5"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic4GConnectionSucceed" translatesAutoresizingMaskIntoConstraints="NO" id="fx4-dN-cS1">
-                                                <rect key="frame" x="0.0" y="84.5" width="651" height="61"/>
-                                            </imageView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="25" translatesAutoresizingMaskIntoConstraints="NO" id="B6D-9b-ufc">
+                                                <rect key="frame" x="0.0" y="65" width="494" height="106"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="ZgN-6O-NWr">
+                                                        <rect key="frame" x="226" y="0.0" width="42" height="20"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
+                                                        <color key="textColor" name="sambuca"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic4GConnectionSucceed" translatesAutoresizingMaskIntoConstraints="NO" id="fx4-dN-cS1">
+                                                        <rect key="frame" x="86.5" y="45" width="321" height="61"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    </imageView>
+                                                </subviews>
+                                            </stackView>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EhL-K5-K7U" userLabel="ButtonsView">
-                                                <rect key="frame" x="0.0" y="157.5" width="651" height="50"/>
+                                                <rect key="frame" x="0.0" y="196" width="494" height="50"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dbv-Nh-NxN">
-                                                        <rect key="frame" x="228" y="0.0" width="195" height="50"/>
+                                                        <rect key="frame" x="173" y="0.0" width="148" height="50"/>
+                                                        <color key="backgroundColor" name="green_medium_sea"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="50" id="sG8-K0-ngv"/>
                                                         </constraints>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                        <state key="normal" title="Ok">
+                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
                                                         <connections>
                                                             <action selector="okButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="K1U-Nj-wWR"/>
                                                         </connections>
@@ -82,14 +100,15 @@
                                                 <constraints>
                                                     <constraint firstItem="dbv-Nh-NxN" firstAttribute="centerX" secondItem="EhL-K5-K7U" secondAttribute="centerX" id="4hb-Mx-a2Z"/>
                                                     <constraint firstItem="dbv-Nh-NxN" firstAttribute="top" secondItem="EhL-K5-K7U" secondAttribute="top" id="IjS-MI-CSW"/>
-                                                    <constraint firstItem="dbv-Nh-NxN" firstAttribute="width" secondItem="EhL-K5-K7U" secondAttribute="width" multiplier="0.3" id="ZBb-X3-dFp"/>
+                                                    <constraint firstItem="dbv-Nh-NxN" firstAttribute="width" secondItem="EhL-K5-K7U" secondAttribute="width" multiplier="0.3" id="fau-cq-AOp"/>
                                                     <constraint firstAttribute="bottom" secondItem="dbv-Nh-NxN" secondAttribute="bottom" id="r6D-VW-xjE"/>
                                                 </constraints>
                                             </view>
                                         </subviews>
-                                        <variation key="heightClass=compact-widthClass=compact" spacing="12"/>
+                                        <variation key="heightClass=compact-widthClass=compact" spacing="25"/>
                                     </stackView>
                                 </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstItem="GnM-WJ-M1v" firstAttribute="top" secondItem="3Ka-vY-chT" secondAttribute="top" constant="8" id="hou-bo-ZT6"/>
                                     <constraint firstAttribute="bottom" secondItem="GnM-WJ-M1v" secondAttribute="bottom" constant="40" id="iu6-aC-gUf"/>
@@ -102,10 +121,10 @@
                         <constraints>
                             <constraint firstItem="dN7-wP-wKN" firstAttribute="top" secondItem="rLE-aO-Qp0" secondAttribute="top" id="0Lg-G8-LOp"/>
                             <constraint firstItem="dN7-wP-wKN" firstAttribute="leading" secondItem="rLE-aO-Qp0" secondAttribute="leading" id="0lE-Ow-KpK"/>
-                            <constraint firstItem="rLE-aO-Qp0" firstAttribute="trailing" secondItem="3Ka-vY-chT" secondAttribute="trailing" constant="8" id="2fO-O7-1f0" userLabel="Safe Area.trailing = Panel View.trailing"/>
+                            <constraint firstItem="rLE-aO-Qp0" firstAttribute="trailing" secondItem="3Ka-vY-chT" secondAttribute="trailing" constant="37" id="2fO-O7-1f0" userLabel="Safe Area.trailing = Panel View.trailing"/>
                             <constraint firstAttribute="bottom" secondItem="3Ka-vY-chT" secondAttribute="bottom" constant="-6" id="Qow-Iy-b0D"/>
                             <constraint firstItem="dN7-wP-wKN" firstAttribute="trailing" secondItem="rLE-aO-Qp0" secondAttribute="trailing" id="Z5x-fL-z5h"/>
-                            <constraint firstItem="3Ka-vY-chT" firstAttribute="leading" secondItem="rLE-aO-Qp0" secondAttribute="leading" constant="8" id="pbS-qI-aVQ" userLabel="Panel View.leading = Safe Area.leading"/>
+                            <constraint firstItem="3Ka-vY-chT" firstAttribute="leading" secondItem="rLE-aO-Qp0" secondAttribute="leading" constant="37" id="pbS-qI-aVQ" userLabel="Panel View.leading = Safe Area.leading"/>
                             <constraint firstAttribute="bottom" secondItem="dN7-wP-wKN" secondAttribute="bottom" id="w9g-fT-NKV"/>
                         </constraints>
                     </view>
@@ -125,5 +144,11 @@
     <resources>
         <image name="ic4GConnectionSucceed" width="321" height="61"/>
         <image name="icClose" width="24" height="24"/>
+        <namedColor name="green_medium_sea">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
+        <namedColor name="sambuca">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

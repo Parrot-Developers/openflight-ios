@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "icDroneRemoteAlert.png",
+      "filename" : "icDroneRemoteUpdateAlert.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "icDroneRemoteAlert@2x.png",
+      "filename" : "icDroneRemoteUpdateAlert@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "icDroneRemoteAlert@3x.png",
+      "filename" : "icDroneRemoteUpdateAlert@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

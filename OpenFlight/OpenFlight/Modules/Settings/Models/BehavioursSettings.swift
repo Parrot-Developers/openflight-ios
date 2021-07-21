@@ -169,7 +169,7 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
         switch self {
         case .video:
             return BehavioursPreset(horizontalSpeed: 10.0,
-                                    horizontalAcceleration: 0.15,
+                                    horizontalAcceleration: 0.24,
                                     verticalSpeed: 1.0,
                                     rotationSpeed: 10.0,
                                     cameraTilt: 10.0,
@@ -177,7 +177,7 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
                                     inclinedRoll: false)
         case .sport:
             return BehavioursPreset(horizontalSpeed: 25.0,
-                                    horizontalAcceleration: 0.2,
+                                    horizontalAcceleration: 1.01,
                                     verticalSpeed: 2.0,
                                     rotationSpeed: 20.0,
                                     cameraTilt: 20.0,

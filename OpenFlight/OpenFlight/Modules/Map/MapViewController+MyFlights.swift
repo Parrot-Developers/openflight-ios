@@ -50,8 +50,8 @@ internal extension MapViewController {
         removeGraphicOverlay(forKey: Constants.overlayKey)
 
         let customOverlay = AGSGraphicsOverlay()
-        customOverlay.sceneProperties?.surfacePlacement = .drapedBillboarded
-        addGraphicOverlay(customOverlay, forKey: Constants.overlayKey)
+        customOverlay.sceneProperties?.surfacePlacement = .drapedFlat
+        addGraphicOverlay(customOverlay, forKey: Constants.overlayKey, at: 0)
 
         guard let flightPoints = viewModel?.gutma?.points,
             let firstPoint = flightPoints.first

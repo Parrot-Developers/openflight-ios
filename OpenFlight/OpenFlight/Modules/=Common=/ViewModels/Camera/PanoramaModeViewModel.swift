@@ -88,17 +88,14 @@ final class PanoramaModeViewModel: DroneWatcherViewModel<PanoramaModeState> {
     // MARK: - Private Properties
     private var animationPilotingItfRef: Ref<AnimationPilotingItf>?
     private var panoramaModeObserver: DefaultsDisposable?
-    private var animationItf: AnimationPilotingItf? {
-        return drone?.getPilotingItf(PilotingItfs.animation)
-    }
-    private var isCurrentPanoramaModeAvailable: Bool {
-        return animationItf?.isPanoramaPhotoCaptureAvailable(PanoramaMode.current) == true
-    }
+    private var animationItf: AnimationPilotingItf?
+    private var isCurrentPanoramaModeAvailable: Bool?
 
     // MARK: - Init
     override init() {
         super.init()
-
+        animationItf = drone?.getPilotingItf(PilotingItfs.animation)
+        isCurrentPanoramaModeAvailable = animationItf?.isPanoramaPhotoCaptureAvailable(PanoramaMode.current) == true
         listenDefault()
     }
 
@@ -134,10 +131,12 @@ final class PanoramaModeViewModel: DroneWatcherViewModel<PanoramaModeState> {
 private extension PanoramaModeViewModel {
     /// Starts watcher for animation piloting interface.
     func listenAnimation(drone: Drone) {
-        animationPilotingItfRef = drone.getPilotingItf(PilotingItfs.animation) { [weak self] animation in
+        animationPilotingItfRef = drone.getPilotingItf(PilotingItfs.animation) { [weak self] animationItf in
+            self?.animationItf = animationItf
+            self?.isCurrentPanoramaModeAvailable = animationItf?.isPanoramaPhotoCaptureAvailable(PanoramaMode.current) == true
             let copy = self?.state.value.copy()
-            copy?.inProgress = animation?.isPanoramaPhotoCaptureInProgress == true
-            copy?.progress = animation?.animation?.progress ?? 0
+            copy?.inProgress = animationItf?.animation?.status != nil
+            copy?.progress = animationItf?.animation?.progress ?? -1
             copy?.available = self?.isCurrentPanoramaModeAvailable == true
             self?.state.set(copy)
         }
@@ -157,7 +156,7 @@ private extension PanoramaModeViewModel {
     func updatePanoramaMode() {
         let copy = self.state.value.copy()
         copy.mode = PanoramaMode.current
-        copy.available = isCurrentPanoramaModeAvailable
+        copy.available = isCurrentPanoramaModeAvailable ?? false
         self.state.set(copy)
     }
 }

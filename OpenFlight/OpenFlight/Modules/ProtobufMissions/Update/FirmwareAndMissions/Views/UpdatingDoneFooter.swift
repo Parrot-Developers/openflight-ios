@@ -32,7 +32,7 @@ import UIKit
 import Reusable
 
 // MARK: - Protocols
-protocol UpdatingDoneFooterDelegate: class {
+protocol UpdatingDoneFooterDelegate: AnyObject {
     /// Quits the updating processes.
     func quitProcesses()
 }
@@ -96,10 +96,10 @@ private extension UpdatingDoneFooter {
     /// Inits the UI.
     func initUI() {
         continueButton.setTitle(L10n.commonContinue, for: .normal)
-        continueButton.tintColor = ColorName.black.color
-        continueButton.cornerRadiusedWith(backgroundColor: ColorName.white.color,
-                                          borderColor: ColorName.white.color,
-                                          radius: Style.mediumCornerRadius,
+        continueButton.makeup(with: .large)
+        continueButton.cornerRadiusedWith(backgroundColor: .clear,
+                                          borderColor: .white,
+                                          radius: Style.largeCornerRadius,
                                           borderWidth: Style.mediumBorderWidth)
     }
 }

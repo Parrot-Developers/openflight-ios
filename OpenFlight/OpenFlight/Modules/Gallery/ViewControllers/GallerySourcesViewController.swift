@@ -32,7 +32,7 @@ import UIKit
 
 // MARK: - Protocols
 /// Delegate used to discuss with main controller.
-protocol GallerySourcesViewDelegate: class {
+protocol GallerySourcesViewDelegate: AnyObject {
     /// Called when the source did change.
     func sourceDidChange(source: GallerySourceType)
 }
@@ -90,7 +90,7 @@ final class GallerySourcesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.view.backgroundColor = ColorName.black.color
+        self.view.backgroundColor = .white
 
         setupCollection()
 

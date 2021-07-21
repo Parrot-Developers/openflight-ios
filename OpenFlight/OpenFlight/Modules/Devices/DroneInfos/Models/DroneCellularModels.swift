@@ -182,7 +182,7 @@ extension DetailsCellularStatus {
 
     /// Returns true if action button needs to be displayed.
     var shouldShowActionButton: Bool {
-        return self == .simLocked || self == .userNotPaired
+        return self == .simLocked || self == .userNotPaired || self == .noData
     }
 
     /// Returns action button title.
@@ -192,6 +192,8 @@ extension DetailsCellularStatus {
             return L10n.cellularDetailsPairDevice
         case .simLocked:
             return L10n.drone4gEnterPin
+        case .noData:
+            return L10n.cellularConnectionActivate
         default:
             return ""
         }

@@ -35,12 +35,16 @@ import Reusable
 final class ProjectMenuTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var projectName: UILabel!
+    @IBOutlet weak var projectLabel: UILabel!
+    @IBOutlet weak var folderImageView: UIImageView!
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-
-        projectName.makeUp()
+        projectLabel.makeUp(with: .tiny, and: .white)
+        projectLabel.text = L10n.flightPlanMenuProject.uppercased()
+        folderImageView.cornerRadiusedWith(backgroundColor: ColorName.white20.color, radius: Style.largeCornerRadius)
+        projectName.makeUp(with: .regular, and: .white)
     }
 }
 
@@ -51,6 +55,6 @@ extension ProjectMenuTableViewCell {
     /// - Parameters:
     ///     - name: project name
     func setup(name: String?) {
-        self.projectName.text = name
+        projectName.text = name
     }
 }

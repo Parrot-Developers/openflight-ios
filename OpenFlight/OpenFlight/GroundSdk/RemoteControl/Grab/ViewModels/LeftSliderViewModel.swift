@@ -51,16 +51,7 @@ private extension LeftSliderViewModel {
     /// - Parameters:
     ///     - newValue: new tilt velocity value
     func updateCameraTilt(newValue: Double) {
-        guard let gimbal = drone?.getPeripheral(Peripherals.gimbal) else { return }
-
-        gimbal.control(mode: .velocity,
-                       yaw: nil,
-                       pitch: newValue,
-                       roll: nil)
-
-        if gimbal.didOvertilt {
-            NotificationCenter.default.post(name: .remoteControlDidOverTilt,
-                                            object: nil)
-        }
+        // TODO: Wrong injection
+        Services.hub.drone.gimbalTiltService.setTiltVelocity(newValue)
     }
 }

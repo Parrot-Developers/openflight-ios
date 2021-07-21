@@ -32,16 +32,19 @@ import UIKit
 
 // MARK: - Internal Structs
 /// FlightPlan mission provider struct.
-struct FlightPlanMission: MissionProvider {
-    // MARK: - Internal Properties
-    var mission: Mission {
+public struct FlightPlanMission: MissionProvider {
+    // MARK: - Public Properties
+    public init() {}
+
+    public var mission: Mission {
         return Mission(key: FlightPlanMissionMode.standard.rawValue,
                        name: L10n.commonFlightPlan,
                        icon: FlightPlanMissionMode.standard.icon,
                        logName: LogEvent.LogKeyHUDMissionProviderSelectorButton.flightPlan,
-                       modes: FlightPlanMissionMode.allMissionItems)
+                       modes: FlightPlanMissionMode.allMissionItems,
+                       defaultMode: FlightPlanMissionMode.standard.missionMode)
     }
-    var signature: ProtobufMissionSignature = DefaultMissionSignature()
+    public var signature: ProtobufMissionSignature = DefaultMissionSignature()
 }
 
 // MARK: - Internal Enums
@@ -70,7 +73,7 @@ enum FlightPlanMissionMode: String, CaseIterable {
     }
 
     var icon: UIImage {
-        return Asset.Common.Icons.flightPlan.image
+        return Asset.MissionModes.MissionSubModes.icFlightPlan.image
     }
 
     // MARK: - Private Properties

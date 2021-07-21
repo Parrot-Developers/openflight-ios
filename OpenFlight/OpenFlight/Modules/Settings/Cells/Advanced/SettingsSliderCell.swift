@@ -32,7 +32,7 @@ import Reusable
 import GroundSdk
 
 /// Settings Slider Cell Delegate.
-protocol SettingsSliderCellDelegate: class {
+protocol SettingsSliderCellDelegate: AnyObject {
     /// Notify when slider value changed.
     ///
     /// - Parameters:

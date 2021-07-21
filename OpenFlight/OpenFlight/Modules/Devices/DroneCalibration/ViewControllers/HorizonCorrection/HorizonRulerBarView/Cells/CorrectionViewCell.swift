@@ -43,9 +43,10 @@ final class CorrectionViewCell: UICollectionViewCell, NibReusable {
 
     // MARK: - Internal Properties
     /// Value to display.
-    var value: Double = 0.0 {
+    var value: Int = 0 {
         didSet {
-            valueLabel.text = "\(value.rounded(toPlaces: 2))" + unit.unit
+            let val = Double(value) / 10
+            valueLabel.text = "\(val.rounded(toPlaces: 2))" + unit.unit
         }
     }
 

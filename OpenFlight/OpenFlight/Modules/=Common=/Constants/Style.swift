@@ -35,6 +35,7 @@ import UIKit
 // MARK: - Global constants
 public enum Style {
     public static let dash: String = "-"
+    public static let doubledash: String = "--"
     public static let arrow: String = " ▸ "
     public static let dot: String = "."
     public static let colon: String = ":"

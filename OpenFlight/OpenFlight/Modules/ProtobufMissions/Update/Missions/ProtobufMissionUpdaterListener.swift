@@ -59,7 +59,8 @@ final class ProtobufMissionUpdaterListener: NSObject {
 // MARK: - Private Enums
 /// The global state of all missions updates.
 enum ProtobufMissionsGlobalUpdatingState {
-    case processing
+    case ongoing
+    case uploading
     case done
 }
 

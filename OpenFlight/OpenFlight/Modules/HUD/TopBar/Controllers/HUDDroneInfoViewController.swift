@@ -28,9 +28,10 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 // MARK: - Protocols
-protocol HUDDroneInfoViewControllerNavigation: class {
+protocol HUDDroneInfoViewControllerNavigation: AnyObject {
     /// Called when drone informations screen should be opened.
     func openDroneInfos()
 }
@@ -61,6 +62,7 @@ final class HUDDroneInfoViewController: UIViewController {
 
     // MARK: - Private Properties
     private let droneInfosViewModel = DroneInfosViewModel()
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
@@ -81,39 +83,69 @@ private extension HUDDroneInfoViewController {
 
 // MARK: - Private Funcs
 private extension HUDDroneInfoViewController {
+
     /// Sets up view model and initial state.
     func setupViewModel() {
-        droneInfosViewModel.state.valueChanged = { [weak self] state in
-            self?.onBatteryLevelChanged(state.batteryLevel)
-            self?.updateNetworkIcons(state)
-            self?.onGpsStrengthChanged(state.gpsStrength)
-        }
-
-        onBatteryLevelChanged(droneInfosViewModel.state.value.batteryLevel)
-        updateNetworkIcons(droneInfosViewModel.state.value)
-        onGpsStrengthChanged(droneInfosViewModel.state.value.gpsStrength)
+        bindToViewModel()
     }
 
-    /// Called when current battery level changes.
-    func onBatteryLevelChanged(_ batteryLevel: BatteryValueModel) {
-        if let value = batteryLevel.currentValue {
-            droneBatteryLabel.attributedText = NSMutableAttributedString(withBatteryLevel: value)
-        } else {
-            droneBatteryLabel.text = Style.dash
-        }
-
-        batteryAlertBackgroundView.backgroundColor = batteryLevel.alertLevel.color
-    }
-
-    /// Called when wifi signal strength changes.
+    /// Binds the view to the view model
     ///
-    /// - Parameters:
-    ///     - wifiStrength: wifi strength
-    ///     - isWlanActive: tells if wlan is the active link
-    func onWifiStrengthChanged(_ wifiStrength: WifiStrength, isWlanActive: Bool = true) {
-        droneWifiImageView.image = wifiStrength.signalIcon(isLinkActive: isWlanActive)
-        wifiAlertBackgroundView.isHidden = !isWlanActive || wifiStrength == .none
-        if isWlanActive {
+    /// The UI is updated automaticaly when a new value is published by the drone and received in the view model
+    func bindToViewModel() {
+        // Binding battery level
+        droneInfosViewModel.$batteryLevel
+            .sink { [unowned self] batteryLevel in
+                if let batteryValue = batteryLevel.currentValue {
+                    droneBatteryLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryValue)
+                } else {
+                    droneBatteryLabel.text = Style.dash
+                }
+            }
+            .store(in: &cancellables)
+
+        // Binding wifi strength
+        droneInfosViewModel.$wifiStrength
+            .removeDuplicates()
+            .sink { [unowned self] wifiStrength in
+                configureWifiView(wifiStrength: wifiStrength ?? .offline)
+            }
+            .store(in: &cancellables)
+
+        // Binding gps strength
+        droneInfosViewModel.$gpsStrength
+            .sink { [unowned self] gpsStrength in
+                droneGpsImageView.image = gpsStrength.image
+            }
+            .store(in: &cancellables)
+
+        // Binding cellular strength
+        droneInfosViewModel.$cellularStrength
+            .removeDuplicates()
+            .sink { [unowned self] cellularStrength in
+                configureCellularView(cellularStrength: cellularStrength)
+            }
+            .store(in: &cancellables)
+
+        droneInfosViewModel.$currentLink
+            .sink { [unowned self] _ in
+                configureWifiView(wifiStrength: droneInfosViewModel.wifiStrength ?? .offline)
+                configureCellularView(cellularStrength: droneInfosViewModel.cellularStrength)
+            }
+            .store(in: &cancellables)
+    }
+}
+
+private extension HUDDroneInfoViewController {
+
+    /// Sets the color and image for the wifi icon.
+    ///
+    /// - Parameter wifiStrength: the wifi signal received from the drone
+    func configureWifiView(wifiStrength: WifiStrength) {
+        let currenLink = droneInfosViewModel.currentLink
+        droneWifiImageView.image = wifiStrength.signalIcon(isLinkActive: currenLink == .wlan)
+        wifiAlertBackgroundView.isHidden = !(currenLink == .wlan) || wifiStrength == .none
+        if currenLink == .wlan {
             wifiAlertBackgroundView.cornerRadiusedWith(backgroundColor: wifiStrength.backgroundColor.color,
                                                        borderColor: wifiStrength.borderColor.color,
                                                        radius: Style.smallCornerRadius,
@@ -121,33 +153,18 @@ private extension HUDDroneInfoViewController {
         }
     }
 
-    /// Called when gps signal strength changes.
-    func onGpsStrengthChanged(_ gpsStrength: GpsStrength) {
-        droneGpsImageView.image = gpsStrength.image
-    }
-
-    /// Called when 4G signal changes.
+    /// Sets the color and image for the cellular icon.
     ///
-    /// - Parameters:
-    ///     - cellularStrength: cellular strength
-    ///     - isCellularActive: tells if cellular is the active link
-    func onCellularStrengthChanged(_ cellularStrength: CellularStrength,
-                                   isCellularActive: Bool = false) {
-        droneCellularImageView.image = cellularStrength.signalIcon(isLinkActive: isCellularActive)
-        cellularBackgroundView.isHidden = !isCellularActive || cellularStrength == .none
-        if isCellularActive {
+    /// - Parameter cellularStrength: the cellular signal received from the drone
+    func configureCellularView(cellularStrength: CellularStrength) {
+        let currentLink = droneInfosViewModel.currentLink
+        droneCellularImageView.image = cellularStrength.signalIcon(isLinkActive: currentLink == .cellular)
+        cellularBackgroundView.isHidden = !(currentLink == .cellular) || cellularStrength == .none
+        if currentLink == .cellular {
             cellularBackgroundView.cornerRadiusedWith(backgroundColor: cellularStrength.backgroundColor.color,
                                                       borderColor: cellularStrength.borderColor.color,
                                                       radius: Style.smallCornerRadius,
                                                       borderWidth: Style.mediumBorderWidth)
         }
-    }
-
-    /// Update network icons when link did change.
-    func updateNetworkIcons(_ state: DroneInfosState) {
-        onCellularStrengthChanged(state.cellularStrength,
-                                  isCellularActive: state.currentLink == .cellular)
-        onWifiStrengthChanged(state.wifiStrength,
-                              isWlanActive: state.currentLink == .wlan)
     }
 }

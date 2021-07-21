@@ -48,6 +48,13 @@ class QuickSettingsViewModel: DroneWatcherViewModel<DeviceConnectionState>, Sett
     private var obstacleAvoidanceRef: Ref<ObstacleAvoidance>?
     private var cameraRef: Ref<MainCamera2>?
     private var rthRef: Ref<ReturnHomePilotingItf>?
+    private unowned var obstacleAvoidanceMonitor: ObstacleAvoidanceMonitor
+
+    // MARK: - Init
+    init(obstacleAvoidanceMonitor: ObstacleAvoidanceMonitor) {
+        self.obstacleAvoidanceMonitor = obstacleAvoidanceMonitor
+        super.init()
+    }
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
@@ -104,8 +111,8 @@ extension QuickSettingsViewModel {
                 SettingEntry(setting: newZoomModel,
                              title: L10n.settingsCameraLossyZoom,
                              isEnabled: newZoomModel?.currentValue != nil,
-                             image: Asset.Settings.Quick.extrazoomActive.image,
-                             imageDisabled: Asset.Settings.Quick.extrazoomInactive.image,
+                             image: Asset.Settings.Quick.losslessZoomActive.image,
+                             imageDisabled: Asset.Settings.Quick.losslessZoomInactive.image,
                              itemLogKey: LogEvent.LogKeyQuickSettings.extraZoom),
                 SettingEntry(setting: self.autoRecordModel,
                              title: L10n.settingsCameraAutoRecord,
@@ -122,14 +129,9 @@ private extension QuickSettingsViewModel {
         let zoomAllowance = drone?.currentCamera?.config[Camera2Params.zoomVelocityControlQualityMode]?.value
         return DroneSettingModel(allValues: Camera2ZoomVelocityControlQualityMode.allValues,
                                  supportedValues: Camera2ZoomVelocityControlQualityMode.allValues,
-                                 currentValue: zoomAllowance,
-                                 isUpdating: nil) { [weak self] mode in
+                                 currentValue: zoomAllowance) { mode in
             guard let mode = mode as? Camera2ZoomVelocityControlQualityMode else { return }
-
-            let currentEditor = self?.drone?.currentCamera?.currentEditor
-            let currentConfig = self?.drone?.currentCamera?.config
-            currentEditor?[Camera2Params.zoomVelocityControlQualityMode]?.value = mode
-            currentEditor?.saveSettings(currentConfig: currentConfig)
+            Services.hub.drone.zoomService.setQualityMode(mode)
         }
     }
 
@@ -138,8 +140,7 @@ private extension QuickSettingsViewModel {
         let autoRecord = drone?.currentCamera?.config[Camera2Params.autoRecordMode]?.value
         return DroneSettingModel(allValues: Camera2AutoRecordMode.allValues,
                                  supportedValues: Camera2AutoRecordMode.allValues,
-                                 currentValue: autoRecord,
-                                 isUpdating: nil) { [weak self] mode in
+                                 currentValue: autoRecord) { [weak self] mode in
             guard let mode = mode as? Camera2AutoRecordMode else { return }
 
             let currentEditor = self?.drone?.currentCamera?.currentEditor
@@ -154,17 +155,15 @@ private extension QuickSettingsViewModel {
         guard let obstacleAvoidance = drone?.getPeripheral(Peripherals.obstacleAvoidance) else {
             return DroneSettingModel(allValues: ObstacleAvoidanceMode.allValues,
                                      supportedValues: ObstacleAvoidanceMode.allValues,
-                                     currentValue: ObstacleAvoidanceMode.disabled,
-                                     isUpdating: false)
+                                     currentValue: ObstacleAvoidanceMode.disabled)
         }
 
         return DroneSettingModel(allValues: ObstacleAvoidanceMode.allValues,
                                  supportedValues: ObstacleAvoidanceMode.allValues,
                                  currentValue: obstacleAvoidance.mode.preferredValue,
-                                 isUpdating: obstacleAvoidance.mode.updating) { [weak obstacleAvoidance] mode in
-            guard let strongMode = mode as? ObstacleAvoidanceMode else { return }
-
-            obstacleAvoidance?.mode.preferredValue = strongMode
+                                 isUpdating: obstacleAvoidance.mode.updating) { [unowned obstacleAvoidanceMonitor] mode in
+            guard let mode = mode as? ObstacleAvoidanceMode else { return }
+            obstacleAvoidanceMonitor.userAsks(mode: mode)
         }
     }
 
@@ -173,8 +172,7 @@ private extension QuickSettingsViewModel {
         let startAudio = drone?.currentCamera?.config[Camera2Params.audioRecordingMode]?.value
         return DroneSettingModel(allValues: Camera2AudioRecordingMode.allValues,
                                  supportedValues: Camera2AudioRecordingMode.allValues,
-                                 currentValue: startAudio,
-                                 isUpdating: nil) { [weak self] audio in
+                                 currentValue: startAudio) { [weak self] audio in
             guard let audio = audio as? Camera2AudioRecordingMode else { return }
 
             let currentEditor = self?.drone?.currentCamera?.currentEditor

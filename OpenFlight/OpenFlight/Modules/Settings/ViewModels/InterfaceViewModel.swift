@@ -41,9 +41,6 @@ final class InterfaceViewModel: BaseViewModel<DeviceConnectionState>, SettingsVi
         return [SettingEntry(setting: SettingsMapDisplayType.self,
                              title: L10n.settingsInterfaceMinimapType,
                              itemLogKey: LogEvent.LogKeyAdvancedSettings.mapType),
-                SettingEntry(setting: SecondaryScreenType.self,
-                             title: L10n.settingsInterfaceSecondaryScreen,
-                             itemLogKey: LogEvent.LogKeyAdvancedSettings.secondaryScreenType),
                 SettingEntry(setting: UserMeasurementSetting.self,
                              title: L10n.settingsInterfaceMeasurementSystem,
                              itemLogKey: LogEvent.LogKeyAdvancedSettings.measurementSystem)]
@@ -51,7 +48,6 @@ final class InterfaceViewModel: BaseViewModel<DeviceConnectionState>, SettingsVi
 
     func resetSettings() {
         Defaults.userMiniMapTypeSetting = InterfacePreset.miniMapType.rawValue
-        Defaults.secondaryScreenSetting = InterfacePreset.secondaryScreenType.rawValue
         Defaults.userMeasurementSetting = InterfacePreset.measurementSystem.rawValue
         notifyChange()
     }

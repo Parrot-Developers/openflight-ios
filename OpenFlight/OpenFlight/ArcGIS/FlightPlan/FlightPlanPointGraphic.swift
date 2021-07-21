@@ -53,3 +53,31 @@ public class FlightPlanPointGraphic: FlightPlanGraphic {
         /// Implement in children.
     }
 }
+
+extension FlightPlanPointGraphic {
+    /// Create image with text
+    ///
+    /// - Parameters:
+    ///     - name: name
+    ///     - textColor: text color
+    ///     - fontSize: size of the font
+    ///     - size: size of the text graphic
+    /// - Returns: generated image
+    static func imageWith(name: String?, textColor: UIColor, fontSize: CGFloat, size: CGSize) -> UIImage? {
+        let frame = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+        let nameLabel = UILabel(frame: frame)
+        nameLabel.textAlignment = .center
+        nameLabel.backgroundColor = .clear
+        nameLabel.textColor = textColor
+        nameLabel.font = UIFont.rajdhaniSemiBold(size: fontSize)
+        nameLabel.text = name
+        UIGraphicsBeginImageContextWithOptions(frame.size, false, 0.0)
+        if let currentContext = UIGraphicsGetCurrentContext() {
+            nameLabel.layer.render(in: currentContext)
+            let nameImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            return nameImage
+        }
+        return nil
+    }
+}

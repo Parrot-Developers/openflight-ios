@@ -69,7 +69,7 @@ extension MapMode {
 }
 
 /// State for center location.
-enum MapCenterState {
+public enum MapCenterState {
     case drone
     case user
     case none
@@ -89,16 +89,16 @@ enum MapCenterState {
 
 // MARK: - Public Structs
 /// Represents a location with a specific heading.
-struct OrientedLocation: Equatable {
+public struct OrientedLocation: Equatable {
     /// Coordinates of the location.
-    var coordinates: CLLocationCoordinate2D?
+    public var coordinates: Location3D?
     /// Heading of the location.
-    var heading: CLLocationDirection = 0.0
+    public var heading: CLLocationDirection = 0.0
 
     /// Returns true if current coordinates are valid.
-    var isValid: Bool {
+    public var isValid: Bool {
         guard let coordinates = coordinates,
-            CLLocationCoordinate2DIsValid(coordinates)
+              CLLocationCoordinate2DIsValid(coordinates.coordinate)
             else {
                 return false
         }
@@ -106,7 +106,7 @@ struct OrientedLocation: Equatable {
     }
 
     /// Returns coordinates only if they are valid.
-    var validCoordinates: CLLocationCoordinate2D? {
+    public var validCoordinates: Location3D? {
         return isValid ? coordinates : nil
     }
 }

@@ -67,6 +67,8 @@ final class ImagingBarCameraIsoViewModel: AutomatableBarButtonViewModel<Automata
 
         let currentEditor = camera.currentEditor
         currentEditor[Camera2Params.isoSensitivity]?.value = cameraIso
+        currentEditor[Camera2Params.exposureMode]?.value =
+            camera.config[Camera2Params.exposureMode]?.value.toManualIsoSensitivity()
         currentEditor.saveSettings(currentConfig: camera.config)
     }
 
@@ -134,7 +136,7 @@ private extension ImagingBarCameraIsoViewModel {
             }
 
             copy.supportedModes = isoSensitivity.currentSupportedValues.sorted()
-            copy.image = exposureMode.value.automaticIsoSensitivity ? Asset.BottomBar.Icons.iconAuto.image : nil
+            copy.image = exposureMode.value == .manualShutterSpeed ? Asset.BottomBar.Icons.iconAuto.image : nil
             copy.isAutomatic = exposureMode.value.automaticIsoSensitivity
             self?.state.set(copy)
             self?.state.value.exposureSettingsMode.set(exposureMode.value)

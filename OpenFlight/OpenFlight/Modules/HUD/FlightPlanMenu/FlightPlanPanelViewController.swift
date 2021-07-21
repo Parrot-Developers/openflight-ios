@@ -191,7 +191,7 @@ private extension FlightPlanPanelViewController {
            let flightPlanProvider = flightPlanPanelViewModel.state.value.missionMode.flightPlanProvider {
             guard flightPlanProvider.flightPlanCoordinator != nil else {
                 FlightPlanManager.shared.new(flightPlanProvider: flightPlanProvider)
-                coordinator?.startFlightPlanEdition()
+                coordinator?.startFlightPlanEdition(shouldCenter: true)
                 return
             }
 
@@ -222,11 +222,13 @@ private extension FlightPlanPanelViewController {
 private extension FlightPlanPanelViewController {
     /// Inits view.
     func initView() {
-        projectNameLabel.makeUp(with: .small, and: .white50)
+        projectNameLabel.makeUp(with: .tiny, and: .white)
         projectNameLabel.text = L10n.flightPlanMenuProject.uppercased()
         folderButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color, radius: Style.largeCornerRadius)
         historyButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color, radius: Style.largeCornerRadius)
         playButton.makeup()
+        playButton.setTitleColor(ColorName.white.color, for: .normal)
+        playButton.setTitleColor(ColorName.white30.color, for: .disabled)
         stopButton.cornerRadiusedWith(backgroundColor: ColorName.redTorch.color, radius: Style.largeCornerRadius)
         stopButton.setImage(Asset.Common.Icons.stop.image, for: .normal)
         editButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color, radius: Style.largeCornerRadius)
@@ -283,29 +285,30 @@ private extension FlightPlanPanelViewController {
         playButton.setTitle(state.runFlightPlanState?.formattedDuration, for: .normal)
         actionButton.isHidden = isActive
         stopButton.isHidden = !isActive
-        flightPlanPanelProgressView?.isHidden = !(state.isFlightPlanLoaded && state.isConnected())
-
+        stopButton.isEnabled = state.isConnected()
+        flightPlanPanelProgressView?.isHidden = !state.isFlightPlanLoaded
         if isActive {
             buttonsStackView.distribution = .fill
             switch runState {
             case .playing:
                 playButton.setImage(Asset.Common.Icons.pause.image, for: .normal)
                 playButton.cornerRadiusedWith(backgroundColor: .clear,
-                                              borderColor: ColorName.white.color,
-                                              radius: Style.largeCornerRadius,
-                                              borderWidth: Style.mediumBorderWidth)
+                    borderColor: state.isConnected() ? ColorName.white.color : ColorName.white30.color,
+                    radius: Style.largeCornerRadius,
+                    borderWidth: Style.mediumBorderWidth)
+
             case .paused,
                  .uploading:
-                setupDefaultPlayButtonStyle()
+                setupDefaultPlayButtonStyle(hasNoBlockingIssue: state.runFlightPlanState?.unavailabilityReasons.hasNoBlockingIssue)
             default:
                 break
             }
         } else {
             buttonsStackView.distribution = .fillEqually
-            setupDefaultPlayButtonStyle()
+            setupDefaultPlayButtonStyle(hasNoBlockingIssue: state.runFlightPlanState?.unavailabilityReasons.hasNoBlockingIssue)
             editButton.setTitle(state.isFlightPlanLoaded ? "" : L10n.flightPlanNewFlightPlan,
                                 for: .normal)
-            editButton.setImage(state.isFlightPlanLoaded ? Asset.MyFlights.iconEdit.image : nil,
+            editButton.setImage(state.isFlightPlanLoaded ? Asset.Common.Icons.iconEdit.image : nil,
                                 for: .normal)
             editButton.setTitleColor(state.isFlightPlanLoaded ? ColorName.white.color : ColorName.greenSpring.color,
                                      for: .normal)
@@ -324,7 +327,8 @@ private extension FlightPlanPanelViewController {
         }
 
         if let viewModel = FlightPlanManager.shared.currentFlightPlanViewModel {
-            historyButton.isHidden = viewModel.executions.isEmpty == true || isActive
+            historyButton.isHidden = isActive
+            historyButton.isEnabled = !viewModel.executions.isEmpty
             projectButton.setTitle(viewModel.state.value.title,
                                    for: .normal)
         } else {
@@ -342,10 +346,16 @@ private extension FlightPlanPanelViewController {
     }
 
     /// Sets up default play button style.
-    func setupDefaultPlayButtonStyle() {
+    func setupDefaultPlayButtonStyle(hasNoBlockingIssue: Bool?) {
         playButton.setImage(Asset.Common.Icons.play.image, for: .normal)
-        playButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
-                                      radius: Style.largeCornerRadius)
+
+        if hasNoBlockingIssue == nil || hasNoBlockingIssue == true {
+            playButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
+                                          radius: Style.largeCornerRadius)
+        } else {
+            playButton.cornerRadiusedWith(backgroundColor: ColorName.redTorch25.color,
+                                          radius: Style.largeCornerRadius)
+        }
     }
 
     /// Disables controls for a specified time interval.

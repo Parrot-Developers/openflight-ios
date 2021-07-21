@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -15,117 +16,100 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="DashboardDeviceCell" translatesAutoresizingMaskIntoConstraints="NO" id="gTV-IL-0wX" customClass="DashboardDeviceCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="140" height="140"/>
+            <rect key="frame" x="0.0" y="0.0" width="162" height="158"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                <rect key="frame" x="0.0" y="0.0" width="140" height="140"/>
+                <rect key="frame" x="0.0" y="0.0" width="162" height="158"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <view multipleTouchEnabled="YES" alpha="0.80000000000000004" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="emZ-eg-iYF" userLabel="Content view">
-                        <rect key="frame" x="0.0" y="0.0" width="140" height="140"/>
+                    <view multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="emZ-eg-iYF" userLabel="Content view">
+                        <rect key="frame" x="0.0" y="0.0" width="162" height="158"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" translatesAutoresizingMaskIntoConstraints="NO" id="Bii-xG-UvL">
-                                <rect key="frame" x="9" y="9" width="122" height="14"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" translatesAutoresizingMaskIntoConstraints="NO" id="Tk9-7r-Ns1">
+                                <rect key="frame" x="9" y="9" width="144" height="140"/>
                                 <subviews>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGps55" translatesAutoresizingMaskIntoConstraints="NO" id="ix6-JG-9yL">
-                                        <rect key="frame" x="0.0" y="0.0" width="14" height="14"/>
-                                    </imageView>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic4GNoSignal" translatesAutoresizingMaskIntoConstraints="NO" id="BLO-o8-Qzy">
-                                        <rect key="frame" x="33" y="0.0" width="11" height="14"/>
-                                    </imageView>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icWifi" translatesAutoresizingMaskIntoConstraints="NO" id="4G2-JS-UEk">
-                                        <rect key="frame" x="62" y="0.0" width="17" height="14"/>
-                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </imageView>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dQH-IC-WKH">
-                                        <rect key="frame" x="82" y="0.0" width="40" height="14"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Bii-xG-UvL">
+                                        <rect key="frame" x="0.0" y="0.0" width="144" height="15.5"/>
                                         <subviews>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBattery" translatesAutoresizingMaskIntoConstraints="NO" id="dRF-M7-xo2">
-                                                <rect key="frame" x="5.5" y="0.0" width="7" height="14"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="9MK-Wr-SSU">
+                                                <rect key="frame" x="0.0" y="2" width="34" height="12"/>
+                                                <subviews>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGpsNone" translatesAutoresizingMaskIntoConstraints="NO" id="ix6-JG-9yL">
+                                                        <rect key="frame" x="0.0" y="0.0" width="15" height="12"/>
+                                                    </imageView>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon4GOffline" translatesAutoresizingMaskIntoConstraints="NO" id="BLO-o8-Qzy">
+                                                        <rect key="frame" x="23" y="0.0" width="11" height="12"/>
+                                                    </imageView>
+                                                </subviews>
+                                            </stackView>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icWifiOffline" translatesAutoresizingMaskIntoConstraints="NO" id="4G2-JS-UEk">
+                                                <rect key="frame" x="59" y="2" width="16" height="12"/>
                                             </imageView>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="center" verticalHuggingPriority="251" text="90%" lineBreakMode="characterWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="X6Y-RX-Fxe">
-                                                <rect key="frame" x="16.5" y="2" width="23.5" height="12"/>
-                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
+                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Lua-sr-P2Z">
+                                                <rect key="frame" x="89" y="0.0" width="55" height="15.5"/>
+                                                <subviews>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryNone" translatesAutoresizingMaskIntoConstraints="NO" id="dRF-M7-xo2">
+                                                        <rect key="frame" x="0.0" y="0.0" width="27.5" height="15.5"/>
+                                                    </imageView>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="center" verticalHuggingPriority="251" text="90%" lineBreakMode="characterWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="X6Y-RX-Fxe">
+                                                        <rect key="frame" x="27.5" y="0.0" width="27.5" height="15.5"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                        <color key="textColor" name="sambuca"/>
+                                                        <nil key="highlightedColor"/>
+                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                        </variation>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
                                         </subviews>
+                                    </stackView>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icController" translatesAutoresizingMaskIntoConstraints="NO" id="sau-Xx-DUA">
+                                        <rect key="frame" x="0.0" y="52.5" width="144" height="25"/>
+                                        <color key="tintColor" name="sambuca"/>
                                         <constraints>
-                                            <constraint firstAttribute="bottom" secondItem="X6Y-RX-Fxe" secondAttribute="bottom" id="SwU-wY-2mt"/>
-                                            <constraint firstAttribute="bottom" secondItem="dRF-M7-xo2" secondAttribute="bottom" id="Z64-ja-trY"/>
-                                            <constraint firstAttribute="width" constant="40" id="ZdK-Uo-Rd0"/>
-                                            <constraint firstItem="dRF-M7-xo2" firstAttribute="trailing" secondItem="X6Y-RX-Fxe" secondAttribute="leading" constant="-4" id="Zyf-Od-cRU"/>
-                                            <constraint firstItem="X6Y-RX-Fxe" firstAttribute="top" secondItem="dQH-IC-WKH" secondAttribute="top" constant="2" id="dLw-sf-dYi"/>
-                                            <constraint firstAttribute="height" constant="14" id="kHy-XQ-Q9G"/>
-                                            <constraint firstAttribute="trailing" secondItem="X6Y-RX-Fxe" secondAttribute="trailing" id="mYx-Re-ptQ"/>
-                                            <constraint firstItem="dRF-M7-xo2" firstAttribute="top" secondItem="dQH-IC-WKH" secondAttribute="top" id="njW-ze-z0Z"/>
+                                            <constraint firstAttribute="height" constant="25" id="a6K-mh-Xld">
+                                                <variation key="heightClass=regular-widthClass=regular" constant="40"/>
+                                            </constraint>
                                         </constraints>
-                                    </view>
-                                </subviews>
-                                <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="dQH-IC-WKH" secondAttribute="trailing" id="zLf-rc-eSp"/>
-                                </constraints>
-                            </stackView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRemote" translatesAutoresizingMaskIntoConstraints="NO" id="sau-Xx-DUA">
-                                <rect key="frame" x="9" y="38" width="122" height="42"/>
-                            </imageView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="20q-ZH-dxg">
-                                <rect key="frame" x="9" y="95" width="122" height="30"/>
-                                <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fhz-yt-jKF">
-                                        <rect key="frame" x="0.0" y="0.0" width="122" height="0.0"/>
-                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GM0-S8-ogq">
-                                        <rect key="frame" x="0.0" y="10" width="122" height="20"/>
+                                    </imageView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" alignment="center" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="0GU-XM-u1r">
+                                        <rect key="frame" x="0.0" y="114" width="144" height="26"/>
                                         <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="disconnected" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="X1D-nF-bqk">
-                                                <rect key="frame" x="0.0" y="0.0" width="122" height="20"/>
-                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                <color key="textColor" red="0.0092955669388175011" green="0.99204188585281372" blue="0.35139968991279602" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fhz-yt-jKF">
+                                                <rect key="frame" x="72" y="0.0" width="0.0" height="0.0"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <color key="textColor" name="sambuca"/>
                                                 <nil key="highlightedColor"/>
+                                                <variation key="heightClass=regular-widthClass=regular">
+                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="18"/>
+                                                </variation>
                                             </label>
-                                            <view hidden="YES" multipleTouchEnabled="YES" contentMode="center" translatesAutoresizingMaskIntoConstraints="NO" id="Zm8-cc-0UZ" customClass="UpdateCustomButton" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="27" y="0.0" width="68" height="20"/>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="c6T-Se-u3F" customClass="DeviceStateButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="57" y="7" width="30" height="19"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="68" id="5bD-fv-ljQ"/>
-                                                    <constraint firstAttribute="width" priority="250" constant="68" id="UEc-PQ-9Yc"/>
+                                                    <constraint firstAttribute="height" constant="19" id="86e-X9-NaH"/>
                                                 </constraints>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                <inset key="titleEdgeInsets" minX="6" minY="2" maxX="6" maxY="2"/>
+                                                <variation key="heightClass=regular-widthClass=regular">
+                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                </variation>
                                                 <connections>
-                                                    <action selector="needUpdateButtonTouchedUpInside:" destination="gTV-IL-0wX" eventType="touchUpInside" id="I23-SZ-zYp"/>
+                                                    <action selector="stateDeviceTouchedUpInside:" destination="gTV-IL-0wX" eventType="touchUpInside" id="fTQ-8j-g6I"/>
                                                 </connections>
-                                            </view>
+                                            </button>
                                         </subviews>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstAttribute="bottom" secondItem="X1D-nF-bqk" secondAttribute="bottom" id="3iQ-Qw-CH5"/>
-                                            <constraint firstAttribute="trailing" secondItem="X1D-nF-bqk" secondAttribute="trailing" id="KVc-Fh-XwU"/>
-                                            <constraint firstItem="Zm8-cc-0UZ" firstAttribute="top" secondItem="GM0-S8-ogq" secondAttribute="top" id="KYO-XO-tzk"/>
-                                            <constraint firstItem="X1D-nF-bqk" firstAttribute="top" secondItem="GM0-S8-ogq" secondAttribute="top" id="N1O-FH-gwY"/>
-                                            <constraint firstAttribute="bottom" secondItem="Zm8-cc-0UZ" secondAttribute="bottom" id="Tfc-SV-ZJj"/>
-                                            <constraint firstItem="X1D-nF-bqk" firstAttribute="leading" secondItem="GM0-S8-ogq" secondAttribute="leading" id="jGQ-zP-XUI"/>
-                                            <constraint firstAttribute="height" constant="20" id="joQ-JF-pwd"/>
-                                            <constraint firstItem="Zm8-cc-0UZ" firstAttribute="centerX" secondItem="GM0-S8-ogq" secondAttribute="centerX" id="kuj-Qi-rcN"/>
-                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Zm8-cc-0UZ" secondAttribute="trailing" id="n1l-YI-ARR"/>
-                                            <constraint firstItem="Zm8-cc-0UZ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="GM0-S8-ogq" secondAttribute="leading" id="oAQ-oA-WbH"/>
-                                        </constraints>
-                                    </view>
+                                    </stackView>
                                 </subviews>
                             </stackView>
                         </subviews>
-                        <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="Bii-xG-UvL" firstAttribute="top" secondItem="emZ-eg-iYF" secondAttribute="top" constant="9" id="3Rb-5f-uoE"/>
-                            <constraint firstItem="Bii-xG-UvL" firstAttribute="leading" secondItem="emZ-eg-iYF" secondAttribute="leading" constant="9" id="B2T-B5-LMF"/>
-                            <constraint firstAttribute="trailing" secondItem="20q-ZH-dxg" secondAttribute="trailing" constant="9" id="FLu-lV-tPP"/>
-                            <constraint firstAttribute="bottom" secondItem="20q-ZH-dxg" secondAttribute="bottom" constant="15" id="GKZ-4j-uQf"/>
-                            <constraint firstItem="sau-Xx-DUA" firstAttribute="top" secondItem="Bii-xG-UvL" secondAttribute="bottom" constant="15" id="LKS-if-YWA"/>
-                            <constraint firstItem="sau-Xx-DUA" firstAttribute="leading" secondItem="emZ-eg-iYF" secondAttribute="leading" constant="9" id="NAg-oN-ebo"/>
-                            <constraint firstItem="20q-ZH-dxg" firstAttribute="top" secondItem="sau-Xx-DUA" secondAttribute="bottom" constant="15" id="Vab-Bx-K8L"/>
-                            <constraint firstItem="20q-ZH-dxg" firstAttribute="leading" secondItem="emZ-eg-iYF" secondAttribute="leading" constant="9" id="ZQu-fz-Avt"/>
-                            <constraint firstAttribute="trailing" secondItem="sau-Xx-DUA" secondAttribute="trailing" constant="9" id="eHp-oJ-YcC"/>
-                            <constraint firstAttribute="trailing" secondItem="Bii-xG-UvL" secondAttribute="trailing" constant="9" id="eVa-Jr-vr4"/>
+                            <constraint firstItem="Tk9-7r-Ns1" firstAttribute="leading" secondItem="emZ-eg-iYF" secondAttribute="leading" constant="9" id="4h4-RJ-Egh"/>
+                            <constraint firstAttribute="bottom" secondItem="Tk9-7r-Ns1" secondAttribute="bottom" constant="9" id="Knp-Pf-BiK"/>
+                            <constraint firstAttribute="trailing" secondItem="Tk9-7r-Ns1" secondAttribute="trailing" constant="9" id="xJu-Tp-3FA"/>
+                            <constraint firstItem="Tk9-7r-Ns1" firstAttribute="top" secondItem="emZ-eg-iYF" secondAttribute="top" constant="9" id="zES-JF-2H2"/>
                         </constraints>
                         <userDefinedRuntimeAttributes>
                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -141,25 +125,28 @@
                 <constraint firstItem="emZ-eg-iYF" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="kFn-3q-dd5"/>
                 <constraint firstAttribute="bottom" secondItem="emZ-eg-iYF" secondAttribute="bottom" id="sxX-Cw-G1Q"/>
             </constraints>
+            <size key="customSize" width="162" height="158"/>
             <connections>
+                <outlet property="batteryLevelImageView" destination="dRF-M7-xo2" id="g23-eq-uvC"/>
                 <outlet property="batteryValueLabel" destination="X6Y-RX-Fxe" id="F9I-Eg-bQE"/>
-                <outlet property="bottomView" destination="GM0-S8-ogq" id="ekz-sh-NCx"/>
                 <outlet property="deviceImageView" destination="sau-Xx-DUA" id="A7y-S1-X4i"/>
+                <outlet property="deviceStateButton" destination="c6T-Se-u3F" id="wv5-Hp-j4A"/>
                 <outlet property="gpsStatusImageView" destination="ix6-JG-9yL" id="EnJ-Od-VDQ"/>
                 <outlet property="nameDeviceLabel" destination="Fhz-yt-jKF" id="502-Cc-Cj8"/>
-                <outlet property="needUpdateButton" destination="Zm8-cc-0UZ" id="yhu-vW-AwU"/>
                 <outlet property="networkImageView" destination="BLO-o8-Qzy" id="xDG-C2-evT"/>
-                <outlet property="stateDeviceLabel" destination="X1D-nF-bqk" id="Tw2-IL-QSZ"/>
                 <outlet property="wifiStatusImageView" destination="4G2-JS-UEk" id="dll-cC-Lme"/>
             </connections>
-            <point key="canvasLocation" x="137.59999999999999" y="154.72263868065968"/>
+            <point key="canvasLocation" x="155.19999999999999" y="162.81859070464768"/>
         </collectionViewCell>
     </objects>
     <resources>
-        <image name="ic4GNoSignal" width="11" height="12"/>
-        <image name="icBattery" width="7" height="14"/>
-        <image name="icGps55" width="14" height="12"/>
-        <image name="icRemote" width="114" height="86"/>
-        <image name="icWifi" width="17" height="13"/>
+        <image name="icBatteryNone" width="7" height="14"/>
+        <image name="icController" width="33" height="25"/>
+        <image name="icGpsNone" width="15" height="12"/>
+        <image name="icWifiOffline" width="16" height="12"/>
+        <image name="icon4GOffline" width="11" height="12"/>
+        <namedColor name="sambuca">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

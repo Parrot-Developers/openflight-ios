@@ -35,7 +35,6 @@ final class RearLeftButtonViewModel: DroneStateViewModel<DeviceConnectionState> 
     // MARK: - Private Enums
     private enum Constants {
         static let defaultZoom: Double = 1.0
-        static let defaultTilt: Double = 0.0
     }
 }
 
@@ -56,10 +55,7 @@ private extension RearLeftButtonViewModel {
     func resetTilt() {
         guard let gimbal = drone?.getPeripheral(Peripherals.gimbal) else { return }
 
-        gimbal.control(mode: .position,
-                       yaw: Constants.defaultTilt,
-                       pitch: nil,
-                       roll: nil)
+        gimbal.resetAttitude()
     }
 
     /// Resets zoom level.

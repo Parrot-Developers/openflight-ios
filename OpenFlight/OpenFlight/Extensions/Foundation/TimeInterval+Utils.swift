@@ -40,6 +40,15 @@ public extension TimeInterval {
         return String(format: "%02d:%02d", minutes, seconds)
     }
 
+    /// Returns a string containing current time interval with HH:MM:SS format.
+    var longFormattedString: String {
+        let interval = Int(self)
+        let hours = interval / 3600
+        let seconds = interval % 60
+        let minutes = (interval / 60)
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+
     /// Returns a string containing current time interval with HMS format.
     var formattedHmsString: String? {
         let durationFormatter = DateComponentsFormatter()

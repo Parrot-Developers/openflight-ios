@@ -49,14 +49,12 @@ final class CellularConfigurationViewController: UIViewController {
     static func instantiate(coordinator: HUDCoordinator) -> CellularConfigurationViewController {
         let viewController = StoryboardScene.CellularConfiguration.initialScene.instantiate()
         viewController.coordinator = coordinator
-
         return viewController
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         initView()
         initViewModel()
     }
@@ -97,24 +95,17 @@ private extension CellularConfigurationViewController {
 private extension CellularConfigurationViewController {
     /// Inits the view.
     func initView() {
-        panelView.addBlurEffect()
-        closeButton.setImage(Asset.Common.Icons.icClose.image,
-                             for: .normal)
-        laterButton.setTitle(L10n.commonLater,
-                             for: .normal)
-        configureButton.setTitle(L10n.cellularConnectionAvailableConfigure,
-                                 for: .normal)
+        panelView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
+        closeButton.setImage(Asset.Common.Icons.icClose.image, for: .normal)
+        laterButton.setTitle(L10n.commonLater, for: .normal)
+        configureButton.setTitle(L10n.cellularConnectionAvailableConfigure, for: .normal)
         descriptionLabel.text = L10n.cellularConnectionAvailableSimDetected
             + Style.newLine
             + L10n.cellularConnectionAvailableConfigureNow
         titleLabel.text = L10n.cellularConnectionAvailable
-        titleLabel.makeUp(with: .huge)
-        descriptionLabel.makeUp(with: .large)
-        laterButton.makeup(with: .large)
-        configureButton.makeup(with: .large)
-        configureButton.cornerRadiusedWith(backgroundColor: ColorName.greenPea.color,
+        configureButton.cornerRadiusedWith(backgroundColor: ColorName.greenMediumSea.color,
                                            radius: Style.largeCornerRadius)
-        laterButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
+        laterButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
                                        radius: Style.largeCornerRadius)
     }
 

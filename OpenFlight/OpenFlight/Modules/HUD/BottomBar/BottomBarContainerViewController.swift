@@ -32,7 +32,7 @@ import UIKit
 
 // MARK: - Protocols
 /// Protocol used to show and hide bottom bar levels.
-protocol BottomBarContainerDelegate: class {
+protocol BottomBarContainerDelegate: AnyObject {
     /// Opens level one level and displays appropriate bar given viewModel.
     func showLevelOne<T: BarButtonState>(viewModel: BarButtonViewModel<T>)
     /// Closes level one with animation.
@@ -114,7 +114,6 @@ private extension BottomBarContainerViewController {
                   strongSelf.isPanoramaInProgress != state.inProgress else {
                 return
             }
-
             strongSelf.isPanoramaInProgress = state.inProgress
         }
     }
@@ -152,6 +151,7 @@ extension BottomBarContainerViewController: BottomBarContainerDelegate {
                         self.levelOneContainerView.isHidden = false
                         self.levelOneContainerView.alpha = 1.0
                        })
+
         // Autohide level two when a new level one bar is displayed.
         hideLevelTwo()
     }

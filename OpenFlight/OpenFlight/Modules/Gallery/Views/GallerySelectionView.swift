@@ -33,11 +33,13 @@ import Reusable
 
 // MARK: - Protocols
 /// Gallery Selection View Delegate.
-protocol GallerySelectionDelegate: class {
+protocol GallerySelectionDelegate: AnyObject {
     /// Delete the selection.
     func mustDeleteSelection()
     /// Download the selection.
     func mustDownloadSelection()
+    /// Share the selection.
+    func mustShareSelection()
 }
 
 /// Gallery selection view.
@@ -47,6 +49,7 @@ final class GallerySelectionView: UIView, NibOwnerLoadable {
     @IBOutlet private weak var deleteButton: UIButton!
     @IBOutlet private weak var infoLabel: UILabel!
     @IBOutlet private weak var downloadButton: UIButton!
+    @IBOutlet private weak var shareButton: UIButton!
 
     // MARK: - Internal Properties
     weak var delegate: GallerySelectionDelegate?
@@ -74,6 +77,10 @@ private extension GallerySelectionView {
 
     @IBAction func downloadButtonDidTouchUpInside(_ sender: Any) {
         delegate?.mustDownloadSelection()
+    }
+
+    @IBAction func shareButtonDidTouchUpInside(_ sender: Any) {
+        delegate?.mustShareSelection()
     }
 }
 
@@ -108,30 +115,44 @@ internal extension GallerySelectionView {
         downloadButton.isHidden = !enabled
     }
 
-    /// Checks if medias are downloaded.
+    /// Checks if all medias are downloaded.
     ///
     /// - Parameters:
-    ///    - selectedMedias: medias wich are selected
-    func areDownloadedMedias(selectedMedias: [GalleryMedia]) -> Bool {
-        return !selectedMedias.contains(where: { $0.downloadState != .downloaded })
+    ///    - selectedMedias: medias which are selected
+    func allMediasDownloaded(selectedMedias: [GalleryMedia]) -> Bool {
+        return !selectedMedias.isEmpty && !selectedMedias.contains(where: { $0.downloadState != .downloaded })
     }
 
-    /// Disables download button if selected medias are already downloaded.
+    /// Sets if share is allowed.
+    ///
+    /// - Parameters:
+    ///    - enabled: enabled
+    func setAllowShare(_ enabled: Bool) {
+        shareButton.isHidden = !enabled
+    }
+
+    /// Updates buttons if medias are selected or downloaded.
     ///
     /// - Parameters:
     ///    - selectedMedias: tells if medias are selected
     func updateButtons(selectedMedias: [GalleryMedia]) {
-        let downloadedMedias = areDownloadedMedias(selectedMedias: selectedMedias)
-        let downloadColor = downloadedMedias ? ColorName.greenSpring20 : ColorName.greenSpring
-        downloadButton.makeup(with: .largeMedium, color: downloadColor)
+        let allMediasDownloaded = allMediasDownloaded(selectedMedias: selectedMedias)
+        let downloadColor = allMediasDownloaded ? ColorName.greenMediumSea20 : ColorName.greenMediumSea
+        downloadButton.setTitleColor(downloadColor.color, for: .normal)
 
-        let downloadTitle = downloadedMedias ? L10n.commonDownloaded : L10n.commonDownload
+        let downloadTitle = allMediasDownloaded ? L10n.commonDownloaded : L10n.commonDownload
         downloadButton.setTitle(downloadTitle, for: .normal)
-        downloadButton.isEnabled = !downloadedMedias
+        downloadButton.isEnabled = !allMediasDownloaded
 
-        let deleteColor = selectedMedias.isEmpty ? ColorName.redTorch25 : ColorName.redTorch
-        deleteButton.makeup(with: .largeMedium, color: deleteColor)
+        let deleteColor = selectedMedias.isEmpty ? ColorName.valencia30 : ColorName.valencia
+        deleteButton.setTitleColor(deleteColor.color, for: .normal)
         deleteButton.isEnabled = !selectedMedias.isEmpty
+
+        let shareColor = selectedMedias.isEmpty ? ColorName.greenMediumSea20 : ColorName.greenMediumSea
+        shareButton.setTitleColor(shareColor.color, for: .normal)
+        shareButton.isEnabled = !selectedMedias.isEmpty
+
+        infoLabel.textColor = selectedMedias.isEmpty ? ColorName.sambuca50.color : ColorName.sambuca.color
     }
 }
 
@@ -140,13 +161,11 @@ private extension GallerySelectionView {
     /// Setup all things related to UI
     func commonInitGallerySelectionView() {
         self.loadNibContent()
-        self.addBlurEffect(cornerRadius: 0.0)
         self.isHidden = true
-        deleteButton.makeup(with: .largeMedium, color: ColorName.redTorch)
+        self.backgroundColor = .white
         deleteButton.setTitle(L10n.commonDelete, for: .normal)
-        infoLabel.makeUp(with: .large)
-        infoLabel.textColor = ColorName.white50.color
-        downloadButton.makeup(with: .largeMedium, color: ColorName.greenSpring20)
         downloadButton.setTitle(L10n.commonDownloaded, for: .normal)
+        shareButton.setTitle(L10n.commonShare, for: .normal)
+        updateButtons(selectedMedias: [])
     }
 }

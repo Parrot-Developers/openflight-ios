@@ -33,7 +33,7 @@ import ArcGIS
 
 // MARK: - Protocol
 /// Defines a custom controls object for the HUD.
-public protocol CustomHUDControls: class {
+public protocol CustomHUDControls: AnyObject {
     var mapViewController: MapViewController? { get set }
     var validationView: UIView? { get set }
     var available: Bool { get }

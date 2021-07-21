@@ -29,114 +29,80 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
-/// State for `HorizonCorrectionViewModel`.
-final class HorizonCorrectionState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    fileprivate(set) var flyingState: FlyingIndicatorsState?
-    fileprivate(set) var offsetCorrectionProcess: GimbalOffsetsCorrectionProcess?
+// MARK: - Protocol
+/// Protocol for navigation of the horizon correction.
+protocol HorizonCorrectionCoordinator: AnyObject {
 
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - connectionState: connection state of the drone.
-    ///    - flyingState: flying state of the drone.
-    ///    - offsetCorrectionProcess: Correction gimbal offset.
-    init(connectionState: DeviceState.ConnectionState,
-         flyingState: FlyingIndicatorsState?,
-         offsetCorrectionProcess: GimbalOffsetsCorrectionProcess?) {
-        super.init(connectionState: connectionState)
-
-        self.flyingState = flyingState
-        self.offsetCorrectionProcess = offsetCorrectionProcess
-    }
-
-    // MARK: - Internal Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? HorizonCorrectionState else { return false }
-
-        return super.isEqual(to: other)
-            && self.flyingState == other.flyingState
-            && self.offsetCorrectionProcess == other.offsetCorrectionProcess
-    }
-
-    /// Returns a copy of the object.
-    override func copy() -> HorizonCorrectionState {
-        let copy = HorizonCorrectionState(connectionState: connectionState,
-                                          flyingState: self.flyingState,
-                                          offsetCorrectionProcess: self.offsetCorrectionProcess)
-        return copy
-    }
+    /// The calibration did stop.
+    func calibrationDidStop()
 }
 
 /// ViewModel for horizon correction.
-final class HorizonCorrectionViewModel: DroneStateViewModel<HorizonCorrectionState> {
+final class HorizonCorrectionViewModel {
     // MARK: - Private Properties
+    /// Current gimbal offset correction process
+    @Published private(set) var offsetsCorrectionProcess: GimbalOffsetsCorrectionProcess?
+
     private var gimbalRef: Ref<Gimbal>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var cancellables = Set<AnyCancellable>()
+    private weak var coordinator: HorizonCorrectionCoordinator?
 
-    // MARK: - Deinit
-    deinit {
-        self.gimbalRef = nil
-        self.flyingIndicatorsRef = nil
+    // MARK: - Init
+    init(coordinator: HorizonCorrectionCoordinator, droneHolder: ConnectedDroneHolder) {
+        self.coordinator = coordinator
+        bind(droneHolder: droneHolder)
     }
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-
-        self.listenGimbal(for: drone)
-        self.listenFlyingIndicators(for: drone)
-    }
-}
-
-// MARK: - Internal Funcs
-extension HorizonCorrectionViewModel {
-    /// Start horizon correction.
-    func startCalibration() {
-        self.drone?.getPeripheral(Peripherals.gimbal)?.startOffsetsCorrectionProcess()
+    func bind(droneHolder: ConnectedDroneHolder) {
+        droneHolder.dronePublisher
+            .removeDuplicates()
+            .sink { [unowned self] drone in
+                guard let drone = drone else {
+                    stopCalibration()
+                    return
+                }
+                self.listenGimbal(drone)
+                self.listenFlyingIndicators(drone)
+            }
+            .store(in: &cancellables)
     }
 
-    /// Stop horizon correction.
-    func cancelCalibration() {
-        self.drone?.getPeripheral(Peripherals.gimbal)?.stopOffsetsCorrectionProcess()
+    func userDidTapBack() {
+        stopCalibration()
     }
 }
 
 // MARK: - Private Funcs
 private extension HorizonCorrectionViewModel {
-    /// Listen the drone gimbal.
-    func listenGimbal(for drone: Drone) {
-        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] _ in
-            self?.updateOffsetCorrectionProcess()
+    /// Starts calibration
+    func startCalibration() {
+        gimbalRef?.value?.startOffsetsCorrectionProcess()
+    }
+
+    /// Stops calibration
+    func stopCalibration() {
+        gimbalRef?.value?.stopOffsetsCorrectionProcess()
+        coordinator?.calibrationDidStop()
+    }
+
+    /// Listens the drone gimbal.
+    func listenGimbal(_ drone: Drone) {
+        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
+            self?.offsetsCorrectionProcess = gimbal?.offsetsCorrectionProcess
         }
     }
 
-    /// Listen the drone flying indicators.
-    func listenFlyingIndicators(for drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicators in
-            guard let flyingState = flyingIndicators?.state else { return }
-
-            let copy = self?.state.value.copy()
-            copy?.flyingState = flyingState
-            self?.state.set(copy)
+    /// Listens the drone flying indicators.
+    func listenFlyingIndicators(_ drone: Drone) {
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicators in
+            if flyingIndicators?.state != .flying {
+                startCalibration()
+            } else {
+                stopCalibration()
+            }
         }
-    }
-
-    /// Updates gimbal's offset correction process.
-    func updateOffsetCorrectionProcess() {
-        guard let drone = drone,
-              let gimbal = drone.getPeripheral(Peripherals.gimbal) else {
-            return
-        }
-
-        let copy = self.state.value.copy()
-        copy.offsetCorrectionProcess = gimbal.offsetsCorrectionProcess
-        self.state.set(copy)
     }
 }

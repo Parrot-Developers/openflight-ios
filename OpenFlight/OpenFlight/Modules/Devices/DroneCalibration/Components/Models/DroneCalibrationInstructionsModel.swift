@@ -38,10 +38,16 @@ struct DroneCalibrationInstructionsModel {
     var image: UIImage?
     /// Main instruction label.
     var firstLabel: String
+    /// Main instruction label color.
+    var firstLabelColor: UIColor
+    /// Main instruction label alignment.
+    var firstLabelAlignment: NSTextAlignment
     /// Subtitle instruction label.
     var secondLabel: String?
-    /// Main instruction label color.
-    var firstLabelColor: UIColor?
+    /// Subtitle instruction label alignment.
+    var secondLabelAlignment: NSTextAlignment
+    /// Item labels.
+    var items: [String]
 
     // MARK: - Init
     /// Init.
@@ -49,15 +55,24 @@ struct DroneCalibrationInstructionsModel {
     /// - Parameters:
     ///    - image: Instruction image.
     ///    - firstLabel: Main instruction label.
-    ///    - secondLabel: Subtitle instruction label.
     ///    - firstLabelColor: Main instruction label color.
+    ///    - firstLabelAlignment: Main instruction label alignment.
+    ///    - secondLabel: Subtitle instruction label.
+    ///    - secondLabelAlignment: Subtitle instruction label alignment.
+    ///    - items: Item failure labels.
     init(image: UIImage?,
          firstLabel: String,
+         firstLabelColor: UIColor = ColorName.white.color,
+         firstLabelAlignment: NSTextAlignment = .center,
          secondLabel: String?,
-         firstLabelColor: UIColor? = ColorName.white.color) {
+         secondLabelAlignment: NSTextAlignment = .center,
+         items: [String]) {
         self.image = image
         self.firstLabel = firstLabel
-        self.secondLabel = secondLabel
         self.firstLabelColor = firstLabelColor
+        self.firstLabelAlignment = firstLabelAlignment
+        self.secondLabel = secondLabel
+        self.secondLabelAlignment = firstLabelAlignment
+        self.items = items
     }
 }

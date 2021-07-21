@@ -33,7 +33,7 @@ import GroundSdk
 
 // MARK: - Protocols
 /// Gallery image ViewController Delegate.
-protocol GalleryImageViewControllerDelegate: class {
+protocol GalleryImageViewControllerDelegate: AnyObject {
     /// Notify delegate when media image index changes.
     ///
     /// - Parameters:
@@ -256,20 +256,13 @@ private extension GalleryImageViewController {
 
     /// Setup picker view.
     func setupPickerView() {
-        pickerSideView.removeBlurEffect()
-        if traitCollection.verticalSizeClass == .compact {
-            pickerSideView.addBlurEffect(with: .dark, cornerRadius: 0.0)
-        }
-
-        pickerSelectionView.layer.cornerRadius = Style.largeCornerRadius
-        pickerSelectionView.layer.borderWidth = Style.mediumBorderWidth
-        pickerSelectionView.layer.borderColor = ColorName.greenSpring.color.cgColor
+        pickerSelectionView.cornerRadiusedWith(backgroundColor: ColorName.greenMediumSea.color, radius: Style.largeCornerRadius)
         pickerSideView.isHidden = true
         pickerView.dataSource = self
         pickerView.selectRow(imageIndex, inComponent: 0, animated: false)
         pickerView.delegate = self
         pickerView.isUserInteractionEnabled = true
-        pickerView.showsSelectionIndicator = false
+        pickerView.subviews.forEach { $0.backgroundColor = .clear }
         if let viewModel = viewModel,
            let media = viewModel.getMedia(index: index),
            viewModel.getMediaImageCount(media) > 1 {
@@ -288,13 +281,10 @@ private extension GalleryImageViewController {
             generateSideView.isHidden = true
         } else {
             generateSideView.isHidden = viewModel.shouldHideGenerationOption(currentMedia: currentMedia)
-            generateSideView.removeBlurEffect()
-            generateSideView.addBlurEffect(with: .dark, cornerRadius: 0.0)
         }
-        generateButton.makeup(with: .large, color: ColorName.white)
         generateButton.setTitle(L10n.galleryPanoramaGenerate, for: .normal)
-        generateButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color, radius: Style.largeCornerRadius)
-        generateFullScreenButton.cornerRadiusedWith(backgroundColor: ColorName.black60.color, radius: Style.largeCornerRadius)
+        generateButton.cornerRadiusedWith(backgroundColor: ColorName.tomato.color, radius: Style.largeCornerRadius)
+        generateFullScreenButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
         generateFullScreenButton.isHidden = true
         if let imageUrl = imageUrl {
             let panoramaRelatedEntries = PanoramaMediaType.allCases.map({ $0.rawValue })
@@ -355,15 +345,25 @@ extension GalleryImageViewController: UIPickerViewDelegate {
         return Constants.pickerRowSize
     }
 
+    func pickerView(_ pickerView: UIPickerView, widthForComponent component: Int) -> CGFloat {
+        return Constants.pickerRowSize
+    }
+
     func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
         if let viewModel = viewModel,
            let media = viewModel.getMedia(index: index) {
             let title = viewModel.getMediaImagePickerTitle(media, index: row)
             let panoramaRelatedEntries = PanoramaMediaType.allCases.map({ $0.rawValue })
-
             if panoramaRelatedEntries.contains(title) {
-                let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.pickerRowSize, height: Constants.pickerRowSize))
+                var imageView: UIImageView
+                if let view = view as? UIImageView {
+                    imageView = view
+                } else {
+                    imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.pickerRowSize, height: Constants.pickerRowSize))
+                }
                 imageView.contentMode = .center
+                imageView.tintColor = ColorName.sambuca.color
+                imageView.isUserInteractionEnabled = false
 
                 switch PanoramaMediaType(rawValue: title) {
                 case .vertical:
@@ -381,13 +381,19 @@ extension GalleryImageViewController: UIPickerViewDelegate {
                 case nil :
                     break
                 }
-
                 return imageView
+
             } else {
-                let label = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.pickerRowSize, height: Constants.pickerRowSize))
+                var label: UILabel
+                if let view = view as? UILabel {
+                    label = view
+                } else {
+                    label = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.pickerRowSize, height: Constants.pickerRowSize))
+                }
+                label.makeUp(with: .large, and: .sambuca)
                 label.textAlignment = .center
-                label.makeUp(with: .large)
                 label.text = title
+                label.isUserInteractionEnabled = false
                 return label
             }
         }
@@ -398,5 +404,10 @@ extension GalleryImageViewController: UIPickerViewDelegate {
         imageIndex = row
         delegate?.selectionDidChangeToImageIndex(imageIndex)
         loadImage()
+    }
+
+    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        // this will trigger attributedTitleForRow-method to be called
+        pickerView.reloadAllComponents()
     }
 }

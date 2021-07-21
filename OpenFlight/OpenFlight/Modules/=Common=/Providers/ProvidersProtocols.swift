@@ -29,16 +29,9 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import UIKit
 
 // MARK: - Protocols
-/// Defines a third party service user can log to.
-public protocol ThirdPartyService: class {
-    /// Returns `true` is user is currently connected to the service.
-    var isConnected: Bool { get }
-    /// Returns image to display for this service.
-    var image: UIImage { get }
-}
-
 /// AccountProvider protocol
 public protocol AccountProvider {
     /// Returns an image to show when needed (ie: on dashboard tile).
@@ -51,23 +44,14 @@ public protocol AccountProvider {
     var userName: String? { get }
     /// Returns if current user is connected or not.
     var isConnected: Bool { get }
-    /// Returns if current user is connected to third part account or not.
-    var thirdPartyServices: [ThirdPartyService] { get }
+    /// Returns custom dashboard account view.
+    var dashboardAccountView: DashboardAccountView { get }
     /// Custom account view to display in MyFlightsVC.
     var myFlightsAccountView: MyFlightsAccountView? { get }
-    /// Start disconnected view from coordinator.
-    func startLogin()
-    /// Start Profile view from coordinator.
-    func startProfile()
     /// Start Data confidentiality view from coordinator.
     func startDataConfidentiality()
     /// Start a specific view from coordinator when clicking on MyFlightsAccountView.
     func startMyFlightsAccountView()
-    /// Start third-party account screen regarding the connection status.
-    ///
-    /// - Parameters:
-    ///    - service: third party service to start
-    func startThirdPartyProcess(service: ThirdPartyService)
     /// Remove flight, synchronized on the user's account.
     ///
     /// - Parameters:
@@ -132,13 +116,6 @@ public protocol FlightPlanProvider {
     ///     - flightPlanObject: Flight Plan Object
     /// - Returns: Flight Plan Graphic array
     func graphicsWithFlightPlan(_ flightPlanObject: FlightPlanObject) -> [FlightPlanGraphic]
-
-    /// Returns graphic label items to diplay a Flight Plan.
-    ///
-    /// - Parameters:
-    ///     - flightPlanObject: Flight Plan Object
-    /// - Returns: Flight Plan Label Graphic array
-    func graphicsLabelsWithFlightPlan(_ flightPlanObject: FlightPlanObject) -> [FlightPlanLabelGraphic]
 }
 
 /// Provides Flight Plan types.
@@ -200,7 +177,10 @@ public protocol FlightPlanSettingsProvider {
 extension FlightPlanSettingsProvider {
     /// Returns true if currrent Flight Plan has a custom type.
     var hasCustomType: Bool {
-        return currentType != nil
+        if let type = currentType, type.key != ClassicFlightPlanType.standard.key {
+            return true
+        }
+        return false
     }
 }
 
@@ -226,6 +206,8 @@ public protocol FlightPlanSettingType {
     var unit: UnitType { get }
     /// Provides setting step between values.
     var step: Double { get }
+    /// Provides if values needs to be divided.
+    var divider: Double { get }
     /// Tells if the setting must be disabled.
     var isDisabled: Bool { get }
     /// Provides cell category of the current flight plan setting.
@@ -255,8 +237,8 @@ extension FlightPlanSettingType {
                 return UnitHelper.stringDistanceWithDouble(Double(value), spacing: false)
             case .speed:
                 var doubleValue = Double(value)
-                if step <= 1.0 {
-                    doubleValue *= step
+                if divider <= 1.0 {
+                    doubleValue *= divider
                 }
 
                 return UnitHelper.stringSpeedWithDouble(doubleValue, spacing: false)
@@ -290,6 +272,7 @@ extension FlightPlanSettingType {
                                  key: key,
                                  unit: unit,
                                  step: step,
+                                 divider: divider,
                                  isDisabled: isDisabled,
                                  category: category)
     }
@@ -328,8 +311,10 @@ public protocol FlightPlanType {
     var canGenerateMavlink: Bool { get }
     /// Specify the type of the mavlink generation.
     var mavLinkType: FlightPlanInterpreter { get }
-    /// Mode key.
-    var modeKey: String { get }
+    /// Mission provider
+    var missionProvider: MissionProvider { get }
+    /// Mission mode
+    var missionMode: MissionMode { get }
 }
 
 /// Provides a custom UIViewController displayed modally at Flight Plan's completion.
@@ -360,23 +345,34 @@ public struct Mission {
     var logName: String
     /// Returns mission modes.
     public var modes: [MissionMode]
+
     /// Returns default mission mode.
     /// Mission have usually only one mode.
-    public var defaultMode: MissionMode? {
-        modes.first
-    }
+    public var defaultMode: MissionMode
 
     /// Default struct init, as public.
     public init(key: String,
                 name: String,
                 icon: UIImage,
                 logName: String,
-                modes: [MissionMode]) {
+                modes: [MissionMode],
+                defaultMode: MissionMode) {
         self.key = key
         self.name = name
         self.icon = icon
         self.logName = logName
         self.modes = modes
+        self.defaultMode = defaultMode
+    }
+
+    /// Init with one mission mode, as public.
+    public init(mode: MissionMode) {
+        self.init(key: mode.key,
+                  name: mode.name,
+                  icon: mode.icon,
+                  logName: mode.logName,
+                  modes: [mode],
+                  defaultMode: mode)
     }
 }
 
@@ -442,7 +438,7 @@ public struct MissionMode: Equatable {
     /// Returns Flight Plan provider.
     public var flightPlanProvider: FlightPlanProvider? // TODO: make it smarter by directly handling current mission mode
     /// Returns a model for mission activation.
-    var missionActivationModel: MissionActivationModel
+    public var missionActivationModel: MissionActivationModel
     /// Provides Return to Home type title.
     var rthTypeTitle: String
     /// Returns true if this mode is a tracking one.

@@ -38,11 +38,11 @@ extension DeviceState.ConnectionState {
         case .connecting:
             return L10n.connecting
         case .connected:
-            return L10n.connected
+            return L10n.commonReady
         case .disconnecting:
             return L10n.disconnecting
         default:
-            return L10n.disconnected
+            return L10n.commonNotConnected
         }
     }
 }

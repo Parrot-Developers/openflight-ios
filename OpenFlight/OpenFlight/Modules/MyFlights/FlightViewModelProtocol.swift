@@ -49,7 +49,7 @@ enum CloudStatus: String {
 // MARK: - Protocols
 /// Flight Plan and flight data common helpers.
 
-protocol FlightViewModelProtocol: class {
+protocol FlightViewModelProtocol: AnyObject {
     /// Flight location.
     var location: CLLocationCoordinate2D? { get }
     /// Flight points.

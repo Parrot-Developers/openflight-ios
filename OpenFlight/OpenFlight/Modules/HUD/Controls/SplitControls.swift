@@ -30,6 +30,7 @@
 import Foundation
 import UIKit
 import SwiftyUserDefaults
+import Combine
 
 /// Class that manages ths split screen between streaming and secondary HUD view.
 
@@ -38,9 +39,16 @@ final class SplitControls: NSObject, DelayedTaskProvider {
     // MARK: - Outlets
     @IBOutlet private weak var view: UIView!
     @IBOutlet private weak var streamContainerView: UIView!
+    @IBOutlet private weak var aeLockContainerView: UIView!
     @IBOutlet private weak var secondaryContainerView: UIView!
     @IBOutlet private weak var splitView: HUDSplitView!
     @IBOutlet private weak var splitTouchView: UIView!
+    @IBOutlet private weak var centerMapButton: UIButton! {
+        didSet {
+            self.centerMapButton.setImage(Asset.Map.centerOnUser.image, for: .normal)
+            self.centerMapButton.applyHUDRoundButtonStyle()
+        }
+    }
     @IBOutlet private weak var splitViewConstraint: NSLayoutConstraint!
     @IBOutlet private var streamTrailingToSplitViewConstraint: NSLayoutConstraint!
     @IBOutlet private var secondaryViewLeadingToSplitViewConstraint: NSLayoutConstraint!
@@ -60,6 +68,8 @@ final class SplitControls: NSObject, DelayedTaskProvider {
             streamMiniatureLeadingToMissionLauncher.isActive = false
         }
     }
+    @IBOutlet private weak var streamButton: UIButton!
+    @IBOutlet private weak var secondaryViewButton: UIButton!
 
     @IBOutlet private var streamFullscreenConstraints: [NSLayoutConstraint]!
     @IBOutlet private var streamMiniatureConstraints: [NSLayoutConstraint]!
@@ -94,10 +104,10 @@ final class SplitControls: NSObject, DelayedTaskProvider {
 
     // MARK: - Private Properties
     private var longPressGestureRecognizer: UILongPressGestureRecognizer!
-    private var streamTapGestureRecognizer: UITapGestureRecognizer!
-    private var secondaryViewTapGestureRecognizer: UITapGestureRecognizer!
+    private var cancellables = Set<AnyCancellable>()
     private let viewModel = SplitControlsViewModel()
-    private var missionModeViewModel = MissionLauncherViewModel()
+    // TODO: Wrong injection
+    private unowned var currentMissionManager = Services.hub.currentMissionManager
     private var currentStreamRatio: CGFloat?
     private var preferredSplitPosition: CGFloat {
         guard let currentStreamRatio = currentStreamRatio else {
@@ -108,42 +118,37 @@ final class SplitControls: NSObject, DelayedTaskProvider {
             .clamp(preferredWidth)
     }
     private var secondaryViewCornerRadius: CGFloat {
-        let state = viewModel.state.value
+        let state = viewModel
         let ratio = state.isJoysticksVisible && state.mode == .stream ? Constants.secondaryMiniatureCenterHeightRatio : Constants.secondaryMiniatureHeightRatio
         return self.view.frame.height * ratio / 2.0
     }
     private var occupancyViewController: OccupancyViewController?
     private var stereoVisionBlendedViewController: StereoVisionBlendedViewController?
-    private var isMapRequired: Bool {
-        guard let missionMode = MissionsManager.shared.missionSubModeFor(key: Defaults.userMissionMode) else {
-            return false
-        }
-
-        return missionMode.isMapRequired
-    }
+    private var isMapRequired: Bool { Services.hub.currentMissionManager.mode.isMapRequired }
 
     // MARK: - Internal Funcs
     /// Sets up gesture recognizers.
     /// Should be called inside viewDidLoad.
     func start() {
         setLongPressGesture()
-        setSecondaryTapGesture()
-        setStreamTapGesture()
-        secondaryViewTapGestureRecognizer?.isEnabled = false
-        streamTapGestureRecognizer?.isEnabled = false
-        viewModel.state.valueChanged = { [weak self] state in
-            UIView.animate(withDuration: Constants.defaultAnimationDuration) {
-                self?.secondaryContainerView.alphaHidden(state.shouldHideSecondary)
+        viewModel.shouldHideSecondary
+            .sink { [weak self] shouldHideSecondary in
+                UIView.animate(withDuration: Constants.defaultAnimationDuration) {
+                    self?.secondaryContainerView.alphaHidden(shouldHideSecondary)
+                }
             }
-            self?.updateJogs(state)
-        }
-        missionModeViewModel.state.valueChanged = { [weak self] state in
-            guard let missionMode = state.mode else {
-                return
+            .store(in: &cancellables)
+        viewModel.bottomBarModePublisher
+            .combineLatest(viewModel.isJoysticksVisiblePublisher, viewModel.modePublisher)
+            .sink { [weak self] _ in
+                self?.updateJogs()
             }
-            self?.setSplitMode(missionMode.preferredSplitMode)
-            self?.updateStreamState(enabled: !missionMode.isFlightPlanPanelRequired)
+            .store(in: &cancellables)
+        currentMissionManager.modePublisher.sink { [unowned self] in
+            setSplitMode($0.preferredSplitMode)
+            updateStreamState(enabled: !$0.isFlightPlanPanelRequired)
         }
+        .store(in: &cancellables)
     }
 
     /// Sets up initial split screen position.
@@ -155,14 +160,14 @@ final class SplitControls: NSObject, DelayedTaskProvider {
             return
         }
         currentStreamRatio = Constants.defaultStreamRatio
-        if !viewModel.state.value.isJoysticksVisible {
+        if !viewModel.isJoysticksVisible {
             setupSplitedScreen(atValue: preferredSplitPosition)
         }
     }
 
     /// Updates split mode layout according current and new modes.
     func setSplitMode(_ mode: SplitScreenMode) {
-        switch (viewModel.state.value.mode, mode) {
+        switch (viewModel.mode, mode) {
         case (.stream, .secondary):
             switchFromStreamingToSecondaryFullScreen()
         case (.stream, .splited):
@@ -183,7 +188,7 @@ final class SplitControls: NSObject, DelayedTaskProvider {
 
     /// Switch to full streaming mode if needed.
     func collapseSecondaryViewIfNeeded() {
-        switch viewModel.state.value.mode {
+        switch viewModel.mode {
         case .splited:
             setupStreamingFullscreen()
         default:
@@ -215,6 +220,7 @@ final class SplitControls: NSObject, DelayedTaskProvider {
     func updateStreamState(enabled: Bool) {
         enabled ? cameraStreamingViewController?.restartStream() : cameraStreamingViewController?.stopStream()
         streamContainerView.isHidden = !enabled
+        streamButton.isHidden = !enabled
     }
 
     /// Update secondary view content depending SecondaryScreenType settings.
@@ -222,7 +228,7 @@ final class SplitControls: NSObject, DelayedTaskProvider {
         var secondaryView: UIView?
         switch SecondaryScreenType.current {
         case .map,
-             .threeDimensions where viewModel.state.value.mode == .stream,
+             .threeDimensions where viewModel.mode == .stream,
              .threeDimensions where isMapRequired:
             secondaryView = mapViewController?.view
         case .threeDimensions:
@@ -238,6 +244,27 @@ final class SplitControls: NSObject, DelayedTaskProvider {
             secondaryContainerView.addWithConstraints(subview: secondView)
         }
     }
+
+    /// Update centerMapButton status.
+    func updateCenterMapButtonStatus(hide: Bool, image: UIImage?) {
+        centerMapButton.isHidden = hide
+        centerMapButton.setImage(image, for: .normal)
+    }
+}
+
+// MARK: - Actions
+private extension SplitControls {
+    @IBAction func streamButtonTouchedUpInside(_ sender: UIButton) {
+        switchToSplitScreenFromStreamTap()
+    }
+
+    @IBAction func secondaryViewButtonTouchedUpInside(_ sender: UIButton) {
+        switchToSplitScreenFromSecondaryTap()
+    }
+
+    @IBAction func centerMapButtonTouchedUpInsider(_ sender: UIButton) {
+        mapViewController?.disableAutoCenter(false)
+    }
 }
 
 // MARK: - Gesture Recognizers
@@ -249,23 +276,9 @@ private extension SplitControls {
         splitTouchView.addGestureRecognizer(longPressGestureRecognizer)
     }
 
-    /// Sets up tap gesture for secondary view.
-    func setSecondaryTapGesture() {
-        secondaryViewTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(onTapSecondaryView))
-        secondaryViewTapGestureRecognizer.numberOfTapsRequired = 1
-        secondaryContainerView.addGestureRecognizer(secondaryViewTapGestureRecognizer)
-    }
-
-    /// Sets up tap gesture for stream.
-    func setStreamTapGesture() {
-        streamTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(onTapStream))
-        streamTapGestureRecognizer.numberOfTapsRequired = 1
-        streamContainerView.addGestureRecognizer(streamTapGestureRecognizer)
-    }
-
     /// Called when a long press on split touch view occurs.
     @objc func onLongPress(sender: UILongPressGestureRecognizer) {
-        guard viewModel.state.value.mode == .splited else {
+        guard viewModel.mode == .splited else {
             return
         }
         switch sender.state {
@@ -277,16 +290,6 @@ private extension SplitControls {
             break
         }
         handleLongPress(at: sender.location(in: view))
-    }
-
-    /// Called when user taps the stream miniature.
-    @objc func onTapStream(sender: UITapGestureRecognizer) {
-        switchToSplitScreenFromStreamTap()
-    }
-
-    /// Called when user taps the secondary view miniature.
-    @objc func onTapSecondaryView(sender: UITapGestureRecognizer) {
-        switchToSplitScreenFromSecondaryTap()
     }
 }
 
@@ -325,7 +328,7 @@ private extension SplitControls {
     /// Updates UI from stream fullscreen to splited mode, and animates changes.
     func switchToSplitScreenFromSecondaryTap() {
         viewModel.setMode(.splited)
-        secondaryViewTapGestureRecognizer?.isEnabled = false
+        secondaryViewButton.isUserInteractionEnabled = false
         mapViewController?.disableUserInteraction(false)
         updateSecondaryContainer()
         updateSecondaryViewContent()
@@ -350,8 +353,10 @@ private extension SplitControls {
     /// Updates UI from secondary view fullscreen to splited mode, and animates changes.
     func switchToSplitScreenFromStreamTap() {
         viewModel.setMode(.splited)
+        view.insertSubview(aeLockContainerView, aboveSubview: streamContainerView)
+        view.insertSubview(streamContainerView, aboveSubview: secondaryContainerView)
         cameraStreamingViewController?.removeBorder()
-        streamTapGestureRecognizer?.isEnabled = false
+        streamButton.isUserInteractionEnabled = false
         mapViewController?.disableUserInteraction(false)
         UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
             // Moves stream from miniature to splited position.
@@ -375,7 +380,7 @@ private extension SplitControls {
 
     /// Moves currently splited mode to another location.
     func setupSplitedScreen(atValue value: CGFloat, animated: Bool = false) {
-        guard viewModel.state.value.mode == .splited else {
+        guard viewModel.mode == .splited else {
             return
         }
         if animated {
@@ -393,8 +398,8 @@ private extension SplitControls {
     func setupSecondaryViewFullscreen() {
         splitView.stopAnimation()
         viewModel.setMode(.secondary)
-        self.view.insertSubview(streamContainerView, aboveSubview: secondaryContainerView)
-        streamTapGestureRecognizer?.isEnabled = true
+        view.insertSubview(streamContainerView, aboveSubview: secondaryContainerView)
+        streamButton.isUserInteractionEnabled = true
         mapViewController?.disableUserInteraction(false)
         cameraStreamingViewController?.mode = .preview
 
@@ -420,9 +425,10 @@ private extension SplitControls {
     func setupStreamingFullscreen() {
         splitView.stopAnimation()
         viewModel.setMode(.stream)
-        self.view.insertSubview(secondaryContainerView, aboveSubview: streamContainerView)
+        view.insertSubview(aeLockContainerView, aboveSubview: streamContainerView)
+        view.insertSubview(secondaryContainerView, aboveSubview: streamContainerView)
         mapViewController?.disableUserInteraction(true)
-        secondaryViewTapGestureRecognizer?.isEnabled = true
+        secondaryViewButton.isUserInteractionEnabled = true
         updateSecondaryViewContent()
         UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
             // Moves stream from splited postion to fullscreen position.
@@ -445,7 +451,7 @@ private extension SplitControls {
     func switchFromSecondaryToStreamingFullScreen() {
         viewModel.setMode(.stream)
         cameraStreamingViewController?.removeBorder()
-        streamTapGestureRecognizer?.isEnabled = false
+        streamButton.isUserInteractionEnabled = false
         mapViewController?.disableUserInteraction(true)
         UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
             // Moves stream from miniature to full screen position.
@@ -463,8 +469,9 @@ private extension SplitControls {
                 self.updateSecondaryContainer()
                 self.view.layoutIfNeeded()
             }, completion: { _ in
+                self.view.insertSubview(self.aeLockContainerView, aboveSubview: self.streamContainerView)
                 self.view.insertSubview(self.secondaryContainerView, aboveSubview: self.streamContainerView)
-                self.secondaryViewTapGestureRecognizer?.isEnabled = true
+                self.secondaryViewButton.isUserInteractionEnabled = true
                 self.cameraStreamingViewController?.mode = .fullscreen
             })
         })
@@ -473,7 +480,7 @@ private extension SplitControls {
     /// Updates UI from stream to secondary fullscreen mode.
     func switchFromStreamingToSecondaryFullScreen() {
         viewModel.setMode(.secondary)
-        secondaryViewTapGestureRecognizer?.isEnabled = false
+        secondaryViewButton.isUserInteractionEnabled = false
         mapViewController?.disableUserInteraction(false)
         updateSecondaryContainer()
         cameraStreamingViewController?.mode = .preview
@@ -495,7 +502,7 @@ private extension SplitControls {
                 self.view.layoutIfNeeded()
             }, completion: { _ in
                 self.cameraStreamingViewController?.addBorder()
-                self.streamTapGestureRecognizer?.isEnabled = true
+                self.streamButton.isUserInteractionEnabled = true
                 self.view.insertSubview(self.streamContainerView, aboveSubview: self.secondaryContainerView)
             })
         })
@@ -518,7 +525,7 @@ private extension SplitControls {
     /// Updates secondary container view for current split screen mode.
     /// Miniature is rounded with a border when stream is fullscreen.
     func updateSecondaryContainer() {
-        let isMiniature = viewModel.state.value.mode == .stream
+        let isMiniature = viewModel.mode == .stream
         secondaryContainerView.setBorder(borderColor: isMiniature ? Constants.secondaryMiniatureBorderColor : .clear,
                                          borderWidth: isMiniature ? Constants.secondaryMiniatureBorderWidth : 0.0)
         // Adds/removes secondary view's custom corner radius (with animation).
@@ -530,15 +537,15 @@ private extension SplitControls {
     ///
     /// - Parameters:
     ///     - state: current split controls state
-    func updateJogs(_ state: SplitControlsState?) {
-        splitTouchView.isUserInteractionEnabled = state?.isJoysticksVisible == false
-        updateMapMiniaturePosition(for: state)
+    func updateJogs() {
+        splitTouchView.isUserInteractionEnabled = !viewModel.isJoysticksVisible
+        updateMapMiniaturePosition()
         // Setup a splited value when joysticks are visible and if the mode is not full stream.
-        if state?.mode == .stream {
+        if viewModel.mode == .stream {
             // Update radius of the minimap if mode is stream
             secondaryContainerView.applyCornerRadius(secondaryViewCornerRadius)
-        } else if state?.mode == .splited {
-            let value = state?.isJoysticksVisible == true
+        } else if viewModel.mode == .splited {
+            let value = viewModel.isJoysticksVisible
                 ? UIScreen.main.bounds.width - Constants.minimumSecondaryViewWidth
                 : preferredSplitPosition
             setupSplitedScreen(atValue: value)
@@ -549,8 +556,8 @@ private extension SplitControls {
     ///
     /// - Parameters:
     ///     - state: current split controls state
-    func updateMapMiniaturePosition(for state: SplitControlsState?) {
-        let needToCenterSecondaryView = state?.isJoysticksVisible == true && state?.mode == .stream
+    func updateMapMiniaturePosition() {
+        let needToCenterSecondaryView = viewModel.isJoysticksVisible == true && viewModel.mode == .stream
         secondaryViewMiniatureConstraints.forEach { $0.isActive = !needToCenterSecondaryView }
         secondaryViewMiniatureCenterConstraints.forEach { $0.isActive = needToCenterSecondaryView }
 
@@ -574,6 +581,7 @@ extension SplitControls: MapViewRestorer {
         mapViewController?.remove()
         // Add map.
         mapViewController = map
+        mapViewController?.splitControls = self
         parent.addChild(map)
         secondaryContainerView.addWithConstraints(subview: map.view)
         map.didMove(toParent: parent)

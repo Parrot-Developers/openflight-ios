@@ -41,7 +41,7 @@ final class SnowView: UIView, NibOwnerLoadable {
     /// isHidden: Overriden to add stop / restart snow animation.
     override var isHidden: Bool {
         didSet {
-            self.animate(onOff: isHidden)
+            self.animate(isHidden: isHidden)
         }
     }
 
@@ -58,9 +58,17 @@ final class SnowView: UIView, NibOwnerLoadable {
 
     override func draw(_ rect: CGRect) {
         super.draw(rect)
-        let animationImages = Asset.SnowView.allValues.compactMap { $0.image }
-        self.imageView.image = UIImage.animatedImage(with: animationImages,
-                                                     duration: Style.mediumAnimationDuration)
+        createImageIfNecessary()
+    }
+
+    // MARK: - Funcs
+    /// Create animation image if necessary.
+    func createImageIfNecessary() {
+        if self.imageView.image == nil {
+            let animationImages = Asset.SnowView.allValues.compactMap { $0.image }
+            self.imageView.image = UIImage.animatedImage(with: animationImages,
+                                                         duration: Style.mediumAnimationDuration)
+        }
     }
 }
 
@@ -69,11 +77,17 @@ private extension SnowView {
     /// Starts or stops snow animation.
     ///
     /// - Parameters:
-    ///    - onOff: whether animation should be started or stopped
-    func animate(onOff: Bool) {
+    ///    - isHidden: whether animation is hidden or not
+    func animate(isHidden: Bool) {
         guard let imageView = imageView else {
             return
         }
-        _ = onOff ? imageView.stopAnimating():  imageView.startAnimating()
+
+        if isHidden {
+            imageView.stopAnimating()
+        } else {
+            createImageIfNecessary()
+            imageView.startAnimating()
+        }
     }
 }

@@ -29,33 +29,45 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
 /// ViewModel that listen a drone and a remote control by default.
 open class WatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
+    // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
+    private unowned var currentRemoteControlHolder: CurrentRemoteControlHolder
+    private unowned var currentDroneHolder: CurrentDroneHolder
+
     // MARK: - Public Properties
     /// Property which provides the current drone using currentDroneWatcher.
     public var drone: Drone? {
-        return currentDroneWatcher.drone
+        return currentDroneHolder.drone
     }
     /// Property which provides the current remote control using currentRemoteControlWatcher.
     public var remoteControl: RemoteControl? {
-        return currentRemoteControlWatcher.remoteControl
+        return currentRemoteControlHolder.remoteControl
     }
-
-    // MARK: - Private Properties
-    private var currentDroneWatcher = CurrentDroneWatcher()
-    private var currentRemoteControlWatcher = CurrentRemoteControlWatcher()
 
     // MARK: - Init
     public override init() {
+        // TODO inject
+        currentRemoteControlHolder = Services.hub.currentRemoteControlHolder
+        currentDroneHolder = Services.hub.currentDroneHolder
+
         super.init()
 
-        currentDroneWatcher.start { [weak self] drone in
-            self?.listenDrone(drone: drone)
-        }
-        currentRemoteControlWatcher.start { [weak self] remoteControl in
-            self?.listenRemoteControl(remoteControl: remoteControl)
-        }
+        currentDroneHolder.dronePublisher
+            .sink { [unowned self] drone in
+                self.listenDrone(drone: drone)
+            }
+            .store(in: &cancellables)
+
+        currentRemoteControlHolder.remoteControlPublisher
+            .compactMap { $0 }
+            .sink { [unowned self] remoteControl in
+                listenRemoteControl(remoteControl: remoteControl)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Internal Funcs

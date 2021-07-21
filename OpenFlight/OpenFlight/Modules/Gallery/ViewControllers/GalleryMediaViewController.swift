@@ -33,7 +33,7 @@ import GroundSdk
 
 // MARK: - Protocols
 /// Delegate used to discuss with main controller.
-protocol GalleryMediaViewDelegate: class {
+protocol GalleryMediaViewDelegate: AnyObject {
     /// Called when an action was triggered by the multiple selection.
     func multipleSelectionActionTriggered()
     /// Called when the multiple selection is enabled from here.
@@ -175,7 +175,7 @@ private extension GalleryMediaViewController {
                                         self?.viewModel?.deleteMedias(medias, completion: { _ in
                                             self?.loadingMedias.removeAll()
                                             self?.viewModel?.refreshMedias()
-                                            self?.selectionView.setCountAndSizeOfItems(0, 0)
+                                            self?.delegate?.multipleSelectionActionTriggered()
                                         })
                                        })
         let keepAction = AlertAction(title: L10n.commonKeep,
@@ -203,7 +203,6 @@ private extension GalleryMediaViewController {
             guard success else { return }
 
             self?.viewModel?.refreshMedias()
-            self?.selectionView.setCountAndSizeOfItems(0, 0)
         })
     }
 
@@ -212,6 +211,33 @@ private extension GalleryMediaViewController {
         let medias = selectedMedias
         delegate?.multipleSelectionActionTriggered()
         handleDelete(medias)
+    }
+
+    /// Handle share.
+    func handleShare() {
+        // TODO: It might be relevant to add a spinner loader instead of the "share" button when medias sharing are loading ?
+        var urls: [URL] = []
+        let waitingGroup = DispatchGroup()
+        let backgroundQueue = DispatchQueue.global(qos: .userInitiated)
+        selectedMedias.forEach { selectedMedia in
+            selectedMedia.urls?.indices.forEach({ index in
+                // Medias loading queue.
+                waitingGroup.enter()
+                backgroundQueue.async {
+                    self.viewModel?.getMediaPreviewImageUrl(selectedMedia, index) { url in
+                        if let url = url {
+                            urls.append(url)
+                        }
+                        waitingGroup.leave()
+                    }
+                }
+            })
+        }
+        waitingGroup.notify(queue: DispatchQueue.main) { [weak self] in
+            guard let strongSelf = self else { return }
+
+            strongSelf.coordinator?.showSharingScreen(fromView: strongSelf.view, items: urls)
+        }
     }
 
     /// Handle long press on collection view cell.
@@ -286,6 +312,7 @@ extension GalleryMediaViewController: UICollectionViewDelegate {
 
             collectionView.reloadData()
             selectionView.setAllowDownload(viewModel.sourceType != .mobileDevice)
+            selectionView.setAllowShare(viewModel.sourceType == .mobileDevice)
             selectionView.setCountAndSizeOfItems(selectedMedias.count, selectedMediasSize)
             selectionView.updateButtons(selectedMedias: selectedMedias)
         } else if let index = viewModel.getMediaIndex(media) {
@@ -357,6 +384,7 @@ extension GalleryMediaViewController: GalleryViewDelegate {
     func multipleSelectionDidChange(enabled: Bool) {
         collection.allowsMultipleSelection = enabled
         selectionView.setAllowDownload(viewModel?.sourceType != .mobileDevice)
+        selectionView.setAllowShare(viewModel?.sourceType == .mobileDevice)
         selectionView.setCountAndSizeOfItems(selectedMedias.count, selectedMediasSize)
         selectionView.updateButtons(selectedMedias: selectedMedias)
         selectionView.isHidden = !enabled
@@ -369,6 +397,7 @@ extension GalleryMediaViewController: GalleryViewDelegate {
     func sourceDidChange(source: GallerySourceType) {
         if collection.allowsMultipleSelection {
             selectionView.setAllowDownload(source != .mobileDevice)
+            selectionView.setAllowShare(source == .mobileDevice)
             selectionView.setCountAndSizeOfItems(0, 0)
             selectedMedias.removeAll()
             collection.reloadData()
@@ -390,9 +419,9 @@ extension GalleryMediaViewController: GallerySelectionDelegate {
                                        })
         let cancelAction = AlertAction(title: L10n.cancel,
                                        style: .cancel,
+                                       cancelCustomColor: .greenMediumSea,
                                        actionHandler: {})
-        // TODO: handle this properly when working on delete / download actions
-        let message: String = ""
+        let message: String = String(format: L10n.galleryRemoveSdConfirm, viewModel?.sourceType?.title ?? "")
         showAlert(title: L10n.commonDelete,
                   message: message,
                   cancelAction: cancelAction,
@@ -401,7 +430,11 @@ extension GalleryMediaViewController: GallerySelectionDelegate {
 
     func mustDownloadSelection() {
         let medias = selectedMedias
-        delegate?.multipleSelectionActionTriggered()
+        delegate?.multipleSelectionEnabled()
         handleDownload(medias)
+    }
+
+    func mustShareSelection() {
+        handleShare()
     }
 }

@@ -42,10 +42,10 @@ final class DownloadButton: UIButton {
     // MARK: - Internal Funcs
     /// Setup display.
     func setup() {
-        self.makeup(with: .regular, color: .greenSpring)
+        self.makeup(with: .regular)
         self.applyCornerRadius(Style.mediumCornerRadius)
-        self.backgroundColor = ColorName.greenSpring20.color
-        self.tintColor = ColorName.greenSpring20.color
+        self.backgroundColor = ColorName.greenMediumSea.color
+        self.tintColor = .white
         self.contentEdgeInsets = Constants.contentEdgeInsets
         self.imageEdgeInsets = Constants.imageEdgeInsets
         self.setImage(Asset.Gallery.mediaDownload.image, for: .normal)
@@ -60,30 +60,24 @@ final class DownloadButton: UIButton {
     func updateState(_ state: GalleryMediaDownloadState?,
                      title: String?) {
         self.setImage(state?.icon, for: .normal)
+        self.backgroundColor = state?.backgroundColor
+        self.tintColor = state?.tintColor
         self.isHidden = state == nil
-        let filtredTitle: String?
+        let filteredTitle: String?
         switch state {
         case .downloading,
              .downloaded:
-            filtredTitle = nil
+            filteredTitle = nil
         default:
-            filtredTitle = title ?? L10n.commonDownload
+            filteredTitle = title ?? L10n.commonDownload
         }
-        self.setTitle(filtredTitle, for: .normal)
-        setHighlightedStyle(state == .downloading)
-        setSelectedStyle(isSelected)
-        self.isEnabled = state != .downloading
+        self.setTitle(filteredTitle, for: .normal)
+        self.isUserInteractionEnabled = state != .downloading
     }
 
     override var isHighlighted: Bool {
         didSet {
             setHighlightedStyle(isHighlighted)
-        }
-    }
-
-    override var isSelected: Bool {
-        didSet {
-            setSelectedStyle(isSelected)
         }
     }
 }
@@ -96,13 +90,5 @@ private extension DownloadButton {
     ///    - isHighlighted: is highlighted
     func setHighlightedStyle(_ isHighlighted: Bool) {
         self.alpha = isHighlighted ? 0.5 : 1.0
-    }
-
-    /// Set specific selected style.
-    ///
-    /// - Parameters:
-    ///    - isSelected: is selected
-    func setSelectedStyle(_ isSelected: Bool) {
-        self.backgroundColor = self.isSelected ? ColorName.black60.color : ColorName.greenSpring20.color
     }
 }

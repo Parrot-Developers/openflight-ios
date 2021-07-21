@@ -50,16 +50,6 @@ extension PoiPoint {
     /// - Returns: computed graphic
     func markerGraphic(index: Int) -> FlightPlanPoiPointGraphic {
         return FlightPlanPoiPointGraphic(poiPoint: self,
-                                            index: index)
-    }
-
-    /// Computes label graphic for poi.
-    ///
-    /// - Parameters:
-    ///    - index: index of poi
-    /// - Returns: computed graphic
-    func labelGraphic(index: Int) -> FlightPlanPoiPointLabelGraphic {
-        return FlightPlanPoiPointLabelGraphic(poiPoint: self,
-                                                 index: index)
+                                            index: index, heading: 0)
     }
 }

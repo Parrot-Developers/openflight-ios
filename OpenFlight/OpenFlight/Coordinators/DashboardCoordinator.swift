@@ -32,14 +32,22 @@ import SwiftyUserDefaults
 
 /// Coordinator for Dashboard part.
 public final class DashboardCoordinator: Coordinator {
-    // MARK: - Properties
+    // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
     public var parentCoordinator: Coordinator?
+    /// The services. Warning: only here for availability in extensions, don't use from the outside
+    public unowned var services: ServiceHub
+
+    // MARK: - Init
+    init(services: ServiceHub) {
+        self.services = services
+    }
 
     // MARK: - Public Funcs
     public func start() {
-        let viewController = DashboardViewController.instantiate(coordinator: self)
+        let dashboardViewModel = DashboardViewModel(services: self.services)
+        let viewController = DashboardViewController.instantiate(coordinator: self, viewModel: dashboardViewModel)
         // Prevents not fullscreen presentation style since iOS 13.
         viewController.modalPresentationStyle = .fullScreen
         self.navigationController = NavigationController(rootViewController: viewController)
@@ -108,19 +116,10 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
         self.push(viewController)
     }
 
-    /// Starts third-party process.
-    ///
-    /// - Parameters:
-    ///    - service: third party service to start
-    func startThirdPartyProcess(service: ThirdPartyService) {
-        guard let currentAccount = AccountManager.shared.currentAccount,
-              let loginCoordinator = currentAccount.destinationCoordinator else {
-            return
-        }
-
-        loginCoordinator.parentCoordinator = self
-        currentAccount.startThirdPartyProcess(service: service)
-        self.present(childCoordinator: loginCoordinator, animated: true, completion: nil)
+    /// Displays my acount screen.
+    func startMyAccount() {
+        let viewController = DashboardMyAccountViewController.instantiate(coordinator: self)
+        push(viewController)
     }
 
     /// Starts Confidentiality screen.
@@ -138,32 +137,6 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
 
     /// Starts map preloading.
     func startMapPreloading() {
-    }
-
-    /// Starts login screen.
-    func startLogin() {
-        guard let currentAccount = AccountManager.shared.currentAccount,
-              let loginCoordinator = currentAccount.destinationCoordinator else {
-            return
-        }
-
-        // If you need to login, start a disconnected profile screen here.
-        loginCoordinator.parentCoordinator = self
-        currentAccount.startLogin()
-        self.present(childCoordinator: loginCoordinator, animated: true, completion: nil)
-    }
-
-    /// Function used to display user profile.
-    func startProviderProfile() {
-        guard let currentAccount = AccountManager.shared.currentAccount,
-              let loginCoordinator = currentAccount.destinationCoordinator else {
-            return
-        }
-
-        // If you need to show a user profile, start profile from login coordinator here.
-        loginCoordinator.parentCoordinator = self
-        currentAccount.startProfile()
-        self.present(childCoordinator: loginCoordinator, animated: true, completion: nil)
     }
 
     /// Dismisses the dashboard.
@@ -203,20 +176,16 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
     func showFlightPlan(viewModel: FlightPlanViewModel?) {
         guard let type = viewModel?.state.value.type else { return }
 
-        // Set Flight Plan as last used to be automatically open.
+        // Set Flight Plan as last used to be automatically open
+        // if the current mission is not related to a Flight Plan.
         viewModel?.setAsLastUsed()
+        // Set Flight Plan as current.
+        FlightPlanManager.shared.currentFlightPlanViewModel = viewModel
 
         dismissDashboard {
             // Setup Mission as a Flight Plan mission (may be custom).
-            let modeKey = FlightPlanTypeManager.shared.missionModeKey(for: type)
-            if let mode = MissionsManager.shared.missionSubModeFor(key: modeKey) {
-                Defaults.userMissionProvider = FlightPlanTypeManager.shared.missionKey(for: type)
-                let missionModeViewModel = MissionLauncherViewModel()
-                if let provider = MissionsManager.shared.allMissions.first(where: { $0.mission.key == modeKey}) {
-                    missionModeViewModel.update(provider: provider)
-                }
-                missionModeViewModel.update(mode: mode)
-            }
+            Services.hub.currentMissionManager.set(provider: type.missionProvider)
+            Services.hub.currentMissionManager.set(mode: type.missionMode)
         }
     }
 }

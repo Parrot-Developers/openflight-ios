@@ -55,7 +55,16 @@ enum PhotoFormatMode: String, BarItemMode, CaseIterable {
     }
 
     var image: UIImage? {
-        return nil
+        switch self {
+        case .rectilinearJpeg:
+            return Asset.BottomBar.PhotoSettingsDefinition.iconPhotoSettingsDefinitionJpegRect.image
+        case .fullFrameJpeg:
+            return Asset.BottomBar.PhotoSettingsDefinition.iconPhotoSettingsDefinitionWide.image
+        case .rectilinearDngJpeg:
+            return Asset.BottomBar.PhotoSettingsDefinition.iconPhotoSettingsDefinitionWideRect.image
+        case .fullFrameDngJpeg:
+            return Asset.BottomBar.PhotoSettingsDefinition.iconPhotoSettingsDefinitionWideWide.image
+        }
     }
 
     var key: String {
@@ -188,39 +197,70 @@ extension Camera2 {
 
 /// Utility extension for `Camera2Params` which help to retrieve default camera supported values.
 extension Camera2Params {
-    /// Returns default camera editor.
-    private static func defaultCameraEditor() -> Camera2Editor? {
-        // Use default drone, a real one is not needed.
-        guard let defaultDrone = GroundSdk().getDrone(uid: DroneConstants.defaultDroneUid),
-              let camera = defaultDrone.currentCamera else {
+    /// Gets camera configuration of current drone.
+    ///
+    /// - Returns: camera configuration, `nil` if unavailable
+    private static func currentCameraConfig() -> Camera2Config? {
+        // TODO very wrong to access a service here
+        guard let camera = Services.hub.currentDroneHolder.drone.currentCamera else {
             return nil
         }
-
-        // Open empty editor "fromScratch".
-        return camera.config.edit(fromScratch: true)
+        return camera.config
     }
 
-    /// Returns supported recording framerates regarding resolution.
+    /// Gets supported video recording framerates regarding resolution.
+    ///
+    /// - Parameter resolution: video recording resolution
+    /// - Returns: supported video recording framerates
     static func supportedRecordingFramerate(for resolution: Camera2RecordingResolution) -> [Camera2RecordingFramerate] {
-        guard let editor = defaultCameraEditor() else { return [] }
+        // create configuration editor starting from scratch
+        guard let editor = currentCameraConfig()?.edit(fromScratch: true) else { return [] }
 
-        // Set desired resolution to the editor.
         editor[Camera2Params.videoRecordingResolution]?.value = resolution
-        // Return available framerates.
-        guard let currentSupportedValues = editor[Camera2Params.videoRecordingFramerate]?.currentSupportedValues else { return [] }
+
+        let currentSupportedValues = editor[Camera2Params.videoRecordingFramerate]?.currentSupportedValues ?? []
 
         let supportedValues = currentSupportedValues.intersection(Camera2RecordingFramerate.availableFramerates)
         return Array(supportedValues).sorted()
     }
 
-    /// Returns supported recording resolutions.
+    /// Gets supported recording resolutions.
+    ///
+    /// - Returns: supported video recording framerates
     static func supportedRecordingResolution() -> [Camera2RecordingResolution] {
-        guard let editor = defaultCameraEditor(),
-              let currentSupportedValues = editor[Camera2Params.videoRecordingResolution]?.currentSupportedValues else {
+        guard let config = currentCameraConfig(),
+              let overallSupportedValues = config[Camera2Params.videoRecordingResolution]?.overallSupportedValues else {
             return []
         }
 
-        let supportedValues = currentSupportedValues.intersection(Camera2RecordingResolution.availableResolutions)
+        let supportedValues = overallSupportedValues.intersection(Camera2RecordingResolution.availableResolutions)
         return Array(supportedValues).sorted()
+    }
+
+    /// Gets range of supported photo capture timelapse interval for a given photo resolution.
+    ///
+    /// - Parameter resolution: photo resolution
+    /// - Returns: range of supported values for timelapse interval, `nil` if not supported
+    static func supportedTimelapseInterval(for resolution: Camera2PhotoResolution) -> ClosedRange<Double>? {
+        // create configuration editor starting from scratch
+        guard let editor = currentCameraConfig()?.edit(fromScratch: true) else { return nil }
+
+        editor[Camera2Params.photoResolution]?.value = resolution
+        let photoTimelapseInterval = editor[Camera2Params.photoTimelapseInterval]
+        return photoTimelapseInterval?.currentSupportedValues
+    }
+
+    /// Gets range of supported photo capture timepalse interval in current configuration,
+    /// considering camera mode is photo.
+    ///
+    /// - Returns: range of supported values for timelapse interval, `nil` if not supported
+    static func currentSupportedTimelapseInterval() -> ClosedRange<Double>? {
+        // create configuration editor starting from current configuration
+        guard let editor = currentCameraConfig()?.edit(fromScratch: false) else { return nil }
+
+        // in video recording mode, no timelapse value is supported,
+        // so set camera mode in configuration editor to photo
+        editor[Camera2Params.mode]?.value = .photo
+        return editor[Camera2Params.photoTimelapseInterval]?.currentSupportedValues
     }
 }

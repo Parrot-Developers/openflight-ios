@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -11,264 +14,257 @@
             <objects>
                 <viewController storyboardIdentifier="ImagingSettingsBarViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="ImagingSettingsBarViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Wf3-fd-o0X">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="34"/>
+                        <rect key="frame" x="0.0" y="0.0" width="741" height="34"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="wS5-Kc-vnX">
-                                <rect key="frame" x="0.0" y="0.0" width="600" height="34"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="11" translatesAutoresizingMaskIntoConstraints="NO" id="wS5-Kc-vnX">
+                                <rect key="frame" x="0.0" y="0.0" width="741" height="34"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ePC-K6-UEL">
-                                        <rect key="frame" x="0.0" y="0.0" width="50" height="34"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="E8W-Nc-Kbm">
+                                        <rect key="frame" x="0.0" y="0.0" width="389" height="34"/>
                                         <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="91O-vb-9pP">
-                                                <rect key="frame" x="0.0" y="0.0" width="50" height="34"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <state key="highlighted">
-                                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                                </state>
-                                                <connections>
-                                                    <action selector="autoExposurePadklockTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="bho-O4-g2S"/>
-                                                </connections>
-                                            </button>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="lockAEEnabled" translatesAutoresizingMaskIntoConstraints="NO" id="8Mn-dj-tfh">
-                                                <rect key="frame" x="20.5" y="10.5" width="9" height="13"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" secondItem="8Mn-dj-tfh" secondAttribute="height" multiplier="9:13" id="NZQ-3c-jtQ"/>
-                                                    <constraint firstAttribute="width" constant="9" id="bQX-Sp-9yD"/>
-                                                </constraints>
-                                            </imageView>
-                                        </subviews>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstItem="8Mn-dj-tfh" firstAttribute="centerX" secondItem="ePC-K6-UEL" secondAttribute="centerX" id="7DD-ZM-82Q"/>
-                                            <constraint firstAttribute="trailing" secondItem="91O-vb-9pP" secondAttribute="trailing" id="9ar-ub-B7Y"/>
-                                            <constraint firstItem="8Mn-dj-tfh" firstAttribute="centerY" secondItem="ePC-K6-UEL" secondAttribute="centerY" id="dZK-fl-C7d"/>
-                                            <constraint firstAttribute="width" constant="50" id="gEv-3b-oPG"/>
-                                            <constraint firstItem="91O-vb-9pP" firstAttribute="leading" secondItem="ePC-K6-UEL" secondAttribute="leading" id="pqp-UA-gbl"/>
-                                            <constraint firstAttribute="bottom" secondItem="91O-vb-9pP" secondAttribute="bottom" id="s9S-c9-6SE"/>
-                                            <constraint firstItem="91O-vb-9pP" firstAttribute="top" secondItem="ePC-K6-UEL" secondAttribute="top" id="xac-uX-Vbp"/>
-                                        </constraints>
-                                    </view>
-                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eaH-Rc-nYI">
-                                        <rect key="frame" x="60" y="0.0" width="239.5" height="34"/>
-                                        <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dEp-cr-ki5" customClass="HighlightableUIControl" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="43.5" height="34"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="86D-eP-m08">
+                                                <rect key="frame" x="0.0" y="0.0" width="109" height="34"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconManualAutoManual" translatesAutoresizingMaskIntoConstraints="NO" id="Pei-Ii-jCN">
-                                                        <rect key="frame" x="4" y="0.0" width="35.5" height="34"/>
-                                                    </imageView>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1dp-ZT-o4w" customClass="HighlightableUIControl" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="54" height="34"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="lockAElocked" translatesAutoresizingMaskIntoConstraints="NO" id="0ur-jY-jBO">
+                                                                <rect key="frame" x="22.5" y="10.5" width="9" height="13"/>
+                                                            </imageView>
+                                                        </subviews>
+                                                        <color key="backgroundColor" name="yellow_sea"/>
+                                                        <constraints>
+                                                            <constraint firstItem="0ur-jY-jBO" firstAttribute="centerY" secondItem="1dp-ZT-o4w" secondAttribute="centerY" id="He4-3G-p1u"/>
+                                                            <constraint firstItem="0ur-jY-jBO" firstAttribute="centerX" secondItem="1dp-ZT-o4w" secondAttribute="centerX" id="w58-j3-YVa"/>
+                                                        </constraints>
+                                                        <connections>
+                                                            <action selector="autoExposurePadklockTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="4GF-76-X4P"/>
+                                                        </connections>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dEp-cr-ki5" customClass="HighlightableUIControl" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="55" y="0.0" width="54" height="34"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconManualAutoManual" translatesAutoresizingMaskIntoConstraints="NO" id="Pei-Ii-jCN">
+                                                                <rect key="frame" x="9.5" y="8" width="35" height="18"/>
+                                                            </imageView>
+                                                        </subviews>
+                                                        <color key="backgroundColor" name="yellow_sea"/>
+                                                        <constraints>
+                                                            <constraint firstItem="Pei-Ii-jCN" firstAttribute="centerX" secondItem="dEp-cr-ki5" secondAttribute="centerX" id="dWP-gh-1oZ"/>
+                                                            <constraint firstItem="Pei-Ii-jCN" firstAttribute="centerY" secondItem="dEp-cr-ki5" secondAttribute="centerY" id="xhH-y8-i4I"/>
+                                                        </constraints>
+                                                        <connections>
+                                                            <action selector="autoModeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="dMT-RH-6KG"/>
+                                                        </connections>
+                                                    </view>
                                                 </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="bottom" secondItem="Pei-Ii-jCN" secondAttribute="bottom" id="grt-nh-ElV"/>
-                                                    <constraint firstItem="Pei-Ii-jCN" firstAttribute="top" secondItem="dEp-cr-ki5" secondAttribute="top" id="nHG-1C-QbR"/>
-                                                    <constraint firstAttribute="trailing" secondItem="Pei-Ii-jCN" secondAttribute="trailing" constant="4" id="sFo-BE-nm1"/>
-                                                    <constraint firstItem="Pei-Ii-jCN" firstAttribute="leading" secondItem="dEp-cr-ki5" secondAttribute="leading" constant="4" id="xou-9c-Axd"/>
-                                                </constraints>
-                                                <connections>
-                                                    <action selector="autoModeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="dMT-RH-6KG"/>
-                                                </connections>
-                                            </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lPm-qw-8r9">
-                                                <rect key="frame" x="43.5" y="0.0" width="1" height="34"/>
-                                                <color key="backgroundColor" white="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="1" id="z2u-rg-zRY"/>
-                                                </constraints>
-                                            </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="c9u-Jd-SwP" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="44.5" y="0.0" width="96.5" height="34"/>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="nSx-HT-EQn">
+                                                <rect key="frame" x="110" y="0.0" width="279" height="34"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="eaH-Rc-nYI">
+                                                        <rect key="frame" x="0.0" y="0.0" width="186.5" height="34"/>
+                                                        <subviews>
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cR0-1T-shW">
+                                                                <rect key="frame" x="0.0" y="0.0" width="93" height="34"/>
+                                                                <subviews>
+                                                                    <view alpha="0.90000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="c9u-Jd-SwP" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="93" height="34"/>
+                                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <connections>
+                                                                            <action selector="shutterSpeedItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="HZj-IA-fhw"/>
+                                                                        </connections>
+                                                                    </view>
+                                                                </subviews>
+                                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="trailing" secondItem="c9u-Jd-SwP" secondAttribute="trailing" id="3ug-Hp-Qpb"/>
+                                                                    <constraint firstAttribute="bottom" secondItem="c9u-Jd-SwP" secondAttribute="bottom" id="WUK-o9-YHt"/>
+                                                                    <constraint firstItem="c9u-Jd-SwP" firstAttribute="top" secondItem="cR0-1T-shW" secondAttribute="top" id="hk3-NB-zL4"/>
+                                                                    <constraint firstItem="c9u-Jd-SwP" firstAttribute="leading" secondItem="cR0-1T-shW" secondAttribute="leading" id="rj8-t9-47c"/>
+                                                                </constraints>
+                                                            </view>
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YJu-zL-KVt">
+                                                                <rect key="frame" x="94" y="0.0" width="92.5" height="34"/>
+                                                                <subviews>
+                                                                    <view alpha="0.90000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="k8k-aJ-Pq0" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="92.5" height="34"/>
+                                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <connections>
+                                                                            <action selector="cameroIsoItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="mes-F6-xDN"/>
+                                                                        </connections>
+                                                                    </view>
+                                                                </subviews>
+                                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <constraints>
+                                                                    <constraint firstItem="k8k-aJ-Pq0" firstAttribute="leading" secondItem="YJu-zL-KVt" secondAttribute="leading" id="0T0-nO-o3F"/>
+                                                                    <constraint firstAttribute="bottom" secondItem="k8k-aJ-Pq0" secondAttribute="bottom" id="NAf-vO-nQA"/>
+                                                                    <constraint firstItem="k8k-aJ-Pq0" firstAttribute="top" secondItem="YJu-zL-KVt" secondAttribute="top" id="dHm-2c-vdB"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="k8k-aJ-Pq0" secondAttribute="trailing" id="eq9-Ae-Aic"/>
+                                                                </constraints>
+                                                            </view>
+                                                        </subviews>
+                                                        <color key="backgroundColor" name="sambuca"/>
+                                                    </stackView>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AOE-bk-gzw">
+                                                        <rect key="frame" x="187.5" y="0.0" width="91.5" height="34"/>
+                                                        <subviews>
+                                                            <view alpha="0.90000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rGT-ui-TnM" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="91.5" height="34"/>
+                                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <connections>
+                                                                    <action selector="evCompensationItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="hy4-j0-HPu"/>
+                                                                </connections>
+                                                            </view>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="bottom" secondItem="rGT-ui-TnM" secondAttribute="bottom" id="L0j-Ii-T53"/>
+                                                            <constraint firstAttribute="trailing" secondItem="rGT-ui-TnM" secondAttribute="trailing" id="O1G-7h-eje"/>
+                                                            <constraint firstItem="rGT-ui-TnM" firstAttribute="leading" secondItem="AOE-bk-gzw" secondAttribute="leading" id="Z9y-Mf-EXL"/>
+                                                            <constraint firstItem="rGT-ui-TnM" firstAttribute="top" secondItem="AOE-bk-gzw" secondAttribute="top" id="cWd-tl-89K"/>
+                                                        </constraints>
+                                                    </view>
+                                                </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <connections>
-                                                    <action selector="shutterSpeedItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="HZj-IA-fhw"/>
-                                                </connections>
-                                            </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UOK-ox-xZM">
-                                                <rect key="frame" x="141" y="0.0" width="1" height="34"/>
-                                                <color key="backgroundColor" white="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="1" id="8yP-WV-GIr"/>
-                                                </constraints>
-                                            </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="k8k-aJ-Pq0" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="142" y="0.0" width="96.5" height="34"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <connections>
-                                                    <action selector="cameroIsoItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="mes-F6-xDN"/>
-                                                </connections>
-                                            </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MI8-Aj-qjE">
-                                                <rect key="frame" x="238.5" y="0.0" width="1" height="34"/>
-                                                <color key="backgroundColor" white="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="1" id="Mdk-lp-tv0"/>
-                                                </constraints>
-                                            </view>
+                                            </stackView>
                                         </subviews>
+                                        <color key="backgroundColor" name="sambuca"/>
                                         <constraints>
-                                            <constraint firstItem="k8k-aJ-Pq0" firstAttribute="width" secondItem="c9u-Jd-SwP" secondAttribute="width" id="tGd-1i-aRx"/>
+                                            <constraint firstItem="nSx-HT-EQn" firstAttribute="width" secondItem="E8W-Nc-Kbm" secondAttribute="width" multiplier="0.719" id="nSU-Hu-fU7"/>
+                                            <constraint firstItem="86D-eP-m08" firstAttribute="width" secondItem="E8W-Nc-Kbm" secondAttribute="width" multiplier="0.28" id="y4W-eY-S1b"/>
                                         </constraints>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TAO-RN-kAO">
-                                        <rect key="frame" x="309.5" y="0.0" width="95" height="34"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="bF8-CD-yE2">
+                                        <rect key="frame" x="400" y="0.0" width="207.5" height="34"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rGT-ui-TnM" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="95" height="34"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <connections>
-                                                    <action selector="evCompensationItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="hy4-j0-HPu"/>
-                                                </connections>
-                                            </view>
-                                        </subviews>
-                                    </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bF8-CD-yE2">
-                                        <rect key="frame" x="414.5" y="0.0" width="102.5" height="34"/>
-                                        <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8Nc-WO-B7c" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="51" height="34"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <connections>
-                                                    <action selector="whiteBalanceItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="7Do-7x-YaS"/>
-                                                </connections>
-                                            </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UWD-Vb-hIj">
-                                                <rect key="frame" x="51" y="0.0" width="1" height="34"/>
-                                                <color key="backgroundColor" white="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="x6O-DU-RuH">
+                                                <rect key="frame" x="0.0" y="0.0" width="103.5" height="34"/>
+                                                <subviews>
+                                                    <view alpha="0.90000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8Nc-WO-B7c" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="103.5" height="34"/>
+                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <connections>
+                                                            <action selector="whiteBalanceItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="7Do-7x-YaS"/>
+                                                        </connections>
+                                                    </view>
+                                                </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" constant="1" id="ctc-eT-AH5"/>
+                                                    <constraint firstAttribute="trailing" secondItem="8Nc-WO-B7c" secondAttribute="trailing" id="2lh-0I-Mks"/>
+                                                    <constraint firstItem="8Nc-WO-B7c" firstAttribute="leading" secondItem="x6O-DU-RuH" secondAttribute="leading" id="gA7-Ca-n0E"/>
+                                                    <constraint firstAttribute="bottom" secondItem="8Nc-WO-B7c" secondAttribute="bottom" id="jBG-nx-bYp"/>
+                                                    <constraint firstItem="8Nc-WO-B7c" firstAttribute="top" secondItem="x6O-DU-RuH" secondAttribute="top" id="wCE-sM-QQx"/>
                                                 </constraints>
                                             </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TZd-fH-Ox3" customClass="DynamicRangeItemView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="52" y="0.0" width="50.5" height="34"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <connections>
-                                                    <action selector="dynamicRangeTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="cbT-Hk-9K5"/>
-                                                </connections>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="12I-Ue-NWV">
+                                                <rect key="frame" x="104.5" y="0.0" width="103" height="34"/>
+                                                <subviews>
+                                                    <view alpha="0.90000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TZd-fH-Ox3" customClass="DynamicRangeItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="103" height="34"/>
+                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <connections>
+                                                            <action selector="dynamicRangeTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="cbT-Hk-9K5"/>
+                                                        </connections>
+                                                    </view>
+                                                </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstItem="TZd-fH-Ox3" firstAttribute="top" secondItem="12I-Ue-NWV" secondAttribute="top" id="Mun-h9-mRj"/>
+                                                    <constraint firstAttribute="trailing" secondItem="TZd-fH-Ox3" secondAttribute="trailing" id="NYL-Kt-Jgb"/>
+                                                    <constraint firstItem="TZd-fH-Ox3" firstAttribute="leading" secondItem="12I-Ue-NWV" secondAttribute="leading" id="Rtq-ET-GJ8"/>
+                                                    <constraint firstAttribute="bottom" secondItem="TZd-fH-Ox3" secondAttribute="bottom" id="UB3-Mf-JYq"/>
+                                                </constraints>
                                             </view>
                                         </subviews>
-                                        <constraints>
-                                            <constraint firstItem="8Nc-WO-B7c" firstAttribute="width" secondItem="TZd-fH-Ox3" secondAttribute="width" id="0i0-ne-OgS"/>
-                                        </constraints>
+                                        <color key="backgroundColor" name="sambuca"/>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="dft-1C-WQZ">
-                                        <rect key="frame" x="527" y="0.0" width="73" height="34"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dft-1C-WQZ">
+                                        <rect key="frame" x="618.5" y="0.0" width="122.5" height="34"/>
                                         <subviews>
-                                            <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kvf-Vr-z4Y">
+                                            <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="kvf-Vr-z4Y">
                                                 <rect key="frame" x="0.0" y="0.0" width="1" height="34"/>
                                                 <subviews>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tru-qk-0ae" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                    <view alpha="0.90000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tru-qk-0ae" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
                                                         <rect key="frame" x="0.0" y="0.0" width="0.0" height="34"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <connections>
                                                             <action selector="photoResolutionItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="CXq-DS-gOm"/>
                                                         </connections>
                                                     </view>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qLT-LV-5go">
-                                                        <rect key="frame" x="0.0" y="0.0" width="1" height="34"/>
-                                                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="calibratedRGB"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" constant="1" id="PAZ-YR-s92"/>
-                                                        </constraints>
-                                                    </view>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="79U-Dd-EFI" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                    <view alpha="0.90000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="79U-Dd-EFI" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
                                                         <rect key="frame" x="1" y="0.0" width="0.0" height="34"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <connections>
                                                             <action selector="photoFormatItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="yo2-3h-6oU"/>
                                                         </connections>
                                                     </view>
                                                 </subviews>
-                                                <constraints>
-                                                    <constraint firstItem="tru-qk-0ae" firstAttribute="width" secondItem="79U-Dd-EFI" secondAttribute="width" id="UUL-KK-nRw"/>
-                                                </constraints>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </stackView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PFw-BY-exF">
-                                                <rect key="frame" x="0.0" y="0.0" width="73" height="34"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="PFw-BY-exF">
+                                                <rect key="frame" x="0.0" y="0.0" width="122.5" height="34"/>
                                                 <subviews>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JzT-dO-b6q" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="36" height="34"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <view alpha="0.90000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JzT-dO-b6q" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="61" height="34"/>
+                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <connections>
                                                             <action selector="videoResolutionItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="eg1-yP-uI4"/>
                                                         </connections>
                                                     </view>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2hV-rG-0C3">
-                                                        <rect key="frame" x="36" y="0.0" width="1" height="34"/>
-                                                        <color key="backgroundColor" white="1" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" constant="1" id="YNd-R8-NDZ"/>
-                                                        </constraints>
-                                                    </view>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SY5-iL-37X" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="37" y="0.0" width="36" height="34"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <view alpha="0.90000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SY5-iL-37X" customClass="ImagingBarItemView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="62" y="0.0" width="60.5" height="34"/>
+                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <connections>
                                                             <action selector="framerateItemTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="MUl-ry-G3x"/>
                                                         </connections>
                                                     </view>
                                                 </subviews>
-                                                <constraints>
-                                                    <constraint firstItem="SY5-iL-37X" firstAttribute="width" secondItem="JzT-dO-b6q" secondAttribute="width" id="oyv-to-8CG"/>
-                                                </constraints>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </stackView>
                                         </subviews>
+                                        <color key="backgroundColor" name="sambuca"/>
                                     </stackView>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="height" relation="lessThanOrEqual" constant="34" id="8kl-HL-tgI"/>
-                                    <constraint firstAttribute="height" priority="900" constant="34" id="TJe-bx-AFY"/>
-                                    <constraint firstItem="dft-1C-WQZ" firstAttribute="width" secondItem="eaH-Rc-nYI" secondAttribute="width" multiplier="128:421" id="ZKj-sq-xCh"/>
-                                    <constraint firstItem="TAO-RN-kAO" firstAttribute="width" secondItem="eaH-Rc-nYI" secondAttribute="width" multiplier="101:255" id="vAQ-gE-geQ"/>
-                                    <constraint firstItem="bF8-CD-yE2" firstAttribute="width" secondItem="eaH-Rc-nYI" secondAttribute="width" multiplier="180:421" id="zBm-WE-tKL"/>
+                                    <constraint firstAttribute="height" relation="lessThanOrEqual" constant="34" id="8kl-HL-tgI">
+                                        <variation key="heightClass=regular-widthClass=regular" constant="54"/>
+                                    </constraint>
+                                    <constraint firstItem="bF8-CD-yE2" firstAttribute="width" secondItem="wS5-Kc-vnX" secondAttribute="width" multiplier="0.28" id="Sif-ge-Q9X"/>
+                                    <constraint firstAttribute="height" priority="900" constant="34" id="TJe-bx-AFY">
+                                        <variation key="heightClass=regular-widthClass=regular" constant="54"/>
+                                    </constraint>
+                                    <constraint firstItem="dft-1C-WQZ" firstAttribute="width" secondItem="wS5-Kc-vnX" secondAttribute="width" multiplier="0.17" id="h6e-h7-SVE"/>
+                                    <constraint firstItem="E8W-Nc-Kbm" firstAttribute="width" secondItem="wS5-Kc-vnX" secondAttribute="width" multiplier="0.525" id="zml-3t-bef"/>
                                 </constraints>
-                                <variation key="heightClass=compact-widthClass=compact" spacing="4"/>
+                                <variation key="heightClass=regular-widthClass=regular" spacing="20"/>
                             </stackView>
-                            <view hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pq3-dj-Qym">
-                                <rect key="frame" x="60" y="0.0" width="239.5" height="34"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </view>
-                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uaB-ZI-zca">
-                                <rect key="frame" x="103" y="0.0" width="2" height="34"/>
-                                <color key="backgroundColor" red="1" green="0.86274509803921573" blue="0.0078431372549019607" alpha="1" colorSpace="calibratedRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2" id="qwt-W8-05m"/>
-                                </constraints>
-                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="tEe-33-WLu"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="pq3-dj-Qym" firstAttribute="leading" secondItem="eaH-Rc-nYI" secondAttribute="leading" id="7gr-ZO-XOT"/>
-                            <constraint firstItem="pq3-dj-Qym" firstAttribute="top" secondItem="eaH-Rc-nYI" secondAttribute="top" id="9tU-az-HCy"/>
-                            <constraint firstAttribute="trailing" secondItem="wS5-Kc-vnX" secondAttribute="trailing" id="JT2-VW-0wd"/>
-                            <constraint firstItem="wS5-Kc-vnX" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="VGx-Xp-TGM"/>
-                            <constraint firstItem="pq3-dj-Qym" firstAttribute="bottom" secondItem="eaH-Rc-nYI" secondAttribute="bottom" id="cQu-x0-0Lf"/>
+                            <constraint firstItem="wS5-Kc-vnX" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="bi8-Nv-8uV"/>
+                            <constraint firstAttribute="trailing" secondItem="wS5-Kc-vnX" secondAttribute="trailing" id="hhC-gj-iAf"/>
                             <constraint firstAttribute="bottom" secondItem="wS5-Kc-vnX" secondAttribute="bottom" id="lH4-Oa-5hm"/>
-                            <constraint firstItem="pq3-dj-Qym" firstAttribute="trailing" secondItem="eaH-Rc-nYI" secondAttribute="trailing" id="lPW-C2-XF8"/>
-                            <constraint firstItem="uaB-ZI-zca" firstAttribute="bottom" secondItem="pq3-dj-Qym" secondAttribute="bottom" id="ldJ-xv-4i3"/>
-                            <constraint firstItem="uaB-ZI-zca" firstAttribute="centerX" secondItem="lPm-qw-8r9" secondAttribute="centerX" id="lvn-N7-FxT"/>
-                            <constraint firstItem="uaB-ZI-zca" firstAttribute="top" secondItem="pq3-dj-Qym" secondAttribute="top" id="mvm-mZ-n3F"/>
                             <constraint firstItem="wS5-Kc-vnX" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="uQn-Vv-2Da"/>
                         </constraints>
                     </view>
-                    <size key="freeformSize" width="600" height="34"/>
+                    <size key="freeformSize" width="741" height="34"/>
                     <connections>
-                        <outlet property="autoExposureButton" destination="91O-vb-9pP" id="EcK-PR-uoq"/>
-                        <outlet property="autoExposurePadlockImageView" destination="8Mn-dj-tfh" id="0YW-Nz-zKC"/>
-                        <outlet property="autoModeBorderView" destination="pq3-dj-Qym" id="h7c-5y-OZ3"/>
+                        <outlet property="autoExposureButton" destination="1dp-ZT-o4w" id="ciH-gX-bJt"/>
+                        <outlet property="autoExposurePadlockImageView" destination="0ur-jY-jBO" id="Jmy-7J-Gs6"/>
+                        <outlet property="autoExposureStackView" destination="E8W-Nc-Kbm" id="Uya-3n-Bs2"/>
                         <outlet property="autoModeButton" destination="dEp-cr-ki5" id="em2-yp-URH"/>
                         <outlet property="autoModeImageView" destination="Pei-Ii-jCN" id="rNt-lq-mZ3"/>
-                        <outlet property="autoModeSeparatorView" destination="uaB-ZI-zca" id="BTP-I2-CRt"/>
                         <outlet property="cameraIsoItemView" destination="k8k-aJ-Pq0" id="Ryv-kO-skP"/>
                         <outlet property="dynamicRangeItemStackView" destination="bF8-CD-yE2" id="E7h-9d-Ews"/>
                         <outlet property="dynamicRangeItemView" destination="TZd-fH-Ox3" id="Jxg-bJ-6Tk"/>
                         <outlet property="evCompensationItemView" destination="rGT-ui-TnM" id="1KE-Ud-TJ8"/>
-                        <outlet property="evStackView" destination="TAO-RN-kAO" id="ezr-KC-n7z"/>
                         <outlet property="framerateItemView" destination="SY5-iL-37X" id="VBe-TZ-fY2"/>
                         <outlet property="generalSettingsStackView" destination="eaH-Rc-nYI" id="TrB-UJ-y4I"/>
                         <outlet property="imagingSettingsBarStackView" destination="wS5-Kc-vnX" id="UuY-Aw-vpq"/>
-                        <outlet property="lockAEView" destination="ePC-K6-UEL" id="kFS-Hl-xZZ"/>
                         <outlet property="photoFormatItemView" destination="79U-Dd-EFI" id="GGf-xT-Ubh"/>
                         <outlet property="photoItemsStackView" destination="kvf-Vr-z4Y" id="0z6-0X-yQJ"/>
                         <outlet property="photoResolutionItemView" destination="tru-qk-0ae" id="6TB-BM-vEC"/>
@@ -286,6 +282,12 @@
     </scenes>
     <resources>
         <image name="iconManualAutoManual" width="35" height="18"/>
-        <image name="lockAEEnabled" width="9" height="13"/>
+        <image name="lockAElocked" width="9" height="13"/>
+        <namedColor name="sambuca">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="yellow_sea">
+            <color red="1" green="0.86274509803921573" blue="0.0078431372549019607" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

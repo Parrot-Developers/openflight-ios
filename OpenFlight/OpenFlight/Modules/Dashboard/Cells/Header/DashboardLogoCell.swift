@@ -33,6 +33,15 @@ import Reusable
 
 /// Custom View used for the header of the Dashboard.
 final class DashboardLogoCell: UICollectionViewCell, NibReusable {
+
+    @IBOutlet private weak var logoImageView: UIImageView!
+
+    var logoImage: UIImage = Asset.Logo.icLogoParrotApp.image {
+        didSet {
+            logoImageView.image = logoImage
+        }
+    }
+
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()

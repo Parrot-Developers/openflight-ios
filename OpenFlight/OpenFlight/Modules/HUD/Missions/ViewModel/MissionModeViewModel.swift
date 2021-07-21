@@ -29,7 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
-import SwiftyUserDefaults
+import Combine
 
 /// State for `MissionModeViewModel`.
 
@@ -50,8 +50,8 @@ public class MissionProviderState: ViewModelState, EquatableState, Copying {
 
     // MARK: - Init
     required public init() {
-        provider = MissionsManager.shared.missionFor(key: Defaults.userMissionProvider)
-        mode = MissionsManager.shared.missionSubModeFor(key: Defaults.userMissionMode)
+        provider = Services.hub.currentMissionManager.provider
+        mode = Services.hub.currentMissionManager.mode
     }
 
     /// Init.
@@ -84,19 +84,13 @@ public class MissionProviderState: ViewModelState, EquatableState, Copying {
 final class MissionProviderViewModel: BaseViewModel<MissionProviderState> {
 
     // MARK: - Private Properties
-    private var defaultsDisposable: DefaultsDisposable?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     override init() {
         super.init()
 
         listenDefaults()
-    }
-
-    // MARK: - Deinit
-    deinit {
-        defaultsDisposable?.dispose()
-        defaultsDisposable = nil
     }
 }
 
@@ -105,15 +99,12 @@ private extension MissionProviderViewModel {
 
     /// Listen updates on user defaults to detect mission mode changes.
     func listenDefaults() {
-        defaultsDisposable = Defaults.observe(\.userMissionMode) { [weak self] _ in
-            DispatchQueue.userDefaults.async {
-                let stateCopy = self?.state.value.copy()
-                let newProvider = MissionsManager.shared.missionFor(key: Defaults.userMissionProvider)
-                let newMode = MissionsManager.shared.missionSubModeFor(key: Defaults.userMissionMode)
-                stateCopy?.provider = newProvider
-                stateCopy?.mode = newMode
-                self?.state.set(stateCopy)
-            }
-        }
+        Services.hub.currentMissionManager.modePublisher.sink { [unowned self] mode in
+            let stateCopy = state.value.copy()
+            let newProvider = Services.hub.currentMissionManager.provider
+            stateCopy.provider = newProvider
+            stateCopy.mode = mode
+            state.set(stateCopy)
+        }.store(in: &cancellables)
     }
 }

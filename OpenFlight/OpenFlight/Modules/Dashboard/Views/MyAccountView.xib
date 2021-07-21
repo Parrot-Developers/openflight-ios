@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="MyAccountView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="backgroundView" destination="ibG-5m-g5P" id="GOe-Wp-eKI"/>
+                <outlet property="connectButton" destination="rGS-3N-pVq" id="JX7-O2-jsG"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ibG-5m-g5P">
+                    <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                </view>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rGS-3N-pVq">
+                    <rect key="frame" x="150" y="240" width="300" height="120"/>
+                    <color key="backgroundColor" name="green_medium_sea"/>
+                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                    <state key="normal" title="Se connecter">
+                        <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </state>
+                    <connections>
+                        <action selector="connectButtonTouchedUpInside:" destination="-1" eventType="touchUpInside" id="YHZ-z4-yZx"/>
+                    </connections>
+                </button>
+            </subviews>
+            <constraints>
+                <constraint firstItem="ibG-5m-g5P" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="4zQ-3T-Wdn"/>
+                <constraint firstItem="rGS-3N-pVq" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" multiplier="0.5" id="D3C-E6-bdA"/>
+                <constraint firstItem="rGS-3N-pVq" firstAttribute="height" secondItem="iN0-l3-epB" secondAttribute="height" multiplier="0.2" id="TE0-p3-874"/>
+                <constraint firstItem="rGS-3N-pVq" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="hYP-YP-Fmv"/>
+                <constraint firstItem="ibG-5m-g5P" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="jrS-DM-Kq7"/>
+                <constraint firstAttribute="bottom" secondItem="ibG-5m-g5P" secondAttribute="bottom" id="pgn-01-tuG"/>
+                <constraint firstAttribute="trailing" secondItem="ibG-5m-g5P" secondAttribute="trailing" id="rUq-Kq-8Uh"/>
+                <constraint firstItem="rGS-3N-pVq" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="rfQ-rC-LK2"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="139" y="129"/>
+        </view>
+    </objects>
+    <resources>
+        <namedColor name="green_medium_sea">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

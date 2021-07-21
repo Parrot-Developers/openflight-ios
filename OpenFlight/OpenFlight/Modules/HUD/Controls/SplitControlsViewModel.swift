@@ -29,75 +29,53 @@
 //    SUCH DAMAGE.
 
 import SwiftyUserDefaults
-
-/// State for `SplitControlsViewModel`.
-
-final class SplitControlsState: ViewModelState, EquatableState, Copying {
-    // MARK: - Internal Properties
-    /// Current split screen mode.
-    fileprivate(set) var mode: SplitScreenMode = .splited
-    /// Current bottom bar mode.
-    fileprivate(set) var bottomBarMode: BottomBarMode = .preset
-    /// Tells if joysticks are visible.
-    fileprivate(set) var isJoysticksVisible = false
-    /// Helper for secondary miniature visibility.
-    var shouldHideSecondary: Bool {
-        return mode == .stream && bottomBarMode != .closed
-    }
-
-    // MARK: - Init
-    required init() {}
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - mode: current split screen mode
-    ///    - bottomBarMode: current bottom bar mode
-    ///    - isJoysticksVisible: tells if joysticks are visible
-    init(mode: SplitScreenMode,
-         bottomBarMode: BottomBarMode,
-         isJoysticksVisible: Bool) {
-        self.mode = mode
-        self.bottomBarMode = bottomBarMode
-        self.isJoysticksVisible = isJoysticksVisible
-    }
-
-    // MARK: - Equatable Implementation
-    func isEqual(to other: SplitControlsState) -> Bool {
-        return self.mode == other.mode
-            && self.bottomBarMode == other.bottomBarMode
-            && self.isJoysticksVisible == other.isJoysticksVisible
-    }
-
-    // MARK: - Copying Implementation
-    func copy() -> SplitControlsState {
-        return SplitControlsState(mode: self.mode,
-                                  bottomBarMode: self.bottomBarMode,
-                                  isJoysticksVisible: self.isJoysticksVisible)
-    }
-}
+import Combine
 
 /// View model for split screen.
 
-final class SplitControlsViewModel: BaseViewModel<SplitControlsState> {
+class SplitControlsViewModel {
     // MARK: - Private Properties
     private var bottomBarModeObserver: Any?
-    private var joysticksAvailabilityObserver: Any?
+    private var cancellables = Set<AnyCancellable>()
+    private var modeSubject = CurrentValueSubject<SplitScreenMode, Never>(.splited)
+    private var bottomBarModeSubject = CurrentValueSubject<BottomBarMode, Never>(.preset)
+    private var isJoysticksVisibleSubject = CurrentValueSubject<Bool, Never>(false)
+
+    // MARK: - Internal Properties
+    /// Current split screen mode.
+    var mode: SplitScreenMode { modeSubject.value }
+    /// Current bottom bar mode.
+    var bottomBarMode: BottomBarMode { bottomBarModeSubject.value }
+    /// Tells if joysticks are visible.
+    var isJoysticksVisible: Bool { isJoysticksVisibleSubject.value }
+    /// Helper for secondary miniature visibility.
+    var shouldHideSecondary: AnyPublisher<Bool, Never> {
+        modeSubject
+            .combineLatest(bottomBarModeSubject)
+            .map { (couple: (SplitScreenMode, BottomBarMode)) -> Bool in
+                let (mode, bottomBarMode) = couple
+                return mode == .stream && bottomBarMode != .closed
+            }
+            .eraseToAnyPublisher()
+    }
+    /// Current split screen mode.
+    var modePublisher: AnyPublisher<SplitScreenMode, Never> { modeSubject.eraseToAnyPublisher() }
+    /// Tells if joysticks are visible.
+    var isJoysticksVisiblePublisher: AnyPublisher<Bool, Never> { isJoysticksVisibleSubject.eraseToAnyPublisher() }
+    /// Current bottom bar mode.
+    var bottomBarModePublisher: AnyPublisher<BottomBarMode, Never> { bottomBarModeSubject.eraseToAnyPublisher() }
 
     // MARK: - Init
-    override init() {
-        super.init()
-
+    init() {
         listenBottomBarModeChanges()
-        listenJoysticksAvailabilityChanges()
+        // TODO: Wrong injection
+        listenJoysticksAvailabilityChanges(joysticksAvailabilityService: Services.hub.ui.joysticksAvailabilityService)
     }
 
     // MARK: - Deinit
     deinit {
         NotificationCenter.default.remove(observer: bottomBarModeObserver)
         bottomBarModeObserver = nil
-        NotificationCenter.default.remove(observer: joysticksAvailabilityObserver)
-        joysticksAvailabilityObserver = nil
     }
 
     // MARK: - Internal Funcs
@@ -106,9 +84,7 @@ final class SplitControlsViewModel: BaseViewModel<SplitControlsState> {
     /// - Parameters:
     ///    - mode: split screen mode to apply
     func setMode(_ mode: SplitScreenMode) {
-        let copy = self.state.value.copy()
-        copy.mode = mode
-        self.state.set(copy)
+        self.modeSubject.value = mode
         NotificationCenter.default.post(name: .splitModeDidChange,
                                         object: self,
                                         userInfo: [SplitControlsConstants.splitScreenModeKey: mode])
@@ -125,23 +101,15 @@ private extension SplitControlsViewModel {
             guard let bottomBarMode = notification.userInfo?[BottomBarMode.notificationKey] as? BottomBarMode else {
                 return
             }
-            let copy = self?.state.value.copy()
-            copy?.bottomBarMode = bottomBarMode
-            self?.state.set(copy)
+            self?.bottomBarModeSubject.value = bottomBarMode
         }
     }
 
-    /// Starts watcher for joysticks availability changes.
-    func listenJoysticksAvailabilityChanges() {
-        joysticksAvailabilityObserver = NotificationCenter.default.addObserver(forName: .joysticksAvailabilityDidChange,
-                                                                             object: nil,
-                                                                             queue: nil) { [weak self] notification in
-            guard let joysticksAvailable = notification.userInfo?[JoysticksStateNotifications.joysticksAvailabilityNotificationKey] as? Bool else {
-                return
-            }
-            let copy = self?.state.value.copy()
-            copy?.isJoysticksVisible = joysticksAvailable
-            self?.state.set(copy)
+    /// Starts watching for joysticks visibility changes.
+    func listenJoysticksAvailabilityChanges(joysticksAvailabilityService: JoysticksAvailabilityService) {
+        joysticksAvailabilityService.showJoysticksPublisher.sink { [unowned self] in
+            isJoysticksVisibleSubject.value = $0
         }
+        .store(in: &cancellables)
     }
 }

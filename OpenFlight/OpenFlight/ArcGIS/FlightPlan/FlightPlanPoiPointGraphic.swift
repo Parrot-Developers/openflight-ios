@@ -33,9 +33,11 @@ import ArcGIS
 /// Graphic class for Flight Plan's point of interest.
 public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRelatedGraphic {
     // MARK: - Private Properties
-    private var diamondSymbol: AGSSimpleMarkerSymbol? {
-        return symbol as? AGSSimpleMarkerSymbol
-    }
+    private var mainLabel: AGSPictureMarkerSymbol?
+    private var diamondSymbol: AGSSimpleMarkerSymbol
+
+    /// Camera heading
+    private var heading: Int = 0
 
     // MARK: - Public Properties
     /// Associated point of interest.
@@ -54,7 +56,12 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
         static let outlineColor: UIColor = ColorName.white.color
         static let selectedColor: UIColor = ColorName.greenSpring.color
         static let diamondSize: CGFloat = 54.0
-        static let outlineWidth: CGFloat = 2.0
+        static let outlineWidth: CGFloat = 1.0
+        static let textColor: UIColor = ColorName.black.color
+        static let labelSize: CGFloat = 34.0
+        // Labels altitude should be offset to prevent from colliding with other graphics.
+        static let textAltitudeOffset: Double = 0.05
+        static let fontSize: CGFloat = 13.0
     }
 
     // MARK: - Init
@@ -63,19 +70,31 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     /// - Parameters:
     ///    - poiPoint: point of interest
     ///    - index: index of point of interest
-    public init(poiPoint: PoiPoint, index: Int) {
-        let diamond = AGSSimpleMarkerSymbol(style: .diamond,
-                                            color: FlightPlanAGSConstants.colorForPoiIndex(index),
-                                            size: Constants.diamondSize)
-        diamond.outline = AGSSimpleLineSymbol(style: .solid,
-                                              color: Constants.outlineColor,
-                                              width: Constants.outlineWidth)
+    ///    - heading: camera heading
+    public init(poiPoint: PoiPoint, index: Int, heading: Double) {
+
+        self.heading = Int(heading)
+        diamondSymbol = AGSSimpleMarkerSymbol(style: .diamond,
+                                              color: FlightPlanAGSConstants.colorForPoiIndex(index),
+                                              size: Constants.diamondSize)
+        diamondSymbol.outline = AGSSimpleLineSymbol(style: .solid,
+                                                    color: Constants.outlineColor,
+                                                    width: Constants.outlineWidth)
+        var array = [AGSSymbol]()
+        array.append(diamondSymbol)
+
+        let symbol = AGSCompositeSymbol(symbols: array)
+
         super.init(geometry: poiPoint.agsPoint,
-                   symbol: diamond,
+                   symbol: symbol,
                    attributes: nil)
 
+        zIndex = Int(poiPoint.altitude)
         self.poiPoint = poiPoint
         self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = index
+        refreshText(altitude: poiPoint.formattedAltitude)
+        applyRotation()
+        self.symbol = getSymbol()
     }
 
     /// Init.
@@ -83,29 +102,91 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     /// - Parameters:
     ///    - location: point of interest's location
     public init(location: Location3D) {
-        let diamond = AGSSimpleMarkerSymbol(style: .diamond,
-                                            color: Constants.selectedColor,
-                                            size: Constants.diamondSize)
-        diamond.outline = AGSSimpleLineSymbol(style: .solid,
-                                              color: Constants.outlineColor,
-                                              width: Constants.outlineWidth)
+        diamondSymbol = AGSSimpleMarkerSymbol(style: .diamond,
+                                              color: Constants.selectedColor,
+                                              size: Constants.diamondSize)
+        diamondSymbol.outline = AGSSimpleLineSymbol(style: .solid,
+                                                    color: Constants.outlineColor,
+                                                    width: Constants.outlineWidth)
+
+        // add altitude
+        var array = [AGSSymbol]()
+        array.append(diamondSymbol)
+
+        let symbol = AGSCompositeSymbol(symbols: array)
+
         super.init(geometry: location.agsPoint,
-                   symbol: diamond,
+                   symbol: symbol,
                    attributes: nil)
 
         self.attributes[AGSConstants.poiPointAttributeKey] = true
+        refreshText(altitude: location.formattedAltitude)
+        self.symbol = getSymbol()
     }
 
     // MARK: - Override Funcs
     override func updateColors(isSelected: Bool) {
-        diamondSymbol?.color = isSelected
+        diamondSymbol.color = isSelected
             ? Constants.selectedColor
             : FlightPlanAGSConstants.colorForPoiIndex(poiIndex ?? 0)
     }
 
     override func updateAltitude(_ altitude: Double) {
+        let changeAltitude = (poiPoint?.altitude ?? 0.0) != altitude
         self.geometry = mapPoint?.withAltitude(altitude)
         poiPoint?.altitude = altitude
+
+        if changeAltitude {
+            zIndex = Int(altitude)
+            refreshText(altitude: poiPoint?.formattedAltitude ?? "")
+            applyRotation()
+            symbol = getSymbol()
+        }
+    }
+
+    /// Refresh text of main label
+    ///
+    /// - Parameters:
+    ///     - altitude: altitude to display
+    private func refreshText(altitude: String) {
+        let altitudeImage = FlightPlanPointGraphic.imageWith(name: poiPoint?.formattedAltitude,
+                            textColor: Constants.textColor,
+                            fontSize: Constants.fontSize,
+                            size: CGSize(width: Constants.diamondSize, height: Constants.diamondSize))
+
+        if let image = altitudeImage {
+            mainLabel = AGSPictureMarkerSymbol(image: image)
+        }
+    }
+
+    /// Get symbol
+    ///
+    /// - Returns: symbol
+    private func getSymbol() -> AGSCompositeSymbol {
+        var array = [AGSSymbol]()
+        array.append(diamondSymbol)
+        if let mainLabel = mainLabel {
+            array.append(mainLabel)
+        }
+        return AGSCompositeSymbol(symbols: array)
+    }
+
+    /// Updates camera heading.
+    ///
+    /// - Parameters:
+    ///     - heading: camera heading
+    func update(heading: Double) {
+        if self.heading != Int(heading) {
+            self.heading = Int(heading)
+            applyRotation()
+            symbol = getSymbol()
+        }
+    }
+
+    /// Applies rotation to symbols.
+    private func applyRotation() {
+        mainLabel?.angle = Float(heading) * FlightPlanGraphic.Constants.rotationFactor
+        diamondSymbol.angle = Float(heading) * FlightPlanGraphic.Constants.rotationFactor
     }
 }
 

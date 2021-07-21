@@ -31,7 +31,7 @@
 import GroundSdk
 
 /// Utility extension for `Cellular` peripheral.
-extension Cellular {
+public extension Cellular {
     /// Returns true if cellular is available.
     var isAvailable: Bool {
         return simStatus == .ready

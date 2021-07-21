@@ -38,9 +38,9 @@ extension NSMutableAttributedString {
     ///
     /// - Parameters:
     ///    - level: battery level
-    convenience init(withBatteryLevel level: Int) {
+    convenience init(withBatteryLevel level: Int?) {
         self.init()
-        append(NSAttributedString(string: String(level),
+        append(NSAttributedString(string: level?.description ?? Style.doubledash,
                                   attributes: [NSAttributedString.Key.font: ParrotFontStyle.regular.font]))
         append(NSAttributedString(string: "%",
                                   attributes: [NSAttributedString.Key.font: ParrotFontStyle.tiny.font]))
@@ -55,12 +55,12 @@ extension NSMutableAttributedString {
         append(NSAttributedString(string: String(format: "%.1lf", space),
                                   attributes: [
                                     NSAttributedString.Key.font: ParrotFontStyle.regular.font,
-                                    NSAttributedString.Key.foregroundColor: ColorName.white.color
+                                    NSAttributedString.Key.foregroundColor: ColorName.blackPearl.color
         ]))
         append(NSAttributedString(string: String(format: " %@", L10n.galleryMemoryFree.uppercased()),
                                   attributes: [
                                     NSAttributedString.Key.font: ParrotFontStyle.tiny.font,
-                                    NSAttributedString.Key.foregroundColor: ColorName.white50.color
+                                    NSAttributedString.Key.foregroundColor: ColorName.blackPearl.color
         ]))
     }
 

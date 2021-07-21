@@ -46,14 +46,12 @@ final class CellularPairingSuccessViewController: UIViewController {
     static func instantiate(coordinator: HUDCoordinator) -> CellularPairingSuccessViewController {
         let viewController = StoryboardScene.CellularPairingSuccess.initialScene.instantiate()
         viewController.coordinator = coordinator
-
         return viewController
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         initView()
     }
 
@@ -89,17 +87,12 @@ private extension CellularPairingSuccessViewController {
 private extension CellularPairingSuccessViewController {
     /// Inits the view.
     func initView() {
-        panelView.addBlurEffect()
-        closeButton.setImage(Asset.Common.Icons.icClose.image,
-                             for: .normal)
-        titleLabel.makeUp(with: .huge)
+        panelView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
+        closeButton.setImage(Asset.Common.Icons.icClose.image, for: .normal)
         titleLabel.text = L10n.cellularConfigurationSucceed
         descriptionLabel.text = L10n.cellularConfigurationSucceedReadyToUse
-        descriptionLabel.makeUp(with: .large)
-        okButton.makeup(with: .large)
-        okButton.cornerRadiusedWith(backgroundColor: ColorName.greenPea.color,
+        okButton.cornerRadiusedWith(backgroundColor: ColorName.greenMediumSea.color,
                                     radius: Style.largeCornerRadius)
-        okButton.setTitle(L10n.ok,
-                          for: .normal)
+        okButton.setTitle(L10n.ok, for: .normal)
     }
 }

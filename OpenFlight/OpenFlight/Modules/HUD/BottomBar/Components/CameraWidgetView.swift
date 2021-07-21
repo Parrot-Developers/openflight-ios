@@ -50,7 +50,7 @@ final class CameraWidgetView: UIControl, NibOwnerLoadable {
     @IBOutlet private weak var macaronImageView: UIImageView!
 
     // MARK: - Internal Properties
-    var model: CameraWidgetState? {
+    var model: CameraWidgetState! {
         didSet {
             fill(with: model)
         }
@@ -78,23 +78,19 @@ private extension CameraWidgetView {
     ///
     /// - Parameters:
     ///    - viewModel: model representing the contents
-    func fill(with model: CameraWidgetState?) {
-        guard let model = model else { return }
-
-        cameraWidgetLabel1?.attributedText = attributedTextFor(shutterSpeed: model.labelShutterSpeed,
-                                                               exposure: model.labelExposureCompensation.uppercased(),
-                                                               exposureColor: model.exposureColor)
-        let photoSignature = model.isPhotoSignatureEnabled
-        macaronImageView.isHidden = !photoSignature
-
+    func fill(with viewModel: CameraWidgetState) {
+        cameraWidgetLabel1.attributedText = attributedTextFor(shutterSpeed: model.labelShutterSpeed,
+                                                              exposure: model.labelExposureCompensation.uppercased(),
+                                                              exposureColor: model.exposureColor)
         if let labelCameraValue2 = model.labelCameraSpecificProperty2 {
-            cameraWidgetLabel2?.text = model.labelCameraSpecificProperty1 + " · " + labelCameraValue2
+            cameraWidgetLabel2.text = model.labelCameraSpecificProperty1 + " · " + labelCameraValue2
         } else {
-            cameraWidgetLabel2?.text = model.labelCameraSpecificProperty1
+            cameraWidgetLabel2.text = model.labelCameraSpecificProperty1
         }
-        DispatchQueue.main.async {
-            self.updateBackgroundColor()
-        }
+
+        updateIcon()
+        updateTextColor()
+        updateBackgroundColor()
     }
 
     /// Compute attributed string given shutter speed and exposure.
@@ -110,16 +106,25 @@ private extension CameraWidgetView {
         return attrString
     }
 
+    func updateIcon() {
+        let photoSignature = model.isPhotoSignatureEnabled
+        macaronImageView.isHidden = !photoSignature
+        // TODO - uncomment when the given icon is compatible to tint
+        // macaronImageView.tintColor = model.isSelected.value ? .white : ColorName.sambuca.color
+    }
+
+    func updateTextColor() {
+        let textColor = model.isSelected.value ? .white : ColorName.sambuca.color
+        cameraWidgetLabel1.textColor = textColor
+        cameraWidgetLabel2.textColor = textColor
+    }
+
     func updateBackgroundColor() {
-        if model != nil {
-            let isSelected = model?.isSelected.value == true
-            let backgroundColor = isSelected ? ColorName.greenSpring20.color : .clear
-            let borderColor = isSelected ? ColorName.greenSpring.color : .clear
-            customCornered(corners: [.topRight, .bottomRight],
-                           radius: Style.largeCornerRadius,
-                           backgroundColor: backgroundColor,
-                           borderColor: borderColor,
-                           borderWidth: 4.0)
-        }
+        let isSelected = model.isSelected.value == true
+        let backgroundColor = isSelected ? ColorName.greenMediumSea.color : ColorName.white90.color
+        customCornered(corners: [.topRight, .bottomRight],
+                       radius: Style.largeCornerRadius,
+                       backgroundColor: backgroundColor,
+                       borderColor: .clear)
     }
 }

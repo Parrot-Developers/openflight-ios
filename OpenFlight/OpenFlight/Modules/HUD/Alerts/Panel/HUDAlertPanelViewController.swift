@@ -31,7 +31,7 @@
 import UIKit
 
 // MARK: - Protocols
-public protocol HUDAlertPanelDelegate: class {
+public protocol HUDAlertPanelDelegate: AnyObject {
     /// Shows alert panel view.
     func showAlertPanel()
     /// Hides alert panel view.

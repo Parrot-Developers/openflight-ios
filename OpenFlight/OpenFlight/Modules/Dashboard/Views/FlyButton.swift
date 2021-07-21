@@ -73,8 +73,6 @@ private extension FlyButton {
     func commonInitFlyButton() {
         self.loadNibContent()
         listenViewModel()
-        globalView.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
-                                      radius: Style.largeCornerRadius)
         labelView.isHidden = !UIApplication.isLandscape
     }
 
@@ -96,13 +94,14 @@ private extension FlyButton {
 
     /// Activates fly animation.
     func activateFlyAnimation() {
-        globalView.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
-                                      radius: Style.largeCornerRadius)
         // Stop current animation if one.
         flyImageView.stopAnimating()
-        flyLabel.makeUp(with: .veryHuge, and: .greenSpring)
-        flyLabel.text = L10n.dashboardStartButtonFly.capitalized
+        globalView.cornerRadiusedWith(backgroundColor: ColorName.tomato.color,
+                                      radius: Style.largeCornerRadius)
+        flyLabel.makeUp(with: .veryHuge, and: .white)
+        flyLabel.text = L10n.commonFly.uppercased()
         let flyAnimationImages: [UIImage] = Asset.Dashboard.Fly.allValues.map { $0.image }
+        flyImageView.tintColor = .white
         flyImageView.animationImages = flyAnimationImages
         flyImageView.animationDuration = Style.longAnimationDuration
         flyImageView.startAnimating()
@@ -111,10 +110,11 @@ private extension FlyButton {
     /// Deactivates fly animation.
     func deactivateFlyAnimation() {
         flyImageView.stopAnimating()
-        flyLabel.makeUp(with: .veryHuge)
-        flyImageView.image = Asset.Common.Icons.icRightArrow.image
-        flyLabel.text = L10n.dashboardStartButtonFly.capitalized
-        globalView.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
+        globalView.cornerRadiusedWith(backgroundColor: .white,
                                       radius: Style.largeCornerRadius)
+        flyLabel.makeUp(with: .veryHuge, and: .tomato)
+        flyImageView.image = Asset.Common.Icons.icRightArrow.image
+        flyImageView.tintColor = ColorName.tomato.color
+        flyLabel.text = L10n.commonFly.uppercased()
     }
 }

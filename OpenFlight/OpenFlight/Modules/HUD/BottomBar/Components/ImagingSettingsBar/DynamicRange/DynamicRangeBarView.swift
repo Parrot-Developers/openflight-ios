@@ -68,14 +68,12 @@ private extension DynamicRangeBarView {
     /// Common init.
     func commonInitDynamicRangeBarView() {
         self.loadNibContent()
-        self.addBlurEffect()
     }
 
     /// Adds segmented bar to view.
     func addSegmentedBar() {
         removeSegmentedBar()
         let segmentedBarView = SegmentedBarView<DynamicRangeBarState>()
-        segmentedBarView.hasBlurEffect = false
         segmentedBarView.viewModel = viewModel
         segmentedViewContainer.addWithConstraints(subview: segmentedBarView)
         self.segmentedBarView = segmentedBarView

@@ -41,6 +41,7 @@ public class FlightPlanSetting: FlightPlanSettingType {
     public var key: String
     public var unit: UnitType
     public var step: Double
+    public var divider: Double
     public var isDisabled: Bool
     public var category: FlightPlanSettingCategory
 
@@ -58,6 +59,7 @@ public class FlightPlanSetting: FlightPlanSettingType {
     ///    - key: key of the setting
     ///    - unit: unit of the setting
     ///    - step: step between values of the setting
+    ///    - divider: values divider of the setting
     ///    - isDisabled: Tells if the setting must be disabled
     ///    - category: setting category
     init(title: String,
@@ -70,6 +72,7 @@ public class FlightPlanSetting: FlightPlanSettingType {
          key: String,
          unit: UnitType,
          step: Double,
+         divider: Double,
          isDisabled: Bool,
          category: FlightPlanSettingCategory) {
         self.title = title
@@ -82,6 +85,7 @@ public class FlightPlanSetting: FlightPlanSettingType {
         self.key = key
         self.unit = unit
         self.step = step
+        self.divider = divider
         self.isDisabled = isDisabled
         self.category = category
     }

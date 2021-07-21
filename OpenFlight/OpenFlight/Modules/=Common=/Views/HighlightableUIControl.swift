@@ -31,7 +31,7 @@ import UIKit
 
 /// Custom UIControl with an alpha change similar to UIButton on highlight.
 
-public class HighlightableUIControl: UIControl {
+open class HighlightableUIControl: UIControl {
     // MARK: - Override Properties
     /// Updates alpha on highlight.
     override public var isHighlighted: Bool {

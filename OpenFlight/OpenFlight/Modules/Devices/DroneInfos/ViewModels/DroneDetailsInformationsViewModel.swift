@@ -40,6 +40,8 @@ final class DroneDetailsInformationsState: DeviceConnectionState {
     fileprivate(set) var imei: String = Style.dash
     /// Hardware version.
     fileprivate(set) var hardwareVersion: String = Style.dash
+    /// Firmware version.
+    fileprivate(set) var firmwareVersion: String = Style.dash
 
     // MARK: - Init
     required init() {
@@ -56,11 +58,13 @@ final class DroneDetailsInformationsState: DeviceConnectionState {
     init(connectionState: DeviceState.ConnectionState,
          imei: String,
          hardwareVersion: String,
-         serialNumber: String) {
+         serialNumber: String,
+         firmwareVersion: String) {
         super.init(connectionState: connectionState)
 
         self.hardwareVersion = hardwareVersion
         self.serialNumber = serialNumber
+        self.firmwareVersion = firmwareVersion
         self.imei = imei
     }
 
@@ -72,13 +76,15 @@ final class DroneDetailsInformationsState: DeviceConnectionState {
             && self.serialNumber == other.serialNumber
             && self.imei == other.imei
             && self.hardwareVersion == other.hardwareVersion
+            && self.firmwareVersion == other.firmwareVersion
     }
 
     override func copy() -> DroneDetailsInformationsState {
         let copy = DroneDetailsInformationsState(connectionState: connectionState,
                                                  imei: imei,
                                                  hardwareVersion: hardwareVersion,
-                                                 serialNumber: serialNumber)
+                                                 serialNumber: serialNumber,
+                                                 firmwareVersion: firmwareVersion)
         return copy
     }
 }
@@ -136,6 +142,7 @@ private extension DroneDetailsInformationsViewModel {
         let copy = state.value.copy()
         copy.hardwareVersion = systemInfo?.hardwareVersion ?? Style.dash
         copy.serialNumber = systemInfo?.serial ?? Style.dash
+        copy.firmwareVersion = systemInfo?.firmwareVersion ?? Style.dash
         state.set(copy)
     }
 

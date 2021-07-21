@@ -95,6 +95,10 @@ final public class FlightDataState: ViewModelState, EquatableState, Copying, Fli
     public var formattedDuration: String {
         return (duration.formattedHmsString) ?? Style.dash
     }
+    /// Returns long duration as string.
+    public var longFormattedDuration: String {
+        return duration.longFormattedString
+    }
     /// Returns distance as string.
     var formattedDistance: String {
         return UnitHelper.stringDistanceWithDouble(distance)

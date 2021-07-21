@@ -38,14 +38,13 @@ final class StereoVisionCalibViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var firstLabel: UILabel!
-    @IBOutlet private weak var secondLabel: UILabel!
-    @IBOutlet private weak var thirdLabel: UILabel!
     @IBOutlet private weak var readyButton: UIButton!
     @IBOutlet private weak var videoView: UIView!
     @IBOutlet private weak var backButton: UIButton!
 
     // MARK: - Private Properties
     private weak var coordinator: DroneCalibrationCoordinator?
+    private var viewModel = StereoVisionSensorCalibrationViewModel()
     private var isRequired: Bool = false
     private var videoEndedObserver: Any?
 
@@ -73,7 +72,7 @@ final class StereoVisionCalibViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initUI()
-        self.addVideoTutorial()
+        self.setupViewModels()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -85,6 +84,8 @@ final class StereoVisionCalibViewController: UIViewController {
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
+
+        self.viewModel.cancelCalibration()
 
         NotificationCenter.default.remove(observer: videoEndedObserver)
         videoEndedObserver = nil
@@ -110,7 +111,7 @@ final class StereoVisionCalibViewController: UIViewController {
 // MARK: - Actions
 private extension StereoVisionCalibViewController {
     @IBAction func readyButtonTouchedUpInside(_ sender: Any) {
-        self.coordinator?.startStereoVisionCalibrationSteps()
+        self.viewModel.startCalibration()
     }
     @IBAction func backButtonTouchedUpInside(_ sender: Any) {
         self.coordinator?.back()
@@ -125,13 +126,20 @@ private extension StereoVisionCalibViewController {
             let value = UIInterfaceOrientation.landscapeRight.rawValue
             UIDevice.current.setValue(value, forKey: Constants.currentOrientation)
         }
-        self.titleLabel.text = L10n.sensorCalibrationTutorialTitle
-        self.firstLabel.text = L10n.sensorCalibrationTutorialDesc1
-        self.secondLabel.text = L10n.sensorCalibrationTutorialDesc2
-        self.thirdLabel.text = L10n.sensorCalibrationTutorialDesc3
+        self.titleLabel.text = "Ophtalmo"
+        self.firstLabel.text = "State: \(self.viewModel.state.value.missionState?.description ?? "unknown")"
         self.readyButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color, radius: Style.largeCornerRadius)
         self.readyButton.setTitleColor(ColorName.white.color, for: .normal)
-        self.readyButton.setTitle(L10n.sensorCalibrationTutorialReady, for: .normal)
+        self.readyButton.setTitle("Start", for: .normal)
+    }
+
+    /// Sets up view models associated with the view.
+    func setupViewModels() {
+        self.viewModel.state.valueChanged = { [weak self] state in
+            if let missionState = state.missionState {
+                self?.firstLabel.text = "State: \(missionState.description)"
+            }
+        }
     }
 
     /// Add tutorial video to first love calibration screen.

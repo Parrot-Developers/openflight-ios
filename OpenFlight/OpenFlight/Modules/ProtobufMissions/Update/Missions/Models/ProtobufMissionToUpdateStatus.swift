@@ -67,11 +67,11 @@ extension ProtobufMissionToUpdateStatus {
     /// - Parameters:
     ///     - newMissionState: The state given by `ProtobufMissionsUpdaterWrapper`
     ///     - newProgress: The progress given by `ProtobufMissionsUpdaterWrapper`
-    ///     - cancelableTaskCore: a CancelableCore object given by `ProtobufMissionsUpdaterWrapper`.
+    ///     - cancelableTask: a CancelableCore object given by `ProtobufMissionsUpdaterWrapper`.
     /// - Returns: The new `ProtobufMissionToUpdateStatus`.
     func nextStatus(for newMissionState: MissionUpdaterUploadState?,
                     newProgress: Int,
-                    cancelableTaskCore: CancelableTaskCore?) -> ProtobufMissionToUpdateStatus {
+                    cancelableTask: CancelableCore?) -> ProtobufMissionToUpdateStatus {
         guard let newMissionState = newMissionState else { return self }
 
         switch newMissionState {
@@ -80,7 +80,7 @@ extension ProtobufMissionToUpdateStatus {
         case .success:
             return .updateDone
         case .uploading:
-            return .onGoingUpdate(ProtobufMissionToUpdateTask(task: cancelableTaskCore,
+            return .onGoingUpdate(ProtobufMissionToUpdateTask(task: cancelableTask,
                                                               progress: newProgress))
         }
     }

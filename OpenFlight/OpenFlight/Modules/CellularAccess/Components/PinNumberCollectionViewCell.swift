@@ -32,7 +32,7 @@ import UIKit
 import Reusable
 
 // MARK: - Protocols
-protocol PinNumberCollectionViewCellDelegate: class {
+protocol PinNumberCollectionViewCellDelegate: AnyObject {
     /// Called when user click on number button.
     ///
     /// - Parameters:
@@ -56,7 +56,6 @@ final class PinNumberCollectionViewCell: UICollectionViewCell, NibReusable {
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-        initView()
     }
 
     override func prepareForReuse() {
@@ -95,25 +94,16 @@ private extension PinNumberCollectionViewCell {
 
 // MARK: - Private Funcs
 private extension PinNumberCollectionViewCell {
-    /// Inits the view.
-    func initView() {
-        numberButton.makeup(with: .giant, color: .white)
-    }
-
     /// Updates view.
     ///
     /// - Parameters:
     ///     - isSelected: tells if the view is selected
     func updateView(isSelected: Bool = false) {
         let cornerRadius = mainView.frame.width / 2
-        let backgroundColor = isSelected ? UIColor.white : UIColor.clear
-        numberButton.makeup(with: .giant, color: isSelected ? .black : .white)
-
-        mainView.customCornered(corners: .allCorners,
-                                    radius: cornerRadius,
-                                    backgroundColor: backgroundColor,
-                                    borderColor: .white,
-                                    borderWidth: Style.mediumBorderWidth)
-
+        let backgroundColor = isSelected ? ColorName.greenMediumSea.color : .clear
+        numberButton.cornerRadiusedWith(backgroundColor: backgroundColor,
+                                        borderColor: ColorName.sambuca.color,
+                                        radius: cornerRadius,
+                                        borderWidth: Style.mediumBorderWidth)
     }
 }

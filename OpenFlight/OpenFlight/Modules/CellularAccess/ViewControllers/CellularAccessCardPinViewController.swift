@@ -29,11 +29,12 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Modal presented to enter a pin number for cellular access.
 final class CellularAccessCardPinViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var mainView: UIView!
+    @IBOutlet private weak var panelView: UIView!
     @IBOutlet private weak var collectionView: UICollectionView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var okButton: UIButton!
@@ -47,6 +48,7 @@ final class CellularAccessCardPinViewController: UIViewController {
     private weak var coordinator: Coordinator?
     private let viewModel = CellularAccessCardPinViewModel()
     private var pinCode: String = ""
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -72,7 +74,7 @@ final class CellularAccessCardPinViewController: UIViewController {
 
         initView()
         initCollectionView()
-        initViewModel()
+        setupViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -152,42 +154,51 @@ private extension CellularAccessCardPinViewController {
 
     /// Inits the view.
     func initView() {
-        mainView.addBlurEffect()
+        panelView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
         pinTextField.isEnabled = false
-        okButton.makeup(with: .large, color: .white)
         pinTextField.backgroundColor = .clear
-        fieldView.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
-                                     borderColor: .white,
+        fieldView.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
+                                     borderColor: .clear,
                                      radius: Style.largeCornerRadius,
-                                     borderWidth: Style.mediumBorderWidth)
-        titleLabel.makeUp(with: .huge)
+                                     borderWidth: 0.0)
         titleLabel.text = L10n.pinModalSimCardPin
-        descriptionLabel.makeUp(with: .large, and: .redTorch)
         updateOkButton(isEnabled: pinCode.count >= Constants.requiredPinNumber)
     }
 
-    /// Inits the view model.
-    func initViewModel() {
-        viewModel.state.valueChanged = { [weak self] _ in
-            self?.updateView()
-        }
-        updateView()
-    }
-
-    /// Updates the view.
-    func updateView() {
-        let state = viewModel.state.value
-        if state.cellularConnectionState == .ready {
-            coordinator?.dismiss {
-                (self.coordinator as? HUDCoordinator)?.displayPairingSuccess()
+    /// Binds the view model to the view.
+    func setupViewModel() {
+        viewModel.$cellularConnectionState
+            .removeDuplicates()
+            .sink { [unowned self] connectionState in
+                if connectionState == .ready {
+                    coordinator?.dismiss {
+                        (self.coordinator as? HUDCoordinator)?.displayPairingSuccess()
+                    }
+                } else {
+                    descriptionLabel.textColor = connectionState?.descriptionColor
+                }
             }
-        } else {
-            descriptionLabel.isHidden = state.canShowLabel == true
-            descriptionLabel.text = state.descriptionTitle
-            descriptionLabel.textColor = state.cellularConnectionState?.descriptionColor
-        }
+            .store(in: &cancellables)
 
-        updateLoaderView(shouldShow: state.shouldShowLoader == true)
+        viewModel.$descriptionTitle
+            .removeDuplicates()
+            .sink { [unowned self] descriptionTitle in
+                descriptionLabel.text = descriptionTitle
+            }
+            .store(in: &cancellables)
+
+        viewModel.$shouldShowLoader
+            .removeDuplicates()
+            .sink { [unowned self] shouldShowLoader in
+                updateLoaderView(shouldShow: shouldShowLoader == true)
+            }
+            .store(in: &cancellables)
+
+        viewModel.hideLabel
+            .sink { [unowned self] hideLabel in
+                descriptionLabel.isHidden = hideLabel
+            }
+            .store(in: &cancellables)
     }
 
     /// Updates loader image view.
@@ -211,12 +222,11 @@ private extension CellularAccessCardPinViewController {
     ///     - isEnabled: tells if ok button need to be enabled
     func updateOkButton(isEnabled: Bool) {
         let pinNumberIsCompleted: Bool = pinCode.count >= Constants.requiredPinNumber
-        let backgroundColor = pinNumberIsCompleted ? ColorName.greenSpring20.color : ColorName.white20.color
-        let textColor = pinNumberIsCompleted ? ColorName.greenSpring.color : ColorName.white50.color
+        let backgroundColor = pinNumberIsCompleted ? ColorName.greenMediumSea.color : ColorName.greenMediumSea20.color
         okButton.isEnabled = pinNumberIsCompleted
         okButton.cornerRadiusedWith(backgroundColor: backgroundColor,
                                     radius: Style.largeCornerRadius)
-        okButton.setTitleColor(textColor, for: .normal)
+        okButton.setTitleColor(.white, for: .normal)
     }
 
     /// Calls log event.

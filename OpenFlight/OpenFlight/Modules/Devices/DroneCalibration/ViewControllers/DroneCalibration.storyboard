@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina5_9" orientation="landscape" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -50,7 +50,7 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ggq-2k-hfe">
-                                        <rect key="frame" x="330.66666666666669" y="22" width="46.666666666666686" height="22.333333333333329"/>
+                                        <rect key="frame" x="333" y="23.666666666666657" width="42" height="19"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
@@ -383,13 +383,13 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5t2-5b-9dC">
-                                        <rect key="frame" x="330.66666666666669" y="22" width="46.666666666666686" height="22.333333333333329"/>
+                                        <rect key="frame" x="333" y="23.666666666666671" width="42" height="19"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGimbal" translatesAutoresizingMaskIntoConstraints="NO" id="vth-vk-G1J">
-                                        <rect key="frame" x="307" y="65" width="94" height="94"/>
+                                        <rect key="frame" x="307" y="63.333333333333343" width="94" height="94"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="171" id="fX4-hP-7Hd"/>
                                             <constraint firstAttribute="width" secondItem="vth-vk-G1J" secondAttribute="height" multiplier="1:1" id="oUj-MG-Q2E"/>
@@ -406,7 +406,7 @@
                                         </variation>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mUN-FR-AKZ">
-                                        <rect key="frame" x="229" y="226.66666666666669" width="250" height="50"/>
+                                        <rect key="frame" x="229" y="222.33333333333331" width="250" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="4oF-eV-r2y"/>
                                             <constraint firstAttribute="width" constant="250" id="8WV-Jn-JnZ"/>
@@ -432,13 +432,13 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Vc-IQ-ayN">
-                                        <rect key="frame" x="335.66666666666669" y="179" width="37" height="17.666666666666657"/>
+                                        <rect key="frame" x="337.33333333333331" y="177.33333333333331" width="33.333333333333314" height="15"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                         <color key="textColor" red="1" green="0.86274509803921573" blue="0.0078431372549019607" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icloading" translatesAutoresizingMaskIntoConstraints="NO" id="hiS-DO-7ek">
-                                        <rect key="frame" x="343.66666666666669" y="99" width="21" height="21"/>
+                                        <rect key="frame" x="343.66666666666669" y="97.333333333333343" width="21" height="21"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="35" id="s0r-Ca-tLA"/>
                                             <constraint firstAttribute="width" secondItem="hiS-DO-7ek" secondAttribute="height" multiplier="1:1" id="xl4-hB-txm"/>
@@ -485,9 +485,9 @@
                                 </constraints>
                                 <variation key="default">
                                     <mask key="constraints">
+                                        <exclude reference="hKb-bh-2ek"/>
                                         <exclude reference="39s-pg-Aoc"/>
                                         <exclude reference="mp0-tP-OaD"/>
-                                        <exclude reference="hKb-bh-2ek"/>
                                     </mask>
                                 </variation>
                                 <variation key="heightClass=compact-widthClass=compact">
@@ -497,10 +497,10 @@
                                 </variation>
                                 <variation key="heightClass=regular-widthClass=compact">
                                     <mask key="constraints">
+                                        <include reference="hKb-bh-2ek"/>
                                         <include reference="39s-pg-Aoc"/>
                                         <exclude reference="7Dg-vw-RCn"/>
                                         <include reference="mp0-tP-OaD"/>
-                                        <include reference="hKb-bh-2ek"/>
                                     </mask>
                                 </variation>
                             </view>

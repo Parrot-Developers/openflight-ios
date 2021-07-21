@@ -102,7 +102,6 @@ private extension ImagingBarWhiteBalanceBarView {
     /// Common init.
     func commonInitImagingBarWhiteBalanceBarView() {
         self.loadNibContent()
-        self.addBlurEffect()
         secondaryViewModel.state.valueChanged = { [weak self] state in
             self?.updateAutomaticMode(isAutomatic: state.mode as? Camera2WhiteBalanceMode == .automatic)
             self?.segmentedBarView?.updateModels()
@@ -116,7 +115,6 @@ private extension ImagingBarWhiteBalanceBarView {
     func addSegmentedBar() {
         segmentedBarView?.removeFromSuperview()
         let segmentedBarView = SegmentedBarView<ImagingBarState>()
-        segmentedBarView.hasBlurEffect = false
         segmentedBarView.maxItems = Constants.maxSegmentedItems
         segmentedBarView.viewModel = viewModel
         segmentedBarView.delegate = self
@@ -138,10 +136,10 @@ private extension ImagingBarWhiteBalanceBarView {
     /// - Parameters:
     ///    - isAutomatic: boolean describing if setting is monitored automatically.
     func updateAutomaticMode(isAutomatic: Bool) {
-        autoButton.cornerRadiusedWith(backgroundColor: isAutomatic ? ColorName.greenSpring20.color : .clear,
-                                      borderColor: isAutomatic ? ColorName.greenSpring.color: .clear,
-                                      radius: Style.largeCornerRadius,
-                                      borderWidth: Style.largeBorderWidth)
+        autoButton.cornerRadiusedWith(backgroundColor: isAutomatic ? ColorName.greenMediumSea.color : ColorName.white90.color,
+                                      borderColor: .clear,
+                                      radius: Style.largeCornerRadius)
+        autoButton.tintColor = isAutomatic ? .white : ColorName.sambuca.color
         centeredRulerBarView?.isAutomatic = isAutomatic
     }
 

@@ -86,9 +86,16 @@ public struct FlightPlanPanelProgressModel {
             if state.isAvailable {
                 self.init(mainText: L10n.flightPlanInfoDroneReady)
             } else {
-                self.init(mainText: state.unavailabilityReasons.errorText ?? L10n.error,
-                          mainColor: ColorName.redTorch.color,
-                          hasError: true)
+                if state.isConnected() {
+                    self.init(mainText: state.unavailabilityReasons.errorText ?? L10n.error,
+                              mainColor: ColorName.redTorch.color,
+                              hasError: true)
+                } else {
+                    self.init(mainText: L10n.commonDroneNotConnected,
+                              mainColor: ColorName.yellowSea.color,
+                              hasError: true)
+                }
+
             }
         case .uploading:
             self.init(mainText: L10n.flightPlanInfoUploading)

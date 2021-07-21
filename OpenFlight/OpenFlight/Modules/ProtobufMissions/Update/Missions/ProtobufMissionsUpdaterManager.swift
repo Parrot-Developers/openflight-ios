@@ -117,7 +117,7 @@ extension ProtobufMissionsUpdaterManager {
         return success
     }
 
-    /// Starts the update process of a mission.
+    /// Adds a mission to the list of missions to update.
     ///
     /// - Parameters:
     ///    - mission: The `ProtobufMissionUpdateViewModel` to add to the list of updates
@@ -227,30 +227,30 @@ private extension ProtobufMissionsUpdaterManager {
             let currentProgress = protobufMissionUpdateState.currentUpdatingProgress
             let currentUpdatingState = protobufMissionUpdateState.currentUpdatingState
             let currentMissionToUpdateStatus = missionToUpdate.state.value.missionToUpdateStatus
-            let currentCancelableTaskCore: CancelableTaskCore?
+            let currentCancelableTask: CancelableCore?
             if let currentUpdatingFilePath = currentUpdatingFilePath {
-                currentCancelableTaskCore = protobufMissionsUpdaterWrapper.cancelableTaskCoreRecord[currentUpdatingFilePath]
+                currentCancelableTask = protobufMissionsUpdaterWrapper.cancelableTasks[currentUpdatingFilePath]
             } else {
-                currentCancelableTaskCore = nil
+                currentCancelableTask = nil
             }
 
             let newMissionToUpdateStatus = currentMissionToUpdateStatus.nextStatus(
                 for: currentUpdatingState,
                 newProgress: currentProgress,
-                cancelableTaskCore: currentCancelableTaskCore)
+                cancelableTask: currentCancelableTask)
 
             listener.missionToUpdateCallback(newMissionToUpdateStatus)
         }
 
-        triggerNewDowloadIfNeed(for: protobufMissionUpdateState.currentUpdatingState)
+        triggerNewUploadIfNeed(for: protobufMissionUpdateState.currentUpdatingState)
         globalListener?.allMissionToUpdateCallback(missionsToUpdateList.protobufMissionsGlobalState())
     }
 
-    /// Triggers a new download if the current download is done.
+    /// Triggers a new upload if the current upload is done.
     ///
     /// - Parameters:
-    ///   - currentUpdatingState: The state of the current dowload
-    func triggerNewDowloadIfNeed(for currentUpdatingState: MissionUpdaterUploadState?) {
+    ///   - currentUpdatingState: The state of the current upload
+    func triggerNewUploadIfNeed(for currentUpdatingState: MissionUpdaterUploadState?) {
         guard let currentUpdatingState = currentUpdatingState else { return }
 
         switch currentUpdatingState {

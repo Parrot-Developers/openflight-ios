@@ -35,13 +35,13 @@ final class SegmentedBarItemView: UIControl, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var label: UILabel!
     @IBOutlet private weak var imageView: UIImageView!
+    @IBOutlet private weak var unavailableLabel: UILabel!
     @IBOutlet private weak var imageViewContainer: UIView!
-    @IBOutlet private weak var selectedBackground: UIView!
     @IBOutlet private var viewsToDisable: [UIView]!
     @IBOutlet private weak var stackView: UIStackView!
 
     // MARK: - Internal Properties
-    var model: BarButtonState? {
+    var model: BarButtonState! {
         didSet {
             fill(with: model)
         }
@@ -82,7 +82,7 @@ final class SegmentedBarItemView: UIControl, NibOwnerLoadable {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        reloadBackground()
+        updateBackgroundColor()
     }
 }
 
@@ -90,15 +90,15 @@ final class SegmentedBarItemView: UIControl, NibOwnerLoadable {
 private extension SegmentedBarItemView {
     /// Called when user taps item view.
     @IBAction func onTap(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: model?.mode?.logKey,
-                             newValue: model?.mode?.key ?? "",
+        LogEvent.logAppEvent(itemName: model.mode?.logKey,
+                             newValue: model.mode?.key ?? "",
                              logType: .button)
-        if model?.isSelected.value == true {
+        if model.isSelected.value == true {
             // Special case when item is already currently selected.
-            model?.isSelected.set(false)
-            model?.isSelected.set(true)
+            model.isSelected.set(false)
+            model.isSelected.set(true)
         } else {
-            model?.isSelected.set(true)
+            model.isSelected.set(true)
         }
     }
 }
@@ -114,36 +114,54 @@ private extension SegmentedBarItemView {
     ///
     /// - Parameters:
     ///    - viewModel: model representing the contents
-    func fill(with viewModel: BarButtonState?) {
-        guard let viewModel = viewModel else { return }
-        label.text = viewModel.subtext
-        imageView.image = viewModel.image
-        selectedBackground.backgroundColor = viewModel.isSelected.value ? ColorName.greenSpring20.color : UIColor.clear
-        isControlSelected = viewModel.isSelected.value
+    func fill(with viewModel: BarButtonState) {
+        if let key = viewModel.mode?.key,
+           let unavailableReason = viewModel.unavailableReason[key] {
+            unavailableLabel.isHidden = viewModel.enabled
+            unavailableLabel.text = unavailableReason
+        } else {
+            unavailableLabel.isHidden = true
+        }
+
         isEnabled = viewModel.enabled
+        isControlSelected = viewModel.isSelected.value
 
         // specific display according to image
-        let hasImage = viewModel.image != nil
-        imageView.isHidden = !hasImage
-        imageViewContainer.isHidden = !hasImage
-
-        label.font = (hasImage ? ParrotFontStyle.regular : ParrotFontStyle.large).font
+        updateIcon()
 
         // specific display according to label
-        label.isHidden = viewModel.subtext?.isEmpty ?? true
+        updateLabel()
 
-        reloadBackground()
+        // specific display according to background
+        updateBackgroundColor()
 
         layoutIfNeeded()
     }
 
-    /// Reloads segmented bar item background.
-    func reloadBackground() {
-        let color = model?.isSelected.value == true ? ColorName.greenSpring.color : .clear
-        customCornered(corners: [.allCorners],
-                       radius: Style.largeCornerRadius,
-                       backgroundColor: .clear,
-                       borderColor: color,
-                       borderWidth: Constants.customCornerBorderWidth)
+    func updateIcon() {
+        let isSelected = model.isSelected.value == true
+        let hasImage = model.image != nil
+        imageView.isHidden = !hasImage
+        imageViewContainer.isHidden = !hasImage
+        imageView.image = model?.image
+        imageView.tintColor = isSelected ? .white : ColorName.sambuca.color
+    }
+
+    func updateLabel() {
+        let isSelected = model.isSelected.value == true
+        let hasImage = model.image != nil
+        label.text = model.subtext
+        label.textColor = isSelected ? .white : ColorName.sambuca.color
+        label.isHidden = model.subtext?.isEmpty ?? true
+        label.font = (hasImage ? ParrotFontStyle.regular : ParrotFontStyle.large).font
+    }
+
+    /// Updates bar item background.
+    func updateBackgroundColor() {
+        let isSelected = model.isSelected.value == true
+        backgroundColor = isSelected ? ColorName.greenMediumSea.color : .clear
+        if isSelected {
+            applyCornerRadius(Style.largeCornerRadius)
+        }
     }
 }

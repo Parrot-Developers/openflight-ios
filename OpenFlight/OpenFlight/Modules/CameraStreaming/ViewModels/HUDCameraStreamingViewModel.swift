@@ -85,7 +85,6 @@ final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamin
     private var overexposureSettingObserver: DefaultsDisposable?
     private var streamServerRef: Ref<StreamServer>?
     private var cameraLiveRef: Ref<CameraLive>?
-    private var cameraRef: Ref<MainCamera2>?
     private var playStreamRetryTimer: Timer?
     private var isMonitoring: Bool = false
 
@@ -103,7 +102,6 @@ final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamin
 
     // MARK: - Deinit
     deinit {
-        cameraRef = nil
         cameraLiveRef = nil
         streamServerRef = nil
         playStreamRetryTimer?.invalidate()
@@ -130,10 +128,9 @@ final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamin
         if enabled {
             if let drone = drone {
                 listenStreamServer(drone: drone)
-                listenCamera(drone: drone)
             }
         } else {
-            cameraRef = nil
+            _ = cameraLiveRef?.value?.pause()
             streamServerRef = nil
             cameraLiveRef = nil
             cameraLiveUpdateCallback?(nil)
@@ -160,9 +157,8 @@ private extension HUDCameraStreamingViewModel {
                     return
                 }
                 self?.cameraLiveUpdateCallback?(cameraLive)
-                self?.playStreamIfNeeded(drone: drone)
+                self?.playStreamIfNeeded(cameraLive: cameraLive)
             }
-            strongSelf.playStreamIfNeeded(drone: drone)
         }
     }
 
@@ -171,13 +167,6 @@ private extension HUDCameraStreamingViewModel {
         let copy = state.value.copy()
         copy.streamEnabled = enabled
         state.set(copy)
-    }
-
-    /// Starts watcher for camera.
-    func listenCamera(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] _ in
-            self?.playStreamIfNeeded(drone: drone)
-        }
     }
 
     /// Starts watchers for defaults.
@@ -193,22 +182,19 @@ private extension HUDCameraStreamingViewModel {
     }
 
     /// Plays the stream if all conditions are met.
-    func playStreamIfNeeded(drone: Drone) {
+    func playStreamIfNeeded(cameraLive: CameraLive) {
         guard state.value.streamEnabled,
-            let camera = drone.currentCamera,
-            camera.isActive,
-            let stream = cameraLiveRef?.value,
-            stream.playState != .playing
+            cameraLive.playState != .playing
             else {
                 return
         }
         // Play live stream.
-        _ = stream.play()
+        _ = cameraLive.play()
         // Retry later to recover from potential playing error (for instance when connection quality is low).
         playStreamRetryTimer?.invalidate()
         playStreamRetryTimer = Timer.scheduledTimer(withTimeInterval: Constants.playStreamRetryDelay, repeats: false) { [weak self] _ in
-            if let drone = self?.drone {
-                self?.playStreamIfNeeded(drone: drone)
+            if let cameraLive = self?.cameraLiveRef?.value {
+                self?.playStreamIfNeeded(cameraLive: cameraLive)
             }
         }
     }

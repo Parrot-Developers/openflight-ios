@@ -39,20 +39,109 @@ extension FlightPlanObject {
         var lastPoint: WayPoint?
         var totalDistance: Double = 0.0
         var totalTime: TimeInterval = 0.0
-        wayPoints
-            .forEach { wayPoint in
-                if let lastPoint = lastPoint {
-                    let distance = lastPoint.agsPoint.distanceToPoint(wayPoint.agsPoint)
-                    totalTime += distance / lastPoint.speed
-                    totalDistance += distance
-                }
-                lastPoint = wayPoint
+
+        let verticalSpeedUp = 4.0
+        let verticalSpeedDown = -3.0
+        /// Max acceleration. Should be different from 0
+        let maxAcceleration = 1.5
+        /// Min speed. Should be different from 0
+        var speedMin = 0.5
+        if let speedSettingMin = SpeedSettingType().allValues.first, speedSettingMin != 0 {
+            speedMin = Double(speedSettingMin) * SpeedSettingType().divider
+        }
+        var speedMax = 14.0
+        if let speedSettingMax = SpeedSettingType().allValues.last, speedSettingMax != 0 {
+            speedMax = Double(speedSettingMax) * SpeedSettingType().divider
+        }
+
+        wayPoints.forEach { wayPoint in
+            if let lastPoint = lastPoint {
+                let speedReference = wayPoint.speed * SpeedSettingType().divider
+                let distance = lastPoint.agsPoint.distanceToPoint(wayPoint.agsPoint)
+                let speedClamped = clampVelocity(firstPoint: lastPoint, secondPoint: wayPoint,
+                                                    speed: speedReference, speedMin: speedMin, speedMax: speedMax,
+                                                    verticalSpeedUp: verticalSpeedUp,
+                                                    verticalSpeedDown: verticalSpeedDown)
+
+                let speedBound = maxReachableSpeed(distance: distance, accelerationMax: maxAcceleration,
+                                                   speedMin: speedMin)
+
+                let speed = min(speedClamped, speedBound)
+                let pieceDuration = pieceDurationOptimistic(distance: distance,
+                                                                speed: (speed != 0 ? speed : speedMin))
+                totalTime += pieceDuration
+                totalDistance += distance
             }
+            lastPoint = wayPoint
+        }
         estimations.distance = totalDistance
         estimations.duration = totalTime
         // TODO: memory size in next gerrit (need more informations)
 
         return estimations
+    }
+
+    /// Clamp velocity into the feasible speed
+    ///
+    /// - Parameters:
+    ///     - firstPoint: first way point
+    ///     - secondPoint: second way point
+    ///     - speed: speed to apply
+    ///     - speedMin: minimum speed available
+    ///     - speedMax: maximum speed available
+    ///     - verticalSpeedUp: vertical speed up
+    ///     - verticalSpeedDown: vertical speed down
+    private func clampVelocity(firstPoint: WayPoint,
+                               secondPoint: WayPoint,
+                               speed: Double,
+                               speedMin: Double,
+                               speedMax: Double,
+                               verticalSpeedUp: Double,
+                               verticalSpeedDown: Double) -> Double {
+        var clampSpeed = (speedMin...speedMax).clamp(speed)
+        let distance = firstPoint.agsPoint.distanceToPoint(secondPoint.agsPoint)
+        if clampSpeed != 0, distance != 0 {
+            let verticalVelocity = clampSpeed * (secondPoint.altitude - firstPoint.altitude) / distance
+            let clampedVerticalVelocity = (verticalSpeedDown...verticalSpeedUp).clamp(verticalVelocity)
+            if verticalVelocity != 0 {
+                clampSpeed *= clampedVerticalVelocity / verticalVelocity
+            }
+        }
+
+        return clampSpeed
+    }
+
+    /// Max reachable speed
+    ///
+    /// - Parameters:
+    ///     - distance: distance
+    ///     - accelerationMax: maximum acceleration
+    ///     - speedMin: minimum  speed
+    private func maxReachableSpeed(distance: Double, accelerationMax: Double, speedMin: Double) -> Double {
+        return max(sqrt(accelerationMax * distance / 3.0), speedMin)
+    }
+
+    /// Optimistic estimation of the duration to travel a given distance at a given speed
+    ///
+    /// - Parameters:
+    ///     - distance: distance
+    ///     - speed: speed, should be different from 0
+    private func pieceDurationOptimistic(distance: Double, speed: Double) -> Double {
+        return distance / speed
+    }
+
+    /// Pessimistic estimation of the duration to travel a given distance at a given speed
+    ///
+    /// - Parameters:
+    ///     - distance: distance
+    ///     - speed: speed, should be different from 0
+    ///     - accelerationMax: maximum acceleration, should be different from 0
+    private func pieceDurationPessimistic(distance: Double, speed: Double, accelerationMax: Double) -> Double {
+        if distance > (pow(speed, 2) / accelerationMax) {
+            return distance / speed + speed / accelerationMax
+        } else {
+            return 2.0 * sqrt(distance / accelerationMax)
+        }
     }
 
     // MARK: - Internal Properties
@@ -90,11 +179,6 @@ extension FlightPlanObject {
             + poisMarkersGraphics
     }
 
-    /// Returns an array with all flight plan's labels graphics.
-    var allLabelsGraphics: [FlightPlanLabelGraphic] {
-        return waypointsLabelsGraphics + poiLabelsGraphics
-    }
-
     /// Returns a simple `AGSPolyline` with all points.
     var polyline: AGSPolyline {
         return AGSPolyline(points: wayPoints.compactMap { return $0.agsPoint }
@@ -120,15 +204,6 @@ extension FlightPlanObject {
         }
     }
 
-    /// Returns an array with waypoints' labels graphics.
-    private var waypointsLabelsGraphics: [FlightPlanWayPointLabelsGraphic] {
-        return wayPoints
-            .enumerated()
-            .map { (index, wayPoint) in
-                wayPoint.labelsGraphic(index: index)
-        }
-    }
-
     /// Returns an array with pois' markers graphics.
     private var poisMarkersGraphics: [FlightPlanPoiPointGraphic] {
         return pois
@@ -138,21 +213,12 @@ extension FlightPlanObject {
         }
     }
 
-    /// Returns an array with pois' labels graphics.
-    private var poiLabelsGraphics: [FlightPlanPoiPointLabelGraphic] {
-        return pois
-            .enumerated()
-            .map { (index, poiPoint) in
-                poiPoint.labelGraphic(index: index)
-        }
-    }
-
-    /// Returns weight of all waypoint segments (a fraction representing their
-    /// relative duration inside the entire Flight Plan).
+    /// Returns weight of all waypoint segments (the fraction of the total distance corresponding to
+    /// each segment of the Flight Plan).
     private var segmentWeights: [Double] {
-        guard let totalDuration = estimations.duration else { return [] }
+        guard let totalDistance = estimations.distance else { return [] }
 
-        return wayPoints.map { $0.navigateToNextDuration / totalDuration }
+        return wayPoints.map { $0.navigateToNextDistance / totalDistance }
     }
 
     // MARK: - Public Funcs
@@ -223,11 +289,17 @@ extension FlightPlanObject {
         guard !wayPoints.isEmpty,
               (0...wayPoints.count-1).contains(lastWayPointIndex) else { return 0.0 }
 
+        // Percentage of completion of the current segment being traveled
         let currentSegmentProgress = self.wayPoints[lastWayPointIndex].navigateToNextProgress(with: currentLocation)
+
+        // Percentage of completion up to the last validated waypoint
         let progressAtWayPoint = self.segmentWeights
             .prefix(lastWayPointIndex)
             .reduce(0.0) { return $0 + $1 }
 
-        return (0.0...1.0).clamp(progressAtWayPoint + segmentWeights[lastWayPointIndex] * currentSegmentProgress)
+        // Sum of the progress up to the last validated waypoint
+        // and the weighted progress of the segment being traveled
+        let currentProgress = progressAtWayPoint + segmentWeights[lastWayPointIndex] * currentSegmentProgress
+        return (0.0...1.0).clamp(currentProgress)
     }
 }

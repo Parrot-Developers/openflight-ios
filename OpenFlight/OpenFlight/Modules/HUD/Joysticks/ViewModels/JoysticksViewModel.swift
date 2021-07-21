@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import Foundation
+import Combine
 
 /// State for `JoysticksViewModel`.
 
@@ -63,34 +64,25 @@ final class JoysticksState: ViewModelState, EquatableState, Copying {
 
 final class JoysticksViewModel: BaseViewModel<JoysticksState> {
     // MARK: - Private Properties
-    private var joysticksAvailabilityObserver: Any?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     override init() {
         super.init()
-
-        listenJoysticksAvailabilityChanges()
-    }
-
-    // MARK: - Deinit
-    deinit {
-        NotificationCenter.default.remove(observer: joysticksAvailabilityObserver)
-        joysticksAvailabilityObserver = nil
+        // TODO: Wrong injection
+        listenJoysticksAvailabilityChanges(joysticksAvailabilityService: Services.hub.ui.joysticksAvailabilityService)
     }
 }
 
 // MARK: - Private Funcs
 private extension JoysticksViewModel {
-    /// Starts watcher for joysticks availability changes.
-    func listenJoysticksAvailabilityChanges() {
-        joysticksAvailabilityObserver = NotificationCenter.default.addObserver(forName: .joysticksAvailabilityDidChange,
-                                                                             object: nil,
-                                                                             queue: nil) { [weak self] notification in
-            if let joysticksAvailable = notification.userInfo?[JoysticksStateNotifications.joysticksAvailabilityNotificationKey] as? Bool {
-                let copy = self?.state.value.copy()
-                copy?.shouldHideJoysticks = !joysticksAvailable
-                self?.state.set(copy)
-            }
+    /// Starts watching for joysticks visibility changes.
+    func listenJoysticksAvailabilityChanges(joysticksAvailabilityService: JoysticksAvailabilityService) {
+        joysticksAvailabilityService.showJoysticksPublisher.sink { [unowned self] in
+            let copy = state.value.copy()
+            copy.shouldHideJoysticks = !$0
+            state.set(copy)
         }
+        .store(in: &cancellables)
     }
 }

@@ -128,12 +128,7 @@ private extension RemoteDetailsDeviceViewController {
     /// - Parameters:
     ///     - battery: current battery value
     func batteryLevelChanged(_ battery: BatteryValueModel) {
-        if let batteryLevel = battery.currentValue {
-            batteryValueLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryLevel)
-        } else {
-            batteryValueLabel.text = Style.dash
-        }
-
+        batteryValueLabel.attributedText = NSMutableAttributedString(withBatteryLevel: battery.currentValue)
         batteryImageView.image = battery.batteryImage
     }
 }

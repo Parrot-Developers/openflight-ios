@@ -41,8 +41,10 @@ extension FlightPlanModel {
         if let thumb = self.thumbnail {
             thumbnail = UIImage(data: thumb)
         }
+        // TODO: injection issue
+        let typeObject = Services.hub.flightPlanTypeStore.typeForKey(type)
         return FlightPlanState(title: title,
-                               type: type,
+                               type: typeObject,
                                uuid: uuid,
                                date: date,
                                lastModified: lastModified,

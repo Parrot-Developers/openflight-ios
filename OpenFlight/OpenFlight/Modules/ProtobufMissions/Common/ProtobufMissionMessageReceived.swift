@@ -35,9 +35,9 @@ import GroundSdk
 /// A wrapper for GroundSDK `MissionMessage`: used to receive a message from a drone.
 public struct ProtobufMissionMessageReceived: MissionMessage, Equatable {
     // MARK: - Public Properties
-    public let uid: String
-    public let messageNumber: UInt
-    public let packageName: String
+    public let missionUid: String
+    public let messageUid: UInt
+    public let serviceUid: UInt
     public let payload: Data
 
     // MARK: - Init
@@ -45,18 +45,18 @@ public struct ProtobufMissionMessageReceived: MissionMessage, Equatable {
     ///
     /// - Parameter missionMessage: A mission message
     public init(missionMessage: MissionMessage) {
-        self.uid = missionMessage.uid
-        self.messageNumber = missionMessage.messageNumber
-        self.packageName = missionMessage.packageName
+        self.missionUid = missionMessage.missionUid
+        self.messageUid = missionMessage.messageUid
+        self.serviceUid = missionMessage.serviceUid
         self.payload = missionMessage.payload
     }
 
     // MARK: - Equatable
     public static func == (lhs: ProtobufMissionMessageReceived,
                            rhs: ProtobufMissionMessageReceived) -> Bool {
-        return lhs.uid == rhs.uid
-            && lhs.messageNumber == rhs.messageNumber
-            && lhs.packageName == rhs.packageName
+        return lhs.missionUid == rhs.missionUid
+            && lhs.messageUid == rhs.messageUid
+            && lhs.serviceUid == rhs.serviceUid
             && lhs.payload == rhs.payload
     }
 }

@@ -28,6 +28,8 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import GroundSdk
+
 // MARK: - APCApiManager
 /// Manager that handles all methods relative to APC API.
 public final class APCApiManager {
@@ -45,6 +47,11 @@ private extension APCApiManager {
     /// APC URLs.
     enum APCApiManagerURL {
         static let baseURL = "https://accounts.parrot.com"
+    }
+
+    /// APC parameters.
+    enum Params {
+        static let accountProvider = "APC"
     }
 }
 
@@ -102,10 +109,33 @@ extension APCApiManager {
                 return
             }
 
+            self.updateGsdkUserAccount(token: apiResponse.apcToken)
+
             completion(apiResponse.apcAccountCreated,
                        apiResponse.apcToken,
                        nil)
         }.resume()
+    }
+
+    /// Set user account on gsdk.
+    ///
+    /// - Parameter token: the APC token to set
+    private func updateGsdkUserAccount(token: String?) {
+        guard let token = token else {
+            return
+        }
+
+        let userAccount = GroundSdk().getFacility(Facilities.userAccount)
+
+        // User account update should be done on the main Thread.
+        DispatchQueue.main.async {
+            userAccount?.set(accountProvider: APCApiManager.Params.accountProvider,
+                             accountId: "",
+                             dataUploadPolicy: .deny,
+                             oldDataPolicy: .denyUpload,
+                             token: token,
+                             droneList: "")
+        }
     }
 }
 

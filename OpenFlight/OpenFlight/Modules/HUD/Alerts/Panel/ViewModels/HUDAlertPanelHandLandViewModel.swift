@@ -70,7 +70,7 @@ public final class HUDAlertPanelHandLandState: DeviceConnectionState, AlertPanel
         return Asset.Alertes.HandLand.Animation.allValues.compactMap { $0.image }
     }
     public var state: AlertPanelCurrentState? = .none
-    public var isAlertForceHidden: Bool = false
+    public var isAlertForceHidden: Bool = true
     public var countdown: Int?
     public var startViewIsVisible: Bool {
         return false
@@ -87,9 +87,7 @@ public final class HUDAlertPanelHandLandState: DeviceConnectionState, AlertPanel
     }
     /// Should be shown if it is available and if it is not in force hidden state.
     public var shouldShowAlertPanel: Bool {
-        return connectionState == .connected
-            && (state == .available || state == .started)
-            && !isAlertForceHidden
+        return false
     }
     public var hasAnimation: Bool {
         return false

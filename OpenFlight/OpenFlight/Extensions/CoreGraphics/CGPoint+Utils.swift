@@ -34,8 +34,7 @@ import CoreGraphics
 
 extension CGPoint {
     /// Returns true if point is the origin point (0.0, 0.0).
-    var isOriginPoint: Bool {
-        return self.x == 0.0
-            && self.y == 0.0
+    public var isOriginPoint: Bool {
+        return self == CGPoint.zero
     }
 }

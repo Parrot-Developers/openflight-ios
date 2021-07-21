@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Hiy-MS-qF2">
-    <device id="retina6_1" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Hiy-MS-qF2">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -13,35 +13,38 @@
             <objects>
                 <viewController storyboardIdentifier="DroneDetailsInformations" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Hiy-MS-qF2" customClass="DroneDetailsInformationsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="APM-4l-0ws">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yO1-p2-TMW">
-                                <rect key="frame" x="0.0" y="0.0" width="197" height="896"/>
+                                <rect key="frame" x="0.0" y="0.0" width="200" height="414"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="FOF-Fh-hPz">
-                                        <rect key="frame" x="0.0" y="179" width="197" height="538"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="FOF-Fh-hPz">
+                                        <rect key="frame" x="0.0" y="83" width="200" height="248"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="wW4-A6-DaI">
-                                                <rect key="frame" x="0.0" y="0.0" width="197" height="259"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="200" height="90"/>
                                                 <subviews>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GFf-x6-SMF" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="197" height="119.5"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="200" height="35"/>
                                                     </view>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2fj-uR-yxm" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="139.5" width="197" height="119.5"/>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iWr-Cy-YoU" userLabel="Firmware Version Container View" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="55" width="200" height="35"/>
                                                     </view>
                                                 </subviews>
                                                 <variation key="heightClass=compact-widthClass=compact" spacing="6"/>
                                             </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="C39-eC-OqH">
-                                                <rect key="frame" x="0.0" y="279" width="197" height="259"/>
+                                                <rect key="frame" x="0.0" y="110" width="200" height="138"/>
                                                 <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2fj-uR-yxm" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="200" height="33"/>
+                                                    </view>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Kwp-vh-wQ4" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="197" height="119.5"/>
+                                                        <rect key="frame" x="0.0" y="53" width="200" height="32.5"/>
                                                     </view>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1TF-4r-HqB">
-                                                        <rect key="frame" x="0.0" y="139.5" width="197" height="119.5"/>
+                                                        <rect key="frame" x="0.0" y="105.5" width="200" height="32.5"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" relation="lessThanOrEqual" constant="200" id="AvX-L3-TTH"/>
                                                         </constraints>
@@ -71,8 +74,8 @@
                                 </variation>
                                 <variation key="heightClass=regular-widthClass=compact">
                                     <mask key="constraints">
-                                        <exclude reference="ogn-5r-ESg"/>
                                         <include reference="RAT-he-YlY"/>
+                                        <exclude reference="ogn-5r-ESg"/>
                                     </mask>
                                 </variation>
                             </view>
@@ -100,6 +103,7 @@
                         </variation>
                     </view>
                     <connections>
+                        <outlet property="firmwareVersionContainerView" destination="iWr-Cy-YoU" id="gGp-3P-zch"/>
                         <outlet property="hardwareVersionContainerView" destination="2fj-uR-yxm" id="HFp-t4-Vag"/>
                         <outlet property="imeiContainerView" destination="Kwp-vh-wQ4" id="KVe-ev-RYB"/>
                         <outlet property="resetButton" destination="1TF-4r-HqB" id="2rr-1t-Jf7"/>

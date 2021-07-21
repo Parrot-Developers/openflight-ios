@@ -30,6 +30,7 @@
 
 import SwiftyUserDefaults
 import GroundSdk
+import Combine
 
 /// Parrot Debug screen to activate, edit & share logs.
 class ParrotDebugViewController: UIViewController {
@@ -44,7 +45,7 @@ class ParrotDebugViewController: UIViewController {
     @IBOutlet private weak var sendDebugTagTextField: UITextField!
 
     // MARK: - Private Properties
-    private var currentDroneWatcher = CurrentDroneWatcher()
+    private var cancellables = Set<AnyCancellable>()
     private var drone: Drone?
     private let groundSdk = GroundSdk()
     private weak var renameOkAction: UIAlertAction?
@@ -85,15 +86,16 @@ class ParrotDebugViewController: UIViewController {
         filesTableView.refreshControl = refreshControl
         refreshControl.addTarget(self, action: #selector(refreshFileList(_:)), for: .valueChanged)
 
-        currentDroneWatcher.start { [weak self] drone in
-            self?.drone = drone
-            self?.devToolboxRef = drone.getPeripheral(Peripherals.devToolbox) { [weak self] devToolbox in
+        Services.hub.currentDroneHolder.dronePublisher.sink { [unowned self] drone in
+            self.drone = drone
+            devToolboxRef = drone.getPeripheral(Peripherals.devToolbox) { [weak self] devToolbox in
                 if let debugSettings = devToolbox?.debugSettings,
                     let cameraConf = debugSettings.first(where: { $0.name == Constants.oaRecordStartConfName }) as? BoolDebugSetting {
                     self?.recordDisparitySwitch.isOn = cameraConf.value
                 }
             }
         }
+        .store(in: &cancellables)
     }
 
     override func viewWillAppear(_ animated: Bool) {

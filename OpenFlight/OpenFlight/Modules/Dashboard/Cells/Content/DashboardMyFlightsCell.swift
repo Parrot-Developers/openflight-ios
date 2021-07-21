@@ -89,6 +89,8 @@ final class DashboardMyFlightsCell: UICollectionViewCell, NibReusable {
 private extension DashboardMyFlightsCell {
     /// Instantiate text for version number and buttons.
     func initView() {
+        self.cornerRadiusedWith(backgroundColor: ColorName.clear.color,
+                                radius: Style.largeCornerRadius)
         titleLabel.makeUp(with: .small)
         totalDistanceTitleLabel.makeUp(with: .tiny, and: .white50)
         totalDistanceLabel.makeUp()

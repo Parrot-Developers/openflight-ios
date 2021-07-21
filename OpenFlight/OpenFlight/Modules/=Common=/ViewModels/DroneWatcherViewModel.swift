@@ -29,25 +29,30 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
 /// ViewModel that listen a drone by default.
 open class DroneWatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
+    // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
+    private unowned var currentDroneHolder: CurrentDroneHolder
+
     // MARK: - Public Properties
     /// Property which provides the current drone using currentDroneWatcher.
     public var drone: Drone? {
-        return currentDroneWatcher.drone
+        return currentDroneHolder.drone
     }
-
-    // MARK: - Private Properties
-    private var currentDroneWatcher = CurrentDroneWatcher()
 
     // MARK: - Init
     public override init() {
-        super.init()
+        // TODO inject
+        currentDroneHolder = Services.hub.currentDroneHolder
 
-        currentDroneWatcher.start { [weak self] drone in
-            self?.listenDrone(drone: drone)
+        super.init()
+        currentDroneHolder.dronePublisher.sink { [unowned self] drone in
+            self.listenDrone(drone: drone)
         }
+        .store(in: &cancellables)
     }
 
     // MARK: - Public Funcs

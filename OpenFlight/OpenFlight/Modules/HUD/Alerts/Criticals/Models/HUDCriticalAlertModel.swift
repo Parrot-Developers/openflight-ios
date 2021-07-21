@@ -35,8 +35,12 @@ import UIKit
 protocol CriticalAlertModel {
     /// Alert panel top title.
     var topTitle: String? { get }
+    /// Alert panel top title color.
+    var topTitleColor: ColorName? { get }
     /// Alert panel top title's icon.
     var topIcon: UIImage? { get }
+    /// Alert panel top title's icon color.
+    var topIconTintColor: ColorName? { get }
     /// Alert panel top background color.
     var topBackgroundColor: ColorName? { get }
     /// Main alert image.
@@ -111,17 +115,47 @@ extension HUDCriticalAlertType: CriticalAlertModel {
         }
     }
 
+    var topIconTintColor: ColorName? {
+        switch self {
+        case .verticalCameraFailure,
+             .tooMuchAngle:
+            return nil
+        case .droneCalibrationRequired:
+            return .tomato
+        case .droneUpdateRequired,
+             .droneAndRemoteUpdateRequired:
+            return .sambuca
+        case .highTemperature,
+             .lowTemperature:
+            return .white
+        }
+    }
+
+    var topTitleColor: ColorName? {
+        switch self {
+        case .verticalCameraFailure,
+             .highTemperature,
+             .tooMuchAngle,
+             .lowTemperature:
+            return .white
+        case .droneUpdateRequired,
+             .droneAndRemoteUpdateRequired,
+             .droneCalibrationRequired:
+            return .sambuca
+        }
+    }
+
     var topBackgroundColor: ColorName? {
         switch self {
         case .verticalCameraFailure,
              .highTemperature,
              .tooMuchAngle,
              .lowTemperature:
-            return .redTorch
+            return .valencia
         case .droneUpdateRequired,
              .droneAndRemoteUpdateRequired,
              .droneCalibrationRequired:
-            return .black
+            return .white
         }
     }
 
@@ -192,29 +226,30 @@ extension HUDCriticalAlertType: CriticalAlertModel {
 
     var actionButtonTitleColor: ColorName? {
         switch self {
-        case .verticalCameraFailure,
-             .highTemperature,
-             .tooMuchAngle,
-             .lowTemperature:
-            return .black
         case .droneUpdateRequired,
              .droneAndRemoteUpdateRequired,
-             .droneCalibrationRequired:
+             .droneCalibrationRequired,
+             .highTemperature,
+             .lowTemperature:
             return .white
+        case .tooMuchAngle,
+             .verticalCameraFailure:
+            return .sambuca
         }
     }
 
     var actionButtonBackgroundColor: ColorName? {
         switch self {
-        case .verticalCameraFailure,
-             .highTemperature,
-             .tooMuchAngle,
+        case .highTemperature,
              .lowTemperature:
-            return .white
+            return .tomato
+        case .tooMuchAngle,
+             .verticalCameraFailure:
+            return .whiteAlbescent
         case .droneUpdateRequired,
              .droneAndRemoteUpdateRequired,
              .droneCalibrationRequired:
-            return .greenPea
+            return .greenMediumSea
         }
     }
 }

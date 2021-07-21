@@ -29,125 +29,87 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
-// MARK: - ControllerInfosState
-/// State for ControllerInfosViewModel.
-final class ControllerInfosState: DevicesConnectionState {
-    // MARK: - Internal Properties
+// MARK: - ControllerInfosViewModel
+/// ViewModel for ControllerInfos, notifies on current controller, battery level and gps strength changes.
+final class ControllerInfosViewModel {
+    // MARK: - Private Properties
     /// Current controller battery level.
-    fileprivate(set) var batteryLevel = BatteryValueModel()
+    @Published private(set) var batteryLevel: BatteryValueModel = BatteryValueModel()
     /// Current controller gps strength.
-    fileprivate(set) var gpsStrength = UserLocationGpsStrength.unavailable
-    /// Current controller.
-    var currentController: Controller {
-        switch self.remoteControlConnectionState?.connectionState {
-        case .connected, .connecting:
-            return .remoteControl
-        default:
-            return .userDevice
+    @Published private(set) var gpsStrength: UserLocationGpsStrength = UserLocationGpsStrength.unavailable
+    /// Current controller connection state
+    @Published private(set) var remoteControlConnectionState: DeviceState.ConnectionState = .disconnected
+    /// Current controller
+    @Published private(set) var currentController: Controller = .userDevice
+
+    private var batteryInfoRef: Ref<BatteryInfo>?
+    private var alarmsRef: Ref<Alarms>?
+    private var remoteControlStateRef: Ref<DeviceState>?
+    private var cancellables = Set<AnyCancellable>()
+
+    // TODO - Wrong injection
+    private var connectedRemoteControlHolder = Services.hub.connectedRemoteControlHolder
+
+    /// Listens for update from the remote controller
+    /// - Parameter remoteControl: The current remote controller
+    func listenRemoteControl(remoteControl: RemoteControl) {
+        remoteControlStateRef = remoteControl.getState { [weak self] remoteControlState in
+            self?.remoteControlConnectionState = remoteControlState?.connectionState ?? .disconnected
+            self?.computeBatteryLevel(remoteControl: remoteControl)
         }
     }
 
     // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - droneConnectionState: drone connection state
-    ///    - remoteControlConnectionState: remote control connection state
-    ///    - batteryLevel: current controller battery level
-    ///    - gpsStrength: current controller gps strength
-    init(droneConnectionState: DeviceConnectionState?,
-         remoteControlConnectionState: DeviceConnectionState?,
-         batteryLevel: BatteryValueModel,
-         gpsStrength: UserLocationGpsStrength) {
-        super.init(droneConnectionState: droneConnectionState,
-                   remoteControlConnectionState: remoteControlConnectionState)
-
-        self.batteryLevel = batteryLevel
-        self.gpsStrength = gpsStrength
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DevicesConnectionState) -> Bool {
-        guard let other = other as? ControllerInfosState else { return false }
-
-        return super.isEqual(to: other)
-            && self.batteryLevel == other.batteryLevel
-            && self.gpsStrength == other.gpsStrength
-    }
-
-    override func copy() -> ControllerInfosState {
-        return ControllerInfosState(droneConnectionState: self.droneConnectionState,
-                                    remoteControlConnectionState: self.remoteControlConnectionState,
-                                    batteryLevel: self.batteryLevel,
-                                    gpsStrength: self.gpsStrength)
-    }
-}
-
-// MARK: - ControllerInfosViewModel
-/// ViewModel for ControllerInfos, notifies on current controller, battery level and gps strength changes.
-final class ControllerInfosViewModel: DevicesStateViewModel<ControllerInfosState> {
-    // MARK: - Private Properties
-    private let groundSdk = GroundSdk()
-    private var batteryInfoRef: Ref<BatteryInfo>?
-    private var alarmsRef: Ref<Alarms>?
-
-    // MARK: - Init
-    /// Init.
-    override init() {
-        super.init()
-
+    init() {
         listenUserDeviceBattery()
-    }
 
-    // MARK: - Deinit
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
+        Services.hub.currentDroneHolder.dronePublisher
+            .sink { [unowned self] drone in
+                listenAlarms(drone)
+            }
+            .store(in: &cancellables)
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-
-        listenAlarms(drone)
-    }
-
-    override func listenRemoteControl(remoteControl: RemoteControl) {
-        super.listenRemoteControl(remoteControl: remoteControl)
-
-        listenBatteryLevel(remoteControl: remoteControl)
-    }
-
-    override func remoteControlConnectionStateDidChange() {
-        super.remoteControlConnectionStateDidChange()
-
-        computeBatteryLevel()
+        connectedRemoteControlHolder.remoteControlPublisher
+            .sink { [unowned self] remoteControl in
+                guard let remoteControl = remoteControl else {
+                    currentController = .userDevice
+                    return
+                }
+                currentController = .remoteControl
+                listenRemoteControl(remoteControl: remoteControl)
+                listenBatteryLevel(remoteControl: remoteControl)
+            }
+            .store(in: &cancellables)
     }
 }
 
 // MARK: - Private Funcs
 private extension ControllerInfosViewModel {
     /// Starts watcher for remote control battery level.
+    ///
+    /// - Parameters:
+    ///     - remoteControl: the current remote control
     func listenBatteryLevel(remoteControl: RemoteControl) {
         batteryInfoRef = remoteControl.getInstrument(Instruments.batteryInfo) { [weak self] _ in
-            self?.computeBatteryLevel()
+            self?.computeBatteryLevel(remoteControl: remoteControl)
         }
     }
 
     /// Starts watcher for user device battery level.
     func listenUserDeviceBattery() {
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(self.computeBatteryLevel),
+                                               selector: #selector(self.handleDeviceBatteryLevelChange),
                                                name: UIDevice.batteryLevelDidChangeNotification,
                                                object: nil)
-        computeBatteryLevel()
+        computeBatteryLevel(remoteControl: nil)
     }
 
     /// Starts watcher for drone alarm.
+    ///
+    /// - Parameters:
+    ///     - drone: the current drone
     func listenAlarms(_ drone: Drone) {
         alarmsRef = drone.getInstrument(Instruments.alarms) { [weak self] alarms in
             let unreliableControllerLocationAlarm = alarms?.getAlarm(kind: .unreliableControllerLocation)
@@ -155,33 +117,44 @@ private extension ControllerInfosViewModel {
         }
     }
 
+    /// Handles device's battery level changes.
+    ///
+    /// - Parameters:
+    ///     - notification: the current notification
+    @objc func handleDeviceBatteryLevelChange(notification: NSNotification) {
+        guard connectedRemoteControlHolder.remoteControl == nil else {
+            // Listens currently remote control
+            return
+        }
+
+        computeBatteryLevel(remoteControl: nil)
+    }
+
     /// Updates gps strength
     ///
     /// - Parameters:
     ///     - unreliableControllerLocationAlarm: Controller location alarm
     func updateGpsStrength(unreliableControllerLocationAlarm: Alarm?) {
-        let copy = self.state.value.copy()
         switch unreliableControllerLocationAlarm?.level {
         case .critical,
              .warning:
-            copy.gpsStrength = .gpsKo
+            gpsStrength = .gpsKo
         case .off:
-            copy.gpsStrength = .gpsFixed
+            gpsStrength = .gpsFixed
         default:
-            copy.gpsStrength = .unavailable
+            gpsStrength = .unavailable
         }
-        self.state.set(copy)
     }
 
     /// Computes current battery level and updates state accordingly.
-    @objc func computeBatteryLevel() {
-        let copy = self.state.value.copy()
-        switch state.value.currentController {
-        case .userDevice:
-            copy.batteryLevel = UIDevice.current.batteryValueModel
-        case .remoteControl:
-            copy.batteryLevel = BatteryValueModel(currentValue: remoteControl?.getInstrument(Instruments.batteryInfo)?.batteryLevel)
+    ///
+    /// - Parameters:
+    ///     - remoteControl: the current remote control
+    func computeBatteryLevel(remoteControl: RemoteControl?) {
+        guard let remoteControl = remoteControl else {
+            batteryLevel = UIDevice.current.batteryValueModel
+            return
         }
-        self.state.set(copy)
+        batteryLevel = BatteryValueModel(currentValue: remoteControl.getInstrument(Instruments.batteryInfo)?.batteryLevel)
     }
 }

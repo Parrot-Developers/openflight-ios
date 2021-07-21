@@ -34,7 +34,7 @@ import Reusable
 // MARK: - Protocols
 /// Protocol used to manage navigation for each cell.
 
-protocol PairingCellDelegate: class {
+protocol PairingCellDelegate: AnyObject {
     /// Called when user can fly.
     func canFly()
     /// Called when user can't find the remote.

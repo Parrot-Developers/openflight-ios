@@ -35,33 +35,15 @@ extension Camera2RecordingResolution: BarItemMode, Sortable {
     // MARK: - BarItemMode
     public var title: String {
         switch self {
-        case .resUhd8k:
-            return L10n.videoSettingsResolution8k
-        case .res5k:
-            return L10n.videoSettingsResolution5k
-        case .resDci4k:
-            return L10n.videoSettingsResolution4kCinema
         case .resUhd4k:
             return L10n.videoSettingsResolution4k
-        case .res2_7k:
-            return L10n.videoSettingsResolution27k
         case .res1080p:
             return L10n.videoSettingsResolution1080p
-        case .res720p:
-            return L10n.videoSettingsResolution720p
-        case .res480p:
-            return L10n.videoSettingsResolution480p
-        case .res1080pSd:
-            return L10n.videoSettingsResolution1080pSD
-        case .res720pSd:
-            return L10n.videoSettingsResolution720pSD
         }
     }
 
     public static var availableResolutions: [Camera2RecordingResolution] {
         [.res1080p,
-         .res1080pSd,
-         .resDci4k,
          .resUhd4k]
     }
 
@@ -83,13 +65,12 @@ extension Camera2RecordingResolution: BarItemMode, Sortable {
 
     /// Default value.
     public static var defaultResolution: Camera2RecordingResolution {
-        availableResolutions[0]
+        .resUhd4k
     }
 
     // MARK: - Sortable
     public static var sortedCases: [Camera2RecordingResolution] {
-        return [.res480p, .res720pSd, .res720p, .res1080pSd, .res1080p,
-                .res2_7k, .resDci4k, .resUhd4k, .res5k, .resUhd8k]
+        return [.res1080p, .resUhd4k]
     }
 
     public var logKey: String {

@@ -29,9 +29,9 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// View controller that manages gimbal tilt and zoom components.
-
 final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Outlets
     @IBOutlet private weak var tiltButton: TiltButton!
@@ -42,6 +42,7 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
     @IBOutlet private weak var overzoomLabel: UILabel!
     @IBOutlet private weak var maxTiltLabel: UILabel!
     @IBOutlet private weak var joysticksButton: UIButton!
+
     @IBOutlet private var overzoomLabelOpenConstraints: [NSLayoutConstraint]!
     @IBOutlet private var overzoomLabelClosedConstraints: [NSLayoutConstraint]!
     @IBOutlet private var maxTiltLabelClosedConstraints: [NSLayoutConstraint]!
@@ -51,28 +52,21 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
 
     // MARK: - Internal Properties
     var delayedTaskComponents = DelayedTaskComponents()
+    var viewModel: CameraSlidersViewModel!
+    var coordinator: CameraSlidersCoordinator!
 
     // MARK: - Private Properties
-    private var gimbalTiltViewModel: GimbalTiltViewModel!
-    private var cameraZoomViewModel: CameraZoomViewModel!
-    private let joysticksAvailabilityViewModel = JoysticksAvailabilityViewModel()
+    private var cancellables = Set<AnyCancellable>()
 
-    private var currentMaxTiltVerticalConstraint: NSLayoutConstraint {
-        switch gimbalTiltViewModel.state.value.current {
-        case ...0.0:
-            return maxTiltLabelOpenNegativeVerticalConstraint
-        default:
-            return maxTiltLabelOpenPositiveVerticalConstraint
-        }
+    private func currentMaxTiltVerticalConstraint(positive: Bool) -> NSLayoutConstraint {
+        positive ? maxTiltLabelOpenPositiveVerticalConstraint : maxTiltLabelOpenNegativeVerticalConstraint
     }
 
     // MARK: - Private Enums
     private enum Constants {
         static let zoomDisabledTitleColor = UIColor.white.withAlphaComponent(0.3)
-        static let hideSliderTaskKey: String = "hideSlider"
         static let hideInfoLabelTaskKey: String = "hideInfoLabel"
         static let hideTiltMaxLabelTaskKey: String = "hideTiltMaxLabel"
-        static let autoHideDelay: TimeInterval = 3.0
         static let maxReachedNotificationDuration: TimeInterval = 1.0
         static let defaultZoomVelocity: Double = 1.0
         static let defaultDezoomVelocity: Double = -1.0
@@ -82,10 +76,10 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-        zoomSliderView.delegate = self
-        tiltSliderView.delegate = self
+        zoomSliderView.viewModel = coordinator.zoomSliderViewModel()
+        tiltSliderView.viewModel = coordinator.gimbalTiltSliderViewModel()
         setupView()
-        setupViewModels()
+        setupViewModel()
     }
 }
 
@@ -93,17 +87,17 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
 private extension CameraSlidersViewController {
     /// Called when user taps the zoom button.
     @IBAction func zoomButtonTouchedUpInside(_ sender: Any) {
-        cameraZoomViewModel?.toggleSliderVisibility()
+        viewModel.zoomButtonTapped()
     }
 
     /// Called when user taps the tilt button.
     @IBAction func tiltButtonTouchedUpInside(_ sender: Any) {
-        gimbalTiltViewModel?.toggleSliderVisibility()
+        viewModel.tiltButtonTapped()
     }
 
     /// Called when user touch jogs button.
     @IBAction func joysticksButtonTouchedUpInside(_ sender: Any) {
-        joysticksAvailabilityViewModel.toggleJogsButtonVisibility()
+        viewModel.joysticksButtonTapped()
     }
 }
 
@@ -123,69 +117,95 @@ private extension CameraSlidersViewController {
     }
 
     /// Sets up view models associated with the view.
-    func setupViewModels() {
-        gimbalTiltViewModel = GimbalTiltViewModel(sliderVisibilityDidUpdate: onTiltSliderVisibilityUpdate,
-                                                  isOverTiltingDidUpdate: onIsOvertiltingUpdate,
-                                                  tiltVisibilityDidUpdate: tiltVisibilityDidUpdate)
-        cameraZoomViewModel = CameraZoomViewModel(sliderVisibilityDidUpdate: onZoomSliderVisibilityUpdate,
-                                                  isOverzoomingDidUpdate: onIsOverzoomingUpdate,
-                                                  zoomVisibilityDidUpdate: zoomVisibilityDidUpdate)
-
-        // Setup callbacks.
-        gimbalTiltViewModel.state.valueChanged = { [weak self] state in
-            self?.onGimbalTiltUpdate(state)
-        }
-        cameraZoomViewModel.state.valueChanged = { [weak self] state in
-            self?.onCameraZoomUpdate(state)
-        }
-        joysticksAvailabilityViewModel.state.valueChanged = { [weak self] state in
-            self?.onJoysticksUpdate(state)
-        }
-
-        // Set inital view model state.
-        onGimbalTiltUpdate(gimbalTiltViewModel.state.value)
-        onCameraZoomUpdate(cameraZoomViewModel.state.value)
-        onJoysticksUpdate(joysticksAvailabilityViewModel.state.value)
+    func setupViewModel() {
+        listenJoysticksButton()
+        listenZoom()
+        listenTilt()
     }
 
-    /// Update jogs button view.
-    ///
-    /// - Parameters:
-    ///     - state: joysticks availability state
-    func onJoysticksUpdate(_ state: JoysticksAvailabilityState?) {
-        joysticksButton.isHidden = state?.allowingJoysticks == false || state?.isBottomBarOpened == true
-        if state?.allowingJoysticks == true {
-            let image = state?.shouldHideJoysticks == true ? Asset.Joysticks.icJogsShow.image : Asset.Joysticks.icJogsHide.image
-            joysticksButton.setImage(image, for: .normal)
+    func listenJoysticksButton() {
+        viewModel.$showJoysticksButton.sink { [unowned self] in
+            joysticksButton.isHidden = !$0
         }
-    }
-
-    /// Called when camera zoom gets updated.
-    func onCameraZoomUpdate(_ state: CameraZoomState) {
-        zoomSliderView.zoomState = state
-        zoomButton.setTitle(state.formattedTitle, for: .normal)
-        zoomButton.setTitleColor(state.color, for: .normal)
-        zoomButton.isEnabled = state.isAvailable
-    }
-
-    /// Called when zoom slider visibility should be updated.
-    func onZoomSliderVisibilityUpdate(_ shouldOpenSlider: Bool) {
-        shouldOpenSlider ? showZoomSliderView() : hideZoomSliderView()
-    }
-
-    /// Called when zoom visibility should be updated.
-    func zoomVisibilityDidUpdate(_ shouldHideZoom: Bool) {
-        zoomButton.isHidden = shouldHideZoom
-    }
-
-    /// Called when isOverzooming gets updated.
-    func onIsOverzoomingUpdate(_ isOverzooming: Bool) {
-        if isOverzooming {
-            setupDelayedTask(hideOverzoomLabel,
-                             delay: Constants.maxReachedNotificationDuration,
-                             key: Constants.hideInfoLabelTaskKey)
-            overzoomLabel.isHidden = false
+        .store(in: &cancellables)
+        viewModel.$joysticksButtonImage.sink { [unowned self] in
+            joysticksButton.setImage($0, for: .normal)
         }
+        .store(in: &cancellables)
+    }
+
+    func listenZoom() {
+        // Button
+        viewModel.zoomButtonEnabled
+            .sink { [unowned self] in zoomButton.isEnabled = $0 }
+            .store(in: &cancellables)
+        viewModel.zoomButtonHidden
+            .sink { [unowned self] in zoomButton.isHidden = $0 }
+            .store(in: &cancellables)
+        viewModel.$zoomButtonTitle
+            .sink { [unowned self] in
+                zoomButton.setTitle($0, for: .normal)
+            }
+            .store(in: &cancellables)
+        viewModel.$zoomButtonColor
+            .sink { [unowned self] in
+                zoomButton.setTitleColor($0, for: .normal)
+            }
+            .store(in: &cancellables)
+        // Slider
+        viewModel.$showZoomSlider
+            .removeDuplicates()
+            .sink { [unowned self] in
+                if $0 {
+                    showZoomSliderView()
+                } else {
+                    hideZoomSliderView()
+                }
+            }
+            .store(in: &cancellables)
+        // Overzooming warning
+        viewModel.overzoomingEvent
+            .sink { [unowned self] _ in showOverzoomLabel() }
+            .store(in: &cancellables)
+    }
+
+    func listenTilt() {
+        // Button
+        viewModel.gimbalTiltButtonEnabled
+            .sink { [unowned self] in tiltButton.isEnabled = $0 }
+            .store(in: &cancellables)
+        viewModel.gimbalTiltValue
+            .sink { [unowned self] in tiltButton.value = $0 }
+            .store(in: &cancellables)
+        viewModel.gimbalTiltButtonHidden
+            .sink { [unowned self] in tiltButton.isHidden = $0 }
+            .store(in: &cancellables)
+        // Slider
+        viewModel.$showGimbalTiltSlider
+            .removeDuplicates()
+            .sink { [unowned self] in
+                if $0 {
+                    showTiltSliderView()
+                } else {
+                    hideTiltSliderView()
+                }
+            }
+            .store(in: &cancellables)
+        // Over / under tilt
+        viewModel.overtiltEvent
+            .sink { [unowned self] _ in showMaxTiltLabel(positive: true) }
+            .store(in: &cancellables)
+        viewModel.undertiltEvent
+            .sink { [unowned self] _ in showMaxTiltLabel(positive: false) }
+            .store(in: &cancellables)
+    }
+
+    // Show the overzoom label and schedules its hidding
+    func showOverzoomLabel() {
+        setupDelayedTask(hideOverzoomLabel,
+                         delay: Constants.maxReachedNotificationDuration,
+                         key: Constants.hideInfoLabelTaskKey)
+        overzoomLabel.isHidden = false
     }
 
     /// Hides the overzoom information label.
@@ -193,36 +213,17 @@ private extension CameraSlidersViewController {
         overzoomLabel.isHidden = true
     }
 
-    /// Called when gimbal tilt gets updated.
-    func onGimbalTiltUpdate(_ state: GimbalTiltState) {
-        tiltSliderView.tiltState = state
-        tiltButton.tiltState = state
-        tiltButton.isEnabled = state.isAvailable
-    }
-
-    /// Called when tilt slider visibility should be updated.
-    func onTiltSliderVisibilityUpdate(_ shouldOpenSlider: Bool) {
-        shouldOpenSlider ? showTiltSliderView() : hideTiltSliderView()
-    }
-
-    /// Called when isOvertilting gets updated.
-    func onIsOvertiltingUpdate(_ isOvertilting: Bool) {
-        if isOvertilting {
-            if gimbalTiltViewModel.state.value.shouldOpenSlider.value {
-                maxTiltLabelOpenNegativeVerticalConstraint.isActive = false
-                maxTiltLabelOpenPositiveVerticalConstraint.isActive = false
-                currentMaxTiltVerticalConstraint.isActive = true
-            }
-            setupDelayedTask(hideMaxTiltLabel,
-                             delay: Constants.maxReachedNotificationDuration,
-                             key: Constants.hideTiltMaxLabelTaskKey)
-            maxTiltLabel.isHidden = false
+    /// Show max tilt label
+    func showMaxTiltLabel(positive: Bool) {
+        if !tiltSliderView.isHidden {
+            maxTiltLabelOpenNegativeVerticalConstraint.isActive = false
+            maxTiltLabelOpenPositiveVerticalConstraint.isActive = false
+            currentMaxTiltVerticalConstraint(positive: positive).isActive = true
         }
-    }
-
-    /// Called when tilt visibility should be updated.
-    func tiltVisibilityDidUpdate(_ shouldHideTilt: Bool) {
-        tiltButton.isHidden = shouldHideTilt
+        setupDelayedTask(hideMaxTiltLabel,
+                         delay: Constants.maxReachedNotificationDuration,
+                         key: Constants.hideTiltMaxLabelTaskKey)
+        maxTiltLabel.isHidden = false
     }
 
     /// Hides the max tilt information label.
@@ -262,9 +263,7 @@ private extension CameraSlidersViewController {
         animate(viewToShow: tiltSliderContainerView,
                 viewToHide: zoomButton,
                 constraintsToRemove: maxTiltLabelClosedConstraints,
-                constraintsToActivate: [maxTiltLabelOpenLeadingConstraint, currentMaxTiltVerticalConstraint])
-        // Slider autohides after a delay.
-        setupDelayedTask(gimbalTiltViewModel.closeSlider, delay: Constants.autoHideDelay, key: Constants.hideSliderTaskKey)
+                constraintsToActivate: [maxTiltLabelOpenLeadingConstraint, maxTiltLabelOpenPositiveVerticalConstraint])
     }
 
     /// Hides the tilt slider view.
@@ -275,7 +274,6 @@ private extension CameraSlidersViewController {
                                       maxTiltLabelOpenPositiveVerticalConstraint,
                                       maxTiltLabelOpenNegativeVerticalConstraint],
                 constraintsToActivate: maxTiltLabelClosedConstraints)
-        cancelDelayedTask(key: Constants.hideSliderTaskKey)
     }
 
     /// Shows the zoom slider view.
@@ -284,8 +282,6 @@ private extension CameraSlidersViewController {
                 viewToHide: tiltButton,
                 constraintsToRemove: overzoomLabelClosedConstraints,
                 constraintsToActivate: overzoomLabelOpenConstraints)
-        // Slider autohides after a delay.
-        setupDelayedTask(cameraZoomViewModel.closeSlider, delay: Constants.autoHideDelay, key: Constants.hideSliderTaskKey)
     }
 
     /// Hides the zoom slider view.
@@ -294,47 +290,5 @@ private extension CameraSlidersViewController {
                 viewToHide: zoomSliderView,
                 constraintsToRemove: overzoomLabelOpenConstraints,
                 constraintsToActivate: overzoomLabelClosedConstraints)
-        cancelDelayedTask(key: Constants.hideSliderTaskKey)
-    }
-}
-
-// MARK: - TiltViewDelegate
-extension CameraSlidersViewController: TiltSliderViewDelegate {
-    func setPitchVelocity(_ velocity: Double) {
-        gimbalTiltViewModel?.setPitchVelocity(velocity)
-    }
-
-    func resetPitch() {
-        gimbalTiltViewModel?.resetPitch()
-    }
-
-    func didStartInteracting() {
-        cancelDelayedTask(key: Constants.hideSliderTaskKey)
-    }
-
-    func didStopInteracting() {
-        setupDelayedTask(gimbalTiltViewModel.closeSlider, delay: Constants.autoHideDelay, key: Constants.hideSliderTaskKey)
-    }
-}
-
-// MARK: - ZoomSliderViewDelegate
-extension CameraSlidersViewController: ZoomSliderViewDelegate {
-    func startZoom() {
-        cameraZoomViewModel?.setZoomVelocity(Constants.defaultZoomVelocity)
-        cancelDelayedTask(key: Constants.hideSliderTaskKey)
-    }
-
-    func startDezoom() {
-        cameraZoomViewModel?.setZoomVelocity(Constants.defaultDezoomVelocity)
-        cancelDelayedTask(key: Constants.hideSliderTaskKey)
-    }
-
-    func stopZoom() {
-        cameraZoomViewModel?.setZoomVelocity(0)
-        setupDelayedTask(cameraZoomViewModel.closeSlider, delay: Constants.autoHideDelay, key: Constants.hideSliderTaskKey)
-    }
-
-    func resetZoom() {
-        cameraZoomViewModel?.resetZoom()
     }
 }

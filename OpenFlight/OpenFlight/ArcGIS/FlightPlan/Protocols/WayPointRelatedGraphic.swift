@@ -29,7 +29,7 @@
 //    SUCH DAMAGE.
 
 /// Defines ArcGIS graphics related to a waypoint.
-protocol WayPointRelatedGraphic: class {
+protocol WayPointRelatedGraphic: AnyObject {
     /// Waypoint's index.
     var wayPointIndex: Int? { get set }
     /// Increments waypoint's index.

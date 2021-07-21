@@ -221,7 +221,7 @@ private extension SettingsCellularDataViewModel {
         return DroneSettingModel(allValues: SettingsCellularAvailability.allValues,
                                  supportedValues: SettingsCellularAvailability.allValues,
                                  currentValue: state.value.cellularAvailability,
-                                 isUpdating: cellular?.mode.updating) { mode in
+                                 isUpdating: cellular?.mode.updating ?? false) { mode in
             guard let mode = mode as? SettingsCellularAvailability else { return }
 
             switch mode {
@@ -248,7 +248,7 @@ private extension SettingsCellularDataViewModel {
         return DroneSettingModel(allValues: SettingsCellularSelection.allValues,
                                  supportedValues: SettingsCellularSelection.allValues,
                                  currentValue: state.value.selectionMode,
-                                 isUpdating: cellular?.apnConfigurationSetting.updating)
+                                 isUpdating: cellular?.apnConfigurationSetting.updating ?? false)
     }
 
     /// Returns a setting model for 4G network policy. It can be Auto, Cellular or Wi-fi priority.

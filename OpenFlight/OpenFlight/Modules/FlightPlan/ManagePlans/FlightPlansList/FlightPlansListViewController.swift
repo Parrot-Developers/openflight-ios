@@ -29,21 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
-
-// MARK: - Internal Enums
-/// Describes FlightPlansList ViewController display mode.
-enum FlightPlansListDisplayMode {
-    /// Full screen.
-    case full
-    /// Part of a sub view controller.
-    case compact
-}
-
-// MARK: - Protocols
-protocol FlightPlansListViewControllerDelegate: class {
-    /// Called when user selects a Flight Plan.
-    func didSelect(flightPlan: FlightPlanViewModel)
-}
+import Combine
 
 /// Manages a flight plan list.
 final class FlightPlansListViewController: UIViewController {
@@ -54,50 +40,57 @@ final class FlightPlansListViewController: UIViewController {
     @IBOutlet private weak var emptyLabelStack: UIStackView!
 
     // MARK: - Internal Properties
-    weak var delegate: FlightPlansListViewControllerDelegate?
-    var displayMode: FlightPlansListDisplayMode = .full
-    var selectedFlightPlanUuid: String? {
-        didSet {
-            collectionView?.reloadData()
-        }
+    private var viewModel: (FlightPlansListViewModelUIInput & FlightPlanListHeaderDelegate)!
+    private var cancellables = [AnyCancellable]()
+
+    func setupViewModel(with viewModel: (FlightPlansListViewModelUIInput & FlightPlanListHeaderDelegate)) {
+        self.viewModel = viewModel
+        self.viewModel.initialized()
     }
 
-    // MARK: - Private Properties
-    private let missionProviderViewModel: MissionProviderViewModel = MissionProviderViewModel()
-    private var flightPlansListViewModel: FlightPlansListViewModel?
-    private weak var coordinator: Coordinator?
-    private var allFlightPlans: [FlightPlanViewModel] = [FlightPlanViewModel]() {
-        didSet {
-            self.collectionView.reloadData()
-            self.emptyLabelStack.isHidden = !allFlightPlans.isEmpty
-        }
+    func setupViewModel(with viewModel: (FlightPlansListViewModelUIInput & FlightPlanListHeaderDelegate), delegate: FlightPlansListViewModelDelegate) {
+        self.viewModel = viewModel
+        self.viewModel.setupDelegate(with: delegate)
+        self.viewModel.initialized()
+    }
+
+    private func bindViewModel() {
+        viewModel.allFlightPlansPublisher
+            .sink { [unowned self] _ in
+                self.collectionView?.reloadData()
+                self.emptyLabelStack.isHidden = self.viewModel.modelsCount() > 0
+            }
+            .store(in: &cancellables)
+
+        viewModel.uuidPublisher
+            .sink { [unowned self] _ in
+                self.collectionView?.reloadData()
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Private Enums
     private enum Constants {
-        static let nbColumnsLandscape: CGFloat = 3.0
+        static let nbColumnsLandscapeFull: CGFloat = 4.0
+        static let nbColumnsLandscapeCompact: CGFloat = 3.0
         static let nbColumnsPortrait: CGFloat = 2.0
         static let itemSpacing: CGFloat = 10.0
         static let cellWidthRatio: CGFloat = 0.9
+        static let heightHeader: CGFloat = 50.0
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        flightPlansListViewModel = FlightPlansListViewModel(delegate: self)
+        collectionView.register(FlightPlanListReusableHeaderView.self,
+                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+                                withReuseIdentifier: FlightPlanListReusableHeaderView.identifier)
         collectionView.register(cellType: FlightPlanCollectionViewCell.self)
         collectionView.delegate = self
         collectionView.dataSource = self
         emptyFlightPlansTitleLabel.text = L10n.flightPlanEmptyListTitle
         emptyFlightPlansDescriptionLabel.text = L10n.flightPlanEmptyListDesc
-
-        // Load stored Flight Plans.
-        updateDataSource()
-
-        FlightPlanManager.shared.syncFlightPlansWithFiles(persistedFlightPlans: self.allFlightPlans) { [weak self] _ in
-            self?.updateDataSource()
-        }
+        bindViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -108,53 +101,43 @@ final class FlightPlansListViewController: UIViewController {
                              logType: .screen)
     }
 
-    /// Update display when orientation changed.
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
 
-        // Reload data source.
-        collectionView.reloadData()
+        // Update layout when orientation changed.
+        collectionView.collectionViewLayout.invalidateLayout()
     }
 
     override var prefersStatusBarHidden: Bool {
         return true
     }
-}
 
-// MARK: - Privates Funcs
-private extension FlightPlansListViewController {
-    /// Update data source.
-    func updateDataSource() {
-        var predicate: NSPredicate?
-        if displayMode == .compact {
-            // Filter flight plan in compact mode only.
-            predicate = missionProviderViewModel.state.value.mode?.flightPlanProvider?.filterPredicate
-        }
-        self.allFlightPlans = CoreDataManager.shared.loadAllFlightPlanViewModels(predicate: predicate)
-    }
-}
-
-// MARK: - FlightPlansListDelegate
-extension FlightPlansListViewController: FlightPlansListDelegate {
-    func flightPlansUpdated() {
-        updateDataSource()
+    func collectionView(_ collectionView: UICollectionView,
+                        viewForSupplementaryElementOfKind kind: String,
+                        at indexPath: IndexPath) -> UICollectionReusableView {
+        guard let header = collectionView
+                .dequeueReusableSupplementaryView(ofKind: kind,
+                                                  withReuseIdentifier: FlightPlanListReusableHeaderView.identifier,
+                                                  for: indexPath) as? FlightPlanListReusableHeaderView
+        else { return UICollectionReusableView() }
+        header.configure(provider: viewModel.getHeaderProvider(), delegate: viewModel)
+        return header
     }
 }
 
 // MARK: - UICollectionViewDataSource
 extension FlightPlansListViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return allFlightPlans.count
+        return viewModel.modelsCount()
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(for: indexPath) as FlightPlanCollectionViewCell
-        if indexPath.row < allFlightPlans.count {
-            let flightPlan = allFlightPlans[indexPath.row]
-            let isSelected = displayMode == .full ? false : selectedFlightPlanUuid == flightPlan.state.value.uuid
-            cell.configureCell(viewModel: flightPlan,
-                               isSelected: isSelected)
-        }
+        guard let cellProvider = viewModel.getFlightPlan(at: indexPath.row) else { return cell }
+        cell.configureCell(viewModel: cellProvider.flightPlan,
+                           isSelected: cellProvider.isSelected,
+                           index: indexPath.row)
+        cell.delegate = self
         return cell
     }
 }
@@ -162,11 +145,7 @@ extension FlightPlansListViewController: UICollectionViewDataSource {
 // MARK: - UICollectionViewDelegate
 extension FlightPlansListViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard indexPath.row < allFlightPlans.count else { return }
-
-        let flightPlan = allFlightPlans[indexPath.row]
-        selectedFlightPlanUuid = flightPlan.state.value.uuid
-        delegate?.didSelect(flightPlan: flightPlan)
+        viewModel.selectedItem(at: indexPath.row)
     }
 }
 
@@ -175,9 +154,26 @@ extension FlightPlansListViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         // remove left and right insets.
         let collectionViewWidth = collectionView.frame.width - 2 * Constants.itemSpacing
-        let nbColumns = UIApplication.isLandscape ? Constants.nbColumnsLandscape : Constants.nbColumnsPortrait
+        let nbColumnsLadscape = viewModel.displayMode == .full ? Constants.nbColumnsLandscapeFull : Constants.nbColumnsLandscapeCompact
+        let nbColumns = UIApplication.isLandscape ? nbColumnsLadscape : Constants.nbColumnsPortrait
         let width = collectionViewWidth / nbColumns - Constants.itemSpacing
         let size = CGSize(width: width, height: width * Constants.cellWidthRatio)
         return size
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        referenceSizeForHeaderInSection section: Int) -> CGSize {
+        if viewModel.displayMode == .full {
+            return .init(width: self.collectionView.frame.width, height: Constants.heightHeader)
+        }
+        return .zero
+    }
+}
+
+// MARK: - FlightPlanCollectionDelegate
+extension FlightPlansListViewController: FlightPlanCollectionDelegate {
+    func didDoubleTap(index: Int) {
+        viewModel.openProject(at: index)
     }
 }

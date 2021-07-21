@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// State for `BottomBarViewModel`.
 
@@ -68,7 +69,8 @@ final class GlobalBottomBarState: ViewModelState, EquatableState, Copying {
 final class BottomBarViewModel: BaseViewModel<GlobalBottomBarState> {
     // MARK: - Private Properties
     private var modalPresentationObserver: Any?
-    private var missionLauncherViewModel: MissionLauncherViewModel = MissionLauncherViewModel()
+    private var cancellables = Set<AnyCancellable>()
+    private unowned var currentMissionManager = Services.hub.currentMissionManager
 
     // MARK: - Init
     override init() {
@@ -102,23 +104,13 @@ private extension BottomBarViewModel {
         }
     }
 
-    /// Starts watcher for mission modes.
+    /// Listen for mission mode
     func listenMissionMode() {
-        updateState(state: missionLauncherViewModel.state.value)
-        missionLauncherViewModel.state.valueChanged = { [weak self] state in
-            self?.updateState(state: state)
+        currentMissionManager.modePublisher.sink { [unowned self] in
+            let copy = self.state.value.copy()
+            copy.missionMode = $0
+            self.state.set(copy)
         }
-    }
-
-    /// Updates mission mode state.
-    /// - Parameters:
-    ///     - state: mission mode state
-    func updateState(state: MissionLauncherState?) {
-        guard let mode = state?.mode else {
-            return
-        }
-        let copy = self.state.value.copy()
-        copy.missionMode = mode
-        self.state.set(copy)
+        .store(in: &cancellables)
     }
 }

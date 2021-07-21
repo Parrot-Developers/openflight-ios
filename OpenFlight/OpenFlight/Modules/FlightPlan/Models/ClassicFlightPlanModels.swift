@@ -30,6 +30,7 @@
 
 import Foundation
 import GroundSdk
+import ArcGIS
 
 /// Provider for classic Flight Plan.
 struct ClassicFlightPlanProvider: FlightPlanProvider {
@@ -65,10 +66,30 @@ struct ClassicFlightPlanProvider: FlightPlanProvider {
     func graphicsWithFlightPlan(_ flightPlanObject: FlightPlanObject) -> [FlightPlanGraphic] {
         return flightPlanObject.allLinesAndMarkersGraphics
     }
+}
 
-    func graphicsLabelsWithFlightPlan(_ flightPlanObject: FlightPlanObject) -> [FlightPlanLabelGraphic] {
-        return flightPlanObject.allLabelsGraphics
-    }
+/// Enum describing classic flight plan type
+public enum ClassicFlightPlanType: String, FlightPlanType, CaseIterable {
+    case standard
+
+    /// Not used
+    public var title: String { "" }
+
+    public var icon: UIImage { missionMode.icon }
+
+    /// Not used
+    public var tag: Int { 0 }
+
+    public var key: String { FlightPlanConstants.defaultType }
+
+    public var canGenerateMavlink: Bool { false }
+
+    public var mavLinkType: FlightPlanInterpreter { .standard }
+
+    public var missionProvider: MissionProvider { FlightPlanMission() }
+
+    public var missionMode: MissionMode { FlightPlanMissionMode.standard.missionMode }
+
 }
 
 /// Setting types for Classic Flight Plan.
@@ -145,7 +166,11 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         case .resolution:
             return Camera2Params.supportedRecordingResolution().indices.map { $0 }
         case .timeLapseCycle:
-            return TimeLapseMode.allValues.compactMap { ($0 as? TimeLapseMode)?.value }
+            guard let currentFlightPlan = currentFlightPlan else { return [] }
+
+            let resolution = currentFlightPlan.plan.photoResolution
+            let supportedTimelapses = TimeLapseMode.supportedValuesForResolution(for: resolution)
+            return supportedTimelapses.compactMap { $0.value }
         case .gpsLapseDistance:
             return GpsLapseMode.allValues.compactMap { ($0 as? GpsLapseMode)?.value }
         case .whiteBalance:
@@ -175,7 +200,11 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         case .imageMode:
             return FlightPlanCaptureMode.allCases.map { $0.title }
         case .timeLapseCycle:
-            return TimeLapseMode.allValues.compactMap { ($0 as? TimeLapseMode)?.title }
+            guard let currentFlightPlan = currentFlightPlan else { return [] }
+
+            let resolution = currentFlightPlan.plan.photoResolution
+            let supportedTimelapses = TimeLapseMode.supportedValuesForResolution(for: resolution)
+            return supportedTimelapses.compactMap { $0.title }
         case .gpsLapseDistance:
             return GpsLapseMode.allValues.compactMap { ($0 as? GpsLapseMode)?.title }
         case .whiteBalance:
@@ -224,13 +253,13 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
                 return allValues.first ?? 0
             }
 
-            return Int(value)
+            return value
         case .timeLapseCycle:
             guard let value = currentFlightPlan.plan.timeLapseCycle else {
                 return allValues.first ?? 0
             }
 
-            return Int(value)
+            return value
         case .exposure:
             let value = currentFlightPlan.plan.exposure
             return Camera2EvCompensation.availableValues.firstIndex(where: { $0 == value })
@@ -273,6 +302,10 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         return 1.0
     }
 
+    public var divider: Double {
+        return 1.0
+    }
+
     public var isDisabled: Bool {
         return false
     }
@@ -303,10 +336,10 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
 final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
     // MARK: - Internal Properties
     var currentType: FlightPlanType? {
-        return nil
+        return ClassicFlightPlanType.standard
     }
 
-    var allTypes: [FlightPlanType] = []
+    var allTypes: [FlightPlanType] = [ ClassicFlightPlanType.standard ]
 
     var settings: [FlightPlanSetting] {
         guard let savedFlightPlan = currentFlightPlan else { return [] }
@@ -325,11 +358,11 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
 
     // MARK: - Internal Funcs
     func updateType(tag: Int) {
-        // No types for classic Flight Plan.
+        // Only one type for classic Flight Plan.
     }
 
     func updateType(key: String) {
-        // No types for classic Flight Plan.
+        // Only one type for classic Flight Plan.
     }
 
     func updateSettingValue(for key: String, value: Int) {
@@ -350,6 +383,7 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
             let allValues = Camera2Params.supportedRecordingResolution()
             if value < allValues.count {
                 currentFlightPlan.plan.resolution = allValues[value]
+                currentFlightPlan.plan.framerate = Camera2RecordingFramerate.defaultFramerate
             }
         case ClassicFlightPlanSettingType.imageMode.key where value < FlightPlanCaptureMode.allCases.count:
             currentFlightPlan.plan.captureModeEnum = FlightPlanCaptureMode.allCases[value]
@@ -443,6 +477,14 @@ final class WayPointSettingsProvider: FlightPlanSettingsProvider {
         self.wayPoint = wayPoint
     }
 
+    // MARK: - Public Funcs
+    // Find closest valid angle for the requested camera tilt
+    // An angle is considered valid when it is a multiple of 5
+    class func closestAngle(value: Double) -> Int {
+        let mult: Double = value / 5.0
+        return 5 * Int(mult.rounded())
+    }
+
     // MARK: - Internal Funcs
     func updateType(tag: Int) { }
 
@@ -451,6 +493,7 @@ final class WayPointSettingsProvider: FlightPlanSettingsProvider {
     func updateSettingValue(for key: String, value: Int) {
         if key == AltitudeSettingType().key {
             self.wayPoint?.altitude = Double(value)
+            self.wayPoint?.updateTiltRelation()
         } else if key == TiltAngleSettingType().key {
             self.wayPoint?.tilt = Double(value)
         }
@@ -568,6 +611,11 @@ final class PoiPointSettingsProvider: FlightPlanSettingsProvider {
         switch key {
         case AltitudeSettingType().key:
             self.poiPoint?.altitude = Double(value)
+            if let wayPoints = self.poiPoint?.wayPoints {
+                wayPoints.forEach {
+                    $0.updateTiltRelation()
+                }
+            }
         default:
             break
         }
@@ -615,6 +663,10 @@ final class AltitudeSettingType: FlightPlanSettingType {
         return 1.0
     }
 
+    var divider: Double {
+        return 1.0
+    }
+
     var isDisabled: Bool {
         return false
     }
@@ -642,7 +694,7 @@ final class TiltAngleSettingType: FlightPlanSettingType {
     }
 
     var allValues: [Int] {
-        return Array(-90...90)
+        return Array(-90...90).stepFiltered(with: Int(step))
     }
 
     var valueDescriptions: [String]?
@@ -664,6 +716,10 @@ final class TiltAngleSettingType: FlightPlanSettingType {
     }
 
     var step: Double {
+        return 5.0
+    }
+
+    var divider: Double {
         return 1.0
     }
 
@@ -694,7 +750,8 @@ final class SpeedSettingType: FlightPlanSettingType {
     }
 
     var allValues: [Int] {
-        return Array(1...121)
+        // speed values range from 5 to 120 with a 5 step increment (step/divider)
+        return Array(5...120).stepFiltered(with: Int(step/divider))
     }
 
     var valueDescriptions: [String]?
@@ -716,7 +773,10 @@ final class SpeedSettingType: FlightPlanSettingType {
     }
 
     var step: Double {
-        //FIXME: change values to Double and remove speed step hack.
+        return 0.5
+    }
+
+    var divider: Double {
         return 0.1
     }
 

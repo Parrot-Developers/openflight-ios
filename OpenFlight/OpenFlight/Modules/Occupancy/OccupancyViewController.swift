@@ -40,8 +40,6 @@ final class OccupancyViewController: UIViewController {
 
     // MARK: - Private Properties
     private var renderer: OccupancyRenderer?
-    // ViewModels
-    private var loveCameraStreamingViewModel: LoveCameraStreamingViewModel?
     private var occupancyViewModel: OccupancyViewModel?
 
     // MARK: - Setup
@@ -87,14 +85,6 @@ final class OccupancyViewController: UIViewController {
 private extension OccupancyViewController {
     /// Sets up view models associated with the view.
     func setupViewModels() {
-        loveCameraStreamingViewModel = LoveCameraStreamingViewModel()
-        loveCameraStreamingViewModel?.state.valueChanged = { [weak self] state in
-            self?.onStateUpdate(state)
-        }
-        setupOccupancyViewModel()
-    }
-
-    func setupOccupancyViewModel() {
         guard let worldStorage = renderer?.worldStorage else {
             return
         }
@@ -126,21 +116,7 @@ private extension OccupancyViewController {
     /// - Parameters:
     ///    - enabled: boolean that enable or disable monitoring.
     func enableMonitoring(_ enabled: Bool) {
-        self.loveCameraStreamingViewModel?.enableMonitoring(enabled)
         self.occupancyViewModel?.enableMonitoring(enabled)
-    }
-
-    /// Called when streaming state is updated.
-    ///
-    /// - Parameters:
-    ///    - state: state from LoveCameraStreamingViewModel.
-    func onStateUpdate(_ state: LoveCameraStreamingState) {
-        if !state.streamEnabled {
-            self.clearOccupancy()
-        } else {
-            self.occupancyViewModel = nil
-            self.setupOccupancyViewModel()
-        }
     }
 
     /// Removes all traces from occupancy functionnality.

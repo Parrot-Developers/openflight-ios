@@ -42,7 +42,7 @@ enum DroneDetailsUpdateType {
     var title: String {
         switch self {
         case .upToDate:
-            return L10n.droneDetailsSoftwareVersion
+            return L10n.deviceDetailsSoftwareVersion
         case .needUpdate:
             return L10n.droneUpdateControllerUpdate
         }

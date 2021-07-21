@@ -29,156 +29,59 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
-/// State for `ObstacleAvoidanceViewModel`.
-final class ObstacleAvoidanceState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    /// Whether if obstacle avoidance is activated.
-    fileprivate(set) var obstacleAvoidanceActivated: Bool = false
-    /// Whether if stereo vision sensor calibration is needed.
-    fileprivate(set) var stereoVisionCalibrationNeeded: Bool = false
+/// View model for obstacle avoidance indicator
+public class ObstacleAvoidanceViewModel {
 
-    // MARK: Helpers
-    /// Image to display obstacle avoidance state.
-    var obstacleAvoidanceImage: UIImage {
-        if !isConnected() {
-            return Asset.ObstacleAvoidance.icObstacleDetectionDisconnected.image
-        } else if obstacleAvoidanceActivated && stereoVisionCalibrationNeeded {
-            return Asset.ObstacleAvoidance.icObstacleDetectionError.image
-        } else if obstacleAvoidanceActivated && !stereoVisionCalibrationNeeded {
-            return Asset.ObstacleAvoidance.icObstacleDetectionOn.image
-        } else {
-            return Asset.ObstacleAvoidance.icObstacleDetectionOff.image
-        }
+    /// State for OA display
+    public enum State: Equatable {
+        case disconnected
+        case unwanted
+        case wanted(ObstacleAvoidanceState)
     }
 
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
+    // MARK: - Public Properties
+    @Published private(set) var state = State.disconnected
 
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - connectionState: drone's connection state
-    ///    - obstacleAvoidanceActivated: wheter obstacle avoidance is activated
-    ///    - stereoVisionCalibrationNeeded: Bool that indicates if stereo vision sensor calibration is needed.
-    init(connectionState: DeviceState.ConnectionState,
-         obstacleAvoidanceActivated: Bool,
-         stereoVisionCalibrationNeeded: Bool) {
-        super.init(connectionState: connectionState)
-
-        self.obstacleAvoidanceActivated = obstacleAvoidanceActivated
-        self.stereoVisionCalibrationNeeded = stereoVisionCalibrationNeeded
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? ObstacleAvoidanceState else {
-            return false
-        }
-
-        return super.isEqual(to: other)
-            && self.obstacleAvoidanceActivated == other.obstacleAvoidanceActivated
-            && self.stereoVisionCalibrationNeeded == other.stereoVisionCalibrationNeeded
-    }
-
-    override func copy() -> ObstacleAvoidanceState {
-        return ObstacleAvoidanceState(connectionState: self.connectionState,
-                                      obstacleAvoidanceActivated: self.obstacleAvoidanceActivated,
-                                      stereoVisionCalibrationNeeded: self.stereoVisionCalibrationNeeded)
-    }
-}
-
-/// View model for drone details buttons.
-final class ObstacleAvoidanceViewModel: DroneStateViewModel<ObstacleAvoidanceState> {
     // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
     private var obstacleAvoidanceRef: Ref<ObstacleAvoidance>?
-    private var stereoVisionSensorRef: Ref<StereoVisionSensor>?
-    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
-    private var manualPilotingRef: Ref<ManualCopterPilotingItf>?
 
-    // MARK: - Deinit
-    deinit {
-        self.obstacleAvoidanceRef = nil
-        self.stereoVisionSensorRef = nil
-        self.flyingIndicatorsRef = nil
-        self.manualPilotingRef = nil
-    }
-
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-
-        listenObstacleAvoidance(drone)
-        listenStereoVisionSensor(drone)
-        listenManualPiloting(drone: drone)
-        listenFlyingIndicators(drone: drone)
+    /// Init
+    /// - Parameter connectedDroneHolder: the connected drone holder
+    init(connectedDroneHolder: ConnectedDroneHolder) {
+        connectedDroneHolder.dronePublisher.sink { [unowned self] in
+            if let drone = $0 {
+                // If there's a connected drone, directly listen its OA state
+                listenObstacleAvoidanceState(drone: drone)
+            } else {
+                // Stop listening for OA on previously connected drone if any
+                obstacleAvoidanceRef = nil
+                state = .disconnected
+            }
+        }
+        .store(in: &cancellables)
     }
 }
 
 // MARK: - Private Funcs
 private extension ObstacleAvoidanceViewModel {
-    /// Starts watcher for obstacle avoidance.
-    func listenObstacleAvoidance(_ drone: Drone) {
-        obstacleAvoidanceRef = drone.getPeripheral(Peripherals.obstacleAvoidance) { [weak self] _ in
-            self?.updateObstacleAvoidanceState()
+
+    /// Listen to OA on drone
+    func listenObstacleAvoidanceState(drone: Drone) {
+        obstacleAvoidanceRef = drone.getPeripheral(Peripherals.obstacleAvoidance) { [unowned self] in
+            guard let obstacleAvoidance = $0 else {
+                // Not having access to the peripheral is like being disconnected from the OA indicator point of view
+                state = .disconnected
+                return
+            }
+            switch obstacleAvoidance.mode.preferredValue {
+            case .disabled:
+                state = .unwanted
+            case .standard:
+                state = .wanted(obstacleAvoidance.state)
+            }
         }
-        updateObstacleAvoidanceState()
-    }
-
-    /// Starts watcher for flying indicators.
-    func listenFlyingIndicators(drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
-            self?.updateObstacleAvoidanceState()
-        }
-    }
-
-    /// Starts watcher for manual piloting.
-    func listenManualPiloting(drone: Drone) {
-        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [weak self] _ in
-            self?.updateObstacleAvoidanceState()
-        }
-    }
-
-    /// Updates obstacle avoidance state.
-    func updateObstacleAvoidanceState() {
-        guard let drone = drone,
-              let strongObstacleAvoidance = drone.getPeripheral(Peripherals.obstacleAvoidance),
-              let manualPiloting = drone.getPilotingItf(PilotingItfs.manualCopter),
-              let flyingIndicators = drone.getInstrument(Instruments.flyingIndicators) else {
-            return
-        }
-
-        let copy = self.state.value.copy()
-        guard !manualPiloting.canHandLand,
-              manualPiloting.state == .active,
-              manualPiloting.smartTakeOffLandAction != .land,
-              flyingIndicators.flyingState != .takingOff,
-              flyingIndicators.flyingState != .landing else {
-            copy.obstacleAvoidanceActivated = false
-            self.state.set(copy)
-            return
-        }
-
-        copy.obstacleAvoidanceActivated = strongObstacleAvoidance.mode.preferredValue == .standard
-        self.state.set(copy)
-    }
-
-    /// Starts watcher for stereo vision sensor.
-    func listenStereoVisionSensor(_ drone: Drone) {
-        stereoVisionSensorRef = drone.getPeripheral(Peripherals.stereoVisionSensor) { [weak self] stereoVisionSensor in
-            self?.updateStereoVisionSensorCalibrationState(with: stereoVisionSensor)
-        }
-        updateStereoVisionSensorCalibrationState(with: drone.getPeripheral(Peripherals.stereoVisionSensor))
-    }
-
-    /// Updates stereo vision sensor calibration state.
-    func updateStereoVisionSensorCalibrationState(with stereoVisionSensor: StereoVisionSensor?) {
-        guard let strongStereoVisionSensor = stereoVisionSensor else { return }
-
-        let copy = self.state.value.copy()
-        copy.stereoVisionCalibrationNeeded = !strongStereoVisionSensor.isCalibrated
-        self.state.set(copy)
     }
 }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina4_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -23,30 +23,16 @@
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vAE-b8-XVw">
-                                <rect key="frame" x="615" y="40" width="42" height="42"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="42" id="f6D-gZ-edk"/>
-                                    <constraint firstAttribute="width" constant="42" id="rkA-yx-zbM"/>
-                                </constraints>
-                                <state key="normal" image="centerOnUser"/>
-                                <connections>
-                                    <action selector="centerButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="B7P-KO-QM0"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="rZi-Mi-6wZ" secondAttribute="bottom" id="FdG-2k-kYQ"/>
                             <constraint firstItem="rZi-Mi-6wZ" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="H9L-R3-Hf9"/>
-                            <constraint firstItem="vAE-b8-XVw" firstAttribute="top" secondItem="C1A-cC-ySo" secondAttribute="bottom" constant="40" id="NiV-ru-xLQ"/>
                             <constraint firstAttribute="trailing" secondItem="rZi-Mi-6wZ" secondAttribute="trailing" id="TZq-Q3-SMl"/>
-                            <constraint firstAttribute="trailing" secondItem="vAE-b8-XVw" secondAttribute="trailing" constant="10" id="dBT-la-hsp"/>
                             <constraint firstItem="rZi-Mi-6wZ" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="ghN-nL-1lU"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="centerButton" destination="vAE-b8-XVw" id="EKm-Il-0dR"/>
                         <outlet property="leadingMapConstraint" destination="H9L-R3-Hf9" id="p5p-Cu-gjj"/>
                         <outlet property="sceneView" destination="rZi-Mi-6wZ" id="w50-og-xYR"/>
                     </connections>
@@ -56,7 +42,4 @@
             <point key="canvasLocation" x="-720.08995502248877" y="213.59999999999999"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="centerOnUser" width="20" height="20"/>
-    </resources>
 </document>

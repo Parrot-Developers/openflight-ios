@@ -38,11 +38,9 @@ final class TiltButton: HighlightableUIControl, NibOwnerLoadable {
     @IBOutlet private weak var progressView: TiltButtonProgressView!
     @IBOutlet private weak var cameraImageView: UIImageView!
 
-    // MARK: - Internal Properties
-    /// State containing current tilt information.
-    weak var tiltState: GimbalTiltState? {
+    var value: Double = 0 {
         didSet {
-            updateTiltPosition()
+            updateDisplay()
         }
     }
 
@@ -65,12 +63,12 @@ final class TiltButton: HighlightableUIControl, NibOwnerLoadable {
     }
 }
 
-// MARK: - Private Funcs
+// MARK: - Private Functions
 private extension TiltButton {
-    /// Called when model changes. Updates the progress view and the rotation angle.
-    func updateTiltPosition() {
-        progressView.tiltState = tiltState
-        let tilt = CGFloat(tiltState?.current ?? 0)
+    /// Update the display depending on the value
+    func updateDisplay() {
+        progressView.value = value
+        let tilt = CGFloat(value)
         cameraImageView.transform = CGAffineTransform(rotationAngle: -tilt.toRadians)
     }
 }

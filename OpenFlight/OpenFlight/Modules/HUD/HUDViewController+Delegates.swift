@@ -59,7 +59,7 @@ extension HUDViewController: HUDCameraStreamingViewControllerDelegate {
     func didUpdate(contentZone: CGRect?) {
         // Sets up current content zone wherever it is needed.
         splitControls.setupRatio(withContentZone: contentZone)
-        videoControls.lockAETargetZoneViewController?.currentContentZone = contentZone
+        videoControls.lockAETargetZoneViewController?.streamingContentZone = contentZone
     }
 }
 
@@ -72,13 +72,6 @@ extension HUDViewController: HUDIndicatorViewControllerNavigation {
 
 // MARK: - BottomBarViewControllerDelegate
 extension HUDViewController: BottomBarViewControllerDelegate {
-    func showMissionLauncher(viewModel: MissionLauncherViewModel) {
-        missionControls?.showMissionLauncher(viewModel: viewModel)
-    }
-
-    func hideMissionLauncher(viewModel: MissionLauncherViewModel) {
-        missionControls?.hideMissionLauncher()
-    }
 
     func showAETargetZone() {
         videoControls.showAETargetZone()

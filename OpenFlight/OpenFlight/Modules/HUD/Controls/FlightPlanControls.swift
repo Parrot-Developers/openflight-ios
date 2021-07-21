@@ -29,9 +29,9 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Class that manages flight plan panel on HUD.
-
 final class FlightPlanControls: NSObject {
     // MARK: - Outlets
     @IBOutlet weak var flightPlanPanelView: UIView!
@@ -43,7 +43,9 @@ final class FlightPlanControls: NSObject {
     let viewModel = FlightPlanControlsViewModel()
 
     // MARK: - Private Properties
-    private var missionModeViewModel = MissionLauncherViewModel()
+    // TODO wrong injection
+    private var currentMissionManager = Services.hub.currentMissionManager
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -63,17 +65,19 @@ final class FlightPlanControls: NSObject {
                 self?.hideFlightPlanPanel()
             }
         }
-        missionModeViewModel.state.valueChanged = { [weak self] state in
-            if state.mode?.isFlightPlanPanelRequired == true {
-                self?.viewModel.forceHidePanel(false)
+        currentMissionManager.modePublisher.sink { [unowned self] mode in
+            if mode.isFlightPlanPanelRequired {
+                viewModel.forceHidePanel(false)
+                self.showFlightPlanPanel()
             }
         }
+        .store(in: &cancellables)
     }
 
     /// Stops view model's callback if needed.
     func stop() {
         viewModel.state.valueChanged = nil
-        missionModeViewModel.state.valueChanged = nil
+        cancellables = Set()
     }
 }
 

@@ -28,6 +28,7 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Combine
 import UIKit
 import SwiftyUserDefaults
 import GroundSdk
@@ -36,23 +37,13 @@ import GroundSdk
 final class ImagingSettingsBarViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var imagingSettingsBarStackView: UIStackView!
+    @IBOutlet private weak var autoExposureStackView: UIStackView!
     @IBOutlet private weak var generalSettingsStackView: UIStackView!
     @IBOutlet private weak var specificSettingsStackView: UIStackView!
-    @IBOutlet private weak var evStackView: UIStackView!
     @IBOutlet private weak var recordingItemsStackView: UIStackView!
     @IBOutlet private weak var photoItemsStackView: UIStackView!
     @IBOutlet private weak var dynamicRangeItemStackView: UIStackView!
-    @IBOutlet private weak var autoModeBorderView: UIView! {
-        didSet {
-            autoModeBorderView.setBorder(borderColor: ColorName.yellowSea.color, borderWidth: Style.largeBorderWidth)
-            autoModeBorderView.backgroundColor = .clear
-            autoModeBorderView.layer.cornerRadius = Style.mediumCornerRadius
-            autoModeBorderView.layer.maskedCorners = [.layerMaxXMinYCorner, .layerMaxXMaxYCorner]
-        }
-    }
-    @IBOutlet private weak var autoModeSeparatorView: UIView!
-    @IBOutlet private weak var lockAEView: UIView!
-    @IBOutlet private weak var autoExposureButton: UIButton!
+    @IBOutlet private weak var autoExposureButton: UIControl!
     @IBOutlet private weak var autoExposurePadlockImageView: UIImageView!
     @IBOutlet private weak var autoModeButton: UIControl!
     @IBOutlet private weak var autoModeImageView: UIImageView!
@@ -83,9 +74,12 @@ final class ImagingSettingsBarViewController: UIViewController {
     private var photoResolutionItemViewModel = ImagingBarPhotoResolutionViewModel()
     private var videoResolutionItemViewModel = ImagingBarVideoResolutionViewModel()
     private var framerateItemViewModel = ImagingBarFramerateViewModel()
-    private var lockAETargetZoneViewModel = LockAETargetZoneViewModel()
     private var imagingSettingsBarViewModel = ImagingSettingsBarViewModel()
+    // TODO injection
+    private var exposureLockViewModel = ExposureLockViewModel(exposureLockService: Services.hub.exposureLockService)
     private var deselectableViewModels = [Deselectable]()
+    /// Combine subscriptions.
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Setup
     static func instantiate(delegate: BottomBarContainerDelegate? = nil) -> ImagingSettingsBarViewController {
@@ -98,7 +92,6 @@ final class ImagingSettingsBarViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         deselectableViewModels = [shutterSpeedItemViewModel,
                                   cameraIsoItemViewModel,
                                   whiteBalanceItemViewModel,
@@ -109,23 +102,7 @@ final class ImagingSettingsBarViewController: UIViewController {
                                   videoResolutionItemViewModel,
                                   framerateItemViewModel]
         setupViewModels()
-        setupCorners()
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-
-        evStackView.addBlurEffectWithTwoCorners(firstCorner: .layerMaxXMinYCorner, secondCorner: .layerMaxXMaxYCorner)
-        generalSettingsStackView.addBlurEffect(cornerRadius: Style.mediumCornerRadius)
-        dynamicRangeItemStackView.addBlurEffect(cornerRadius: Style.mediumCornerRadius)
-        specificSettingsStackView.addBlurEffect(cornerRadius: Style.mediumCornerRadius)
-        lockAEView.addBlurEffectWithTwoCorners(firstCorner: .layerMinXMinYCorner, secondCorner: .layerMinXMaxYCorner)
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        setupAutoModeViewModel()
+        initUI()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -142,29 +119,22 @@ private extension ImagingSettingsBarViewController {
     @IBAction func autoExposurePadklockTouchedUpInside(_ sender: Any) {
         isAutoExposureLocked = !isAutoExposureLocked
         updateLockAEButtonUI(isLocked: isAutoExposureLocked)
-        if isAutoExposureLocked {
-            self.lockAETargetZoneViewModel.lockOnCurrentValues()
-        } else {
-            self.lockAETargetZoneViewModel.unlock()
-        }
+        exposureLockViewModel.toggleExposureLock()
     }
 
     @IBAction func autoModeButtonTouchedUpInside(_ sender: Any) {
         autoModeViewModel.toggleAutoMode()
-        updatePadlockForHDRAndAutoMode()
         logEvent(with: LogEvent.LogKeyHUDBottomBarButton.shutterSpeedSetting.name,
                  and: autoModeViewModel.state.value.isActive.logValue)
     }
 
     @IBAction func shutterSpeedItemTouchedUpInside(_ sender: Any) {
-        autoModeViewModel.disableAutoMode()
         shutterSpeedItemViewModel.toggleSelectionState()
         logEvent(with: LogEvent.LogKeyHUDBottomBarButton.shutterSpeedSetting.name,
                  and: shutterSpeedItemViewModel.state.value.mode?.key)
     }
 
     @IBAction func cameroIsoItemTouchedUpInside(_ sender: Any) {
-        autoModeViewModel.disableAutoMode()
         cameraIsoItemViewModel.toggleSelectionState()
         logEvent(with: LogEvent.LogKeyHUDBottomBarButton.cameraIsoSetting.name,
                  and: cameraIsoItemViewModel.state.value.mode?.key)
@@ -213,17 +183,26 @@ private extension ImagingSettingsBarViewController {
 
 // MARK: - Private Funcs
 private extension ImagingSettingsBarViewController {
-    /// Sets up corners for item views.
-    func setupCorners() {
-        evCompensationItemView.roundedCorners = [.topRight, .bottomRight]
-        photoResolutionItemView.roundedCorners = [.topLeft, .bottomLeft]
-        photoFormatItemView.roundedCorners = [.topRight, .bottomRight]
-        framerateItemView.roundedCorners = [.topRight, .bottomRight]
-        videoResolutionItemView.roundedCorners = [.topLeft, .bottomLeft]
-        whiteBalanceItemView.roundedCorners = [.topLeft, .bottomLeft]
-        lockAEView.customCornered(corners: [.bottomLeft, .topLeft], radius: Style.mediumCornerRadius)
-        imagingSettingsBarStackView.setCustomSpacing(2.0, after: lockAEView)
-        imagingSettingsBarStackView.setCustomSpacing(0.0, after: generalSettingsStackView)
+    /// Initializes interfaces.
+    func initUI() {
+        // Sets up corners
+        autoExposureStackView.customCornered(corners: [.allCorners], radius: Style.mediumCornerRadius)
+        dynamicRangeItemStackView.customCornered(corners: [.allCorners], radius: Style.mediumCornerRadius)
+        specificSettingsStackView.customCornered(corners: [.allCorners], radius: Style.mediumCornerRadius)
+
+        // Sets up the border of general setings
+        generalSettingsStackView.setBorder(borderColor: ColorName.yellowSea.color, borderWidth: Style.largeBorderWidth)
+
+        // Sets up item bar colors
+        shutterSpeedItemView.unselectedBackgroundColor = ColorName.yellowSea30.color
+        shutterSpeedItemView.selectedBackgroundColor = ColorName.yellowSea.color
+        shutterSpeedItemView.unselectedTextColor = ColorName.sambuca.color
+        shutterSpeedItemView.selectedTextColor = ColorName.sambuca.color
+
+        cameraIsoItemView.unselectedBackgroundColor = ColorName.yellowSea30.color
+        cameraIsoItemView.selectedBackgroundColor = ColorName.yellowSea.color
+        cameraIsoItemView.unselectedTextColor = ColorName.sambuca.color
+        cameraIsoItemView.selectedTextColor = ColorName.sambuca.color
     }
 
     /// Sets up all imaging bar view models.
@@ -237,7 +216,6 @@ private extension ImagingSettingsBarViewController {
         // Setup dynamic range view model and its item view.
         dynamicRangeBarViewModel.state.valueChanged = { [weak self] state in
             self?.dynamicRangeItemView.model = state
-            self?.updatePadlockForHDRAndAutoMode()
         }
 
         dynamicRangeBarViewModel.state.value.isSelected.valueChanged = { [weak self] isSelected in
@@ -252,42 +230,29 @@ private extension ImagingSettingsBarViewController {
         }
 
         dynamicRangeItemView.model = dynamicRangeBarViewModel.state.value
+
         // Setup other view models and their associated item views.
         setup(viewModel: shutterSpeedItemViewModel, itemView: shutterSpeedItemView)
         setup(viewModel: cameraIsoItemViewModel, itemView: cameraIsoItemView)
-        setup(viewModel: whiteBalanceItemViewModel, itemView: whiteBalanceItemView)
         setup(viewModel: evCompensationItemViewModel, itemView: evCompensationItemView)
+        setup(viewModel: whiteBalanceItemViewModel, itemView: whiteBalanceItemView)
         setup(viewModel: photoFormatItemViewModel, itemView: photoFormatItemView)
         setup(viewModel: photoResolutionItemViewModel, itemView: photoResolutionItemView)
         setup(viewModel: videoResolutionItemViewModel, itemView: videoResolutionItemView)
         setup(viewModel: framerateItemViewModel, itemView: framerateItemView)
 
-        lockAETargetZoneViewModel.state.valueChanged = { [weak self] state in
-            guard let lockAEMode = state.lockAEMode else { return }
-
-            switch lockAEMode {
-            case .none:
-                self?.isAutoExposureLocked = false
-                self?.bottomBarDelegate?.hideAETargetZone()
-                self?.updateAutoModeBarUI(isLocked: false)
-                self?.updateLockAEButtonUI(isLocked: false)
-            case .currentValues,
-                 .region:
-                self?.isAutoExposureLocked = true
-                self?.bottomBarDelegate?.showAETargetZone()
-                self?.updateAutoModeBarUI(isLocked: true)
-                self?.updateLockAEButtonUI(isLocked: true)
+        exposureLockViewModel.statePublisher
+            .sink { [unowned self] state in
+                isAutoExposureLocked = state.locked
+                updatePadlockForExposureLock(exposureLockState: state)
             }
-        }
+            .store(in: &cancellables)
 
         imagingSettingsBarViewModel.state.valueChanged = { [weak self] state in
             self?.evCompensationItemView.isEnabled = state.isShutterAndISOManual == false
             self?.evCompensationItemView.alphaWithEnabledState(state.isShutterAndISOManual == false)
         }
-    }
 
-    /// Sets up view model for auto mode.
-    func setupAutoModeViewModel() {
         autoModeViewModel.state.valueChanged = { [weak self] state in
             self?.updateAutoMode(state: state)
         }
@@ -343,17 +308,10 @@ private extension ImagingSettingsBarViewController {
             cameraIsoItemViewModel.deselect()
             whiteBalanceItemViewModel.deselect()
         }
-        autoModeBorderView.isHidden = !state.isActive
-        autoModeSeparatorView.isHidden = !state.isActive
         evCompensationItemView.isEnabled = state.isActive
         evCompensationItemView.alphaWithEnabledState(state.isActive)
-        updatePadlockForHDRAndAutoMode()
         autoModeImageView.image = state.image
-        autoModeButton.customCornered(corners: [.topLeft, .bottomLeft],
-                                      radius: Style.mediumCornerRadius,
-                                      backgroundColor: state.isActive ? ColorName.yellowSchoolBus20.color : .clear,
-                                      borderColor: .clear,
-                                      borderWidth: 0.0)
+        autoModeButton.backgroundColor = ColorName.yellowSea.color
     }
 
     /// Calls log event.
@@ -376,9 +334,9 @@ private extension ImagingSettingsBarViewController {
     ///    - isLocked: Boolean to precise the auto exposure button status
     func updateLockAEButtonUI(isLocked: Bool) {
         isAutoExposureLocked = isLocked
-        autoExposureButton.backgroundColor = isLocked ?  ColorName.yellowSea.color : .clear
-        let aeImage = isLocked ? Asset.BottomBar.Icons.lockAElocked.image : Asset.BottomBar.Icons.lockAEEnabled.image
-        autoExposurePadlockImageView.image = aeImage
+        autoExposureButton.backgroundColor = isLocked ? ColorName.yellowSea.color : ColorName.white90.color
+        autoExposurePadlockImageView.image = isLocked ? Asset.BottomBar.Icons.lockAElocked.image : Asset.BottomBar.Icons.lockAEEnabled.image
+        autoExposurePadlockImageView.tintColor = ColorName.sambuca.color
     }
 
     /// Updates lockAEButton visibility.
@@ -387,35 +345,34 @@ private extension ImagingSettingsBarViewController {
     ///    - isEnabled: Boolean to precise if the lock button is enabled
     func updateLockAEButtonVisibility(isEnabled: Bool) {
         updateLockAEButtonUI(isLocked: isEnabled)
-        self.autoExposureButton.isEnabled = isEnabled
+        autoExposureButton.isEnabled = isEnabled
         autoExposureButton.alphaWithEnabledState(autoExposureButton.isEnabled)
         autoExposurePadlockImageView.alphaWithEnabledState(autoExposureButton.isEnabled)
     }
 
-    /// Updates UI according to HDR and auto mode states.
-    func updatePadlockForHDRAndAutoMode() {
-        if !Defaults.isImagingAutoModeActive
-            || (self.dynamicRangeBarViewModel.state.value.mode as? DynamicRange) == DynamicRange.hdrOn {
-            bottomBarDelegate?.hideAETargetZone()
+    /// Updates UI regading exposure lock state.
+    ///
+    /// - Parameters:
+    ///    - exposureLockState: current exposure lock state
+    func updatePadlockForExposureLock(exposureLockState: ExposureLockState) {
+        switch exposureLockState {
+        case .unavailable:
             updateLockAEButtonVisibility(isEnabled: false)
             updateAutoModeBarUI(isLocked: false)
-        } else {
+        case .unlocked:
             updateLockAEButtonVisibility(isEnabled: true)
-            guard let lockAEMode = self.lockAETargetZoneViewModel.state.value.lockAEMode else {
-                return
-            }
-
-            switch lockAEMode {
-            case .none:
-                self.bottomBarDelegate?.hideAETargetZone()
-                updateLockAEButtonUI(isLocked: false)
-                updateAutoModeBarUI(isLocked: false)
-            case .currentValues,
-                 .region:
-                updateLockAEButtonUI(isLocked: true)
-                updateAutoModeBarUI(isLocked: true)
-                bottomBarDelegate?.showAETargetZone()
-            }
+            updateLockAEButtonUI(isLocked: false)
+            updateAutoModeBarUI(isLocked: false)
+        case .lockingOnCurrentValues,
+             .lockingOnRegion:
+            updateLockAEButtonVisibility(isEnabled: false)
+            updateLockAEButtonUI(isLocked: true)
+            updateAutoModeBarUI(isLocked: true)
+        case .lockedOnCurrentValues,
+             .lockOnRegion:
+            updateLockAEButtonVisibility(isEnabled: true)
+            updateLockAEButtonUI(isLocked: true)
+            updateAutoModeBarUI(isLocked: true)
         }
     }
 

@@ -33,7 +33,7 @@ import Reusable
 
 // MARK: - Protocols
 /// Delegate for custom correction ruler view.
-public protocol CorrectionRulerViewDelegate: class {
+public protocol CorrectionRulerViewDelegate: AnyObject {
     /// Called when ruler value changed.
     ///
     /// - Parameters:
@@ -44,27 +44,31 @@ public protocol CorrectionRulerViewDelegate: class {
 // MARK: - Public Structs
 /// Model for `CorrectionRulerView`.
 public struct CorrectionRulerModel {
-    var value: Double = 0.0
-    var title: String = ""
-    var range: [Double] = Array(stride(from: 0.0, through: 0.0, by: 0.1))
+    var value: Int = 0
+    var title: String
+    var range: [Int]
+    var step: Double
     var unit: UnitType = .degree
     var orientation: RulerOrientation = .vertical
 
     // MARK: - Init
     public init(value: Double = 0.0,
                 title: String = "",
-                range: [Double] = Array(stride(from: 0.0, through: 0.0, by: 0.1)),
+                minValue: Double = 0.0,
+                maxValue: Double = 0.0,
+                step: Double = 0.1,
                 unit: UnitType = .degree,
                 orientation: RulerOrientation = .vertical) {
-        self.value = value
         self.title = title
-        self.range = range
+        self.range = Array(stride(from: Int(minValue / step), through: Int(maxValue / step), by: 1))
+        self.step = step
+        self.value = Int((value / step).rounded())
         self.unit = unit
         self.orientation = orientation
     }
 
     // MARK: - Private Properties
-    fileprivate var values: [Double] {
+    fileprivate var values: [Int] {
         return orientation.isHorizontal ? Array(range) : Array(range).reversed()
     }
 }
@@ -83,10 +87,8 @@ public final class CorrectionRulerView: UIView, NibOwnerLoadable {
         didSet {
             collectionView?.reloadData()
             collectionView?.scrollToItem(at: indexPathForSelectedValue,
-                                        at: orientation.isHorizontal
-                                            ? .centeredHorizontally
-                                            : .centeredVertically,
-                                        animated: true)
+                                         at: orientation.isHorizontal ? .centeredHorizontally : .centeredVertically,
+                                         animated: true)
             titleLabel.text = model.title
         }
     }
@@ -132,16 +134,16 @@ public final class CorrectionRulerView: UIView, NibOwnerLoadable {
         super.layoutSublayers(of: layer)
         if orientation.isHorizontal {
             self.collectionView?.contentInset = UIEdgeInsets(top: 0.0,
-                                                            left: self.collectionView.frame.size.width/2.0,
+                                                            left: self.collectionView.frame.size.width / 2.0,
                                                             bottom: 0.0,
-                                                            right: self.collectionView.frame.size.width/2.0)
+                                                            right: self.collectionView.frame.size.width / 2.0)
             self.collectionView?.scrollToItem(at: indexPathForSelectedValue,
                                              at: .centeredHorizontally,
                                              animated: false)
         } else {
-            self.collectionView?.contentInset = UIEdgeInsets(top: self.collectionView.frame.size.height/2.0,
+            self.collectionView?.contentInset = UIEdgeInsets(top: self.collectionView.frame.size.height / 2.0,
                                                             left: 0.0,
-                                                            bottom: self.collectionView.frame.size.height/2.0,
+                                                            bottom: self.collectionView.frame.size.height / 2.0,
                                                             right: 0.0)
             self.collectionView?.scrollToItem(at: indexPathForSelectedValue,
                                              at: .centeredVertically,
@@ -196,7 +198,7 @@ private extension CorrectionRulerView {
         let newValue = model.values[indexPath.row]
         if newValue != model.value {
             model.value = newValue
-            delegate?.valueDidChange(newValue)
+            delegate?.valueDidChange(Double(newValue) * model.step)
         }
         collectionView.scrollToItem(at: indexPath,
                                     at: orientation.isHorizontal

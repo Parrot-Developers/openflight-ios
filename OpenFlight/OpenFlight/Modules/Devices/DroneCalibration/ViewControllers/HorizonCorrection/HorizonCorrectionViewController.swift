@@ -30,6 +30,7 @@
 
 import UIKit
 import GroundSdk
+import Combine
 
 /// View Controller used to display the horizon correction screen.
 final class HorizonCorrectionViewController: UIViewController {
@@ -40,9 +41,9 @@ final class HorizonCorrectionViewController: UIViewController {
     @IBOutlet private weak var rulerBarView: UIView!
 
     // MARK: - Private Properties
-    private weak var coordinator: DroneCalibrationCoordinator?
-    private var viewModel = HorizonCorrectionViewModel()
+    private var viewModel: HorizonCorrectionViewModel!
     private var centeredRulerBarView: CorrectionRulerView?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -53,11 +54,11 @@ final class HorizonCorrectionViewController: UIViewController {
     /// Instantiate View controller.
     ///
     /// - Parameters:
-    ///     - coordinator: navigation coordinator
-    static func instantiate(coordinator: DroneCalibrationCoordinator) -> HorizonCorrectionViewController {
+    ///     - viewModel: the view model
+    /// - Returns: the newly view controller created.
+    static func instantiate(viewModel: HorizonCorrectionViewModel) -> HorizonCorrectionViewController {
         let viewController = StoryboardScene.HorizonCorrection.horizonCorrectionViewController.instantiate()
-        viewController.coordinator = coordinator
-
+        viewController.viewModel = viewModel
         return viewController
     }
 
@@ -66,19 +67,7 @@ final class HorizonCorrectionViewController: UIViewController {
         super.viewDidLoad()
 
         self.initUI()
-        self.setupViewModels()
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-
-        self.viewModel.startCalibration()
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-
-        self.viewModel.cancelCalibration()
+        self.observeViewModel()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -98,8 +87,7 @@ final class HorizonCorrectionViewController: UIViewController {
 private extension HorizonCorrectionViewController {
     /// Function called when the back button is clicked.
     @IBAction func backButtonTouchedUpInside(_ sender: UIButton) {
-        self.viewModel.cancelCalibration()
-        self.coordinator?.back()
+        self.viewModel.userDidTapBack()
     }
 }
 
@@ -113,12 +101,16 @@ private extension HorizonCorrectionViewController {
         if let correctionProcess = offset, let roll = correctionProcess.offsetsCorrection[.roll] {
             let minValue = roll.min
             let maxValue = roll.max
-            centeredRulerBarView?.model = CorrectionRulerModel(value: roll.value,
-                                                               range: Array(stride(from: minValue, through: maxValue, by: 0.1)),
+            let value = roll.value
+            centeredRulerBarView?.model = CorrectionRulerModel(value: value,
+                                                               minValue: minValue,
+                                                               maxValue: maxValue,
+                                                               step: 0.1,
                                                                unit: .degree,
                                                                orientation: .horizontal)
         }
     }
+
     /// Adds ruler bar to view controller.
     func createRulerBar() {
         let ruler = CorrectionRulerView(orientation: .horizontal)
@@ -131,7 +123,9 @@ private extension HorizonCorrectionViewController {
     func initUI() {
         rulerBarView.addBlurEffect()
         createRulerBar()
-        self.horizonCorrectionTitle.text = L10n.droneHorizonCalibration
+        backButton.addShadow()
+        horizonCorrectionTitle.text = L10n.droneHorizonCalibration
+        horizonCorrectionTitle.addShadow()
         horizonLevels.forEach { $0.layer.cornerRadius = $0.frame.size.height / 2.0 }
 
         if !UIApplication.isLandscape {
@@ -140,54 +134,34 @@ private extension HorizonCorrectionViewController {
         }
     }
 
-    /// Sets up view models associated with the view.
-    func setupViewModels() {
-        self.viewModel.state.valueChanged = { [weak self] state in
-            guard state.isConnected(),
-                  state.flyingState != .flying else {
-                self?.closeCalibrationView()
-                return
+    /// Observe view model associated to the view controller.
+    func observeViewModel() {
+        self.viewModel.$offsetsCorrectionProcess
+            .removeDuplicates()
+            .sink { [unowned self] offset in
+                updateRulerBar(offset: offset)
             }
-
-            if let offsetCorrectionProcess = state.offsetCorrectionProcess {
-                self?.updateRulerView(offset: offsetCorrectionProcess)
-            }
-        }
-    }
-
-    /// Updates ruler view with values from ground sdk.
-    ///
-    /// - Parameters:
-    ///     - offset: Correction gimbal offset.
-    func updateRulerView(offset: GimbalOffsetsCorrectionProcess?) {
-        updateRulerBar(offset: offset)
+            .store(in: &cancellables)
     }
 
     /// Updates ruler view with selected value
     ///
     /// - Parameters:
-    ///     - offset: Correction gimbal offset.
-    func updateCorrectionValue(offset: GimbalOffsetsCorrectionProcess?) {
-        guard offset?.correctableAxes.contains(.roll) == true,
-              let rollSetting = offset?.offsetsCorrection[.roll] else {
+    ///     - value: correction value
+    func updateCorrectionValue(value: Double) {
+        guard let offset = self.viewModel.offsetsCorrectionProcess,
+              offset.correctableAxes.contains(.roll) == true,
+              let rollSetting = offset.offsetsCorrection[.roll] else {
             return
         }
 
-        if let barValue = centeredRulerBarView?.model.value {
-            rollSetting.value = barValue
-        }
-    }
-
-    /// Close the view controller.
-    func closeCalibrationView() {
-        self.viewModel.cancelCalibration()
-        self.coordinator?.back()
+        rollSetting.value = value
     }
 }
 
 // MARK: - SettingValueRulerViewDelegate
 extension HorizonCorrectionViewController: CorrectionRulerViewDelegate {
     func valueDidChange(_ value: Double) {
-        updateCorrectionValue(offset: self.viewModel.state.value.offsetCorrectionProcess)
+        updateCorrectionValue(value: value)
     }
 }

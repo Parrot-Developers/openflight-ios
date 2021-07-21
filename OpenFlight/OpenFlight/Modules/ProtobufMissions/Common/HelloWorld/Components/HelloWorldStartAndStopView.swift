@@ -34,7 +34,7 @@ import Reusable
 import GroundSdk
 
 // MARK: - Public Protocols
-protocol HelloWorldStartAndStopViewDelegate: class {
+protocol HelloWorldStartAndStopViewDelegate: AnyObject {
     func didClickOnStartAndStop()
 }
 

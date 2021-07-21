@@ -53,29 +53,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }()
     /// Main coordinator of the application.
     private var appCoordinator: AppCoordinator!
-    /// Helper class that stores the current `Drone`.
-    private let currentDroneStore = CurrentDroneStore()
-    /// Helper class that stores the current `RemoteControl`.
-    private let currentRemoteControlStore = CurrentRemoteControlStore()
+    /// Service hub.
+    private var services: ServiceHub!
     /// Gutma log manager ref.
     private var gutmaLogManager: Ref<GutmaLogManager>?
     /// Inits Grab view model.
-    private var grabberViewModel: RemoteControlGrabberViewModel = RemoteControlGrabberViewModel()
+    private var grabberViewModel: RemoteControlGrabberViewModel!
 
     // MARK: - Public Funcs
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // Create instance of services
+        Services.createInstance(variableAssetsService: VariableAssetsServiceImpl())
+        let services: ServiceHub = Services.hub
+        self.services = services
+
+        /// Sets up grabber view model
+        grabberViewModel = RemoteControlGrabberViewModel()
 
         /// Sets up global managers and interactors
         setupProtobufMissionManager()
         setupFirmwareAndMissionsInteractor()
 
         /// Start AppCoordinator.
-        self.appCoordinator = AppCoordinator()
+        self.appCoordinator = AppCoordinator(services: services)
         self.appCoordinator.start()
         addMissionsToHUDPanel()
 
         /// Configure Main Window of the App.
         self.window = UIWindow(frame: UIScreen.main.bounds)
+        self.window?.backgroundColor = ColorName.alabaster.color
         self.window?.rootViewController = self.appCoordinator.navigationController
         self.window?.makeKeyAndVisible()
 
@@ -113,7 +119,8 @@ extension AppDelegate: ProtobufMissionsSetupProtocol {
 
     /// Add protobuf missions to the HUD Panel.
     func addMissionsToHUDPanel() {
-        MissionsManager.shared.addMissions([HelloWorldMission()])
+        services.missionsStore.addMissions([FlightPlanMission(),
+                                            HelloWorldMission()])
     }
 }
 
@@ -161,10 +168,6 @@ public class AppDelegateSetup {
 
         // Enable device battery monitoring.
         UIDevice.current.isBatteryMonitoringEnabled = true
-
-        // Reset mission mode defaults.
-        Defaults.remove(\.userMissionProvider)
-        Defaults.remove(\.userMissionMode)
 
         // Start Core Data manager.
         CoreDataManager.shared.setup(with: persistentContainer)

@@ -132,15 +132,16 @@ private extension HUDRadarView {
     /// Updates drone horizontal offset inside radar.
     func updateDroneOffset(state: HUDRadarState) {
         guard let droneCoordinate = state.droneLocation?.coordinate,
-            let userCoordinate = state.userLocation?.coordinate,
-            let userlHeading = state.userHeading
-            else {
-                updateColor(AlertLevel.critical.radarColor)
-                return
+              let userCoordinate = state.userLocation?.coordinate,
+              let userHeading = state.userHeading else {
+            updateColor(AlertLevel.critical.radarColor)
+            return
         }
-        let deltaYaw = GeometryUtils.deltaYaw(fromLocation: droneCoordinate,
-                                              toLocation: userCoordinate,
-                                              withHeading: userlHeading)
+
+        let deltaYaw = GeometryUtils.deltaYaw(fromLocation: userCoordinate,
+                                              toLocation: droneCoordinate,
+                                              withHeading: userHeading)
+
         let halfWidth = cardinalDirectionsView.bounds.width / 2.0
         let halfScope = Constants.userOrientedScopeAngle / 2.0
         let imageOffset = CGFloat(deltaYaw) * halfWidth / CGFloat(halfScope.toRadians())

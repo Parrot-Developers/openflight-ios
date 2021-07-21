@@ -53,8 +53,9 @@ final class MediaUtils {
                                                     resources: [MediaItem.Resource],
                                                     onlyDownloadable: Bool = false) -> MediaResourceList {
         let resourceList = MediaResourceListFactory.emptyList()
+        // TODO uses Services.hub, should be done another way
         let filteredList = onlyDownloadable ?
-            resources.filter({ !$0.isDownloaded(droneId: CurrentDroneStore.currentDroneUid, mediaType: mediaItem.mediaType) }) :
+            resources.filter({ !$0.isDownloaded(droneId: Services.hub.currentDroneHolder.drone.uid, mediaType: mediaItem.mediaType) }) :
         resources
         filteredList.forEach({ resourceList.add(media: mediaItem, resource: $0) })
         return resourceList

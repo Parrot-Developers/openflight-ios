@@ -27,6 +27,8 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import SwiftyUserDefaults
+
 /// Global coordinator for the App.
 public class AppCoordinator: Coordinator {
     // MARK: - Public Properties
@@ -34,11 +36,28 @@ public class AppCoordinator: Coordinator {
     public var childCoordinators = [Coordinator]()
     public var parentCoordinator: Coordinator?
 
+    // MARK: - Private Properties
+    private var hudCoordinator: HUDCoordinator
+
+    // MARK: - Init
+
+    /// Init
+    /// - Parameter services: the services
+    init(services: ServiceHub) {
+        hudCoordinator = HUDCoordinator(services: services)
+    }
+
     // MARK: - Public Funcs
     public func start() {
         self.navigationController = NavigationController()
-        let hudCoordinator = HUDCoordinator()
-        hudCoordinator.parentCoordinator = self
-        self.start(childCoordinator: hudCoordinator)
+        if Defaults[key: DefaultsKeys.areOFTermsOfUseAccepted] == false {
+            let onboardingCoordinator = OnboardingCoordinator { self.hudCoordinator }
+            onboardingCoordinator.parentCoordinator = self
+            self.start(childCoordinator: onboardingCoordinator)
+        } else {
+            let hudCoordinator = self.hudCoordinator
+            hudCoordinator.parentCoordinator = self
+            self.start(childCoordinator: hudCoordinator)
+        }
     }
 }

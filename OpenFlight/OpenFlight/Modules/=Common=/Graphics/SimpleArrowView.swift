@@ -30,27 +30,17 @@
 
 import UIKit
 
-// MARK: - Internal Enums
-/// Enum representing arrow orientation.
-enum ArrowOrientation {
-    case left
-    case right
-    case top
-    case bottom
-}
-
 /// View that draws a simple arrow (isosceles triangle).
-
-final class SimpleArrowView: UIView {
-    // MARK: - Internal Properties
+public final class SimpleArrowView: UIView {
+    // MARK: - Public Properties
     /// Current orientation of the arrow.
-    var orientation: ArrowOrientation = .top {
+    public var orientation: ArrowOrientation = .top {
         didSet {
             redrawTriangle()
         }
     }
     /// Current color of the arrow.
-    var color: UIColor = .white {
+    public var color: UIColor = .white {
         didSet {
             redrawTriangle()
         }
@@ -79,6 +69,15 @@ final class SimpleArrowView: UIView {
         }
     }
 
+    // MARK: - Public Enums
+    /// Enum representing arrow orientation.
+    public enum ArrowOrientation {
+        case left
+        case right
+        case top
+        case bottom
+    }
+
     // MARK: - Private Structs
     /// Struct containing the coordinates of the triangle summits.
     private struct Triangle {
@@ -88,7 +87,7 @@ final class SimpleArrowView: UIView {
     }
 
     // MARK: - Override Funcs
-    override func draw(_ rect: CGRect) {
+    override public func draw(_ rect: CGRect) {
         super.draw(rect)
         redrawTriangle()
     }

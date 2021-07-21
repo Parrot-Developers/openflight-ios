@@ -32,7 +32,7 @@ import UIKit
 import Reusable
 
 /// Delegate protocol for `SettingsCellularDataCell`.
-protocol SettingsCellularDataDelegate: class {
+protocol SettingsCellularDataDelegate: AnyObject {
     /// Tells when a cellular segment did changes.
     func cellularDataDidChange()
 
@@ -141,28 +141,15 @@ private extension SettingsCellularDataCell {
         cellularAccessAndNetworkModeStackView.addSeparators()
 
         // Adds/removes cell segments if cellular data access is activated/desactivated
-        if viewModel.state.value.isCellularActivated == true {
-            cellularAccessAndNetworkModeStackView.removeSubViews()
-            cellularAccessAndNetworkModeStackView.addArrangedSubview(cellularAccessSegment.contentView)
-            cellularAccessAndNetworkModeStackView.addArrangedSubview(connectionNetworkModeSegment.contentView)
-            cellularAccessAndNetworkModeStackView.addSeparators()
-            networkSelectionStackView.isHidden = false
-            networkSelectionViewHeightConstraint.constant = Constants.networkSelectionViewHeightConstraint
-            manualSelectionViewHeightConstraint.constant = Constants.manualSelectionViewHeightConstraint
-            configureConnectionNetworkSelectionCell()
-        } else {
-            cellularAccessAndNetworkModeStackView.removeSubViews()
-            cellularAccessAndNetworkModeStackView.addArrangedSubview(cellularAccessSegment.contentView)
-            networkSelectionStackView.isHidden = true
-            networkSelectionViewHeightConstraint.constant = 0.0
-            manualSelectionViewHeightConstraint.constant = 0.0
-        }
+        cellularAccessAndNetworkModeStackView.removeSubViews()
+        cellularAccessAndNetworkModeStackView.addArrangedSubview(cellularAccessSegment.contentView)
+        cellularAccessAndNetworkModeStackView.addArrangedSubview(connectionNetworkModeSegment.contentView)
+        cellularAccessAndNetworkModeStackView.addSeparators()
+        networkSelectionStackView.isHidden = false
+        networkSelectionViewHeightConstraint.constant = Constants.networkSelectionViewHeightConstraint
+        manualSelectionViewHeightConstraint.constant = Constants.manualSelectionViewHeightConstraint
+        configureConnectionNetworkSelectionCell()
 
-        // User interaction is enabled if a sim card is inserted in drone
-        self.isUserInteractionEnabled = viewModel.state.value.isSimCardInserted
-        for view in contentView.subviews {
-            view.alphaWithEnabledState(viewModel.state.value.isSimCardInserted)
-        }
         self.segmentedControl.isEnabled = viewModel.state.value.isSelectionUpdating == false
     }
 

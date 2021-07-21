@@ -69,16 +69,16 @@ private extension ImagingBarFramerateViewModel {
             copy.mode = camera.config[Camera2Params.videoRecordingFramerate]?.value
 
             // Setup a camera configuration editor in order to compute which video recording framerates
-            // are supported with the current video recording resolution.
-            // FIXME: We should use the current configuration instead, but it doesn't work properly with
-            // the camera capabilities defined by current Anafi2 firmware.
+            // are supported regarding the current video recording resolution and HDR mode.
             let editor = camera.config.edit(fromScratch: true)
             editor[Camera2Params.videoRecordingResolution]?.value = camera.config[Camera2Params.videoRecordingResolution]?.value
+            editor[Camera2Params.videoRecordingDynamicRange]?.value = camera.config[Camera2Params.videoRecordingDynamicRange]?.value
 
             copy.supportedModes = editor[Camera2Params.videoRecordingFramerate]?.currentSupportedValues
                 // Several framerate values must be ignored.
                 .intersection(availableFramerates)
                 .sorted()
+            copy.showUnsupportedModes = true
             self?.state.set(copy)
         }
     }

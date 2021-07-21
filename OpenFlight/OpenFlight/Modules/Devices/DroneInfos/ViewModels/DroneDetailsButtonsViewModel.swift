@@ -31,28 +31,124 @@
 import GroundSdk
 import CoreLocation
 import SwiftyUserDefaults
+import Combine
 
-/// State for `DroneDetailsButtonsViewModel`.
-final class DroneDetailsButtonsState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    /// Drone's last known position.
-    fileprivate(set) var lastKnownPosition: CLLocation?
-    /// Whether a stereo vision sensor calibration is needed.
-    fileprivate(set) var isStereoVisionSensorCalibrationNeeded: Bool = false
-    /// Whether magnetometer calibration is needed.
-    fileprivate(set) var isMagnetometerCalibrationNeeded: Bool = false
+/// View model for drone details buttons.
+final class DroneDetailsButtonsViewModel {
+
+    // MARK: - Published Properties
+
     /// Gimbal state.
-    fileprivate(set) var gimbalState: CalibratableGimbalState?
-    /// Whether a gimbal front stereo vision calibration is needed.
-    fileprivate(set) var isGimbalFrontStereoCalibrationNeeded: Bool = false
+    @Published private(set) var gimbalState: CalibratableGimbalState?
     /// Drone's cellular network state.
-    fileprivate(set) var cellularStateDescription: String?
-    /// Drone's cellular connection status.
-    fileprivate(set) var cellularStatus: DetailsCellularStatus = .noState
+    @Published private(set) var cellularStateDescription: String?
     /// Drone's flying state.
-    fileprivate(set) var flyingState: FlyingIndicatorsState?
+    @Published private(set) var flyingState: FlyingIndicatorsState?
+    /// Whether a gimbal front stereo vision calibration is needed.
+    @Published private(set) var isGimbalFrontStereoCalibrationNeeded: Bool = false
+    /// Whether magnetometer calibration is needed.
+    @Published private(set) var isMagnetometerCalibrationNeeded: Bool = false
+    /// Whether a stereo vision sensor calibration is needed.
+    @Published private(set) var isStereoVisionSensorCalibrationNeeded: Bool = false
+    /// Drone's last known position.
+    @Published private(set) var lastKnownPosition: CLLocation?
+    /// Drone's cellular connection status.
+    @Published private(set) var cellularStatus: DetailsCellularStatus = .noState
+    /// Drone's connection state.
+    @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
+    /// Tells if we can display the cellular modal.
+    @Published private(set) var canShowCellular: Bool = false
+
+    // MARK: - Private Properties
+
+    private var gpsRef: Ref<Gps>?
+    private var gimbalRef: Ref<Gimbal>?
+    private var stereoVisionSensorRef: Ref<StereoVisionSensor>?
+    private var magnetometerRef: Ref<MagnetometerWith3StepCalibration>?
+    private var frontStereoGimbalRef: Ref<FrontStereoGimbal>?
+    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var connectionStateRef: Ref<DeviceState>?
+    private let cellularViewModel = DroneDetailsCellularViewModel()
+    private var cancellables = Set<AnyCancellable>()
+    private var currentDrone = Services.hub.currentDroneHolder
+
+    // MARK: - Init
+
+    init() {
+        currentDrone.dronePublisher
+            .sink { [unowned self] drone in
+                listenGps(drone)
+                listenGimbal(drone)
+                listenStereoVisionSensor(drone)
+                listenMagnetometer(drone)
+                listenFrontStereoGimbal(drone)
+                listenFlyingIndicators(drone: drone)
+                listenConnectionState(drone: drone)
+            }
+            .store(in: &cancellables)
+
+        cellularViewModel.$cellularStatus
+            .sink { [unowned self] cellularStatus in updateCellularState(cellularStatus: cellularStatus) }
+            .store(in: &cancellables)
+
+        updateCellularState(cellularStatus: cellularStatus)
+
+        cellularViewModel.$connectionState
+            .removeDuplicates()
+            .combineLatest($cellularStatus)
+            .sink { [unowned self] (connectionState, cellularStatus) in
+                canShowCellular = cellularStatus != .noState && connectionState == .connected
+            }
+            .store(in: &cancellables)
+    }
 
     // MARK: Helpers
+
+    /// Message to display if a calibration is needed.
+    var calibrationMessage: AnyPublisher<String?, Never> {
+        $connectionState
+            .combineLatest($flyingState)
+            .map { [unowned self] (connectionState, flyingState) in
+                if !(connectionState == .connected) || flyingState == .flying {
+                    return Style.dash
+                } else if isMagnetometerCalibrationNeeded {
+                    return L10n.droneDetailsCalibrationRequired
+                } else if isStereoVisionSensorCalibrationNeeded {
+                    return L10n.droneDetailsCalibrationLoveRequired
+                } else if isGimbalFrontStereoCalibrationNeeded {
+                    return L10n.droneDetailsCalibrationGimbalRequired
+                } else {
+                    return nil
+                }
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Message to display on calibration button.
+    var calibrationText: AnyPublisher<String?, Never> {
+        calibrationMessage.map { [unowned self] (calibrationMessage: String?) in
+            if calibrationMessage != nil {
+                return calibrationMessage
+            } else {
+                guard let gimbal = currentDrone.drone.getPeripheral(Peripherals.gimbal) else {
+                    return L10n.droneDetailsCalibrationOk
+                }
+
+                switch gimbal.state {
+                case .calibrated,
+                     .unavailable:
+                    return L10n.droneDetailsCalibrationOk
+                case .needed,
+                     .error:
+                    return L10n.droneDetailsCalibrationGimbalRequired
+                case .recommended:
+                    return L10n.droneDetailsCalibrationGimbalRecommended
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
     /// Tells if a calibration is needed.
     var isCalibrationNeeded: Bool {
         return isMagnetometerCalibrationNeeded
@@ -60,217 +156,96 @@ final class DroneDetailsButtonsState: DeviceConnectionState {
             || isGimbalFrontStereoCalibrationNeeded
     }
 
-    /// Message to display on calibration button.
-    var calibrationText: String? {
-        if !isConnected() || flyingState == .flying {
-            return Style.dash
-        } else if isMagnetometerCalibrationNeeded {
-            return L10n.droneDetailsCalibrationRequired
-        } else if isStereoVisionSensorCalibrationNeeded {
-            return L10n.droneDetailsCalibrationLoveRequired
-        } else if isGimbalFrontStereoCalibrationNeeded {
-            return L10n.droneDetailsCalibrationGimbalRequired
-        } else {
-            return nil
-        }
-    }
-
-    /// Color for calibration text cell.
-    var calibrationTextColor: ColorName? {
-        if !isConnected() || flyingState == .flying {
-            return .white50
-        } else if isCalibrationNeeded {
-            return .redTorch
-        } else {
-            return nil
-        }
+    /// Tells if calibration button is available.
+    var isCalibrationButtonAvailable: AnyPublisher<Bool, Never> {
+        $connectionState
+            .combineLatest($flyingState)
+            .map { (connectionState, flyingState) in
+                return (connectionState == .connected) && flyingState == .landed
+            }
+            .eraseToAnyPublisher()
     }
 
     /// Background for calibration text cell.
-    var calibrationBackgroundCellColor: ColorName? {
-        if !isConnected() || flyingState == .flying {
-            return .white10
-        } else if isCalibrationNeeded {
-            return .redTorch25
-        } else {
-            return nil
-        }
+    var calibrationBackgroundCellColor: AnyPublisher<ColorName?, Never> {
+        $connectionState
+            .combineLatest($flyingState)
+            .map { [unowned self] (connectionState, flyingState) in
+                if !(connectionState == .connected) || flyingState == .flying {
+                    return .white10
+                } else if isCalibrationNeeded {
+                    return .redTorch25
+                } else {
+                    return nil
+                }
+            }
+            .eraseToAnyPublisher()
     }
 
-    /// Tells if we can display the cellular modal.
-    var canShowCellular: Bool {
-        return cellularStatus != .noState && isConnected()
+    /// Color for calibration text cell.
+    var calibrationMessageColor: AnyPublisher<ColorName?, Never> {
+        $connectionState
+            .combineLatest($flyingState)
+            .map { [unowned self] (connectionState, flyingState) in
+                if !(connectionState == .connected) || flyingState == .flying {
+                    return .white50
+                } else if isCalibrationNeeded {
+                    return .redTorch
+                } else {
+                    return nil
+                }
+            }
+            .eraseToAnyPublisher()
     }
 
-    /// Tells if calibration button is available.
-    var isCalibrationButtonAvailable: Bool {
-        return isConnected() && flyingState == .landed
-    }
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - connectionState: drone's connection state
-    ///    - lastKnownPosition: drone's last known position
-    ///    - gimbalState: gimbal state
-    ///    - isStereoVisionSensorCalibrationNeeded: wheter a stereo vision sensor calibration is needed
-    ///    - isMagnetometerCalibrationNeeded: wheter a magnetometer calibration is needed
-    ///    - isGimbalFrontStereoCalibrationNeeded: wheter a gimbal front stereo calibration calibration is needed
-    ///    - cellularStateDescription: cellular description state
-    ///    - cellularStatus: current cellular status
-    ///    - flyingState: flying state of the drone.
-    init(connectionState: DeviceState.ConnectionState,
-         lastKnownPosition: CLLocation?,
-         gimbalState: CalibratableGimbalState?,
-         isStereoVisionSensorCalibrationNeeded: Bool,
-         isMagnetometerCalibrationNeeded: Bool,
-         isGimbalFrontStereoCalibrationNeeded: Bool,
-         cellularStateDescription: String?,
-         cellularStatus: DetailsCellularStatus,
-         flyingState: FlyingIndicatorsState?) {
-        super.init(connectionState: connectionState)
-
-        self.lastKnownPosition = lastKnownPosition
-        self.gimbalState = gimbalState
-        self.isStereoVisionSensorCalibrationNeeded = isStereoVisionSensorCalibrationNeeded
-        self.isMagnetometerCalibrationNeeded = isMagnetometerCalibrationNeeded
-        self.isGimbalFrontStereoCalibrationNeeded = isGimbalFrontStereoCalibrationNeeded
-        self.cellularStateDescription = cellularStateDescription
-        self.cellularStatus = cellularStatus
-        self.flyingState = flyingState
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? DroneDetailsButtonsState else { return false }
-
-        return super.isEqual(to: other)
-            && self.lastKnownPosition == other.lastKnownPosition
-            && self.gimbalState == other.gimbalState
-            && self.isStereoVisionSensorCalibrationNeeded == other.isStereoVisionSensorCalibrationNeeded
-            && self.isMagnetometerCalibrationNeeded == other.isMagnetometerCalibrationNeeded
-            && self.isGimbalFrontStereoCalibrationNeeded == other.isGimbalFrontStereoCalibrationNeeded
-            && self.cellularStateDescription == other.cellularStateDescription
-            && self.cellularStatus == other.cellularStatus
-            && self.flyingState == other.flyingState
-    }
-
-    override func copy() -> DroneDetailsButtonsState {
-        return DroneDetailsButtonsState(connectionState: self.connectionState,
-                                        lastKnownPosition: self.lastKnownPosition,
-                                        gimbalState: self.gimbalState,
-                                        isStereoVisionSensorCalibrationNeeded: self.isStereoVisionSensorCalibrationNeeded,
-                                        isMagnetometerCalibrationNeeded: self.isMagnetometerCalibrationNeeded,
-                                        isGimbalFrontStereoCalibrationNeeded: self.isGimbalFrontStereoCalibrationNeeded,
-                                        cellularStateDescription: self.cellularStateDescription,
-                                        cellularStatus: self.cellularStatus,
-                                        flyingState: self.flyingState)
-    }
-}
-
-/// View model for drone details buttons.
-final class DroneDetailsButtonsViewModel: DroneStateViewModel<DroneDetailsButtonsState> {
-    // MARK: - Internal Properties
     /// Returns custom cellular button subtitle.
     var cellularButtonSubtitle: String {
-        var subtitle: String = state.value.cellularStatus.droneDetailsTileDescription ?? ""
+        var subtitle: String = cellularStatus.droneDetailsTileDescription ?? ""
 
-        if state.value.cellularStatus == .cellularConnected,
-           let provider = drone?.getPeripheral(Peripherals.cellular)?.operator {
+        if cellularStatus == .cellularConnected,
+           let provider = currentDrone.drone.getPeripheral(Peripherals.cellular)?.operator {
             subtitle.append(Style.colon + Style.whiteSpace + provider)
         }
-
         return subtitle
     }
 
-    // MARK: - Helper
-    /// Message to display on calibration button.
-    var calibrationText: String? {
-        if state.value.calibrationText != nil {
-            return state.value.calibrationText
-        } else {
-            guard let gimbal = drone?.getPeripheral(Peripherals.gimbal) else {
-                return L10n.droneDetailsCalibrationOk
-            }
-
-            switch gimbal.state {
-            case .calibrated,
-                 .unavailable:
-                return L10n.droneDetailsCalibrationOk
-            case .needed,
-                 .error:
-                return L10n.droneDetailsCalibrationGimbalRequired
-            case .recommended:
-                return L10n.droneDetailsCalibrationGimbalRecommended
-            }
-        }
-    }
-
     /// Calibration description color.
-    var calibrationTextColor: ColorName? {
-        if state.value.calibrationText != nil {
-            return state.value.calibrationTextColor
-        } else {
-            return drone?.getPeripheral(Peripherals.gimbal)?.subtextColor ?? .white10
-        }
+    var calibrationTextColor: AnyPublisher<ColorName?, Never> {
+        calibrationMessage.combineLatest(calibrationMessageColor)
+            .map { [unowned self] (calibrationMessage, calibrationMessageColor) in
+                if calibrationMessage != nil {
+                    return calibrationMessageColor
+                } else {
+                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.subtextColor ?? .white10
+                }
+            }
+            .eraseToAnyPublisher()
     }
 
     /// Background color for calibration cell.
-    var calibrationTextBackgroundColor: ColorName? {
-        if state.value.calibrationBackgroundCellColor != nil {
-            return state.value.calibrationBackgroundCellColor
-        } else {
-            guard let gimbal = drone?.getPeripheral(Peripherals.gimbal) else {
-                return .white10
+    var calibrationTextBackgroundColor: AnyPublisher<ColorName?, Never> {
+        calibrationBackgroundCellColor.map { [unowned self] (calibrationBackgroundCellColor: ColorName?) -> ColorName? in
+            if calibrationBackgroundCellColor != nil {
+                return calibrationBackgroundCellColor
+            } else {
+                guard let gimbal = currentDrone.drone.getPeripheral(Peripherals.gimbal) else {
+                    return .white10
+                }
+
+                return gimbal.backgroundColor
             }
-
-            return gimbal.backgroundColor
         }
-    }
-
-    // MARK: - Private Properties
-    private var gpsRef: Ref<Gps>?
-    private var gimbalRef: Ref<Gimbal>?
-    private var stereoVisionSensorRef: Ref<StereoVisionSensor>?
-    private var magnetometerRef: Ref<MagnetometerWith3StepCalibration>?
-    private var frontStereoGimbalRef: Ref<FrontStereoGimbal>?
-    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
-    private let cellularViewModel = DroneDetailsCellularViewModel()
-
-    // MARK: - Init
-    override init() {
-        super.init()
-
-        cellularViewModel.state.valueChanged = { [weak self] _ in
-            self?.updateCellularState()
-        }
-        updateCellularState()
-    }
-
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-
-        listenGps(drone)
-        listenGimbal(drone)
-        listenStereoVisionSensor(drone)
-        listenMagnetometer(drone)
-        listenFrontStereoGimbal(drone)
-        listenFlyingIndicators(drone: drone)
+        .eraseToAnyPublisher()
     }
 
     // MARK: - Internal Funcs
+
     /// Removes current drone uid in the dismissed pairing list.
     /// The pairing process for the current drone could be displayed again in the HUD.
     func resetPairingDroneListIfNeeded() {
-        guard let uid = self.drone?.uid,
-              Defaults.dronesListPairingProcessHidden.contains(uid),
-              drone?.isAlreadyPaired == false else {
+        let uid = currentDrone.drone.uid
+        guard Defaults.dronesListPairingProcessHidden.contains(uid),
+              currentDrone.drone.isAlreadyPaired == false else {
             return
         }
 
@@ -279,22 +254,29 @@ final class DroneDetailsButtonsViewModel: DroneStateViewModel<DroneDetailsButton
 }
 
 // MARK: - Private Funcs
+
 private extension DroneDetailsButtonsViewModel {
+
+    /// Starts watcher for drone's connection state.
+    ///
+    /// - Parameter drone: the current drone
+    func listenConnectionState(drone: Drone) {
+        connectionStateRef = drone.getState { [weak self] state in
+            self?.connectionState = state?.connectionState ?? .disconnected
+        }
+    }
+
     /// Starts watcher for gps.
     func listenGps(_ drone: Drone) {
         gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
-            let copy = self?.state.value.copy()
-            copy?.lastKnownPosition = gps?.lastKnownLocation
-            self?.state.set(copy)
+            self?.lastKnownPosition = gps?.lastKnownLocation
         }
     }
 
     /// Starts watcher for gimbal.
     func listenGimbal(_ drone: Drone) {
         gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
-            let copy = self?.state.value.copy()
-            copy?.gimbalState = gimbal?.state
-            self?.state.set(copy)
+            self?.gimbalState = gimbal?.state
         }
     }
 
@@ -309,10 +291,7 @@ private extension DroneDetailsButtonsViewModel {
     func listenFlyingIndicators(drone: Drone) {
         flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicators in
             guard let flyingState = flyingIndicators?.state else { return }
-
-            let copy = self?.state.value.copy()
-            copy?.flyingState = flyingState
-            self?.state.set(copy)
+            self?.flyingState = flyingState
         }
     }
 
@@ -332,64 +311,48 @@ private extension DroneDetailsButtonsViewModel {
 
     /// Updates front stereo gimbal calibration state.
     func updateFrontStereoGimbal(frontStereoGimbal: FrontStereoGimbal?) {
-        let copy = self.state.value.copy()
-
         guard let frontStereoGimbal = frontStereoGimbal else {
-            copy.isGimbalFrontStereoCalibrationNeeded = false
-            self.state.set(copy)
+            isGimbalFrontStereoCalibrationNeeded = false
             return
         }
 
         switch (frontStereoGimbal.calibrated, frontStereoGimbal.currentErrors.isEmpty) {
         case (false, true),
              (true, false):
-            copy.isGimbalFrontStereoCalibrationNeeded = true
+            isGimbalFrontStereoCalibrationNeeded = true
         default:
-            copy.isGimbalFrontStereoCalibrationNeeded = false
+            isGimbalFrontStereoCalibrationNeeded = false
         }
-
-        self.state.set(copy)
     }
 
     /// Updates stereo vision sensor calibration state.
     func updateStereoVisionSensorCalibrationState(stereoVisionSensors: StereoVisionSensor?) {
-        let copy = self.state.value.copy()
-
         guard let stereoVisionSensor = stereoVisionSensors else {
-            copy.isStereoVisionSensorCalibrationNeeded = false
-            self.state.set(copy)
+            isStereoVisionSensorCalibrationNeeded = false
             return
         }
 
-        copy.isStereoVisionSensorCalibrationNeeded = !stereoVisionSensor.isCalibrated
-        self.state.set(copy)
+        isStereoVisionSensorCalibrationNeeded = !stereoVisionSensor.isCalibrated
     }
 
     /// Updates magnetometer calibration state.
     func updateMagnetometerCalibrationState(magnetometer: MagnetometerWith3StepCalibration?) {
-        let copy = self.state.value.copy()
-
-        guard let magnetometer = magnetometer else {
-            copy.isMagnetometerCalibrationNeeded = false
-            self.state.set(copy)
+       guard let magnetometer = magnetometer else {
+            isMagnetometerCalibrationNeeded = false
             return
         }
 
         switch magnetometer.calibrationState {
         case .calibrated:
-            copy.isMagnetometerCalibrationNeeded = false
+            isMagnetometerCalibrationNeeded = false
         case .required,
              .recommended:
-            copy.isMagnetometerCalibrationNeeded = true
+            isMagnetometerCalibrationNeeded = true
         }
-
-        state.set(copy)
     }
 
     /// Updates cellular state.
-    func updateCellularState() {
-        let copy = state.value.copy()
-        copy.cellularStatus = cellularViewModel.state.value.cellularStatus
-        state.set(copy)
+    func updateCellularState(cellularStatus: DetailsCellularStatus) {
+        self.cellularStatus = cellularStatus
     }
 }

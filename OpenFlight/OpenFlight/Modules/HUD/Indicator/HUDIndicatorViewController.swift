@@ -31,7 +31,7 @@
 import UIKit
 
 // MARK: - Protocols
-protocol HUDIndicatorViewControllerNavigation: class {
+protocol HUDIndicatorViewControllerNavigation: AnyObject {
     /// Called when pairing should be opened.
     func openPairing()
 }

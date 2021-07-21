@@ -129,18 +129,22 @@ extension ProtobufMissionsToUpdateList {
     ///
     /// - Returns: The global state for the current list.
     func protobufMissionsGlobalState() -> ProtobufMissionsGlobalUpdatingState {
-        let processIsNotFinished = missionsToUpdateArray.contains { (missionToUpdate) -> Bool in
-            switch missionToUpdate.state.value.missionToUpdateStatus {
-            case .waitingForUpdate,
-                 .onGoingUpdate:
+        let globalState: ProtobufMissionsGlobalUpdatingState
+        let uploading = missionsToUpdateArray.contains {
+            switch $0.state.value.missionToUpdateStatus {
+            case .onGoingUpdate:
                 return true
-            case .notInUpdateList,
-                 .updateDone,
-                 .failed:
+            default:
                 return false
             }
         }
-        let globalState: ProtobufMissionsGlobalUpdatingState = processIsNotFinished ? .processing : .done
+
+        if uploading {
+            globalState = .uploading
+        } else {
+            let waiting = missionsToUpdateArray.contains { $0.state.value.missionToUpdateStatus == .waitingForUpdate }
+            globalState = waiting ? .ongoing : .done
+        }
         ULog.d(.missionUpdateTag, "Missions global state: \(globalState)")
 
         return globalState

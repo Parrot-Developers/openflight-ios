@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -15,7 +16,7 @@
         </array>
     </customFonts>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="BehaviourModeView" customModuleProvider="target">
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="BehaviourModeView" customModule="OpenFlight" customModuleProvider="target">
             <connections>
                 <outlet property="currentMode" destination="oh8-xp-Wct" id="88e-Ib-c1x"/>
                 <outlet property="imageView" destination="vOr-nd-K81" id="8VB-DX-5it"/>
@@ -29,7 +30,7 @@
             <rect key="frame" x="0.0" y="0.0" width="158" height="42"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zQf-L3-klZ">
+                <view opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zQf-L3-klZ">
                     <rect key="frame" x="0.0" y="0.0" width="158" height="42"/>
                     <subviews>
                         <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="WJf-zo-wng">
@@ -89,19 +90,15 @@
                     </constraints>
                 </view>
             </subviews>
-            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="bottom" secondItem="vUN-kp-3ea" secondAttribute="bottom" id="4Zz-Rp-U1C"/>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="4wi-sx-rVk"/>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="EED-cB-AEf"/>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" id="JCn-Ng-sQF"/>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="PGO-hA-Jxp"/>
-                <constraint firstAttribute="trailing" secondItem="zQf-L3-klZ" secondAttribute="trailing" id="Q4B-uJ-VVt"/>
-                <constraint firstAttribute="bottom" secondItem="zQf-L3-klZ" secondAttribute="bottom" id="ets-2E-1qD"/>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="trailing" secondItem="vUN-kp-3ea" secondAttribute="trailing" id="nnF-2H-Mov"/>
+                <constraint firstItem="zQf-L3-klZ" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="2IQ-bz-hQm"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="zQf-L3-klZ" secondAttribute="trailing" id="PcU-nZ-wyz"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="top" secondItem="zQf-L3-klZ" secondAttribute="top" id="eu3-TL-92X"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="zQf-L3-klZ" secondAttribute="bottom" id="rfw-Rk-ptb"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <point key="canvasLocation" x="-75" y="319.5"/>
         </view>
     </objects>

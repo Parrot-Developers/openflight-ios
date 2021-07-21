@@ -31,6 +31,13 @@
 import UIKit
 import Reusable
 
+protocol FlightPlanCollectionDelegate: AnyObject {
+    /// handles double tap cell
+    ///
+    /// -index: row of indexPath of cell
+    func didDoubleTap(index: Int)
+}
+
 final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var backgroundImageView: UIImageView!
@@ -48,6 +55,9 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     @IBOutlet private weak var typeImage: UIImageView!
     @IBOutlet private weak var selectedView: UIView!
 
+    weak var delegate: FlightPlanCollectionDelegate?
+    private var index: Int?
+
     // MARK: - Private Enums
     private enum Constants {
         /// Gradient layer start alpha.
@@ -64,6 +74,14 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
                                         borderColor: ColorName.greenSpring.color,
                                         radius: Style.largeCornerRadius,
                                         borderWidth: Style.largeBorderWidth)
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(didDoubleTap))
+        gesture.numberOfTapsRequired = 2
+        contentView.addGestureRecognizer(gesture)
+    }
+
+    @objc func didDoubleTap() {
+        guard let index = index else { return }
+        delegate?.didDoubleTap(index: index)
     }
 
     override func layoutSublayers(of layer: CALayer) {
@@ -89,21 +107,35 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     /// - Parameters:
     ///     - viewModel: flight plan view model
     ///     - isSelected: Whether cell is selected.
-    func configureCell(viewModel: FlightPlanViewModel, isSelected: Bool) {
+    ///     - index: cell current index
+    func configureCell(viewModel: FlightPlanViewModel, isSelected: Bool, index: Int) {
+        self.index = index
         let viewModelState = viewModel.state.value
         self.titleLabel.text = viewModelState.title ?? viewModelState.location?.coordinatesDescription
         self.dateLabel.text = viewModelState.date?.shortWithTimeFormattedString
-        self.backgroundImageView.image = viewModelState.thumbnail
+        let defaultBackground = UIImage(asset: Asset.MyFlights.projectPlaceHolder)
+
+        if let thumbnail = viewModelState.thumbnail {
+            self.backgroundImageView.image = thumbnail
+        } else {
+            self.backgroundImageView.image = defaultBackground
+        }
+
         if let type = viewModelState.type,
-           FlightPlanTypeManager.shared.missionKey(for: type) != FlightPlanMissionMode.standard.rawValue {
+           type.missionMode.key != FlightPlanMissionMode.standard.rawValue {
             // Set image for custom Flight Plan types
-            typeImage.image = FlightPlanTypeManager.shared.missionIcon(for: type)
+            typeImage.image = type.icon
         } else {
             typeImage.image = nil
         }
 
         viewModel.state.valueChanged = { [weak self] state in
-            self?.backgroundImageView.image = state.thumbnail
+            if let thumbnail = state.thumbnail {
+                self?.backgroundImageView.image = thumbnail
+            } else {
+                self?.backgroundImageView.image = defaultBackground
+            }
+
             self?.layoutSubviews()
         }
         viewModel.requestThumbnail(thumbnailSize: self.frame.size)

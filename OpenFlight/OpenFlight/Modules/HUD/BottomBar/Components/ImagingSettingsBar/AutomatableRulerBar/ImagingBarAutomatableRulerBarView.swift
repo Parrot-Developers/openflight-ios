@@ -74,6 +74,7 @@ final class ImagingBarAutomatableRulerBarView<T: AutomatableRulerImagingBarState
             }
             self?.updateAutomaticMode(isAutomatic: isAutomatic)
         }
+        updateAutomaticMode(isAutomatic: viewModel.state.value.isAutomatic)
         addRulerBar()
     }
 
@@ -88,7 +89,6 @@ private extension ImagingBarAutomatableRulerBarView {
     /// Common init.
     func commonInitImagingBarShutterSpeedBarView() {
         self.loadNibContent()
-        self.addBlurEffect()
     }
 
     /// Add ruler displaying current mode values.
@@ -96,6 +96,8 @@ private extension ImagingBarAutomatableRulerBarView {
         removeRulerBar()
         let centeredRulerBarView = CenteredRulerBarView<T>()
         centeredRulerBarView.viewModel = viewModel
+        centeredRulerBarView.customCornered(corners: [.topRight, .bottomRight],
+                                            radius: Style.largeCornerRadius)
         centeredRulerBarContainer.addWithConstraints(subview: centeredRulerBarView)
         self.centeredRulerBarView = centeredRulerBarView
     }
@@ -111,10 +113,12 @@ private extension ImagingBarAutomatableRulerBarView {
     /// - Parameters:
     ///    - isAutomatic: boolean describing if setting is monitored automatically.
     func updateAutomaticMode(isAutomatic: Bool) {
-        autoButton.cornerRadiusedWith(backgroundColor: isAutomatic ? ColorName.greenSpring20.color : .clear,
-                                      borderColor: isAutomatic ? ColorName.greenSpring.color: .clear,
-                                      radius: Style.largeCornerRadius,
-                                      borderWidth: Style.largeBorderWidth)
+        autoButton.customCornered(corners: [.topLeft, .bottomLeft],
+                                  radius: Style.largeCornerRadius,
+                                  backgroundColor: isAutomatic ? ColorName.greenMediumSea.color : ColorName.white90.color,
+                                  borderColor: .clear,
+                                  borderWidth: 0.0)
+        autoButton.tintColor = isAutomatic ? .white : ColorName.sambuca.color
         centeredRulerBarView?.isAutomatic = isAutomatic
     }
 }

@@ -35,7 +35,6 @@ public final class DroneCalibrationCoordinator: Coordinator {
     public var childCoordinators = [Coordinator]()
     public var parentCoordinator: Coordinator?
 
-    // MARK: - Public Funcs
     public func start() {
         let viewController = DroneCalibrationViewController.instantiate(coordinator: self)
         self.navigationController = NavigationController(rootViewController: viewController)
@@ -96,7 +95,14 @@ extension DroneCalibrationCoordinator {
 
     /// Starts Horizon correction.
     func startHorizonCorrection() {
-        let controller = HorizonCorrectionViewController.instantiate(coordinator: self)
+        let viewModel = HorizonCorrectionViewModel(coordinator: self, droneHolder: Services.hub.connectedDroneHolder)
+        let controller = HorizonCorrectionViewController.instantiate(viewModel: viewModel)
         self.push(controller)
+    }
+}
+
+extension DroneCalibrationCoordinator: HorizonCorrectionCoordinator {
+    func calibrationDidStop() {
+        back()
     }
 }

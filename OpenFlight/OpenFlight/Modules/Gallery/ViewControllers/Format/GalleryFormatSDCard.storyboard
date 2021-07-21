@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina4_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -25,7 +26,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zXX-L7-V9K">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zXX-L7-V9K">
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                 <connections>
                                     <action selector="backgroundButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="3vz-Ix-6cl"/>
@@ -40,6 +41,7 @@
                                             <constraint firstAttribute="width" secondItem="0hY-0T-Ppg" secondAttribute="height" multiplier="1:1" id="DZl-LE-4Tx"/>
                                             <constraint firstAttribute="width" constant="66" id="WuJ-Kz-08e"/>
                                         </constraints>
+                                        <color key="tintColor" name="sambuca"/>
                                         <inset key="imageEdgeInsets" minX="25" minY="25" maxX="25" maxY="25"/>
                                         <state key="normal" image="icClose"/>
                                         <connections>
@@ -49,13 +51,13 @@
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ggq-2k-hfe">
                                         <rect key="frame" x="288" y="23.5" width="75.5" height="19"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="textColor" name="sambuca"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FzE-GT-lPK">
                                         <rect key="frame" x="307" y="42.5" width="37.5" height="18"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                        <color key="textColor" systemColor="systemOrangeColor" red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="textColor" name="tomato"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="feS-iU-maj">
@@ -144,7 +146,7 @@
                                         </constraints>
                                     </view>
                                 </subviews>
-                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <color key="backgroundColor" name="alabaster"/>
                                 <constraints>
                                     <constraint firstItem="FzE-GT-lPK" firstAttribute="centerX" secondItem="EJ5-A0-gWb" secondAttribute="centerX" id="59U-17-aFY"/>
                                     <constraint firstItem="feS-iU-maj" firstAttribute="centerX" secondItem="EJ5-A0-gWb" secondAttribute="centerX" id="BxH-UQ-2tl"/>
@@ -161,6 +163,7 @@
                                 </constraints>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="tFU-hx-eZR"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="zXX-L7-V9K" secondAttribute="trailing" id="880-C2-o7M"/>
@@ -171,7 +174,6 @@
                             <constraint firstItem="EJ5-A0-gWb" firstAttribute="leading" secondItem="tFU-hx-eZR" secondAttribute="leading" constant="8" id="W39-VE-Vfd"/>
                             <constraint firstAttribute="bottom" secondItem="zXX-L7-V9K" secondAttribute="bottom" id="nxb-Op-Rwc"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="tFU-hx-eZR"/>
                     </view>
                     <connections>
                         <outlet property="backgroundButton" destination="zXX-L7-V9K" id="btp-uq-Wta"/>
@@ -198,5 +200,14 @@
     <resources>
         <image name="icClose" width="24" height="24"/>
         <image name="icSdCardFormatQuick" width="32" height="44"/>
+        <namedColor name="alabaster">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="sambuca">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="tomato">
+            <color red="1" green="0.44705882352941179" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

@@ -67,7 +67,7 @@ extension Drone {
     // MARK: - Internal Funcs
     /// Starts Hand Launch.
     func startHandLaunch() {
-        self.getPilotingItf(PilotingItfs.manualCopter)?.smartTakeOffLand()
+        self.getPilotingItf(PilotingItfs.manualCopter)?.thrownTakeOff()
     }
 
     /// Start Hand Land.

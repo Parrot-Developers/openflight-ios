@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 ///  Displays buttons with drone informations (calibration state, firmware version, etc).
 final class DroneDetailsButtonsViewController: UIViewController {
@@ -43,6 +44,7 @@ final class DroneDetailsButtonsViewController: UIViewController {
     private var viewModel = DroneDetailsButtonsViewModel()
     private var firmwareAndMissionsInteractorListener: FirmwareAndMissionsListener?
     private weak var coordinator: DroneCoordinator?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Setup
     static func instantiate(coordinator: DroneCoordinator) -> DroneDetailsButtonsViewController {
@@ -62,6 +64,7 @@ final class DroneDetailsButtonsViewController: UIViewController {
         super.viewDidLoad()
 
         setupView()
+        bindToViewModel()
         setupViewModel()
     }
 }
@@ -85,7 +88,6 @@ private extension DroneDetailsButtonsViewController {
 
     @IBAction func cellularAccessButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyDroneDetailsButtons.cellularAccess)
-
         viewModel.resetPairingDroneListIfNeeded()
         coordinator?.displayCellularDetails()
     }
@@ -98,6 +100,7 @@ private extension DroneDetailsButtonsViewController {
 
 // MARK: - Private Funcs
 private extension DroneDetailsButtonsViewController {
+
     /// Sets up initial view display.
     func setupView() {
         mapButtonView.applyCornerRadius(Style.largeCornerRadius)
@@ -116,45 +119,71 @@ private extension DroneDetailsButtonsViewController {
                                                                   title: L10n.droneDetailsCellularAccess,
                                                                   subtitle: viewModel.cellularButtonSubtitle)
         passwordButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.icDronePassword.image,
-                                                            title: L10n.commonPassword,
+                                                            title: L10n.droneDetailsWifiPassword,
                                                             subtitle: nil)
     }
 
     /// Sets up view model.
     func setupViewModel() {
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.updateView(state: state)
-        }
-        updateView(state: viewModel.state.value)
-
         firmwareAndMissionsInteractorListener = FirmwareAndMissionsInteractor.shared
             .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
                 self?.updateFirmwareUpdateButtonView(for: firmwareAndMissionToUpdateModel)
             }
     }
 
-    /// Update the buttons with state.
-    ///
-    /// - Parameters:
-    ///    - state: current state
-    func updateView(state: DroneDetailsButtonsState) {
-        // Map button.
-        let coordinateString = state.lastKnownPosition?.coordinate.convertToDmsCoordinate()
-        mapButtonView.model?.subtitle = coordinateString ?? Style.dash
+    /// Binds the views to the view model
+    func bindToViewModel() {
+        viewModel.$cellularStatus
+            .removeDuplicates()
+            .sink { [unowned self] cellularStatus in
+                // Cellular button.
+                cellularAccessButtonView.model?.subtitle = viewModel.cellularButtonSubtitle
+                cellularAccessButtonView.model?.subtitleColor = cellularStatus.detailsTextColor
+                }
+            .store(in: &cancellables)
 
-        // Calibration button.
-        calibrationButtonView.model?.subtitle = viewModel.calibrationText
-        calibrationButtonView.model?.subtitleColor = viewModel.calibrationTextColor
-        calibrationButtonView.model?.backgroundColor = viewModel.calibrationTextBackgroundColor
-        calibrationButtonView.isEnabled = state.isCalibrationButtonAvailable
+        viewModel.$canShowCellular
+            .sink { [unowned self] canShowCellular in cellularAccessButtonView.isEnabled = canShowCellular }
+            .store(in: &cancellables)
 
-        // Cellular button.
-        cellularAccessButtonView.model?.subtitle = viewModel.cellularButtonSubtitle
-        cellularAccessButtonView.model?.subtitleColor = state.cellularStatus.detailsTextColor
-        cellularAccessButtonView.isEnabled = viewModel.state.value.canShowCellular
+        viewModel.$lastKnownPosition
+            .sink { [unowned self] lastKnownPosition in
+                // Map button.
+                let coordinateString = lastKnownPosition?.coordinate.convertToDmsCoordinate()
+                mapButtonView.model?.subtitle = coordinateString ?? Style.dash
+            }
+            .store(in: &cancellables)
 
-        // Password button.
-        passwordButtonView.isEnabled = state.isConnected()
+        viewModel.$connectionState
+            .sink { [unowned self] connectionState in
+                if connectionState == .connected {
+                    passwordButtonView.isEnabled = true
+                } else {
+                    passwordButtonView.isEnabled = false
+                }
+            }
+            .store(in: &cancellables)
+
+        viewModel.calibrationText
+            .sink { [unowned self] calibrationText in calibrationButtonView.model?.subtitle = calibrationText }
+            .store(in: &cancellables)
+
+        viewModel.calibrationTextColor
+            .sink { [unowned self] calibrationTextColor in calibrationButtonView.model?.subtitleColor = calibrationTextColor
+            }
+            .store(in: &cancellables)
+
+        viewModel.calibrationTextBackgroundColor
+            .sink { [unowned self] calibrationTextBackgroundColor in
+                calibrationButtonView.model?.backgroundColor = calibrationTextBackgroundColor
+            }
+            .store(in: &cancellables)
+
+        viewModel.isCalibrationButtonAvailable
+            .sink { [unowned self] isCalibrationButtonAvailable in
+                calibrationButtonView.isEnabled = isCalibrationButtonAvailable
+            }
+            .store(in: &cancellables)
     }
 
     /// Updates the firmwareUpdateButtonView UI.

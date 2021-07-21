@@ -82,26 +82,31 @@ public extension UIView {
         self.layer.cornerRadius = min(self.frame.width, self.frame.height) / 2
     }
 
-    /// Apply Corner radius so the view's corners are custom defined.
+    /// Applies corner radius so the view's corners are custom defined.
     ///
     /// - Parameters:
-    ///    - corners: The corners to modify
-    ///    - radius: The radius to apply
-    @discardableResult
-    func customCornered(corners: UIRectCorner, radius: CGFloat) -> CAShapeLayer {
-        let mask = CAShapeLayer()
-        let width = radius
-        let cornerRadii = CGSize(width: width, height: 0)
-        let path = UIBezierPath(roundedRect: self.bounds,
-                                byRoundingCorners: corners,
-                                cornerRadii: cornerRadii)
-        mask.path = path.cgPath
-        self.layer.mask = mask
+    ///     - corners: The corners to modify
+    ///     - radius: The radius to apply
+    func customCornered(corners: UIRectCorner, radius: CGFloat) {
+        var layerCorners: CACornerMask = CACornerMask()
+        if corners.contains(.topLeft) {
+            layerCorners.insert(.layerMinXMinYCorner)
+        }
+        if corners.contains(.topRight) {
+            layerCorners.insert(.layerMaxXMinYCorner)
+        }
+        if corners.contains(.bottomLeft) {
+            layerCorners.insert(.layerMinXMaxYCorner)
+        }
+        if corners.contains(.bottomRight) {
+            layerCorners.insert(.layerMaxXMaxYCorner)
+        }
+        self.layer.maskedCorners = layerCorners
+        self.layer.cornerRadius = radius
         self.layer.masksToBounds = true
-        return mask
     }
 
-    /// Apply Corner radius so the view's corners are custom defined, with custom background and border.
+    /// Applies corner radius so the view's corners are custom defined, with custom background and border.
     ///
     /// - Parameters:
     ///     - corners: The corners to modify
@@ -109,22 +114,9 @@ public extension UIView {
     ///     - backgroundColor: The background color
     ///     - borderColor: The border color
     func customCornered(corners: UIRectCorner, radius: CGFloat, backgroundColor: UIColor, borderColor: UIColor, borderWidth: CGFloat = 1.0) {
-        // Remove previous CustomShapeLayers
-        self.layer.sublayers?.forEach {
-            if $0 is CustomShapeLayer {
-                $0.removeFromSuperlayer()
-            }
-        }
-        // Create path for mask and custom layer.
-        let mask = customCornered(corners: corners, radius: radius)
-
-        let frameLayer = CustomShapeLayer()
-        frameLayer.path =  mask.path // Reuse the Bezier path
-        frameLayer.strokeColor = borderColor.cgColor
-        frameLayer.fillColor = nil
-        frameLayer.lineWidth = borderWidth
         self.backgroundColor = backgroundColor
-        self.layer.insertSublayer(frameLayer, at: 0)
+        self.setBorder(borderColor: borderColor, borderWidth: borderWidth)
+        customCornered(corners: corners, radius: radius)
     }
 
     /// Apply Corner radius and animates changes.
@@ -143,8 +135,8 @@ public extension UIView {
     }
 
     /// Apply shadow to view.
-    func addShadow() {
-        self.layer.shadowColor = UIColor.black.cgColor
+    func addShadow(shadowColor: UIColor = .black) {
+        self.layer.shadowColor = shadowColor.cgColor
         self.layer.shadowOffset = CGSize(width: 0, height: 1)
         self.layer.shadowOpacity = 1
         self.layer.shadowRadius = 2.0

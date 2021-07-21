@@ -1,5 +1,5 @@
 //
-//  Copyright (C) 2020 Parrot Drones SAS.
+//  Copyright (C) 2021 Parrot Drones SAS.
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -28,40 +28,58 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Foundation
+import Combine
 import GroundSdk
-import UIKit
-import SwiftyUserDefaults
 
-// MARK: - DroneInfosState
-/// State for DroneInfosViewModel.
-final class DroneInfosState: DeviceConnectionState {
-    // MARK: - Internal Properties
+/// This class links the drone's properties from groundSDK to the published properties of our view model
+final class DroneInfosViewModel {
+
+    // MARK: - Internal Published Properties
+
     /// Drone's battery level.
-    fileprivate(set) var batteryLevel: BatteryValueModel = BatteryValueModel()
+    @Published private(set) var batteryLevel: BatteryValueModel = BatteryValueModel()
     /// Drone's WiFi strength.
-    fileprivate(set) var wifiStrength: WifiStrength = .offline
+    @Published private(set) var wifiStrength: WifiStrength?
     /// Drone's GPS strength.
-    fileprivate(set) var gpsStrength: GpsStrength = .none
+    @Published private(set) var gpsStrength: GpsStrength = .none
     /// Drone's GPS satellite count.
-    fileprivate(set) var satelliteCount: Int?
+    @Published private(set) var satelliteCount: Int?
     /// Drone's model.
-    fileprivate(set) var droneModel: String = Style.dash
+    @Published private(set) var droneModel: String = Style.dash
     /// Drone's name.
-    fileprivate(set) var droneName: String = Style.dash
+    @Published private(set) var droneName: String = Style.dash
     /// Drone's gimbal status.
-    fileprivate(set) var gimbalStatus: CalibratableGimbalState?
+    @Published private(set) var gimbalStatus: CalibratableGimbalState?
     /// Drone's front stereo gimbal status.
-    fileprivate(set) var frontStereoGimbalStatus: FrontStereoGimbalState?
+    @Published private(set) var frontStereoGimbalStatus: FrontStereoGimbalState?
     /// Drone's magnetometer status.
-    fileprivate(set) var magnetometerStatus: MagnetometerCalibrationState?
+    @Published private(set) var magnetometerStatus: MagnetometerCalibrationState?
     /// Drone's stereo vision sensor status.
-    fileprivate(set) var stereoVisionStatus: StereoVisionSensorsCalibrationState?
+    @Published private(set) var stereoVisionStatus: StereoVisionSensorsCalibrationState?
     /// Drone's cellular strength.
-    fileprivate(set) var cellularStrength: CellularStrength = .offline
+    @Published private(set) var cellularStrength: CellularStrength = .offline
     /// Drone's current network link. It can be cellular or wlan one.
-    fileprivate(set) var currentLink: NetworkControlLinkType = .wlan
+    @Published private(set) var currentLink: NetworkControlLinkType = .wlan
     /// Drone's current copter motor errors.
-    fileprivate(set) var copterMotorsErrors: Set<CopterMotor>?
+    @Published private(set) var copterMotorsErrors: Set<CopterMotor>?
+    /// Current connection state
+    @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
+
+    // MARK: - Private Properties
+
+    private var cancellables = Set<AnyCancellable>()
+    private var batteryInfoRef: Ref<BatteryInfo>?
+    private var gpsRef: Ref<Gps>?
+    private var nameRef: Ref<String>?
+    private var connectionStateRef: Ref<DeviceState>?
+    private var gimbalRef: Ref<Gimbal>?
+    private var frontStereoGimbalRef: Ref<FrontStereoGimbal>?
+    private var magnetometerRef: Ref<Magnetometer>?
+    private var stereoVisionSensorRef: Ref<StereoVisionSensor>?
+    private var cellularRef: Ref<Cellular>?
+    private var networkControlRef: Ref<NetworkControl>?
+    private var motorsRef: Ref<CopterMotors>?
 
     /// Returns true if drone currently requires a calibration.
     var requiresCalibration: Bool {
@@ -82,339 +100,180 @@ final class DroneInfosState: DeviceConnectionState {
         return nil
     }
 
-    // MARK: - Override Funcs
-    required init() {
-        super.init()
-    }
+    init() {
+        // TODO inject
+        Services.hub.currentDroneHolder.dronePublisher
+            .sink { [unowned self] drone in
+                listenBatteryInfo(drone: drone)
+                listenName(drone: drone)
+                listenGimbalAndFrontStereo(drone: drone)
+                listenMagnetometer(drone: drone)
+                listenStereoVisionSensor(drone: drone)
+                listenCellular(drone: drone)
+                listenNetworkControl(drone: drone)
+                listenMotors(drone: drone)
+                listenConnectionState(drone: drone)
+            }
+            .store(in: &cancellables)
 
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - connectionState: connection state
-    ///    - batteryLevel: current battery
-    ///    - wifiStrength: wifi signal
-    ///    - gpsStrength: current gps strength
-    ///    - satelliteCount: drone's gps satellite count
-    ///    - droneModel: drone's model
-    ///    - droneName: drone's name
-    ///    - gimbalStatus: drone's gimbal status
-    ///    - frontStereoGimbalStatus: drone's front stereo status
-    ///    - magnetometerStatus: drone's magnetometer status
-    ///    - stereoVisionStatus: drone's stereo vision sensor status
-    ///    - cellularStrength: current cellular signal
-    ///    - currentLink: current network link
-    ///    - copterMotorsErrors: drone's copter motor errors
-    init(connectionState: DeviceState.ConnectionState,
-         batteryLevel: BatteryValueModel,
-         wifiStrength: WifiStrength,
-         gpsStrength: GpsStrength,
-         satelliteCount: Int?,
-         droneModel: String,
-         droneName: String,
-         gimbalStatus: CalibratableGimbalState?,
-         frontStereoGimbalStatus: FrontStereoGimbalState?,
-         magnetometerStatus: MagnetometerCalibrationState?,
-         stereoVisionStatus: StereoVisionSensorsCalibrationState?,
-         cellularStrength: CellularStrength,
-         currentLink: NetworkControlLinkType,
-         copterMotorsErrors: Set<CopterMotor>?) {
-        super.init(connectionState: connectionState)
-
-        self.batteryLevel = batteryLevel
-        self.wifiStrength = wifiStrength
-        self.gpsStrength = gpsStrength
-        self.satelliteCount = satelliteCount
-        self.droneModel = droneModel
-        self.droneName = droneName
-        self.gimbalStatus = gimbalStatus
-        self.frontStereoGimbalStatus = frontStereoGimbalStatus
-        self.magnetometerStatus = magnetometerStatus
-        self.stereoVisionStatus = stereoVisionStatus
-        self.cellularStrength = cellularStrength
-        self.currentLink = currentLink
-        self.copterMotorsErrors = copterMotorsErrors
-    }
-
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? DroneInfosState else { return false }
-
-        return super.isEqual(to: other)
-            && self.batteryLevel == other.batteryLevel
-            && self.wifiStrength == other.wifiStrength
-            && self.gpsStrength == other.gpsStrength
-            && self.satelliteCount == other.satelliteCount
-            && self.droneModel == other.droneModel
-            && self.droneName == other.droneName
-            && self.gimbalStatus == other.gimbalStatus
-            && self.frontStereoGimbalStatus == other.frontStereoGimbalStatus
-            && self.magnetometerStatus == other.magnetometerStatus
-            && self.stereoVisionStatus == other.stereoVisionStatus
-            && self.cellularStrength == other.cellularStrength
-            && self.currentLink == other.currentLink
-            && self.copterMotorsErrors == other.copterMotorsErrors
-    }
-
-    override func copy() -> DroneInfosState {
-        return DroneInfosState(connectionState: connectionState,
-                               batteryLevel: batteryLevel,
-                               wifiStrength: wifiStrength,
-                               gpsStrength: gpsStrength,
-                               satelliteCount: satelliteCount,
-                               droneModel: droneModel,
-                               droneName: droneName,
-                               gimbalStatus: gimbalStatus,
-                               frontStereoGimbalStatus: frontStereoGimbalStatus,
-                               magnetometerStatus: magnetometerStatus,
-                               stereoVisionStatus: stereoVisionStatus,
-                               cellularStrength: cellularStrength,
-                               currentLink: currentLink,
-                               copterMotorsErrors: copterMotorsErrors)
-    }
-}
-
-// MARK: - DroneInfosViewModel
-/// ViewModel for DroneInfos, notifies on battery level, wifi strength and gps strength changes.
-final class DroneInfosViewModel: DroneStateViewModel<DroneInfosState> {
-    // MARK: - Private Properties
-    private var batteryInfoRef: Ref<BatteryInfo>?
-    private var radioRef: Ref<Radio>?
-    private var gpsRef: Ref<Gps>?
-    private var nameRef: Ref<String>?
-    private var connectionStateRef: Ref<DeviceState>?
-    private var gimbalRef: Ref<Gimbal>?
-    private var frontStereoGimbalRef: Ref<FrontStereoGimbal>?
-    private var magnetometerRef: Ref<Magnetometer>?
-    private var stereoVisionSensorRef: Ref<StereoVisionSensor>?
-    private var cellularRef: Ref<Cellular>?
-    private var networkControlRef: Ref<NetworkControl>?
-    private var motorsRef: Ref<CopterMotors>?
-
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-
-        let copy = self.state.value.copy()
-        copy.droneModel = drone.model.publicName
-        self.state.set(copy)
-
-        listenBatteryInfo(drone: drone)
-        listenRadio(drone: drone)
-        listenGps(drone: drone)
-        listenName(drone: drone)
-        listenMagnetometer(drone)
-        listenStereoVisionSensor(drone)
-        listenGimbal(drone)
-        listenFrontStereoGimbal(drone)
-        listenCellular(drone)
-        listenNetworkControl(drone)
-        listenMotors(drone)
-    }
-
-    override func droneConnectionStateDidChange() {
-        updateCellularStrength()
+        Services.hub.connectedDroneHolder.dronePublisher
+            .sink { [unowned self] drone in
+                listenGps(drone: drone)
+            }
+            .store(in: &cancellables)
     }
 }
 
 // MARK: - Private Funcs
 /// Ref Listeners.
 private extension DroneInfosViewModel {
-    // MARK: - Battery
-    /// Starts watcher for battery info.
+
+    /// Starts watcher for battery.
+    ///
+    /// - Parameter drone: the current drone
     func listenBatteryInfo(drone: Drone) {
         batteryInfoRef = drone.getInstrument(Instruments.batteryInfo) { [weak self] batteryInfo in
-            let copy = self?.state.value.copy()
             let batteryLevel = BatteryValueModel(currentValue: batteryInfo?.batteryLevel)
-            copy?.batteryLevel = batteryLevel
-            self?.state.set(copy)
+            self?.batteryLevel = batteryLevel
         }
-    }
-
-    /// Updates battery level.
-    ///
-    /// - Parameters:
-    ///    - batteryInfo: battery info instrument
-    func updateBatteryLevel(_ batteryInfo: BatteryInfo?) {
-        let copy = self.state.value.copy()
-        copy.batteryLevel = BatteryValueModel(currentValue: batteryInfo?.batteryLevel)
-        self.state.set(copy)
-    }
-
-    // MARK: - WiFi
-    /// Starts watcher for radio.
-    func listenRadio(drone: Drone) {
-        radioRef = drone.getInstrument(Instruments.radio) { [weak self] _ in
-            self?.updateWifiStrength()
-        }
-    }
-
-    /// Updates Wi-Fi signal strength.
-    func updateWifiStrength() {
-        let copy = self.state.value.copy()
-        copy.wifiStrength = drone?.wifiStrength ?? .offline
-        self.state.set(copy)
     }
 
     // MARK: - GPS
-    /// Starts watcher for gps.
-    func listenGps(drone: Drone) {
-        gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
-            self?.updateGpsStrength(gps)
-        }
-    }
 
-    /// Updates GPS strength.
+    /// Starts observing changes for gps strength and updates the gps Strength published property.
     ///
-    /// - Parameters:
-    ///    - gps: gps instrument
-    func updateGpsStrength(_ gps: Gps?) {
-        let copy = self.state.value.copy()
-        copy.gpsStrength = gps?.gpsStrength ?? .none
-        copy.satelliteCount = gps?.satelliteCount
-        self.state.set(copy)
+    /// - Parameter drone: the current drone
+    func listenGps(drone: Drone?) {
+        guard let drone = drone else {
+            gpsStrength = .none
+            satelliteCount = nil
+            return
+        }
+        gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
+            self?.gpsStrength = gps?.gpsStrength ?? .none
+            self?.satelliteCount = gps?.satelliteCount
+        }
     }
 
     // MARK: - Name
-    /// Starts watcher for name.
+
+    /// Starts observing changes for the drone's name and updates the drone name published property.
+    ///
+    /// - Parameter drone: the current drone
     func listenName(drone: Drone) {
         nameRef = drone.getName(observer: { [weak self] name in
-            self?.updateName(name)
+            self?.droneName = name ?? Style.dash
         })
     }
 
-    /// Updates name.
-    ///
-    /// - Parameters:
-    ///    - name: drone's name
-    func updateName(_ name: String?) {
-        let copy = self.state.value.copy()
-        copy.droneName = name ?? Style.dash
-        self.state.set(copy)
-    }
-
-    // MARK: - Gimbal and Front Stereo
-    /// Starts watcher for drone gimbal state.
-    func listenGimbal(_ drone: Drone) {
-        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] _ in
-            self?.updateGimbalAndFrontStereo()
-        }
-    }
-
-    /// Starts watcher for drone front stereo gimbal state.
-    func listenFrontStereoGimbal(_ drone: Drone) {
-        frontStereoGimbalRef = drone.getPeripheral(Peripherals.frontStereoGimbal) { [weak self] _ in
-            self?.updateGimbalAndFrontStereo()
-        }
-    }
-
     /// Updates gimbal and front stereo calibration state.
-    func updateGimbalAndFrontStereo() {
-        let copy = state.value.copy()
-
-        guard let gimbal = drone?.getPeripheral(Peripherals.gimbal),
-              let frontStereoGimbal = drone?.getPeripheral(Peripherals.frontStereoGimbal) else {
-            copy.gimbalStatus = .unavailable
-            copy.frontStereoGimbalStatus = .unavailable
-            state.set(copy)
+    ///
+    /// - Parameter drone: the current drone
+    func listenGimbalAndFrontStereo(drone: Drone) {
+        guard let gimbal = drone.getPeripheral(Peripherals.gimbal),
+              let frontStereoGimbal = drone.getPeripheral(Peripherals.frontStereoGimbal) else {
+            self.gimbalStatus = .unavailable
+            self.frontStereoGimbalStatus = .unavailable
             return
         }
 
-        copy.gimbalStatus = gimbal.state
-        copy.frontStereoGimbalStatus = frontStereoGimbal.state
-        state.set(copy)
+        gimbalStatus = gimbal.state
+        frontStereoGimbalStatus = frontStereoGimbal.state
     }
 
     // MARK: - Magnetometer
-    /// Starts watcher for drone magnetometer state.
-    func listenMagnetometer(_ drone: Drone) {
-        magnetometerRef = drone.getPeripheral(Peripherals.magnetometer) { [weak self] magnetometer in
-            self?.updateMagnetometerState(magnetometer)
-        }
-    }
 
-    /// Updates magnetometer calibration state.
+    /// Starts observing changes for magnetometer and updates the magnetometer status published property.
     ///
-    /// - Parameters:
-    ///    - magnetometer: magnetometer peripheral
-    func updateMagnetometerState(_ magnetometer: Magnetometer?) {
-        let copy = self.state.value.copy()
-        copy.magnetometerStatus = magnetometer?.calibrationState
-        self.state.set(copy)
+    /// - Parameter drone: the current drone
+    func listenMagnetometer(drone: Drone) {
+        magnetometerRef = drone.getPeripheral(Peripherals.magnetometer) { [weak self] magnetometer in
+            self?.magnetometerStatus = magnetometer?.calibrationState
+        }
     }
 
     // MARK: - Stereo Vision Sensor
-    /// Starts watcher for drone stereo vision sensor state.
-    func listenStereoVisionSensor(_ drone: Drone) {
-        stereoVisionSensorRef = drone.getPeripheral(Peripherals.stereoVisionSensor) { [weak self] stereoVisionSensor in
-            self?.updateStereoVisionSensorState(stereoVisionSensor)
-        }
-    }
 
-    /// Updates stereo vision sensor calibration state.
+    /// Starts observing changes for the drone stereo vision sensor state and updates the stereo vision sensor published property.
     ///
-    /// - Parameters:
-    ///    - stereVisionSensor: stereo vision sensor peripheral
-    func updateStereoVisionSensorState(_ stereoVisionSensor: StereoVisionSensor?) {
-        let copy = self.state.value.copy()
-        copy.stereoVisionStatus = stereoVisionSensor?.isCalibrated ==  true ? .calibrated : .needed
-        self.state.set(copy)
+    /// - Parameter drone: the current drone
+    func listenStereoVisionSensor(drone: Drone) {
+        stereoVisionSensorRef = drone.getPeripheral(Peripherals.stereoVisionSensor) { [weak self] stereoVisionSensor in
+            self?.stereoVisionStatus = stereoVisionSensor?.isCalibrated == true ? .calibrated : .needed
+        }
     }
 
     // MARK: - Cellular
+
     /// Starts watcher for drone cellular.
-    func listenCellular(_ drone: Drone) {
+    ///
+    /// - Parameter drone: the current drone
+    func listenCellular(drone: Drone) {
         cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] _ in
-            self?.updateCellularStrength()
+            self?.updateCellularStrength(drone: drone)
         }
-
-        updateCellularStrength()
-    }
-
-    /// Updates cellular signal strength.
-    func updateCellularStrength() {
-        let copy = self.state.value.copy()
-        if drone?.isAlreadyPaired == false {
-            copy.cellularStrength = .offline
-        } else {
-            copy.cellularStrength = drone?.cellularStrength ?? .offline
-        }
-
-        self.state.set(copy)
     }
 
     // MARK: - Network Control
+
     /// Starts watcher for drone network control.
-    func listenNetworkControl(_ drone: Drone) {
+    ///
+    /// - Parameter drone: the current drone
+    func listenNetworkControl(drone: Drone) {
         networkControlRef = drone.getPeripheral(Peripherals.networkControl) { [weak self] networkControl in
-            self?.updateCurrentLink(networkControl)
-            self?.updateCellularStrength()
+            self?.currentLink = networkControl?.currentLink ?? .wlan
+            self?.wifiStrength = networkControl?.wifiStrength
+            self?.updateCellularStrength(drone: drone)
         }
     }
 
-    /// Updates current link.
+    /// Updates the cellular strength in our view model.
     ///
-    /// - Parameters:
-    ///    - networkControl: network control peripheral
-    func updateCurrentLink(_ networkControl: NetworkControl?) {
-        let copy = self.state.value.copy()
-        copy.currentLink = networkControl?.currentLink ?? .wlan
-        self.state.set(copy)
+    /// - Parameter drone: the current drone
+    func updateCellularStrength(drone: Drone) {
+        let cellular = drone.getPeripheral(Peripherals.cellular)
+
+        if cellular?.isActivated != true {
+            if drone.isConnected == false {
+                cellularStrength = .offline
+                return
+            }
+            cellularStrength = .deactivated
+            return
+        }
+
+        if cellular?.simStatus != .ready
+            || cellular?.modemStatus != .online
+            || cellular?.mode.value != .data
+            || cellular?.networkStatus != .activated
+            || cellular?.registrationStatus == .denied
+            || cellular?.registrationStatus == .notRegistered {
+            cellularStrength = .offline
+        } else if let strength = drone.getPeripheral(Peripherals.networkControl)?.cellularStrength {
+            cellularStrength = strength
+        } else {
+            cellularStrength = .ko0On4
+        }
     }
 
     // MARK: - Motors
+
     /// Starts watcher for drone's motors.
-    func listenMotors(_ drone: Drone) {
+    ///
+    /// - Parameter drone: the current drone
+    func listenMotors(drone: Drone) {
         motorsRef = drone.getPeripheral(Peripherals.copterMotors) { [weak self] copterMotors in
-            self?.updateMotorsError(copterMotors)
+            self?.copterMotorsErrors = copterMotors?.motorsCurrentlyInError
         }
     }
 
-    /// Updates motor errors.
+    /// Starts watcher for drone's connection state.
     ///
-    /// - Parameters:
-    ///    - copterMotors: copter motors peripheral
-    func updateMotorsError(_ copterMotors: CopterMotors?) {
-        let copy = self.state.value.copy()
-        copy.copterMotorsErrors = copterMotors?.motorsCurrentlyInError
-        self.state.set(copy)
+    /// - Parameter drone: the current drone
+    func listenConnectionState(drone: Drone) {
+        connectionStateRef = drone.getState { [weak self] state in
+            self?.connectionState = state?.connectionState ?? .disconnected
+            self?.updateCellularStrength(drone: drone)
+        }
     }
 }

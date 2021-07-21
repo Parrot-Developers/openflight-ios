@@ -40,7 +40,8 @@ final class SettingsQuickViewController: UIViewController, StoryboardBased {
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
-    private let viewModel = QuickSettingsViewModel()
+    // TODO wrong injection, viewModel should be prepared one level up (coordinator or upper VM)
+    private let viewModel = QuickSettingsViewModel(obstacleAvoidanceMonitor: Services.hub.obstacleAvoidanceMonitor)
     private var settings: [SettingEntry] = [] {
         didSet {
             collection?.reloadData()

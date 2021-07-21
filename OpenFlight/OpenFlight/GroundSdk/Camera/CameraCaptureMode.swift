@@ -36,18 +36,14 @@ import GroundSdk
 enum CameraCaptureMode: String, BarItemMode, CaseIterable {
     case video
     case photo
-    case slowmotion
-    case hyperlapse
-    case panorama
-    case bracketing
     case timelapse
     case gpslapse
+    case panorama
+    case bracketing
     case burst
 
     static var allValues: [BarItemMode] {
-        // FIXME: Temporarily remove slowmotion and hyperlapse
-        // Should return CameraCaptureMode.allCases
-        return [video, photo, panorama, bracketing, timelapse, gpslapse, burst]
+        return [video, photo, timelapse, gpslapse, panorama, bracketing, burst]
     }
 
     /// String describing camera capture mode.
@@ -57,10 +53,6 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
             return "Camera Mode Video"
         case .photo:
             return "Camera Mode Photo"
-        case .slowmotion:
-            return "Camera Mode Slow Motion"
-        case .hyperlapse:
-            return "Camera Mode Hyperlapse"
         case .panorama:
             return "Camera Mode Panorama"
         case .bracketing:
@@ -80,10 +72,6 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
             return L10n.cameraModeVideo
         case .photo:
             return L10n.cameraModePhoto
-        case .slowmotion:
-            return L10n.cameraModeSlomo
-        case .hyperlapse:
-            return L10n.cameraModeHyperlapse
         case .panorama:
             return L10n.cameraModePanorama
         case .bracketing:
@@ -103,10 +91,6 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
             return Asset.BottomBar.CameraModes.icCameraModeVideo.image
         case .photo:
             return Asset.BottomBar.CameraModes.icCameraModePhoto.image
-        case .slowmotion:
-            return Asset.BottomBar.CameraModes.icCameraModeSlowMotion.image
-        case .hyperlapse:
-            return Asset.BottomBar.CameraModes.icCameraModeHyperlapse.image
         case .panorama:
             return Asset.BottomBar.CameraModes.icCameraModePano.image
         case .bracketing:
@@ -124,10 +108,6 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
         switch self {
         case .bracketing:
             return BracketingMode.allValues as? [BarItemSubMode]
-        case .hyperlapse:
-            return Camera2HyperlapseValue.allValues as? [BarItemSubMode]
-        case .slowmotion:
-            return SlowMotionMode.allValues as? [BarItemSubMode]
         case .gpslapse:
             return GpsLapseMode.allValues as? [BarItemSubMode]
         case .timelapse:
@@ -147,10 +127,6 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
         switch self {
         case .video:
             return .standard
-        case .slowmotion:
-            return .slowMotion
-        case .hyperlapse:
-            return .hyperlapse
         default:
             return nil
         }

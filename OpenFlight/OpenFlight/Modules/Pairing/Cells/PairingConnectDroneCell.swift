@@ -32,7 +32,7 @@ import UIKit
 import Reusable
 
 // MARK: - Protocols
-protocol PairingConnectDroneCellDelegate: class {
+protocol PairingConnectDroneCellDelegate: AnyObject {
     /// Forget the current drone.
     ///
     /// - Parameters:

@@ -50,7 +50,7 @@ struct GalleryFormatSDCardStepModel {
     ///    - textColor: main text color.
     init(image: UIImage,
          text: String,
-         textColor: ColorName = ColorName.white50) {
+         textColor: ColorName = ColorName.sambuca50) {
         self.image = image
         self.text = text
         self.textColor = textColor

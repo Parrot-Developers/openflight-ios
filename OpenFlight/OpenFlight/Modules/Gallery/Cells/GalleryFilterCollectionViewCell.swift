@@ -39,16 +39,11 @@ final class GalleryFilterCollectionViewCell: UICollectionViewCell, NibReusable {
     @IBOutlet private weak var image: UIImageView!
     @IBOutlet private weak var imageWidthConstraint: NSLayoutConstraint!
     @IBOutlet private weak var imageHeightConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var label: UILabel! {
-        didSet {
-            label.makeUp()
-        }
-    }
+    @IBOutlet private weak var label: UILabel!
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-        backgroundColor = .clear
     }
 }
 
@@ -61,13 +56,16 @@ internal extension GalleryFilterCollectionViewCell {
     ///    - itemCount: number of item of this type
     ///    - highlight: boolean to determine if we need to apply the highlight theme
     func setup(type: GalleryMediaType, itemCount: Int, highlight: Bool) {
-        bgView.cornerRadiusedWith(backgroundColor: (highlight ? ColorName.greenSpring20.color : .clear),
-                                  borderColor: (highlight ? ColorName.greenSpring.color : ColorName.white20.color),
+        let tintColor = highlight ? .white : ColorName.sambuca.color
+        bgView.cornerRadiusedWith(backgroundColor: (highlight ? ColorName.greenMediumSea.color : .white),
+                                  borderColor: .clear,
                                   radius: Style.mediumCornerRadius,
-                                  borderWidth: Style.mediumBorderWidth)
+                                  borderWidth: 0.0)
         image.image = type.filterImage
+        image.tintColor = tintColor
         imageWidthConstraint.constant = type.preferredWidth
         imageHeightConstraint.constant = type.preferredHeight
         label.text = "\(itemCount)"
+        label.textColor = tintColor
     }
 }

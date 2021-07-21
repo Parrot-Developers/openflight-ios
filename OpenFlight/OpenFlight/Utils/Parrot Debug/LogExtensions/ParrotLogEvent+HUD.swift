@@ -61,11 +61,9 @@ extension LogEvent {
         case photoResolutionSetting
         case videoResolutionSetting
         case framerateSetting
-        case hyperlapseRatio
         /// Bottom bar photo mode buttons.
         case gpsLapse
         case timeLapse
-        case slowMotion
         case panorama
         case braketing
 
@@ -104,14 +102,10 @@ extension LogEvent {
                 return "VideoResolution"
             case .framerateSetting:
                 return "FramerateSetting"
-            case .hyperlapseRatio:
-                return "HyperlapseRatio"
             case .gpsLapse:
                 return "GPSLapse"
             case .timeLapse:
                 return "TimeLapse"
-            case .slowMotion:
-                return "SlowMotion"
             case .panorama:
                 return "Panorama"
             case .braketing:

@@ -36,11 +36,10 @@ final class SettingsRthViewModel: DroneStateViewModel<DeviceConnectionState>, Se
     var settingEntries: [SettingEntry] {
         var entries = [SettingEntry(setting: rthTargetModel,
                                     title: L10n.settingsRthTypeTitle,
-                                    itemLogKey: LogEvent.LogKeyAdvancedSettings.returnHome),
-                       SettingEntry(setting: SettingsCellType.rth)]
-        if drone?.isConnected == true {
-            entries.append(SettingEntry(setting: SettingsCellType.endHovering))
-        }
+                                    itemLogKey: LogEvent.LogKeyAdvancedSettings.returnHome)]
+
+        entries.append(SettingEntry(setting: SettingsCellType.endHovering))
+        entries.append(SettingEntry(setting: SettingsCellType.rth))
 
         return entries
     }
@@ -84,20 +83,24 @@ private extension SettingsRthViewModel {
 
     /// Returns a RTH preferred target model.
     var rthTargetModel: DroneSettingModel? {
-        guard let homeTarget = drone?.getPilotingItf(PilotingItfs.returnHome)?.preferredTarget,
-              homeTarget.target.isHomeAvailable else {
+        let homeTarget = drone?.getPilotingItf(PilotingItfs.returnHome)?.preferredTarget
+        guard homeTarget?.target.isHomeAvailable == true else {
             return DroneSettingModel(allValues: ReturnHomeTarget.allValues,
                                      supportedValues: ReturnHomeTarget.allValues,
                                      currentValue: RthPreset.rthType,
-                                     isUpdating: false)
+                                     isUpdating: false) { rthTarget in
+                if let strongRthTarget = rthTarget as? ReturnHomeTarget {
+                    homeTarget?.target = strongRthTarget
+                }
+            }
         }
 
         return DroneSettingModel(allValues: ReturnHomeTarget.allValues,
                                  supportedValues: ReturnHomeTarget.allValues,
-                                 currentValue: homeTarget.target,
-                                 isUpdating: homeTarget.updating) { rthTarget in
+                                 currentValue: homeTarget?.target,
+                                 isUpdating: homeTarget?.updating ?? false) { rthTarget in
             if let strongRthTarget = rthTarget as? ReturnHomeTarget {
-                homeTarget.target = strongRthTarget
+                homeTarget?.target = strongRthTarget
             }
         }
     }

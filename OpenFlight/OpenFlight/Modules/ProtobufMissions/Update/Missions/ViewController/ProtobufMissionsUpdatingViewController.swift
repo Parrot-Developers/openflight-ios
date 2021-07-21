@@ -48,6 +48,7 @@ final class ProtobufMissionsUpdatingViewController: UIViewController {
     private var manualRebootStarted: Bool = false
     private var shouldRestartProcesses: Bool = false
     private var processIsFinished: Bool = false
+    private var updateOngoing: Bool = false
     private var droneStateViewModel = DroneStateViewModel()
     private let missionsUpdaterManager = ProtobufMissionsUpdaterManager.shared
     private var missionsUpdateListener: ProtobufAllMissionsUpdaterListener?
@@ -56,7 +57,7 @@ final class ProtobufMissionsUpdatingViewController: UIViewController {
     enum Constants {
         static let minProgress: Float = 0.0
         static let tableViewHeight: CGFloat = 50.0
-        static let rebootDuration: TimeInterval = 60.0
+        static let rebootDuration: TimeInterval = 35.0
     }
 
     // MARK: - Setup
@@ -156,11 +157,11 @@ private extension ProtobufMissionsUpdatingViewController {
         missionsUpdaterManager
             .registerGlobalListener(allMissionToUpdateCallback: { [weak self] (missionsGlobalUpdatingState) in
                 guard let strongSelf = self,
-                      strongSelf.droneStateViewModel.state.value.isConnected() == false else {
+                      strongSelf.droneStateViewModel.state.value.isConnected() else {
                     return
                 }
 
-                strongSelf.finalizeMissionsProcesses(missionsGlobalUpdatingState: missionsGlobalUpdatingState)
+                strongSelf.updateMissionsProcesses(missionsGlobalUpdatingState: missionsGlobalUpdatingState)
             })
     }
 
@@ -168,12 +169,19 @@ private extension ProtobufMissionsUpdatingViewController {
     ///
     /// - Parameters:
     ///    - missionsGlobalUpdatingState: The gobal state of the processes
-    func finalizeMissionsProcesses(missionsGlobalUpdatingState: ProtobufMissionsGlobalUpdatingState) {
+    func updateMissionsProcesses(missionsGlobalUpdatingState: ProtobufMissionsGlobalUpdatingState) {
         switch missionsGlobalUpdatingState {
-        case .processing:
-            progressView.update(currentProgress: dataSource.currentTotalProgress)
+        case .ongoing:
+            updateOngoing = true
+            return
+        case .uploading:
             dataSource = ProtobufMissionsUpdatingDataSource(manualRebootState: .waiting)
-            tableView.reloadData()
+            progressView.update(currentProgress: dataSource.currentTotalProgress)
+            // Reload tableView only one time while uploading to avoid restarting little progress animation
+            if updateOngoing {
+                updateOngoing = false
+                tableView.reloadData()
+            }
         case .done:
             if !missionsUpdaterManager.missionsUpdateProcessNeedAReboot() && !processIsFinished {
                 dataSource = ProtobufMissionsUpdatingDataSource(manualRebootState: .failed)
@@ -286,7 +294,7 @@ private extension ProtobufMissionsUpdatingViewController {
         subtitleLabel.text = dataSource.subtitle
         view.backgroundColor = ColorName.greyShark.color
         cancelButton.setTitle(L10n.cancel, for: .normal)
-        cancelButton.tintColor = ColorName.white.color
+        cancelButton.makeup(with: .large)
         cancelButton.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
                                         borderColor: .clear,
                                         radius: 0.0,

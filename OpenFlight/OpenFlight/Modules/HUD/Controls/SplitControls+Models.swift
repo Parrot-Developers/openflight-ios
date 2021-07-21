@@ -54,7 +54,7 @@ enum SplitControlsConstants {
 
 // MARK: - Protocols
 /// Protocol used to get notified on stream size change.
-protocol SplitControlsDelegate: class {
+protocol SplitControlsDelegate: AnyObject {
     /// Informs delegate about stream width change.
     func streamSizeDidChange(width: CGFloat)
 }
@@ -64,7 +64,7 @@ protocol SplitControlsDelegate: class {
 /// Note: this is needed because, when entering Flight Plan edition,
 /// map view is transferred to the new view controller. This protocol
 /// is used to restore it back to its original container.
-public protocol MapViewRestorer: class {
+public protocol MapViewRestorer: AnyObject {
     /// Adds map view controller in view
     ///
     /// - Parameters:

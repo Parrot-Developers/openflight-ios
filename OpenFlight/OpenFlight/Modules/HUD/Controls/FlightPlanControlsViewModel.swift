@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import Foundation
+import Combine
 
 /// State for `FlightPlanControlsViewModel`.
 
@@ -102,15 +103,16 @@ final class FlightPlanControlsViewModel: BaseViewModel<FlightPlanControlsState> 
     private var missionLauncherModeObserver: Any?
     private var alertPanelModeObserver: Any?
     private var panelVisibilityObserver: Any?
-    private var missionLauncherViewModel = MissionLauncherViewModel()
+    // TODO : wrong injection
+    private unowned var currentMissionManager = Services.hub.currentMissionManager
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     override init() {
         super.init()
-
         listenMissionLauncherMode()
         listenAlertPanelMode()
-        listenMissionLauncherViewModel()
+        listenCurrentMission()
         listenPanelVisibilityChanges()
     }
 
@@ -168,16 +170,14 @@ private extension FlightPlanControlsViewModel {
         }
     }
 
-    /// Starts watcher for mission mode/submode.
-    func listenMissionLauncherViewModel() {
-        missionLauncherViewModel.state.valueChanged = { [weak self] state in
-            guard let mode = state.mode else {
-                return
-            }
-            let copy = self?.state.value.copy()
-            copy?.isFlightPlanPanelRequired = mode.isFlightPlanPanelRequired
-            self?.state.set(copy)
+    /// Listen for mission
+    func listenCurrentMission() {
+        currentMissionManager.modePublisher.sink { [unowned self] mode in
+            let copy = state.value.copy()
+            copy.isFlightPlanPanelRequired = mode.isFlightPlanPanelRequired
+            state.set(copy)
         }
+        .store(in: &cancellables)
     }
 
     /// Starts watcher for flight plan panel visibility changes.

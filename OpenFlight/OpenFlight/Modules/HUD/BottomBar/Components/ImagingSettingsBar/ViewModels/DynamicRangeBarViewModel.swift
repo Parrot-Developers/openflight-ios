@@ -39,7 +39,8 @@ final class DynamicRangeBarState: ImagingBarState {
         return DynamicRangeBarState(mode: self.mode,
                                     supportedModes: self.supportedModes,
                                     showUnsupportedModes: self.showUnsupportedModes,
-                                    isSelected: self.isSelected)
+                                    isSelected: self.isSelected,
+                                    unavailableReason: self.unavailableReason)
     }
 }
 
@@ -120,11 +121,42 @@ private extension DynamicRangeBarViewModel {
         let copy = state.value.copy()
         var supportedModes: [DynamicRange] = [.hdrOff]
 
-        if camera.hdrAvailable {
-            supportedModes.append(.hdrOn)
+        guard let currentMode = camera.mode else { return }
+        switch currentMode {
+        case .photo:
+            copy.unavailableReason[DynamicRange.plog.key] = L10n.cameraPlogUnavailable
+            if !camera.photoHdrAvailableForPhotoMode {
+                if let cameraMode = CameraUtils.computeCameraMode(camera: camera) {
+                    copy.unavailableReason[DynamicRange.hdrOn.key] = L10n.cameraHdrUnavailable(cameraMode.title)
+                } else {
+                    copy.unavailableReason[DynamicRange.hdrOn.key] = nil
+                }
+            } else if !camera.photoHdrAvailableForResolution {
+                copy.unavailableReason[DynamicRange.hdrOn.key] = L10n.cameraHdrUnavailablePhotoResolution
+            } else if !camera.photoHdrAvailableForFileFormat {
+                copy.unavailableReason[DynamicRange.hdrOn.key] = L10n.cameraHdrUnavailablePhotoFormat
+            } else {
+                copy.unavailableReason[DynamicRange.hdrOn.key] = nil
+                supportedModes.append(.hdrOn)
+            }
+
+        case .recording:
+            if !camera.recordingHdrAvailableForResolution {
+                if let resolution = camera.config[Camera2Params.videoRecordingResolution]?.value.title {
+                    copy.unavailableReason[DynamicRange.hdrOn.key] = L10n.cameraHdrUnavailable(resolution)
+                } else {
+                    copy.unavailableReason[DynamicRange.hdrOn.key] = nil
+                }
+            } else if !camera.recordingHdrAvailableForFramerate {
+                copy.unavailableReason[DynamicRange.hdrOn.key] = L10n.cameraHdrUnavailableFramerates
+            } else {
+                copy.unavailableReason[DynamicRange.hdrOn.key] = nil
+                supportedModes.append(.hdrOn)
+            }
         }
 
         if camera.plogAvailable {
+            copy.unavailableReason[DynamicRange.plog.key] = nil
             supportedModes.append(.plog)
         }
 

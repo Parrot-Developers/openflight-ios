@@ -132,10 +132,13 @@ public protocol BarButtonState: BottomBarState {
     var subtitle: String? { get }
     /// Current button availability.
     var enabled: Bool { get }
+    /// Current reasons why buttons are not enabled.
+    /// Keys are BarItemMode.key fields.
+    var unavailableReason: [String: String] { get }
 }
 
 /// Protocol for an item that can get deselected.
-protocol Deselectable: class {
+protocol Deselectable: AnyObject {
     /// Deselect item.
     func deselect()
 }
@@ -160,30 +163,6 @@ class BarButtonViewModel<T: BottomBarState>: DroneWatcherViewModel<T>, Deselecta
 
     /// Udpate state with sub mode.
     func update(subMode: BarItemSubMode) {
-        assert(false) // Must override...
-    }
-}
-
-/// Base viewModel used for button views in launcher.
-public class MissionLauncherButtonViewModel<T: BottomBarState>: DroneWatcherViewModel<T>, Deselectable {
-    // MARK: - Internal Funcs
-    /// Toggles bar button selection state.
-    func toggleSelectionState() {
-        state.value.isSelected.set(!state.value.isSelected.value)
-    }
-
-    /// Deselect bar button.
-    func deselect() {
-        state.value.isSelected.set(false)
-    }
-
-    /// Udpate state with mode.
-    func update(provider: MissionProvider) {
-        assert(false) // Must override...
-    }
-
-    /// Udpate state with sub mode.
-    func update(mode: MissionMode) {
         assert(false) // Must override...
     }
 }

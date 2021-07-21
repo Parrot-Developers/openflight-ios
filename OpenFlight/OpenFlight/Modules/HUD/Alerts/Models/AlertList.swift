@@ -59,4 +59,8 @@ final class AlertList {
     func cleanAlerts(withCategories categories: [AlertCategoryType]) {
         allAlerts.removeAll(where: { categories.contains($0.category) })
     }
+
+    public var description: String {
+        "AllAlerts: [\(allAlerts.map { $0.label }.joined(separator: ",\n"))]"
+    }
 }

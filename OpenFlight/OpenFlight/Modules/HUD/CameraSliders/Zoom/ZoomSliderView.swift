@@ -29,46 +29,34 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 import Reusable
-
-// MARK: - Protocols
-/// Protocol describing zoom slider view commands.
-protocol ZoomSliderViewDelegate: class {
-    /// Called when camera should be zooming.
-    func startZoom()
-    /// Called when camera should be dezooming.
-    func startDezoom()
-    /// Called when camera should stop zooming.
-    func stopZoom()
-    /// Called when camera should reset zoom to default.
-    func resetZoom()
-}
 
 // MARK: - Internal Enums
 
-/// View displaying the deployed zoom controller.
-
+/// Zoom slider view
 final class ZoomSliderView: UIView, NibOwnerLoadable {
+
     // MARK: - Outlets
     @IBOutlet private weak var minusButton: UIButton!
     @IBOutlet private weak var plusButton: UIButton!
     @IBOutlet private weak var zoomSlider: ZoomSlider!
     @IBOutlet private weak var zoomSubview: UIView!
 
-    // MARK: - Internal Properties
-    weak var delegate: ZoomSliderViewDelegate?
-    weak var zoomState: CameraZoomState? {
+    // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
+    private var doubleTapGestureRecognizer: UITapGestureRecognizer!
+    var viewModel: ZoomSliderViewModel! {
         didSet {
-            updateSlider()
+            viewModel.$state.sink { [unowned self] in
+                updateSlider($0)
+            }
+            .store(in: &cancellables)
         }
     }
 
-    // MARK: - Private Properties
-    private var doubleTapGestureRecognizer: UITapGestureRecognizer!
-
     // MARK: - Private Enums
     private enum Constants {
-        static let minimumZoomValue: Float = 1.0
         static let numberOfTaps: Int = 2
     }
 
@@ -95,27 +83,29 @@ final class ZoomSliderView: UIView, NibOwnerLoadable {
 private extension ZoomSliderView {
     /// Called when user holds down the minus button.
     @IBAction func minusButtonHoldDown(_ sender: Any) {
-        delegate?.startDezoom()
+        viewModel.minusButtonHoldDown()
     }
 
     /// Called when user holds down the plus button.
     @IBAction func plusButtonHoldDown(_ sender: Any) {
-        delegate?.startZoom()
+        viewModel.plusButtonHoldDown()
     }
 
     /// Called when user releases the minus button.
     @IBAction func minusButtonTouchedUpInside(_ sender: Any) {
-        delegate?.stopZoom()
+        viewModel.minusButtonTouchedUp()
     }
 
     /// Called when user releases the plus button.
     @IBAction func plusButtonTouchedUpInside(_ sender: Any) {
-        delegate?.stopZoom()
+        viewModel.plusButtonTouchedUp()
     }
 }
 
 // MARK: - Private Funcs
 private extension ZoomSliderView {
+
+    /// Should be called for any init
     func commonInit() {
         self.loadNibContent()
         setDoubleTapGesture()
@@ -131,17 +121,14 @@ private extension ZoomSliderView {
 
     /// Called when a double tap on slider occurs.
     @objc func onDoubleTap(sender: UITapGestureRecognizer) {
-        delegate?.resetZoom()
+        viewModel.onDoubleTap()
     }
 
     /// Updates the zoom slider with current state.
-    func updateSlider() {
-        guard let state = zoomState else {
-            return
-        }
-        zoomSlider.maximumValue = Float(state.isLossyAllowed ? state.maxLossy : state.maxLossLess)
-        zoomSlider.minimumValue = Constants.minimumZoomValue
-        zoomSlider.overLimitValue = Float(state.maxLossLess)
-        zoomSlider.value = Float(state.current)
+    func updateSlider(_ state: ZoomSliderViewModel.State) {
+        zoomSlider.maximumValue = state.max
+        zoomSlider.minimumValue = state.min
+        zoomSlider.overLimitValue = state.overLimit
+        zoomSlider.value = state.value
     }
 }

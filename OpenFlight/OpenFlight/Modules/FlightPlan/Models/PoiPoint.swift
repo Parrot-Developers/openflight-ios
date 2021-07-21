@@ -36,6 +36,7 @@ import GroundSdk
 
 public final class PoiPoint: Codable {
     // MARK: - Public Properties
+    var index: Int?
     var color: Int
     var altitude: Double
 
@@ -66,12 +67,16 @@ public final class PoiPoint: Codable {
         return PoiPointSettingsProvider(poiPoint: self)
     }
 
+    /// Related waypoints, if any.
+    var wayPoints: [WayPoint]?
+
     // MARK: - Private Properties
     private var latitude: Double
     private var longitude: Double
 
     // MARK: - Private Enums
     enum CodingKeys: String, CodingKey {
+        case index
         case color
         case latitude
         case longitude
@@ -88,10 +93,12 @@ public final class PoiPoint: Codable {
     public init(coordinate: CLLocationCoordinate2D,
                 altitude: Double,
                 color: Int = 0) {
+        self.index = -1
         self.latitude = coordinate.latitude
         self.longitude = coordinate.longitude
         self.altitude = altitude
         self.color = color
+        self.wayPoints = []
     }
 
     /// Init with Mavlink command.
@@ -99,9 +106,39 @@ public final class PoiPoint: Codable {
     /// - Parameters:
     ///    - roiMavLinkCommand: ROI Mavlink location command
     public init(roiMavLinkCommand: MavlinkStandard.SetRoiLocationCommand) {
+        self.index = -1
         self.latitude = roiMavLinkCommand.latitude
         self.longitude = roiMavLinkCommand.longitude
         self.altitude = roiMavLinkCommand.altitude
         self.color = 0
+        self.wayPoints = []
+    }
+
+    /// Add POI Index.
+    ///
+    /// - Parameters:
+    ///    - index: POI Index used as identifier
+    public func addIndex(index: Int) {
+        self.index = index
+    }
+
+    /// Assigns waypoint to point of interest.
+    ///
+    /// - Parameters:
+    ///    - wayPoint: waypoint to assign
+    func assignWayPoint(wayPoint: WayPoint?) {
+        if let wayPoint = wayPoint {
+            if self.wayPoints == nil {
+                self.wayPoints = []
+            }
+            self.wayPoints?.append(wayPoint)
+        }
+    }
+
+    /// Unassigns waypoints that do not match POI index
+    func cleanWayPoints() {
+        self.wayPoints?.removeAll(where: {
+            $0.poiIndex != self.index
+        })
     }
 }

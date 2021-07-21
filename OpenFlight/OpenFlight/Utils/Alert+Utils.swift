@@ -63,7 +63,7 @@ enum AlertLevel {
         case .critical:
             return UIColor(named: .redTorch)
         default:
-            return UIColor(named: .greenSpring)
+            return UIColor(named: .greenMediumSea)
         }
     }
 

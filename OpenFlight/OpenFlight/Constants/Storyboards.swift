@@ -64,6 +64,13 @@ internal enum StoryboardScene {
 
     internal static let dashboardViewController = SceneType<OpenFlight.DashboardViewController>(storyboard: Dashboard.self, identifier: "DashboardViewController")
   }
+  internal enum DashboardMyAccount: StoryboardType {
+    internal static let storyboardName = "DashboardMyAccount"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.DashboardMyAccountViewController>(storyboard: DashboardMyAccount.self)
+
+    internal static let dashboardMyAccountViewController = SceneType<OpenFlight.DashboardMyAccountViewController>(storyboard: DashboardMyAccount.self, identifier: "DashboardMyAccountViewController")
+  }
   internal enum DevToolbox: StoryboardType {
     internal static let storyboardName = "DevToolbox"
 
@@ -174,6 +181,13 @@ internal enum StoryboardScene {
     internal static let storyboardName = "FlightPlanEdition"
 
     internal static let initialScene = InitialSceneType<OpenFlight.FlightPlanEditionViewController>(storyboard: FlightPlanEdition.self)
+  }
+  internal enum FlightPlanListHeaderViewController: StoryboardType {
+    internal static let storyboardName = "FlightPlanListHeaderViewController"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.FlightPlanListHeaderViewController>(storyboard: FlightPlanListHeaderViewController.self)
+
+    internal static let flightPlanListHeaderViewController = SceneType<OpenFlight.FlightPlanListHeaderViewController>(storyboard: FlightPlanListHeaderViewController.self, identifier: "FlightPlanListHeaderViewController")
   }
   internal enum FlightPlanPanel: StoryboardType {
     internal static let storyboardName = "FlightPlanPanel"
@@ -352,8 +366,6 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.MissionProviderSelectorViewController>(storyboard: Missions.self)
 
     internal static let missionProviderSelectorViewController = SceneType<OpenFlight.MissionProviderSelectorViewController>(storyboard: Missions.self, identifier: "MissionProviderSelectorViewController")
-
-    internal static let missionSelectorViewController = SceneType<OpenFlight.MissionSelectorViewController>(storyboard: Missions.self, identifier: "MissionSelectorViewController")
   }
   internal enum MyFlightsViewController: StoryboardType {
     internal static let storyboardName = "MyFlightsViewController"
@@ -368,6 +380,27 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.OccupancyViewController>(storyboard: Occupancy.self)
 
     internal static let occupancyViewController = SceneType<OpenFlight.OccupancyViewController>(storyboard: Occupancy.self, identifier: "OccupancyViewController")
+  }
+  internal enum OnboardingLocalizationViewController: StoryboardType {
+    internal static let storyboardName = "OnboardingLocalizationViewController"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.OnboardingLocalizationViewController>(storyboard: OnboardingLocalizationViewController.self)
+
+    internal static let onboardingLocalizationViewController = SceneType<OpenFlight.OnboardingLocalizationViewController>(storyboard: OnboardingLocalizationViewController.self, identifier: "OnboardingLocalizationViewController")
+  }
+  internal enum OnboardingPairing: StoryboardType {
+    internal static let storyboardName = "OnboardingPairing"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.OnboardingPairingViewController>(storyboard: OnboardingPairing.self)
+
+    internal static let onboardingPairingViewController = SceneType<OpenFlight.OnboardingPairingViewController>(storyboard: OnboardingPairing.self, identifier: "OnboardingPairingViewController")
+  }
+  internal enum OnboardingTermsOfUse: StoryboardType {
+    internal static let storyboardName = "OnboardingTermsOfUse"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.OnboardingTermsOfUseViewController>(storyboard: OnboardingTermsOfUse.self)
+
+    internal static let onboardingToUViewController = SceneType<OpenFlight.OnboardingTermsOfUseViewController>(storyboard: OnboardingTermsOfUse.self, identifier: "OnboardingToUViewController")
   }
   internal enum Pairing: StoryboardType {
     internal static let storyboardName = "Pairing"

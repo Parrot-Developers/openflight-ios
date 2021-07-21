@@ -31,11 +31,6 @@ import SwiftyUserDefaults
 
 /// Defines defaultKeys to store in UserDefaults.
 public extension DefaultsKeys {
-    // MARK: - Stored IDs
-    var lastConnectedDroneUID: DefaultsKey<String?> { .init("key_lastConnectedDroneUID") }
-    var lastConnectedRcUID: DefaultsKey<String?> { .init("key_lastConnectedRcUID") }
-    // DRI
-    var lastDriId: DefaultsKey<String?> { .init("key_lastDriId") }
 
     // MARK: - User Settings
 
@@ -89,7 +84,6 @@ public extension DefaultsKeys {
     var hdrModeSetting: DefaultsKey<String?> { .init("key_hdrModeSetting") }
     var isPanoramaModeActivated: DefaultsKey<Bool> { .init("key_isPanoramaModeActivated", defaultValue: false) }
     var userPanoramaSetting: DefaultsKey<String> { DefaultsKeys.userPanoramaSettingKey }
-    var isImagingAutoModeActive: DefaultsKey<Bool> { .init("key_isImagingAutoModeActive", defaultValue: true) }
     var lastShutterSpeedValue: DefaultsKey<String?> { .init("key_lastShutterSpeedValue") }
     var lastCameraIsoValue: DefaultsKey<String?> { .init("key_lastCameraIsoValue") }
     var highDynamicRangeSetting: DefaultsKey<String?> { .init("key_highDynamicRangeSetting") }
@@ -105,16 +99,8 @@ public extension DefaultsKeys {
     // is User Connected to My Parrot
     var isUserConnected: DefaultsKey<Bool> { .init("key_isUserConnected", defaultValue: false) }
 
-    // MARK: - Mission
-    var userMissionProvider: DefaultsKey<String> { .init("key_userMissionProvider", defaultValue: String(describing: ClassicMission.self)) }
-    var userMissionMode: DefaultsKey<String> { .init("key_userMissionMode", defaultValue: MissionConstants.classicMissionManualKey) }
-
     // MARK: - My Flights
     var flightPlanLastSyncDate: DefaultsKey<Date?> { .init("key_flightPlanLastSyncDate") }
-
-    // MARK: - Drone
-    var lastDroneLocation: DefaultsKey<Data?> { DefaultsKeys.lastDroneLocationKey }
-    var lastDroneHeading: DefaultsKey<Double?> { DefaultsKeys.lastDroneHeadingKey }
 
     // MARK: - Parrot Debug
     var activatedLog: DefaultsKey<Bool> { .init("key_activatedLog", defaultValue: false) }
@@ -173,12 +159,13 @@ public extension DefaultsKeys {
     static let personalDataLastSyncDateKey: DefaultsKey<Date?> = DefaultsKey<Date?>("key_personalDataLastSyncDate")
     static let flightsAndFlightPlansLastSyncDateKey: DefaultsKey<Date?> = DefaultsKey<Date?>("key_flightsAndFlightPlansLastSyncDate")
 
-    // MARK: - Drone
-    static let lastDroneLocationKey: DefaultsKey<Data?> = DefaultsKey<Data?>("key_lastDroneLocation")
-    static let lastDroneHeadingKey: DefaultsKey<Double?> = DefaultsKey<Double?>("key_lastDroneHeading")
-
     // MARK: - Cellular Access
     static let networkUsernameKey: DefaultsKey<String?> = DefaultsKey<String?>("key_networkUsername")
     static let networkPasswordKey: DefaultsKey<String?> = DefaultsKey<String?>("key_networkPassword")
     static let networkUrlKey: DefaultsKey<String?> = DefaultsKey<String?>("key_networkUrl")
+
+    // MARK: - Terms Of Use
+    /// Bool which indicates if terms of use are accepted.
+    static let areOFTermsOfUseAccepted: DefaultsKey<Bool> = DefaultsKey<Bool>("key_areOFTermsOfUseAccepted",
+                                                                              defaultValue: false)
 }

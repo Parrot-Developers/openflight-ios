@@ -32,45 +32,60 @@ import GroundSdk
 
 // MARK: - Internal Enums
 /// Enum used to display camera timelapse sub-modes in bottom bar.
-
 public enum TimeLapseMode: Int, BarItemSubMode {
-    case oneSecond = 1
-    case twoSeconds = 2
-    case tenSeconds = 10
-    case thirtySeconds = 30
-    case sixtySeconds = 60
+    case halfSecond = 500
+    case oneSecond = 1000
+    case twoSeconds = 2000
+    case fourSeconds = 4000
+    case tenSeconds = 10000
+    case thirtySeconds = 30000
+    case sixtySeconds = 60000
 
-    public static let allValues: [BarItemMode] = [TimeLapseMode.oneSecond,
+    public static let allValues: [BarItemMode] = [TimeLapseMode.halfSecond,
+                                           TimeLapseMode.oneSecond,
                                            TimeLapseMode.twoSeconds,
+                                           TimeLapseMode.fourSeconds,
                                            TimeLapseMode.tenSeconds,
                                            TimeLapseMode.thirtySeconds,
                                            TimeLapseMode.sixtySeconds]
 
-    public static var preset: TimeLapseMode {
-        return .twoSeconds
+    public static var preset: TimeLapseMode { .twoSeconds }
+
+    public var title: String { UnitHelper.formatSeconds(interval) }
+
+    public var image: UIImage? { Asset.BottomBar.CameraModes.icCameraModeTimeLapse.image }
+
+    public var key: String { String(rawValue) }
+
+    public var value: Int? { rawValue }
+
+    /// Timelapse interval in seconds.
+    public var interval: Double { Double(rawValue) / 1000.0 }
+
+    public var isAvailable: Bool {
+        Camera2Params.currentSupportedTimelapseInterval()?.contains(interval) == true
     }
 
-    public var title: String {
-        return L10n.timeInSeconds(rawValue)
+    public var shutterText: String? { nil }
+
+    public var logKey: String { LogEvent.LogKeyHUDBottomBarButton.timeLapse.name }
+
+    /// Gets supported values for a given photo resolution.
+    ///
+    /// - Parameter resolution: photo resolution
+    /// - Returns: supported timelapse interval values
+    public static func supportedValuesForResolution(for resolution: Camera2PhotoResolution) -> [TimeLapseMode] {
+        guard let range = Camera2Params.supportedTimelapseInterval(for: resolution),
+              let allValues = allValues as? [TimeLapseMode] else {
+            return []
+        }
+        return allValues.filter { range.contains( $0.interval ) }
     }
 
-    public var image: UIImage? {
-        return Asset.BottomBar.CameraModes.icCameraModeTimeLapse.image
-    }
-
-    public var key: String {
-        return String(rawValue)
-    }
-
-    public var value: Int? {
-        return rawValue
-    }
-
-    public var shutterText: String? {
-        return nil
-    }
-
-    public var logKey: String {
-        return LogEvent.LogKeyHUDBottomBarButton.timeLapse.name
+    /// Constructor.
+    ///
+    /// - Parameter interval: timelapse interval expressed in seconds
+    public init?(interval: Double) {
+        self.init(rawValue: Int(interval * 1000))
     }
 }

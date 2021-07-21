@@ -38,7 +38,6 @@ final class GallerySourceCollectionViewCell: UICollectionViewCell, NibReusable {
     @IBOutlet private weak var mainStackView: UIStackView!
     @IBOutlet private weak var bgView: UIView! {
         didSet {
-            bgView.backgroundColor = .clear
             bgView.applyCornerRadius()
         }
     }
@@ -98,20 +97,20 @@ internal extension GallerySourceCollectionViewCell {
         let isStorageCriticalLimitReached: Bool = storageRatio > Constants.criticalStorageLimit
         // Setup labels display.
         if isCompact {
-            titleLabel.makeUp()
-            storageLabel.makeUp()
+            titleLabel.makeUp(and: .sambuca)
+            storageLabel.makeUp(and: .sambuca)
         } else {
-            titleLabel.makeUp(with: .large)
-            storageLabel.makeUp()
+            titleLabel.makeUp(with: .large, and: .sambuca)
+            storageLabel.makeUp(and: .sambuca)
         }
         titleLabel.textAlignment = isCompact ? .center : .left
         storageLabel.textAlignment = isCompact ? .center : .left
 
         // Setup labels colors.
-        bgView.backgroundColor = isSelected ? ColorName.white.color : .clear
-        iconImageView.tintColor = isSelected ? ColorName.black.color : ColorName.white.color
-        titleLabel.textColor = isSelected ? ColorName.black.color : ColorName.white.color
-        let normalColor = isSelected ? ColorName.black.color : ColorName.white50.color
+        bgView.backgroundColor = isSelected ? ColorName.greenMediumSea.color : .clear
+        iconImageView.tintColor = isSelected ? .white : ColorName.sambuca.color
+        titleLabel.textColor = isSelected ? .white : ColorName.sambuca.color
+        let normalColor = isSelected ? .white : ColorName.sambuca50.color
         if isStorageCriticalLimitReached && isCompact {
             updateStorageLabelColor(AlertLevel.critical.radarColor)
         } else if isStorageWarningLimitReached && isCompact {
@@ -121,7 +120,7 @@ internal extension GallerySourceCollectionViewCell {
         }
 
         // Setup labels text.
-        titleLabel.text = source.title
+        titleLabel.text = source.type.title
         iconImageView.image = source.image
         let storageText = isCompact ? L10n.galleryMemoryFreeCompact : L10n.galleryMemoryFree
         storageLabel.text = String(format: "%.1lf/%.1lf %@",
@@ -132,13 +131,14 @@ internal extension GallerySourceCollectionViewCell {
         // Setup progress circle.
         circleProgressView.isHidden = isCompact
         if !isCompact {
-            circleProgressView.bgStokeColor = isSelected ? ColorName.black40.color : ColorName.white20.color
+            circleProgressView.bgStokeColor = isSelected ? ColorName.black.color : ColorName.black40.color
+
             if isStorageCriticalLimitReached {
                 updateCircleProgressColor(AlertLevel.critical.radarColor)
             } else if isStorageWarningLimitReached {
                 updateCircleProgressColor(AlertLevel.warning.radarColor)
             } else {
-                updateCircleProgressColor(AlertLevel.none.radarColor)
+                updateCircleProgressColor(isSelected ? .white : AlertLevel.none.radarColor)
             }
 
             circleProgressView.setProgress(Float(storageRatio))
@@ -156,17 +156,15 @@ private extension GallerySourceCollectionViewCell {
     /// - Parameters:
     ///    - source: GallerySource
     func offlineSetup(source: GallerySource) {
-        titleLabel.makeUp()
-        storageLabel.makeUp()
-        titleLabel.text = source.title
-        iconImageView.image = source.image
         bgView.backgroundColor = .clear
-        iconImageView.tintColor = ColorName.white50.color
-        titleLabel.textColor = ColorName.white50.color
-        storageLabel.textColor = ColorName.white50.color
+        iconImageView.image = source.image
+        iconImageView.tintColor = ColorName.sambuca50.color
+        titleLabel.text = source.type.title
+        titleLabel.textColor = ColorName.sambuca50.color
         storageLabel.text = L10n.commonOffline
+        storageLabel.textColor = ColorName.white50.color
         storageRatio = 0.0
-        circleProgressView.bgStokeColor = ColorName.white20.color
+        circleProgressView.bgStokeColor = ColorName.black40.color
         circleProgressView.setProgress(Float(storageRatio))
     }
 

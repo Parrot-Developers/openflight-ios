@@ -29,25 +29,28 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
 /// ViewModel that listen a remote control by default.
 class RemoteControlWatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     // MARK: - Public Properties
     /// Property which provides the current remote control using currentRemoteControlWatcher.
-    public var remoteControl: RemoteControl? {
-        return currentRemoteControlWatcher.remoteControl
-    }
+    public var remoteControl: RemoteControl? { currentRemoteControlHolder.remoteControl }
 
     // MARK: - Private Properties
-    private var currentRemoteControlWatcher = CurrentRemoteControlWatcher()
+    private var cancellables = Set<AnyCancellable>()
+    private unowned var currentRemoteControlHolder: CurrentRemoteControlHolder
 
     // MARK: - Init
     override init() {
+        // TODO inject
+        currentRemoteControlHolder = Services.hub.currentRemoteControlHolder
         super.init()
-
-        currentRemoteControlWatcher.start { [weak self] remoteControl in
-            self?.listenRemoteControl(remoteControl: remoteControl)
+        currentRemoteControlHolder.remoteControlPublisher.sink { [unowned self] remoteControl in
+            guard let remoteControl = remoteControl else { return }
+            listenRemoteControl(remoteControl: remoteControl)
         }
+        .store(in: &cancellables)
     }
 
     // MARK: - Internal Funcs

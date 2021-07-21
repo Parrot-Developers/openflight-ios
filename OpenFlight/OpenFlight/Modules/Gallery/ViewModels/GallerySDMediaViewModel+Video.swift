@@ -100,14 +100,15 @@ extension GallerySDMediaViewModel {
     ///    - completion: Completion called when mediaReplay is instantiated
     func setStreamFromResource(_ resource: MediaItem.Resource,
                                completion: @escaping (_ replay: Replay?) -> Void) {
-        guard let drone = self.drone else {
+        guard let drone = self.drone,
+              let source = MediaReplaySourceFactory.videoTrackOf(resource: resource,
+                                                                 track: streamingDefaultTrack) else {
             completion(nil)
             return
         }
 
         streamingCurrentResource = resource
         drone.getPeripheral(Peripherals.streamServer)?.enabled = true
-        let source = MediaReplaySourceFactory.videoTrackOf(resource: resource, track: streamingDefaultTrack)
         streamingMediaReplayRef = drone.getPeripheral(Peripherals.streamServer)?.replay(source: source) { _ in }
         completion(streamingMediaReplayRef?.value)
     }

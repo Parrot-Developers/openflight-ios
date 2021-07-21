@@ -49,7 +49,7 @@ public final class RemoteCoordinator: Coordinator {
 extension RemoteCoordinator {
     /// Starts drone list coordinator.
     func startDronesList() {
-        let pairingCoordinator = PairingCoordinator()
+        let pairingCoordinator = PairingCoordinator(delegate: self)
         pairingCoordinator.parentCoordinator = self
         pairingCoordinator.navigationController = self.navigationController
         self.childCoordinators.append(pairingCoordinator)
@@ -68,5 +68,11 @@ extension RemoteCoordinator {
         updateCoordinator.parentCoordinator = self
         updateCoordinator.start()
         self.present(childCoordinator: updateCoordinator)
+    }
+}
+
+extension RemoteCoordinator: PairingCoordinatorDelegate {
+    public func pairingDidFinish() {
+        dismissChildCoordinator()
     }
 }

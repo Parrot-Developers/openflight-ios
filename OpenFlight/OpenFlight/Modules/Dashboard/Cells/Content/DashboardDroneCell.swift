@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 import Reusable
 
 /// Custom View used for Drone cell in the Dashboard.
@@ -39,13 +40,13 @@ class DashboardDroneCell: UICollectionViewCell, NibReusable {
     @IBOutlet private weak var wifiStatusImageView: UIImageView!
     @IBOutlet private weak var deviceImageView: UIImageView!
     @IBOutlet private weak var nameDeviceLabel: UILabel!
-    @IBOutlet private weak var stateDeviceLabel: UILabel!
+    @IBOutlet private weak var deviceStateButton: DeviceStateButton!
     @IBOutlet private weak var batteryValueLabel: UILabel!
-    @IBOutlet private weak var bottomView: UIView!
-    @IBOutlet private weak var needUpdateButton: UpdateCustomButton!
+    @IBOutlet private weak var batteryLevelImageView: UIImageView!
 
     // MARK: - Private Properties
     private weak var viewModel: DroneInfosViewModel?
+    private var cancellables = Set<AnyCancellable>()
     private weak var delegate: DashboardDeviceCellDelegate?
 
     private var firmwareAndMissionsUpdateListener: FirmwareAndMissionsListener?
@@ -54,7 +55,6 @@ class DashboardDroneCell: UICollectionViewCell, NibReusable {
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-
         // Clean UI when we create the cell.
         cleanViews()
     }
@@ -74,11 +74,11 @@ class DashboardDroneCell: UICollectionViewCell, NibReusable {
     ///    - state: The view model state for drone cell
     func setup(_ viewModel: DroneInfosViewModel) {
         self.viewModel = viewModel
-        listenViewModel()
+        bindToViewModel()
         firmwareAndMissionsUpdateListener = FirmwareAndMissionsInteractor.shared
             .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
                 self?.firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel
-                self?.setStateDeviceLabel(with: firmwareAndMissionToUpdateModel)
+                self?.setStateDeviceButton(with: firmwareAndMissionToUpdateModel)
             }
     }
 
@@ -93,119 +93,121 @@ class DashboardDroneCell: UICollectionViewCell, NibReusable {
 
 // MARK: - Actions
 private extension DashboardDroneCell {
-    @IBAction func needUpdateButtonTouchedUpInside(_ sender: Any) {
+    @IBAction func stateDeviceTouchedUpInside(_ sender: Any) {
         delegate?.startUpdate(.drone)
     }
 }
 
 // MARK: - Private Funcs
 private extension DashboardDroneCell {
-    /// Set battery percent.
-    ///
-    /// - Parameters:
-    ///    - value: the current battery level
-    func updateBatteryLevel(_ value: Int?) {
-        if let batteryLevel = value {
-            batteryValueLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryLevel)
-        } else {
-            batteryValueLabel.text = Style.dash
-        }
+
+    func bindToViewModel() {
+        bindBatteryLevel()
+        bindWifiStrength()
+        bindGpsStrength()
+        bindDroneName()
+        bindCellularStrength()
+        bindConnectionState()
+    }
+
+    /// Binds the battery from the view model to battery label
+    func bindBatteryLevel() {
+        viewModel?.$batteryLevel
+            .sink { [unowned self] batteryValue in
+                batteryValueLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryValue.currentValue)
+                batteryLevelImageView.image = batteryValue.batteryImage
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Binds the wifi strength from the view model to wifi image view
+    func bindWifiStrength() {
+        viewModel?.$wifiStrength
+            .sink { [unowned self] wifiStrength in
+                let isCellularActive = viewModel?.currentLink == .cellular
+                wifiStatusImageView.image = wifiStrength?.signalIcon(isLinkActive: !isCellularActive)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Binds the gps strenght from the view model to gps status image view
+    func bindGpsStrength() {
+        viewModel?.$gpsStrength
+            .sink { [unowned self] gpsStrength in
+                gpsStatusImageView.image = gpsStrength.image
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Binds the drone name from the view model to the device name label
+    func bindDroneName() {
+        viewModel?.$droneName
+            .sink { [unowned self] droneName in
+                nameDeviceLabel.text = droneName
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Binds the cellular strength from the view model to the network image view
+    func bindCellularStrength() {
+        viewModel?.$cellularStrength
+            .sink { [unowned self] cellularStrength in
+                let isCellularActive = viewModel?.currentLink == .cellular
+                networkImageView.image = cellularStrength.signalIcon(isLinkActive: isCellularActive)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Binds the device connection state from the view model to the device state labal.
+    func bindConnectionState() {
+        viewModel?.$connectionState
+            .sink { [unowned self] _ in
+                if let firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel {
+                    setStateDeviceButton(with: firmwareAndMissionToUpdateModel)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     /// This method is used to clean UI before setting value from the state.
     func cleanViews() {
         networkImageView.image = nil
+        batteryLevelImageView.image = nil
         nameDeviceLabel.text = nil
-        stateDeviceLabel.text = nil
         batteryValueLabel.text = nil
-        needUpdateButton.isHidden = true
-        bottomView.isHidden = false
         wifiStatusImageView.image = nil
         gpsStatusImageView.image = nil
-        stateDeviceLabel.text = nil
     }
 
     /// This method is used to clean all current states.
     func cleanStates() {
         FirmwareAndMissionsInteractor.shared.unregister(firmwareAndMissionsUpdateListener)
         firmwareAndMissionToUpdateModel = nil
-        viewModel?.state.valueChanged = nil
     }
 }
 
 // MARK: - Private Funcs
 private extension DashboardDroneCell {
-    /// Listens view model.
-    func listenViewModel() {
-        viewModel?.state.valueChanged = { [weak self] state in
-            self?.updateCell(state)
-        }
-        if let state = viewModel?.state.value {
-            updateCell(state)
-        }
-    }
-
-    /// Updates cell with current state.
-    ///
-    /// - Parameters:
-    ///    - state: drone's infos state
-    func updateCell(_ state: DroneInfosState) {
-        let isCellularActive = state.currentLink == .cellular
-        updateBatteryLevel(state.batteryLevel.currentValue)
-        wifiStatusImageView.image = state.wifiStrength.signalIcon(isLinkActive: !isCellularActive)
-        gpsStatusImageView.image = state.gpsStrength.image
-        nameDeviceLabel.text = state.droneName
-        networkImageView.image = state.cellularStrength.signalIcon(isLinkActive: isCellularActive)
-
-        if let firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel {
-            setStateDeviceLabel(with: firmwareAndMissionToUpdateModel)
-        }
-    }
 
     /// Sets the state device label.
     ///
     /// - Parameters:
     ///    - firmwareAndMissionToUpdateModel: The firmware and mission update model
-    func setStateDeviceLabel(with firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel) {
-        guard let droneInfosState = viewModel?.state.value else { return }
+    func setStateDeviceButton(with firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel) {
+        guard let droneInfosViewModel = viewModel else { return }
 
-        let droneCalibrationRequired = droneInfosState.isConnected() == true
-            && droneInfosState.requiresCalibration
+        let droneCalibrationRequired = droneInfosViewModel.connectionState == .connected
+            && droneInfosViewModel.requiresCalibration
 
         switch firmwareAndMissionToUpdateModel {
         case .upToDate where droneCalibrationRequired,
              .notInitialized where droneCalibrationRequired:
-            stateDeviceLabel.text = L10n.remoteCalibrationRequired
-            stateDeviceLabel.textColor = ColorName.redTorch.color
+            deviceStateButton.update(with: DeviceStateButton.Status.calibrationRequired, title: L10n.remoteCalibrationRequired)
         default:
-            stateDeviceLabel.textColor = firmwareAndMissionToUpdateModel
-                .stateDeviceLabelTextColor(deviceConnectionState: droneInfosState.connectionState)
-            stateDeviceLabel.text = firmwareAndMissionToUpdateModel
-                .stateDeviceLabelText(deviceConnectionState: droneInfosState.connectionState)
-        }
-
-        setNeedUpdateButtonLayoutForDroneCase(with: firmwareAndMissionToUpdateModel,
-                                              droneInfosState: droneInfosState)
-    }
-
-    /// Sets the need update button layout.
-    ///
-    /// - Parameters:
-    ///    - firmwareAndMissionToUpdateModel: The firmware and mission update model
-    ///    - droneInfosState: The view model state for drone cell
-    func setNeedUpdateButtonLayoutForDroneCase(with firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel,
-                                               droneInfosState: DroneInfosState) {
-        switch firmwareAndMissionToUpdateModel {
-        case .upToDate,
-             .notInitialized:
-            needUpdateButton.isHidden = true
-        case .firmware,
-             .singleMission,
-             .missions:
-            needUpdateButton.isHidden = false
-            let buttonTitle = firmwareAndMissionToUpdateModel
-                .stateDeviceLabelText(deviceConnectionState: droneInfosState.connectionState)
-            needUpdateButton.setup(with: buttonTitle)
+            let connectionState = droneInfosViewModel.connectionState
+            let title = firmwareAndMissionToUpdateModel.stateDeviceButtonTitle(deviceConnectionState: connectionState)
+            let status = firmwareAndMissionToUpdateModel.stateDeviceButtonStatus(deviceConnectionState: connectionState)
+            deviceStateButton.update(with: status, title: title)
         }
     }
 }

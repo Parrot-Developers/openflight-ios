@@ -35,17 +35,26 @@ final class RemoteDetailsInformationsViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var serialNumberView: DeviceInformationsView!
     @IBOutlet private weak var hardwareVersionView: DeviceInformationsView!
+    @IBOutlet private weak var firmwareVersionView: DeviceInformationsView!
     @IBOutlet private weak var resetButton: UIButton!
 
     // MARK: - Private Properties
-    private var viewModel: RemoteDetailsInformationsViewModel = RemoteDetailsInformationsViewModel()
+    private var viewModel: RemoteDetailsInformationsViewModel!
     private weak var coordinator: RemoteCoordinator?
 
     // MARK: - Setup
-    static func instantiate(coordinator: RemoteCoordinator) -> RemoteDetailsInformationsViewController {
+    /// Instantiate the view controller.
+    ///
+    /// - Parameters:
+    ///     - coordinator: the coordinator
+    ///     - viewModel: the view model
+    /// - Returns: the newly created controller.
+    static func instantiate(coordinator: RemoteCoordinator,
+                            viewModel: RemoteDetailsInformationsViewModel
+    ) -> RemoteDetailsInformationsViewController {
         let viewController = StoryboardScene.RemoteDetailsInformations.initialScene.instantiate()
         viewController.coordinator = coordinator
-
+        viewController.viewModel = viewModel
         return viewController
     }
 
@@ -120,6 +129,8 @@ private extension RemoteDetailsInformationsViewController {
 
         serialNumberView.model = DeviceInformationsModel(title: L10n.remoteDetailsSerialNumber,
                                                          description: state.serialNumber)
+        firmwareVersionView.model = DeviceInformationsModel(title: L10n.deviceDetailsFirmwareVersion,
+                                                            description: state.firmwareVersion)
         hardwareVersionView.model = DeviceInformationsModel(title: L10n.droneDetailsHardwareVersion,
                                                             description: state.hardwareVersion)
     }

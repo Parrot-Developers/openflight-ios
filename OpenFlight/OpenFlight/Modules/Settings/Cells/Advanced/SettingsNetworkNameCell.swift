@@ -32,7 +32,7 @@ import UIKit
 import Reusable
 
 /// Delegate protocol for `SettingsNetworkNameCell`.
-protocol SettingsNetworkNameDelegate: class {
+protocol SettingsNetworkNameDelegate: AnyObject {
     /// Tells when user edits network name.
     func didStartNameEditing()
 }

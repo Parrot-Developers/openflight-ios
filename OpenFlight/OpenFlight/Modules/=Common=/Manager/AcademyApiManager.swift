@@ -28,6 +28,8 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import GroundSdk
+
 // MARK: - AcademyApiManager
 /// Manager that handles all methods relative to Academy API.
 public class AcademyApiManager {
@@ -99,6 +101,36 @@ private extension AcademyApiManager {
 
 // MARK: - Public Funcs
 public extension AcademyApiManager {
+
+    /// Makes a DELETE request with parameters and returns the response.
+    ///
+    /// - Parameters:
+    ///    - endpoint: Academy API endpoint to reach.
+    ///    - params: Parameters necessary for the request.
+    ///    - session: Custom session.
+    ///    - completion: Callback with the server response.
+    func delete(_ endpoint: String,
+                session: URLSession,
+                completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
+        //TODO: Change competion type to Result<Data, Error>
+
+        guard let url = URL(string: AcademyApiManager.baseURL + endpoint) else {
+            completion(nil, AcademyApiManagerError.badURL)
+            return
+        }
+
+        var request: URLRequest = URLRequest(url: url)
+        request.httpMethod = RequestType.delete
+        request.setValue(RequestHeaderFields.appJson, forHTTPHeaderField: RequestHeaderFields.contentType)
+
+        session.dataTask(with: request) { data, response, error in
+            self.treatResponse(data: data,
+                               response: response,
+                               error: error,
+                               completion: completion)
+        }.resume()
+    }
+
     /// Makes a GET request with custom parameters and returns a callback with the response.
     ///
     /// - Parameters:
@@ -151,6 +183,40 @@ public extension AcademyApiManager {
         }
     }
 
+    /// Makes a PUT request with parameters and returns the response.
+    ///
+    /// - Parameters:
+    ///    - endpoint: Academy API endpoint to reach.
+    ///    - params: Parameters necessary for the request.
+    ///    - session: Custom session.
+    ///    - completion: Callback with the server response.
+    func put(_ endpoint: String,
+             params: [String: Any],
+             session: URLSession,
+             completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
+        guard let url = URL(string: AcademyApiManager.baseURL + endpoint) else {
+            completion(nil, AcademyApiManagerError.badURL)
+            return
+        }
+
+        var request: URLRequest = URLRequest(url: url)
+        request.httpMethod = RequestType.put
+        request.setValue(RequestHeaderFields.appJson, forHTTPHeaderField: RequestHeaderFields.contentType)
+
+        do {
+            let httpBody = try JSONSerialization.data(withJSONObject: params, options: [])
+            request.httpBody = httpBody
+            session.dataTask(with: request) { data, response, error in
+                self.treatResponse(data: data,
+                                   response: response,
+                                   error: error,
+                                   completion: completion)
+            }.resume()
+        } catch let error {
+            completion(nil, error)
+        }
+    }
+
     /// Handles the Data response with multiple verifications and returns the response in a Data object if it's correct.
     ///
     /// - Parameters:
@@ -162,7 +228,13 @@ public extension AcademyApiManager {
                        response: URLResponse?,
                        error: Error?,
                        completion: @escaping (_ jsonDict: Data?, _ error: Error?) -> Void) {
-        guard error == nil else { return completion(nil, error) }
+        //TODO: Change competion type to Result<Data, Error>
+
+        guard error == nil else {
+            ULog.e(.academyApiTag, "AcademyAPI Response error : \(error?.localizedDescription ?? "")")
+
+            return completion(nil, AcademyApiManagerError.unknownError)
+        }
 
         guard let httpResponse = response as? HTTPURLResponse else {
             return completion(nil, AcademyApiManagerError.serverError)

@@ -31,7 +31,7 @@
 import Reusable
 
 // MARK: - Protocols
-protocol CircleProgressViewDelegate: class {
+protocol CircleProgressViewDelegate: AnyObject {
     /// Tells that the animation is finished.
     func animationProgressFinished()
 }
@@ -92,6 +92,7 @@ final class CircleProgressView: UIView, NibOwnerLoadable {
     func setProgress(_ progress: Float, duration: TimeInterval = 0.0) {
         let progress = min(1, max(0, progress))
         let isAnimated = duration > 0.0
+        progressLayer.removeAnimation(forKey: Constants.layerAnimationKey)
         drawProgressLayer(strokeColor: strokeColor, progress: CGFloat(progress), animated: isAnimated)
         if isAnimated {
             animateProgressLayer(duration: duration)

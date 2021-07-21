@@ -41,7 +41,7 @@ enum GalleryMediaDownloadState: CaseIterable {
 
     static let defaultValue: GalleryMediaDownloadState = .toDownload
 
-    var icon: UIImage? {
+    var icon: UIImage {
         switch self {
         case .downloading:
             return Asset.Gallery.mediaDownloading.image
@@ -51,6 +51,31 @@ enum GalleryMediaDownloadState: CaseIterable {
             return Asset.Gallery.mediaDownloaded.image
         case .error:
             return Asset.Gallery.mediaCorrupted.image
+        }
+    }
+
+    var backgroundColor: UIColor {
+        switch self {
+        case .toDownload:
+            return ColorName.greenMediumSea.color
+        case .downloaded:
+            return .white
+        case .downloading:
+            return ColorName.greenSpring20.color
+        case .error:
+            return .clear
+        }
+    }
+
+    var tintColor: UIColor {
+        switch self {
+        case .toDownload:
+            return .white
+        case .downloading:
+            return ColorName.greenSpring.color
+        case .downloaded,
+             .error:
+            return ColorName.greenMediumSea.color
         }
     }
 

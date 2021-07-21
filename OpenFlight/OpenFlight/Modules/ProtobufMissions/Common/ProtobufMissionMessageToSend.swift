@@ -35,9 +35,9 @@ import GroundSdk
 /// A wrapper for GroundSDK `MissionMessage`: used to send message to the drone.
 public struct ProtobufMissionMessageToSend: MissionMessage {
     // MARK: - Public Properties
-    public let uid: String
-    public let messageNumber: UInt
-    public let packageName: String
+    public let missionUid: String
+    public let messageUid: UInt
+    public let serviceUid: UInt
     public let payload: Data
 
     // MARK: - Init
@@ -47,9 +47,9 @@ public struct ProtobufMissionMessageToSend: MissionMessage {
     ///   - payload: The payload
     public init(mission: ProtobufMissionSignature,
                 payload: Data) {
-        self.uid = mission.missionUID
-        self.messageNumber = 1
-        self.packageName = mission.packageName
+        self.missionUid = mission.missionUID
+        self.messageUid = 1
+        self.serviceUid = mission.serviceUidCommand
         self.payload = payload
     }
 }

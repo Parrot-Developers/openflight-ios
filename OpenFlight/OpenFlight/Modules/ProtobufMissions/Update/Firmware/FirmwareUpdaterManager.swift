@@ -184,7 +184,7 @@ private extension FirmwareUpdaterManager {
             return
         }
 
-        if firmwareUpdaterWrapper.isDownloadFinished() && !wasUpdateStarted {
+        if firmwareUpdaterWrapperState.downloadState == .success && !wasUpdateStarted {
             wasUpdateStarted = true
             firmwareUpdaterWrapper.startFirmwareUpdate()
         }
@@ -194,23 +194,27 @@ private extension FirmwareUpdaterManager {
     ///
     /// - Returns: The current `FirmwareGlobalUpdatingState`.
     func firmwareGlobalUpdatingState() -> FirmwareGlobalUpdatingState {
-        guard firmwareToUpdate != nil else {
-            ULog.d(.missionUpdateTag, "Firmware global state not initialized")
+        let globalState: FirmwareGlobalUpdatingState
 
-            return .notInitialized
+        if firmwareToUpdate == nil {
+            globalState = .notInitialized
+        } else if areProcessesFinished() {
+            globalState = downloadOrUpdateContainError() ? .error : .success
+        } else if firmwareUpdaterWrapper.state.value.downloadState == .downloading {
+            globalState = .downloading
+        } else {
+            switch firmwareUpdaterWrapper.state.value.updateState {
+            case .uploading,
+                 .processing:
+                globalState = .uploading
+            case .waitingForReboot:
+                globalState = .waitingForReboot
+            default:
+                globalState = .ongoing
+            }
         }
 
-        let processesAreFinished = areProcessesFinished()
-        if !processesAreFinished {
-            let globalState: FirmwareGlobalUpdatingState = firmwareUpdaterWrapper.isWaitingForReboot() ? .waitingForReboot : .ongoing
-            ULog.d(.missionUpdateTag, "Firmware global state \(globalState)")
-
-            return globalState
-        }
-
-        let globalState: FirmwareGlobalUpdatingState = downloadOrUpdateContainError() ? .error : .success
         ULog.d(.missionUpdateTag, "Firmware global state \(globalState)")
-
         return globalState
     }
 

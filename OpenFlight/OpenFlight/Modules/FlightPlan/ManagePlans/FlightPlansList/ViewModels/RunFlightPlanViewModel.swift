@@ -78,6 +78,11 @@ final class RunFlightPlanState: DeviceConnectionState {
     var isAvailable: Bool {
         return isConnected() && unavailabilityReasons.hasNoBlockingIssue
     }
+
+    var hasBlockingIssue: Bool {
+        return !unavailabilityReasons.hasNoBlockingIssue
+    }
+
     var formattedDuration: String? {
         switch runState {
         case .playing,
@@ -136,6 +141,19 @@ final class RunFlightPlanState: DeviceConnectionState {
             .prefix(latestItem + 1)
             .filter { $0 is MavlinkStandard.NavigateToWaypointCommand }
             .count - 1
+    }
+
+    /// Return the index of the last mavlink command
+    var lastMavlinkCommandIndex: Int {
+        var lastIndex = mavlinkCommands.count - 1
+        // mavlinkCommands is an ordered list. Search for the first RTH in the list and use the
+        // previous index as the last mavlink command item. Note: A potential flightplan
+        // with more than one RTH will be marked as completed as long as the first one of them
+        // was reached.
+        if let firstRthIndex = mavlinkCommands.firstIndex(where: { $0 is MavlinkStandard.ReturnToLaunchCommand }) {
+            lastIndex = firstRthIndex - 1
+        }
+        return lastIndex
     }
 
     // MARK: - Init
@@ -204,9 +222,11 @@ final class RunFlightPlanState: DeviceConnectionState {
             && self.activationError == other.activationError
             && self.uploadState == other.uploadState
             && self.pilotingState == other.pilotingState
+            && self.unavailabilityReasons == other.unavailabilityReasons
             && self.isAvailable == other.isAvailable
             && self.isFileKnownByDrone == other.isFileKnownByDrone
             && self.isFileUpToDate == other.isFileUpToDate
+            && self.mavlinkCommands == other.mavlinkCommands
             && self.duration == other.duration
             && self.latestItemExecuted == other.latestItemExecuted
             && self.completed == other.completed
@@ -239,10 +259,10 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
     // MARK: - Private Properties
     private var flightPlanPilotingRef: Ref<FlightPlanPilotingItf>?
     private weak var flightPlanViewModel: FlightPlanViewModel?
-    private var flightPlanSettingsHandler: FlightPlanSettingsHandler
     private var runningTimer: Timer?
     private var didStartExecution: Bool = false
     private var lastExecutionId: String?
+    private unowned var flightPlanTypeStore: FlightPlanTypeStore
     private var flightPlanExecution: FlightPlanExecution? {
         didSet {
             if let strongFlightPlanExecution = flightPlanExecution {
@@ -264,8 +284,8 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
     ///     - flightPlanViewModel: Flight Plan view model
     init(flightPlanViewModel: FlightPlanViewModel) {
         self.flightPlanViewModel = flightPlanViewModel
-        flightPlanSettingsHandler = FlightPlanSettingsHandler(flightPlanViewModel: flightPlanViewModel)
-
+        // TODO injection issue
+        flightPlanTypeStore = Services.hub.flightPlanTypeStore
         super.init()
     }
 
@@ -274,7 +294,11 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
         flightPlanPilotingRef = nil
         flightPlanExecution?.state = .stopped
         stopRunningTimer()
-        handleFlightEnds()
+
+        if self.state.value.runState.isActive {
+            var copy = self.state.value.copy()
+            handleFlightEnds(state: &copy)
+        }
     }
 
     // MARK: - Override Funcs
@@ -282,18 +306,11 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
         super.listenDrone(drone: drone)
 
         listenFlightPlanPiloting(drone: drone)
-        flightPlanSettingsHandler.saveDroneSettings(drone: drone)
-    }
-
-    override func droneConnectionStateDidChange() {
-        if state.value.isConnected(),
-           let drone = self.drone {
-            flightPlanSettingsHandler.saveDroneSettings(drone: drone)
-        }
     }
 
     // MARK: - Internal Funcs
-    /// Toggle play/pause.
+
+    /// Play or pause the execution of the flightplan currently open.
     func togglePlayPause() {
         let state = self.state.value
         guard state.runState != .uploading,
@@ -303,7 +320,7 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
         state.runState == .playing ? pause() : play()
     }
 
-    /// Resume execution.
+    /// Resume an incompleted flightplan from last executed item.
     ///
     /// - Parameters:
     ///     - execution: Flight plan execution to resume.
@@ -320,10 +337,10 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
         return true
     }
 
-    /// Stop Flight Plan.
+    /// Stop flightplan execution.
     func stop() {
         let deactivationSucceeded = self.getPilotingItf()?.deactivate() ?? false
-        let copy = self.state.value.copy()
+        var copy = self.state.value.copy()
         // If the FlightPlanPilotingItf interface was previously paused the it can not be deactivated.
         // Note that "pausing" a FlightPlanPilotingItf is equivalent to calling .decativate().
         // So when transitioning from a paused state to a stopped one always update the state so
@@ -331,7 +348,7 @@ final class RunFlightPlanViewModel: DroneStateViewModel<RunFlightPlanState> {
         if deactivationSucceeded || copy.runState == .paused {
             if copy.runState == .paused {
                 // Prevents from missing case pause, then stop.
-                handleFlightEnds()
+                handleFlightEnds(state: &copy)
             }
             self.flightPlanExecution?.state = .stopped
             copy.runState = .userStopped
@@ -359,15 +376,35 @@ private extension RunFlightPlanViewModel {
                   let pilotingItf = flightPlanPiloting else { return }
 
             var shouldHandleResuming: Bool = false
-            let copy = strongSelf.state.value.copy()
+            var copy = strongSelf.state.value.copy()
             copy.activationError = pilotingItf.latestActivationError
             copy.pilotingState = pilotingItf.state
             copy.uploadState = pilotingItf.latestUploadState
             copy.unavailabilityReasons = pilotingItf.unavailabilityReasons
             copy.isFileKnownByDrone = pilotingItf.flightPlanFileIsKnown
-            copy.latestItemExecuted = pilotingItf.latestMissionItemExecuted
 
-            strongSelf.updateFlightPlanItemExecution(pilotingItf.latestMissionItemExecuted)
+            // Find largest mavlink item between skipped and executed
+            var largestMissionItem: Int?
+            if let latestSkipped = pilotingItf.latestMissionItemSkipped {
+                if let latestExecuted = pilotingItf.latestMissionItemExecuted {
+                    largestMissionItem = max(latestSkipped, latestExecuted)
+                } else {
+                    largestMissionItem = latestSkipped
+                }
+            } else {
+                largestMissionItem = pilotingItf.latestMissionItemExecuted
+            }
+
+            // Update latest item executed only if received idx is greater than current idx
+            if let receivedItemExecuted = largestMissionItem,
+               let latestItemExecuted = copy.latestItemExecuted,
+               receivedItemExecuted > latestItemExecuted {
+                copy.latestItemExecuted = receivedItemExecuted
+                strongSelf.updateFlightPlanItemExecution(receivedItemExecuted)
+
+            } else if copy.latestItemExecuted == nil {
+                copy.latestItemExecuted = pilotingItf.latestMissionItemExecuted
+            }
 
             // If a flight plan is active, we start a new execution.
             if pilotingItf.state == .active,
@@ -376,7 +413,7 @@ private extension RunFlightPlanViewModel {
                 strongSelf.startFlightPlanExecution()
             } else if pilotingItf.state == .idle,
                       strongSelf.state.value.runState == .userStopped {
-                strongSelf.handleFlightEnds()
+                strongSelf.handleFlightEnds(state: &copy)
             }
 
             switch pilotingItf.state {
@@ -399,13 +436,15 @@ private extension RunFlightPlanViewModel {
             case .uploading:
                 copy.runState = .uploading
             case .uploaded where copy.runState == .uploading:
+                copy.isFileUpToDate = true
+
                 // Try to handle auto play
                 // directly via flightPlanPiloting to ease state change.
                 if copy.pilotingState == .idle {
                     // Ends upload: start fight plan.
                     copy.runState = .playing
                     if strongSelf.activate(isPaused: false ) {
-                        strongSelf.startRunningTimer(resetStartDate: true)
+                        strongSelf.startRunningTimer(state: &copy, resetStartDate: true)
                     }
                 }
             case .failed:
@@ -420,10 +459,10 @@ private extension RunFlightPlanViewModel {
             strongSelf.state.set(copy)
 
             if strongSelf.state.value.completed {
-                strongSelf.handleFlightEnds()
+                strongSelf.handleFlightEnds(state: &copy)
             } else if shouldHandleResuming {
-                strongSelf.startRunningTimer(resetStartDate: true)
-                strongSelf.handleAppResumeWhileFlightPlanRunning()
+                strongSelf.startRunningTimer(state: &copy, resetStartDate: true)
+                strongSelf.handleAppResumeWhileFlightPlanRunning(state: &copy)
             }
         }
     }
@@ -447,37 +486,39 @@ private extension RunFlightPlanViewModel {
         var interpreter: FlightPlanInterpreter = .standard
         if let flightPlan = self.flightPlanViewModel?.flightPlan,
            let fpStringType = flightPlan.type,
-           let flightPlanType = FlightPlanTypeManager.shared.typeForKey(fpStringType) {
+           let flightPlanType = flightPlanTypeStore.typeForKey(fpStringType) {
             interpreter = flightPlanType.mavLinkType
         }
 
+        // Let the FP watcher know the FP will be activated
+        if let flightPlan = self.flightPlanViewModel?.flightPlan {
+            Services.hub.activeFlightPlanWatcher.flightPlanWillBeActivated(flightPlan)
+        }
+        let result: Bool
+
         // Start run.
-        let activationSuccess: Bool
         if let missionItem = flightPlanExecution?.latestItemExecuted,
            interface.activateAtMissionItemSupported {
             // Resume flight plan at missionItem.
-            activationSuccess = interface.activate(restart: !isPaused,
-                                                   interpreter: interpreter,
-                                                   missionItem: missionItem)
+            result = interface.activate(restart: !isPaused,
+                                      interpreter: interpreter,
+                                      missionItem: missionItem)
         } else {
             // Start flight plan from its begining.
-            activationSuccess = interface.activate(restart: !isPaused,
-                                                   interpreter: interpreter)
+            result = interface.activate(restart: !isPaused,
+                                      interpreter: interpreter)
         }
-
-        if activationSuccess {
-            // Apply settings when FP was activated.
-            flightPlanSettingsHandler.applyFlightPlanSetting()
+        if !result {
+            Services.hub.activeFlightPlanWatcher.flightPlanActivationFailed()
         }
-
-        return activationSuccess
+        return result
     }
 
     // MARK: - Controls
     /// Plays or uploads Flight Plan regarding state.
     func play() {
         // Reset ending execution state and completed state.
-        let copy = self.state.value.copy()
+        var copy = self.state.value.copy()
         copy.flightPlanExecutionEndingState = .notEnded
         copy.completed = false
         self.state.set(copy)
@@ -487,25 +528,24 @@ private extension RunFlightPlanViewModel {
            state.isFileUpToDate {
             let isPaused = state.runState == .paused
             if activate(isPaused: isPaused) {
-                let copy = self.state.value.copy()
                 // When resuming an execution, we specify that the run state is stopped
                 // to prevent bad behaviours in the listener of the flightPlan piloting interface.
                 copy.runState = .stopped
                 self.state.set(copy)
-                startRunningTimer(resetStartDate: !isPaused)
+                startRunningTimer(state: &copy, resetStartDate: !isPaused)
             }
         } else if state.isAvailable {
-            // When starting an execution, we specify that the run state is stopped
-            // to prevent bad behaviours in the listener of the flightPlan piloting interface.
-            let copy = self.state.value.copy()
-            copy.runState = .stopped
+            // When starting an execution, we specify that the run state is uploading
+            // to prevent bad behaviours in the listener of the flightPlan piloting interface
+            // in the case of an upload that happens too fast.
+            copy.runState = .uploading
             self.state.set(copy)
             self.sendMavlinkToDevice()
         }
     }
 
     /// Handles special case when app just resuming and a flight plan is runnning.
-    func handleAppResumeWhileFlightPlanRunning() {
+    func handleAppResumeWhileFlightPlanRunning(state: inout RunFlightPlanState) {
         // Check the flightPlanExecution to be sur the FP was not run by self
         // Check flight plan is running
         // Get recovery if and deduce execution object if exists.
@@ -519,25 +559,24 @@ private extension RunFlightPlanViewModel {
         // Set the previously created execution to self
         self.flightPlanExecution = execution
 
-        let copy = self.state.value.copy()
         // Get commands back.
         if let path = flightPlanExecution?.mavlinkUrl?.path,
            FileManager.default.fileExists(atPath: path),
            let mavlinkCommands: [MavlinkStandard.MavlinkCommand] = (try? MavlinkStandard.MavlinkFiles.parse(filepath: path)) {
-            copy.mavlinkCommands = mavlinkCommands
+            state.mavlinkCommands = mavlinkCommands
         }
 
         // Update latestItemExecuted if needed (case segment was not finished).
-        if copy.latestItemExecuted == nil {
-            copy.latestItemExecuted = execution.latestItemExecuted
+        if state.latestItemExecuted == nil {
+            state.latestItemExecuted = execution.latestItemExecuted
         }
         // Update running timer.
-        copy.duration = execution.startDate.timeIntervalSinceNow * -1
-        self.state.set(copy)
+        state.duration = execution.startDate.timeIntervalSinceNow * -1
+        self.state.set(state)
 
         // Start timer if needed.
         if self.state.value.runState == .playing {
-            self.startRunningTimer(resetStartDate: false)
+            self.startRunningTimer(state: &state, resetStartDate: false)
         }
     }
 
@@ -559,13 +598,12 @@ private extension RunFlightPlanViewModel {
         else {
             return
         }
-        // Update state, assuming SDK's uploadFlightPlan will work.
         let copy = self.state.value.copy()
         if flightPlan.canGenerateMavlink == false,
            FileManager.default.fileExists(atPath: path) {
             // Do not generate Mavlink, use the stored one.
             if let fpStringType = flightPlan.type,
-               let flightPlanType = FlightPlanTypeManager.shared.typeForKey(fpStringType),
+               let flightPlanType = flightPlanTypeStore.typeForKey(fpStringType),
                flightPlanType.mavLinkType == .standard {
                 // If Flight Plan uses MavlinkStandard we can parse its commands to display progress.
                 copy.mavlinkCommands = (try? MavlinkStandard.MavlinkFiles.parse(filepath: path)) ?? []
@@ -577,7 +615,6 @@ private extension RunFlightPlanViewModel {
             // TODO: handle error for generation
             copy.mavlinkCommands = mavlinkCommands
         }
-        copy.isFileUpToDate = true
         self.state.set(copy)
         // Send Mavlink to drone.
         self.getPilotingItf()?.uploadFlightPlan(filepath: path)
@@ -588,11 +625,10 @@ private extension RunFlightPlanViewModel {
     ///
     /// - Parameters:
     ///     - resetStartDate: reset start date if true
-    func startRunningTimer(resetStartDate: Bool) {
+    func startRunningTimer(state: inout RunFlightPlanState, resetStartDate: Bool) {
         if resetStartDate {
-            let copy = self.state.value.copy()
-            copy.duration = 0.0
-            self.state.set(copy)
+            state.duration = 0.0
+            self.state.set(state)
         }
         runningTimer?.invalidate()
         runningTimer = Timer.scheduledTimer(withTimeInterval: Constants.timerDelay,
@@ -665,6 +701,8 @@ private extension RunFlightPlanViewModel {
         let flightPlanRecoveryId = drone?.getPilotingItf(PilotingItfs.flightPlan)?.flightPlanId
         let flightId = self.drone?.getInstrument(Instruments.flightInfo)?.flightId
         let settings = flightPlanViewModel?.flightPlan?.settings
+        var executions = flightPlanViewModel?.executions.count ?? 0
+
         if self.flightPlanExecution == nil {
             // Starts new execution.
             self.flightPlanExecution = FlightPlanExecution(flightPlanId: flightPlanId,
@@ -672,6 +710,8 @@ private extension RunFlightPlanViewModel {
                                                            startDate: Date(),
                                                            settings: settings,
                                                            flightPlanRecoveryId: flightPlanRecoveryId)
+            // Sets the execution index.
+            executions += 1
         } else {
             // Resumes execution: Updates settings and dates.
             self.flightPlanExecution?.state = .initialized
@@ -687,24 +727,43 @@ private extension RunFlightPlanViewModel {
                 self.flightPlanExecution?.startDate = Date()
             }
             self.flightPlanExecution?.endDate = nil
+            // Sets the execution index.
+            if let executionId = self.flightPlanExecution?.executionId,
+               let executionIndex = flightPlanViewModel?.executions.firstIndex(where: { $0.executionId == executionId }) {
+                executions = Int(executionIndex)
+            }
         }
 
-        guard let execution = self.flightPlanExecution else { return }
+        guard let execution = self.flightPlanExecution,
+              let mediaMetadata = self.drone?.getPeripheral(Peripherals.mainCamera2)?.mediaMetadata else {
+            return
+        }
 
         self.flightPlanViewModel?.saveExecution(execution)
-        // Sets the custom Id of the drone media meta data with the flight plan execution Id to get media that belong to the flight plan execution.
-        self.drone?.getPeripheral(Peripherals.mainCamera2)?.mediaMetadata?.customId = execution.executionId
+        // Sets the custom Id and the custom title of the drone media metadata for the flight plan execution.
+        // To get media title + index that belong to the flight plan execution.
+        mediaMetadata.customId = execution.executionId
+        mediaMetadata.customTitle = "\(flightPlanViewModel?.state.value.title ?? "") (\(executions))"
     }
 
     /// Saves flight plan execution in database.
     func saveFlightPlanExecution() {
-        // Reset the custom Id for the drone media meta data.
-        self.drone?.getPeripheral(Peripherals.mainCamera2)?.mediaMetadata?.customId = ""
-
+        // Resets the custom id and the custom title for the drone media metadata.
+        self.drone?.getPeripheral(Peripherals.mainCamera2)?.resetCustomMediaMetadata()
         guard let strongFpExecution = self.flightPlanExecution else { return }
 
+        // Flight plan must be completed with all items executed to complete the execution.
         if self.state.value.completed {
-            strongFpExecution.state = .completed
+            var latestItemExecuted = state.value.latestItemExecuted
+            if let recoveryInfo = drone?.getPilotingItf(PilotingItfs.flightPlan)?.recoveryInfo,
+               self.flightPlanExecution?.flightPlanRecoveryId == recoveryInfo.id {
+                latestItemExecuted = recoveryInfo.latestMissionItemExecuted
+            }
+
+            if let latestItemExecuted = latestItemExecuted,
+               latestItemExecuted >= state.value.lastMavlinkCommandIndex {
+                strongFpExecution.state = .completed
+            }
         }
 
         strongFpExecution.endDate = Date()
@@ -714,20 +773,24 @@ private extension RunFlightPlanViewModel {
         didStartExecution = false
     }
 
-    /// Updates flight Plan execution ending state.
-    func updateExecutionEnds() {
-        guard let strongLastExecutionId = lastExecutionId else { return }
-
-        let copy = self.state.value.copy()
-        copy.flightPlanExecutionEndingState = .ended(strongLastExecutionId)
-        self.state.set(copy)
-    }
-
     /// Handle flight ends.
-    func handleFlightEnds() {
-        flightPlanSettingsHandler.restoreSettings()
+    func handleFlightEnds(state: inout RunFlightPlanState) {
         saveFlightPlanExecution()
-        updateExecutionEnds()
+
+        // Reset completed state to prevent extra handleFlightEnds() calls.
+        state.completed = false
+        if let strongLastExecutionId = lastExecutionId {
+            // Updates flight Plan execution ending state.
+            state.flightPlanExecutionEndingState = .ended(strongLastExecutionId)
+        }
+        self.state.set(state)
+
+        let newCopy = self.state.value.copy()
+        newCopy.flightPlanExecutionEndingState = .notEnded
+        self.state.set(newCopy)
+
+        lastExecutionId = nil
+
         drone?.getPilotingItf(PilotingItfs.flightPlan)?.clearRecoveryInfo()
     }
 }

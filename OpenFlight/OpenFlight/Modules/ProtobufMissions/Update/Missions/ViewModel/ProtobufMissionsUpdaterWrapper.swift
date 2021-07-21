@@ -31,11 +31,16 @@
 import GroundSdk
 import SwiftProtobuf
 
+// MARK: - Private Enums
+private enum Constants {
+    static let defaultProgress: Int = -1
+}
+
 // MARK: - ProtobufMissionsUpdaterState
 /// The states for `ProtobufMissionsUpdaterWrapper`.
 final class ProtobufMissionsUpdaterState: DeviceConnectionState {
     // MARK: - Private Properties
-    fileprivate(set) var currentUpdatingProgress: Int = -1
+    fileprivate(set) var currentUpdatingProgress: Int = Constants.defaultProgress
     fileprivate(set) var currentUpdatingState: MissionUpdaterUploadState?
     fileprivate(set) var currentUpdatingFilePath: String?
     fileprivate(set) var allMissionsOnDrone: [ProtobufMissionBasicInformation] = []
@@ -91,7 +96,7 @@ final class ProtobufMissionsUpdaterState: DeviceConnectionState {
 /// The view model that handles protobuf missions updates. Don't use this model directly, use `ProtobufMissionsUpdaterManager`.
 final class ProtobufMissionsUpdaterWrapper: DroneStateViewModel<ProtobufMissionsUpdaterState> {
     // MARK: - Internal Properties
-    private(set) var cancelableTaskCoreRecord: [String: CancelableTaskCore] = [:]
+    private(set) var cancelableTasks: [String: CancelableCore] = [:]
 
     // MARK: - Private Properties
     private var missionsUpdaterRef: Ref<MissionUpdater>?
@@ -112,8 +117,8 @@ final class ProtobufMissionsUpdaterWrapper: DroneStateViewModel<ProtobufMissions
 
     /// Resets the missions updater
     func resetMissionsUpdater() {
-        self.cancelableTaskCoreRecord = [:]
-        resetCurrentUpdatingFilePath()
+        self.cancelableTasks = [:]
+        resetState()
     }
 
     /// Triggers manual reboot.
@@ -141,16 +146,8 @@ final class ProtobufMissionsUpdaterWrapper: DroneStateViewModel<ProtobufMissions
             return
         }
 
-        update(currentUpdatingFilePath: filePathURL.absoluteString)
-        let cancelableCore = missionsUpdater.upload(filePath: filePathURL,
-                                                    overwrite: overwrite)
-
-        if let cancelableTaskCore = cancelableCore as? CancelableTaskCore {
-            ULog.d(.missionUpdateTag, "The mission \(filePathURL.absoluteString) is cancelable")
-            cancelableTaskCoreRecord[filePathURL.absoluteString] = cancelableTaskCore
-        } else {
-            ULog.d(.missionUpdateTag, "The mission \(filePathURL.absoluteString) is not cancelable")
-        }
+        cancelableTasks[filePathURL.absoluteString] = missionsUpdater.upload(filePath: filePathURL,
+                                                                             overwrite: overwrite)
     }
 
     /// Manually browse the missions on drone.
@@ -240,11 +237,11 @@ private extension ProtobufMissionsUpdaterWrapper {
         ULog.d(.missionUpdateTag, "Missions update state: \(stateValue), progress: \(progressValue), file path: \(pathValue)")
     }
 
-    /// Updates the states.
+    /// Updates the state.
     ///
     /// - Parameters:
-    ///     - currentUpdatingState: The  current updating state
-    ///     - currentUpdatingFilePath: The current updating file's path
+    ///     - currentUpdatingState: The current updating state
+    ///     - currentUpdatingFilePath: The current updating file path
     func update(currentUpdatingState: MissionUpdaterUploadState,
                 currentUpdatingFilePath: String) {
         let copy = self.state.value.copy()
@@ -253,20 +250,13 @@ private extension ProtobufMissionsUpdaterWrapper {
         self.state.set(copy)
     }
 
-    /// Updates the state with the potential current updating file's path.
-    ///
-    /// - Parameters:
-    ///     - currentUpdatingFilePath: The current updating file's path
-    func update(currentUpdatingFilePath: String) {
+    /// Resets the updater state.
+    func resetState() {
         let copy = self.state.value.copy()
-        copy.currentUpdatingFilePath = currentUpdatingFilePath
-        self.state.set(copy)
-    }
-
-    /// Resets the current updating file's path.
-    func resetCurrentUpdatingFilePath() {
-        let copy = self.state.value.copy()
+        copy.currentUpdatingProgress = Constants.defaultProgress
+        copy.currentUpdatingState = nil
         copy.currentUpdatingFilePath = nil
+        copy.allMissionsOnDrone = []
         self.state.set(copy)
     }
 }

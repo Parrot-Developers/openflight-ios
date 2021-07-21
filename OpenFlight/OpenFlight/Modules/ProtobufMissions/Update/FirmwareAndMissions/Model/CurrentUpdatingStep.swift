@@ -149,3 +149,25 @@ extension CurrentUpdatingStep {
         }
     }
 }
+
+extension MissionUpdaterError {
+    var description: String {
+        switch self {
+        case .badMissionFile:       return L10n.firmwareMissionUpdateErrorBadMission
+        case .serverError:          return L10n.firmwareMissionUpdateErrorServer
+        case .connectionError:      return L10n.firmwareMissionUpdateErrorConnection
+        case .badRequest:           return L10n.firmwareMissionUpdateErrorBadRequest
+        case .canceled:             return L10n.firmwareMissionUpdateErrorCancelled
+        case .busy:                 return L10n.firmwareMissionUpdateErrorBusy
+        case .missionAlreadyExists: return L10n.firmwareMissionUpdateErrorMissionAlreadyExists
+        case .installationFailed:   return L10n.firmwareMissionUpdateErrorInstallationFailed
+        case .noSpaceLeft:          return L10n.firmwareMissionUpdateErrorNoSpaceLeft
+        case .incorrectMethod:      return L10n.firmwareMissionUpdateErrorIncorrectMethod
+        case .invalidSignature:     return L10n.firmwareMissionUpdateErrorInvalidSignature
+        case .versionMismatch:      return L10n.firmwareMissionUpdateErrorVersionMismatch
+        case .modelMismatch:        return L10n.firmwareMissionUpdateErrorModelMismatch
+        case .badInfoFile:          return L10n.firmwareMissionUpdateErrorBadInfoFile
+        case .corruptedFile:        return L10n.firmwareMissionUpdateErrorCorruptedFile
+        }
+    }
+}

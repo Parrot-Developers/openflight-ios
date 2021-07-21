@@ -236,7 +236,7 @@ private class SightAngleAnalyser: SightAngleAnalysis {
     }
 }
 
-private protocol FollowingAngleAnalysis: class {
+private protocol FollowingAngleAnalysis: AnyObject {
     var currentAngle: Float { get }
     // var nilMotionTrigerOveride: (TimeInterval, EnumMotionAnalyse)? { get set }
     init(slicesNumber: UInt, plane: CameraPlane)

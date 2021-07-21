@@ -33,7 +33,7 @@ import Reusable
 
 // MARK: - Protocols
 /// Stop view protocol.
-public protocol StopViewDelegate: class {
+public protocol StopViewDelegate: AnyObject {
     /// Should be called when user click on stop view.
     func didClickOnStop()
 }

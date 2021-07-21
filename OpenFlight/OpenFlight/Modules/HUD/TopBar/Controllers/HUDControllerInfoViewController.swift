@@ -28,9 +28,10 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 // MARK: - Protocols
-protocol HUDControllerInfoViewControllerNavigation: class {
+protocol HUDControllerInfoViewControllerNavigation: AnyObject {
     /// Called when remote control informations screen should be opened.
     func openRemoteControlInfos()
 }
@@ -57,12 +58,12 @@ final class HUDControllerInfoViewController: UIViewController {
 
     // MARK: - Private Properties
     private let viewModel = ControllerInfosViewModel()
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        setupViewModel()
+        bindToViewModel()
     }
 }
 
@@ -70,38 +71,39 @@ final class HUDControllerInfoViewController: UIViewController {
 private extension HUDControllerInfoViewController {
     /// Called when user taps the view.
     @IBAction func controllerInfoTouchedUpInside(_ sender: Any) {
-        if viewModel.state.value.currentController == .remoteControl {
-            LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDTopBarButton.remoteControlDetails,
-                                 logType: .simpleButton)
-            navigationDelegate?.openRemoteControlInfos()
-        }
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDTopBarButton.remoteControlDetails,
+                             logType: .simpleButton)
+        navigationDelegate?.openRemoteControlInfos()
     }
 }
 
 // MARK: - Private Funcs
 private extension HUDControllerInfoViewController {
-    /// Sets up view model.
-    func setupViewModel() {
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.updateState(state)
-        }
-        updateState(viewModel.state.value)
-    }
 
-    /// Updates current controller state.
-    func updateState(_ state: ControllerInfosState) {
-        controllerImageView.image = state.currentController.batteryImage
-        gpsImageView.image = state.gpsStrength.image
-        updateBatteryLevel(state.batteryLevel)
-    }
+    func bindToViewModel() {
+        viewModel.$batteryLevel
+            .sink { [unowned self] batteryLevel in
+                if let level = batteryLevel.currentValue {
+                    batteryLevelLabel.attributedText = NSMutableAttributedString(withBatteryLevel: level)
+                } else {
+                    batteryLevelLabel.text = Style.dash
+                }
 
-    /// Updates battery level display.
-    func updateBatteryLevel(_ batteryLevel: BatteryValueModel) {
-        if let level = batteryLevel.currentValue {
-            batteryLevelLabel.attributedText = NSMutableAttributedString(withBatteryLevel: level)
-        } else {
-            batteryLevelLabel.text = Style.dash
-        }
-        batteryAlertBackgroundView.backgroundColor = batteryLevel.alertLevel.color
+                batteryAlertBackgroundView.backgroundColor = batteryLevel.alertLevel.color
+            }
+            .store(in: &cancellables)
+
+        viewModel.$currentController
+            .sink { [unowned self] controller in
+                self.view.isUserInteractionEnabled = controller == .remoteControl
+                controllerImageView.image = controller.batteryImage
+            }
+            .store(in: &cancellables)
+
+        viewModel.$gpsStrength
+            .sink { [unowned self] gpsStrength in
+                gpsImageView.image = gpsStrength.image
+            }
+            .store(in: &cancellables)
     }
 }

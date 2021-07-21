@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zxS-jz-EQH">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zxS-jz-EQH">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -56,7 +56,7 @@
                                         <rect key="frame" x="0.0" y="0.0" width="31" height="150"/>
                                         <subviews>
                                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Zoom max reached" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qKA-eY-Yh4" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="38" y="59.5" width="119.5" height="31"/>
+                                                <rect key="frame" x="38" y="59.5" width="101.5" height="31"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="31" id="Ctw-z2-ZQH"/>
@@ -80,7 +80,7 @@
                                                 </userDefinedRuntimeAttributes>
                                             </label>
                                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Max Tilt" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ydd-Y8-qtH" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="38" y="110.5" width="59.5" height="31"/>
+                                                <rect key="frame" x="38" y="110.5" width="41.5" height="31"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="31" id="R73-a7-w7k"/>
@@ -179,6 +179,7 @@
                                 </subviews>
                             </stackView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="1jJ-rj-rYb"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="mNG-Lo-JAx" firstAttribute="top" secondItem="BQq-ZJ-0gu" secondAttribute="top" id="UK6-3Y-Uwg"/>
@@ -186,7 +187,6 @@
                             <constraint firstItem="mNG-Lo-JAx" firstAttribute="leading" secondItem="BQq-ZJ-0gu" secondAttribute="leading" id="qKF-Fl-Yuj"/>
                             <constraint firstAttribute="bottom" secondItem="mNG-Lo-JAx" secondAttribute="bottom" id="z2v-ph-ixn"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="1jJ-rj-rYb"/>
                     </view>
                     <size key="freeformSize" width="31" height="150"/>
                     <connections>
@@ -214,4 +214,12 @@
             <point key="canvasLocation" x="35" y="175"/>
         </scene>
     </scenes>
+    <designables>
+        <designable name="Ydd-Y8-qtH">
+            <size key="intrinsicContentSize" width="41.5" height="13"/>
+        </designable>
+        <designable name="qKA-eY-Yh4">
+            <size key="intrinsicContentSize" width="101.5" height="13"/>
+        </designable>
+    </designables>
 </document>

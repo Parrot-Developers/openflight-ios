@@ -31,7 +31,7 @@
 import Reusable
 
 /// Settings Segmented Cell Delegate.
-protocol SettingsSegmentedCellDelegate: class {
+protocol SettingsSegmentedCellDelegate: AnyObject {
     /// Used to notify which segment in selected of which indexPath.
     func settingsSegmentedCellDidChange(selectedSegmentIndex: Int, atIndexPath indexPath: IndexPath)
 }
@@ -135,19 +135,30 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
         }
 
         self.showInfo = showInfo
-        segmentControl.removeAllSegments()
-        for segmentItem: SettingsSegment in segmentModel.segments {
-            segmentControl.insertSegment(withTitle: segmentItem.title,
-                                         at: self.segmentControl.numberOfSegments,
-                                         animated: false)
-            segmentControl.setEnabled(!segmentItem.disabled,
-                                      forSegmentAt: self.segmentControl.numberOfSegments - 1)
-            // Set fixed size for small item to align items, automatic dimension will be set otherwise.
-            if segmentItem.title.count < Constants.smallTextLength {
-                segmentControl.setWidth(Constants.segmentWidth,
-                                        forSegmentAt: self.segmentControl.numberOfSegments - 1)
-            }
 
+        // update segments
+        var segmentIndex = 0
+        for segmentItem: SettingsSegment in segmentModel.segments {
+            if segmentIndex > segmentControl.numberOfSegments - 1 {
+                // insert new segment, if not yet present
+                segmentControl.insertSegment(withTitle: segmentItem.title,
+                                             at: segmentIndex,
+                                             animated: false)
+            } else {
+                // update segment title
+                segmentControl.setTitle(segmentItem.title, forSegmentAt: segmentIndex)
+            }
+            segmentControl.setEnabled(!segmentItem.disabled, forSegmentAt: segmentIndex)
+            // set fixed size for small item to align items, automatic dimension will be set otherwise.
+            if segmentItem.title.count < Constants.smallTextLength {
+                segmentControl.setWidth(Constants.segmentWidth, forSegmentAt: segmentIndex)
+            }
+            segmentIndex += 1
+        }
+        // remove excess segments
+        while segmentIndex <= segmentControl.numberOfSegments - 1 {
+            segmentControl.removeSegment(at: segmentIndex, animated: false)
+            segmentIndex += 1
         }
 
         if showInfo != nil {

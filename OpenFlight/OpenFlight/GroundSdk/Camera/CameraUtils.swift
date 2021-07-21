@@ -59,10 +59,6 @@ final class CameraUtils {
         switch cameraMode {
         case .bracketing:
             return camera.config[Camera2Params.photoBracketing]?.value.bracketingMode
-        case .hyperlapse:
-            return camera.config[Camera2Params.videoRecordingHyperlapse]?.value
-        case .slowmotion:
-            return camera.config[Camera2Params.videoRecordingResolution]?.value.slowMotionMode
         case .gpslapse:
             return camera.gpsLapseMode
         case .timelapse:
@@ -83,12 +79,6 @@ private extension CameraUtils {
         switch videoMode {
         case .standard:
             return .video
-        case .hyperlapse:
-            return .hyperlapse
-        case .slowMotion:
-            return .slowmotion
-        case .highFramerate:
-            return .hyperlapse
         }
     }
 

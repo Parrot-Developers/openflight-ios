@@ -79,7 +79,7 @@ final class SettingsEndHoveringViewModel: DroneWatcherViewModel<SettingsEndHover
                             title: L10n.commonHovering,
                             unit: UnitType.distance,
                             defaultValue: Float(RthPreset.defaultHoveringAltitude),
-                            isEnabled: returnHome?.endingBehavior.behavior == .hovering)
+                            isEnabled: true)
     }
 
     // MARK: - Private Properties

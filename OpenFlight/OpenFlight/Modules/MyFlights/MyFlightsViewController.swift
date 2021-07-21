@@ -77,11 +77,10 @@ extension MyFlightsPanelType {
 /// Contains ans manages the two MyFlights panels (completedFlights and plans).
 final class MyFlightsViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var bgView: UIView!
     @IBOutlet private weak var containerView: UIView!
     @IBOutlet private weak var segmentedControl: UISegmentedControl!
     @IBOutlet private weak var topBar: UIView!
-    @IBOutlet private weak var accountImageView: UIImageView!
+    private weak var viewAccount: MyFlightsAccountView?
 
     // MARK: - Private Properties
     private var flightsViewController: FlightsViewController?
@@ -91,6 +90,12 @@ final class MyFlightsViewController: UIViewController {
     private var myFlightsViewModel: MyFlightsViewModel?
     private var selectedPanel: MyFlightsPanelType {
         MyFlightsPanelType.type(at: segmentedControl?.selectedSegmentIndex ?? 0)
+    }
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let heightAccountView: CGFloat = 40
+        static let trailingAccountView: CGFloat = -20
     }
 
     // MARK: - Setup
@@ -109,14 +114,11 @@ final class MyFlightsViewController: UIViewController {
         self.navigationController?.setNavigationBarHidden(true, animated: false)
         initUI()
         listenMyFlightsViewModel()
-        setupSegmentedControl()
-        reloadContainerView()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
-        setupAccountView()
+        viewAccount?.viewWillAppear()
         LogEvent.logAppEvent(screen: selectedPanel == .completedFlights
                                 ? LogEvent.EventLoggerScreenConstants.myFlightsFlightList
                                 : LogEvent.EventLoggerScreenConstants.myFlightsPlans,
@@ -157,8 +159,10 @@ private extension MyFlightsViewController {
 private extension MyFlightsViewController {
     /// Instantiate basic UI.
     func initUI() {
-        segmentedControl.customMakeup()
-        bgView.backgroundColor = ColorName.black80.color
+        topBar.addShadow(shadowColor: ColorName.sambuca.color)
+        setupSegmentedControl()
+        reloadContainerView()
+        setupAccountView()
     }
 
     /// Listen MyFlights ViewModel.
@@ -173,15 +177,23 @@ private extension MyFlightsViewController {
 
     /// Setup account view.
     func setupAccountView() {
-        if let currentAccount = AccountManager.shared.currentAccount {
-            accountImageView.image = currentAccount.userAvatar
-            accountImageView.layer.cornerRadius = Style.smallCornerRadius
+        if let currentAccount = AccountManager.shared.currentAccount,
+           let viewAccount = currentAccount.myFlightsAccountView {
+            viewAccount.delegate = self
+            viewAccount.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(viewAccount)
+            NSLayoutConstraint.activate([
+                viewAccount.trailingAnchor.constraint(equalTo: topBar.trailingAnchor, constant: Constants.trailingAccountView),
+                viewAccount.heightAnchor.constraint(equalToConstant: Constants.heightAccountView),
+                viewAccount.centerYAnchor.constraint(equalTo: topBar.centerYAnchor),
+                viewAccount.leadingAnchor.constraint(equalTo: segmentedControl.trailingAnchor)
+            ])
+            self.viewAccount = viewAccount
         }
     }
 
     /// Setup segmented control.
     func setupSegmentedControl() {
-        segmentedControl.customMakeup()
         self.segmentedControl.removeAllSegments()
         for panelType in MyFlightsPanelType.allCases {
             self.segmentedControl.insertSegment(withTitle: panelType.title,
@@ -189,33 +201,14 @@ private extension MyFlightsViewController {
                                                 animated: false)
         }
         self.segmentedControl.selectedSegmentIndex = MyFlightsPanelType.index(for: selectedPanel)
+        segmentedControl.customMakeup(normalBackgroundColor: .alabaster,
+                                      selectedBackgroundColor: .greenMediumSea,
+                                      normalFontColor: .sambuca,
+                                      selectedFontColor: .white)
     }
 
-    /// Reload container view.
-    func reloadContainerView() {
-        let controller: UIViewController
-        switch selectedPanel {
-        case .completedFlights:
-            if let flightsViewController = self.flightsViewController {
-                controller = flightsViewController
-            } else {
-                // Initial case
-                let newViewController = FlightsViewController.instantiate(coordinator: coordinator)
-                self.flightsViewController = newViewController
-                controller = newViewController
-            }
-        case .plans:
-            if let flightPlanViewController = self.flightPlanViewController {
-                controller = flightPlanViewController
-            } else {
-                // Initial case
-                let newViewController = StoryboardScene.FlightPlansList.flightPlansListViewController.instantiate()
-                newViewController.delegate = self
-                self.flightPlanViewController = newViewController
-                controller = newViewController
-            }
-        }
-
+    /// Remove all child views and viewControllers and insert the new ones
+    func insertContainerView(controller: UIViewController) {
         for view in containerView.subviews {
             view.removeFromSuperview()
         }
@@ -227,6 +220,36 @@ private extension MyFlightsViewController {
         containerView.addSubview(controller.view)
         controller.didMove(toParent: self)
     }
+
+    /// Reload container view.
+    func reloadContainerView() {
+        switch selectedPanel {
+        case .completedFlights:
+            var controller: FlightsViewController
+            if let flightsViewController = self.flightsViewController {
+                controller = flightsViewController
+            } else {
+                // Initial case
+                let newViewController = FlightsViewController.instantiate(coordinator: coordinator)
+                self.flightsViewController = newViewController
+                controller = newViewController
+            }
+            insertContainerView(controller: controller)
+        case .plans:
+            var controller: FlightPlansListViewController
+            if let flightPlanViewController = self.flightPlanViewController {
+                controller = flightPlanViewController
+            } else {
+                // Initial case
+                let newViewController = StoryboardScene.FlightPlansList.flightPlansListViewController.instantiate()
+                newViewController.setupViewModel(with: FlightPlansListViewModel(persistence: CoreDataManager.shared), delegate: self)
+                self.flightPlanViewController = newViewController
+                controller = newViewController
+            }
+            insertContainerView(controller: controller)
+        }
+
+    }
 }
 
 // MARK: - MyFlightsAccountViewDelegate
@@ -237,7 +260,9 @@ extension MyFlightsViewController: MyFlightsAccountViewDelegate {
 }
 
 // MARK: - FlightPlansListViewControllerDelegate
-extension MyFlightsViewController: FlightPlansListViewControllerDelegate {
+extension MyFlightsViewController: FlightPlansListViewModelDelegate {
+    func didDoubleTapOn(flightplan: FlightPlanViewModel) { }
+
     func didSelect(flightPlan: FlightPlanViewModel) {
         coordinator?.startFlightPlanDashboard(viewModel: flightPlan)
     }

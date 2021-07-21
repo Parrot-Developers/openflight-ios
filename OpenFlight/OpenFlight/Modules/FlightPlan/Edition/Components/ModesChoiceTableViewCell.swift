@@ -32,7 +32,7 @@ import UIKit
 import Reusable
 
 // MARK: - Protocols
-protocol ModesChoiceTableViewCellDelegate: class {
+protocol ModesChoiceTableViewCellDelegate: AnyObject {
     /// Update current flight plan mode.
     ///
     /// - Parameters:
@@ -83,7 +83,7 @@ private extension ModesChoiceTableViewCell {
     func initView() {
         backgroundColor = .clear
         modeLabel.makeUp()
-        titleLabel.makeUp(with: .small, and: .white50)
+        titleLabel.makeUp(with: .small, and: .white)
         titleLabel.text = L10n.commonMode.uppercased()
         modesBackgroundView.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
                                                radius: Style.largeCornerRadius)

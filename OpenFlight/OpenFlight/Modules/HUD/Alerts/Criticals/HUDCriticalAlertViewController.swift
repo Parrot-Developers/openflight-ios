@@ -32,7 +32,7 @@ import UIKit
 
 // MARK: Protocols
 /// Handles alert buttons logic.
-protocol HUDCriticalAlertDelegate: class {
+protocol HUDCriticalAlertDelegate: AnyObject {
     /// Called when user dimisses the alert.
     func dismissAlert()
 
@@ -55,6 +55,7 @@ final class HUDCriticalAlertViewController: UIViewController {
     @IBOutlet private weak var cancelButton: UIButton!
     @IBOutlet private weak var actionButton: UIButton!
     @IBOutlet private weak var descriptionLabel: UILabel!
+    @IBOutlet private weak var closeButton: UIButton!
 
     // MARK: - Internal Properties
     weak var delegate: HUDCriticalAlertDelegate?
@@ -114,7 +115,7 @@ private extension HUDCriticalAlertViewController {
     }
 
     /// Called when user touches the close button.
-    @objc func closeButtonTouchedUpInside(_ sender: UIButton) {
+    @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
         delegate?.dismissAlert()
     }
 }
@@ -123,24 +124,14 @@ private extension HUDCriticalAlertViewController {
 private extension HUDCriticalAlertViewController {
     /// Inits panel view.
     func initView() {
-        panelView.addBlurEffect()
-        alertTopView.applyCornerRadius(Style.mediumCornerRadius)
-        alertTopView.backgroundColor = ColorName.black.color
-        titleLabel.makeUp(with: .large)
-        descriptionLabel.makeUp(with: .large)
+        panelView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
+        alertTopView.cornerRadiusedWith(backgroundColor: .white, radius: Style.mediumCornerRadius)
+        alertTopView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
         cancelButton.setTitle(L10n.cancel, for: .normal)
-        cancelButton.makeup(with: .large)
-        actionButton.makeup(with: .large)
-        actionButton.cornerRadiusedWith(backgroundColor: ColorName.greenPea.color,
+        actionButton.cornerRadiusedWith(backgroundColor: ColorName.greenMediumSea.color,
                                         radius: Style.largeCornerRadius)
-        cancelButton.cornerRadiusedWith(backgroundColor: .clear,
-                                        borderColor: .white,
-                                        radius: Style.largeCornerRadius,
-                                        borderWidth: Style.mediumBorderWidth)
-        descriptionLabel.makeUp(with: .big)
-        self.addCloseButton(onTapAction: #selector(closeButtonTouchedUpInside(_:)),
-                            targetView: panelView,
-                            style: .cross)
+        cancelButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
+                                        radius: Style.largeCornerRadius)
     }
 
     /// Updates the view according to model value.
@@ -150,8 +141,10 @@ private extension HUDCriticalAlertViewController {
     func setupView(alertModel: HUDCriticalAlertType) {
         titleLabel.text = alertModel.topTitle
         topImageView.image = alertModel.topIcon
+        topImageView.tintColor = alertModel.topIconTintColor?.color
         topImageView.isHidden = alertModel.topIcon == nil
         alertTopView.backgroundColor = alertModel.topBackgroundColor?.color
+        titleLabel.textColor = alertModel.topTitleColor?.color
         mainImageView.image = alertModel.mainImage
         descriptionLabel.text = alertModel.mainDescription
         cancelButton.isHidden = alertModel.showCancelButton == false

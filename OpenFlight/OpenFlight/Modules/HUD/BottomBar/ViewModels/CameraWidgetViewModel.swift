@@ -62,6 +62,7 @@ class CameraWidgetState: BarButtonState, EquatableState, Copying {
     var subMode: BarItemSubMode?
     var subtitle: String?
     var enabled: Bool = true
+    var unavailableReason: [String: String] = [:]
 
     // MARK: - Init
     required init() {
@@ -209,7 +210,7 @@ private extension CameraWidgetViewModel {
             return
         }
 
-        let shutterSpeed = camera.config[Camera2Params.shutterSpeed]?.value
+        let shutterSpeed = camera.getComponent(Camera2Components.exposureIndicator)?.shutterSpeed
         guard let photoSignature = camera.config[Camera2Params.photoDigitalSignature]?.value else { return }
 
         let newState = state.value.copy()

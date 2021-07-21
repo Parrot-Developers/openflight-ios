@@ -30,6 +30,12 @@
 
 import GroundSdk
 
+// MARK: - Private Enums
+private enum Constants {
+    /// Threshold for bad link signal quality.
+    static let linkQualityThreshold: Int = 1
+}
+
 // MARK: - Protocols
 protocol SignalStrength {
     // MARK: - Internal Properties
@@ -73,7 +79,7 @@ extension CellularStrength: SignalStrength {
              .ok2On4,
              .ok3On4,
              .ok4On4:
-            return .greenSpring20
+            return .greenMediumSea20
         }
     }
 
@@ -87,7 +93,7 @@ extension CellularStrength: SignalStrength {
              .ok2On4,
              .ok3On4,
              .ok4On4:
-            return .greenSpring
+            return .greenMediumSea
         }
     }
 
@@ -100,23 +106,23 @@ extension CellularStrength: SignalStrength {
         case .ko0On4:
             return isLinkActive
                 ? Asset.Cellular.ic4GInactiveQuality1.image
-                : Asset.Cellular.ic4GQuality1.image
+                : Asset.Cellular.icon4GOffline.image
         case .ok1On4:
             return isLinkActive
                 ? Asset.Cellular.ic4GInactiveQuality2.image
-                : Asset.Cellular.ic4GQuality2.image
+                : Asset.Cellular.icon4GOffline.image
         case .ok2On4:
             return isLinkActive
                 ? Asset.Cellular.ic4GInactiveQuality3.image
-                : Asset.Cellular.ic4GQuality3.image
+                : Asset.Cellular.icon4GOffline.image
         case .ok3On4:
             return isLinkActive
                 ? Asset.Cellular.ic4GQuality4.image
-                : Asset.Cellular.ic4GInactiveQuality4.image
+                : Asset.Cellular.icon4GOffline.image
         case .ok4On4:
             return isLinkActive
                 ? Asset.Cellular.ic4GQuality5.image
-                : Asset.Cellular.ic4GInactiveQuality5.image
+                : Asset.Cellular.icon4GOffline.image
         }
     }
 }
@@ -126,6 +132,24 @@ extension NetworkControl {
     // MARK: - Internal Properties
     /// Returns current Cellular strength.
     var cellularStrength: CellularStrength {
-        return CellularStrength(rawValue: linkQuality ?? CellularStrength.offline.rawValue) ?? .offline
+        let quality = links.filter({ $0.type == .cellular }).first?.quality
+        return CellularStrength(rawValue: quality ?? CellularStrength.offline.rawValue) ?? .offline
+    }
+
+    /// Returns current Wifi strength.
+    var wifiStrength: WifiStrength {
+        let quality = links.filter({ $0.type == .wlan }).first?.quality
+        return WifiStrength(rawValue: quality ?? WifiStrength.offline.rawValue) ?? .offline
+    }
+
+    /// Returns current Wifi errors.
+    var currentWifiAlerts: [HUDAlertType] {
+        if let quality = linkQuality,
+           quality <= Constants.linkQualityThreshold,
+           currentLink == .wlan {
+            return [HUDBannerWarningAlertType.lowAndPerturbedWifi]
+        } else {
+            return []
+        }
     }
 }

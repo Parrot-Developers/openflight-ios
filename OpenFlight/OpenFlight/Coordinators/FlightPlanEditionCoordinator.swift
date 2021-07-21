@@ -30,7 +30,7 @@
 
 // MARK: - Protocols
 /// Delegate that gets notified when an overcontext modal is dismissed.
-protocol OverContextModalDelegate: class {
+protocol OverContextModalDelegate: AnyObject {
     /// Called when modal will get dismissed.
     func willDismissModal()
 }

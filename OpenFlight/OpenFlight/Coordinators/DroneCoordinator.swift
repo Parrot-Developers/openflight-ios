@@ -36,6 +36,7 @@ public final class DroneCoordinator: Coordinator {
     public var parentCoordinator: Coordinator?
 
     // MARK: - Public Funcs
+    /// Starts drone coordinator.
     public func start() {
         let viewController = DroneDetailsViewController.instantiate(coordinator: self)
         viewController.modalPresentationStyle = .fullScreen

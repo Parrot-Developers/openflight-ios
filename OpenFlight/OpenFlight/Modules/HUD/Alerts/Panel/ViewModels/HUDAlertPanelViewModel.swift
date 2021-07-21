@@ -183,7 +183,7 @@ private extension HUDAlertPanelViewModel {
         handLandViewModel.state.valueChanged = { [weak self] state in
             let copy = self?.state.value.copy()
             copy?.handLandState = state
-            self?.alertPanelDisplayed(isPresented: state.shouldShowAlertPanel == true)
+            self?.alertPanelDisplayed(isPresented: state.shouldShowAlertPanel)
             self?.state.set(copy)
         }
     }

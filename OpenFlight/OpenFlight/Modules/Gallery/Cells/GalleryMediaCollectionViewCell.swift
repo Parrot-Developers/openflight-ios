@@ -34,7 +34,7 @@ import GroundSdk
 
 // MARK: - Protocols
 /// Gallery Media CollectionView Cell Delegate.
-protocol GalleryMediaCellDelegate: class {
+protocol GalleryMediaCellDelegate: AnyObject {
     /// Should download media.
     ///
     /// - Parameters:
@@ -75,8 +75,7 @@ final class GalleryMediaCollectionViewCell: UICollectionViewCell, NibReusable {
 private extension GalleryMediaCollectionViewCell {
     @IBAction func downloadTouchedUpInside(_ sender: Any) {
         guard let media = self.media,
-            media.downloadState == .toDownload
-            else {
+              media.downloadState == .toDownload else {
                 return
         }
         delegate?.shouldDownloadMedia(media)
@@ -136,10 +135,10 @@ internal extension GalleryMediaCollectionViewCell {
         downloadButton.updateState(media.downloadState, title: media.formattedSize)
         self.media = media
         self.delegate = delegate
-        selectionView.backgroundColor = ColorName.black40.color
-        selectionCheckmarkView.layer.cornerRadius = selectionCheckmarkView.frame.size.width / 2.0
-        downloadButton.isSelected = selected
+        self.isUserInteractionEnabled = media.downloadState != .downloading
         downloadButton.isHidden = media.source == .mobileDevice
         selectionView.isHidden = !selected
+        selectionCheckmarkView.isHidden = !selected
+        setBorder(borderColor: ColorName.greenSpring.color, borderWidth: selected ? 2.0 : 0.0)
     }
 }

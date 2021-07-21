@@ -192,7 +192,7 @@ private extension CellularPairingAvailabilityViewModel {
             Defaults.cellularPairedDronesList = pairedList
             self.updateDronePairingState()
 
-            // User account drone list should be done on the main Thread.
+            // User account update should be done on the main Thread.
             DispatchQueue.main.async {
                 guard let jsonString: String = ParserUtils.jsonString(cellularPairedDronesList),
                       let userAccount = GroundSdk().getFacility(Facilities.userAccount) else {

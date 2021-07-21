@@ -38,7 +38,7 @@ struct ButtonCellSetting {
 }
 
 /// Settings Button Cell Delegate.
-protocol SettingsButtonCellDelegate: class {
+protocol SettingsButtonCellDelegate: AnyObject {
     /// Used to notify when button is touched.
     func settingsButtonCellDidTouchButton()
 }

@@ -31,42 +31,52 @@ import UIKit
 import CoreLocation
 import ArcGIS
 import SwiftyUserDefaults
+import Reachability
+import Combine
 
 /// View controller for map display.
 open class MapViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet public weak var sceneView: AGSSceneView!
     @IBOutlet private weak var leadingMapConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var centerButton: UIButton! {
-        didSet {
-            self.centerButton.setImage(Asset.Map.centerOnUser.image, for: .normal)
-            self.centerButton.applyHUDRoundButtonStyle()
-        }
-    }
 
     // MARK: - Public Properties
     public weak var editionDelegate: FlightPlanEditionViewControllerDelegate?
     public weak var settingsDelegate: EditionSettingsDelegate?
     public var currentMissionProviderState: MissionProviderState?
-    public var currentMapMode: MapMode = .standard
+    public var currentMapMode: MapMode = .standard {
+        didSet {
+            updateElevationVisibility()
+        }
+    }
+
+    /// Returns true if flight plan is currently draped.
+    public var isFlightPlanDraped: Bool {
+        return flightPlanOverlay?.sceneProperties?.surfacePlacement == .drapedFlat
+    }
+
     open var flightPlanViewModel: FlightPlanViewModel? {
         didSet {
             let fileChanged = oldValue?.state.value.uuid != flightPlanViewModel?.state.value.uuid
-            self.didUpdateFlightPlan(flightPlanViewModel, fileChanged)
+            didUpdateFlightPlan(flightPlanViewModel, fileChanged)
         }
     }
-    public var droneLocation: CLLocationCoordinate2D? {
-        return locationsViewModel.state.value.droneLocation.coordinates
+
+    /// Tells whether map and flight plan should be displayed in 2D,
+    open var shouldDisplayMapIn2D: Bool {
+        currentMapMode == .flightPlanEdition || currentMapMode == .flightPlan
     }
 
     // MARK: - Internal Properties
     internal var flightPlanListener: FlightPlanListener?
-    internal var commandLimiter = CommandLimiter(limit: Constants.commandLimiterDefaultLimit)
     internal weak var customControls: CustomHUDControls?
+    internal weak var splitControls: SplitControls?
 
     // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
+    // TODO: Wrong injection
+    public var viewModel = MapViewModel(locationsTracker: Services.hub.locationsTracker)
     private var currentMapType: SettingsMapDisplayType?
-    private let locationsViewModel = MapLocationsViewModel()
     private let missionProviderViewModel = MissionProviderViewModel()
     public var droneLocationGraphic: AGSGraphic?
     private var userLocationGraphic: AGSGraphic?
@@ -79,6 +89,7 @@ open class MapViewController: UIViewController {
                          pitch: 0.0,
                          roll: 0.0)
     }
+    private var reachability: Reachability?
 
     // MARK: - Internal Properties
     var shouldUpdateMapType: Bool = true
@@ -89,7 +100,6 @@ open class MapViewController: UIViewController {
         static let mapBoundsPadding: CGFloat = 10.0
         static let zoomValue = 14.0
         static let splitToFullscreenAnimationDuration: TimeInterval = 0.8 + 0.3 // SplitView delay + animation time
-        static let commandLimiterDefaultLimit: TimeInterval = 0.05
     }
     private enum MapConstants {
         static let sceneLayerURL = "https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_Brest/SceneServer/layers/0"
@@ -109,7 +119,8 @@ open class MapViewController: UIViewController {
         static let defaultLocation = CLLocationCoordinate2D(latitude: 48.879, longitude: 2.3673)
         static let extrusionExpression = "[HEIGHT]"
     }
-    fileprivate enum LocationGraphicType: Int {
+
+    enum LocationGraphicType: Int {
         case user
         case drone
     }
@@ -134,18 +145,27 @@ open class MapViewController: UIViewController {
     // MARK: - Override Funcs
     override open func viewDidLoad() {
         super.viewDidLoad()
-
         configureMapView()
-        locationsViewModel.state.valueChanged = { [weak self] state in
-            self?.locationsDidChange(state)
-            self?.updateCenterButtonStatus(state)
-        }
+        viewModel.hideCenterButtonPublisher
+            .combineLatest(viewModel.centerStatePublisher)
+            .sink { [unowned self] in
+                let (hide, centerState) = $0
+                splitControls?.updateCenterMapButtonStatus(hide: hide, image: centerState.image)
+            }
+            .store(in: &cancellables)
+        viewModel.droneLocationPublisher
+            .combineLatest(viewModel.userLocationPublisher, viewModel.autoCenterDisabledPublisher, viewModel.centerStatePublisher)
+            .sink { [unowned self] in
+                let (droneLocation, userLocation, _, _) = $0
+                locationsDidChange(userLocation: userLocation, droneLocation: droneLocation)
+            }
+            .store(in: &cancellables)
         if currentMapMode.isHudMode {
             setupMissionProviderViewModel()
         }
-        updateCenterButtonStatus(locationsViewModel.state.value)
         setCameraHandler()
         configureMapOptions()
+        setupReachability()
     }
 
     override open func viewWillAppear(_ animated: Bool) {
@@ -154,8 +174,6 @@ open class MapViewController: UIViewController {
         if shouldUpdateMapType {
             updateMapType(SettingsMapDisplayType.current)
         }
-
-        flightPlanLabelsOverlay?.refreshLabels()
     }
 
     override public func viewWillLayoutSubviews() {
@@ -245,6 +263,9 @@ open class MapViewController: UIViewController {
         if fileChanged {
             // Future value is a new FP view model: update graphic overlay.
             self.displayFlightPlan(newFlightPlanViewModel, shouldReloadCamera: true)
+            if newFlightPlanViewModel.isEmpty {
+                self.centerMapOnDroneOrUser()
+            }
         }
     }
 
@@ -288,10 +309,10 @@ open class MapViewController: UIViewController {
     ///    - isDisabled: True if user interaction should be disabled and center button hidden
     func disableUserInteraction(_ isDisabled: Bool) {
         sceneView.isUserInteractionEnabled = !isDisabled
-        locationsViewModel.forceHideCenterButton(isDisabled)
+        viewModel.forceHideCenterButton(isDisabled)
         // Map with disabled interaction always autocenters on drone/user location.
         if isDisabled {
-            locationsViewModel.disableAutoCenter(false)
+            viewModel.disableAutoCenter(false)
         }
     }
 
@@ -300,8 +321,7 @@ open class MapViewController: UIViewController {
     /// - Parameters:
     ///    - mode: MapMode to set.
     func setMapMode(_ mode: MapMode) {
-        let needRefreshFlightplan: Bool = mode == .flightPlanEdition
-            || currentMapMode == .flightPlanEdition && mode == .standard
+        let needRefreshFlightplan: Bool = mode != currentMapMode
 
         currentMapMode = mode
         guard self.isViewLoaded else {
@@ -337,9 +357,18 @@ open class MapViewController: UIViewController {
     /// - Parameters:
     ///    - overlay: graphics overlay
     ///    - key: overlay key
-    public func addGraphicOverlay(_ overlay: AGSGraphicsOverlay, forKey key: String) {
+    ///    - index: preferred index where the overlay should be added
+    public func addGraphicOverlay(_ overlay: AGSGraphicsOverlay,
+                                  forKey key: String,
+                                  at index: Int? = nil) {
         overlay.overlayID = key
-        sceneView.graphicsOverlays.add(overlay)
+
+        if let index = index,
+           index < sceneView.graphicsOverlays.count {
+            sceneView.graphicsOverlays.insert(overlay, at: index)
+        } else {
+            sceneView.graphicsOverlays.add(overlay)
+        }
     }
 
     /// Get overlay associated with given key.
@@ -347,7 +376,7 @@ open class MapViewController: UIViewController {
     /// - Parameters:
     ///    - key: overlay key
     public func getGraphicOverlay(forKey key: String) -> AGSGraphicsOverlay? {
-        return sceneView.graphicOverlay(forKey: key)
+        return sceneView?.graphicOverlay(forKey: key)
     }
 
     /// Remove previously added overlay.
@@ -379,6 +408,11 @@ open class MapViewController: UIViewController {
     ///    - camera: current camera
     ///    - removePitch: force remove pitch
     public func updateCameraIfNeeded(camera: AGSCamera, removePitch: Bool = false) {
+        guard !(shouldDisplayMapIn2D && camera.pitch > 0.001) else {
+            // force camera pitch to zero
+            removeCameraPitch(camera: camera)
+            return
+        }
         guard !ignoreCameraAdjustments else {
             return
         }
@@ -402,7 +436,7 @@ open class MapViewController: UIViewController {
             zoom = MapConstants.maxZoomLevel
             shouldReloadCamera = true
         }
-
+        flightPlanOverlay?.update(heading: camera.heading)
         // Reload camera if needed.
         if shouldReloadCamera {
             if !removePitch {
@@ -414,16 +448,17 @@ open class MapViewController: UIViewController {
                                           roll: camera.roll)
                 sceneView.setViewpointCamera(newCamera)
             } else {
-                removeCameraPitch(camera: camera)
+                removeCameraPitchAnimated(camera: camera)
             }
         }
     }
-}
 
-// MARK: - Actions
-private extension MapViewController {
-    @IBAction func centerButtonTouchedUpInside(_ sender: AnyObject) {
-        locationsViewModel.disableAutoCenter(false)
+    /// Disables auto center.
+    ///
+    /// - Parameters:
+    ///    - isDisabled: whether autocenter should be disabled
+    public func disableAutoCenter(_ isDisabled: Bool) {
+        viewModel.disableAutoCenter(isDisabled)
     }
 }
 
@@ -432,9 +467,53 @@ extension MapViewController {
     /// Center Map on Drone or User.
     func centerMapOnDroneOrUser() {
         let currentCamera = sceneView.currentViewpointCamera()
-        let camera = currentCamera.hasValidLocation ? currentCamera : defaultCamera
+        var camera = currentCamera.hasValidLocation ? currentCamera : defaultCamera
+        if let currentCenterCoordinates = viewModel.currentCenterCoordinates {
+            camera = AGSCamera(lookAt: AGSPoint(clLocationCoordinate2D: currentCenterCoordinates),
+                               distance: MapConstants.cameraDistanceToCenterLocation,
+                               heading: camera.heading,
+                               pitch: camera.pitch,
+                               roll: camera.roll)
+        }
+        sceneView.setViewpointCamera(camera)
+    }
 
-        sceneView.setViewpointCamera(locationsViewModel.updateCenteredCamera(camera, distance: MapConstants.cameraDistanceToCenterLocation))
+    /// Inserts user location graphic into locations overlay or flight plan overlay, depending on map mode.
+    func insertUserGraphic() {
+        if let flightPlanOverlay = flightPlanOverlay {
+            // if flight plan overlay is present,
+            // remove user location from location overlay
+            if let graphic = userLocationGraphic {
+                getGraphicOverlay(forKey: MapConstants.locationsOverlayKey)?
+                    .graphics.remove(graphic)
+            }
+            // insert user location into flight plan overlay
+            flightPlanOverlay.setUserGraphic(userLocationGraphic)
+        } else if let graphic = userLocationGraphic {
+            // if flight plan overlay is not present,
+            // insert user location into location overlay
+            getGraphicOverlay(forKey: MapConstants.locationsOverlayKey)?
+                .graphics.add(graphic)
+        }
+    }
+
+    /// Inserts drone location graphic into locations overlay or flight plan overlay, depending on map mode.
+    func insertDroneGraphic() {
+        if let flightPlanOverlay = flightPlanOverlay {
+            // if flight plan overlay is present,
+            // remove drone location from location overlay
+            if let graphic = droneLocationGraphic {
+                getGraphicOverlay(forKey: MapConstants.locationsOverlayKey)?
+                    .graphics.remove(graphic)
+            }
+            // insert drone location into flight plan overlay
+            flightPlanOverlay.setDroneGraphic(droneLocationGraphic)
+        } else if let graphic = droneLocationGraphic {
+            // if flight plan overlay is not present,
+            // insert drone location into location overlay
+            getGraphicOverlay(forKey: MapConstants.locationsOverlayKey)?
+                .graphics.add(graphic)
+        }
     }
 }
 
@@ -508,7 +587,7 @@ private extension MapViewController {
                 return
             }
 
-            self?.updateFlightPlanOverlaysIfNeeded(withCameraPitch: camera.pitch)
+            self?.updateElevationVisibility()
             self?.updateCameraIfNeeded(camera: camera)
 
             // Update content for viewpoint change.
@@ -516,10 +595,24 @@ private extension MapViewController {
         }
     }
 
-    /// Update centerButton status.
-    func updateCenterButtonStatus(_ state: MapLocationsState?) {
-        centerButton.isHidden = state?.shouldHideCenterButton != false
-        centerButton.setImage(state?.centerState.image, for: .normal)
+    /// Sets up reachability notifier.
+    func setupReachability() {
+        do {
+            try reachability = Reachability()
+            try reachability?.startNotifier()
+        } catch {
+            // Unable to start reachability.
+        }
+
+        reachability?.whenReachable = { [weak self] _ in
+            // Refresh basemap when network is reachable.
+            self?.sceneView.scene?.basemap = self?.currentMapType?.agsBasemap
+
+            // Remove reachability notifier, since it should
+            // be enough to setup basemap once while being online.
+            self?.reachability?.stopNotifier()
+            self?.reachability = nil
+        }
     }
 
     /// Update map background with given setting.
@@ -543,28 +636,25 @@ private extension MapViewController {
             disableLocations()
             updateMapType(.hybrid)
         case .standard:
-            locationsViewModel.forceHideCenterButton(false)
+            viewModel.forceHideCenterButton(false)
             centerMapOnDroneOrUserIfNeeded()
         case .droneDetails:
             shouldUpdateMapType = false
-            locationsViewModel.forceHideCenterButton(true)
-            locationsViewModel.alwaysCenterOnDroneLocation(true)
+            viewModel.forceHideCenterButton(true)
+            viewModel.alwaysCenterOnDroneLocation(true)
             updateMapType(.satellite)
         case .flightPlan:
-            locationsViewModel.forceHideCenterButton(true)
-            locationsViewModel.disableAutoCenter(true)
+            viewModel.disableAutoCenter(true)
         case .flightPlanEdition:
-            locationsViewModel.forceHideCenterButton(true)
-            locationsViewModel.disableAutoCenter(true)
-            self.removeCameraPitch(camera: self.sceneView.currentViewpointCamera())
+            removeCameraPitchAnimated(camera: self.sceneView.currentViewpointCamera())
         }
     }
 
-    /// Remove camera pitch.
+    /// Removes camera pitch, with animation.
     ///
     /// - Parameters:
     ///    - camera: current camera
-    func removeCameraPitch(camera: AGSCamera) {
+    func removeCameraPitchAnimated(camera: AGSCamera) {
         guard let viewPoint = sceneView.currentViewpoint(with: .centerAndScale)?.targetGeometry as? AGSPoint
             else { return }
 
@@ -579,13 +669,28 @@ private extension MapViewController {
                                         self?.ignoreCameraAdjustments = false
         }
     }
+
+    /// Removes camera pitch.
+    ///
+    /// - Parameters:
+    ///    - camera: current camera
+    func removeCameraPitch(camera: AGSCamera) {
+        guard let viewPoint = sceneView.currentViewpoint(with: .centerAndScale)?.targetGeometry as? AGSPoint
+            else { return }
+
+        let newCamera = AGSCamera(lookAt: viewPoint,
+                                  distance: camera.location.distanceToPoint(viewPoint),
+                                  heading: camera.heading,
+                                  pitch: 0.0,
+                                  roll: camera.roll)
+        sceneView.setViewpointCamera(newCamera)
+    }
 }
 
 // MARK: - Private Funcs - Map locations update
 private extension MapViewController {
     /// Completely disable user & drone locations.
     func disableLocations() {
-        locationsViewModel.state.valueChanged = nil
         removeGraphicOverlay(forKey: MapConstants.locationsOverlayKey)
     }
 
@@ -593,60 +698,75 @@ private extension MapViewController {
     ///
     /// - Parameters:
     ///    - locationsState: new locations state
-    func locationsDidChange(_ locationsState: MapLocationsState) {
-        if let droneLocationCoordinates = locationsState.droneLocation.validCoordinates {
-            updateLocationGraphic(type: .drone,
-                                  location: droneLocationCoordinates,
-                                  heading: locationsState.droneLocation.heading)
+    func locationsDidChange(userLocation: OrientedLocation, droneLocation: OrientedLocation) {
+        if let droneLocationCoordinates = droneLocation.validCoordinates {
+            updateDroneLocationGraphic(location: droneLocationCoordinates, heading: droneLocation.heading)
         }
 
-        if let userLocationCoordinates = locationsState.userOrientedLocation.validCoordinates {
-            updateLocationGraphic(type: .user,
-                                  location: userLocationCoordinates,
-                                  heading: locationsState.userOrientedLocation.heading)
+        if let userLocationCoordinates = userLocation.validCoordinates {
+            updateUserLocationGraphic(location: userLocationCoordinates.coordinate, heading: userLocation.heading)
         }
-
         centerMapOnDroneOrUserIfNeeded()
     }
 
-    /// Update location graphic.
+    /// Update user location graphic.
     ///
     /// - Parameters:
-    ///    - type: Graphic type
     ///    - location: New location to set
     ///    - heading: Updated heading
-    func updateLocationGraphic(type: LocationGraphicType,
-                               location: CLLocationCoordinate2D,
-                               heading: CLLocationDegrees) {
+    func updateUserLocationGraphic(location: CLLocationCoordinate2D,
+                                   heading: CLLocationDegrees) {
         let geometry = AGSPoint(clLocationCoordinate2D: location)
+        let camera = self.sceneView.currentViewpointCamera()
 
-        switch type {
-        case .user:
-            if userLocationGraphic == nil {
-                // If it doesn't exist, create graphic.
-                let symbol = AGSPictureMarkerSymbol(image: Asset.Map.user.image)
-                symbol.angle = Float(heading)
-                let attributes = [MapConstants.typeKey: MapConstants.userLocationValue]
-                let graphic = AGSGraphic(geometry: geometry, symbol: symbol, attributes: attributes)
-                self.userLocationGraphic = graphic
-                getGraphicOverlay(forKey: MapConstants.locationsOverlayKey)?.graphics.add(graphic)
-            } else {
-                // Otherwise update it.
-                self.userLocationGraphic?.geometry = geometry
-                (self.userLocationGraphic?.symbol as? AGSPictureMarkerSymbol)?.angle = Float(heading)
-            }
-        case .drone where self.droneLocationGraphic != nil:
-            self.droneLocationGraphic?.geometry = geometry
-            (self.droneLocationGraphic?.symbol as? AGSPictureMarkerSymbol)?.angle = Float(heading)
-        case .drone where self.droneLocationGraphic == nil:
+        var headingWithMapOrientation = Float(Int(heading) % 360)
+        if !isFlightPlanDraped {
+            headingWithMapOrientation -= Float(camera.heading)
+        } else {
+            headingWithMapOrientation *= -1
+        }
+        if let userLocationGraphic = userLocationGraphic {
+            // create graphic for user location
+            userLocationGraphic.geometry = geometry
+            (userLocationGraphic.symbol as? AGSPictureMarkerSymbol)?.angle = headingWithMapOrientation
+        } else {
+            // create graphic for user location, if it does not exist
+            let symbol = AGSPictureMarkerSymbol(image: Asset.Map.user.image)
+            symbol.angle = headingWithMapOrientation
+            let attributes = [MapConstants.typeKey: MapConstants.userLocationValue]
+            let graphic = AGSGraphic(geometry: geometry, symbol: symbol, attributes: attributes)
+            userLocationGraphic = graphic
+            insertUserGraphic()
+        }
+    }
+
+    /// Update drone location graphic.
+    ///
+    /// - Parameters:
+    ///    - location: New location to set
+    ///    - heading: Updated heading
+    func updateDroneLocationGraphic(location: Location3D,
+                                    heading: CLLocationDegrees) {
+        let geometry = location.agsPoint
+        let camera = self.sceneView.currentViewpointCamera()
+        var headingWithMapOrientation = Float(heading)
+        if !isFlightPlanDraped {
+            headingWithMapOrientation -= Float(camera.heading)
+        } else {
+            headingWithMapOrientation *= -1
+        }
+        if let droneLocationGraphic = droneLocationGraphic {
+            // create graphic for drone location
+            droneLocationGraphic.geometry = geometry
+            (droneLocationGraphic.symbol as? AGSPictureMarkerSymbol)?.angle = headingWithMapOrientation
+        } else {
+            // create graphic for drone location, if it does not exist
             let symbol = AGSPictureMarkerSymbol(image: Asset.Map.mapDrone.image)
-            symbol.angle = Float(heading)
+            symbol.angle = headingWithMapOrientation
             let attributes = [MapConstants.typeKey: MapConstants.droneLocationValue]
             let graphic = AGSGraphic(geometry: geometry, symbol: symbol, attributes: attributes)
-            self.droneLocationGraphic = graphic
-            getGraphicOverlay(forKey: MapConstants.locationsOverlayKey)?.graphics.add(graphic)
-        default:
-            break
+            droneLocationGraphic = graphic
+            insertDroneGraphic()
         }
     }
 }
@@ -655,7 +775,7 @@ private extension MapViewController {
 private extension MapViewController {
     /// Center map to drone location. If drone location is unavailable, use the user's location instead (if available).
     func centerMapOnDroneOrUserIfNeeded() {
-        guard locationsViewModel.state.value.disabledAutoCenter == false else {
+        guard !viewModel.autoCenterDisabled else {
             return
         }
         centerMapOnDroneOrUser()
@@ -667,6 +787,9 @@ extension MapViewController: AGSGeoViewTouchDelegate {
     open func geoView(_ geoView: AGSGeoView,
                       didTapAtScreenPoint screenPoint: CGPoint,
                       mapPoint: AGSPoint) {
+        // Filter out invalid screen touches returned by AGSGeoView.
+        guard !screenPoint.isOriginPoint else { return }
+
         switch currentMapMode {
         case .flightPlanEdition:
             flightPlanHandleTap(geoView, didTapAtScreenPoint: screenPoint, mapPoint: mapPoint)
@@ -680,6 +803,9 @@ extension MapViewController: AGSGeoViewTouchDelegate {
     }
 
     open func geoView(_ geoView: AGSGeoView, didLongPressAtScreenPoint screenPoint: CGPoint, mapPoint: AGSPoint) {
+        // Filter out invalid screen touches returned by AGSGeoView.
+        guard !screenPoint.isOriginPoint else { return }
+
         if currentMapMode == .flightPlanEdition {
             flightPlanHandleLongPress(geoView, didLongPressAtScreenPoint: screenPoint, mapPoint: mapPoint)
         }
@@ -689,7 +815,10 @@ extension MapViewController: AGSGeoViewTouchDelegate {
                       didTouchDownAtScreenPoint screenPoint: CGPoint,
                       mapPoint: AGSPoint,
                       completion: @escaping (Bool) -> Void) {
-        locationsViewModel.disableAutoCenter(true)
+        // Filter out invalid screen touches returned by AGSGeoView.
+        guard !screenPoint.isOriginPoint else { return }
+
+        viewModel.disableAutoCenter(true)
         if currentMapMode == .flightPlanEdition {
             flightPlanHandleTouchDown(geoView,
                                       didTouchDownAtScreenPoint: screenPoint,
@@ -701,12 +830,18 @@ extension MapViewController: AGSGeoViewTouchDelegate {
     }
 
     open func geoView(_ geoView: AGSGeoView, didTouchDragToScreenPoint screenPoint: CGPoint, mapPoint: AGSPoint) {
+        // Filter out invalid screen touches returned by AGSGeoView.
+        guard !screenPoint.isOriginPoint else { return }
+
         if currentMapMode == .flightPlanEdition {
             flightPlanHandleTouchDrag(geoView, didTouchDragToScreenPoint: screenPoint, mapPoint: mapPoint)
         }
     }
 
     open func geoView(_ geoView: AGSGeoView, didTouchUpAtScreenPoint screenPoint: CGPoint, mapPoint: AGSPoint) {
+        // Filter out invalid screen touches returned by AGSGeoView.
+        guard !screenPoint.isOriginPoint else { return }
+
         if currentMapMode == .flightPlanEdition {
             flightPlanHandleTouchUp(geoView, didTouchUpAtScreenPoint: screenPoint, mapPoint: mapPoint)
         }

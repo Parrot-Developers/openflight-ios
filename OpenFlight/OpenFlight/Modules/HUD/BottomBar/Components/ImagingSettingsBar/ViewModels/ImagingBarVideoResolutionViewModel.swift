@@ -45,8 +45,7 @@ final class ImagingBarVideoResolutionViewModel: BarButtonViewModel<ImagingBarSta
     override func update(mode: BarItemMode) {
         guard let camera = drone?.currentCamera,
             !camera.config.updating,
-            let resolution = mode as? Camera2RecordingResolution
-            else {
+            let resolution = mode as? Camera2RecordingResolution else {
                 return
         }
 

@@ -32,7 +32,7 @@ import UIKit
 
 // MARK: - Protocols
 /// Delegate used to update container
-protocol ContainterSizeDelegate: class {
+protocol ContainterSizeDelegate: AnyObject {
     /// Called when the content height changed.
     ///
     /// - Parameters:

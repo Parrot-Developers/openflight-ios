@@ -30,6 +30,7 @@
 
 import UIKit
 import GroundSdk
+import CoreLocation
 
 /// Utility extension for `MediaItem`.
 
@@ -76,7 +77,8 @@ extension MediaItem {
     }
 
     var droneId: String {
-        return CurrentDroneStore.currentDroneUid
+        // TODO very wrong to access a service here
+        return Services.hub.currentDroneHolder.drone.uid
     }
 
     /// Returns a list of all downloadable resources for this mediaItem.
@@ -98,6 +100,20 @@ extension MediaItem {
     var isInternalStorage: Bool {
         return !resources.filter({ $0.storage == .internal }).isEmpty
     }
+
+    /// Requests the address description of location.
+    ///
+    /// - Parameters:
+    ///     - completion: callback which returns the location detail string
+    func locationDetail(completion: @escaping(String?) -> Void) {
+        guard let location = self.resources.first?.location else {
+            completion(nil)
+            return
+        }
+
+        location.locationDetail(completion: completion)
+    }
+
 }
 
 /// Utility extension for `MediaItem.Resource`.
@@ -112,8 +128,7 @@ extension MediaItem.Resource {
     ///     - mediaType: GalleryMediaType
     /// - Returns: Url For Gallery Image Directory.
     func galleryURL(droneId: String?, mediaType: GalleryMediaType?) -> URL? {
-        guard let galleryURL = createGalleryURL(droneId: droneId, mediaType: mediaType)
-            else { return nil }
+        guard let galleryURL = createGalleryURL(droneId: droneId, mediaType: mediaType) else { return nil }
 
         // Special case: test if single image was part of DNG MediaItem.
         if !FileManager.default.fileExists(atPath: galleryURL.path) && mediaType == .photo {
@@ -142,8 +157,7 @@ extension MediaItem.Resource {
     ///     - mediaType: GalleryMediaType
     /// - Returns: Resource gallery Url
     private func createGalleryURL(droneId: String?, mediaType: GalleryMediaType?) -> URL? {
-        guard var imgGalleryDirectoryUrl = MediaUtils.imgGalleryDirectoryUrl
-            else { return nil }
+        guard var imgGalleryDirectoryUrl = MediaUtils.imgGalleryDirectoryUrl else { return nil }
 
         if let droneId = droneId {
             imgGalleryDirectoryUrl = imgGalleryDirectoryUrl.appendingPathComponent(droneId)
@@ -164,8 +178,9 @@ extension MediaItem.Resource {
     static func previewDirectoryUrl(droneId: String?) -> URL? {
         guard let cacheURL = FileManager.default.urls(for: .cachesDirectory,
                                                       in: .userDomainMask).first,
-            let droneId = droneId
-            else { return nil }
+              let droneId = droneId else {
+            return nil
+        }
 
         return cacheURL
             .appendingPathComponent(Paths.imagePreviewDirectory)
@@ -178,8 +193,7 @@ extension MediaItem.Resource {
     ///    - droneId: drone Id
     /// - Returns: Url For Cached Image Directory
     func cachedImgUrl(droneId: String?) -> URL? {
-        guard let imgPreviewDirectoryUrl = MediaItem.Resource.previewDirectoryUrl(droneId: droneId)
-            else { return nil }
+        guard let imgPreviewDirectoryUrl = MediaItem.Resource.previewDirectoryUrl(droneId: droneId) else { return nil }
 
         return imgPreviewDirectoryUrl.appendingPathComponent(self.uid, isDirectory: false)
     }
@@ -190,8 +204,7 @@ extension MediaItem.Resource {
     ///    - droneId: drone Id
     /// - Returns: true if image cache directory exists
     func cachedImgUrlExist(droneId: String?) -> Bool {
-        guard let cachedImgUrl = cachedImgUrl(droneId: droneId)
-            else { return false }
+        guard let cachedImgUrl = cachedImgUrl(droneId: droneId) else { return false }
 
         return FileManager.default.fileExists(atPath: cachedImgUrl.path)
     }

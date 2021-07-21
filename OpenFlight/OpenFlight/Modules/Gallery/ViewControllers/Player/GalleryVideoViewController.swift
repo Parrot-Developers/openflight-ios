@@ -42,6 +42,7 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
     @IBOutlet private weak var playButton: UIButton!
     @IBOutlet private weak var fullscreenButton: UIButton!
     @IBOutlet private weak var bottomBarView: MediaVideoBottomBarView!
+    @IBOutlet private weak var bottomBgBarView: UIStackView!
 
     // MARK: - Internal Properties
     private(set) var index: Int = 0
@@ -90,6 +91,7 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        bottomBgBarView.addBlurEffect(with: .light)
         bottomBarView.delegate = self
         start()
         updatePlayButton()
@@ -130,6 +132,7 @@ private extension GalleryVideoViewController {
         guard let viewModel = viewModel else { return }
 
         if !viewModel.videoIsPlaying(),
+           viewModel.getVideoDuration() != 0,
            viewModel.getVideoPosition() == viewModel.getVideoDuration() {
             // We should reset video position to the beginning
             stop()
@@ -164,6 +167,10 @@ private extension GalleryVideoViewController {
             }
             self?.updatePlayButton(forceHideBars: isDownloading)
             self?.updateBottomBar(forceHideBars: isDownloading)
+
+            if self?.viewModel?.videoIsPlaying() == true {
+                self?.hideThumbnail()
+            }
         })
     }
 
@@ -189,7 +196,7 @@ private extension GalleryVideoViewController {
     func updateBottomBar(forceHideBars: Bool = false) {
         guard let viewModel = viewModel else { return }
 
-        bottomBarView.isHidden = forceHideBars ? forceHideBars : viewModel.shouldHideControls
+        bottomBgBarView.isHidden = forceHideBars ? forceHideBars : viewModel.shouldHideControls
         bottomBarView.updateSlider(position: viewModel.getVideoPosition(), duration: viewModel.getVideoDuration())
     }
 

@@ -109,11 +109,13 @@ public class LogEvent {
             newValue = index == 0 ? false.description : true.description
         }
         // SettingEnum.Type.
-        else if let setting = settingEntry.setting as? SettingEnum.Type {
+        else if let setting = settingEntry.setting as? SettingEnum.Type,
+                (0...setting.allValues.count - 1).contains(index) {
             newValue = setting.allValues[index].rawValue
         }
         // SpecialSettingModel.
-        else if let setting = settingEntry.setting as? DroneSettingModel {
+        else if let setting = settingEntry.setting as? DroneSettingModel,
+                (0...setting.allValues.count - 1).contains(index) {
             newValue = setting.allValues[index].key
         }
 

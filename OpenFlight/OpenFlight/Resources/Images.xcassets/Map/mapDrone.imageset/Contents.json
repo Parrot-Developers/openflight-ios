@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "mapeDrone.png",
+      "filename" : "mapDrone.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "mapeDrone@2x.png",
+      "filename" : "mapDrone@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "mapeDrone@3x.png",
+      "filename" : "mapDrone@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

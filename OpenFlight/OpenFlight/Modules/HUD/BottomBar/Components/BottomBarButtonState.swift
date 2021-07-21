@@ -44,6 +44,7 @@ public final class BottomBarButtonState: BarButtonState {
     public var subMode: BarItemSubMode?
     public var subtitle: String?
     public var enabled: Bool = true
+    public var unavailableReason: [String: String] = [:]
 
     // MARK: - Init
     required public init() { }

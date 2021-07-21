@@ -56,7 +56,7 @@ final class SettingsChooseChannelCell: UITableViewCell, NibReusable {
         gridView.currentChannel = isAuto ? nil : viewModel.state.value.currentChannel
         gridView.delegate = self
         gridView.setNeedsDisplay()
-        gridView.isUserInteractionEnabled = viewModel.state.value.isUpdating == false
+        gridView.isUserInteractionEnabled = !viewModel.state.value.channelUpdating
     }
 }
 

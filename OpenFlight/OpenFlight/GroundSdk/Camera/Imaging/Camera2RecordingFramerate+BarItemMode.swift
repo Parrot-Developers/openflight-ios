@@ -35,16 +35,6 @@ extension Camera2RecordingFramerate: BarItemMode, Sortable {
     // MARK: - BarItemMode
     var value: String {
         switch self {
-        case .fps8_6:
-            return "8.6"
-        case .fps10:
-            return "10"
-        case .fps9:
-            return "9"
-        case .fps15:
-            return "15"
-        case .fps20:
-            return "20"
         case .fps24:
             return "24"
         case .fps25:
@@ -63,12 +53,6 @@ extension Camera2RecordingFramerate: BarItemMode, Sortable {
             return "100"
         case .fps120:
             return "120"
-        case .fps192:
-            return "192"
-        case .fps200:
-            return "200"
-        case .fps240:
-            return "240"
         }
     }
 
@@ -79,8 +63,9 @@ extension Camera2RecordingFramerate: BarItemMode, Sortable {
          .fps48,
          .fps50,
          .fps60,
-         .fps120,
-         .fps240]
+         .fps96,
+         .fps100,
+         .fps120]
     }
 
     public var title: String {
@@ -100,7 +85,7 @@ extension Camera2RecordingFramerate: BarItemMode, Sortable {
     }
 
     public static var allValues: [BarItemMode] {
-        return self.allCases.sorted()
+        return availableFramerates
     }
 
     public var subModes: [BarItemSubMode]? {
@@ -113,12 +98,11 @@ extension Camera2RecordingFramerate: BarItemMode, Sortable {
 
     /// Default value.
     public static var defaultFramerate: Camera2RecordingFramerate {
-        availableFramerates[0]
+        .fps30
     }
 
     // MARK: - Sortable
     public static var sortedCases: [Camera2RecordingFramerate] {
-        return [.fps9, .fps15, .fps20, .fps24, .fps25, .fps30, .fps48, .fps50,
-                .fps60, .fps96, .fps100, .fps120, .fps192, .fps200, .fps240]
+        return [fps24, .fps25, .fps30, .fps48, .fps50, .fps60, .fps96, .fps100, .fps120]
     }
 }

@@ -212,7 +212,8 @@ final class PairingConnectDroneViewModel: DevicesStateViewModel<PairingConnectDr
     ///     - uid: current uid
     func forgetDrone(uid: String) {
         // Cleans last connected drone.
-        CurrentDroneStore.clearLastConnectedDroneIfNeeded(uid: uid)
+        // TODO inject
+        Services.hub.currentDroneHolder.clearCurrentDroneOnMatch(uid: uid)
         state.value.discoveredDronesList?.forEach { drone in
             if drone.droneUid == uid {
                 if drone.isDronePaired {

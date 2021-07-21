@@ -48,6 +48,7 @@ final class FirmwareUpdatingViewController: UIViewController {
     private let firmwareUpdaterManager = FirmwareUpdaterManager.shared
     private var firmwareUpdateListener: FirmwareUpdaterListener?
     private var dataSource = FirmwareUpdatingDataSource()
+    private var updateOngoing: Bool = false
     private var isWaitingForDroneReconnection: Bool = false
     private var shouldRestartProcesses: Bool = false
     private var droneStateViewModel = DroneStateViewModel()
@@ -56,7 +57,7 @@ final class FirmwareUpdatingViewController: UIViewController {
     enum Constants {
         static let minProgress: Float = 0.0
         static let tableViewHeight: CGFloat = 50.0
-        static let rebootDuration: TimeInterval = 60.0
+        static let rebootDuration: TimeInterval = 120.0
         static let missionUpdateTag: String = "Firmware Update drone reconnected"
     }
 
@@ -161,28 +162,41 @@ private extension FirmwareUpdatingViewController {
                     return
                 }
 
-                strongSelf.reloadUI()
-                strongSelf.finalizeFirmwareProcesses(firmwareGlobalUpdatingState: firmwareGlobalUpdatingState)
+                strongSelf.handleFirmwareProcesses(firmwareGlobalUpdatingState: firmwareGlobalUpdatingState)
             })
     }
 
-    /// Finalize Firmware processes.
+    /// Handles firmware update processes callback from the manager.
     ///
     /// - Parameters:
     ///    - firmwareGlobalUpdatingState: The gobal state of the processes.
-    func finalizeFirmwareProcesses(firmwareGlobalUpdatingState: FirmwareGlobalUpdatingState) {
+    func handleFirmwareProcesses(firmwareGlobalUpdatingState: FirmwareGlobalUpdatingState) {
         switch firmwareGlobalUpdatingState {
-        case .notInitialized,
-             .ongoing:
+        case .notInitialized:
             break
+        case .ongoing:
+            updateOngoing = true
+        case .downloading,
+             .uploading:
+            // Reload tableView only one time to avoid restarting little progress animation
+            if updateOngoing {
+                updateOngoing = false
+                reloadUI()
+            } else {
+                updateProgress()
+            }
         case .waitingForReboot:
             // After the reboot, a connection with the drone must be established to finish the processes
+            reloadUI()
             waitForReboot()
         case .success:
             // After the reboot and the new connection of the drone, this instruction may be triggered.
+            reloadUI()
             displaySuccessUI()
         case .error:
-            // This instruction may be triggered during the process or after the new connection of the drone following a reboot.
+            // This instruction may be triggered during the process or after the new connection of the drone following
+            // a reboot.
+            reloadUI()
             displayErrorUI()
         }
     }
@@ -205,7 +219,8 @@ private extension FirmwareUpdatingViewController {
             if strongSelf.shouldRestartProcesses {
                 strongSelf.restartProcesses()
             } else if strongSelf.isWaitingForDroneReconnection {
-                // After the reboot and the new connection of the drone, func finalizeFirmwareProcesses() is expected to be called and finalize the UI.
+                // After the reboot and the new connection of the drone, func handleFirmwareProcesses() is expected to
+                // be called and finalize the UI.
                 strongSelf.isWaitingForDroneReconnection = false
                 ULog.d(.missionUpdateTag, Constants.missionUpdateTag)
             }
@@ -281,7 +296,7 @@ private extension FirmwareUpdatingViewController {
         subtitleLabel.textColor = ColorName.white50.color
         subtitleLabel.text = dataSource.subtitle
         cancelButton.setTitle(L10n.cancel, for: .normal)
-        cancelButton.tintColor = ColorName.white.color
+        cancelButton.makeup(with: .large)
         cancelButton.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
                                         radius: 0.0)
         view.backgroundColor = ColorName.greyShark.color
@@ -298,11 +313,17 @@ private extension FirmwareUpdatingViewController {
         tableView.reloadData()
     }
 
-    /// Reloads the UI.
+    /// Reloads the whole UI.
     func reloadUI() {
         dataSource = FirmwareUpdatingDataSource()
         progressView.update(currentProgress: dataSource.currentTotalProgress)
         tableView.reloadData()
+    }
+
+    /// Updates the progress view.
+    func updateProgress() {
+        dataSource = FirmwareUpdatingDataSource()
+        progressView.update(currentProgress: dataSource.currentTotalProgress)
     }
 
     /// Displays success UI.

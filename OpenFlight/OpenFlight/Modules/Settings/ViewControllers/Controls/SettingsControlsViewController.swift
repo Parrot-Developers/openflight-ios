@@ -121,7 +121,9 @@ private extension SettingsControlsViewController {
     func configureResetAllButtonCell(at indexPath: IndexPath) -> UITableViewCell {
         let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsResetAllButtonCell
         cell.delegate = self
-        cell.configureCell(title: resetCellLabel?.uppercased() ?? "", hasNoMargin: true)
+        cell.configureCell(title: resetCellLabel?.uppercased() ?? "",
+                           isEnabled: !(viewModel?.isUpdating ?? false),
+                           hasNoMargin: true)
 
         return cell
     }

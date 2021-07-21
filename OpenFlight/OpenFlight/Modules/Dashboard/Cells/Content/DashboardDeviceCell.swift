@@ -31,7 +31,7 @@ import UIKit
 import Reusable
 
 // MARK: - Protocols
-protocol DashboardDeviceCellDelegate: class {
+protocol DashboardDeviceCellDelegate: AnyObject {
     /// Start device update.
     ///
     /// - Parameters:
@@ -47,10 +47,9 @@ class DashboardDeviceCell: UICollectionViewCell, NibReusable, CellConfigurable {
     @IBOutlet private weak var wifiStatusImageView: UIImageView!
     @IBOutlet private weak var deviceImageView: UIImageView!
     @IBOutlet private weak var nameDeviceLabel: UILabel!
-    @IBOutlet private weak var stateDeviceLabel: UILabel!
+    @IBOutlet private weak var deviceStateButton: DeviceStateButton!
     @IBOutlet private weak var batteryValueLabel: UILabel!
-    @IBOutlet private weak var bottomView: UIView!
-    @IBOutlet private weak var needUpdateButton: UpdateCustomButton!
+    @IBOutlet private weak var batteryLevelImageView: UIImageView!
 
     // MARK: - Private Properties
     private var currentState: ViewModelState?
@@ -62,7 +61,6 @@ class DashboardDeviceCell: UICollectionViewCell, NibReusable, CellConfigurable {
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-
         // Clean UI when we create the cell.
         cleanViews()
     }
@@ -105,7 +103,7 @@ class DashboardDeviceCell: UICollectionViewCell, NibReusable, CellConfigurable {
 
 // MARK: - Actions
 private extension DashboardDeviceCell {
-    @IBAction func needUpdateButtonTouchedUpInside(_ sender: Any) {
+    @IBAction func stateDeviceTouchedUpInside(_ sender: Any) {
         switch currentState {
         case is RemoteInfosState:
             delegate?.startUpdate(.remote)
@@ -117,30 +115,24 @@ private extension DashboardDeviceCell {
 
 // MARK: - Private Funcs
 private extension DashboardDeviceCell {
-    /// Set battery percent.
+    /// Updates battery percent and icon.
     ///
     /// - Parameters:
-    ///    - value: the current battery level
-    func updateBatteryLevel(_ value: Int?) {
-        if let batteryLevel = value {
-            batteryValueLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryLevel)
-        } else {
-            batteryValueLabel.text = Style.dash
-        }
+    ///    - batteryValue: the current battery value model
+    func updateBatteryLevel(_ batteryValue: BatteryValueModel?) {
+        batteryValueLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryValue?.currentValue)
+        batteryLevelImageView.image = batteryValue?.batteryImage
     }
 
     /// This method is used to clean UI before setting value from the state.
     func cleanViews() {
         networkImageView.image = nil
+        batteryLevelImageView.image = nil
         nameDeviceLabel.text = nil
-        stateDeviceLabel.text = nil
         batteryValueLabel.text = nil
-        needUpdateButton.isHidden = true
-        bottomView.isHidden = false
         deviceImageView.image = nil
         wifiStatusImageView.image = nil
         gpsStatusImageView.image = nil
-        stateDeviceLabel.text = nil
     }
 
     /// This method is used to clean all current states.
@@ -173,15 +165,12 @@ private extension DashboardDeviceCell {
         // Set current values because we cleared all fields.
         gpsStatusImageView.image = userDeviceInfosState?.userDeviceGpsStrength.value.image
         deviceImageView.image = Asset.Dashboard.icPhone.image
-        deviceImageView.tintColor = ColorName.white.color
-        stateDeviceLabel.text = L10n.commonReady
-        stateDeviceLabel.textColor = ColorName.greenSpring.color
+        deviceStateButton.update(with: DeviceStateButton.Status.notDisconnected, title: L10n.commonReady)
 
-        updateBatteryLevel(userDeviceInfosState?.userDeviceBatteryLevel.value.currentValue)
+        updateBatteryLevel(userDeviceInfosState?.userDeviceBatteryLevel.value)
 
         userDeviceInfosState?.userDeviceBatteryLevel.valueChanged = { [weak self] batteryValue in
-            self?.batteryValueLabel.isHidden = false
-            self?.updateBatteryLevel(batteryValue.currentValue)
+            self?.updateBatteryLevel(batteryValue)
         }
 
         userDeviceInfosState?.userDeviceGpsStrength.valueChanged = { [weak self] gpsStrength in
@@ -214,17 +203,16 @@ private extension DashboardDeviceCell {
     func setRemoteValues(_ remoteInfosState: RemoteInfosState?) {
         nameDeviceLabel.text = remoteInfosState?.remoteName.value
         deviceImageView.image = Asset.Dashboard.icController.image
+        updateBatteryLevel(remoteInfosState?.remoteBatteryLevel.value)
 
-        updateBatteryLevel(remoteInfosState?.remoteBatteryLevel.value.currentValue)
-        if remoteInfosState?.remoteNeedUpdate.value == true,
-           remoteInfosState?.remoteConnectionState.value == .connected {
-            stateDeviceLabel.text = nil
+        let needUpdate = remoteInfosState?.remoteNeedUpdate.value == true &&
+           remoteInfosState?.remoteConnectionState.value == .connected
+        if needUpdate {
+            deviceStateButton.update(with: DeviceStateButton.Status.updateAvailable,
+                                     title: remoteInfosState?.remoteUpdateVersion.value ?? Style.dash)
         } else {
             updateRemoteLabel(remoteInfosState)
         }
-
-        needUpdateButton.isHidden = (remoteInfosState?.remoteNeedUpdate.value == false
-                                        || remoteInfosState?.remoteConnectionState.value != .connected)
     }
 
     /// Updates label according to remote states.
@@ -232,17 +220,18 @@ private extension DashboardDeviceCell {
     /// - Parameters:
     ///    - remoteInfosState: the view model state for remote cell
     func updateRemoteLabel(_ remoteInfosState: RemoteInfosState?) {
+        var status = DeviceStateButton.Status.disconnected
+        var title: String = L10n.commonNotConnected
+
         if remoteInfosState?.remoteNeedCalibration.value == true {
-            stateDeviceLabel.textColor = ColorName.redTorch.color
-        } else if remoteInfosState?.remoteConnectionState.value == .connected {
-            stateDeviceLabel.textColor = ColorName.greenSpring.color
-        } else {
-            stateDeviceLabel.textColor = ColorName.white50.color
+            status = DeviceStateButton.Status.calibrationRequired
+            title = L10n.remoteCalibrationRequired
+        } else if remoteInfosState?.remoteConnectionState.value != .disconnected {
+            status = DeviceStateButton.Status.notDisconnected
+            title = remoteInfosState?.remoteConnectionState.value.title ?? Style.dash
         }
 
-        stateDeviceLabel.text = remoteInfosState?.remoteNeedCalibration.value == true
-            ? L10n.remoteCalibrationRequired
-            : remoteInfosState?.remoteConnectionState.value.title
+        deviceStateButton.update(with: status, title: title)
     }
 
     /// Observe values from remote state.
@@ -251,30 +240,28 @@ private extension DashboardDeviceCell {
     ///    - remoteInfosState: The view model state for remote cell
     func observeRemoteValues(_ remoteInfosState: RemoteInfosState?) {
         remoteInfosState?.remoteBatteryLevel.valueChanged = { [weak self] batteryValue in
-            self?.batteryValueLabel.isHidden = false
-            self?.updateBatteryLevel(batteryValue.currentValue)
+            self?.updateBatteryLevel(batteryValue)
         }
         remoteInfosState?.remoteName.valueChanged = { [weak self] remoteName in
             self?.nameDeviceLabel.text = remoteName
         }
         remoteInfosState?.remoteNeedUpdate.valueChanged = { [weak self] remoteNeedUpdate in
-            self?.needUpdateButton.isHidden = !remoteNeedUpdate || remoteInfosState?.remoteConnectionState.value != .connected
-            if remoteNeedUpdate,
-               remoteInfosState?.remoteConnectionState.value == .connected {
-                self?.stateDeviceLabel.text = nil
+            let needUpdate = remoteNeedUpdate && remoteInfosState?.remoteConnectionState.value == .connected
+            if needUpdate {
+                self?.deviceStateButton.update(with: DeviceStateButton.Status.updateAvailable, title: remoteInfosState?.remoteUpdateVersion.value ?? Style.dash)
+            } else {
+                self?.updateRemoteLabel(remoteInfosState)
             }
-
-            self?.stateDeviceLabel.isHidden = remoteNeedUpdate
         }
         remoteInfosState?.remoteConnectionState.valueChanged = { [weak self] remoteConnectionState in
-            self?.needUpdateButton.isHidden = (remoteInfosState?.remoteNeedUpdate.value == false
-                                                || remoteConnectionState != .connected)
+            let needUpdate = remoteInfosState?.remoteNeedUpdate.value == true && remoteConnectionState == .connected
+            if needUpdate {
+                self?.deviceStateButton.update(with: DeviceStateButton.Status.updateAvailable, title: remoteInfosState?.remoteUpdateVersion.value ?? Style.dash)
+            } else {
+                self?.updateRemoteLabel(remoteInfosState)
+            }
         }
         remoteInfosState?.remoteNeedCalibration.valueChanged = { [weak self] _ in
-            let shouldDisplay = (remoteInfosState?.remoteNeedUpdate.value == false
-                                        || remoteInfosState?.remoteConnectionState.value != .connected)
-
-            self?.stateDeviceLabel.isHidden = !shouldDisplay
             self?.updateRemoteLabel(remoteInfosState)
         }
     }

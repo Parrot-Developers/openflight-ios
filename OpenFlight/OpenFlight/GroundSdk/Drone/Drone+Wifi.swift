@@ -35,7 +35,7 @@ extension Drone {
     /// Returns drone's WiFi strength.
     var wifiStrength: WifiStrength {
         guard isConnected,
-              let strength = getInstrument(Instruments.radio)?.wifiStrength else {
+              let strength = getPeripheral(Peripherals.networkControl)?.wifiStrength else {
             return .offline
         }
 

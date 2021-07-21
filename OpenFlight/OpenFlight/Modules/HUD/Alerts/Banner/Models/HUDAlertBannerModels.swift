@@ -55,13 +55,11 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     case geofenceAltitudeAndDistance
     case geofenceAltitude
     case geofenceDistance
-    case obstacleAvoidanceDroneStucked
-    case obstacleAvoidanceNoGpsTooHigh
-    case obstacleAvoidanceNoGpsTooDark
     case obstacleAvoidanceTooDark
     case obstacleAvoidanceSensorsFailure
     case obstacleAvoidanceSensorsNotCalibrated
     case obstacleAvoidanceDeteriorated
+    case cameraError
 
     public var level: HUDAlertLevel {
         return .critical
@@ -98,14 +96,13 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
              .geofenceAltitude,
              .geofenceDistance:
             return .geofence
-        case .obstacleAvoidanceDroneStucked,
-             .obstacleAvoidanceNoGpsTooHigh,
-             .obstacleAvoidanceNoGpsTooDark,
-             .obstacleAvoidanceTooDark,
+        case .obstacleAvoidanceTooDark,
              .obstacleAvoidanceSensorsFailure,
              .obstacleAvoidanceSensorsNotCalibrated,
              .obstacleAvoidanceDeteriorated:
             return .obstacleAvoidance
+        case .cameraError:
+            return .componentsCamera
         }
     }
 
@@ -154,11 +151,6 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
              .geofenceAltitude,
              .geofenceDistance:
             return L10n.alertGeofenceReached
-        case .obstacleAvoidanceDroneStucked:
-            return L10n.alertDroneStuck
-        case .obstacleAvoidanceNoGpsTooHigh,
-             .obstacleAvoidanceNoGpsTooDark:
-            return L10n.alertNoAvoidanceNoGps
         case .obstacleAvoidanceTooDark:
             return L10n.alertNoAvoidanceTooDark
         case .obstacleAvoidanceSensorsFailure:
@@ -167,6 +159,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return L10n.alertNoAvoidanceSensorsNotCalibrated
         case .obstacleAvoidanceDeteriorated:
             return L10n.alertAvoidanceDeteriorated
+        case .cameraError:
+            return L10n.alertCameraError
         }
     }
 
@@ -197,6 +191,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return Asset.Telemetry.icAltitude.image
         case .geofenceDistance:
             return Asset.Telemetry.icDistance.image
+        case .cameraError:
+            return Asset.Common.Icons.iconCamera.image
         default:
             return nil
         }
@@ -224,7 +220,6 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
 
 /// List of warning alerts for HUD banner.
 public enum HUDBannerWarningAlertType: String, HUDAlertType {
-    case cameraError
     case lowAndPerturbedWifi
     case obstacleAvoidanceDroneStucked
     case imuVibration
@@ -233,6 +228,7 @@ public enum HUDBannerWarningAlertType: String, HUDAlertType {
     case userDeviceGpsKo
     case unauthorizedFlightZone
     case unauthorizedFlightZoneWithMission
+    case highDeviation
 
     public var level: HUDAlertLevel {
         return .warning
@@ -240,11 +236,10 @@ public enum HUDBannerWarningAlertType: String, HUDAlertType {
 
     public var category: AlertCategoryType {
         switch self {
-        case .cameraError:
-            return .componentsCamera
         case .lowAndPerturbedWifi:
             return .wifi
-        case .obstacleAvoidanceDroneStucked:
+        case .obstacleAvoidanceDroneStucked,
+             .highDeviation:
             return .obstacleAvoidance
         case .imuVibration:
             return .componentsImu
@@ -264,8 +259,6 @@ public enum HUDBannerWarningAlertType: String, HUDAlertType {
 
     public var label: String {
         switch self {
-        case .cameraError:
-            return L10n.alertCameraError
         case .lowAndPerturbedWifi:
             return L10n.alertLowAndPerturbedWifi
         case .obstacleAvoidanceDroneStucked:
@@ -281,13 +274,13 @@ public enum HUDBannerWarningAlertType: String, HUDAlertType {
         case .unauthorizedFlightZone,
              .unauthorizedFlightZoneWithMission:
             return L10n.alertUnauthorizedFlightZone
+        case .highDeviation:
+            return L10n.alertHighDeviation
         }
     }
 
     public var icon: UIImage? {
         switch self {
-        case .cameraError:
-            return Asset.Common.Icons.iconCamera.image
         case .lowAndPerturbedWifi:
             return Asset.Common.Icons.icWifi.image
         case .imuVibration:

@@ -36,6 +36,7 @@ final class RemoteDetailsInformationsState: DeviceConnectionState {
     // MARK: - Internal Properties
     fileprivate(set) var serialNumber: String = Style.dash
     fileprivate(set) var hardwareVersion: String = Style.dash
+    fileprivate(set) var firmwareVersion: String = Style.dash
 
     // MARK: - Init
     required init() {
@@ -48,13 +49,16 @@ final class RemoteDetailsInformationsState: DeviceConnectionState {
     ///    - connectionState: remote control connection state
     ///    - serialNumber: remote serial number
     ///    - hardwareVersion: hardware version
+    ///    - firmwareVersion: firmware version
     init(connectionState: DeviceState.ConnectionState,
          serialNumber: String,
-         hardwareVersion: String) {
+         hardwareVersion: String,
+         firmwareVersion: String
+    ) {
         super.init(connectionState: connectionState)
-
         self.serialNumber = serialNumber
         self.hardwareVersion = hardwareVersion
+        self.firmwareVersion = firmwareVersion
     }
 
     // MARK: - Override Funcs
@@ -64,12 +68,14 @@ final class RemoteDetailsInformationsState: DeviceConnectionState {
         return super.isEqual(to: other)
             && self.serialNumber == other.serialNumber
             && self.hardwareVersion == other.hardwareVersion
+            && self.firmwareVersion == other.firmwareVersion
     }
 
     override func copy() -> RemoteDetailsInformationsState {
         let copy = RemoteDetailsInformationsState(connectionState: self.connectionState,
                                                   serialNumber: self.serialNumber,
-                                                  hardwareVersion: self.hardwareVersion)
+                                                  hardwareVersion: self.hardwareVersion,
+                                                  firmwareVersion: self.firmwareVersion)
         return copy
     }
 }
@@ -111,6 +117,7 @@ private extension RemoteDetailsInformationsViewModel {
         let copy = state.value.copy()
         copy.serialNumber = systemInfo.serial
         copy.hardwareVersion = systemInfo.hardwareVersion
+        copy.firmwareVersion = systemInfo.firmwareVersion
         state.set(copy)
     }
 }

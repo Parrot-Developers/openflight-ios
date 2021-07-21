@@ -62,7 +62,7 @@ enum TargetState {
 
 // MARK: - ProposalDelegate
 /// Protocol for TargetView.
-protocol ProposalDelegate: class {
+protocol ProposalDelegate: AnyObject {
     /// To call when proposal have been selected.
     ///
     /// - Parameters:

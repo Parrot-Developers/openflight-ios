@@ -31,8 +31,7 @@
 import CoreLocation
 import ArcGIS
 
-/// Utility extension for `ClLocation` usage with ArcGIS.
-
+/// Utility extension for `CLLocation` usage with ArcGIS.
 public extension CLLocation {
     /// Returns location as `AGSPoint`.
     var agsPoint: AGSPoint {

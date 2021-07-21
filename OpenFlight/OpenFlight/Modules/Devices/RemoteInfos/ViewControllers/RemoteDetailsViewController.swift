@@ -110,7 +110,10 @@ private extension RemoteDetailsViewController {
 
         buttonsViewController = RemoteDetailsButtonsViewController.instantiate(coordinator: strongCoordinator)
         deviceViewController = RemoteDetailsDeviceViewController.instantiate(coordinator: strongCoordinator)
-        informationViewController = RemoteDetailsInformationsViewController.instantiate(coordinator: strongCoordinator)
+
+        let remoteInfosViewModel = RemoteDetailsInformationsViewModel()
+        informationViewController = RemoteDetailsInformationsViewController.instantiate(coordinator: strongCoordinator,
+                                                                                        viewModel: remoteInfosViewModel)
         [buttonsViewController, deviceViewController, informationViewController].forEach { viewController in
             guard let strongViewController = viewController else { return }
 

@@ -30,6 +30,15 @@
 
 import Foundation
 
+// MARK: - Internal Enums
+/// Stores manual rebooting state.
+enum FirmwareAndMissionsManualRebootingState {
+    case waiting
+    case ongoing
+    case succeeded
+    case failed
+}
+
 /// The data source of `DroneDetailsFirmwaresViewController` table view.
 final class FirmwareAndMissionsUpdatingDataSource {
     // MARK: - Internal Properties
@@ -44,7 +53,11 @@ final class FirmwareAndMissionsUpdatingDataSource {
     }
 
     // MARK: - Init
-    init() {
+    /// Inits the data source
+    ///
+    /// - Parameters:
+    ///    - manualRebootState: the manual rebooting state of the process
+    init(manualRebootState: FirmwareAndMissionsManualRebootingState) {
         let firmwareUpdaterManager = FirmwareUpdaterManager.shared
         let missionsUpdaterManager = ProtobufMissionsUpdaterManager.shared
         let missions = missionsUpdaterManager.missionsToUpdateList.missionsToUpdateArray
@@ -58,12 +71,6 @@ final class FirmwareAndMissionsUpdatingDataSource {
 
         var temporaryElements: [FirmwareMissionsUpdatingCase] = []
         var temporaryProgress: Float = Constants.minProgress
-
-        for mission in missions {
-            let missionUpdatingCase = mission.state.value.missionToUpdateStatus.updatingCase
-            temporaryProgress += Float(mission.currentProgress())
-            temporaryElements.append(.mission(missionUpdatingCase, mission.missionToUpdateData))
-        }
 
         if firmwareToUpdate.allOperationsNeeded.contains(.download) {
             temporaryProgress += Float(firmwareUpdaterManager.currentProgress(for: .download))
@@ -81,8 +88,29 @@ final class FirmwareAndMissionsUpdatingDataSource {
             temporaryElements.append(.reboot(updatinStep))
         }
 
+        for mission in missions {
+            let missionUpdatingCase = mission.state.value.missionToUpdateStatus.updatingCase
+            temporaryProgress += Float(mission.currentProgress())
+            temporaryElements.append(.mission(missionUpdatingCase, mission.missionToUpdateData))
+        }
+
+        switch manualRebootState {
+        case .waiting:
+            temporaryElements.append(.reboot(.waiting))
+        case .ongoing:
+            temporaryElements.append(.reboot(.loading))
+            temporaryProgress += Constants.maxProgress
+        case .succeeded:
+            temporaryElements.append(.reboot(.succeeded))
+            temporaryProgress += Constants.maxProgress
+        case .failed:
+            temporaryElements.append(.reboot(.failed(L10n.firmwareMissionUpdateOperationFailedNeverStarted)))
+            temporaryProgress += Constants.maxProgress
+        }
+
         elements = temporaryElements
-        subtitle = [firmwareToUpdate.firmwareNameAndVersion, missionsUpdaterManager.missionsNamesAndVersion()].joined(separator: Style.dash)
+        subtitle = [firmwareToUpdate.firmwareNameAndVersion, missionsUpdaterManager.missionsNamesAndVersion()]
+            .joined(separator: Style.dash)
         currentTotalProgress = elements.isEmpty ? Constants.maxProgress : temporaryProgress / Float(elements.count)
     }
 }

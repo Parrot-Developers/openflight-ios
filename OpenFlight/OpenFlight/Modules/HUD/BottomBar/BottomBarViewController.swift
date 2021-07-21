@@ -29,15 +29,11 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 // MARK: - Protocols
 /// Protocol used to show and hide mission laucher.
-protocol BottomBarViewControllerDelegate: class {
-    /// Show mission launcher view controller with given viewModel.
-    func showMissionLauncher(viewModel: MissionLauncherViewModel)
-
-    /// Hides mission launcher view controller with given viewModel.
-    func hideMissionLauncher(viewModel: MissionLauncherViewModel)
+protocol BottomBarViewControllerDelegate: AnyObject {
 
     /// Show target zone for lock AE.
     func showAETargetZone()
@@ -47,7 +43,7 @@ protocol BottomBarViewControllerDelegate: class {
 }
 
 /// Protocol used to deselect view models.
-protocol DeselectAllViewModelsDelegate: class {
+protocol DeselectAllViewModelsDelegate: AnyObject {
     /// Deselect all view models except view model from given class type.
     ///
     /// - Parameters:
@@ -80,11 +76,7 @@ final class BottomBarViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var bottomBarView: UIView!
     @IBOutlet private weak var leftStackView: UIStackView!
-    @IBOutlet private weak var rightStackView: UIStackView! {
-        didSet {
-            rightStackView.addBlurEffect()
-        }
-    }
+    @IBOutlet private weak var rightStackView: UIStackView!
     @IBOutlet private weak var missionLauncherButton: MissionLauncherButton!
     @IBOutlet private weak var cameraWidgetView: CameraWidgetView!
     @IBOutlet private weak var cameraModeView: BarButtonView! {
@@ -101,10 +93,23 @@ final class BottomBarViewController: UIViewController {
     // MARK: - Internal Properties
     weak var delegate: BottomBarContainerDelegate?
     weak var bottomBarDelegate: BottomBarViewControllerDelegate?
-    weak var coordinator: HUDCoordinator?
+    weak var coordinator: HUDCoordinator? {
+        didSet {
+            guard let coordinator = coordinator else { return }
+            missionLauncherButtonModel.coordinator = coordinator
+            coordinator.showMissionLauncherPublisher.sink { [unowned self] in
+                if $0 {
+                    deselectAllViewModels(except: type(of: missionLauncherButtonModel))
+                }
+            }
+            .store(in: &cancellables)
+        }
+    }
 
     // MARK: - Private Properties
-    private let missionLauncherButtonViewModel = MissionLauncherViewModel()
+    private var cancellables = Set<AnyCancellable>()
+    // TODO: wrong injection
+    private let missionLauncherButtonModel = MissionLauncherButtonModel(currentMissionManager: Services.hub.currentMissionManager)
     private let cameraWidgetViewModel = CameraWidgetViewModel()
     private let cameraCaptureModeViewModel = CameraCaptureModeViewModel()
     private let cameraShutterButtonViewModel = CameraShutterButtonViewModel()
@@ -122,8 +127,8 @@ final class BottomBarViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        deselectableViewModels = [missionLauncherButtonViewModel, cameraWidgetViewModel, cameraCaptureModeViewModel]
+        missionLauncherButton.model = missionLauncherButtonModel
+        deselectableViewModels = [missionLauncherButtonModel as Deselectable, cameraWidgetViewModel, cameraCaptureModeViewModel]
         observeViewModels()
         initViewModelsState()
         observeViewModelsIsSelectedChange()
@@ -144,7 +149,6 @@ final class BottomBarViewController: UIViewController {
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-
         // Auto close when view disappears.
         deselectAllViewModels()
     }
@@ -157,9 +161,14 @@ final class BottomBarViewController: UIViewController {
 // MARK: - Actions
 private extension BottomBarViewController {
     @IBAction func missionLauncherButtonTouchedUpInside(_ sender: Any) {
-        missionLauncherButtonViewModel.toggleSelectionState()
+        guard let coordinator = coordinator else { return }
+        if coordinator.isMissionLauncherShown {
+            coordinator.hideMissionLauncher()
+        } else {
+            coordinator.showMissionLauncher()
+        }
         logEvent(with: LogEvent.LogKeyHUDBottomBarButton.missionLauncher.name,
-                 and: missionLauncherButtonViewModel.state.value.isSelected.value.logValue)
+                 and: coordinator.isMissionLauncherShown.logValue)
     }
 
     @IBAction func collapseButtonTouchedUpInside(_ sender: Any) {
@@ -286,11 +295,6 @@ private extension BottomBarViewController {
                 self.deselectableViewModels.append(barButtonView.viewModel)
             }
 
-            if (view as? SeparatorView) == nil {
-                // Add blur effect on every view except for SeparatorViews.
-                view.addBlurEffect()
-            }
-
             // Add the view in the left stackView.
             self.leftStackView.addArrangedSubview(view)
         }
@@ -331,9 +335,6 @@ private extension BottomBarViewController {
 
             self?.updateView(for: state.missionMode)
         }
-        missionLauncherButtonViewModel.state.valueChanged = { [weak self] state in
-            self?.missionLauncherButton.model = state
-        }
         cameraWidgetViewModel.state.valueChanged = { [weak self] state in
             self?.cameraWidgetView.model = state
         }
@@ -350,7 +351,6 @@ private extension BottomBarViewController {
 
     /// Inits View Models state.
     func initViewModelsState() {
-        missionLauncherButton.model = missionLauncherButtonViewModel.state.value
         cameraWidgetView.model = cameraWidgetViewModel.state.value
         cameraModeView.model = cameraCaptureModeViewModel.state.value
         cameraShutterButton.model = cameraShutterButtonViewModel.state.value
@@ -362,14 +362,6 @@ private extension BottomBarViewController {
             guard let viewModel = self?.cameraWidgetViewModel else { return }
             isSelected ? self?.delegate?.showLevelOne(viewModel: viewModel) : self?.delegate?.hideLevelOne(viewModel: viewModel)
             self?.cameraWidgetView.model = viewModel.state.value
-            if isSelected {
-                self?.deselectAllViewModels(except: type(of: viewModel))
-            }
-        }
-        missionLauncherButtonViewModel.state.value.isSelected.valueChanged = { [weak self] isSelected in
-            guard let viewModel = self?.missionLauncherButtonViewModel else { return }
-            isSelected ? self?.bottomBarDelegate?.showMissionLauncher(viewModel: viewModel) : self?.bottomBarDelegate?.hideMissionLauncher(viewModel: viewModel)
-            self?.missionLauncherButton.model = viewModel.state.value
             if isSelected {
                 self?.deselectAllViewModels(except: type(of: viewModel))
             }

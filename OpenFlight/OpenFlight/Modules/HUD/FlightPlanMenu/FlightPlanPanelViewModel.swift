@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
 /// State for `FlightPlanPanelViewModel`.
 final class FlightPlanPanelState: DeviceConnectionState {
@@ -102,16 +103,17 @@ final class FlightPlanPanelState: DeviceConnectionState {
 /// View model for flight plan menu.
 final class FlightPlanPanelViewModel: DroneStateViewModel<FlightPlanPanelState> {
     // MARK: - Private Properties
-    private let missionLauncherViewModel = MissionLauncherViewModel()
     private var flightPlanListener: FlightPlanListener?
     private var runFlightPlanViewModelListener: RunFlightPlanListener?
     private var flightPlanViewModel: FlightPlanViewModel?
+    /// Cancellables
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Override Funcs
     override init() {
         super.init()
 
-        listenMissionLauncherViewModel()
+        listenMissionMode()
         initFlightPlanListener()
     }
 
@@ -157,22 +159,11 @@ private extension FlightPlanPanelViewModel {
     }
 
     /// Starts watcher for mission modes.
-    func listenMissionLauncherViewModel() {
-        self.updateState(with: missionLauncherViewModel.state.value)
-        missionLauncherViewModel.state.valueChanged = { [weak self] state in
-            self?.updateState(with: state)
-        }
-    }
-
-    /// Updates state regarding mission mode.
-    ///
-    /// - Parameters:
-    ///    - missionLauncherState: mission launcher state
-    func updateState(with missionLauncherState: MissionLauncherState?) {
-        if let mode = missionLauncherState?.mode {
-            let copy = self.state.value.copy()
+    func listenMissionMode() {
+        Services.hub.currentMissionManager.modePublisher.sink { [unowned self] mode in
+            let copy = state.value.copy()
             copy.missionMode = mode
-            self.state.set(copy)
-        }
+            state.set(copy)
+        }.store(in: &cancellables)
     }
 }

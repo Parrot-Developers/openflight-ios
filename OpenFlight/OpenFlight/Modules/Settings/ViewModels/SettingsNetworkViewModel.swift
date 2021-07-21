@@ -42,7 +42,10 @@ final class SettingsNetworkState: DeviceConnectionState {
     fileprivate(set) var ssidName: String?
     fileprivate(set) var isLanded: Bool = false
     fileprivate(set) var channelSelectionMode: SettingsWifiRange = SettingsWifiRangePreset.defaultWifiRange
-    fileprivate(set) var isUpdating: Bool = false
+    fileprivate(set) var channelUpdating: Bool = false
+    fileprivate(set) var driMode: Bool = false
+    fileprivate(set) var driModeUpdating: Bool = false
+    fileprivate(set) var driId: String?
 
     var isEnabled: Bool {
         return channelsOccupations.isEmpty == false && isLanded
@@ -61,7 +64,10 @@ final class SettingsNetworkState: DeviceConnectionState {
             ssidName == other.ssidName &&
             isLanded == other.isLanded &&
             isEditing == other.isEditing &&
-            isUpdating == other.isUpdating &&
+            channelUpdating == other.channelUpdating &&
+            driMode == other.driMode &&
+            driModeUpdating == other.driModeUpdating &&
+            driId == other.driId &&
             channelSelectionMode == other.channelSelectionMode &&
             // Compare channelsOccupations arrays.
             zip(channelsOccupations, other.channelsOccupations)
@@ -73,14 +79,16 @@ final class SettingsNetworkState: DeviceConnectionState {
 
     override func copy() -> SettingsNetworkState {
         let copy = SettingsNetworkState()
-        copy.channelsOccupations = self.channelsOccupations
-        copy.currentChannel = self.currentChannel
-        copy.isEditing = self.isEditing
-        copy.ssidName = self.ssidName
-        copy.isLanded = self.isLanded
-        copy.isUpdating = self.isUpdating
-        copy.channelSelectionMode = self.channelSelectionMode
-
+        copy.channelsOccupations = channelsOccupations
+        copy.currentChannel = currentChannel
+        copy.isEditing = isEditing
+        copy.ssidName = ssidName
+        copy.isLanded = isLanded
+        copy.channelUpdating = channelUpdating
+        copy.driMode = driMode
+        copy.driModeUpdating = driModeUpdating
+        copy.driId = driId
+        copy.channelSelectionMode = channelSelectionMode
         return copy
     }
 }
@@ -93,6 +101,7 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
     private var wifiScannerRef: Ref<WifiScanner>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var cellularRef: Ref<Cellular>?
+    private var driRef: Ref<Dri>?
 
     // MARK: - Internal Properties
     var infoHandler: ((SettingMode.Type) -> Void)?
@@ -116,15 +125,19 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
             entries.append(SettingEntry(setting: SettingsCellType.wifiChannels))
         }
 
-        guard let dri = drone?.getPeripheral(Peripherals.dri) else { return entries }
+        guard let dri = drone?.getPeripheral(Peripherals.dri) else {
+            // do not display dri settings if not supported by the drone
+            return entries
+        }
 
         var subtitle: String?
-        if dri.mode?.value == true && dri.droneId?.id != nil {
+        if let droneId = state.value.driId,
+           state.value.driMode {
             subtitle = L10n.settingsConnectionDriName
                 + Style.whiteSpace
-                + (dri.droneId?.id ?? Defaults.lastDriId ?? Style.dash)
+                + droneId
         }
-        entries.append(SettingEntry(setting: driModeModel(),
+        entries.append(SettingEntry(setting: driModeModel(dri: dri),
                                     title: L10n.settingsConnectionBroadcastDri,
                                     subtitle: subtitle,
                                     isEnabled: drone?.isConnected == true,
@@ -147,6 +160,7 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
         listenFlyingIndicators(drone)
         listenWifiScanner(drone)
         listenWifiAccessPoint(drone)
+        listenDri(drone)
     }
 
     // MARK: - Internal Funcs
@@ -261,13 +275,27 @@ private extension SettingsNetworkViewModel {
             copy.channelsOccupations = self?.updateOccupationRate(wifiAccessPoint: wifiAccessPoint, drone: drone) ?? [WifiChannel: Int]()
             copy.currentChannel = wifiAccessPoint?.channel.channel
             copy.ssidName = wifiAccessPoint?.ssid.value
-            copy.isUpdating = wifiAccessPoint?.channel.updating ?? false
+            copy.channelUpdating = wifiAccessPoint?.channel.updating ?? false
 
             if let selectionMode = wifiAccessPoint?.channel.selectionMode {
                 copy.channelSelectionMode = selectionMode == .manual ? SettingsWifiRange.manual : SettingsWifiRange.auto
             }
 
             self?.state.set(copy)
+        }
+    }
+
+    /// Listens DRI.
+    ///
+    /// - Parameters:
+    ///     - drone: current drone
+    func listenDri(_ drone: Drone) {
+        driRef = drone.getPeripheral(Peripherals.dri) { [unowned self] dri in
+            let copy = state.value.copy()
+            copy.driMode = dri?.mode?.value ?? false
+            copy.driModeUpdating = dri?.mode?.updating ?? false
+            copy.driId = dri?.droneId?.id
+            state.set(copy)
         }
     }
 
@@ -300,21 +328,17 @@ private extension SettingsNetworkViewModel {
     }
 
     /// Returns a setting model for broadcast DRI. It can be ON showing drone PI, or OFF.
-    func driModeModel() -> DroneSettingModel {
-        guard let currentDri = drone?.getPeripheral(Peripherals.dri) else {
-            return DroneSettingModel(allValues: BroadcastDRISettings.allValues,
-                                     supportedValues: BroadcastDRISettings.allValues,
-                                     currentValue: BroadcastDRISettings.driOff,
-                                     isUpdating: false)
-        }
-
+    ///
+    /// - Parameter dri: DRI drone peripheral
+    /// - Returns: setting model for DRI
+    func driModeModel(dri: Dri) -> DroneSettingModel {
         return DroneSettingModel(allValues: BroadcastDRISettings.allValues,
                                  supportedValues: BroadcastDRISettings.allValues,
-                                 currentValue: currentDri.mode?.value == true ? BroadcastDRISettings.driOn : BroadcastDRISettings.driOff,
-                                 isUpdating: currentDri.mode?.updating) { dri in
-            guard let strongDRI = dri as? BroadcastDRISettings else { return }
+                                 currentValue: dri.mode?.value == true ? BroadcastDRISettings.driOn : BroadcastDRISettings.driOff,
+                                 isUpdating: dri.mode?.updating ?? false) { setting in
+            guard let driSetting = setting as? BroadcastDRISettings else { return }
 
-            currentDri.mode?.value = strongDRI == .driOn
+            dri.mode?.value = driSetting == .driOn
         }
     }
 }

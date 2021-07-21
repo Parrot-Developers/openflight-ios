@@ -67,10 +67,11 @@ public extension Observable where T: Equatable {
     /// it is not nil and different from currently stored value.
     ///
     /// - Parameters:
-    ///    - newValue: new value to set
-    func set(_ newValue: T?) {
+    ///    - newValue: new value to set.
+    ///    - force: force value to be updated and notified regardless of equality.
+    func set(_ newValue: T?, force: Bool? = false) {
         guard let newValue = newValue,
-              newValue != self.value else {
+               newValue != self.value || force == true else {
             return
         }
 

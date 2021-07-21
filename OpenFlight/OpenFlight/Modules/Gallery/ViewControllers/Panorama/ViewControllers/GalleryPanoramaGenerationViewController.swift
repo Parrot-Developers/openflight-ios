@@ -137,7 +137,7 @@ private extension GalleryPanoramaGenerationViewController {
         mediaListener = self.viewModel?.galleryViewModel?.registerListener(didChange: { [weak self] state in
             self?.circleProgressView.setProgress(state.downloadProgress / 2.0)
             self?.progressLabel.text = String(format: "%d%%", Int((state.downloadProgress / 2.0) * 100))
-            if state.downloadProgress == 1.0 && state.downloadStatus == .complete {
+            if state.downloadProgress == 1.0 && state.downloadStatus == .complete && self?.photoPano == nil {
                 self?.updateSteps()
                 self?.generatePanorama()
             }

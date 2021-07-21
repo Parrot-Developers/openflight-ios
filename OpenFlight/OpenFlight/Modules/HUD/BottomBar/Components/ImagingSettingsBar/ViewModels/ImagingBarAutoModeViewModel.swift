@@ -35,12 +35,17 @@ import SwiftyUserDefaults
 final class ImagingBarAutoModeState: ViewModelState, EquatableState, Copying {
     // MARK: - Private Properties
     /// Boolean describing auto mode state.
-    fileprivate(set) var isActive: Bool = Defaults.isImagingAutoModeActive
+    fileprivate(set) var isActive = false
     /// Image for current state.
     var image: UIImage {
         return isActive
             ? Asset.BottomBar.Icons.iconManualAutoAuto.image
             : Asset.BottomBar.Icons.iconManualAutoManual.image
+    }
+    var imageTintColor: UIColor {
+        return isActive
+            ? .white
+            : ColorName.sambuca.color
     }
 
     // MARK: - Init
@@ -66,54 +71,46 @@ final class ImagingBarAutoModeState: ViewModelState, EquatableState, Copying {
 
 final class ImagingBarAutoModeViewModel: DroneWatcherViewModel<ImagingBarAutoModeState> {
     // MARK: - Private Properties
-    private var autoModeObserver: DefaultsDisposable?
+    private var cameraRef: Ref<MainCamera2>?
 
     // MARK: - Init
     override init() {
         super.init()
-
-        listenDefault()
-    }
-
-    // MARK: - Deinit
-    deinit {
-        autoModeObserver?.dispose()
-        autoModeObserver = nil
     }
 
     // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) { }
+    override func listenDrone(drone: Drone) {
+        listenCamera(drone: drone)
+    }
 
     // MARK: - Internal Funcs
     /// Toggle auto mode.
     func toggleAutoMode() {
-        Defaults.isImagingAutoModeActive.toggle()
-        if Defaults.isImagingAutoModeActive,
-           let camera = drone?.currentCamera {
-            let currentEditor = camera.currentEditor
-            currentEditor[Camera2Params.exposureMode]?.value = .automatic
-            currentEditor[Camera2Params.whiteBalanceMode]?.value = .automatic
-            currentEditor.saveSettings(currentConfig: camera.config)
+        if let camera = drone?.currentCamera,
+           let exposureMode = camera.config[Camera2Params.exposureMode]?.value {
+            let editor = camera.currentEditor
+            editor[Camera2Params.exposureMode]?.value = exposureMode.automaticIsoAndShutterSpeed ?
+                .manual : exposureMode.toAutomaticMode()
+            editor.saveSettings(currentConfig: camera.config)
         }
-    }
-
-    /// Disable auto mode.
-    func disableAutoMode() {
-        Defaults.isImagingAutoModeActive = false
     }
 }
 
 // MARK: - Private Funcs
 private extension ImagingBarAutoModeViewModel {
-    func listenDefault() {
-        autoModeObserver = Defaults.observe(\.isImagingAutoModeActive, options: [.new]) { [weak self] _ in
-            DispatchQueue.userDefaults.async {
-                guard let strongSelf = self else { return }
-
-                let copy = strongSelf.state.value.copy()
-                copy.isActive = Defaults.isImagingAutoModeActive
-                strongSelf.state.set(copy)
+    /// Starts watcher for camera.
+    ///
+    /// - Parameter drone: drone to observe
+    func listenCamera(drone: Drone) {
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
+            guard let camera = camera,
+                  let exposureMode = camera.config[Camera2Params.exposureMode] else {
+                return
             }
+
+            let copy = state.value.copy()
+            copy.isActive = exposureMode.value.automaticIsoAndShutterSpeed
+            state.set(copy)
         }
     }
 }

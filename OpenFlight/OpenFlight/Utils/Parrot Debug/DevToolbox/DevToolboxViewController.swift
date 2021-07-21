@@ -30,12 +30,13 @@
 import UIKit
 import GroundSdk
 import Reusable
+import Combine
 
 /// Parrot DevToolbox screen to show DevToolbox content.
 class DevToolboxViewController: UITableViewController {
     // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
     private let groundSdk = GroundSdk()
-    private var currentDroneWatcher = CurrentDroneWatcher()
     private var drone: Drone?
     private var devToolboxRef: Ref<DevToolbox>?
     private var dataSource: [DebugSetting] = []
@@ -51,16 +52,18 @@ class DevToolboxViewController: UITableViewController {
         super.viewDidLoad()
 
         tableView.register(cellType: DevToolboxCell.self)
+        // TODO access to service from VC, should be in a VM
+        Services.hub.currentDroneHolder.dronePublisher
+            .sink { [unowned self] drone in
+                self.drone = drone
+                devToolboxRef = drone.getPeripheral(Peripherals.devToolbox) { [weak self] devToolbox in
+                    guard let devToolbox = devToolbox else { return }
 
-        currentDroneWatcher.start { [weak self] drone in
-            self?.drone = drone
-            self?.devToolboxRef = drone.getPeripheral(Peripherals.devToolbox) { [weak self] devToolbox in
-                guard let devToolbox = devToolbox else { return }
-
-                self?.dataSource = devToolbox.debugSettings
-                self?.tableView.reloadData()
+                    self?.dataSource = devToolbox.debugSettings
+                    self?.tableView.reloadData()
+                }
             }
-        }
+            .store(in: &cancellables)
     }
 }
 

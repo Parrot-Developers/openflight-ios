@@ -31,7 +31,7 @@ import UIKit
 import Reusable
 
 // MARK: - Protocols
-protocol DashboardHeaderCellDelegate: class {
+protocol DashboardHeaderCellDelegate: AnyObject {
     /// Dismisses the dashboard when we touch the fly button.
     func dismissDasboard()
 }

@@ -88,13 +88,15 @@ private extension CenteredRulerTableViewCell {
         let displayType: RulerDisplayType = settingType?.category != .image ? .number : .string
         let allValues: [Double]
         let currentValue: Double
-        if let step = settingType?.step, step < 1.0,
+        if let step = settingType?.step,
+           let divider = settingType?.divider,
+           divider < 1.0,
            let first: Int = settingType?.allValues.first,
            let last: Int = settingType?.allValues.last {
-            allValues = Array(stride(from: Double(first) * step,
-                                     to: Double(last) * step,
+            allValues = Array(stride(from: Double(first) * divider,
+                                     through: Double(last) * divider,
                                      by: step))
-            currentValue = Double(settingType?.currentValue ?? 0) * step
+            currentValue = Double(settingType?.currentValue ?? 0) * divider
         } else {
             allValues = settingType?.allValues.map({Double($0)}) ?? []
             currentValue = Double(settingType?.currentValue ?? 0)
@@ -116,8 +118,8 @@ private extension CenteredRulerTableViewCell {
 extension CenteredRulerTableViewCell: SettingValueRulerViewDelegate {
     func valueDidChange(_ value: Double) {
         var finalValue = Int(value)
-        if let step = settingType?.step, step < 1.0 {
-            finalValue = Int(value / step)
+        if let divider = settingType?.divider, divider < 1.0 {
+            finalValue = Int(value / divider)
         }
         delegate?.updateSettingValue(for: settingType?.key,
                                      value: finalValue)

@@ -30,8 +30,7 @@
 import UIKit
 
 /// Utility extension for `UIColor`.
-
-extension UIColor {
+public extension UIColor {
     /// provides UIImage filled with color
     func asImage() -> UIImage? {
         let rect = CGRect(x: 0.0, y: 0.0, width: 1.0, height: 1.0)

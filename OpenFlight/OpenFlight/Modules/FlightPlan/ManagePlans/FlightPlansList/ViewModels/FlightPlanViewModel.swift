@@ -74,7 +74,7 @@ public class FlightPlanState: ViewModelState, EquatableState, Copying, FlightSta
     /// Flight Plan title.
     public fileprivate(set) var title: String?
     /// Flight Plan custom type.
-    public fileprivate(set) var type: String?
+    public fileprivate(set) var type: FlightPlanType?
     /// Flight Plan date.
     fileprivate(set) var date: Date?
     /// Flight Plan last modification date.
@@ -114,7 +114,7 @@ public class FlightPlanState: ViewModelState, EquatableState, Copying, FlightSta
     ///    - settings: Flight Plan settings
     ///    - polygonPoints: Flight Plan polygon points
     init(title: String?,
-         type: String?,
+         type: FlightPlanType?,
          uuid: String?,
          date: Date?,
          lastModified: Date?,
@@ -137,10 +137,11 @@ public class FlightPlanState: ViewModelState, EquatableState, Copying, FlightSta
     ///
     /// - Parameters:
     ///    - flightPlan: Flight Plan object
-    public init(flightPlan: SavedFlightPlan) {
+    ///    - type: Flight Plan type
+    public init(flightPlan: SavedFlightPlan, type: FlightPlanType) {
         self.uuid = flightPlan.uuid
         self.title = flightPlan.title
-        self.type = flightPlan.type
+        self.type = type
         self.date = flightPlan.savedDate
         self.lastModified = flightPlan.lastModifiedDate
         self.location = flightPlan.coordinate
@@ -153,12 +154,13 @@ public class FlightPlanState: ViewModelState, EquatableState, Copying, FlightSta
     ///
     /// - Parameters:
     ///    - flightPlan: Flight Plan object
+    ///    - type: Flight Plan type
     /// - Returns: copy of self, updated.
-    func updated(flightPlan: SavedFlightPlan) -> FlightPlanState {
+    func updated(flightPlan: SavedFlightPlan, type: FlightPlanType) -> FlightPlanState {
         let copy = self.copy()
         copy.uuid = flightPlan.uuid
         copy.title = flightPlan.title
-        copy.type = flightPlan.type
+        copy.type = type
         copy.date = flightPlan.savedDate
         copy.lastModified = flightPlan.lastModifiedDate
         copy.location = flightPlan.coordinate
@@ -172,7 +174,7 @@ public class FlightPlanState: ViewModelState, EquatableState, Copying, FlightSta
         return location == other.location
             && thumbnail == other.thumbnail
             && title == other.title
-            && type == other.type
+            && type?.key == other.type?.key
             && date == other.date
             && lastModified == other.lastModified
             && uuid == other.uuid
@@ -210,12 +212,13 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     public lazy var flightPlan: SavedFlightPlan? = {
         // Get persisted data if needed.
         guard let uuid = self.state.value.uuid,
-              let persistedFlightPlan = CoreDataManager.shared.savedFlightPlan(for: uuid) else {
+              let persistedFlightPlan = CoreDataManager.shared.savedFlightPlan(for: uuid),
+              let type = flightPlanTypeStore.typeForKey(persistedFlightPlan.type) else {
             return nil
         }
 
         points = persistedFlightPlan.plan.wayPoints.compactMap({ $0.coordinate })
-        let state = self.state.value.updated(flightPlan: persistedFlightPlan)
+        let state = self.state.value.updated(flightPlan: persistedFlightPlan, type: type)
         // Set state to update content if needed.
         self.state.set(state)
 
@@ -275,6 +278,7 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     private var graphicTapListeners: Set<GraphicTapListener> = []
     private var courseModificationListeners: Set<FlightPlanCourseModificationListener> = []
     private var povModificationListeners: Set<FlightPlanPointOfViewModificationListener> = []
+    private unowned var flightPlanTypeStore: FlightPlanTypeStore
 
     // MARK: - Init
     /// Init.
@@ -282,11 +286,14 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     /// - Parameters:
     ///     - flightPlan: Flight Plan object
     public init(flightPlan: SavedFlightPlan?) {
+        // TODO wrong injection
+        self.flightPlanTypeStore = Services.hub.flightPlanTypeStore
         super.init()
 
-        if let data = flightPlan {
+        if let data = flightPlan,
+           let type = flightPlanTypeStore.typeForKey(data.type) {
             self.flightPlan = data
-            self.state.set(FlightPlanState(flightPlan: data))
+            self.state.set(FlightPlanState(flightPlan: data, type: type))
         }
         updateEstimations()
     }
@@ -296,6 +303,8 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     /// - Parameters:
     ///     - state: Flight Plan state
     public init(state: FlightPlanState) {
+        // TODO wrong injection
+        self.flightPlanTypeStore = Services.hub.flightPlanTypeStore
         super.init()
 
         self.state.set(state)
@@ -312,6 +321,9 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
         // Save date in file.
         flightPlan?.savedDate = now
         flightPlan?.lastModifiedDate = now
+
+        // Update points so open map stays accurate.
+        points = flightPlan?.plan.wayPoints.compactMap({ $0.coordinate }) ?? []
 
         // Save date in state.
         let finalCopy: FlightPlanState = copy ?? self.state.value.copy()
@@ -359,7 +371,7 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
             return
         }
 
-        CoreDataManager.shared.saveOrUpdate(execution: execution, isFromRun: true)
+        CoreDataManager.shared.saveOrUpdate(execution: execution)
     }
 
     /// Deletes flight plan executions.
@@ -462,11 +474,11 @@ public class FlightPlanViewModel: BaseViewModel<FlightPlanState>, FlightViewMode
     /// Change Flight Plan type.
     ///
     /// - Parameters:
-    ///    - type: new type
-    public func updateType(_ type: String?) {
-        guard let type = type, self.state.value.type != type else { return }
+    ///    - typeKey: new type key
+    public func updateType(_ typeKey: String?) {
+        guard self.state.value.type?.key != typeKey, let type = flightPlanTypeStore.typeForKey(typeKey) else { return }
 
-        flightPlan?.type = type
+        flightPlan?.type = typeKey
         let copy = self.state.value.copy()
         copy.type = type
 

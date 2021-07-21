@@ -64,39 +64,32 @@ public final class AlertViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var alertBackground: UIView! {
         didSet {
-            alertBackground.backgroundColor = ColorName.black.color
+            alertBackground.backgroundColor = ColorName.white.color
             alertBackground.applyCornerRadius(Constants.cornerRadius)
         }
     }
-    @IBOutlet private weak var alertTitle: UILabel! {
-        didSet {
-            alertTitle.makeUp(with: .huge)
-        }
-    }
-    @IBOutlet private weak var alertMessage: UILabel! {
-        didSet {
-            alertMessage.makeUp(with: .big)
-        }
-    }
+    @IBOutlet private weak var alertTitle: UILabel!
+    @IBOutlet private weak var alertMessage: UILabel!
     @IBOutlet private weak var cancelButton: UIButton! {
         didSet {
-            cancelButton.makeup(with: .large)
-            cancelButton.cornerRadiusedWith(backgroundColor: .clear,
-                                            borderColor: ColorName.white.color,
+            cancelButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
+                                            borderColor: .clear,
                                             radius: Style.mediumCornerRadius,
-                                            borderWidth: Constants.cancelButtonBorderWidth)
+                                            borderWidth: 0.0)
             cancelButton.setTitle(L10n.cancel, for: .normal)
+            cancelButton.setTitleColor(ColorName.sambuca.color, for: .normal)
         }
     }
     @IBOutlet private weak var validateButton: UIButton! {
         didSet {
-            validateButton.makeup(with: .large)
             validateButton.titleLabel?.adjustsFontSizeToFitWidth = true
             validateButton.titleLabel?.minimumScaleFactor = Constants.minimumFontScale
-            validateButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
-                                              borderColor: ColorName.greenSpring20.color,
-                                              radius: Style.mediumCornerRadius)
+            validateButton.cornerRadiusedWith(backgroundColor: ColorName.greenMediumSea.color,
+                                              borderColor: .clear,
+                                              radius: Style.mediumCornerRadius,
+                                              borderWidth: 0.0)
             validateButton.setTitle(L10n.commonYes, for: .normal)
+            validateButton.setTitleColor(.white, for: .normal)
         }
     }
     @IBOutlet private weak var bgContentBottomConstraint: NSLayoutConstraint! {
@@ -114,13 +107,12 @@ public final class AlertViewController: UIViewController {
     // MARK: - Private Properties
     private var message: String?
     private var closeButtonStyle: CloseButtonStyle?
-    private var messageColor: ColorName = .white
+    private var messageColor: ColorName = .sambuca
     private var cancelAction: AlertAction?
     private var validateAction: AlertAction?
 
     // MARK: - Private Enums
     internal enum Constants {
-        static let cancelButtonBorderWidth: CGFloat = 2.0
         static let cornerRadius: CGFloat = 18.0
         static let horizontalSpacing: CGFloat = 40.0
         static let verticalSpacing: CGFloat = 16.0
@@ -139,7 +131,7 @@ public final class AlertViewController: UIViewController {
     ///     - validateAction: Validate action
     public static func instantiate(title: String,
                                    message: String,
-                                   messageColor: ColorName = .white,
+                                   messageColor: ColorName = .sambuca,
                                    closeButtonStyle: CloseButtonStyle? = nil,
                                    cancelAction: AlertAction? = nil,
                                    validateAction: AlertAction?) -> AlertViewController {
@@ -168,7 +160,7 @@ public final class AlertViewController: UIViewController {
         UIView.animate(withDuration: Style.shortAnimationDuration,
                        delay: Style.shortAnimationDuration,
                        animations: {
-                        self.view.backgroundColor = ColorName.white50.color
+                        self.view.backgroundColor = ColorName.black80.color
                        })
     }
 
@@ -288,28 +280,31 @@ private extension AlertViewController {
                      cancelCustomColor: ColorName? = nil) {
         guard let style = style else { return }
 
-        var color: UIColor = .clear
-        var borderWidth: CGFloat = 0.0
+        var color: UIColor = ColorName.greenMediumSea.color
+        var textColor: UIColor = .white
 
         switch style {
         case .destructive:
-            color = ColorName.redTorch25.color
+            color = ColorName.tomato.color
+            textColor = .white
         case .cancel:
             if let backgroundColor = cancelCustomColor {
                 color = backgroundColor.color
             } else {
-                color = .clear
-                borderWidth = Constants.cancelButtonBorderWidth
+                color = ColorName.whiteAlbescent.color
+                textColor = ColorName.sambuca.color
             }
         case .default:
-            color = ColorName.greenSpring20.color
+            color = ColorName.greenMediumSea.color
+            textColor = .white
         @unknown default:
             break
         }
 
         button.cornerRadiusedWith(backgroundColor: color,
-                                  borderColor: ColorName.white.color,
+                                  borderColor: .clear,
                                   radius: Style.mediumCornerRadius,
-                                  borderWidth: borderWidth)
+                                  borderWidth: 0.0)
+        button.setTitleColor(textColor, for: .normal)
     }
 }

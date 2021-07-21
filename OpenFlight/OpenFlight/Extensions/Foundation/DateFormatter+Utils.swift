@@ -64,4 +64,10 @@ extension DateFormatter {
         dateFormatter.dateFormat = format
         return dateFormatter
     }
+
+    public static let apiDateFormatter: DateFormatter = {
+        let dateFormatter = DateFormatter.customFormat(DateFormatter.Constants.classicDateFormat)
+        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+        return dateFormatter
+    }()
 }

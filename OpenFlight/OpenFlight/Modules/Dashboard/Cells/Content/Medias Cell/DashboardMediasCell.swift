@@ -36,7 +36,6 @@ final class DashboardMediasCell: UICollectionViewCell, NibReusable {
     @IBOutlet private weak var storageIcon: UIImageView!
     @IBOutlet private weak var freeStorageLabel: UILabel!
     @IBOutlet private weak var collectionView: UICollectionView!
-    @IBOutlet private weak var mediasLabel: UILabel!
     @IBOutlet private weak var remainingPhotosLabel: UILabel!
     @IBOutlet private weak var remainingVideosLabel: UILabel!
 
@@ -124,8 +123,7 @@ private extension DashboardMediasCell {
 
         storageIcon.image = viewModel.sourceType?.image
         freeStorageLabel.attributedText = NSMutableAttributedString(withAvailableSpace: viewModel.getAvailableSpace())
-        mediasLabel.text = L10n.dashboardMediasTitle.uppercased()
-        remainingPhotosLabel.text = String(format: "%02d", viewModel.numberOfImages)
-        remainingVideosLabel.text = String(format: "%02d", viewModel.numberOfVideos)
+        remainingPhotosLabel.text = String(format: "%d", viewModel.numberOfImages)
+        remainingVideosLabel.text = String(format: "%d", viewModel.numberOfVideos)
     }
 }

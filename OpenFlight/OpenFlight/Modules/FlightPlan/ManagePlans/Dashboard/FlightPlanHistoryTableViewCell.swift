@@ -32,7 +32,7 @@ import UIKit
 import Reusable
 
 // MARK: - Protocols
-protocol FlightPlanHistoryCellDelegate: class {
+protocol FlightPlanHistoryCellDelegate: AnyObject {
     /// Called when user taps the media view.
     ///
     /// - Parameters:

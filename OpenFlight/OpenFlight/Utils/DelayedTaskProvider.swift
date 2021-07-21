@@ -44,7 +44,7 @@ final class DelayedTaskComponents {
 
 /// Protocol providing the ability to start/cancel a task.
 
-protocol DelayedTaskProvider: class {
+protocol DelayedTaskProvider: AnyObject {
     // MARK: - Properties
     /// Components needed for the protocol.
     var delayedTaskComponents: DelayedTaskComponents { get }

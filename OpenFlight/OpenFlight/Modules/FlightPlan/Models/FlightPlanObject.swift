@@ -162,6 +162,7 @@ public final class FlightPlanObject: Codable {
         }
     }
 
+    /// Timelapse interval, in milliseconds.
     var timeLapseCycle: Int? {
         get {
             guard let value = captureSettings?[ClassicFlightPlanSettingType.timeLapseCycle.rawValue] else {
@@ -204,7 +205,7 @@ public final class FlightPlanObject: Codable {
             guard let triggerCycle = timeLapseCycle else { return nil }
 
             // Set triggerCycle in milliseconds.
-            return MavlinkStandard.CameraTriggerIntervalCommand(triggerCycle: triggerCycle * 1000)
+            return MavlinkStandard.CameraTriggerIntervalCommand(triggerCycle: triggerCycle)
         case .gpsLapse:
             guard let distance = gpsLapseDistance else { return nil }
 
@@ -367,10 +368,17 @@ public final class FlightPlanObject: Codable {
     /// Should be called after creation.
     func setRelations() {
         var previousWayPoint: WayPoint?
+
+        for index in (0...pois.count) {
+            pois.elementAt(index: index)?.addIndex(index: index)
+        }
+
         wayPoints.forEach { wayPoint in
             wayPoint.previousWayPoint = previousWayPoint
             if let poiIndex = wayPoint.poiIndex {
-                wayPoint.poiPoint = pois.elementAt(index: poiIndex)
+                let poiPoint = pois.elementAt(index: poiIndex)
+                wayPoint.poiPoint = poiPoint
+                poiPoint?.assignWayPoint(wayPoint: wayPoint)
             }
             previousWayPoint?.nextWayPoint = wayPoint
             previousWayPoint = wayPoint

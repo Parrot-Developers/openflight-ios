@@ -76,9 +76,9 @@ extension AntiflickerMode: SettingMode {
 extension Camera2ZoomVelocityControlQualityMode: SettingMode {
     var localized: String {
         switch self {
-        case .stopBeforeDegrading:
-            return L10n.commonNo
         case .allowDegrading:
+            return L10n.commonNo
+        case .stopBeforeDegrading:
             return L10n.commonYes
         }
     }
@@ -88,16 +88,16 @@ extension Camera2ZoomVelocityControlQualityMode: SettingMode {
     }
 
     static var allValues: [SettingMode] {
-        return [Camera2ZoomVelocityControlQualityMode.stopBeforeDegrading,
-                Camera2ZoomVelocityControlQualityMode.allowDegrading]
+        return [Camera2ZoomVelocityControlQualityMode.allowDegrading,
+                Camera2ZoomVelocityControlQualityMode.stopBeforeDegrading]
     }
 
     var image: UIImage? {
         switch self {
-        case .stopBeforeDegrading:
-            return Asset.Settings.Quick.extrazoomInactive.image
         case .allowDegrading:
-            return Asset.Settings.Quick.extrazoomActive.image
+            return Asset.Settings.Quick.losslessZoomInactive.image
+        case .stopBeforeDegrading:
+            return Asset.Settings.Quick.losslessZoomActive.image
         }
     }
 
@@ -190,8 +190,6 @@ extension Camera2AudioRecordingMode: SettingMode {
             return L10n.settingsQuickAudioOff
         case .drone:
             return L10n.settingsQuickAudioOn
-        default:
-            return ""
         }
     }
 
@@ -211,8 +209,6 @@ extension Camera2AudioRecordingMode: SettingMode {
             return Asset.Settings.Quick.icStopAudio.image
         case .drone:
             return Asset.Settings.Quick.icStartAudio.image
-        default:
-            return nil
         }
     }
 

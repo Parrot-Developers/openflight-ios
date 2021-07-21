@@ -32,14 +32,9 @@ import UIKit
 import Reusable
 
 /// Gallery medias header.
-
 final class GalleryMediaCollectionReusableView: UICollectionReusableView, NibReusable {
     // MARK: - Outlets
-    @IBOutlet private weak var sectionTitle: UILabel? {
-        didSet {
-            sectionTitle?.makeUp()
-        }
-    }
+    @IBOutlet private weak var sectionTitle: UILabel!
 
     // MARK: - Internal Funcs
     /// Setup cell.
@@ -47,6 +42,6 @@ final class GalleryMediaCollectionReusableView: UICollectionReusableView, NibReu
     /// - Parameters:
     ///    - date: a date
     func setup(date: Date) {
-        sectionTitle?.text = date.formattedString(dateStyle: .long, timeStyle: .none)
+        sectionTitle.text = date.formattedString(dateStyle: .long, timeStyle: .none)
     }
 }

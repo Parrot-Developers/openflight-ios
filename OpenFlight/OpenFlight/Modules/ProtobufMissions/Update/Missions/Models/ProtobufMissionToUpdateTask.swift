@@ -34,13 +34,12 @@ import GroundSdk
 // MARK: - Public Structs
 /// A struct to store the progress and the cancelable task of a mission that is being updated.
 public struct ProtobufMissionToUpdateTask: Equatable {
-    let task: CancelableTaskCore?
+    let task: CancelableCore?
     let progress: Int
 
     // MARK: - Equatable
     public static func == (lhs: ProtobufMissionToUpdateTask,
                            rhs: ProtobufMissionToUpdateTask) -> Bool {
         return lhs.progress == rhs.progress
-            && lhs.task?.canceled == rhs.task?.canceled
     }
 }

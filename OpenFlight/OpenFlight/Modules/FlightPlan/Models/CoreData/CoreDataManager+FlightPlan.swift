@@ -29,12 +29,15 @@
 //    SUCH DAMAGE.
 
 import Foundation
-import GroundSdk
 import CoreData
 
 // MARK: - Protocols
 /// Helpers for Flight Plan data.
-protocol FlightPlanDataProtocol {
+public protocol FlightPlanDataProtocol: AnyObject {
+
+    // TODO shouldn't be exposed
+    var currentContext: NSManagedObjectContext? { get }
+
     /// Returns all flight plan view models.
     ///
     /// - Parameters:
@@ -67,7 +70,7 @@ protocol FlightPlanDataProtocol {
     /// - Parameters:
     ///     - predicate: predicate used to filter Flight Plan if needed
     /// - Returns: Last persisted Flight Plan view model.
-    func loadLastFlightPlan(predicate: NSPredicate?) -> FlightPlanViewModel?
+    func loadLastFlightPlan(predicate: NSPredicate?, completion: @escaping (FlightPlanViewModel?) -> Void)
 
     /// Provides a Flight Plan view model.
     ///
@@ -75,6 +78,13 @@ protocol FlightPlanDataProtocol {
     ///     - uuid: flight plan id
     /// - Returns: Flight plan view model.
     func loadFlightPlan(for uuid: String) -> FlightPlanViewModel?
+
+    /// Provides last Flight Plan view model matching the type parameter
+    ///
+    /// - Parameters:
+    ///    - type: the type of flight plan to look for
+    /// - Returns: Last persisted Flight Plan view model matching the type.
+    func lastFlightPlan(predicate: NSPredicate?) -> FlightPlanViewModel?
 }
 
 // MARK: - Public Funcs
@@ -162,7 +172,7 @@ extension CoreDataManager: FlightPlanDataProtocol {
             }) ?? []
     }
 
-    func removeFlightPlans(for keys: [String]) {
+    public func removeFlightPlans(for keys: [String]) {
         guard let managedContext = currentContext else { return }
 
         // Remove flight plans
@@ -181,7 +191,7 @@ extension CoreDataManager: FlightPlanDataProtocol {
         try? managedContext.save()
     }
 
-    func savedFlightPlan(for key: String) -> SavedFlightPlan? {
+    public func savedFlightPlan(for key: String) -> SavedFlightPlan? {
         guard let flightPlanModel: FlightPlanModel = flightPlan(for: key),
               let flightPlanDataModel: FlightPlanDataModel = flightPlanModel.flightPlanData,
               let flightPlanData: Data = flightPlanDataModel.flightPlanData,
@@ -237,7 +247,7 @@ extension CoreDataManager: FlightPlanDataProtocol {
             data.setValue(uuid, forKeyPath: #keyPath(FlightPlanModel.uuid))
             data.setValue(longitude, forKeyPath: #keyPath(FlightPlanModel.longitude))
             data.setValue(latitude, forKeyPath: #keyPath(FlightPlanModel.latitude))
-            data.setValue(state.type, forKeyPath: #keyPath(FlightPlanModel.type))
+            data.setValue(state.type?.key, forKeyPath: #keyPath(FlightPlanModel.type))
 
             if let title = state.title {
                 data.setValue(title, forKeyPath: #keyPath(FlightPlanModel.title))
@@ -280,23 +290,38 @@ extension CoreDataManager: FlightPlanDataProtocol {
         }
     }
 
-    func loadLastFlightPlan(predicate: NSPredicate?) -> FlightPlanViewModel? {
-        guard let managedContext = currentContext else { return nil }
+    public func loadLastFlightPlan(predicate: NSPredicate?, completion: @escaping (FlightPlanViewModel?) -> Void) {
+        // Last flight plan is provided in the main dispatch queue to ensure this is last one.
+        DispatchQueue.main.async { [weak self] in
+            guard let managedContext = self?.currentContext else {
+                completion(nil)
+                return
+            }
 
-        let fetchRequest: NSFetchRequest<FlightPlanModel> = FlightPlanModel.sortByDateRequest()
-
-        if let predicate = predicate {
+            let fetchRequest: NSFetchRequest<FlightPlanModel> = FlightPlanModel.sortByDateRequest()
             fetchRequest.predicate = predicate
-        }
 
-        if let state = try? (managedContext.fetch(fetchRequest)).first?.flightPlanState() {
-            return FlightPlanViewModel(state: state)
-        } else {
-            return nil
+            if let state = try? (managedContext.fetch(fetchRequest)).first?.flightPlanState() {
+                completion(FlightPlanViewModel(state: state))
+            } else {
+                completion(nil)
+            }
         }
     }
 
-    func loadFlightPlan(for uuid: String) -> FlightPlanViewModel? {
+    public func lastFlightPlan(predicate: NSPredicate?) -> FlightPlanViewModel? {
+        guard let managedContext = self.currentContext else {
+            return nil
+        }
+
+        let fetchRequest: NSFetchRequest<FlightPlanModel> = FlightPlanModel.sortByDateRequest()
+        fetchRequest.predicate = predicate
+
+        guard let state = try? (managedContext.fetch(fetchRequest)).first?.flightPlanState() else { return nil }
+        return FlightPlanViewModel(state: state)
+    }
+
+    public func loadFlightPlan(for uuid: String) -> FlightPlanViewModel? {
         guard let state = flightPlan(for: uuid)?.flightPlanState() else { return nil }
 
         return FlightPlanViewModel(state: state)

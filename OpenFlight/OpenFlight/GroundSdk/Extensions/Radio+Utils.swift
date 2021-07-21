@@ -30,12 +30,6 @@
 
 import GroundSdk
 
-// MARK: - Private Enums
-private enum Constants {
-    /// Threshold for bad link signal quality.
-    static let linkSignalQualityThreshold: Int = 1
-}
-
 // MARK: - Internal Enums
 /// Enum describing Wifi strength.
 enum WifiStrength: Int {
@@ -72,7 +66,7 @@ extension WifiStrength: SignalStrength {
              .ok2On4,
              .ok3On4,
              .ok4On4:
-            return .greenSpring20
+            return .greenMediumSea20
         default:
             return .clear
         }
@@ -84,7 +78,7 @@ extension WifiStrength: SignalStrength {
              .ok2On4,
              .ok3On4,
              .ok4On4:
-            return .greenSpring
+            return .greenMediumSea
         default:
             return .clear
         }
@@ -97,41 +91,23 @@ extension WifiStrength: SignalStrength {
         case .ko0On4:
             return isLinkActive
                 ? Asset.Wifi.icWifiQuality1.image
-                : Asset.Wifi.icWifiInactiveQuality1.image
+                : Asset.Wifi.icWifiOffline.image
         case .ok1On4:
             return isLinkActive
                 ? Asset.Wifi.icWifiQuality2.image
-                : Asset.Wifi.icWifiInactiveQuality2.image
+                : Asset.Wifi.icWifiOffline.image
         case .ok2On4:
             return isLinkActive
                 ? Asset.Wifi.icWifiQuality3.image
-                : Asset.Wifi.icWifiInactiveQuality3.image
+                : Asset.Wifi.icWifiOffline.image
         case .ok3On4:
             return isLinkActive
                 ? Asset.Wifi.icWifiQuality4.image
-                : Asset.Wifi.icWifiInactiveQuality4.image
+                : Asset.Wifi.icWifiOffline.image
         case .ok4On4:
             return isLinkActive
                 ? Asset.Wifi.icWifiQuality5.image
-                : Asset.Wifi.icWifiInactiveQuality5.image
-        }
-    }
-}
-
-/// Utility extension for `Radio`.
-extension Radio {
-    // MARK: - Internal Properties
-    /// Returns current Wifi strength.
-    var wifiStrength: WifiStrength {
-        return WifiStrength(rawValue: linkSignalQuality ?? WifiStrength.offline.rawValue) ?? .offline
-    }
-
-    /// Returns current Wifi errors.
-    var currentAlerts: [HUDAlertType] {
-        if let quality = linkSignalQuality, quality <= Constants.linkSignalQualityThreshold {
-            return [HUDBannerWarningAlertType.lowAndPerturbedWifi]
-        } else {
-            return []
+                : Asset.Wifi.icWifiOffline.image
         }
     }
 }

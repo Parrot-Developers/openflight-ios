@@ -145,8 +145,8 @@ final class GalleryPanoramaViewController: UIViewController {
 private extension GalleryPanoramaViewController {
     /// Sets up all the UI for the view controller.
     func setupUI() {
-        gyroscopeButton.cornerRadiusedWith(backgroundColor: ColorName.black60.color, radius: Style.largeCornerRadius)
-        exitButton.cornerRadiusedWith(backgroundColor: ColorName.black60.color, radius: Style.largeCornerRadius)
+        gyroscopeButton.cornerRadiusedWith(backgroundColor: ColorName.sambuca.color, radius: Style.largeCornerRadius)
+        exitButton.cornerRadiusedWith(backgroundColor: ColorName.sambuca.color, radius: Style.largeCornerRadius)
     }
 
     /// Init gestures.

@@ -83,7 +83,7 @@ public final class WayPoint: Codable {
     /// Waypoint speed MAVLink command.
     var speedMavlinkCommand: MavlinkStandard.ChangeSpeedCommand {
         return MavlinkStandard.ChangeSpeedCommand(speedType: .airSpeed,
-                                                  speed: speed * SpeedSettingType().step)
+                                                  speed: speed * SpeedSettingType().divider)
     }
 
     /// View mode MAVLink command.
@@ -192,7 +192,7 @@ public final class WayPoint: Codable {
         self.altitude = altitude ?? Constants.defaultAltitude
         self.yaw = yaw
         self.hasCustomYaw = hasCustomYaw
-        self.speed = speed ?? (Constants.defaultSpeed / SpeedSettingType().step)
+        self.speed = speed ?? (Constants.defaultSpeed / SpeedSettingType().divider)
         self.shouldContinue = shouldContinue
         self.tilt = tilt ?? Constants.defaultTilt
     }
@@ -273,7 +273,7 @@ public final class WayPoint: Codable {
     /// - Parameters:
     ///    - speedMavlinkCommand: speed Mavlink command
     public func update(speedMavlinkCommand: MavlinkStandard.ChangeSpeedCommand) {
-        speed = speedMavlinkCommand.speed / SpeedSettingType().step
+        speed = speedMavlinkCommand.speed / SpeedSettingType().divider
     }
 }
 
@@ -318,6 +318,30 @@ extension WayPoint {
         nextWayPoint?.updateYaw()
     }
 
+    /// Convert radians to degrees.
+    /// - Parameters:
+    ///    - value: angle in radians
+    /// - returns: angle in degrees
+    func radToDeg(value: Double) -> Double {
+        return value * 180 / .pi
+    }
+
+    /// Check if the waypoint has been assigned to a POI and update
+    /// the camera tilt accordingly. This method must be called whenever
+    /// the altitude or position of the waypoint or corresponding POI has been updated.
+    func updateTiltRelation() {
+        if self.poiIndex != nil,
+           let poiPoint = self.poiPoint {
+            let dr = AGSGeometryEngine.standardGeodeticDistance(between: self.agsPoint,
+                                                                and: poiPoint.agsPoint,
+                                                                distanceUnit: .meters())?.distance ?? 0.0
+            let dz = poiPoint.altitude - self.altitude
+            let degrees = radToDeg(value: atan2(dz, dr))
+            let angle = WayPointSettingsProvider.closestAngle(value: degrees)
+            self.tilt = Double(angle)
+        }
+    }
+
     /// Assigns point of interest to waypoint.
     ///
     /// - Parameters:
@@ -330,6 +354,7 @@ extension WayPoint {
         self.shouldFollowPOI = true
         self.poiPoint = poiPoint
         self.updateYaw()
+        self.updateTiltRelation()
     }
 
     /// Unassigns point of interest from waypoint.

@@ -54,10 +54,17 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     var wayPointArrows: [FlightPlanWayPointArrowGraphic] {
         return self.graphics.compactMap { $0 as? FlightPlanWayPointArrowGraphic }
     }
+
+    /// Last manually selected graphic.
+    var lastManuallySelectedGraphic: FlightPlanGraphic?
+
     /// Currently dragged graphic, if any.
     weak var draggedGraphic: FlightPlanPointGraphic?
     /// Timestamp at which the drag started.
     var startDragTimeStamp: TimeInterval = 0.0
+
+    /// Heading of camera.
+    var cameraHeading: Double = 0
 
     // MARK: - Private Properties
     /// Returns all Flight Plan's graphics.
@@ -84,6 +91,10 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     private var currentInsertWayPointGraphic: FlightPlanInsertWayPointGraphic? {
         return self.graphics.compactMap { $0 as? FlightPlanInsertWayPointGraphic }.first
     }
+    /// Drone location graphic.
+    private var droneGraphic: AGSGraphic?
+    /// User location graphic.
+    private var userGraphic: AGSGraphic?
 
     // MARK: - Private Enums
     private enum Constants {
@@ -98,8 +109,9 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     public init(graphics: [FlightPlanGraphic]) {
         super.init()
 
-        self.sceneProperties?.surfacePlacement = .relative
+        sceneProperties?.surfacePlacement = .drapedFlat
         self.graphics.addObjects(from: graphics)
+        sortGraphics()
     }
 
     // MARK: - Override Funcs
@@ -184,6 +196,10 @@ extension FlightPlanGraphicsOverlay {
         default:
             graphic.isSelected = isSelected
         }
+        sortGraphics()
+        // workound to ensure that graphics order is taken into account by map renderer
+        // TODO find a better way to do this
+        sortGraphicsDelayed()
     }
 
     /// Toggles relation state between waypoint and point of interest.
@@ -196,11 +212,16 @@ extension FlightPlanGraphicsOverlay {
         if wayPointGraphic.poiIndex == poiPointGraphic.poiIndex {
             // Points are related, remove relation.
             unassignPoiPointFrom(wayPointGraphic)
+            poiPointGraphic.poiPoint?.cleanWayPoints()
         } else {
             // Otherwise, create relation.
             assignPoiPointToWayPoint(wayPointGraphic: wayPointGraphic,
                                      poiPointGraphic: poiPointGraphic)
         }
+        sortGraphics()
+        // workound to ensure that graphics order is taken into account by map renderer
+        // TODO find a better way to do this
+        sortGraphicsDelayed()
     }
 
     /// Removes all the lines between waypoints and points of interest.
@@ -225,6 +246,8 @@ extension FlightPlanGraphicsOverlay {
             lineBeforeWayPoint(at: index)?.updateEndPoint(mapPoint)
             lineAfterWayPoint(at: index)?.updateStartPoint(mapPoint)
         }
+
+        sortGraphics()
     }
 
     /// Updates altitude for point of interest at given index.
@@ -240,13 +263,15 @@ extension FlightPlanGraphicsOverlay {
             // Only lines for active point of interest are displayed.
             wayPointToPoiLines.forEach { $0.updatePoiPoint(mapPoint) }
         }
+        sortGraphics()
     }
 
     /// Move currently dragged graphic to location.
     ///
     /// - Parameters:
     ///    - mapPoint: location to move to
-    func updateDraggedGraphicLocation(_ mapPoint: AGSPoint) {
+    ///    - editor: flight plan edition view controller
+    func updateDraggedGraphicLocation(_ mapPoint: AGSPoint, editor: FlightPlanEditionViewController?) {
         guard let draggedGraphic = draggedGraphic,
               let altitude = draggedGraphic.altitude else {
             return
@@ -256,10 +281,10 @@ extension FlightPlanGraphicsOverlay {
         switch draggedGraphic {
         case let wayPointGraphic as FlightPlanWayPointGraphic:
             updateWayPointLocation(wayPointGraphic,
-                                   location: newPoint)
+                                   location: newPoint, editor: editor)
         case let poiPointGraphic as FlightPlanPoiPointGraphic:
             updatePoiPointLocation(poiPointGraphic,
-                                   location: newPoint)
+                                   location: newPoint, editor: editor)
         case let wayPointArrowGraphic as FlightPlanWayPointArrowGraphic:
             updateWayPointArrowRotation(wayPointArrowGraphic,
                                         location: newPoint)
@@ -273,12 +298,19 @@ extension FlightPlanGraphicsOverlay {
     /// - Parameters:
     ///    - wayPointGraphic: waypoint's graphic
     ///    - location: new location
+    ///    - editor: flight plan edition view controller
     func updateWayPointLocation(_ wayPointGraphic: FlightPlanWayPointGraphic,
-                                location: AGSPoint) {
+                                location: AGSPoint, editor: FlightPlanEditionViewController?) {
         guard let index = wayPointGraphic.wayPointIndex else { return }
 
         // Update Flight Plan.
         wayPointGraphic.wayPoint?.setCoordinate(location.toCLLocationCoordinate2D())
+        wayPointGraphic.wayPoint?.updateTiltRelation()
+
+        // refresh current interface if a wayPoint is selected
+        if wayPointGraphic.isSelected, let tilt = wayPointGraphic.wayPoint?.tilt {
+            editor?.updateSettingValue(for: TiltAngleSettingType().key, value: Int(tilt))
+        }
 
         // Get all lines concerned by this waypoint.
         let lines = wayPointLines
@@ -299,7 +331,12 @@ extension FlightPlanGraphicsOverlay {
         }
         poiLine?.updateWayPoint(location)
         arrow?.geometry = location
+        arrow?.refreshOrientation()
         wayPointGraphic.geometry = location
+        let previousArrow = wayPointArrows.first(where: { $0.wayPointIndex == index - 1 })
+        let nextArrow = wayPointArrows.first(where: { $0.wayPointIndex == index + 1 })
+        previousArrow?.refreshOrientation()
+        nextArrow?.refreshOrientation()
     }
 
     /// Updates location of a point of interest.
@@ -307,20 +344,38 @@ extension FlightPlanGraphicsOverlay {
     /// - Parameters:
     ///    - poiPointGraphic: point of interest's graphic
     ///    - location: new location
+    ///    - editor: flight plan edition view controller
     func updatePoiPointLocation(_ poiPointGraphic: FlightPlanPoiPointGraphic,
-                                location: AGSPoint) {
+                                location: AGSPoint, editor: FlightPlanEditionViewController?) {
         guard let index = poiPointGraphic.poiIndex else { return }
 
         // Update Flight Plan.
         poiPointGraphic.poiPoint?.coordinate = location.toCLLocationCoordinate2D()
         wayPoints
-            .compactMap { return $0.poiIndex == index ? $0.wayPoint : nil }
-            .forEach { $0.updateYaw() }
+            .filter { $0.poiIndex == index }
+            .map { $0.wayPoint }
+            .forEach {
+                $0?.updateYaw()
+                $0?.updateTiltRelation()
+            }
+
+        // refresh current interface if a wayPoint is selected
+        wayPoints.forEach { wayPointGraphic in
+            if wayPointGraphic.isSelected, let tilt = wayPointGraphic.wayPoint?.tilt {
+                editor?.updateSettingValue(for: TiltAngleSettingType().key, value: Int(tilt))
+            }
+        }
+
         // Update all lines towards point of interest.
         wayPointToPoiLines
             .filter { $0.poiIndex == index }
             .forEach { $0.updatePoiPoint(location) }
         poiPointGraphic.geometry = location
+
+        // Update all arrows orientation.
+        wayPointArrows
+            .filter { $0.poiIndex == index }
+            .forEach { $0.refreshOrientation() }
     }
 
     /// Updates orientation of a waypoint.
@@ -336,6 +391,7 @@ extension FlightPlanGraphicsOverlay {
                                                                 and: location,
                                                                 azimuthUnit: .degrees())?.azimuth1 ?? 0.0
         wayPointArrowGraphic.wayPoint?.setCustomYaw(newYaw.asPositiveDegrees)
+        wayPointArrowGraphic.refreshOrientation()
     }
 
     // MARK: - Insertion
@@ -354,7 +410,7 @@ extension FlightPlanGraphicsOverlay {
 
         // Create new graphics.
         let wayPointGraphic = FlightPlanWayPointGraphic(wayPoint: wayPoint,
-                                                        index: index)
+                                                        index: index, heading: cameraHeading)
         let arrowGraphic = wayPoint.arrowGraphic(index: index)
         let lineBefore = FlightPlanWayPointLineGraphic(origin: originWayPoint,
                                                        destination: wayPoint,
@@ -369,6 +425,12 @@ extension FlightPlanGraphicsOverlay {
             .filter { $0.wayPointIndex ?? Constants.noIndex >= index }
             .forEach { $0.incrementWayPointIndex() }
 
+        // Refresh previous and next arrow orientation.
+        let previousArrow = wayPointArrows.first(where: { $0.wayPointIndex == index - 1 })
+        let nextArrow = wayPointArrows.first(where: { $0.wayPointIndex == index + 1 })
+        previousArrow?.refreshOrientation()
+        nextArrow?.refreshOrientation()
+
         // Remove existing line.
         self.graphics.remove(line)
 
@@ -377,6 +439,8 @@ extension FlightPlanGraphicsOverlay {
         self.graphics.add(arrowGraphic)
         self.graphics.add(lineBefore)
         self.graphics.add(lineAfter)
+
+        sortGraphics()
 
         return wayPointGraphic
     }
@@ -420,6 +484,14 @@ extension FlightPlanGraphicsOverlay {
             .compactMap { $0 as? WayPointRelatedGraphic }
             .filter { $0.wayPointIndex ?? Constants.noIndex > index }
             .forEach { $0.decrementWayPointIndex() }
+
+        // Refresh previous and next arrow.
+        let previousArrow = wayPointArrows.first(where: { $0.wayPointIndex == index - 1})
+        let nextArrow = wayPointArrows.first(where: { $0.wayPointIndex == index })
+        previousArrow?.refreshOrientation()
+        nextArrow?.refreshOrientation()
+
+        sortGraphics()
     }
 
     /// Removes point of interest at given index and updates related graphics.
@@ -435,12 +507,15 @@ extension FlightPlanGraphicsOverlay {
         wayPoints
             .filter { $0.poiIndex == index }
             .forEach { unassignPoiPointFrom($0) }
+
         // Decrement subsequent points of interest and
         // waypoint to point of interest lines/arrows indexes.
         graphics
             .compactMap { $0 as? PoiPointRelatedGraphic }
             .filter { $0.poiIndex ?? Constants.noIndex > index }
             .forEach { $0.decrementPoiPointIndex() }
+
+        sortGraphics()
     }
 
     // MARK: Selected graphic
@@ -486,6 +561,42 @@ extension FlightPlanGraphicsOverlay {
             return nil
         }
     }
+
+    /// Updates camera heading.
+    ///
+    /// - Parameters:
+    ///     - heading: camera heading
+    func update(heading: Double) {
+        cameraHeading = heading
+        wayPoints.forEach { $0.update(heading: heading) }
+        poiPoints.forEach { $0.update(heading: heading) }
+    }
+
+    /// Sets drone location graphic.
+    ///
+    /// - Parameter graphic: drone location graphic
+    func setDroneGraphic(_ graphic: AGSGraphic?) {
+        if let graphic = graphic {
+            graphics.add(graphic)
+            sortGraphicsDelayed()
+        } else if let droneGraphic = droneGraphic {
+            graphics.remove(droneGraphic)
+        }
+        droneGraphic = graphic
+    }
+
+    /// Sets user location graphic.
+    ///
+    /// - Parameter graphic: user location graphic
+    func setUserGraphic(_ graphic: AGSGraphic?) {
+        if let graphic = graphic {
+            graphics.add(graphic)
+            sortGraphicsDelayed()
+        } else if let userGraphic = userGraphic {
+            graphics.remove(userGraphic)
+        }
+        userGraphic = graphic
+    }
 }
 
 // MARK: - Private Funcs
@@ -507,6 +618,7 @@ private extension FlightPlanGraphicsOverlay {
         // Update Flight Plan.
         wayPointGraphic.wayPoint?.assignPoiPoint(poiPoint: poiPoint,
                                                  poiIndex: poiIndex)
+        poiPoint.assignWayPoint(wayPoint: wayPointGraphic.wayPoint)
         // Update graphic.
         wayPointGraphic.poiIndex = poiPointGraphic.poiIndex
 
@@ -616,5 +728,106 @@ private extension FlightPlanGraphicsOverlay {
             previousArrow?.isSelected = previousArrow?.poiIndex == nil ? isSelected : false
             nextArrow?.isSelected = nextArrow?.poiIndex == nil ? isSelected : false
         }
+    }
+
+    /// Sorts displayed graphics asynchronously after a delay.
+    ///
+    /// This is used as a workaround for overlay rendering issue.
+    /// Sometimes, graphics order is not taken into account immediately.
+    func sortGraphicsDelayed() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+            self.sortGraphics()
+        }
+    }
+
+    /// Sorts displayed graphics.
+    ///
+    /// When using `AGSSceneView` and overlays configured in `drapedFlat` mode,
+    /// graphics are render in the order of `graphics` array.
+    /// This method arranges the order of graphics elements, in order to control
+    /// in what order they are renderer.
+    func sortGraphics() {
+        guard let fpGraphics = graphics as? [AGSGraphic] else { return }
+
+        // sort by zIndex
+        let sortedGraphics = fpGraphics.sorted { $0.zIndex < $1.zIndex }
+
+        // sort by types
+        let linesGraphics = sortedGraphics.filter { ($0 as? FlightPlanGraphic)?.itemType == .lineWayPoint }
+        let linesToPoiGraphics = sortedGraphics.filter { ($0 as? FlightPlanGraphic)?.itemType == .lineWayPointToPoi }
+        let poiGraphics = sortedGraphics.filter { ($0 as? FlightPlanGraphic)?.itemType == .poi }
+        let otherGraphics = sortedGraphics.filter {
+            !linesGraphics.contains($0)
+                && !linesToPoiGraphics.contains($0)
+                && !poiGraphics.contains($0)
+                && $0 !== userGraphic
+                && $0 !== droneGraphic
+        }
+
+        var allGraphics = linesGraphics
+        allGraphics.append(contentsOf: linesToPoiGraphics)
+        allGraphics.append(contentsOf: poiGraphics)
+        allGraphics.append(contentsOf: otherGraphics)
+        if let userGraphic = userGraphic {
+            allGraphics.append(userGraphic)
+        }
+        if let droneGraphic = droneGraphic {
+            allGraphics.append(droneGraphic)
+        }
+
+        // raise selected item
+        if let selected = allGraphics.first(where: { $0.isSelected }) {
+            raiseItem(graphics: &allGraphics, item: selected)
+            switch selected {
+            case let selected as FlightPlanWayPointLineGraphic:
+                // raise origin waypoint, destination waypoint, and insert waypoint graphics
+                if let wayPointIndex = selected.wayPointIndex {
+                    if let originWayPoint = allGraphics.first(where: { ($0 as? FlightPlanWayPointGraphic)?.wayPointIndex == wayPointIndex }) {
+                        raiseItem(graphics: &allGraphics, item: originWayPoint)
+                    }
+                    if let destWayPoint = allGraphics.first(where: { ($0 as? FlightPlanWayPointGraphic)?.wayPointIndex == wayPointIndex + 1 }) {
+                        raiseItem(graphics: &allGraphics, item: destWayPoint)
+                    }
+                    if let insertWayPoint = allGraphics.first(where: { ($0 as? FlightPlanGraphic)?.itemType == .insertWayPoint }) {
+                        raiseItem(graphics: &allGraphics, item: insertWayPoint)
+                    }
+                }
+            case let selected as FlightPlanWayPointGraphic:
+                if let wayPointIndex = selected.wayPointIndex {
+                    // raise waypoint's arrow
+                    if let arrow = allGraphics.first(where: { ($0 as? FlightPlanWayPointArrowGraphic)?.wayPointIndex == wayPointIndex }) {
+                        raiseItem(graphics: &allGraphics, item: arrow)
+                    }
+                }
+            case let selected as FlightPlanPoiPointGraphic:
+                if let poiIndex = selected.poiIndex {
+                    // raise arrows pointing to POI
+                    allGraphics.filter { ($0 as? FlightPlanWayPointArrowGraphic)?.poiIndex == poiIndex}
+                        .forEach {
+                            raiseItem(graphics: &allGraphics, item: $0)
+                        }
+                }
+            default:
+                break
+            }
+        }
+
+        // replace gaphics
+        graphics.removeAllObjects()
+        graphics.addObjects(from: allGraphics)
+    }
+
+    /// Raises a graphic item on top of grahics.
+    ///
+    /// This moves the item at the end of graphics array.
+    ///
+    /// - Parameters:
+    ///   - graphics: graphics array
+    ///   - item: graphic item to raise
+    func raiseItem(graphics: inout [AGSGraphic], item: AGSGraphic) {
+        if let index = graphics.firstIndex(of: item) {
+            graphics.remove(at: index)
+        }
+        graphics.append(item)
     }
 }

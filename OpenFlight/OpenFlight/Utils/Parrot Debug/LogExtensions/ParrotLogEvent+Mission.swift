@@ -43,30 +43,4 @@ extension LogEvent {
         /// Classic submodes.
         static let manual: String = "Manual"
     }
-
-    /// Fomates item name according to mode for logs.
-    ///
-    /// - Parameters:
-    ///     - missionModeState: mission mode state
-    /// - Returns: Item name formated value of mission mode.
-    static func formatItemName(missionModeState: MissionLauncherState?) -> String {
-        guard let missionModeName = missionModeState?.title?.description else { return "" }
-
-        /// Classic mode.
-        if missionModeName.contains(LogEvent.LogKeyHUDMissionProviderSelectorButton.classic) {
-            return LogKeyHUDMissionProviderSelectorButton.classic
-        }
-
-        /// Flight plan mode.
-        if missionModeName.contains(LogEvent.LogKeyHUDMissionProviderSelectorButton.flightPlan) {
-            return LogKeyHUDMissionProviderSelectorButton.flightPlan
-        }
-
-        /// Classic/Manual mode.
-        if missionModeName.contains(LogEvent.LogKeyHUDMissionProviderSelectorButton.manual) {
-            return LogKeyHUDMissionProviderSelectorButton.manual
-        }
-
-        return missionModeState?.mode?.logName ?? ""
-    }
 }

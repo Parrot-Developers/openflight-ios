@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -30,7 +31,7 @@
             <rect key="frame" x="0.0" y="0.0" width="158" height="42"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zQf-L3-klZ">
+                <view opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zQf-L3-klZ">
                     <rect key="frame" x="0.0" y="0.0" width="158" height="42"/>
                     <subviews>
                         <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="WJf-zo-wng">
@@ -48,20 +49,20 @@
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="FWm-UR-Y7o">
                                             <rect key="frame" x="0.0" y="18" width="112" height="0.0"/>
-                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="10"/>
-                                            <color key="textColor" red="1" green="1" blue="1" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="11"/>
+                                            <color key="textColor" name="sambuca"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="oh8-xp-Wct">
                                             <rect key="frame" x="0.0" y="21" width="107" height="0.0"/>
-                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="12"/>
-                                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                            <color key="textColor" name="sambuca"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="0N1-zE-nmL">
                                             <rect key="frame" x="112" y="21" width="0.0" height="0.0"/>
-                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="12"/>
-                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
+                                            <color key="textColor" name="sambuca"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
@@ -90,23 +91,22 @@
                     </constraints>
                 </view>
             </subviews>
-            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="bottom" secondItem="vUN-kp-3ea" secondAttribute="bottom" id="4Zz-Rp-U1C"/>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="4wi-sx-rVk"/>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="EED-cB-AEf"/>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" id="JCn-Ng-sQF"/>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="PGO-hA-Jxp"/>
-                <constraint firstAttribute="trailing" secondItem="zQf-L3-klZ" secondAttribute="trailing" id="Q4B-uJ-VVt"/>
-                <constraint firstAttribute="bottom" secondItem="zQf-L3-klZ" secondAttribute="bottom" id="ets-2E-1qD"/>
-                <constraint firstItem="zQf-L3-klZ" firstAttribute="trailing" secondItem="vUN-kp-3ea" secondAttribute="trailing" id="nnF-2H-Mov"/>
+                <constraint firstItem="zQf-L3-klZ" firstAttribute="bottom" secondItem="vUN-kp-3ea" secondAttribute="bottom" id="Jqd-vu-sHG"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="zQf-L3-klZ" secondAttribute="trailing" id="QJx-3L-b4N"/>
+                <constraint firstItem="zQf-L3-klZ" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="neQ-Uw-IVE"/>
+                <constraint firstItem="zQf-L3-klZ" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" id="rjm-gZ-sNQ"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <point key="canvasLocation" x="-75" y="319.5"/>
         </view>
     </objects>
     <resources>
         <image name="icCameraModeVideo" width="20" height="13"/>
+        <namedColor name="sambuca">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

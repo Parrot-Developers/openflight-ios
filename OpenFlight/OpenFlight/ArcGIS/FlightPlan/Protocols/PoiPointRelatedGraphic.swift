@@ -29,7 +29,7 @@
 //    SUCH DAMAGE.
 
 /// Defines ArcGIS graphics related to a point of interest.
-protocol PoiPointRelatedGraphic: class {
+protocol PoiPointRelatedGraphic: AnyObject {
     /// Point of interest's index.
     var poiIndex: Int? { get set }
     /// Decrements point of interest's index.

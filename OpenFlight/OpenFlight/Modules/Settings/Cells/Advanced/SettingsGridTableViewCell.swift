@@ -33,7 +33,7 @@ import Reusable
 
 // MARK: - Protocol
 /// Settings grid action view delegate.
-protocol SettingsGridActionViewDelegate: class {
+protocol SettingsGridActionViewDelegate: AnyObject {
     /// Notifies when user is dragging the view.
     func userIsDragging(_ isDragging: Bool)
 }

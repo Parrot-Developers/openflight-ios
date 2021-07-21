@@ -44,23 +44,33 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
 
     // MARK: - Private Properties
     private weak var coordinator: ProtobufMissionUpdateCoordinator?
-    private var dataSource = FirmwareAndMissionsUpdatingDataSource()
-    private var isWaitingForDroneReconnection: Bool = false
+    private var dataSource = FirmwareAndMissionsUpdatingDataSource(manualRebootState: .waiting)
     private var droneStateViewModel = DroneStateViewModel()
+    private var globalUpdateState = GlobalUpdateState.initial
+    private var missionUpdateOngoing = false
 
     private let missionsUpdaterManager = ProtobufMissionsUpdaterManager.shared
     private var missionsUpdateListener: ProtobufAllMissionsUpdaterListener?
 
     private let firmwareUpdaterManager = FirmwareUpdaterManager.shared
     private var firmwareUpdateListener: FirmwareUpdaterListener?
-    private var didStartFirmwareProcess: Bool = false
-    private var processesAreFinished: Bool = false
 
     // MARK: - Private Enums
     enum Constants {
         static let minProgress: Float = 0.0
-        static let tableViewHeight: CGFloat = 50.0
-        static let rebootDuration: TimeInterval = 60.0
+        static let tableViewHeight: CGFloat = 32.0
+        static let firmwareRebootDuration: TimeInterval = 120.0
+        static let manualRebootDuration: TimeInterval = 35.0
+    }
+
+    enum GlobalUpdateState {
+        case initial
+        case downloadingFirmware
+        case uploadingFirmware
+        case waitingForRebootAfterFirmwareUpdate
+        case uploadingMissions
+        case waitingForRebootAfterMissionsUpdate
+        case finished
     }
 
     // MARK: - Setup
@@ -81,7 +91,6 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
         super.viewDidLoad()
 
         initUI()
-        listenToMissionsUpdaterManager()
         startProcesses()
         listenToDroneReconnection()
 
@@ -135,10 +144,16 @@ extension FirmwareAndMissionsUpdateViewController: UpdatingDoneFooterDelegate {
 // MARK: - Actions
 private extension FirmwareAndMissionsUpdateViewController {
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
-        if isWaitingForDroneReconnection == false {
+        switch globalUpdateState {
+        case .downloadingFirmware,
+             .uploadingFirmware,
+             .uploadingMissions:
             presentCancelAlertViewController()
-        } else {
+        case .waitingForRebootAfterFirmwareUpdate,
+             .waitingForRebootAfterMissionsUpdate:
             presentQuitRebootAlertViewController()
+        default:
+            return
         }
     }
 }
@@ -148,6 +163,72 @@ private extension FirmwareAndMissionsUpdateViewController {
     /// Starts the update processes.
     func startProcesses() {
         RemoteControlGrabManager.shared.disableRemoteControl()
+        listenToFirmwareUpdateManager()
+        firmwareUpdaterManager.startFirmwareProcesses()
+    }
+
+    /// Listens to the Firmware Update Manager.
+    func listenToFirmwareUpdateManager() {
+        firmwareUpdateListener = firmwareUpdaterManager
+            .register(firmwareToUpdateCallback: { [weak self] firmwareGlobalUpdatingState in
+                self?.handleFirmwareProcesses(firmwareGlobalUpdatingState: firmwareGlobalUpdatingState)
+            })
+    }
+
+    /// Handles firmware update processes callback from the manager.
+    ///
+    /// - Parameters:
+    ///    - firmwareGlobalUpdatingState: The gobal state of the processes.
+    func handleFirmwareProcesses(firmwareGlobalUpdatingState: FirmwareGlobalUpdatingState) {
+        switch firmwareGlobalUpdatingState {
+        case .notInitialized,
+             .ongoing:
+            break
+        case .downloading:
+            // Reload tableView only one time while downloading to avoid restarting little progress animation
+            if globalUpdateState == .initial {
+                globalUpdateState = .downloadingFirmware
+                reloadUI()
+            } else {
+                updateProgress()
+            }
+        case .uploading:
+            // Reload tableView only one time while uploading to avoid restarting little progress animation
+            if globalUpdateState == .initial || globalUpdateState == .downloadingFirmware {
+                globalUpdateState = .uploadingFirmware
+                reloadUI()
+            } else {
+                updateProgress()
+            }
+        case .waitingForReboot:
+            if globalUpdateState == .uploadingFirmware {
+                // After the reboot, a connection with the drone must be established to finish the processes.
+                globalUpdateState = .waitingForRebootAfterFirmwareUpdate
+                displayRebootUI()
+            }
+        case .success:
+            if globalUpdateState == .waitingForRebootAfterFirmwareUpdate {
+                // After the reboot and the new connection of the drone, this instruction should be triggered.
+                globalUpdateState = .uploadingMissions
+                reloadUI()
+                startMissionsProcesses()
+            }
+        case .error:
+            if globalUpdateState == .downloadingFirmware
+                || globalUpdateState == .uploadingFirmware
+                || globalUpdateState == .waitingForRebootAfterFirmwareUpdate {
+                // This instruction may be triggered during the process or after the new connection of the drone
+                // following a reboot.
+                globalUpdateState = .finished
+                reloadUI()
+                displayErrorUI()
+            }
+        }
+    }
+
+    /// Starts missions update processes.
+    func startMissionsProcesses() {
+        listenToMissionsUpdaterManager()
         missionsUpdaterManager.startMissionsUpdateProcess()
     }
 
@@ -155,91 +236,67 @@ private extension FirmwareAndMissionsUpdateViewController {
     func listenToMissionsUpdaterManager() {
         missionsUpdaterManager
             .registerGlobalListener(allMissionToUpdateCallback: { [weak self] (missionsGlobalUpdatingState) in
-                self?.reloadUI()
-                self?.finalizeMissionsProcesses(missionsGlobalUpdatingState: missionsGlobalUpdatingState)
+                self?.handleMissionsProcesses(missionsGlobalUpdatingState: missionsGlobalUpdatingState)
             })
     }
 
-    /// Finalize Missions processes.
+    /// Handles missions update processes callback from the manager.
     ///
     /// - Parameters:
     ///    - missionsGlobalUpdatingState: The gobal state of the processes.
-    func finalizeMissionsProcesses(missionsGlobalUpdatingState: ProtobufMissionsGlobalUpdatingState) {
-        switch missionsGlobalUpdatingState {
-        case .processing:
-            break
-        case .done:
-            if !didStartFirmwareProcess {
-                didStartFirmwareProcess = true
-                listenToFirmwareUpdateManager()
-                firmwareUpdaterManager.startFirmwareProcesses()
-            }
+    func handleMissionsProcesses(missionsGlobalUpdatingState: ProtobufMissionsGlobalUpdatingState) {
+        guard globalUpdateState == .uploadingMissions else {
+            return
         }
-    }
 
-    /// Listens to the Firmware Update Manager .
-    func listenToFirmwareUpdateManager() {
-        firmwareUpdateListener = firmwareUpdaterManager
-            .register(firmwareToUpdateCallback: { [weak self] ( firmwareGlobalUpdatingState) in
-                self?.reloadUI()
-                self?.finalizeFirmwareProcesses(firmwareGlobalUpdatingState: firmwareGlobalUpdatingState)
-            })
-    }
-
-    /// Finalize Firmware processes.
-    ///
-    /// - Parameters:
-    ///    - firmwareGlobalUpdatingState: The gobal state of the processes.
-    func finalizeFirmwareProcesses(firmwareGlobalUpdatingState: FirmwareGlobalUpdatingState) {
-        switch firmwareGlobalUpdatingState {
-        case .notInitialized,
-             .ongoing:
-            break
-        case .waitingForReboot:
-            // After the firmware automatic reboot, a connection with the drone must be established to finish the processes
-            waitForReboot()
-        case .success:
-            // After the firmware automatic reboot and the new connection of the drone, this instruction may be triggered.
-            displayFinalUI()
-        case .error:
-            // This instruction may be triggered during the process or after the new connection of the drone following an automatic firmware reboot.
-
-            cancelButton.isHidden = true
-            guard missionsUpdaterManager.missionsUpdateProcessNeedAReboot() else {
-                displayErrorUI()
-                return
+        switch missionsGlobalUpdatingState {
+        case .ongoing:
+            missionUpdateOngoing = true
+            reloadUI()
+        case .uploading:
+            // Reload tableView only one time while uploading to avoid restarting little progress animation
+            if missionUpdateOngoing {
+                missionUpdateOngoing = false
+                reloadUI()
+            } else {
+                updateProgress()
             }
-
-            // Just a secure test, as after a manual reboot, maybe the firmware "Updater" send again a message of error so this test avoids infinite loop.
-            guard !processesAreFinished else { return }
-
-            // The firmware process failed, however some missions have been updated and need a reboot
-            // TODO: Manually display the reboot cell activity.
-            missionsUpdaterManager.triggerManualReboot()
-            progressView.setFakeRebootProgress(duration: Constants.rebootDuration)
+        case .done:
+            if missionsUpdaterManager.missionsUpdateProcessNeedAReboot() {
+                globalUpdateState = .waitingForRebootAfterMissionsUpdate
+                missionsUpdaterManager.triggerManualReboot()
+                displayRebootUI(manualRebootState: .ongoing)
+            } else {
+                globalUpdateState = .finished
+                reloadUI(manualRebootState: .failed)
+                displayFinalUI()
+            }
         }
     }
 
     /// This is the last step of the processes.
     func listenToDroneReconnection() {
         droneStateViewModel.state.valueChanged = { [weak self] state in
+            // If drone reconnects after firmware update, nothing is done here because func finalizeFirmwareProcesses()
+            // is expected to be called.
             guard let strongSelf = self,
-                  strongSelf.isWaitingForDroneReconnection,
-                  state.connectionState == .connected,
-                  !strongSelf.processesAreFinished
-            else {
+                  strongSelf.globalUpdateState == .waitingForRebootAfterMissionsUpdate,
+                  state.connectionState == .connected else {
                 return
             }
 
-            strongSelf.isWaitingForDroneReconnection = false
             ULog.d(.missionUpdateTag, "Firmware and Missions Update drone reconnected")
+            strongSelf.globalUpdateState = .finished
+            strongSelf.reloadUI(manualRebootState: .succeeded)
             strongSelf.displayFinalUI()
         }
     }
 
     /// Cancel operation in progress and leave screen.
     @objc func cancelProcesses() {
-        guard !isWaitingForDroneReconnection else {
+        guard globalUpdateState == .downloadingFirmware
+                || globalUpdateState == .uploadingFirmware
+                || globalUpdateState == .uploadingMissions else {
             return
         }
 
@@ -296,7 +353,7 @@ private extension FirmwareAndMissionsUpdateViewController {
         subtitleLabel.text = dataSource.subtitle
         view.backgroundColor = ColorName.greyShark.color
         cancelButton.setTitle(L10n.cancel, for: .normal)
-        cancelButton.tintColor = ColorName.white.color
+        cancelButton.makeup(with: .large)
         cancelButton.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
                                         borderColor: .clear,
                                         radius: 0.0,
@@ -314,18 +371,31 @@ private extension FirmwareAndMissionsUpdateViewController {
         tableView.reloadData()
     }
 
-    /// Waits for reboot of the drone
-    func waitForReboot() {
-        cancelButton.isHidden = false
-        isWaitingForDroneReconnection = true
-        progressView.setFakeRebootProgress(duration: Constants.rebootDuration)
-    }
-
-    /// Reloads the UI.
-    func reloadUI() {
-        dataSource = FirmwareAndMissionsUpdatingDataSource()
+    /// Reloads the whole UI.
+    ///
+    /// - Parameter manualRebootState: the manual reboot state of the process
+    func reloadUI(manualRebootState: FirmwareAndMissionsManualRebootingState = .waiting) {
+        dataSource = FirmwareAndMissionsUpdatingDataSource(manualRebootState: manualRebootState)
         progressView.update(currentProgress: dataSource.currentTotalProgress)
         tableView.reloadData()
+    }
+
+    /// Updates the progress view.
+    func updateProgress() {
+        dataSource = FirmwareAndMissionsUpdatingDataSource(manualRebootState: .waiting)
+        progressView.update(currentProgress: dataSource.currentTotalProgress)
+    }
+
+    /// Displays reboot UI.
+    ///
+    /// - Parameter manualRebootState: the manual reboot state of the process
+    func displayRebootUI(manualRebootState: FirmwareAndMissionsManualRebootingState = .waiting) {
+        dataSource = FirmwareAndMissionsUpdatingDataSource(manualRebootState: manualRebootState)
+        let duration = manualRebootState == .ongoing ? Constants.manualRebootDuration : Constants.firmwareRebootDuration
+        progressView.setFakeRebootProgress(progressEnd: dataSource.currentTotalProgress,
+                                           duration: duration)
+        tableView.reloadData()
+        cancelButton.isHidden = false
     }
 
     /// Displays final UI.
@@ -339,7 +409,6 @@ private extension FirmwareAndMissionsUpdateViewController {
 
     /// Displays success UI.
     func displaySuccessUI() {
-        processesAreFinished = true
         continueView.setup(delegate: self, state: .success)
         reportView.setup(with: .success)
         progressView.setFakeSuccessOrErrorProgress()
@@ -348,7 +417,6 @@ private extension FirmwareAndMissionsUpdateViewController {
 
     /// Displays error UI.
     func displayErrorUI() {
-        processesAreFinished = true
         continueView.setup(delegate: self, state: .error)
         reportView.setup(with: .error)
         progressView.setFakeSuccessOrErrorProgress()

@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import CoreData
+import GroundSdk
 
 /// Custom persistent container.
 
@@ -42,7 +43,7 @@ public class PersistentContainer: NSPersistentContainer {
         do {
             try context.save()
         } catch let error as NSError {
-            print("Error: \(error), \(error.userInfo)")
+            ULog.e(.dataModelTag, "Error: \(error), \(error.userInfo)")
         }
     }
 }

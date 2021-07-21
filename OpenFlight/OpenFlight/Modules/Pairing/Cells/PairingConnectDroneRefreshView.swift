@@ -32,7 +32,7 @@ import UIKit
 import Reusable
 
 // MARK: - Protocols
-protocol DroneListDelegate: class {
+protocol DroneListDelegate: AnyObject {
     /// Will be called when user touch refresh button.
     func refresh()
 }

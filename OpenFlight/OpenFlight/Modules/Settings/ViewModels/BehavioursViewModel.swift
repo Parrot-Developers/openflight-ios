@@ -117,9 +117,8 @@ final class BehavioursViewModel: DroneWatcherViewModel<DeviceConnectionState>, S
     /// Apply behaviours settings regarding behaviour mode.
     func applyBehavioursSettings(mode: SettingsBehavioursMode) {
         manualPiloting?.maxPitchRoll.value = Defaults[key: mode.maxPitchRollKey] ?? mode.defaultValues.horizontalSpeed
-        if let maxPitchRollVelocitySavedValue = Defaults[key: mode.maxPitchRollVelocityKey] {
-            manualPiloting?.maxPitchRollVelocity?.value = maxPitchRollVelocitySavedValue
-        } else if let maxPitchRollVelocityPresetValue = manualPiloting?.maxPitchRollVelocityValueForPercent(mode.defaultValues.horizontalAcceleration) {
+
+        if let maxPitchRollVelocityPresetValue = manualPiloting?.maxPitchRollVelocityValueForPercent(mode.defaultValues.horizontalAcceleration) {
             manualPiloting?.maxPitchRollVelocity?.value = maxPitchRollVelocityPresetValue
         }
         manualPiloting?.maxVerticalSpeed.value = Defaults[key: mode.maxVerticalSpeedKey] ?? mode.defaultValues.verticalSpeed

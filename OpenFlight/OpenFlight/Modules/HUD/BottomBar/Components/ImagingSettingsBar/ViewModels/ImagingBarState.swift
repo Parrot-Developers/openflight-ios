@@ -47,6 +47,7 @@ class ImagingBarState: BarButtonState, EquatableState, Copying {
     var subtitle: String?
     var enabled: Bool = true
     var isSelected: Observable<Bool> = Observable(false)
+    var unavailableReason: [String: String] = [:]
 
     // MARK: - Init
     required init() { }
@@ -57,16 +58,19 @@ class ImagingBarState: BarButtonState, EquatableState, Copying {
     ///    - mode: current mode
     ///    - supportedModes: current supported modes
     ///    - isSelected: observer for selected state
+    ///    - unavailableReason: Reason why button is not available
     init(mode: BarItemMode?,
          subMode: BarItemSubMode? = nil,
          supportedModes: [BarItemMode]?,
          showUnsupportedModes: Bool = false,
-         isSelected: Observable<Bool>) {
+         isSelected: Observable<Bool>,
+         unavailableReason: [String: String]? = nil) {
         self.mode = mode
         self.subMode = subMode
         self.supportedModes = supportedModes
         self.showUnsupportedModes = showUnsupportedModes
         self.isSelected = isSelected
+        self.unavailableReason = unavailableReason ?? [:]
     }
 
     // MARK: - Internal Funcs
@@ -109,6 +113,7 @@ final class AutomatableRulerImagingBarState: ImagingBarState {
         }
         return super.isEqual(to: other)
             && self.image == other.image
+            && self.enabled == other.enabled
             && self.title == other.title
             && self.isAutomatic == other.isAutomatic
     }

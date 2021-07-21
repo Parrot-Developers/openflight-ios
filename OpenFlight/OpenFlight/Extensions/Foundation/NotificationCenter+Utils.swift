@@ -53,16 +53,12 @@ public extension Notification.Name {
     static let missionLauncherModeDidChange = NSNotification.Name("missionLauncherModeDidChange")
     static let modalPresentDidChange = NSNotification.Name("modalPresentDidChange")
     static let handDetectedAlertModalPresentDidChange = NSNotification.Name("handDetectedAlertModalPresentDidChange")
-    static let joysticksAvailabilityDidChange = NSNotification.Name("joysticksAvailabilityDidChange")
     static let takeOffRequestedDidChange = NSNotification.Name("takeOffRequestedDidChange")
-    static let startFlightPlanAtLaunch = NSNotification.Name("startFlightPlanAtLaunch")
     static let requestCellularPairingProcess = NSNotification.Name("requestCellularPairingProcess")
 }
 
 // MARK: - Internal Properties
 /// Utility extension for `Notification.Name` to list notifications related to remote control grab.
 extension Notification.Name {
-    static let remoteControlDidOverZoom = NSNotification.Name("remoteControlDidOverZoom")
-    static let remoteControlDidOverTilt = NSNotification.Name("remoteControlDidOverTilt")
     static let remoteControlShutterButtonPressed = NSNotification.Name("remoteControlShutterButtonPressed")
 }

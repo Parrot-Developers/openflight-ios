@@ -126,9 +126,10 @@ final class FirmwareUpdaterWrapper: DroneStateViewModel<FirmwareUpdaterWrapperSt
         guard let updater = updater else { return }
 
         let updateStarted = updater.updateToLatestFirmware()
-        ULog.d(.missionUpdateTag, "Firmware update started")
 
-        if !updateStarted {
+        if updateStarted {
+            ULog.d(.missionUpdateTag, "Firmware update started")
+        } else {
             ULog.d(.missionUpdateTag, "Firmware update never started")
             // The update never started, the logic requires to set its state to "failed".
             update(updateState: .failed,
@@ -141,9 +142,10 @@ final class FirmwareUpdaterWrapper: DroneStateViewModel<FirmwareUpdaterWrapperSt
         guard let updater = updater else { return }
 
         let downloadStarted = updater.downloadAllFirmwares()
-        ULog.d(.missionUpdateTag, "Firmware download started")
 
-        if !downloadStarted {
+        if downloadStarted {
+            ULog.d(.missionUpdateTag, "Firmware download started")
+        } else {
             ULog.d(.missionUpdateTag, "Firmware download never started")
             // The download never started, the logic requires to set its state to "failed".
             update(downloadState: .failed,
@@ -226,20 +228,6 @@ final class FirmwareUpdaterWrapper: DroneStateViewModel<FirmwareUpdaterWrapperSt
         }
     }
 
-    /// Checks if the state is waiting for reboot.
-    ///
-    /// - Returns: True if the state is waiting for reboot.
-    func isWaitingForReboot() -> Bool {
-        guard let updateState = state.value.updateState else { return false }
-
-        switch updateState {
-        case .waitingForReboot:
-            return true
-        default:
-            return false
-        }
-    }
-
     /// Checks if the download is finished.
     ///
     /// - Returns: True if the download is finished.
@@ -293,16 +281,16 @@ final class FirmwareUpdaterWrapper: DroneStateViewModel<FirmwareUpdaterWrapperSt
     /// Returns the current progress for a given operation.
     ///
     /// - Parameters:
-    ///    - operation:The operation
+    ///    - operation: The operation
     /// - Returns: The current progress.
     func currentProgress(for operation: FirwmwareToUpdateOperation) -> Int {
         switch operation {
         case .download:
             return currentDownloadProgress()
         case .update:
-            return currentUpdateProgress(forReboot: false)
+            return currentUpdateProgress()
         case .reboot:
-            return currentUpdateProgress(forReboot: true)
+            return currentRebootProgress()
         }
     }
 }
@@ -333,7 +321,7 @@ private extension FirmwareUpdaterWrapper {
         }
     }
 
-    /// Returns the current progress for a downloadState.
+    /// Returns the current download progress.
     ///
     /// - Returns: The current progress.
     func currentDownloadProgress() -> Int {
@@ -349,24 +337,39 @@ private extension FirmwareUpdaterWrapper {
         }
     }
 
-    /// Returns the current progress for an update state.
+    /// Returns the current update progress.
     ///
-    /// - Parameters:
-    ///    - forReboot:a boolean to indicato how the progress is computed
     /// - Returns: The current progress.
-    func currentUpdateProgress(forReboot: Bool) -> Int {
+    func currentUpdateProgress() -> Int {
         guard let updateState = state.value.updateState else { return 0 }
 
         switch updateState {
-        case .canceled,
+        case .uploading,
+             .processing:
+            return state.value.currentUpdatingProgress
+        case .waitingForReboot,
+             .success,
              .failed,
-             .success:
+             .canceled:
             return Constants.maxProgress
-        case .waitingForReboot:
-            return forReboot ? Constants.minProgress : Constants.maxProgress
-        case .processing,
-             .uploading:
-            return forReboot ? Constants.minProgress : state.value.currentUpdatingProgress
+        }
+    }
+
+    /// Returns the current reboot progress.
+    ///
+    /// - Returns: The current progress.
+    func currentRebootProgress() -> Int {
+        guard let updateState = state.value.updateState else { return 0 }
+
+        switch updateState {
+        case .uploading,
+             .processing:
+            return Constants.minProgress
+        case .waitingForReboot,
+             .success,
+             .failed,
+             .canceled:
+            return Constants.maxProgress
         }
     }
 }

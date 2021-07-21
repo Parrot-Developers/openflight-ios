@@ -62,9 +62,13 @@ final class ImagingBarEvCompensationBarView: UIView, NibOwnerLoadable, BarItemMo
 private extension ImagingBarEvCompensationBarView {
     func commonInitImagingBarEvCompensationBarView() {
         self.loadNibContent()
-        self.addBlurEffect()
         self.viewModel = ImagingBarEvCompensationViewModel()
         self.addRulerBar()
+        centeredRulerBarContainer.customCornered(corners: [.allCorners],
+                                                 radius: Style.largeCornerRadius,
+                                                 backgroundColor: ColorName.white90.color,
+                                                 borderColor: .clear,
+                                                 borderWidth: 0.0)
     }
 
     func addRulerBar() {

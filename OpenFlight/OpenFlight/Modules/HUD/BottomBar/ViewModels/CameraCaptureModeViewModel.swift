@@ -49,6 +49,7 @@ class CameraBarButtonState: BarButtonState, EquatableState, Copying {
     var subtitle: String?
     var enabled: Bool = true
     var isSelected: Observable<Bool> = Observable(false)
+    var unavailableReason: [String: String] = [:]
 
     // MARK: - Init
     required init() {
@@ -62,16 +63,19 @@ class CameraBarButtonState: BarButtonState, EquatableState, Copying {
     ///    - subMode: current mode submode
     ///    - enabled: availability of the mode
     ///    - isSelected: observable for item selection
+    ///    - unavalaibleReasons: reasons why not enabled
     init(title: String? = nil,
          mode: BarItemMode?,
          subMode: BarItemSubMode? = nil,
          enabled: Bool,
-         isSelected: Observable<Bool>) {
+         isSelected: Observable<Bool>,
+         unavailableReason: [String: String]) {
         self.title = title
         self.mode = mode
         self.subMode = subMode
         self.enabled = enabled
         self.isSelected = isSelected
+        self.unavailableReason = unavailableReason
     }
 
     // MARK: - Internal Funcs
@@ -86,7 +90,8 @@ class CameraBarButtonState: BarButtonState, EquatableState, Copying {
                                            mode: mode,
                                            subMode: self.subMode,
                                            enabled: self.enabled,
-                                           isSelected: isSelected) as? Self {
+                                           isSelected: isSelected,
+                                           unavailableReason: self.unavailableReason) as? Self {
             return copy
         } else {
             fatalError("Must override...")
@@ -137,7 +142,7 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
             if let photoMode = cameraMode.photoMode {
                 currentEditor[Camera2Params.photoMode]?.value = photoMode
             }
-        case .video, .slowmotion, .hyperlapse:
+        case .video:
             currentEditor[Camera2Params.mode]?.value = .recording
             if let recordingMode = cameraMode.recordingMode {
                 currentEditor[Camera2Params.videoRecordingMode]?.value = recordingMode
@@ -147,9 +152,8 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
         // Update timelapse/gpslapse with preset value if
         // drone returns a value that is not handled.
         if cameraMode == .timelapse,
-            camera.timeLapseMode == nil,
-            let value = TimeLapseMode.preset.value {
-            currentEditor[Camera2Params.photoTimelapseInterval]?.value = Double(value)
+            camera.timeLapseMode == nil {
+            currentEditor[Camera2Params.photoTimelapseInterval]?.value = TimeLapseMode.preset.interval
         } else if cameraMode == .gpslapse,
             camera.gpsLapseMode == nil,
             let value = GpsLapseMode.preset.value {
@@ -177,20 +181,12 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
             if let value = bracketingMode.value, let bracketingValue = Camera2BracketingValue(rawValue: value) {
                 currentEditor[Camera2Params.photoBracketing]?.value = bracketingValue
             }
-        case let hyperlapseValue as Camera2HyperlapseValue:
-            currentEditor[Camera2Params.videoRecordingHyperlapse]?.value = hyperlapseValue
-        case let slowMotionMode as SlowMotionMode:
-            if let value = slowMotionMode.value, let resolutionValue = Camera2RecordingResolution(rawValue: value) {
-                currentEditor[Camera2Params.videoRecordingResolution]?.value = resolutionValue
-            }
         case let gpsLapseMode as GpsLapseMode:
             if let gpsLapseValue = gpsLapseMode.value {
                 currentEditor[Camera2Params.photoGpslapseInterval]?.value = Double(gpsLapseValue)
             }
         case let timeLapseMode as TimeLapseMode:
-            if let timeLapseValue = timeLapseMode.value {
-                currentEditor[Camera2Params.photoTimelapseInterval]?.value = Double(timeLapseValue)
-            }
+            currentEditor[Camera2Params.photoTimelapseInterval]?.value = timeLapseMode.interval
         default:
             break
         }

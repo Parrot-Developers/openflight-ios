@@ -34,7 +34,7 @@ import SwiftyUserDefaults
 import GroundSdk
 
 // MARK: - Protocols
-protocol SettingsQuickCollectionViewCellDelegate: class {
+protocol SettingsQuickCollectionViewCellDelegate: AnyObject {
     /// Called when user will swipe on a cell.
     func settingsQuickCellWillSwipe()
 

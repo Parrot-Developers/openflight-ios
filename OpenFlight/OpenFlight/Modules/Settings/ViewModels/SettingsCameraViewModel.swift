@@ -37,22 +37,29 @@ final class SettingsCameraViewModel: DroneWatcherViewModel<DeviceConnectionState
     var infoHandler: ((_ modeType: SettingMode.Type) -> Void)?
 
     var settingEntries: [SettingEntry] {
+        let photoSignatureDisabled = photoSignatureModel?.forceDisabling ?? false
+        let videoEncodingDisabled = videoEncodingModel?.forceDisabling ?? false
+        let hdrDisabled = !isDynamicRange10Enabled() || highDynamicRangeModel?.forceDisabling ?? false
+        let antiflickerDisabled = antiflickerModel?.forceDisabling ?? false
         return [SettingEntry(setting: SettingsOverexposure.self,
                              title: L10n.settingsCameraOverExposure,
                              itemLogKey: LogEvent.LogKeyAdvancedSettings.displayOverexposure),
                 SettingEntry(setting: self.photoSignatureModel,
                              title: L10n.settingsCameraPhotoDigitalSignature,
+                             alpha: photoSignatureDisabled ? Constants.disabledAlpha : Constants.enabledAlpha,
                              itemLogKey: LogEvent.LogKeyAdvancedSettings.signPictures),
                 SettingEntry(setting: self.videoEncodingModel,
                              title: L10n.settingsCameraVideoEncoding,
+                             alpha: videoEncodingDisabled ? Constants.disabledAlpha : Constants.enabledAlpha,
                              itemLogKey: LogEvent.LogKeyAdvancedSettings.videoEncoding),
                 SettingEntry(setting: self.highDynamicRangeModel,
                              title: L10n.settingsCameraVideoHdrMode + Style.newLine + L10n.settingsCameraHdr10Availability,
-                             isEnabled: isDynamicRange10Enabled(),
-                             alpha: isDynamicRange10Enabled() ? Constants.enabledAlpha : Constants.disabledAlpha,
+                             isEnabled: !hdrDisabled,
+                             alpha: hdrDisabled ? Constants.disabledAlpha : Constants.enabledAlpha,
                              itemLogKey: LogEvent.LogKeyAdvancedSettings.videoHDR),
                 SettingEntry(setting: self.antiflickerModel,
                              title: L10n.settingsCameraAntiFlickering,
+                             alpha: antiflickerDisabled ? Constants.disabledAlpha : Constants.enabledAlpha,
                              itemLogKey: LogEvent.LogKeyAdvancedSettings.antiFlickering)
                 // TODO: Add calibration button.
         ]
@@ -60,6 +67,7 @@ final class SettingsCameraViewModel: DroneWatcherViewModel<DeviceConnectionState
 
     var isUpdating: Bool? {
         return drone?.currentCamera?.config.updating == true
+            || drone?.getPeripheral(Peripherals.antiflicker)?.setting.updating == true
     }
 
     // MARK: - Private Enums
@@ -71,6 +79,13 @@ final class SettingsCameraViewModel: DroneWatcherViewModel<DeviceConnectionState
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
     private var antiFlickerRef: Ref<Antiflicker>?
+    private unowned var flightPlanCameraSettingsHandler: FlightPlanCameraSettingsHandler
+
+    // MARK: - init
+    init(flightPlanCameraSettingsHandler: FlightPlanCameraSettingsHandler) {
+        self.flightPlanCameraSettingsHandler = flightPlanCameraSettingsHandler
+        super.init()
+    }
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
@@ -120,11 +135,12 @@ private extension SettingsCameraViewModel {
             let currentAntiflicker = antiFlicker?.setting.mode else {
                 return nil
         }
-
+        let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
         return DroneSettingModel(allValues: AntiflickerMode.allValues,
                                  supportedValues: Array(supportedModes),
                                  currentValue: currentAntiflicker,
-                                 isUpdating: antiFlicker?.setting.updating) { [weak self] mode in
+                                 isUpdating: antiFlicker?.setting.updating ?? false,
+                                 forceDisabling: forceDisabling) { [weak self] mode in
                                     guard let mode = mode as? AntiflickerMode else { return }
 
                                     let drone = self?.drone
@@ -137,8 +153,7 @@ private extension SettingsCameraViewModel {
         let zoomAllowance = drone?.currentCamera?.config[Camera2Params.zoomVelocityControlQualityMode]?.value
         return DroneSettingModel(allValues: Camera2ZoomVelocityControlQualityMode.allValues,
                                  supportedValues: Camera2ZoomVelocityControlQualityMode.allValues,
-                                 currentValue: zoomAllowance,
-                                 isUpdating: nil) { [weak self] mode in
+                                 currentValue: zoomAllowance) { [weak self] mode in
                                     guard let mode = mode as? Camera2ZoomVelocityControlQualityMode else { return }
 
                                     let currentEditor = self?.drone?.currentCamera?.currentEditor
@@ -153,8 +168,7 @@ private extension SettingsCameraViewModel {
         let autoRecord = drone?.currentCamera?.config[Camera2Params.autoRecordMode]?.value
         return DroneSettingModel(allValues: Camera2AutoRecordMode.allValues,
                                  supportedValues: Camera2AutoRecordMode.allValues,
-                                 currentValue: autoRecord,
-                                 isUpdating: nil) { [weak self] mode in
+                                 currentValue: autoRecord) { [weak self] mode in
                                     guard let mode = mode as? Camera2AutoRecordMode else { return }
 
                                     let currentEditor = self?.drone?.currentCamera?.currentEditor
@@ -167,10 +181,11 @@ private extension SettingsCameraViewModel {
     /// Return video encoding setting model.
     var videoEncodingModel: DroneSettingModel? {
         let videoEncoding = drone?.currentCamera?.config[Camera2Params.videoRecordingCodec]?.value
+        let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
         return DroneSettingModel(allValues: Camera2VideoCodec.allValues,
                                  supportedValues: Camera2VideoCodec.allValues,
                                  currentValue: videoEncoding,
-                                 isUpdating: nil) { [weak self] mode in
+                                 forceDisabling: forceDisabling) { [weak self] mode in
             guard let encodingMode = mode as? Camera2VideoCodec else { return }
 
             let currentEditor = self?.drone?.currentCamera?.currentEditor
@@ -204,11 +219,11 @@ private extension SettingsCameraViewModel {
             let videoEncoding = drone?.currentCamera?.config[Camera2Params.videoRecordingCodec]?.value
             currentHdrValue = videoEncoding == .h265 ? Camera2DynamicRange.hdr10 : Camera2DynamicRange.hdr8
         }
-
+        let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
         return DroneSettingModel(allValues: Camera2DynamicRange.usedValues,
                                  supportedValues: Camera2DynamicRange.usedValues,
                                  currentValue: currentHdrValue,
-                                 isUpdating: nil) { [weak self] range in
+                                 forceDisabling: forceDisabling) { [weak self] range in
             guard let videoRange = range as? Camera2DynamicRange else { return }
 
             Defaults.highDynamicRangeSetting = videoRange.rawValue
@@ -227,10 +242,11 @@ private extension SettingsCameraViewModel {
     /// Returns photo signature setting model.
     var photoSignatureModel: DroneSettingModel? {
         let photoSignature = drone?.currentCamera?.config[Camera2Params.photoDigitalSignature]?.value
+        let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
         return DroneSettingModel(allValues: Camera2DigitalSignature.allValues,
                                  supportedValues: Camera2DigitalSignature.allValues,
                                  currentValue: photoSignature,
-                                 isUpdating: nil) { [weak self] digitalSignature in
+                                 forceDisabling: forceDisabling) { [weak self] digitalSignature in
                                     guard let digitalSignature = digitalSignature as? Camera2DigitalSignature else { return }
 
                                     let currentEditor = self?.drone?.currentCamera?.currentEditor

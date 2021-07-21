@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "iconPhotoSettingsDefinitionJpegRect.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "iconPhotoSettingsDefinitionJpegRect@2x.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "iconPhotoSettingsDefinitionJpegRect@3x.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

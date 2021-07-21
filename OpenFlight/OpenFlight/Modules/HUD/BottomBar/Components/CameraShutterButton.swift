@@ -209,7 +209,7 @@ private extension CameraShutterButton {
         case (.stopped, .timelapse),
              (.stopped, .gpslapse):
             shutterButtonProgressView.isHidden = true
-            applyLapseModeStyle(labelText: String(model.lapseModeState?.selectedValue ?? 0))
+            applyLapseModeStyle(labelText: nil)
             model.lapseModeState?.currentProgress = 0.0
             currentProgress = 0.0
         case (.started, _):

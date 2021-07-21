@@ -34,7 +34,7 @@ import GroundSdk
 
 // MARK: - Protocols
 /// Gallery Loading View Delegate.
-protocol GalleryLoadingViewDelegate: class {
+protocol GalleryLoadingViewDelegate: AnyObject {
     /// Should stop progress.
     func shouldStopProgress()
 }
@@ -100,14 +100,10 @@ internal extension GalleryLoadingView {
 private extension GalleryLoadingView {
     func commonInitGalleryLoadingView() {
         self.loadNibContent()
-        self.addBlurEffect(cornerRadius: 0.0)
         self.isHidden = true
         progressView.setProgress(0.0, animated: false)
-        progressView.progressTintColor = ColorName.greenSpring20.color
+        progressView.progressTintColor = ColorName.greenMediumSea20.color
         progressView.trackTintColor = .clear
-        progressView.backgroundColor = .clear
-        infoLabel.makeUp(with: .large)
         infoLabel.text = L10n.commonDownloading
-        infoLabel.backgroundColor = .clear
     }
 }

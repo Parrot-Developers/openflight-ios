@@ -100,6 +100,7 @@ final class ProtobufMissionsViewModel: DroneStateViewModel<ProtobufMissionsState
 
     // MARK: - Deinit
     deinit {
+        self.missionManager = nil
         self.missionManagerRef = nil
     }
 
@@ -155,7 +156,6 @@ final class ProtobufMissionsViewModel: DroneStateViewModel<ProtobufMissionsState
             return
         }
 
-        missionManager.packageNames.insert(mission.packageName)
         missionManager.activate(uid: mission.missionUID)
     }
 
@@ -172,7 +172,6 @@ final class ProtobufMissionsViewModel: DroneStateViewModel<ProtobufMissionsState
             return
         }
 
-        missionManager.packageNames.remove(mission.packageName)
         missionManager.deactivate()
     }
 
@@ -214,13 +213,14 @@ private extension ProtobufMissionsViewModel {
     /// - Parameters:
     ///     - drone: The drone
     func listenProtobufMissions(drone: Drone) {
-        missionManagerRef = drone.getPeripheral(Peripherals.missionManager) { [unowned self] missionManager in
-            guard let missionManager = missionManager else { return }
-
+        missionManagerRef = drone.getPeripheral(Peripherals.missionManager) { [unowned self] manager in
+            self.missionManager = manager
+            guard let missionManager = manager else {
+                return
+            }
             self.updateCurrentActiveMissionUID(with: missionManager)
             self.update(lastMessageReceived: missionManager.latestMessage)
             self.update(suggestedActivation: missionManager.suggestedActivation)
-            self.missionManager = missionManager
         }
     }
 

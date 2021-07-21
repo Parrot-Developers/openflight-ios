@@ -45,6 +45,7 @@
 "common_done" = "Done";
 "common_presets" = "Presets";
 "common_warning" = "Warning";
+"common_undo" = "Undo";
 "common_style" = "Style";
 "common_distance" = "距離";
 "common_duration" = "期間";
@@ -102,6 +103,8 @@
 "common_app" = "App";
 "common_controller" = "Controller";
 "common_drone" = "Drone";
+"common_drone_not_connected" = "Drone not connected";
+"common_not_connected" = "Not connected";
 /**
  * Japanese localization.
 */
@@ -137,12 +140,13 @@
 "photo_settings_format_dng_jpeg_rect" = "DNG+JPEG RECT";
 "video_settings_resolution_1080p" = "1080p";
 "video_settings_resolution_8k" = "8K";
+"video_settings_resolution_6k" = "6K";
 "video_settings_resolution_5k" = "5K";
 "video_settings_resolution_4k" = "4K";
 "video_settings_resolution_4k_cinema" = "4K Cinema";
 "video_settings_resolution_27k" = "2.7K";
 "video_settings_resolution_720p" = "720p";
-"video_settings_resolution_480p" = "4K";
+"video_settings_resolution_480p" = "480p";
 "video_settings_resolution_1080p_SD" = "1080p-SD";
 "video_settings_resolution_720p_SD" = "720p-SD";
 "cardinal_direction_north" = "N";
@@ -181,7 +185,7 @@
 "unit_percent" = "%";
 "unit_percent_ios" = "%%";
 "time_in_seconds" = "%d秒";
-"distance_in_meters" = "%d m";
+"distance_in_meters" = "%dm";
 "unit_min" = "min";
 "unit_sec" = "sec";
 "unit_megapixel" = "Mp";
@@ -192,28 +196,18 @@
 "tilt_max_reached" = "Max tilt";
 "camera_mode_photo" = "画像";
 "camera_mode_video" = "映像";
-"camera_mode_hyperlapse" = "Hyperlapse";
-"camera_mode_slomo" = "Slow-Motion";
-"camera_mode_hiframe" = "High-Framerate";
 "camera_mode_single" = "Single";
 "camera_mode_burst" = "Burst";
 "camera_mode_bracketing" = "Bracketing";
 "camera_mode_timelapse" = "Timelapse";
 "camera_mode_gpslapse" = "GPS Lapse";
 "camera_mode_panorama" = "Panorama";
-"camera_sub_mode_slomo_0_25" = "×0.25";
-"camera_sub_mode_slomo_0_5" = "×0.5";
 "camera_sub_mode_bracketing_photo_count" = "%d枚の写真";
 "camera_sub_mode_panorama" = "Pano %@";
 "camera_sub_mode_panorama_horizontal" = "水平";
 "camera_sub_mode_panorama_vertical" = "垂直";
 "camera_sub_mode_panorama_super_wide" = "Super Wide";
 "camera_sub_mode_panorama_360" = "360";
-"camera_sub_mode_hyperlapse_ratio_15" = "x15";
-"camera_sub_mode_hyperlapse_ratio_30" = "x30";
-"camera_sub_mode_hyperlapse_ratio_60" = "x60";
-"camera_sub_mode_hyperlapse_ratio_120" = "x120";
-"camera_sub_mode_hyperlapse_ratio_240" = "x240";
 "camera_white_balance_incandescent" = "Incandescent";
 "camera_white_balance_fluo" = "Fluo";
 "camera_white_balance_sunny" = "Sunny";
@@ -225,8 +219,11 @@
 "camera_range_hdr_on" = "HDR On";
 "camera_range_plog" = "P-Log";
 "camera_hdr" = "HDR";
-"camera_hdr_unavailable" = "unavailable for %@";
-"camera_hdr_unavailable_photo" = "unavailable for 48Mp or DNG";
+"camera_hdr_unavailable" = "Unavailable in %@";
+"camera_hdr_unavailable_framerates" = "Unavailable for framerates above 30 fps";
+"camera_hdr_unavailable_photo_resolution" = "Unavailable for 48 Mp resolution";
+"camera_hdr_unavailable_photo_format" = "Unavailable in DNG mode";
+"camera_plog_unavailable" = "Unavailable in P-Log mode";
 "mission" = "Mission";
 "mission_select_label" = "Missions";
 "mission_classic" = "Piloting";
@@ -267,13 +264,13 @@
 "alert_geofence_reached" = "ジオフェンスに到達しました。";
 "alert_camera_error" = "カメラがブロックされていないことをチェックします。";
 "alert_low_and_perturbed_wifi" = "Weak Wi-Fi signal. Strong interferences.";
-"alert_no_avoidance_sensors_failure" = "Obstacle avoidance - Stereo camera failure";
+"alert_no_avoidance_sensors_failure" = "Obstacle avoidance disabled - Stereo camera failure";
 "alert_no_avoidance_sensors_not_calibrated" = "Obstacle avoidance disabled - Stereo sensors calibration required";
 "alert_no_avoidance_too_dark" = "Obstacle avoidance disabled - Environment too dark";
 "alert_no_avoidance_no_gps" = "Obstacle avoidance disabled - Poor GPS quality";
-"alert_no_avoidance_no_data" = "No avoidance";
 "alert_avoidance_deteriorated" = "Obstacle avoidance deteriorated - Poor GPS quality";
-"alert_drone_stuck" = "Drone was not able to find a path";
+"alert_drone_stuck" = "Obstacle avoidance - Drone was not able to find a path";
+"alert_high_deviation" = "Obstacle avoidance - High deviation";
 "alert_sensor_calibration_recommended" = "Calibrate sensors for a better experience.";
 "alert_too_much_angle" = "Too much angle";
 "alert_too_much_angle_description" = "Put your drone on its four feet to take off.";
@@ -338,7 +335,7 @@
 "flight_plan_alert_error" = "Flight Plan error";
 "flight_plan_alert_corrupted" = "Corrupted Flight Plan file";
 "flight_plan_alert_drone_gps_ko" = "Drone's GPS unavailable";
-"flight_plan_alert_drone_magnetometer_ko" = "Calibrate your drone.";
+"flight_plan_alert_drone_magnetometer_ko" = "Magnetic perturbations";
 "flight_plan_alert_insufficient_battery" = "Insufficient battery";
 "flight_plan_alert_insufficient_memory" = "Insufficient space on SD";
 "flight_plan_alert_cannot_take_off" = "Cannot take off";
@@ -383,6 +380,7 @@
 "flight_plan_settings_resolution" = "Resolution";
 "flight_plan_settings_white_balance" = "White balance";
 "flight_plan_settings_exposure" = "Exposure";
+"flight_plan_default_new_project" = "New project (%d)";
 /**
  * Japanese localization.
 */
@@ -400,8 +398,8 @@
 "dashboard_support_title" = "Support";
 "dashboard_support_subtitle" = "Report an issue or suggest an idea";
 "dashboard_footer_data_confidentiality" = "Data Confidentiality";
-"dashboard_my_flights_section_completed" = "Completed flights";
-"dashboard_my_flights_section_plans" = "Plans";
+"dashboard_my_flights_section_completed" = "All flights";
+"dashboard_my_flights_section_plans" = "Plan executions";
 "dashboard_my_flights_empty_list_title" = "No flight for the moment";
 "dashboard_my_flights_empty_list_desc" = "As you are connected, all plans and flights will be saved in Parrot Cloud";
 "dashboard_my_flights_not_connected" = "Not connected";
@@ -416,8 +414,15 @@
 "dashboard_my_flights_total_time" = "Total time";
 "dashboard_my_flights_plan_execution" = "Plan execution";
 "dashboard_my_flights_last_flight_time" = "Last flight time";
+"dashboard_my_flight_delete_flight" = "Delete flight";
+"dashboard_my_flight_share_flight" = "Share flight";
+"dashboard_my_flight_flight_log" = "Flight log";
 "dashboard_add_services" = "Add services";
 "dashboard_services" = "services";
+"dashboard_account" = "Account";
+"dashboard_connected_accounts" = "Connected accounts";
+"dashboard_add_my_account" = "Add my account";
+"dashboard_link_account" = "Insert link to your account here";
 /**
  * Japanese localization.
 */
@@ -452,7 +457,7 @@
 "settings_advanced_category_camera" = "Recording";
 "settings_advanced_category_connection" = "Connection";
 "settings_camera_reset" = "Reinitiate camera settings";
-"settings_camera_lossy_zoom" = "Extra zoom";
+"settings_camera_lossy_zoom" = "Lossless zoom only";
 "settings_camera_over_exposure" = "露出オーバーを表示";
 "settings_camera_anti_flickering" = "アンチフリッカー";
 "settings_camera_anti_flickering_auto" = "オート";
@@ -621,6 +626,8 @@ Some countries may ask you to register this identification number as well as oth
 "device_update_impossible" = "Update impossible";
 "device_update_drone_flying" = "Your drone is currently in flight. It must be placed on the ground to perform the update safely";
 "remote_update_rebooting_error" = "Your controller is currently being updated, this operation can not be cancelled. You can leave the screen, the controller will finish updating.";
+"device_details_firmware_version" = "Firmware version";
+"device_details_software_version" = "Software version";
 "drone_details_drone_info" = "Drone's information";
 "drone_details_number_flights" = "Number of flights";
 "drone_details_total_flight_time" = "Total flight time";
@@ -634,10 +641,10 @@ Some countries may ask you to register this identification number as well as oth
 "drone_details_calibration_required" = "Drone calibration required";
 "drone_details_calibration_gimbal_required" = "Gimbal calibration required";
 "drone_details_calibration_love_required" = "Sensors calibration required";
+"drone_details_wifi_password" = "Wi-Fi password";
 "drone_details_informations" = "Informations";
 "drone_details_cellular_access" = "Cellular access";
 "drone_details_product_type" = "Product type";
-"drone_details_software_version" = "Software version";
 "drone_details_update_to" = "Update to %@";
 "drone_details_hardware_version" = "Hardware version";
 "drone_details_calibration_gimbal_recommended" = "Gimbal calibration recommended";
@@ -670,6 +677,11 @@ Some countries may ask you to register this identification number as well as oth
 "drone_calibration_ready_to_fly" = "ドローンの飛行準備が完了しました。";
 "drone_calibration_failed" = "キャリブレーションに失敗しました";
 "drone_calibration_failure_instruction" = "金属物からはコントローラーを離してください。";
+"drone_calibration_failure_description" = "Please make sure that the points below are respected:";
+"drone_calibration_failure_item1" = "All four drone's feet are opened.";
+"drone_calibration_failure_item2" = "You are in an open area without metallic structures or close by.";
+"drone_calibration_failure_item3" = "You are not wearing a metallic object like a watch.";
+"drone_calibration_failure_item4" = "There are not electronic devices close by.";
 "drone_calibration_redo" = "もう一度試してください";
 "drone_obstacle_detection_title" = "Obstacle detection";
 "sensor_calibration_tutorial_title" = "Sensors calibration";
@@ -745,7 +757,7 @@ Some countries may ask you to register this identification number as well as oth
 "gallery_format_resetting" = "Resetting SD memory";
 "gallery_format_creating_partition" = "Creating new partition";
 "gallery_format_complete" = "Formatting complete";
-"gallery_format" = "Format";
+"gallery_format" = "Format SD Card";
 "gallery_format_succeeded" = "Format succeeded";
 "gallery_panorama_generate_question" = "What do you want to generate?";
 "gallery_panorama_sphere" = "Sphere";
@@ -898,10 +910,10 @@ Some countries may ask you to register this identification number as well as oth
  * Japanese localization.
 */
 "firmware_mission_update_firmware_name" = "Anafi Ai Firmware";
-"firmware_mission_update_operation_cancel" = "Cancelled";
-"firmware_mission_update_operation_failed_bad_file_format" = "Bad file format";
-"firmware_mission_update_operation_failed_unknown_reason" = "Unknown reason";
-"firmware_mission_update_operation_failed_never_started" = "Never started";
+"firmware_mission_update_operation_cancel" = "cancelled";
+"firmware_mission_update_operation_failed_bad_file_format" = "bad file format";
+"firmware_mission_update_operation_failed_unknown_reason" = "unknown reason";
+"firmware_mission_update_operation_failed_never_started" = "never started";
 "firmware_mission_update_missions" = "Missions";
 "firmware_mission_update_alert_drone_flying_title" = "Drone flying";
 "firmware_mission_update_drone_alert_no_internet_description" = "You need an internet connection to download the drone’s firmware. Please check your connection.\nDo you want to upload the missions to the drone anyway?";
@@ -923,6 +935,21 @@ Some countries may ask you to register this identification number as well as oth
 "firmware_mission_update_reboot" = "Reboot";
 "firmware_mission_update_reboot_and_update" = "Reboot and update";
 "firmware_mission_update_error" = "Error: %@";
+"firmware_mission_update_error_bad_mission" = "malformed mission file";
+"firmware_mission_update_error_server" = "server error";
+"firmware_mission_update_error_connection" = "connection error";
+"firmware_mission_update_error_bad_request" = "bad request";
+"firmware_mission_update_error_cancelled" = "update cancelled";
+"firmware_mission_update_error_busy" = "other upload in progress";
+"firmware_mission_update_error_mission_already_exists" = "mission already installed";
+"firmware_mission_update_error_installation_failed" = "installation failed";
+"firmware_mission_update_error_no_space_left" = "no space left in internal storage";
+"firmware_mission_update_error_incorrect_method" = "incorrect method";
+"firmware_mission_update_error_invalid_signature" = "invalid signature";
+"firmware_mission_update_error_version_mismatch" = "version mismatch";
+"firmware_mission_update_error_model_mismatch" = "model mismatch";
+"firmware_mission_update_error_bad_info_file" = "bad info file";
+"firmware_mission_update_error_corrupted_file" = "corrupted file";
 "firmware_mission_update_processes_succeeded" = "Installation successfully executed";
 "firmware_mission_update_processes_failed" = "Some installations failed:";
 "firmware_mission_update_firmware_download_failed" = "Firmware download failed";

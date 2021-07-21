@@ -32,7 +32,7 @@ import UIKit
 
 // MARK: - Protocols
 /// Delegate that notifiy touch state in the custom view.
-protocol CustomTouchViewDelegate: class {
+protocol CustomTouchViewDelegate: AnyObject {
     /// Did touch listener on Custom touch view.
     ///
     /// - Parameters:

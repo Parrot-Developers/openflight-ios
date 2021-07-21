@@ -73,6 +73,7 @@ private extension GalleryFormatSDCardStepView {
     func update(with model: GalleryFormatSDCardStepModel?) {
         guard let model = model else { return }
         self.imageView.image = model.image
+        self.imageView.tintColor = model.textColor.color
         self.label.makeUp(with: .big, and: model.textColor)
         self.label.text = model.text
     }

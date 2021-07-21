@@ -33,7 +33,7 @@ import GroundSdk
 
 // MARK: - Protocols
 /// Wifi Channels Occupation Grid Delegate.
-protocol WifiChannelsOccupationGridViewDelegate: class {
+protocol WifiChannelsOccupationGridViewDelegate: AnyObject {
     /// Notifies delegate when user selected channel.
     func userDidSelectChannel(_ channel: WifiChannel)
 }

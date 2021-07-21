@@ -39,7 +39,7 @@ final class FirmwareAndMissionProgressView: UIView, NibOwnerLoadable {
     // MARK: - Private Enums
     private enum Constants {
         static let maxProgress: Float = 100.0
-        static let normalizedRebootProgress: Float = 0.95
+        static let rebootProgress: Float = 95.0
         static let normalizedMaxProgress: Float = 1.0
         static let successOrErrorDuration: TimeInterval = 0.3
     }
@@ -70,10 +70,11 @@ final class FirmwareAndMissionProgressView: UIView, NibOwnerLoadable {
     /// Fakes reboot progress.
     ///
     /// - Parameters:
+    ///     - progressEnd: progress end value
     ///     - duration: duration of the animation
-    func setFakeRebootProgress(duration: TimeInterval) {
-        progressView.setProgress(Constants.normalizedRebootProgress,
-                                 duration: duration)
+    func setFakeRebootProgress(progressEnd: Float = Constants.rebootProgress, duration: TimeInterval) {
+        let normalizedProgress = progressEnd / Constants.maxProgress
+        progressView.setProgress(normalizedProgress, duration: duration)
     }
 
     /// Fakes success or error progress.

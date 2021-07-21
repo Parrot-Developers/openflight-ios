@@ -31,7 +31,7 @@
 import Reusable
 
 // MARK: - Protocols
-protocol SegmentedBarViewDelegate: class {
+protocol SegmentedBarViewDelegate: AnyObject {
     /// Called when an item is selected within bar without autoclosing.
     func didSelectWithoutAutoClosing(mode: BarItemMode)
 }
@@ -86,13 +86,6 @@ final class SegmentedBarView<T: BarButtonState>: UIView, NibOwnerLoadable, NibLo
     /// Orientation of the items.
     /// - Note: Should be set before viewModel.
     var itemsOrientation: NSLayoutConstraint.Axis = .vertical
-    var hasBlurEffect: Bool = true {
-        didSet {
-            hasBlurEffect
-                ? containerStackView?.addBlurEffect()
-                : containerStackView?.removeBlurEffect()
-        }
-    }
     weak var delegate: SegmentedBarViewDelegate?
 
     // MARK: - Private Properties
@@ -120,9 +113,8 @@ final class SegmentedBarView<T: BarButtonState>: UIView, NibOwnerLoadable, NibLo
 
     func commonInit() {
         self.loadNibContent()
-        if hasBlurEffect {
-            containerStackView.addBlurEffect()
-        }
+        self.backgroundColor = ColorName.white90.color
+        self.applyCornerRadius(Style.largeCornerRadius)
         updateModels()
     }
 
@@ -141,8 +133,9 @@ final class SegmentedBarView<T: BarButtonState>: UIView, NibOwnerLoadable, NibLo
     /// Generate models for items `SegmentedBarItemView` from viewModel modes.
     func updateModels() {
         guard let currentMode = viewModel?.state.value.mode else { return }
-
         let supportedValues: [BarItemMode]
+        guard let unavailableReason = viewModel?.state.value.unavailableReason else { return }
+
         if viewModel?.state.value.showUnsupportedModes == true {
             supportedValues = type(of: currentMode).allValues
         } else {
@@ -153,7 +146,8 @@ final class SegmentedBarView<T: BarButtonState>: UIView, NibOwnerLoadable, NibLo
             let isEnabled = viewModel?.state.value.supportedModes?.contains(where: { mode.key == $0.key }) ?? mode.isAvailable
             let itemState = CameraBarButtonState(mode: mode,
                                                  enabled: isEnabled,
-                                                 isSelected: Observable(currentMode.key == mode.key))
+                                                 isSelected: Observable(currentMode.key == mode.key),
+                                                 unavailableReason: unavailableReason)
             itemState.isSelected.valueChanged = { [weak self] isSelected in
                 if isSelected, let mode = itemState.mode {
                     if mode.autoClose {
@@ -188,10 +182,12 @@ private extension SegmentedBarView {
     /// Generate models for items `SegmentedBarItemView` from viewModel subModes.
     func updateSubModeModels() {
         guard let subMode = viewModel?.state.value.subMode else { return }
+        guard let unavailableReason = viewModel?.state.value.unavailableReason else { return }
         models = type(of: subMode).allValues.map {
             let itemState = CameraBarButtonState(mode: $0,
                                                  enabled: $0.isAvailable,
-                                                 isSelected: Observable(subMode.key == $0.key))
+                                                 isSelected: Observable(subMode.key == $0.key),
+                                                 unavailableReason: unavailableReason)
             itemState.isSelected.valueChanged = { [weak self] isSelected in
                 if isSelected, let subMode = itemState.mode as? BarItemSubMode {
                     self?.stackView?.isUserInteractionEnabled = false // Prevents double tap issues.
@@ -242,8 +238,10 @@ private extension SegmentedBarView {
                 let itemView = SegmentedBarItemView(frame: .zero)
                 itemView.model = $0
                 itemView.orientation = itemsOrientation
-                return itemView }
+                return itemView
+            }
             .forEach { stackView.addArrangedSubview($0) }
+
         moreArrowView.isHidden = endItemIndex >= models.count - 1
         lessArrowView.isHidden = startItemIndex == 0
         isUserInteractionEnabled = isEnabled

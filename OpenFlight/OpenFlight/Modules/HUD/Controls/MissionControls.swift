@@ -36,9 +36,6 @@ final class MissionControls: NSObject {
     // MARK: - Outlets
     @IBOutlet private weak var missionLauncherView: UIView!
 
-    // MARK: - Internal Properties
-    weak var missionLauncherViewController: MissionProviderSelectorViewController?
-
     // MARK: - Private Properties
     private var missionLauncherMode: MissionLauncherMode = .preset {
         didSet {
@@ -52,14 +49,13 @@ final class MissionControls: NSObject {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let animationDuration: TimeInterval = 0.1
+        static let animationDuration: TimeInterval = 0.2
     }
 
     // MARK: - Internal Funcs
     /// Show mission launcher view controller with given viewModel.
-    func showMissionLauncher(viewModel: MissionLauncherViewModel, completion: ((Bool) -> Void)? = nil) {
+    func showMissionLauncher(completion: ((Bool) -> Void)? = nil) {
         missionLauncherMode = .opened
-        missionLauncherViewController?.viewModel = viewModel
         guard missionLauncherView.isHidden == true else { return }
         UIView.animate(withDuration: Constants.animationDuration, animations: {
             self.missionLauncherView.isHidden = false

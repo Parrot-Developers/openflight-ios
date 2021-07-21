@@ -35,6 +35,7 @@ enum PairingProcessStep {
     case processing
     case challengeRequestSuccess
     case challengeSignSuccess
+    case associationRequestSuccess
     case pairingProcessSuccess
 }
 

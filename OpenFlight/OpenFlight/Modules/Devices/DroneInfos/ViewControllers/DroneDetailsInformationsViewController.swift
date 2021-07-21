@@ -35,6 +35,7 @@ final class DroneDetailsInformationsViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var serialContainerView: DeviceInformationsView!
     @IBOutlet private weak var hardwareVersionContainerView: DeviceInformationsView!
+    @IBOutlet private weak var firmwareVersionContainerView: DeviceInformationsView!
     @IBOutlet private weak var imeiContainerView: DeviceInformationsView!
     @IBOutlet private weak var resetButton: UIButton!
 
@@ -120,6 +121,8 @@ private extension DroneDetailsInformationsViewController {
                                                             description: state.serialNumber)
         hardwareVersionContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsHardwareVersion,
                                                                      description: state.hardwareVersion)
+        firmwareVersionContainerView.model = DeviceInformationsModel(title: L10n.deviceDetailsFirmwareVersion,
+                                                                     description: state.firmwareVersion)
         imeiContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsImei,
                                                           description: state.imei)
     }

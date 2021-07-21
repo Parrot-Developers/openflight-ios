@@ -28,9 +28,10 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Main view controller for the Heads-Up Display (HUD).
-final class HUDViewController: UIViewController, DelayedTaskProvider {
+final public class HUDViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Internal Outlets
     @IBOutlet internal weak var splitControls: SplitControls!
     @IBOutlet internal weak var missionControls: MissionControls!
@@ -49,17 +50,17 @@ final class HUDViewController: UIViewController, DelayedTaskProvider {
     var customControls: CustomHUDControls?
 
     // MARK: - Internal Properties
-    weak var coordinator: HUDCoordinator?
+    public weak var coordinator: HUDCoordinator?
     var delayedTaskComponents: DelayedTaskComponents = DelayedTaskComponents()
 
     // MARK: - Private Properties
+    // TODO: wrong injection
+    private unowned var currentMissionManager = Services.hub.currentMissionManager
+    private var cancellables = Set<AnyCancellable>()
     private var defaultMapViewController: MapViewController?
-    private var lastMissionLauncherState: MissionLauncherState?
-    private var lockAETargetZoneViewController: LockAETargetZoneViewController?
     private let flightPlanPanelCoordinator = FlightPlanPanelCoordinator()
 
     /// View models.
-    private let missionModeViewModel = MissionLauncherViewModel()
     private let joysticksViewModel = JoysticksViewModel()
     private let flightReportViewModel = FlightReportViewModel()
     private let criticalAlertViewModel = HUDCriticalAlertViewModel()
@@ -98,7 +99,7 @@ final class HUDViewController: UIViewController, DelayedTaskProvider {
     }
 
     // MARK: - Override Funcs
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
 
         setupFlightPlanPanel()
@@ -107,28 +108,28 @@ final class HUDViewController: UIViewController, DelayedTaskProvider {
         customControls?.validationView = customValidationView
         customControls?.start()
         videoControls.hideAETargetZone()
-        setupMap()
         setupAlertPanel()
         coordinator?.hudCriticalAlertDelegate = self
+
+        listenMissionMode()
 
         // Handle rotation when coming from Onboarding.
         let value = UIInterfaceOrientation.landscapeRight.rawValue
         UIDevice.current.setValue(value, forKey: Constants.orientationKeyWord)
     }
 
-    override func viewDidAppear(_ animated: Bool) {
+    public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         splitControls.setupSplitIfNeeded()
         splitControls.updateSecondaryViewContent()
         // Show flight plan panel if needed.
-        if let missionMode = MissionLauncherViewModel().state.value.mode,
-           missionMode.isFlightPlanPanelRequired {
+        if currentMissionManager.mode.isFlightPlanPanelRequired {
             flightPlanControls.viewModel.forceHidePanel(false)
         }
     }
 
-    override func viewWillAppear(_ animated: Bool) {
+    public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
         LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.hud,
@@ -137,7 +138,7 @@ final class HUDViewController: UIViewController, DelayedTaskProvider {
         updateViewModels()
     }
 
-    override func viewDidDisappear(_ animated: Bool) {
+    public override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
 
         flightPlanControls.stop()
@@ -146,15 +147,15 @@ final class HUDViewController: UIViewController, DelayedTaskProvider {
         removeContainerViews()
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+    public override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .landscape
     }
 
-    override var shouldAutorotate: Bool {
+    public override var shouldAutorotate: Bool {
         return true
     }
 
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    public override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         super.prepare(for: segue, sender: sender)
 
         if let topBar = segue.destination as? HUDTopBarViewController {
@@ -169,23 +170,40 @@ final class HUDViewController: UIViewController, DelayedTaskProvider {
             bottomBarContainerVC.bottomBarDelegate = self
             bottomBarContainerVC.coordinator = coordinator
         } else if let missionLauncherVC = segue.destination as? MissionProviderSelectorViewController {
-            missionControls.missionLauncherViewController = missionLauncherVC
+            // TODO: wrong injection. Also... SEGUES
+            let services: ServiceHub = Services.hub
+            missionLauncherVC.viewModel = MissionProviderSelectorViewModel(currentMissionManager: services.currentMissionManager,
+                                                                           missionsStore: services.missionsStore,
+                                                                           delegate: self)
         } else if let lockAETargetZoneVC = segue.destination as? LockAETargetZoneViewController {
             videoControls.lockAETargetZoneViewController = lockAETargetZoneVC
+        } else if let sliders = segue.destination as? CameraSlidersViewController {
+            coordinator?.handleCameraSlidersViewController(sliders)
         }
     }
 
-    override var prefersHomeIndicatorAutoHidden: Bool {
+    public override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
 
-    override var prefersStatusBarHidden: Bool {
+    public override var prefersStatusBarHidden: Bool {
         return true
     }
 }
 
 // MARK: - Private Funcs
 private extension HUDViewController {
+
+    /// Listen for mission mode
+    func listenMissionMode() {
+        currentMissionManager.modePublisher.sink { [unowned self] in
+            setupMap()
+            coordinator?.presentModeEntryCoordinatorIfNeeded(mode: $0)
+            videoControls.enableAeTarget(enabled: !$0.isTrackingMode)
+        }
+        .store(in: &cancellables)
+    }
+
     /// Sets up right panel for flight plans.
     func setupFlightPlanPanel() {
         let flightPlanPanelVC = FlightPlanPanelViewController.instantiate(coordinator: flightPlanPanelCoordinator)
@@ -202,11 +220,9 @@ private extension HUDViewController {
     }
 
     /// Map setup.
-    ///
-    /// - Parameters:
-    ///     - missionLauncherState: mission launcher state
-    func setupMap(with missionLauncherState: MissionLauncherState? = nil) {
-        if let map = missionLauncherState?.mode?.customMapProvider?() as? MapViewController {
+    func setupMap() {
+        let mode = currentMissionManager.mode
+        if let map = mode.customMapProvider?() as? MapViewController {
             // Add custom map.
             map.editionDelegate = flightPlanPanelCoordinator
             self.splitControls.addMap(map, parent: self)
@@ -261,9 +277,6 @@ private extension HUDViewController {
 
     /// Updates view models values.
     func updateViewModels() {
-        missionModeViewModel.state.valueChanged = { [weak self] state in
-            self?.handleNewMissionState(state)
-        }
         remoteShutdownAlertViewModel.state.valueChanged = { [weak self] _ in
             self?.showRemoteShutdownAlert()
         }
@@ -291,11 +304,9 @@ private extension HUDViewController {
         cellularIndicatorViewModel.state.valueChanged = { [weak self] state in
             self?.updateCellularIndicatorView(with: state)
         }
-        cellularPairingProcessViewModel.state.valueChanged = { [weak self] state in
+        cellularPairingProcessViewModel.state.valueChanged = { [weak self] _ in
             self?.updateCellularProcess()
         }
-
-        handleNewMissionState(missionModeViewModel.state.value)
         updateLandingView(with: landingViewModel.state.value)
         showRemoteShutdownAlert()
         if let state = helloWorldViewModel?.state.value {
@@ -314,21 +325,8 @@ private extension HUDViewController {
         cellularPairingAvailabilityViewModel.updateAvailabilityState()
     }
 
-    /// Handle new mission state.
-    ///
-    /// - Parameters:
-    ///     - state: Mission launcher state
-    func handleNewMissionState(_ state: MissionLauncherState) {
-        if state != lastMissionLauncherState {
-            setupMap(with: state)
-            coordinator?.presentModeEntryCoordinatorIfNeeded(state: state)
-            lastMissionLauncherState = state
-        }
-    }
-
     /// Removes each view model value changed.
     func removeViewModelObservers() {
-        missionModeViewModel.state.valueChanged = nil
         joysticksViewModel.state.valueChanged = nil
         flightReportViewModel.state.valueChanged = nil
         criticalAlertViewModel.state.valueChanged = nil
@@ -542,5 +540,11 @@ private extension HUDViewController {
         guard cellularPairingAvailabilityViewModel.state.value.canShowModal else { return }
 
         coordinator?.displayCellularPairingAvailable()
+    }
+}
+
+extension HUDViewController: MissionProviderSelectorViewModelDelegate {
+    func userDidTapAnyMission() {
+        coordinator?.hideMissionLauncher()
     }
 }

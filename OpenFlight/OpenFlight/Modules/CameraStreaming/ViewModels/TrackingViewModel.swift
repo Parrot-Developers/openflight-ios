@@ -85,17 +85,17 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
 
     // MARK: - Deinit
     deinit {
-        self.stopImageProcessing()
+        stopImageProcessing()
     }
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
-        self.switchToVideoRecording(drone: drone)
+        switchToVideoRecording(drone: drone)
 
         /// If monitoring is already enabled, reset it for drone change.
         if self.isMonitoring {
-            self.enableMonitoring(false)
-            self.enableMonitoring(true)
+            enableMonitoring(false)
+            enableMonitoring(true)
         }
     }
 
@@ -105,13 +105,13 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
     /// - Parameters:
     ///    - enabled: whether live should be enabled
     func enableMonitoring(_ enabled: Bool) {
-        self.isMonitoring = enabled
+        isMonitoring = enabled
         if enabled, let drone = drone {
-            self.listenStreamServer(drone: drone)
-            self.listenOnboardTracker(drone: drone)
-            self.listenGimbal(drone: drone)
+            listenStreamServer(drone: drone)
+            listenOnboardTracker(drone: drone)
+            listenGimbal(drone: drone)
         } else {
-            self.stopImageProcessing()
+            removeAllReferences()
         }
     }
 
@@ -125,7 +125,7 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
                 return
         }
 
-        self.cookie += 1
+        cookie += 1
         var frameRequest = onboardTracker.ofRect(timestamp: frameTimeStamp,
                                                  horizontalPosition: Float(frame.origin.x),
                                                  verticalPosition: Float(frame.origin.y),
@@ -145,15 +145,15 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
                 return
         }
 
-        self.cookie += 1
+        cookie += 1
         var proposalRequest = onboardTracker.ofProposal(timestamp: frameTimeStamp, proposalId: proposalId)
         proposalRequest.cookie = cookie
-        self.onboardTracker?.replaceAllTargetsBy(trackingRequest: proposalRequest)
+        onboardTracker.replaceAllTargetsBy(trackingRequest: proposalRequest)
     }
 
     /// Remove all current targets.
     func removeAllTargets() {
-        self.onboardTracker?.removeAllTargets()
+        onboardTracker?.removeAllTargets()
     }
 }
 
@@ -197,7 +197,7 @@ private extension TrackingViewModel {
 
     /// Starts watcher for onBoard tracker state.
     func listenOnboardTracker(drone: Drone) {
-        self.onboardTrackerRef = drone.getPeripheral(Peripherals.onboardTracker) { [weak self] onboardTracker in
+        onboardTrackerRef = drone.getPeripheral(Peripherals.onboardTracker) { [weak self] onboardTracker in
             self?.onboardTracker = onboardTracker
         }
         drone.getPeripheral(Peripherals.onboardTracker)?.startTrackingEngine(boxProposals: true)
@@ -205,7 +205,7 @@ private extension TrackingViewModel {
 
     /// Starts watcher for gimbal.
     func listenGimbal(drone: Drone) {
-        self.gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
+        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
             guard let strongGimbal = gimbal,
                 strongGimbal.calibrated,
                 let currentPitch = strongGimbal.currentAttitude[.pitch] else {
@@ -223,7 +223,7 @@ private extension TrackingViewModel {
     /// - Parameters:
     ///    - info: Meta data from the drone.
     func trackingStatusDidUpdate(_ info: TrackingData?) {
-        self.frameTimeStamp = info?.camera.timestamp
+        frameTimeStamp = info?.camera.timestamp
         let copy = state.value.copy()
         copy.trackingInfo = info
         state.set(copy)
@@ -231,13 +231,19 @@ private extension TrackingViewModel {
 
     /// Clear every variables of the view model.
     func stopImageProcessing() {
-        self.onboardTracker?.removeAllTargets()
-        self.onboardTracker?.stopTrackingEngine()
-        self.streamServerRef = nil
-        self.cameraLiveRef = nil
-        self.sink = nil
-        self.onboardTrackerRef = nil
-        self.onboardTracker = nil
+        onboardTracker?.removeAllTargets()
+        onboardTracker?.stopTrackingEngine()
+        removeAllReferences()
+    }
+
+    // Nullifies all references
+    func removeAllReferences() {
+        streamServerRef = nil
+        cameraLiveRef = nil
+        sink = nil
+        onboardTrackerRef = nil
+        onboardTracker = nil
+        gimbalRef = nil
     }
 }
 

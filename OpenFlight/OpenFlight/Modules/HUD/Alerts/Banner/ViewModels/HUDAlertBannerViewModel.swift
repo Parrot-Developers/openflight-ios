@@ -73,6 +73,10 @@ final class HUDAlertBannerState: DeviceConnectionState {
     }
 }
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "HUDAlertBannerVM")
+}
+
 /// View model for `HUDAlertBannerViewController`.
 /// Computes all current alerts and notifies on higher priority alert change.
 final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
@@ -81,7 +85,7 @@ final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
     private var motorsRef: Ref<CopterMotors>?
     private var cameraRef: Ref<MainCamera2>?
     private var gimbalRef: Ref<Gimbal>?
-    private var radioRef: Ref<Radio>?
+    private var networkControlRef: Ref<NetworkControl>?
     private var gpsRef: Ref<Gps>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var alertList = AlertList()
@@ -99,7 +103,7 @@ final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
         listenMotors(drone: drone)
         listenCamera(drone: drone)
         listenGimbal(drone: drone)
-        listenRadio(drone: drone)
+        listenNetworkControl(drone: drone)
         listenGps(drone: drone)
         listenFlyingIndicators(drone: drone)
         listenGeofence()
@@ -150,11 +154,11 @@ private extension HUDAlertBannerViewModel {
         }
     }
 
-    /// Starts watcher for radio.
-    func listenRadio(drone: Drone) {
-        radioRef = drone.getInstrument(Instruments.radio) { [weak self] radio in
+    /// Starts watcher for network control.
+    func listenNetworkControl(drone: Drone) {
+        networkControlRef = drone.getPeripheral(Peripherals.networkControl) { [weak self] networkControl in
             self?.alertList.cleanAlerts(withCategories: [.wifi])
-            if let alerts = radio?.currentAlerts {
+            if let alerts = networkControl?.currentWifiAlerts {
                 self?.alertList.addAlerts(alerts)
             }
             self?.updateState()
@@ -269,6 +273,10 @@ private extension HUDAlertBannerViewModel {
             }
         }
 
+        if let mainAlert = alertList.mainAlert {
+            ULog.i(.tag, "Got alerts: \(alertList)")
+            ULog.i(.tag, "Main alert: \(mainAlert.label)")
+        }
         let copy = state.value.copy()
         copy.alert = alertList.mainAlert
         copy.shouldVibrate = shouldVibrate

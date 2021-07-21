@@ -204,8 +204,8 @@ private extension HUDCriticalAlertViewModel {
         let copy = state.value.copy()
 
         // Updates drone and remote version alert state.
-        let remoteUpdateNeeded = remoteControl?.getPeripheral(Peripherals.updater)?.isUpToDate == false
-        let droneUpdateNeeded = drone?.getPeripheral(Peripherals.updater)?.isUpToDate == false
+        let remoteUpdateNeeded = remoteControl?.getPeripheral(Peripherals.updater)?.applicableFirmwares.isEmpty == false
+        let droneUpdateNeeded = drone?.getPeripheral(Peripherals.updater)?.applicableFirmwares.isEmpty == false
 
         copy.alertStack.update(.droneAndRemoteUpdateRequired,
                                shouldAdd: remoteUpdateNeeded && droneUpdateNeeded)

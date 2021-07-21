@@ -33,7 +33,7 @@ import Reusable
 
 // MARK: - Protocol
 /// Action button delegate when an animation is finished.
-public protocol HUDAlertPanelActionButtonDelegate: class {
+public protocol HUDAlertPanelActionButtonDelegate: AnyObject {
     /// Starts an action at the end of the animation.
     func startAction()
 }

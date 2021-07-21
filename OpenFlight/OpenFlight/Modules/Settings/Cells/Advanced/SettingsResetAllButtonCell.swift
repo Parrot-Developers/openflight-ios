@@ -31,7 +31,7 @@
 import Reusable
 
 /// Settings Reset All Button Cell Delegate.
-protocol SettingsResetAllButtonCellDelegate: class {
+protocol SettingsResetAllButtonCellDelegate: AnyObject {
     /// Notifies when the reset button is touched.
     func settingsResetAllButtonCellButtonTouchUpInside()
 }
@@ -44,6 +44,8 @@ final class SettingsResetAllButtonCell: UITableViewCell, NibReusable {
             resetButton.roundCornered()
             resetButton.backgroundColor = ColorName.white12.color
             resetButton.makeup(with: .regular, color: ColorName.white)
+            resetButton.setTitleColor(ColorName.white.color, for: .normal)
+            resetButton.setTitleColor(ColorName.white30.color, for: .disabled)
         }
     }
     @IBOutlet private weak var topConstraint: NSLayoutConstraint!
@@ -61,13 +63,15 @@ final class SettingsResetAllButtonCell: UITableViewCell, NibReusable {
     ///
     /// - Parameters:
     ///    - title: cell title
+    ///    - isEnabled: whether reset button is enabled
     ///    - hasNoMargin: tells if there are margins
-    func configureCell(title: String, hasNoMargin: Bool = false) {
+    func configureCell(title: String, isEnabled: Bool, hasNoMargin: Bool = false) {
         topConstraint.constant = hasNoMargin ? 0.0 : Constants.topMargin
         resetButton.setTitle(title, for: .normal)
         resetButton.setTitle(title, for: .highlighted)
         resetButton.setTitle(title, for: .disabled)
         resetButton.setTitle(title, for: .selected)
+        resetButton.isEnabled = isEnabled
     }
 }
 

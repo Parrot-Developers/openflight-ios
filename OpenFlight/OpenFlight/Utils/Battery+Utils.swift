@@ -70,7 +70,7 @@ public struct BatteryValueModel: Equatable {
         case .ready:
             return Asset.Remote.icBatteryFull.image
         case .none:
-            return Asset.Remote.icBatteryDisconnected.image
+            return Asset.Remote.icBatteryNone.image
         }
     }
 }

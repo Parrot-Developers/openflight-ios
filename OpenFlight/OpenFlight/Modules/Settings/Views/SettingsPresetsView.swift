@@ -33,7 +33,7 @@ import Reusable
 
 // MARK: - Protocols
 /// Settings mode header view delegate.
-protocol SettingsPresetViewDelegate: class {
+protocol SettingsPresetViewDelegate: AnyObject {
     /// Notifies delegate when the selected mode did change.
     func settingsPresetViewSelectionDidChange(selectedMode: SettingsBehavioursMode)
 }

@@ -85,7 +85,8 @@ struct DroneSettingModel {
     var allValues: [SettingMode]
     var supportedValues: [SettingMode]
     var currentValue: SettingMode?
-    var isUpdating: Bool?
+    var isUpdating = false
+    var forceDisabling = false
     var onSelect: ((SettingMode) -> Void )?
     var selectedIndex: Int {
         return self.allValues.firstIndex(where: {$0.key == self.currentValue?.key}) ?? -1

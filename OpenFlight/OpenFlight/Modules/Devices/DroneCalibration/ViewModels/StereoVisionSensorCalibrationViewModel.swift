@@ -34,6 +34,7 @@ import GroundSdk
 final class StereoVisionSensorCalibrationState: ViewModelState, EquatableState, Copying {
 
     // MARK: - Internal Properties
+    fileprivate(set) var missionState: MissionState?
     fileprivate(set) var calibrationProcessState: StereoVisionCalibrationProcessState?
     fileprivate(set) var calibrationStepsCount: Int?
 
@@ -66,15 +67,20 @@ final class StereoVisionSensorCalibrationState: ViewModelState, EquatableState, 
 final class StereoVisionSensorCalibrationViewModel: DroneWatcherViewModel<StereoVisionSensorCalibrationState> {
 
     // MARK: - Private Properties
+    private let manager = ProtobufMissionsManager.shared
+    private var listener: ProtobufMissionListener?
+    private let signature = OFMissionSignatures.ophtalmo
     private var stereoVisionSensorRef: Ref<StereoVisionSensor>?
 
     // MARK: - Deinit
     deinit {
+        manager.unregister(listener)
         self.stereoVisionSensorRef = nil
     }
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
+        self.listenMission()
         self.listenStereoVisionSensor(for: drone)
     }
 }
@@ -84,17 +90,28 @@ extension StereoVisionSensorCalibrationViewModel {
 
     /// Start the drone stereoVisionSensor calibration.
     func startCalibration() {
-        self.drone?.getPeripheral(Peripherals.stereoVisionSensor)?.startCalibration()
+        manager.activate(mission: signature)
     }
 
     /// Stop the drone stereoVisionSensor calibration.
     func cancelCalibration() {
-        self.drone?.getPeripheral(Peripherals.stereoVisionSensor)?.cancelCalibration()
+        manager.deactivate(mission: signature)
     }
 }
 
 // MARK: - Private Funcs
 private extension StereoVisionSensorCalibrationViewModel {
+
+    /// Listens to the ophtalmo mission.
+    func listenMission() {
+        listener = manager.register(
+            for: signature,
+            missionCallback: { [weak self] (state, _, _) in
+                let copy = self?.state.value.copy()
+                copy?.missionState = state
+                self?.state.set(copy)
+            })
+    }
 
     /// Listen the drone stereoVisionSensor.
     func listenStereoVisionSensor(for drone: Drone) {

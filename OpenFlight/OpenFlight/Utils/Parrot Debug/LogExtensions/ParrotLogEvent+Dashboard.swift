@@ -33,7 +33,6 @@
 extension LogEvent {
     /// Enum which stores dashboard button keys for log message.
     enum LogKeyDashboardButton {
-        static let pilot: String = "Pilot"
         static let myFlights: String = "MyFlights"
         static let controllerDetails: String = "ControllerDetails"
         static let droneDetails: String = "DroneDetails"

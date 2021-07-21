@@ -28,78 +28,37 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// View Controller used to display content of the Dashboard.
 final class DashboardViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var collectionView: UICollectionView!
-    @IBOutlet private weak var backgroundView: UIView!
 
     // MARK: - Private Properties
     private weak var coordinator: DashboardCoordinator?
-    private var dashboardHeaderItems: [DashboardHeaderModel] {
-        return DashboardItemCellType.headerItems
-            .compactMap { return $0.model }
-    }
-
-    private var viewModelsLandscape: [AnyObject]!
-    private var viewModelsPortrait: [AnyObject]!
-    private var dashboardViewModels: [AnyObject] {
-        if UIApplication.isLandscape {
-            return viewModelsLandscape
-        } else {
-            return viewModelsPortrait
-        }
-    }
+    private var viewModel: DashboardViewModel!
+    private var cancellables = [AnyCancellable]()
 
     // MARK: - Private Enums
-    private enum SizeConstants {
-        static let titleNavBarHeight: CGFloat = 40.0
-        static let defaultWidth: CGFloat = 150.0
-        static let commonCellHeight: CGFloat = 150.0
-        static let portraitCellHeight: CGFloat = 100.0
-        static let headerPortraitHeight: CGFloat = 50.0
-        static let headerLandscapeHeight: CGFloat = 44.0
-        static let footerHeight: CGFloat = 60.0
-        static let headerWidth: CGFloat = 50.0
-        static let headerWidthDelta: CGFloat = 62.0
-    }
-    private enum MarginConstants {
-        static let defaultLanscapeMargin: CGFloat = 20.0
-        static let defaultPortraitMargin: CGFloat = 10.0
-        static let topPortraitMargin: CGFloat = 22.0
-        static let topLandscapeMargin: CGFloat = 15.0
-        static let commonCellInset: CGFloat = 24.0
-        static let globalInset: CGFloat = 12.0
-    }
     private enum Constants {
-        static let quarterScreen: CGFloat = 4.0
-        static let oneThirdScreen: CGFloat = 3.0
-        static let halfScreen: CGFloat = 2.0
-        static let wholeScreen: CGFloat = 1.0
-        static let numberFooterItems: Int = 1
         static let supportUrl: String = "https://support.parrot.com/"
-    }
-    private enum SectionType: Int, CaseIterable {
-        case header
-        case content
-        case footer
     }
 
     // MARK: - Init
-    static func instantiate(coordinator: DashboardCoordinator) -> DashboardViewController {
+    static func instantiate(coordinator: DashboardCoordinator, viewModel: DashboardViewModel) -> DashboardViewController {
         let viewController = StoryboardScene.Dashboard.initialScene.instantiate()
         viewController.coordinator = coordinator
-
+        viewModel.initViewModels()
+        viewController.viewModel = viewModel
         return viewController
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         initView()
-        initViewModels()
+        bindViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -122,7 +81,8 @@ final class DashboardViewController: UIViewController {
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
 
-        collectionView.reloadData()
+        // Better use invalidateLayout to trigger layout update
+        self.collectionView.collectionViewLayout.invalidateLayout()
         self.setNeedsStatusBarAppearanceUpdate()
     }
 
@@ -132,7 +92,7 @@ final class DashboardViewController: UIViewController {
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
+        return .darkContent
     }
 }
 
@@ -148,27 +108,23 @@ private extension DashboardViewController {
 // MARK: - Collection View delegate
 extension DashboardViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let viewModel = dashboardViewModels[indexPath.row]
-        let sectionType = SectionType(rawValue: indexPath.section)
 
-        switch sectionType {
-        case .content:
-            switch viewModel {
-            case let myFlightsViewModel as MyFlightsViewModel:
-                logEvent(with: LogEvent.LogKeyDashboardButton.myFlights)
-                self.coordinator?.startMyFlights(myFlightsViewModel)
-            case is RemoteInfosViewModel:
-                logEvent(with: LogEvent.LogKeyDashboardButton.controllerDetails)
-                self.coordinator?.startRemoteInfos()
-            case is DroneInfosViewModel:
-                logEvent(with: LogEvent.LogKeyDashboardButton.droneDetails)
-                self.coordinator?.startDroneInfos()
-            case is GalleryMediaViewModel:
-                logEvent(with: LogEvent.LogKeyDashboardButton.gallery)
-                self.coordinator?.startMedias()
-            default:
-                break
-            }
+        // item from dataSource subscript
+        let item = self.viewModel.dataSource[indexPath.section, indexPath.item]
+
+        switch item {
+        case .content(.myFlights):
+            logEvent(with: LogEvent.LogKeyDashboardButton.myFlights)
+            self.coordinator?.startMyFlights(self.viewModel.myFlightsViewModel)
+        case .content(.remoteInfos):
+            logEvent(with: LogEvent.LogKeyDashboardButton.controllerDetails)
+            self.coordinator?.startRemoteInfos()
+        case .content(.droneInfos):
+            logEvent(with: LogEvent.LogKeyDashboardButton.droneDetails)
+            self.coordinator?.startDroneInfos()
+        case .content(.galleryMedia):
+            logEvent(with: LogEvent.LogKeyDashboardButton.gallery)
+            self.coordinator?.startMedias()
         default:
             break
         }
@@ -180,17 +136,14 @@ extension DashboardViewController: UICollectionViewDataSource {
     /// Func used to fill the collection view.
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         var cell: UICollectionViewCell = UICollectionViewCell()
-        guard let sectionType = SectionType(rawValue: indexPath.section) else { return UICollectionViewCell() }
+        // item from dataSource subscript
+        guard let item = self.viewModel.dataSource[indexPath.section, indexPath.item] else { return UICollectionViewCell() }
 
-        switch sectionType {
-        case .header:
-            let headerItem = dashboardHeaderItems[indexPath.row]
-            switch headerItem.type {
-            case .header:
-                cell = createHeaderCell(indexPath: indexPath)
-            default:
-                cell = createDashboardLogoCell(indexPath: indexPath)
-            }
+        switch item {
+        case .header(.header):
+            cell = createHeaderCell(indexPath: indexPath)
+        case .header(.logo):
+            cell = createDashboardLogoCell(logoImage: viewModel.appLogo, indexPath: indexPath)
         case .content:
             cell = createContentCell(indexPath)
         case .footer:
@@ -202,45 +155,34 @@ extension DashboardViewController: UICollectionViewDataSource {
 
     /// Func used to define the number of sections in the collection view.
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return SectionType.allCases.count
+        return self.viewModel.dataSource.sections.count
     }
 
     /// Func used to define the number of items in each section of the collection view.
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        var nbOfItems: Int = 0
-        guard let sectionType = SectionType(rawValue: section) else { return 0 }
-
-        switch sectionType {
-        case .header:
-            nbOfItems = self.dashboardHeaderItems.count
-        case .content:
-            nbOfItems = self.dashboardViewModels.count
-        case .footer:
-            nbOfItems = Constants.numberFooterItems
-        }
-
-        return nbOfItems
+        let items = self.viewModel.dataSource[section]
+        return items.count
     }
 
     // MARK: - Helpers
     /// Create the content of cells for the section 1.
     private func createContentCell(_ indexPath: IndexPath) -> UICollectionViewCell {
-        let viewModel = dashboardViewModels[indexPath.row]
-        switch viewModel {
-        case let dashboardProfileViewModel as DashboardProfileViewModel:
-            return createDashboardProfileCell(dashboardProfileViewModel, indexPath)
-        case let userDeviceViewModel as UserDeviceViewModel:
-            return createUserDeviceCell(userDeviceViewModel, indexPath)
-        case let remoteViewModel as RemoteInfosViewModel:
-            return createRemoteCell(remoteViewModel, indexPath)
-        case let droneViewModel as DroneInfosViewModel:
-            return createDroneCell(droneViewModel, indexPath)
-        case let galleryMediaViewModel as GalleryMediaViewModel:
-            return createMediasCell(galleryMediaViewModel, indexPath)
-        case let myFlightsViewModel as MyFlightsViewModel:
-            return createMyFlightsCell(myFlightsViewModel, indexPath)
+        let contentType = self.viewModel.dataSource[indexPath.section, indexPath.item]
+        switch contentType {
+        case .content(.dashboardMyAccount):
+            return createDashboardAccountCell(self.viewModel.dashboardMyAccountViewModel, indexPath)
+        case .content(.userDevice):
+            return createUserDeviceCell(self.viewModel.userDeviceViewModel, indexPath)
+        case .content(.remoteInfos):
+            return createRemoteCell(self.viewModel.remoteInfosViewModel, indexPath)
+        case .content(.droneInfos):
+            return createDroneCell(self.viewModel.droneInfosViewModel, indexPath)
+        case .content(.galleryMedia):
+            return createMediasCell(self.viewModel.galleryMediaViewModel, indexPath)
+        case .content(.myFlights):
+            return createMyFlightsCell(self.viewModel.myFlightsViewModel, indexPath)
         default:
-            assertionFailure("\(viewModel) not yet implemented")
+            assertionFailure("\(String(describing: contentType)) not yet implemented")
         }
 
         return UICollectionViewCell()
@@ -251,111 +193,32 @@ extension DashboardViewController: UICollectionViewDataSource {
 extension DashboardViewController: UICollectionViewDelegateFlowLayout {
     /// Func used to define size of each item in the collection view.
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        var width: CGFloat = 0.0
-        var height: CGFloat = 0.0
 
-        guard let sectionType = SectionType(rawValue: indexPath.section) else { return CGSize.zero }
+        guard let item = self.viewModel?.dataSource[indexPath.section, indexPath.item] else { return .zero}
 
-        let viewModel = dashboardViewModels[indexPath.row]
-        if UIApplication.isLandscape {
-            switch sectionType {
-            case .header:
-                height = SizeConstants.headerLandscapeHeight
-                // Set content width to whole screen without inset and the margin.
-                width = (collectionView.frame.width - MarginConstants.defaultLanscapeMargin - MarginConstants.commonCellInset) / Constants.oneThirdScreen
-            case .content:
-                height = SizeConstants.commonCellHeight
-                switch viewModel {
-                case is MyFlightsViewModel:
-                    // Set content width to the half of the screen without inset and the margin.
-                    width = (collectionView.frame.width - MarginConstants.defaultLanscapeMargin - MarginConstants.commonCellInset)
-                        * (Constants.halfScreen / Constants.oneThirdScreen)
-                case is GalleryMediaViewModel:
-                    width = (collectionView.frame.width - MarginConstants.defaultLanscapeMargin - MarginConstants.commonCellInset)
-                        * (Constants.wholeScreen / Constants.oneThirdScreen)
-                default:
-                    // Set content width to the quarter of the screen without inset and the 3 margins.
-                    width = (collectionView.frame.width - 3 * MarginConstants.defaultLanscapeMargin - MarginConstants.commonCellInset) / Constants.quarterScreen
-                }
-            case .footer:
-                height = SizeConstants.footerHeight
-                width = collectionView.frame.width - MarginConstants.commonCellInset
-            }
-        } else {
-            switch sectionType {
-            case .header:
-                height = SizeConstants.headerPortraitHeight
-                if dashboardHeaderItems[indexPath.row].type == DashboardItemCellType.header {
-                    width = SizeConstants.headerWidth
-                } else {
-                    // Set content width to the whole screen.
-                    width = collectionView.frame.width - MarginConstants.commonCellInset - SizeConstants.headerWidthDelta
-                }
-            case .content:
-                height = SizeConstants.commonCellHeight
-                switch viewModel {
-                case is DashboardProfileViewModel,
-                     is RemoteInfosViewModel,
-                     is DroneInfosViewModel,
-                     is UserDeviceViewModel:
-                    // Set content width to the half of the screen without inset and the margin.
-                    width = (collectionView.frame.width - MarginConstants.defaultPortraitMargin - MarginConstants.commonCellInset) / Constants.halfScreen
-                case is MyFlightsViewModel,
-                     is GalleryMediaViewModel:
-                    height = SizeConstants.commonCellHeight
-                    // Set content width to the whole screen.
-                    width = collectionView.frame.width - MarginConstants.commonCellInset
-                default:
-                    height = SizeConstants.portraitCellHeight
-                    // Set content width to the whole screen.
-                    width = collectionView.frame.width - MarginConstants.commonCellInset
-                }
-            case .footer:
-                height = SizeConstants.footerHeight
-                // Set content width to the whole screen.
-                width = collectionView.frame.width - MarginConstants.commonCellInset
-            }
-        }
-
-        return CGSize(width: width, height: height)
+        return item.getComputedSize(width: collectionView.frame.width, height: collectionView.frame.height, isRegularSizeClass: self.isRegularSizeClass)
     }
 
     /// Func used to define top, left, bottom and right insets between sections.
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
-        var bottomMargin: CGFloat = 0.0
-        var topMargin: CGFloat = 0.0
-        if UIApplication.isLandscape {
-            bottomMargin = MarginConstants.defaultLanscapeMargin
-            if section == SectionType.header.rawValue {
-                topMargin = MarginConstants.topLandscapeMargin
-            }
-        } else {
-            bottomMargin = MarginConstants.defaultPortraitMargin
-            if section == SectionType.header.rawValue {
-                topMargin = MarginConstants.topPortraitMargin
-            }
-        }
-
-        return UIEdgeInsets(top: topMargin,
-                            left: MarginConstants.globalInset,
-                            bottom: bottomMargin,
-                            right: MarginConstants.globalInset)
+        guard let section = self.viewModel?.dataSource.sections[section] else { return .zero }
+        return section.getComputedInsets(width: collectionView.frame.width, height: collectionView.frame.height, isRegularSizeClass: self.isRegularSizeClass)
     }
 
     /// Func used to define spacing between different lines for each section.
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return UIApplication.isLandscape ? MarginConstants.defaultLanscapeMargin : MarginConstants.defaultPortraitMargin
+        return self.viewModel.dataSource.sections[section].minimumLineSpacing
     }
 
     /// Func used to define spacing between different items for each section.
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return UIApplication.isLandscape ? MarginConstants.defaultLanscapeMargin : MarginConstants.defaultPortraitMargin
+        return self.viewModel.dataSource.sections[section].minimumInteritemSpacing
     }
 }
 
@@ -365,54 +228,45 @@ private extension DashboardViewController {
     ///
     /// - Parameters:
     ///    - indexPath: index of the cell
-    ///
     /// - Returns: DashboardHeaderCell
     func createHeaderCell(indexPath: IndexPath) -> DashboardHeaderCell {
         let dashboardHeaderCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardHeaderCell
         dashboardHeaderCell.delegate = self
-
         return dashboardHeaderCell
     }
 
     /// Instantiate dashboard logo Cell.
     ///
     /// - Parameters:
+    ///    - appLogo:
     ///    - indexPath: index of the cell
-    ///
     /// - Returns: DashboardLogoCell
-    func createDashboardLogoCell(indexPath: IndexPath) -> DashboardLogoCell {
+    func createDashboardLogoCell(logoImage: UIImage, indexPath: IndexPath) -> DashboardLogoCell {
         let dashboardLogoCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardLogoCell
-
+        dashboardLogoCell.logoImage = logoImage
         return dashboardLogoCell
     }
 
-    /// Instantiate dashboard profile cell.
+    /// Instantiate dashboard account cell.
     ///
     /// - Parameters:
     ///    - viewModel: ViewModel for the cell
     ///    - indexPath: index of the cell
-    ///
     /// - Returns: DashboardProfileCell
-    func createDashboardProfileCell(_ viewModel: DashboardProfileViewModel, _ indexPath: IndexPath) -> DashboardProfileCell {
-        let dashboardProfileCell = self.collectionView.dequeueReusableCell(for: indexPath) as DashboardProfileCell
+    func createDashboardAccountCell(_ viewModel: DashboardMyAccountViewModel, _ indexPath: IndexPath) -> DashboardMyAccountCell {
+        let dashboardMyAccountCell = self.collectionView.dequeueReusableCell(for: indexPath) as DashboardMyAccountCell
 
-        dashboardProfileCell.delegate = self
-        if let currentAccount = AccountManager.shared.currentAccount,
-           let userName = currentAccount.userName,
-           let userPicture = currentAccount.userAvatar {
-            dashboardProfileCell.setProfile(icon: userPicture, name: userName)
-        } else {
-            dashboardProfileCell.setNotConnected()
-        }
+        let accountView = AccountManager.shared.currentAccount?.dashboardAccountView ?? MyAccountView()
+        accountView.dashboardCoordinator = coordinator
+        dashboardMyAccountCell.fill(view: accountView)
 
-        return dashboardProfileCell
+        return dashboardMyAccountCell
     }
 
     /// Instantiate the User Device Cell.
     ///
     /// - Parameters:
     ///    - viewModel: ViewModel for the cell
-    ///
     /// - Returns: DashboardDeviceCell
     func createUserDeviceCell(_ viewModel: UserDeviceViewModel, _ indexPath: IndexPath) -> DashboardDeviceCell {
         let userDeviceCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardDeviceCell
@@ -425,35 +279,30 @@ private extension DashboardViewController {
     ///
     /// - Parameters:
     ///    - viewModel: ViewModel for the cell
-    ///
     /// - Returns: DashboardDeviceCell
     func createRemoteCell(_ viewModel: RemoteInfosViewModel, _ indexPath: IndexPath) -> DashboardDeviceCell {
         let remoteCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardDeviceCell
         remoteCell.setup(state: viewModel.state.value)
         remoteCell.setup(delegate: self)
-
         return remoteCell
     }
 
-    /// Instantiate the Drone Cell.
+    /// Instantiates the Drone Cell.
     ///
     /// - Parameters:
     ///    - viewModel: ViewModel for the cell
-    ///
     /// - Returns: DashboardDroneCell
     func createDroneCell(_ viewModel: DroneInfosViewModel, _ indexPath: IndexPath) -> DashboardDroneCell {
         let droneCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardDroneCell
         droneCell.setup(viewModel)
         droneCell.setup(delegate: self)
-
         return droneCell
     }
 
-    /// Instantiate the Medias Cell.
+    /// Instantiates the Medias Cell.
     ///
     /// - Parameters:
     ///    - viewModel: ViewModel for the cell
-    ///
     /// - Returns: DashboardMediasCell
     func createMediasCell(_ viewModel: GalleryMediaViewModel, _ indexPath: IndexPath) -> DashboardMediasCell {
         let mediaCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardMediasCell
@@ -463,11 +312,10 @@ private extension DashboardViewController {
         return mediaCell
     }
 
-    /// Instantiate the My Flights Cell.
+    /// Instantiates the My Flights Cell.
     ///
     /// - Parameters:
     ///    - viewModel: ViewModel for the cell
-    ///
     /// - Returns: DashboardInfosCell
     func createMyFlightsCell(_ viewModel: MyFlightsViewModel, _ indexPath: IndexPath) -> DashboardMyFlightsCell {
         let myFlightCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardMyFlightsCell
@@ -476,11 +324,10 @@ private extension DashboardViewController {
         return myFlightCell
     }
 
-    /// Instantiate the Footer Cell.
+    /// Instantiates the Footer Cell.
     ///
     /// - Parameters:
     ///    - indexPath: index of the cell
-    ///
     /// - Returns: DashboardFooterCell
     func createFooterCell(_ viewModel: DashboardFooterViewModel, _ indexPath: IndexPath) -> DashboardFooterCell {
         let dashboardFooterCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardFooterCell
@@ -491,7 +338,7 @@ private extension DashboardViewController {
         return dashboardFooterCell
     }
 
-    /// Come back to the HUD.
+    /// Comes back to the HUD.
     @objc func dimissDashboard() {
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .button)
         coordinator?.dismissDashboard()
@@ -499,45 +346,29 @@ private extension DashboardViewController {
 
     /// Inits the view.
     func initView() {
-        backgroundView.addBlurEffect(cornerRadius: 0.0)
         // Register cells which will be displayed in the collection view.
         collectionView.register(cellType: DashboardHeaderCell.self)
         collectionView.register(cellType: DashboardLogoCell.self)
-        collectionView.register(cellType: DashboardProfileCell.self)
+        collectionView.register(cellType: DashboardMyAccountCell.self)
         collectionView.register(cellType: DashboardDeviceCell.self)
         collectionView.register(cellType: DashboardDroneCell.self)
         collectionView.register(cellType: DashboardMyFlightsCell.self)
         collectionView.register(cellType: DashboardFooterCell.self)
         collectionView.register(cellType: DashboardMediasCell.self)
-        // Clear the background of the collection view.
-        collectionView.backgroundColor = UIColor.clear
     }
 
-    /// Inits View Models.
-    func initViewModels() {
-        let myFlightsViewModel = MyFlightsViewModel()
-        myFlightsViewModel.state.valueChanged = { [weak self] _ in
-            self?.collectionView.reloadData()
-        }
-
-        let galleryMediaViewModel = GalleryMediaViewModel(onMediaStateUpdate: { [weak self] _ in
-            self?.collectionView.reloadData()
-        })
-        galleryMediaViewModel.refreshMedias()
-
-        // Fill the view model tab with all dashboard view model.
-        viewModelsLandscape = [DashboardProfileViewModel(),
-                               RemoteInfosViewModel(),
-                               DroneInfosViewModel(),
-                               UserDeviceViewModel(userLocationManager: UserLocationManager()),
-                               myFlightsViewModel,
-                               galleryMediaViewModel]
-        viewModelsPortrait = [DashboardProfileViewModel(),
-                              RemoteInfosViewModel(),
-                              DroneInfosViewModel(),
-                              UserDeviceViewModel(userLocationManager: UserLocationManager()),
-                              myFlightsViewModel,
-                              galleryMediaViewModel]
+    /// bind View Model.
+    func bindViewModel() {
+        self.viewModel?.$viewState
+            .sink(receiveValue: { [unowned self] value in
+                switch value {
+                case .reloadData:
+                    self.collectionView.reloadData()
+                default:
+                    break
+                }
+            })
+            .store(in: &cancellables)
     }
 
     /// Calls log event.
@@ -573,35 +404,12 @@ extension DashboardViewController: DashboardHeaderCellDelegate {
     }
 }
 
-// MARK: - DashboardProfileCellDelegate
-extension DashboardViewController: DashboardProfileCellDelegate {
-    func startThirdPartyProcess(service: ThirdPartyService) {
-        self.coordinator?.startThirdPartyProcess(service: service)
-    }
-
-    func startLogin() {
-        logEvent(with: LogEventScreenManager.shared.logEventProvider?.logStringWithKey(logKey: .parrot) ?? "")
-        self.coordinator?.startLogin()
-    }
-
-    func startProviderProfile() {
-        logEvent(with: LogEvent.LogKeyDashboardButton.pilot)
-        self.coordinator?.startProviderProfile()
-    }
-}
-
 // MARK: - DashboardFooterCellDelegate
 extension DashboardViewController: DashboardFooterCellDelegate {
     func startConfidentiality() {
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyDashboardDataConfidentialityButton.dataConfidentiality.name,
                              logType: .simpleButton)
         coordinator?.startConfidentiality()
-    }
-
-    func startSupport() {
-        guard let url = URL(string: Constants.supportUrl) else { return }
-
-        UIApplication.shared.open(url)
     }
 
     func startParrotDebugScreen() {

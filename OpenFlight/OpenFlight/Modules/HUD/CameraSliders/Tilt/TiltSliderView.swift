@@ -30,25 +30,9 @@
 
 import UIKit
 import Reusable
-
-// MARK: - Protocols
-/// Protocol describing tilt slider view commands.
-protocol TiltSliderViewDelegate: class {
-    /// Called when gimbal pitch velocity should be updated.
-    ///
-    /// - Parameters:
-    ///    - velocity: new velocity to apply
-    func setPitchVelocity(_ velocity: Double)
-    /// Called when gimbal pitch should be reset to default value.
-    func resetPitch()
-    /// Called when user starts interacting with slider.
-    func didStartInteracting()
-    /// Called when user stops interacting with slider.
-    func didStopInteracting()
-}
+import Combine
 
 /// View displaying the deployed tilt controller.
-
 final class TiltSliderView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var mainView: UIView!
@@ -62,17 +46,22 @@ final class TiltSliderView: UIView, NibOwnerLoadable {
     @IBOutlet private weak var progressViewTopConstraint: NSLayoutConstraint!
     @IBOutlet private weak var progressViewBottomConstraint: NSLayoutConstraint!
 
+    // MARK: - Private Properties
+    private var panGestureRecognizer: UIPanGestureRecognizer!
+    private var doubleTapGestureRecognizer: UITapGestureRecognizer!
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Internal Properties
-    weak var tiltState: GimbalTiltState? {
+    var viewModel: GimbalTiltSliderViewModel! {
         didSet {
-            setTiltIndicatorPosition()
+            viewModel.tiltValue
+                .combineLatest(viewModel.tiltUpperBound)
+                .sink { [unowned self] (value, upperBound) in
+                    setTiltIndicatorPosition(currentValue: value, upperBound: upperBound)
+                }
+                .store(in: &cancellables)
         }
     }
-    weak var delegate: TiltSliderViewDelegate?
-
-    // MARK: - Private Properties
-    private var longPressGestureRecognizer: UILongPressGestureRecognizer!
-    private var doubleTapGestureRecognizer: UITapGestureRecognizer!
 
     // MARK: - Private Enums
     private enum Constants {
@@ -105,16 +94,15 @@ private extension TiltSliderView {
         tiltIndicatorView.roundCornered()
         bottomArrowView.orientation = .bottom
 
-        setLongPressGesture()
+        setPanGesture()
         setDoubleTapGesture()
     }
 
-    /// Sets up long press gesture recognizer.
-    func setLongPressGesture() {
-        longPressGestureRecognizer = UILongPressGestureRecognizer(target: self,
-                                                                  action: #selector(onLongPress))
-        longPressGestureRecognizer.minimumPressDuration = 0
-        handleView.addGestureRecognizer(longPressGestureRecognizer)
+    /// Sets up pan gesture recognizer.
+    func setPanGesture() {
+        panGestureRecognizer = UIPanGestureRecognizer(target: self,
+                                                      action: #selector(onPan))
+        handleView.addGestureRecognizer(panGestureRecognizer)
     }
 
     /// Sets up double tap gesture recognizer.
@@ -122,15 +110,14 @@ private extension TiltSliderView {
         doubleTapGestureRecognizer = UITapGestureRecognizer(target: self,
                                                             action: #selector(onDoubleTap))
         doubleTapGestureRecognizer.numberOfTapsRequired = 2
-        longPressGestureRecognizer.require(toFail: doubleTapGestureRecognizer)
         handleView.addGestureRecognizer(doubleTapGestureRecognizer)
     }
 
-    /// Called when a long press on handle view occurs.
-    @objc func onLongPress(sender: UILongPressGestureRecognizer) {
+    /// Called when a pan gesture on handle view occurs.
+    @objc func onPan(sender: UIPanGestureRecognizer) {
         switch sender.state {
         case .began:
-            delegate?.didStartInteracting()
+            viewModel.onStartInteraction()
             fallthrough
         case .possible, .changed:
             let pointY = sender.location(in: self.mainView).y
@@ -138,11 +125,11 @@ private extension TiltSliderView {
             let constraintValue = mainView.frame.height / 2 - clampedY
             setHandlePosition(at: constraintValue)
             let velocity = Double(constraintValue / (mainView.frame.height / 2))
-            delegate?.setPitchVelocity(velocity)
+            viewModel.setPitchVelocity(velocity)
         case .ended, .cancelled, .failed:
             setHandlePosition(at: Constants.defaultHandlePosition)
-            delegate?.setPitchVelocity(Constants.defaultVelocity)
-            delegate?.didStopInteracting()
+            viewModel.setPitchVelocity(Constants.defaultVelocity)
+            viewModel.onStopInteraction()
         @unknown default:
             break
         }
@@ -150,7 +137,9 @@ private extension TiltSliderView {
 
     /// Called when a double tap on handle view occurs.
     @objc func onDoubleTap(sender: UITapGestureRecognizer) {
-        delegate?.resetPitch()
+        panGestureRecognizer.isEnabled = false
+        panGestureRecognizer.isEnabled = true
+        viewModel.onDoubleTap()
     }
 
     /// Moves handle view to given position.
@@ -161,15 +150,9 @@ private extension TiltSliderView {
     }
 
     /// Moves tilt indicator to given position.
-    func setTiltIndicatorPosition() {
-        guard let currentValue = tiltState?.current,
-            let range = tiltState?.range,
-            range.upperBound != 0
-            else {
-                return
-        }
+    func setTiltIndicatorPosition(currentValue: Double, upperBound: Double) {
         let halfHeight = mainView.frame.height / 2 - Constants.tiltIndicatorDelta
-        let position = CGFloat(currentValue) * halfHeight / CGFloat(range.upperBound)
+        let position = CGFloat(currentValue) * halfHeight / CGFloat(upperBound)
         tiltIndicatorViewYConstraint.constant = position
 
         if position > 0 {

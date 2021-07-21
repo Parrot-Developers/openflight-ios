@@ -97,10 +97,10 @@ struct RemoteConnectDroneModel: Equatable {
 /// Paired drone object used to parse API reponse to get drones list response..
 public struct PairedDroneListResponse: Codable {
     // MARK: - Internal Properties
-    var serial: String?
-    var modelId: String?
-    var pairedFor4g: Bool
-    var commonName: String?
+    public var serial: String?
+    public var modelId: String?
+    public var pairedFor4g: Bool
+    public var commonName: String?
 
     // MARK: - Internal Enums
     enum CodingKeys: String, CodingKey {

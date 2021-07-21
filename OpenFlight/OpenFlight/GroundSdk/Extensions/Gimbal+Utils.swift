@@ -122,36 +122,11 @@ extension CalibratableGimbal {
 }
 
 extension Gimbal {
-    /// Returns true if tilt is currently at maximum positive value.
-    var isMaxPositiveTiltReached: Bool {
-        guard let tilt = currentAttitude[.pitch],
-              let range = attitudeBounds[.pitch] else {
-            return false
-        }
-
-        return tilt.rounded(toPlaces: Constants.roundPrecision) >= range.upperBound.rounded(toPlaces: Constants.roundPrecision)
-    }
-
-    /// Returns true if tilt is currently at maximum negative value.
-    var isMaxNegativeTiltReached: Bool {
-        guard let tilt = currentAttitude[.pitch],
-              let range = attitudeBounds[.pitch] else {
-            return false
-        }
-
-        return tilt.rounded(toPlaces: Constants.roundPrecision) <= range.lowerBound.rounded(toPlaces: Constants.roundPrecision)
-    }
-
-    /// Returns true if tilt reaches is maximum negative or positive value.
-    var didOvertilt: Bool {
-        return isMaxPositiveTiltReached || isMaxNegativeTiltReached
-    }
-
     /// Returns current alerts for gimbal.
     var currentAlerts: [HUDAlertType] {
         return currentErrors.isEmpty
             ? []
-            : [HUDBannerWarningAlertType.cameraError]
+            : [HUDBannerCriticalAlertType.cameraError]
     }
 
     /// String describing gimbal calibration state.

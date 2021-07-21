@@ -29,18 +29,25 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import ArsdkEngine
 
 // MARK: - Public Struct
 /// Protobuf Mission Signature protocol.
 public protocol ProtobufMissionSignature {
+    /// The mission name.
     var name: String { get }
+    /// The mission UID.
     var missionUID: String { get }
-    var packageName: String { get }
+    /// The mission service unique id command.
+    var serviceUidCommand: UInt { get }
+    /// The mission service unique id event.
+    var serviceUidEvent: UInt { get }
 }
 
 /// All OpenFlight signatures.
 public struct OFMissionSignatures {
     public static let helloWorld = HelloWorldMissionSignature()
+    public static let ophtalmo = OphtalmoMissionSignature()
     public static let defaultMission = DefaultMissionSignature()
 }
 
@@ -55,10 +62,11 @@ public struct DefaultMissionSignature: ProtobufMissionSignature {
     /// The mission UID.
     public var missionUID: String = "default"
 
-    /// The mission package name.
-    public var packageName: String {
-        return ""
-    }
+    /// The mission service unique id command.
+    public var serviceUidCommand: UInt = 0
+
+    /// The mission service unique id event.
+    public var serviceUidEvent: UInt = 0
 }
 
 /// Default protobuf mission activation model.
@@ -76,6 +84,29 @@ public struct DefaultMissionActivationModel: MissionActivationModel {
     }
 }
 
+// MARK: - Ophtalmo mission
+/// Ophtalmo mission signature.
+public struct OphtalmoMissionSignature: ProtobufMissionSignature {
+
+    fileprivate init() {}
+
+    /// The mission name.
+    public var name: String = "Ophtalmo" // TODO: add resource
+
+    /// The mission UID.
+    public var missionUID: String = "com.parrot.missions.ophtalmo"
+
+    /// The mission service unique id command.
+    public var serviceUidCommand: UInt {
+        return "parrot.missions.ophtalmo.airsdk.messages.Command".serviceId
+    }
+
+    /// The mission service unique id event.
+    public var serviceUidEvent: UInt {
+        return "parrot.missions.ophtalmo.airsdk.messages.Event".serviceId
+    }
+}
+
 // MARK: - HelloWorld mission
 /// HelloWorld protobuf mission.
 public struct HelloWorldMissionSignature: ProtobufMissionSignature {
@@ -87,8 +118,13 @@ public struct HelloWorldMissionSignature: ProtobufMissionSignature {
     /// The mission UID.
     public var missionUID: String = "com.parrot.missions.samples.hello"
 
-    /// The mission package name.
-    public var packageName: String {
-        return "parrot.missions.samples.hello.airsdk.messages"
+    /// The mission service unique id command.
+    public var serviceUidCommand: UInt {
+        return "parrot.missions.samples.hello.airsdk.messages.Command".serviceId
+    }
+
+    /// The mission service unique id event.
+    public var serviceUidEvent: UInt {
+        return "parrot.missions.samples.hello.airsdk.messages.Event".serviceId
     }
 }

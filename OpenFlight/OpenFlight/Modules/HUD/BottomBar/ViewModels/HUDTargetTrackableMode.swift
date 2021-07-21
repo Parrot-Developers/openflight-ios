@@ -32,7 +32,7 @@ import GroundSdk
 
 // MARK: - Protocols
 /// Protocol for controller tracking management.
-public protocol HUDTargetTrackableMode: class {
+public protocol HUDTargetTrackableMode: AnyObject {
     /// TargetTracker reference.
     var trackerRef: Ref<TargetTracker>? { get set }
 

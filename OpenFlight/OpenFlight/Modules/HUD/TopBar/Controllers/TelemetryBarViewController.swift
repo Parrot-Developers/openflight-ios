@@ -28,9 +28,10 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 // MARK: - Navigation protocol
-protocol TelemetryBarViewControllerNavigation: class {
+protocol TelemetryBarViewControllerNavigation: AnyObject {
     /// Called when behaviour settings should be opened.
     func openBehaviourSettings()
     /// Called when geofence settings should be opened.
@@ -49,6 +50,7 @@ final class TelemetryBarViewController: UIViewController {
     weak var navigationDelegate: TelemetryBarViewControllerNavigation?
 
     // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
     private var telemetryViewModel: TelemetryViewModel?
     private var defaultSpeedLabel: String {
         return String(format: "00 %@", UnitHelper.stringSpeedUnit().uppercased())
@@ -56,7 +58,8 @@ final class TelemetryBarViewController: UIViewController {
     private var defaultDistanceLabel: String {
         return String(format: "00 %@", UnitHelper.stringDistanceUnit().uppercased())
     }
-    private var obstacleAvoidanceViewModel = ObstacleAvoidanceViewModel()
+    // TODO: wrong injection
+    private var obstacleAvoidanceViewModel = ObstacleAvoidanceViewModel(connectedDroneHolder: Services.hub.connectedDroneHolder)
 
     // MARK: - Override Funcs
     override func viewWillAppear(_ animated: Bool) {
@@ -104,10 +107,10 @@ private extension TelemetryBarViewController {
                                                      label: defaultDistanceLabel,
                                                      backgroundColor: .clear)
 
-        obstacleAvoidanceViewModel.state.valueChanged = { [weak self] state in
-            self?.updateView(state: state)
+        obstacleAvoidanceViewModel.$state.sink { [unowned self] state in
+            updateView(state: state)
         }
-        updateView(state: obstacleAvoidanceViewModel.state.value)
+        .store(in: &cancellables)
 
         telemetryViewModel = TelemetryViewModel(userLocationManager: UserLocationManager(),
                                                 speedDidChange: { [weak self] speed in
@@ -125,8 +128,24 @@ private extension TelemetryBarViewController {
     ///
     /// - Parameters:
     ///    - state: current state
-    func updateView(state: ObstacleAvoidanceState) {
-        obstacleAvoidanceItemView.model = TelemetryItemModel(image: state.obstacleAvoidanceImage,
+    func updateView(state: ObstacleAvoidanceViewModel.State) {
+        let image: UIImage
+        switch state {
+        case .disconnected:
+            image = Asset.ObstacleAvoidance.icOADisconnected.image
+        case .unwanted:
+            image = Asset.ObstacleAvoidance.icOAUnwanted.image
+        case .wanted(let oaState):
+            switch oaState {
+            case .inactive:
+                image = Asset.ObstacleAvoidance.icOAInactive.image
+            case .active:
+                image = Asset.ObstacleAvoidance.icOAActive.image
+            case .degraded:
+                image = Asset.ObstacleAvoidance.icOADegraded.image
+            }
+        }
+        obstacleAvoidanceItemView.model = TelemetryItemModel(image: image,
                                                              label: "",
                                                              backgroundColor: .clear)
     }

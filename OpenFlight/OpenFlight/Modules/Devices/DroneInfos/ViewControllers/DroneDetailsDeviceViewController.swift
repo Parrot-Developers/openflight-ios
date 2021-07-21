@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Displays drone specific details about device state.
 final class DroneDetailsDeviceViewController: UIViewController {
@@ -45,7 +46,9 @@ final class DroneDetailsDeviceViewController: UIViewController {
     @IBOutlet private weak var separatorView: UIView!
 
     // MARK: - Private Properties
-    private let viewModel = DroneInfosViewModel()
+    private let droneInfoViewModel = DroneInfosViewModel()
+    private var cancellables = Set<AnyCancellable>()
+
     private weak var coordinator: Coordinator?
 
     // MARK: - Setup
@@ -61,7 +64,7 @@ final class DroneDetailsDeviceViewController: UIViewController {
         super.viewDidLoad()
 
         initView()
-        observeViewModel()
+        bindToViewModel()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -79,6 +82,7 @@ final class DroneDetailsDeviceViewController: UIViewController {
 
 // MARK: - Private Funcs
 private extension DroneDetailsDeviceViewController {
+
     /// Inits the view.
     func initView() {
         separatorView.backgroundColor = UIColor(named: .white20)
@@ -87,92 +91,115 @@ private extension DroneDetailsDeviceViewController {
         separatorView.backgroundColor = ColorName.white20.color
     }
 
-    /// Observes main view model.
-    func observeViewModel() {
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.stateDidUpdate(state)
-            self?.batteryLevelChanged(state.batteryLevel)
-            self?.gpsStrengthChanged(state.gpsStrength)
-            self?.nameChanged(state.droneName)
-            self?.updateVisibility(state.isConnected())
-            self?.updateSatelliteCount()
-
-            let isCellularActive = state.currentLink == .cellular
-            self?.cellularIconChanged(state.cellularStrength.signalIcon(isLinkActive: isCellularActive))
-        }
-
-        let state = viewModel.state.value
-        stateDidUpdate(state)
-        batteryLevelChanged(state.batteryLevel)
-        gpsStrengthChanged(state.gpsStrength)
-        nameChanged(state.droneName)
-        updateVisibility(state.isConnected())
-        updateSatelliteCount()
-        let isCellularActive = state.currentLink == .cellular
-        cellularIconChanged(state.cellularStrength.signalIcon(isLinkActive: isCellularActive))
-    }
-
-    /// Listens battery changed.
+    /// Binds the UI element to their counterpart in the view model
     ///
-    /// - Parameters:
-    ///     - battery: current battery value
-    func batteryLevelChanged(_ battery: BatteryValueModel) {
-        if let batteryLevel = battery.currentValue {
-            batteryLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryLevel)
-        } else {
-            batteryLabel.text = Style.dash
-        }
-        batteryImageView.image = battery.batteryImage
+    /// If a value is updated in the view model the UI will be updated too automaticaly
+    func bindToViewModel() {
+        bindBattery()
+        bindGpsStrength()
+        bindDroneName()
+        bindCellularStrength()
+        bindGimbalStatus()
+        bindFrontStereoGimbalStatus()
+        bindStereoVisionStatus()
+        bindCopterMotorsErrors()
+        bindConnectionState()
+        bindSatelliteCount()
+    }
+}
+
+private extension DroneDetailsDeviceViewController {
+
+    /// Binds the view model and the battery label
+    func bindBattery() {
+        droneInfoViewModel.$batteryLevel
+            .sink { [unowned self] batteryLevel in
+                batteryLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryLevel.currentValue)
+            }
+            .store(in: &cancellables)
     }
 
-    /// Listens gps changed.
-    ///
-    /// - Parameters:
-    ///     - gpsStrength: current gps value
-    func gpsStrengthChanged(_ gpsStrength: GpsStrength) {
-        gpsImageView.image = gpsStrength.image
+    /// Binds the view model and the gps image view
+    func bindGpsStrength() {
+        droneInfoViewModel.$gpsStrength
+            .sink { [unowned self] gpsStrength in
+                gpsImageView.image = gpsStrength.image
+            }
+            .store(in: &cancellables)
     }
 
-    /// Listens name changed.
-    ///
-    /// - Parameters:
-    ///     - name: current drone name
-    func nameChanged(_ name: String) {
-        nameLabel.text = name
+    /// Binds the drone's name from the view model to the nameLabel
+    func bindDroneName() {
+        droneInfoViewModel.$droneName
+            .sink { [unowned self] name in
+                nameLabel.text = name
+            }
+            .store(in: &cancellables)
     }
 
-    /// Listens cellular access icon changed.
-    ///
-    /// - Parameters:
-    ///     - icon: current drone network image
-    func cellularIconChanged(_ icon: UIImage?) {
-        networkImageView.image = icon
+    /// Binds the cellular strength from the view model to networkImageView
+    func bindCellularStrength() {
+        droneInfoViewModel.$cellularStrength
+            .sink { [unowned self] cellularStrength in
+                let isCellularActive = droneInfoViewModel.currentLink == .cellular
+                networkImageView.image = cellularStrength.signalIcon(isLinkActive: isCellularActive)
+            }
+            .store(in: &cancellables)
     }
 
-    /// State changed callback.
-    ///
-    /// - Parameters:
-    ///     - state: drone details state
-    func stateDidUpdate(_ state: DroneInfosState) {
-        componentsStatusView.model.droneGimbalStatus = state.gimbalStatus
-        componentsStatusView.model.frontStereoGimbalStatus = state.frontStereoGimbalStatus
-        componentsStatusView.model.stereoVisionStatus = state.stereoVisionStatus
-        componentsStatusView.model.update(with: state.copterMotorsErrors)
-        modelLabel.text = state.droneModel
+    /// Binds the gimbal status from the view model to the componentStatusView model
+    func bindGimbalStatus() {
+        droneInfoViewModel.$gimbalStatus
+            .sink { [unowned self] gimballStatus in
+                componentsStatusView.model.droneGimbalStatus = gimballStatus
+            }
+            .store(in: &cancellables)
     }
 
-    /// Manages each item's visibility according to the connection state.
-    ///
-    /// - Parameters:
-    ///     - isConnected: drone connection state
-    func updateVisibility(_ isConnected: Bool) {
-        componentsStatusView.model.isDroneConnected = isConnected
+    /// Binds the front stereo gimbal status from the view model to the componentStatusView model
+    func bindFrontStereoGimbalStatus() {
+        droneInfoViewModel.$frontStereoGimbalStatus
+            .sink { [unowned self] frontStereoGimbalStatus in
+                componentsStatusView.model.frontStereoGimbalStatus = frontStereoGimbalStatus
+            }
+            .store(in: &cancellables)
     }
 
-    /// Updates satellite count.
-    func updateSatelliteCount() {
-        let isConnected = viewModel.state.value.isConnected()
-        nbSatelliteLabel.text = isConnected ? String(viewModel.state.value.satelliteCount ?? 0) : Style.dash
-        satelliteImageView.image = isConnected ? Asset.Drone.icSatellite.image : Asset.Drone.icSatelliteUnavailable.image
+    /// Binds the stereo vision status from the view model to the componentStatusView model
+    func bindStereoVisionStatus() {
+        droneInfoViewModel.$stereoVisionStatus
+            .sink { [unowned self] stereoVisionStatus in
+                componentsStatusView.model.stereoVisionStatus = stereoVisionStatus
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Binds the copter's motor errors from the view model to the componentStatusView model
+    func bindCopterMotorsErrors() {
+        droneInfoViewModel.$copterMotorsErrors
+            .sink { [unowned self] copterMotorsErrors in
+                componentsStatusView.model.update(with: copterMotorsErrors)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Binds the connection state from the view model to componentStatusView
+    func bindConnectionState() {
+        droneInfoViewModel.$connectionState
+            .sink { [unowned self] connectionState in
+                componentsStatusView.model.isDroneConnected = connectionState == .connected ? true : false
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Binds the sattelite count from the view model to satellite label and image
+    func bindSatelliteCount() {
+        droneInfoViewModel.$satelliteCount
+            .sink { [unowned self] satelliteCount in
+                let isConnected = droneInfoViewModel.connectionState == .connected
+                nbSatelliteLabel.text = isConnected ? String(satelliteCount ?? 0) : Style.dash
+                satelliteImageView.image = isConnected ? Asset.Drone.icSatellite.image : Asset.Drone.icSatelliteUnavailable.image
+            }
+            .store(in: &cancellables)
     }
 }

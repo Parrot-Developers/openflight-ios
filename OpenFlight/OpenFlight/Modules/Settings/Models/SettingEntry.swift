@@ -190,9 +190,9 @@ class SettingEntry: Equatable {
         else if let viewModel = self.setting as? DroneSettingModel {
             selectedIndex = viewModel.selectedIndex
             segments = viewModel.allValues.map { mode in
-                let isModeSupported = !viewModel.supportedValues.filter({ mode.key == $0.key }).isEmpty
-                let isUpdating = viewModel.isUpdating ?? false
-                let isSegmentDisabled = !(!isUpdating && isModeSupported)
+                let isModeSupported = viewModel.supportedValues.contains(where: { mode.key == $0.key })
+                let isUpdating = viewModel.isUpdating
+                let isSegmentDisabled = isUpdating || !isModeSupported || viewModel.forceDisabling
 
                 return SettingsSegment(title: mode.localized, disabled: isSegmentDisabled, image: mode.image)
             }
@@ -215,10 +215,12 @@ class SettingEntry: Equatable {
         else if let setting = self.setting as? DefaultsKey<Bool?> {
             Defaults[key: setting] = settingIndex == 0 ? false : true
         } // SettingEnum.Type.
-        else if let setting = self.setting as? SettingEnum.Type {
+        else if let setting = self.setting as? SettingEnum.Type,
+                (0...setting.allValues.count - 1).contains(settingIndex) {
             Defaults[key: setting.defaultKey] = setting.allValues[settingIndex].rawValue
         } // DroneSettingModel.
-        else if let setting = self.setting as? DroneSettingModel {
+        else if let setting = self.setting as? DroneSettingModel,
+                (0...setting.allValues.count - 1).contains(settingIndex) {
             setting.onSelect?(setting.allValues[settingIndex])
         }
     }

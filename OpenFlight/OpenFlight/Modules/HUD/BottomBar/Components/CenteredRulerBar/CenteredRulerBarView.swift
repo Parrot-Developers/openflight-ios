@@ -66,14 +66,7 @@ final class CenteredRulerBarView<T: BarButtonState>: UIView, NibOwnerLoadable, N
         }
     }
     /// Boolean for current ruler automatic state.
-    var isAutomatic: Bool = true {
-        didSet {
-            selectionView.backgroundColor = (isAutomatic ? ColorName.white20 : ColorName.greenSpring20).color
-            selectionGraduations.forEach {
-                $0.backgroundColor = (isAutomatic ? ColorName.white : ColorName.greenSpring).color
-            }
-        }
-    }
+    var isAutomatic: Bool = true
 
     // MARK: - Private Properties
     private var models = [BarButtonState]()
@@ -110,7 +103,6 @@ final class CenteredRulerBarView<T: BarButtonState>: UIView, NibOwnerLoadable, N
                                                         left: self.collectionView.frame.size.width/2,
                                                         bottom: 0.0,
                                                         right: self.collectionView.frame.size.width/2)
-        self.addGradientLayer()
     }
 
     // MARK: - UICollectionViewDataSource
@@ -179,7 +171,6 @@ private extension CenteredRulerBarView {
     func commonInitCenteredRulerBarView() {
         self.loadNibContent()
         collectionView.register(cellType: RulerBarLabelCollectionViewCell.self)
-        addGradientLayer()
     }
 
     /// Add horizontal gradient layer to view.
@@ -207,11 +198,13 @@ private extension CenteredRulerBarView {
     /// Update ruler models (data source).
     func updateModels() {
         guard let mode = viewModel?.state.value.mode else { return }
+        guard let unavailableReasons = viewModel?.state.value.unavailableReason else { return }
         models = type(of: mode).allValues.map {
             let itemKey = $0.key
             let itemState = CameraBarButtonState(mode: $0,
                                                  enabled: viewModel?.state.value.supportedModes?.contains(where: { mode in itemKey == mode.key }) == true,
-                                                 isSelected: Observable(mode.key == $0.key))
+                                                 isSelected: Observable(mode.key == $0.key),
+                                                 unavailableReason: unavailableReasons)
             itemState.isSelected.valueChanged = { [weak self] isSelected in
                 if isSelected, let mode = itemState.mode {
                     self?.viewModel?.update(mode: mode)

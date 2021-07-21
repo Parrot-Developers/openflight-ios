@@ -32,7 +32,7 @@ import UIKit
 
 // MARK: - Protocols
 /// Flight plan Edition menu delegate.
-public protocol FlightPlanEditionMenuDelegate: class {
+public protocol FlightPlanEditionMenuDelegate: AnyObject {
     /// Ends editing flight plan.
     func doneEdition()
     /// Undos action.
@@ -62,6 +62,7 @@ final class FlightPlanEditionMenuViewController: UIViewController {
         didSet {
             undoButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
                                           radius: Style.largeCornerRadius)
+            undoButton.setTitle(L10n.commonUndo, for: .normal)
         }
     }
     @IBOutlet private weak var tableViewTopConstraint: NSLayoutConstraint!
@@ -298,7 +299,7 @@ extension FlightPlanEditionMenuViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let type = dataSource[section]
         switch type {
-        case .mode:
+        case .mode, .project:
             return nil
         default:
             let view = tableView.dequeueReusableHeaderFooterView(HeaderMenuTableViewCell.self)

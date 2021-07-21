@@ -93,5 +93,6 @@ public extension LogEvent {
     enum KeyForScreenLogger {
         case data
         case parrot
+        case pilot
     }
 }

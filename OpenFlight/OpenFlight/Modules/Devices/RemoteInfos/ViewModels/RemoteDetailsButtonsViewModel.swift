@@ -162,7 +162,7 @@ final class RemoteDetailsButtonsViewModel: DevicesStateViewModel<RemoteDetailsBu
     // MARK: - Private Properties
     private var droneNameRef: Ref<String>?
     private var magnetometerRef: Ref<Magnetometer>?
-    private var radioRef: Ref<Radio>?
+    private var networkControlRef: Ref<NetworkControl>?
     private let groundSdk = GroundSdk()
     private var updaterRef: Ref<Updater>?
     private var systemInfoRef: Ref<SystemInfo>?
@@ -179,7 +179,7 @@ final class RemoteDetailsButtonsViewModel: DevicesStateViewModel<RemoteDetailsBu
         super.listenDrone(drone: drone)
 
         listenDroneName(drone)
-        listenRadio(drone)
+        listenNetworkControl(drone)
     }
 
     override func listenRemoteControl(remoteControl: RemoteControl) {
@@ -207,11 +207,11 @@ private extension RemoteDetailsButtonsViewModel {
         })
     }
 
-    /// Starts watcher for radio.
-    func listenRadio(_ drone: Drone) {
-        radioRef = drone.getInstrument(Instruments.radio) { [weak self] radio in
+    /// Starts watcher for drone network control.
+    func listenNetworkControl(_ drone: Drone) {
+        networkControlRef = drone.getPeripheral(Peripherals.networkControl) { [weak self] networkControl in
             let copy = self?.state.value.copy()
-            copy?.wifiStrength = radio?.wifiStrength ?? WifiStrength.offline
+            copy?.wifiStrength = networkControl?.wifiStrength ?? WifiStrength.offline
             self?.state.set(copy)
         }
     }

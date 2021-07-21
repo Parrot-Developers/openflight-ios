@@ -66,11 +66,11 @@ internal extension ImageMenuTableViewCell {
             switch captureMode {
             case .gpsLapse:
                 if let value = flightPlan.gpsLapseDistance {
-                    settingDescription += Style.whiteSpace +  UnitHelper.stringDistanceWithDouble(Double(value))
+                    settingDescription += Style.whiteSpace + UnitHelper.stringDistanceWithDouble(Double(value))
                 }
             case .timeLapse:
                 if let value = flightPlan.timeLapseCycle {
-                    settingDescription += Style.whiteSpace + "\(value)" + L10n.unitSecond
+                    settingDescription += Style.whiteSpace + UnitHelper.formatSeconds(Double(value)/1000)
                 }
             case .video:
                 settingDescription += Style.whiteSpace

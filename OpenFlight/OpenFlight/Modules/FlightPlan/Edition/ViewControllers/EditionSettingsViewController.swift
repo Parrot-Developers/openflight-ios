@@ -30,6 +30,7 @@
 
 import UIKit
 import Reusable
+import Combine
 
 // MARK: - Protocols
 public protocol EditionSettingsDelegate: EditionSettingsCellModelDelegate {
@@ -58,7 +59,8 @@ final class EditionSettingsViewController: UIViewController {
     @IBOutlet private weak var undoButton: UIButton!
     @IBOutlet private weak var tableViewTopConstraint: NSLayoutConstraint!
     @IBOutlet private weak var tableViewTrailingConstraint: NSLayoutConstraint!
-
+    @IBOutlet private weak var bottomTableViewContraint: NSLayoutConstraint!
+    
     // MARK: - Internal Properties
     weak var delegate: EditionSettingsDelegate?
     /// Provider used to get the settings of the flight plan provider.
@@ -71,6 +73,8 @@ final class EditionSettingsViewController: UIViewController {
             self.fpSettings = settingsProvider?.settings(for: strongFlightPlan)
         }
     }
+
+    @Published private var buttonsState: ButtonState = .none
 
     // MARK: - Private Properties
     private var fpSettings: [FlightPlanSetting]?
@@ -102,12 +106,29 @@ final class EditionSettingsViewController: UIViewController {
         NotificationCenter.default.removeObserver(self)
     }
 
+    private var cancellables = [AnyCancellable]()
+
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
         initView()
         setupOrientationObserver()
+
+        $buttonsState
+            .sink { [unowned self] state in
+                switch state {
+                case .none,
+                     .onlyDelete,
+                     .onlyUndo:
+                    self.bottomTableViewContraint.constant = 80
+                case .allButtons:
+                    self.bottomTableViewContraint.constant = 0
+                }
+
+                self.view.layoutIfNeeded()
+            }
+            .store(in: &cancellables)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -136,6 +157,7 @@ final class EditionSettingsViewController: UIViewController {
         self.savedFlightPlan = savedFlightPlan
         // Delete button is hidden if selected graphic can't be deleted or if no graphic is selected.
         self.deleteButton.isHidden = selectedGraphic?.deletable != true
+        self.buttonsState.updateStateDelete(isHidden: selectedGraphic?.deletable != true)
 
         switch settingsProvider {
         case is WayPointSettingsProvider,
@@ -164,6 +186,9 @@ final class EditionSettingsViewController: UIViewController {
     /// - Parameters:
     ///     - categoryFilter: allows to filter setting category
     func refreshContent(categoryFilter: FlightPlanSettingCategory?) {
+        undoButton.isHidden = categoryFilter == .common || categoryFilter == .image
+        buttonsState.updateStateUndo(isHidden: categoryFilter == .common || categoryFilter == .image)
+
         self.settingsCategoryFilter = categoryFilter
         self.tableView.reloadData()
         updateUndoButton()
@@ -314,11 +339,48 @@ extension EditionSettingsViewController: UITableViewDataSource {
 
 // MARK: - EditionSettingsCellModelDelegate
 extension EditionSettingsViewController: EditionSettingsCellModelDelegate {
+
     func updateSettingValue(for key: String?, value: Int) {
         delegate?.updateSettingValue(for: key, value: value)
     }
 
     func updateChoiceSetting(for key: String?, value: Bool) {
         delegate?.updateChoiceSetting(for: key, value: value)
+    }
+}
+
+extension EditionSettingsViewController {
+    // MARK: - Internal Enums
+    private enum ButtonState {
+        case onlyUndo
+        case onlyDelete
+        case allButtons
+        case none
+
+        mutating func updateStateDelete(isHidden: Bool) {
+            switch self {
+            case .onlyDelete:
+                self = isHidden ? .onlyDelete : .none
+            case .allButtons:
+                self = isHidden ? .allButtons : .onlyUndo
+            case .onlyUndo:
+                self = isHidden ? .allButtons : .onlyUndo
+            case .none:
+                self = isHidden ? .onlyDelete : .none
+            }
+        }
+
+        mutating func updateStateUndo(isHidden: Bool) {
+            switch self {
+            case .onlyDelete:
+                self = isHidden ? .allButtons : .onlyDelete
+            case .allButtons:
+                self = isHidden ? .allButtons : .onlyDelete
+            case .onlyUndo:
+                self = isHidden ? .onlyUndo : .none
+            case .none:
+                self = isHidden ? .onlyUndo : .none
+            }
+        }
     }
 }

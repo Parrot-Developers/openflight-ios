@@ -28,6 +28,7 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Combine
 import GroundSdk
 import SwiftyUserDefaults
 
@@ -69,7 +70,7 @@ final class HUDTopBannerState: DeviceConnectionState {
     /// Boolean for HDR state.
     fileprivate(set) var hdrOn: Bool = false
     /// Lock AE mode.
-    fileprivate(set) var lockAeMode: Camera2ExposureLockMode = .none
+    fileprivate(set) var lockAeMode: ExposureLockState = .unavailable
     /// State for home info.
     fileprivate(set) var homeState: HUDTopBannerHomeState = .none
     /// Boolean describing if an alert is currently shown.
@@ -93,7 +94,7 @@ final class HUDTopBannerState: DeviceConnectionState {
     ///    - shouldDisplayLockAE: whether we should display lockAE
     init(connectionState: DeviceState.ConnectionState,
          hdrOn: Bool,
-         lockAeMode: Camera2ExposureLockMode,
+         lockAeMode: ExposureLockState,
          homeState: HUDTopBannerHomeState,
          isDisplayingAlert: Bool,
          shouldDisplayLockAE: Bool) {
@@ -141,9 +142,16 @@ final class HUDTopBannerViewModel: DroneStateViewModel<HUDTopBannerState> {
     private var shouldShowHomeSetInfo: Bool = true
     private var isAutoModeActive: Bool = false
     private let autoModeViewModel = ImagingBarAutoModeViewModel()
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
+    /// Camera exposure lock service.
+    private unowned var exposureLockService: ExposureLockService
 
     // MARK: - Override Funcs
     override init() {
+        // TODO injection
+        exposureLockService = Services.hub.exposureLockService
+
         super.init()
 
         listenAlertBannerViewModel()
@@ -160,28 +168,36 @@ final class HUDTopBannerViewModel: DroneStateViewModel<HUDTopBannerState> {
         listenPreciseHome(drone: drone)
         listenFlyingIndicators(drone: drone)
         listenReturnHome(drone: drone)
+        listenExposureLock()
     }
 }
 
 // MARK: - Private Funcs
 private extension HUDTopBannerViewModel {
+
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
-            guard let strongSelf = self else { return }
-
-            strongSelf.updateState(camera: camera, isAutoModeActive: strongSelf.isAutoModeActive)
-
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] _ in
+            updateState()
         }
+    }
+
+    /// Starts watcher for exposure lock.
+    func listenExposureLock() {
+        exposureLockService.statePublisher.sink { [unowned self] _ in
+            updateState()
+        }
+        .store(in: &cancellables)
     }
 
     /// Starts watcher for autoModeViewModel.
     func listenAutoModeViewModel() {
         autoModeViewModel.state.valueChanged = { [weak self] state in
-            let camera = self?.drone?.getPeripheral(Peripherals.mainCamera2)
             self?.isAutoModeActive = state.isActive
-            self?.updateState(camera: camera, isAutoModeActive: state.isActive)
+            self?.updateState()
         }
+        isAutoModeActive = autoModeViewModel.state.value.isActive
+        updateState()
     }
 
     /// Starts watcher for precise home.
@@ -227,22 +243,16 @@ private extension HUDTopBannerViewModel {
         self.state.set(copy)
     }
 
-    /// Method that update auto mode state.
-    ///
-    /// - Parameters:
-    ///    - isAutoModeActive: Boolean that indicates if auto mode is active.
-    ///    - camera: Main camera.
-    func updateState(camera: MainCamera2?, isAutoModeActive: Bool) {
-        self.isAutoModeActive = isAutoModeActive
-        guard let camera = camera,
-              let aeMode = camera.getComponent(Camera2Components.exposureLock)?.mode else {
+    /// Updates auto mode state.
+    func updateState() {
+        guard let camera = drone?.getPeripheral(Peripherals.mainCamera2) else {
             return
         }
 
         let copy = state.value.copy()
         copy.hdrOn = camera.isHdrOn == true
-        copy.lockAeMode = aeMode
-        copy.shouldDisplayAutoExposureLock = aeMode != .none
+        copy.lockAeMode = exposureLockService.stateValue
+        copy.shouldDisplayAutoExposureLock = copy.lockAeMode.locked
             && camera.isHdrOn == false
             && isAutoModeActive == true
         state.set(copy)

@@ -39,10 +39,9 @@ final class SettingsCameraViewController: SettingsContentViewController {
         resetCellLabel = L10n.settingsCameraReset
 
         // Setup view model.
-        viewModel = SettingsCameraViewModel()
+        // TODO wrong injection, viewModel should be prepared one level up (coordinator or upper VM)
+        viewModel = SettingsCameraViewModel(flightPlanCameraSettingsHandler: Services.hub.flightPlanCameraSettingsHandler)
         viewModel?.state.valueChanged = { [weak self] state in
-            guard self?.viewModel?.isUpdating == false else { return }
-
             self?.updateDataSource(state)
         }
 

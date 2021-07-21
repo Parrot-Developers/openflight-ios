@@ -46,7 +46,39 @@ final class ImagingBarItemView: UIControl, NibOwnerLoadable {
         }
     }
     /// Corners to round when view is selected.
-    var roundedCorners: UIRectCorner?
+    var roundedCorners: UIRectCorner? {
+        didSet {
+            updateCorners()
+        }
+    }
+
+    /// Background color to use when the view is selected.
+    var selectedBackgroundColor: UIColor = ColorName.greenMediumSea.color {
+        didSet {
+            updateColors()
+        }
+    }
+
+    /// Background color to use when the view is not selected.
+    var unselectedBackgroundColor: UIColor = .white {
+        didSet {
+            updateColors()
+        }
+    }
+
+    /// Text color to use when the view is selected.
+    var selectedTextColor: UIColor = .white {
+        didSet {
+            updateColors()
+        }
+    }
+
+    /// Text color to use when the view is not selected.
+    var unselectedTextColor: UIColor = ColorName.sambuca.color {
+        didSet {
+            updateColors()
+        }
+    }
 
     // MARK: - Override Properties
     override var isHighlighted: Bool {
@@ -90,12 +122,31 @@ private extension ImagingBarItemView {
             if mode.altTitle == nil {
                 itemImageView.isHidden = true
             }
+        } else if let mode = model.mode as? PhotoFormatMode {
+            // Hides image for Photo format on bar level one
+            itemLabel.text = mode.title
+            itemImageView.isHidden = true
         } else {
             itemLabel.text = model.mode?.title ?? model.title
         }
-        self.backgroundColor = model.isSelected.value ? ColorName.greenSpring20.color : .clear
-        if model.isSelected.value, let roundedCorners = roundedCorners {
-            self.customCornered(corners: roundedCorners, radius: Style.mediumCornerRadius)
+
+        updateCorners()
+        updateColors()
+    }
+
+    func updateColors() {
+        guard let model = model else {
+            return
+        }
+        backgroundColor = model.isSelected.value ? selectedBackgroundColor : unselectedBackgroundColor
+        let color = model.isSelected.value ? selectedTextColor : unselectedTextColor
+        itemLabel.textColor = color
+        itemImageView.tintColor = color
+    }
+
+    func updateCorners() {
+        if let roundedCorners = roundedCorners {
+            customCornered(corners: roundedCorners, radius: Style.mediumCornerRadius)
         }
     }
 }

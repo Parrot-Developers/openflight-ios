@@ -28,9 +28,10 @@
 //    SUCH DAMAGE.
 
 import SwiftyUserDefaults
+import Combine
 
 // MARK: - Protocol
-protocol HUDCoordinatorCriticalAlertDelegate: class {
+protocol HUDCoordinatorCriticalAlertDelegate: AnyObject {
     /// Called when user dimisses the alert.
     func onCriticalAlertDismissed()
 }
@@ -41,27 +42,27 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
     public var parentCoordinator: Coordinator?
+    public var showMissionLauncherPublisher: AnyPublisher<Bool, Never> { showMissionsLauncherSubject.eraseToAnyPublisher() }
+    public var isMissionLauncherShown: Bool { showMissionsLauncherSubject.value }
 
     // MARK: - Internal Properties
     weak var hudCriticalAlertDelegate: HUDCoordinatorCriticalAlertDelegate?
 
     // MARK: - Private Properties
-    private var flightPlanExecutionObserver: Any?
+    private unowned var services: ServiceHub
+    private weak var viewController: HUDViewController?
+    private var cameraSlidersCoordinator: CameraSlidersCoordinator?
+    private var showMissionsLauncherSubject = CurrentValueSubject<Bool, Never>(false)
 
     // MARK: - Init
-    required public init() {
-        listenFlightPlanExecution()
-    }
-
-    // MARK: - Deinit
-    deinit {
-        NotificationCenter.default.remove(observer: flightPlanExecutionObserver)
-        flightPlanExecutionObserver = nil
+    public init(services: ServiceHub) {
+        self.services = services
     }
 
     // MARK: - Public Funcs
     open func start() {
         let viewController = HUDViewController.instantiate(coordinator: self)
+        self.viewController = viewController
         self.navigationController?.viewControllers = [viewController]
     }
 
@@ -77,10 +78,17 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
 
 // MARK: - HUDNavigation
 extension HUDCoordinator {
-    // MARK: - Internal Funcs
+    // MARK: - Internal
+
+    /// Handle camera sliders view controller to manage its coordination
+    /// - Parameter cameraSlidersViewController: the sliders view controller
+    func handleCameraSlidersViewController(_ cameraSlidersViewController: CameraSlidersViewController) {
+        cameraSlidersCoordinator = CameraSlidersCoordinator(services: services, viewController: cameraSlidersViewController)
+    }
+
     /// Starts dashboard coordinator.
     func startDashboard() {
-        let dashboardCoordinator = DashboardCoordinator()
+        let dashboardCoordinator = DashboardCoordinator(services: services)
         self.presentCoordinatorWithAnimation(childCoordinator: dashboardCoordinator, animationDirection: .fromLeft)
     }
 
@@ -96,7 +104,7 @@ extension HUDCoordinator {
 
     /// Starts pairing coordinator.
     func startPairing() {
-        let pairingCoordinator = PairingCoordinator()
+        let pairingCoordinator = PairingCoordinator(delegate: self)
         pairingCoordinator.parentCoordinator = self
         pairingCoordinator.start()
         self.present(childCoordinator: pairingCoordinator)
@@ -157,26 +165,13 @@ extension HUDCoordinator {
     /// Displays entry coordinator for current MissionMode.
     ///
     /// - Parameters:
-    ///    - state: current mission launcher state
-    func presentModeEntryCoordinatorIfNeeded(state: MissionLauncherState) {
-        guard let entryCoordinator = state.mode?.entryCoordinatorProvider?() else { return }
+    ///    - mode: current mission mode
+    func presentModeEntryCoordinatorIfNeeded(mode: MissionMode) {
+        guard let entryCoordinator = mode.entryCoordinatorProvider?() else { return }
 
         entryCoordinator.parentCoordinator = self
         entryCoordinator.start()
         self.present(childCoordinator: entryCoordinator, overFullScreen: true)
-    }
-
-    /// Displays the new flight plan screen provided in the flight plan coordinator if there is one.
-    ///
-    /// - Parameters:
-    ///    - flightPlanProvider: flight plan provider
-    ///    - completion: callback that return if the flight plan creation have succeeded
-    func presentNewFpCoordinatorIfNeeded(flightPlanProvider: FlightPlanProvider, creationCompletion: @escaping (_ createNewFlightPlan: Bool) -> Void) {
-        guard let flightPlanCoordinator = flightPlanProvider.flightPlanCoordinator else { return }
-
-        flightPlanCoordinator.parentCoordinator = self
-        flightPlanCoordinator.startNewFlightPlan(flightPlanProvider: flightPlanProvider, creationCompletion: creationCompletion)
-        self.present(childCoordinator: flightPlanCoordinator, overFullScreen: true)
     }
 
     /// Displays cellular pin code modal.
@@ -200,6 +195,16 @@ extension HUDCoordinator {
     /// Displays successful 4G pairing modal.
     func displayPairingSuccess() {
         presentModal(viewController: CellularPairingSuccessViewController.instantiate(coordinator: self))
+    }
+
+    func showMissionLauncher() {
+        viewController?.missionControls.showMissionLauncher()
+        showMissionsLauncherSubject.value = true
+    }
+
+    func hideMissionLauncher() {
+        viewController?.missionControls.hideMissionLauncher()
+        showMissionsLauncherSubject.value = false
     }
 }
 
@@ -227,42 +232,8 @@ extension HUDCoordinator: HUDCriticalAlertDelegate {
     }
 }
 
-// MARK: - Private Funcs
-private extension HUDCoordinator {
-    /// Listens flight plan execution.
-    func listenFlightPlanExecution() {
-        flightPlanExecutionObserver = NotificationCenter.default.addObserver(forName: .startFlightPlanAtLaunch,
-                                                                             object: nil,
-                                                                             queue: nil) { [weak self] notification in
-            guard let flightPlanId = notification.userInfo?[CurrentDroneStore.NotificationKeys.flightPlanRunningNotificationKey] as? String,
-                  let currentViewModel = CoreDataManager.shared.loadFlightPlan(for: flightPlanId) else {
-                return
-            }
-
-            self?.showFlightPlan(viewModel: currentViewModel)
-        }
-    }
-
-    /// Shows active Flight Plan.
-    ///
-    /// - Parameters:
-    ///     - viewModel: Flight Plan view model
-    func showFlightPlan(viewModel: FlightPlanViewModel) {
-        guard let type = viewModel.state.value.type else { return }
-
-        // Set Flight Plan as last used to be automatically open.
-        viewModel.setAsLastUsed()
-
-        // Setup Mission as a Flight Plan mission (may be custom).
-        let modeKey = FlightPlanTypeManager.shared.missionModeKey(for: type)
-        if let mode = MissionsManager.shared.missionSubModeFor(key: modeKey) {
-            Defaults.userMissionProvider = FlightPlanTypeManager.shared.missionKey(for: type)
-            let missionModeViewModel = MissionLauncherViewModel()
-            if let provider = MissionsManager.shared.allMissions.first(where: { $0.mission.key == modeKey}) {
-                missionModeViewModel.update(provider: provider)
-            }
-
-            missionModeViewModel.update(mode: mode)
-        }
+extension HUDCoordinator: PairingCoordinatorDelegate {
+    public func pairingDidFinish() {
+        dismissChildCoordinator()
     }
 }

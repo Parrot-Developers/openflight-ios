@@ -30,6 +30,7 @@
 
 import CoreLocation
 import ArcGIS
+import SwiftyUserDefaults
 
 // MARK: - Public Structs
 /// Represents a location with coordinates and an altitude.
@@ -60,5 +61,49 @@ public struct Location3D: Equatable {
                 altitude: Double) {
         self.coordinate = coordinate
         self.altitude = altitude
+    }
+}
+
+/// Extension for reading/writing `Location3D` to/from UserDefaults.
+
+extension Location3D {
+    // MARK: - Private Enums
+    private enum Constants {
+        static let latitudeKey = "latitude"
+        static let longitudeKey = "longitude"
+        static let altitudeKey = "altitude"
+    }
+
+    // MARK: - Public Funcs
+    /// Save current value to UserDefaults.
+    ///
+    /// - Parameters:
+    ///    - key: Defaults key
+    func saveValueToDefaults(forKey key: DefaultsKey<Data?>) {
+        let values = [Constants.latitudeKey: self.coordinate.latitude,
+                      Constants.longitudeKey: self.coordinate.longitude,
+                      Constants.altitudeKey: self.altitude]
+        if let data = try? NSKeyedArchiver.archivedData(withRootObject: values, requiringSecureCoding: false) {
+            Defaults[key: key] = data
+        }
+    }
+
+    /// Get UserDefaults value from key in parameter.
+    ///
+    /// - Parameters:
+    ///    - key: Defaults key
+    ///
+    /// - Returns: Location saved in UserDefaults for the mentionned key (if available).
+    static func readDefaultsValue(forKey key: DefaultsKey<Data?>) -> Location3D? {
+        guard let data = Defaults[key: key],
+            let extractedData = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? [String: Any],
+            let latitude = extractedData[Constants.latitudeKey] as? CLLocationDegrees,
+            let longitude = extractedData[Constants.longitudeKey] as? CLLocationDegrees,
+            let altitude = extractedData[Constants.altitudeKey] as? Double
+            else {
+            return nil
+        }
+        return Location3D(coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+                          altitude: altitude)
     }
 }

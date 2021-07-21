@@ -34,7 +34,8 @@ import UIKit
 
 final class FlightDetailsViewController: UIViewController, FileShare {
     // MARK: - Outlets
-    @IBOutlet private weak var bgView: UIView!
+    @IBOutlet private weak var backButton: UIButton!
+    @IBOutlet private weak var flightLogLabel: UILabel!
     @IBOutlet private weak var nameLabel: UILabel!
     @IBOutlet private weak var nameTextfield: UITextField!
     @IBOutlet private weak var locationLabel: UILabel!
@@ -44,12 +45,12 @@ final class FlightDetailsViewController: UIViewController, FileShare {
     @IBOutlet private weak var distanceLabel: UILabel!
     @IBOutlet private weak var diagnosticsStackView: UIStackView!
     @IBOutlet private weak var editButton: UIButton!
-    @IBOutlet private weak var exportButton: UIButton!
+    @IBOutlet private weak var shareFlightButton: UIButton!
+    @IBOutlet private weak var deleteFlightButton: UIButton!
     @IBOutlet private weak var portraitContainer: UIView!
     @IBOutlet private weak var landscapeContainer: UIView!
     @IBOutlet private weak var scrollViewBottomConstraint: NSLayoutConstraint!
     @IBOutlet private weak var contentStackViewLeadingConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var overviewView: UIView!
     @IBOutlet private weak var executionView: UIView!
     @IBOutlet private weak var executionLabel: UILabel!
     @IBOutlet private weak var executionCountLabel: UILabel!
@@ -165,10 +166,14 @@ private extension FlightDetailsViewController {
     }
 
     /// Export button touched.
-    @IBAction func exportButtonTouchedUpInside(_ sender: Any) {
+    @IBAction func shareFlightTouchedUpInside(_ sender: Any) {
         shareFile(data: self.viewModel?.gutma?.asData(),
                   name: self.viewModel?.state.value.flightLocationDescription,
                   fileExtension: GutmaConstants.extensionName)
+    }
+
+    @IBAction func deleteFlightTouchedUpInside(_ sender: Any) {
+        // TODO - To implement
     }
 
     @objc func editTitle() {
@@ -183,26 +188,15 @@ private extension FlightDetailsViewController {
 private extension FlightDetailsViewController {
     /// Init view.
     func initView() {
-        bgView.backgroundColor = ColorName.black80.color
-        nameLabel.makeUp(with: .huge)
-        nameTextfield.makeUp(style: .huge)
-        nameTextfield.tintColor = .white
-        nameTextfield.backgroundColor = .clear
+        flightLogLabel.text = L10n.dashboardMyFlightFlightLog
         nameTextfield.isHidden = true
-        dateLabel.makeUp(with: .large)
-        locationLabel.makeUp(with: .large, and: .white50)
-        distanceLabel.makeUp(with: .large)
-        batteryLabel.makeUp(with: .large)
-        durationLabel.makeUp(with: .large)
-        executionLabel.makeUp(with: .huge)
         executionLabel.text = L10n.dashboardMyFlightsPlanExecution
-        executionView.applyCornerRadius(Style.largeCornerRadius)
-        executionView.setBorder(borderColor: ColorName.white20.color,
-                                borderWidth: Style.smallBorderWidth)
-        overviewView.applyCornerRadius(Style.largeCornerRadius)
-        overviewView.setBorder(borderColor: ColorName.white20.color,
-                               borderWidth: Style.smallBorderWidth)
-        executionCountLabel.makeUp(with: .huge, and: .white20)
+        shareFlightButton.setTitle(L10n.dashboardMyFlightShareFlight, for: .normal)
+        shareFlightButton.customCornered(corners: [.allCorners], radius: Style.largeCornerRadius)
+        deleteFlightButton.setTitle(L10n.dashboardMyFlightDeleteFlight, for: .normal)
+        deleteFlightButton.customCornered(corners: [.allCorners], radius: Style.largeCornerRadius)
+        executionView.customCornered(corners: [.allCorners],
+                                     radius: Style.largeCornerRadius)
     }
 
     /// Update content regarding FlightDatasState.
@@ -256,10 +250,7 @@ private extension FlightDetailsViewController {
             }
 
             let cell = ExecutionTableViewCell.loadFromNib()
-            var icon: UIImage?
-            if let type = flightPlan.state.value.type {
-                icon = FlightPlanTypeManager.shared.missionIcon(for: type)
-            }
+            let icon = flightPlan.state.value.type?.missionMode.icon
             cell.setup(name: title,
                        icon: icon,
                        fpExecution: fpExecution)
@@ -277,6 +268,7 @@ private extension FlightDetailsViewController {
         if mapController == nil {
             initMap()
         }
+        backButton.tintColor = UIApplication.isLandscape ? ColorName.sambuca.color : .white
         portraitContainer.isHidden = UIApplication.isLandscape
         landscapeContainer.isHidden = !UIApplication.isLandscape
         contentStackViewLeadingConstraint.constant = UIApplication.isLandscape ? Constants.landscapeContentLeading : Constants.landscapeContentLeading / 2.0

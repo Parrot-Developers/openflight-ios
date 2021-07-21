@@ -32,7 +32,7 @@ import UIKit
 import Reusable
 
 // MARK: - Internal Protocols
-protocol ProtobufMissionUpdateStartViewProtocol: class {
+protocol ProtobufMissionUpdateStartViewProtocol: AnyObject {
     /// Starts the updates processes choosen by the user.
     /// - Parameters:
     ///   - updateChoice: The update choice of the user

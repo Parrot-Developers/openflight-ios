@@ -32,7 +32,7 @@ import UIKit
 /// Definition of coordinator protocol.
 
 // MARK: - Protocol
-public protocol Coordinator: class {
+public protocol Coordinator: AnyObject {
     /// Navigation controller to use in current context.
     var navigationController: NavigationController? { get set }
 

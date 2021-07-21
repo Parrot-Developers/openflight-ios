@@ -39,7 +39,8 @@ struct HelloWorldMission: MissionProvider {
                        name: L10n.missionHello,
                        icon: Asset.MissionModes.MissionSubModes.icHelloWorld.image,
                        logName: "TODO", // TODO: Add log name
-                       modes: HelloWorldMissionMode.allMissionItems)
+                       modes: HelloWorldMissionMode.allMissionItems,
+                       defaultMode: HelloWorldMissionMode.standard.missionMode)
     }
 
     var signature: ProtobufMissionSignature = HelloWorldMissionSignature()

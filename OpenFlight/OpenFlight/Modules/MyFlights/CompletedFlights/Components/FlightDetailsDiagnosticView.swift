@@ -43,7 +43,7 @@ struct FlightDetailsDiagnosticModel {
 
 // MARK: - Protocols
 /// Delegate for `FlightDetailsDiagnosticView`.
-protocol FlightDetailsDiagnosticViewDelegate: class {
+protocol FlightDetailsDiagnosticViewDelegate: AnyObject {
     /// Called to open an URL with user support.
     ///
     /// - Parameters:

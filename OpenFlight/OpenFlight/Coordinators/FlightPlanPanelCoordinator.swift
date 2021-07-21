@@ -27,11 +27,15 @@
 //    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
+import SwiftyUserDefaults
 
 // MARK: - Protocols
-public protocol FlightPlanEditionViewControllerDelegate: class {
+public protocol FlightPlanEditionViewControllerDelegate: AnyObject {
     /// Starts flight plan edition mode.
-    func startFlightPlanEdition()
+    ///
+    /// - Parameters:
+    ///    - shouldCenter: should center position on map
+    func startFlightPlanEdition(shouldCenter: Bool)
 
     /// Starts a new flight plan.
     ///
@@ -43,7 +47,7 @@ public protocol FlightPlanEditionViewControllerDelegate: class {
 }
 
 /// Protocol for `ManagePlansViewController` navigation.
-public protocol FlightPlanManagerCoordinator: class {
+public protocol FlightPlanManagerCoordinator: AnyObject {
     /// Starts manage plans modal.
     func startManagePlans()
 
@@ -53,25 +57,21 @@ public protocol FlightPlanManagerCoordinator: class {
     ///     - flightPlanViewModel: Flight Plan ViewModel
     func startFlightPlanHistory(flightPlanViewModel: FlightPlanViewModel)
 
-    /// Closes manage plans view.
-    ///
-    /// - Parameters:
-    ///     - shouldStartEdition: should start flight plan edition
-    func closeManagePlans(shouldStartEdition: Bool)
 }
 
 /// Coordinator for flight plan planel.
 public final class FlightPlanPanelCoordinator: Coordinator,
-                                               FlightPlanEditionViewControllerDelegate,
-                                               FlightPlanManagerCoordinator {
+                                               FlightPlanEditionViewControllerDelegate {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
     public var parentCoordinator: Coordinator?
+    public weak var flightPlanEditionViewController: FlightPlanEditionViewController?
 
     // MARK: - Private Properties
     private var splitControls: SplitControls?
     private var flightPlanControls: FlightPlanControls?
+    private var managePlansViewModel: ManagePlansViewModel?
 
     // MARK: - Public Funcs
     public func start() {
@@ -101,7 +101,8 @@ public final class FlightPlanPanelCoordinator: Coordinator,
     ///     - flightPlanProvider: Flight Plan Provider
     public func startExecutionSummary(executionId: String, flightPlanProvider: FlightPlanProvider) {
         guard let execution = CoreDataManager.shared.execution(forExecutionId: executionId),
-              let executionSummaryVC = flightPlanProvider.executionSummaryVC(execution: execution, coordinator: self) else {
+              let executionSummaryVC = flightPlanProvider.executionSummaryVC(execution: execution, coordinator: self),
+              navigationController?.viewControllers.count == 1 else {
             return
         }
 
@@ -111,19 +112,31 @@ public final class FlightPlanPanelCoordinator: Coordinator,
 
 // MARK: - FlightPlanEditionViewControllerDelegate
 public extension FlightPlanPanelCoordinator {
-    func startFlightPlanEdition() {
+    func startFlightPlanEdition(shouldCenter: Bool = false) {
         guard let splitControls = splitControls,
               let mapViewController = splitControls.mapViewController else { return }
-
+        if shouldCenter {
+            mapViewController.centerMapOnDroneOrUser()
+        }
         flightPlanControls?.viewModel.forceHidePanel(true)
         self.startFlightPlanEdition(mapViewController: mapViewController,
                                     mapViewRestorer: splitControls)
+    }
+
+    func centerMapViewController() {
+        guard let splitControls = splitControls,
+            let mapViewController = splitControls.mapViewController else { return }
+        mapViewController.centerMapOnDroneOrUser()
     }
 
     func startNewFlightPlan(flightPlanProvider: FlightPlanProvider,
                             creationCompletion: @escaping (_ createNewFp: Bool) -> Void) {
         guard let flightPlanCoordinator = flightPlanProvider.flightPlanCoordinator else { return }
 
+        // center map on user
+        if let splitControls = splitControls, let mapViewController = splitControls.mapViewController {
+            mapViewController.centerMapOnDroneOrUser()
+        }
         flightPlanCoordinator.parentCoordinator = self
         flightPlanCoordinator.startNewFlightPlan(flightPlanProvider: flightPlanProvider, creationCompletion: creationCompletion)
         self.present(childCoordinator: flightPlanCoordinator, overFullScreen: true)
@@ -131,11 +144,22 @@ public extension FlightPlanPanelCoordinator {
 }
 
 // MARK: - FlightPlanManagerCoordinator
-public extension FlightPlanPanelCoordinator {
-    func startManagePlans() {
-        let viewController = ManagePlansViewController.instantiate(coordinator: self)
+extension FlightPlanPanelCoordinator: FlightPlanManagerCoordinator {
+    public func startManagePlans() {
+        guard let fpProvider = Services.hub.currentMissionManager.mode.flightPlanProvider else { return }
+        let viewModel = ManagePlansViewModel(
+            delegate: self,
+            flightPlanProvider: fpProvider,
+            persistence: CoreDataManager.shared,
+            manager: FlightPlanManager.shared
+        )
+
+        let flightPlanListviewModel = FlightPlansListViewModel(persistence: CoreDataManager.shared)
+        viewModel.setupFlightPlanListviewModel(viewModel: flightPlanListviewModel)
+
+        let viewController = ManagePlansViewController.instantiate(viewModel: viewModel)
         let coordinator: Coordinator
-        if let child = self.childCoordinators.first {
+        if let child = self.childCoordinators.first(where: { $0 is FlightPlanEditionCoordinator }) {
             coordinator = child
         } else {
             coordinator = self
@@ -151,35 +175,21 @@ public extension FlightPlanPanelCoordinator {
         coordinator.navigationController?.view.window?.layer.add(transition, forKey: kCATransition)
 
         coordinator.presentModal(viewController: viewController, animated: false)
-
         NotificationCenter.default.post(name: .modalPresentDidChange,
                                         object: self,
                                         userInfo: [BottomBarViewControllerNotifications.notificationKey: true])
+        // The view model will immediately configure the VC on start, start only when everything is installed
+        viewModel.start()
+
+        self.managePlansViewModel = viewModel // Just retaining
     }
 
-    func startFlightPlanHistory(flightPlanViewModel: FlightPlanViewModel) {
+    public func startFlightPlanHistory(flightPlanViewModel: FlightPlanViewModel) {
         let viewController = FlightPlanFullHistoryViewController.instantiate(coordinator: self,
                                                                              viewModel: flightPlanViewModel)
         presentModal(viewController: viewController)
     }
 
-    func closeManagePlans(shouldStartEdition: Bool) {
-        let coordinator: Coordinator
-        if let child = self.childCoordinators.first {
-            coordinator = child
-        } else {
-            coordinator = self
-        }
-        coordinator.dismiss(animated: false) { [weak self] in
-            if shouldStartEdition {
-                self?.startFlightPlanEdition()
-            }
-        }
-        // Notify observers about flight plan modal's visibility status.
-        NotificationCenter.default.post(name: .modalPresentDidChange,
-                                        object: self,
-                                        userInfo: [BottomBarViewControllerNotifications.notificationKey: false])
-    }
 }
 
 // MARK: - Privates Funcs
@@ -202,5 +212,38 @@ private extension FlightPlanPanelCoordinator {
                                            mapViewController: mapViewController,
                                            mapViewRestorer: mapViewRestorer)
         self.present(childCoordinator: flightPlanEditionCoordinator, animated: false)
+    }
+}
+
+extension FlightPlanPanelCoordinator: ManagePlansViewModelDelegate {
+    /// Closes manage plans view.
+    ///
+    /// - Parameters:
+    ///     - shouldStartEdition: should start flight plan edition
+    ///     - shouldCenter: should center position on map
+    func endManagePlans(shouldStartEdition: Bool, shouldCenter: Bool) {
+        let coordinator: Coordinator
+        if let child = self.childCoordinators.first(where: { $0 is FlightPlanEditionCoordinator }) {
+            coordinator = child
+        } else {
+            coordinator = self
+        }
+        coordinator.dismiss(animated: false) { [weak self] in
+            if shouldStartEdition, !(coordinator is FlightPlanEditionCoordinator) {
+                self?.startFlightPlanEdition()
+            }
+            if shouldCenter {
+                self?.centerMapViewController()
+            }
+
+            self?.flightPlanEditionViewController?.checkIfEditionNecesary()
+        }
+
+        // Release the VM
+        self.managePlansViewModel = nil
+        // Notify observers about flight plan modal's visibility status.
+        NotificationCenter.default.post(name: .modalPresentDidChange,
+                                        object: self,
+                                        userInfo: [BottomBarViewControllerNotifications.notificationKey: false])
     }
 }

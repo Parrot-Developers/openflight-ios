@@ -31,8 +31,14 @@
 import UIKit
 import Reusable
 
-/// TableView Cell to display a mission in launcher list.
+/// Model for `MissionItemCell`
+public struct MissionItemCellModel {
+    var title: String
+    var image: UIImage
+    var isSelected: Bool
+}
 
+/// TableView Cell to display a mission in launcher list.
 final class MissionItemCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var missionLabel: UILabel! {
@@ -41,12 +47,19 @@ final class MissionItemCell: UITableViewCell, NibReusable {
         }
     }
     @IBOutlet private weak var missionImage: UIImageView!
-    @IBOutlet private weak var customBackgroundView: UIView!
+    @IBOutlet private weak var customBackgroundView: UIView! {
+        didSet {
+            customBackgroundView.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
+                                                    borderColor: .clear,
+                                                    radius: Style.largeCornerRadius)
+        }
+    }
 
     // MARK: - Internal Properties
-    var model: MissionLauncherState? {
+    var model: MissionItemCellModel? {
         didSet {
             guard let model = model else { return }
+
             setup(with: model)
         }
     }
@@ -63,19 +76,13 @@ final class MissionItemCell: UITableViewCell, NibReusable {
     ///
     /// - Parameters:
     ///     - model: model for mission launcher
-    func setup(with model: MissionLauncherState) {
+    func setup(with model: MissionItemCellModel) {
         missionLabel?.text = model.title
         missionImage?.image = model.image
-        if model.mode != nil {
-            let bgColor = model.isSelected.value ? ColorName.greenPea.color.withAlphaComponent(0.8) : ColorName.white20.color
-            customBackgroundView.cornerRadiusedWith(backgroundColor: bgColor,
-                                                    borderColor: .clear,
-                                                    radius: Style.largeCornerRadius)
-            customBackgroundView.isHidden = false
-            backgroundColor = .clear
-        } else {
-            backgroundColor = model.isSelected.value ? ColorName.greenPea50.color : .clear
-            customBackgroundView.isHidden = true
-        }
+        let bgColor = model.isSelected ? ColorName.greenMediumSea.color : ColorName.white90.color
+        let textColor = model.isSelected ? .white : ColorName.sambuca.color
+        customBackgroundView.backgroundColor = bgColor
+        missionLabel?.textColor = textColor
+        missionImage?.tintColor = textColor
     }
 }

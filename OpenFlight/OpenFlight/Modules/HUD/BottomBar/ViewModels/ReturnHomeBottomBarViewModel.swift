@@ -29,7 +29,7 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
-import SwiftyUserDefaults
+import Combine
 
 /// State for `ReturnHomeBottomBarState`.
 final class ReturnHomeBottomBarState: ViewModelState, EquatableState, Copying {
@@ -63,7 +63,7 @@ final class ReturnHomeBottomBarState: ViewModelState, EquatableState, Copying {
 final class ReturnHomeBottomBarViewModel: DroneWatcherViewModel<ReturnHomeBottomBarState> {
     // MARK: - Private Properties
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
-    private var defaultsDisposable: DefaultsDisposable?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     override init() {
@@ -86,19 +86,14 @@ final class ReturnHomeBottomBarViewModel: DroneWatcherViewModel<ReturnHomeBottom
 private extension ReturnHomeBottomBarViewModel {
     /// Listen updates on user defaults to detect mission mode changes.
     func listenDefaults() {
-        defaultsDisposable = Defaults.observe(\.userMissionMode, options: [.new]) { [weak self] _ in
-            DispatchQueue.userDefaults.async {
-                self?.updateRthTypeDescription()
-            }
-        }
-        updateRthTypeDescription()
+        Services.hub.currentMissionManager.modePublisher.sink { [unowned self] _ in
+            updateRthTypeDescription()
+        }.store(in: &cancellables)
     }
 
     /// Updates Rth description.
     func updateRthTypeDescription() {
-        let currentMode = MissionsManager.shared.missionSubModeFor(key: Defaults.userMissionMode)
-        guard let rthTitle = currentMode?.rthTypeTitle else { return }
-
-        state.value.rthTypeDescription.set(rthTitle)
+        let currentMode = Services.hub.currentMissionManager.mode
+        state.value.rthTypeDescription.set(currentMode.rthTypeTitle)
     }
 }

@@ -30,6 +30,7 @@
 
 import UIKit
 import Reusable
+import Combine
 
 /// Mission Launcher button on HUD.
 
@@ -38,9 +39,9 @@ final class MissionLauncherButton: UIControl, NibOwnerLoadable {
     @IBOutlet private weak var missionImageView: UIImageView!
 
     // MARK: - Internal Properties
-    var model: MissionLauncherState? {
+    var model: MissionLauncherButtonModel! {
         didSet {
-            updateView()
+            listenViewModel()
         }
     }
 
@@ -49,6 +50,9 @@ final class MissionLauncherButton: UIControl, NibOwnerLoadable {
         static let defaultBorderWidth: CGFloat = 1.0
         static let selectedBorderWidth: CGFloat = 4.0
     }
+
+    // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {
@@ -71,16 +75,27 @@ final class MissionLauncherButton: UIControl, NibOwnerLoadable {
 // MARK: - Private Funcs
 private extension MissionLauncherButton {
 
-    func updateView() {
-        missionImageView.image = model?.image
-        let isSelected = model?.isSelected.value == true
-        let borderColor = isSelected ? ColorName.greenSpring.color : .white
+    /// Listen to relevant properties of the VM
+    func listenViewModel() {
+        model.$selected
+            .combineLatest(model.$image)
+            .sink { [unowned self] couple in
+                let (selected, image) = couple
+                updateView(selected: selected, image: image)
+            }
+            .store(in: &cancellables)
+    }
+
+    func updateView(selected: Bool? = nil, image: UIImage? = nil) {
+        let isSelected = selected ?? model.selected
         let cornerRadius = frame.width / 2
-        let borderWidth: CGFloat = isSelected ? Constants.selectedBorderWidth : Constants.defaultBorderWidth
+        let backgroundColor = isSelected ? ColorName.greenMediumSea.color : ColorName.white90.color
+        let tintColor = isSelected ? .white : ColorName.sambuca.color
+        missionImageView.image = image ?? model.image
+        missionImageView.tintColor = tintColor
         customCornered(corners: .allCorners,
                        radius: cornerRadius,
-                       backgroundColor: ColorName.greenPea.color,
-                       borderColor: borderColor,
-                       borderWidth: borderWidth)
+                       backgroundColor: backgroundColor,
+                       borderColor: .clear)
     }
 }

@@ -32,6 +32,37 @@ import GroundSdk
 
 /// Utility extension for `Camera2ExposureMode`.
 extension Camera2ExposureMode {
+    // MARK: - Internal Properties
+    /// Whether shutter speed and ISO sensitivity are automatic.
+    var automaticIsoAndShutterSpeed: Bool {
+        switch self {
+        case .automatic, .automaticPreferShutterSpeed, .automaticPreferIsoSensitivity:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Whether ISO sensitivity is automatic.
+    var automaticIsoSensitivity: Bool {
+        switch self {
+        case .automatic, .automaticPreferShutterSpeed, .automaticPreferIsoSensitivity, .manualShutterSpeed:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Whether shutter speed is automatic.
+    var automaticShutterSpeed: Bool {
+        switch self {
+        case .automatic, .automaticPreferShutterSpeed, .automaticPreferIsoSensitivity, .manualIsoSensitivity:
+            return true
+        default:
+            return false
+        }
+    }
+
     // MARK: - Internal Funcs
     /// Returns ISO sensitivity to be monitored manually.
     func toManualIsoSensitivity() -> Camera2ExposureMode {

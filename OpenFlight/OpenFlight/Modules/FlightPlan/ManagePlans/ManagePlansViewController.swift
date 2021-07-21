@@ -29,16 +29,18 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Manages flight plan managing view.
 final class ManagePlansViewController: UIViewController {
+
     // MARK: - Outlets
     @IBOutlet private weak var topView: UIView!
     @IBOutlet private weak var closeButton: UIButton!
     @IBOutlet private weak var projectTitle: UILabel! {
         didSet {
             projectTitle.makeUp(with: .largeMedium)
-            projectTitle.text = L10n.flightPlanProject
+            projectTitle.text = L10n.flightPlanProjects
         }
     }
     @IBOutlet private weak var currentProjectView: UIView!
@@ -90,29 +92,48 @@ final class ManagePlansViewController: UIViewController {
         }
     }
 
-    // MARK: - Private Properties
-    private weak var coordinator: FlightPlanManagerCoordinator?
-    private var flightPlanListener: FlightPlanListener?
-    private var flightPlanViewModel: FlightPlanViewModel?
-    private var flightPlansListViewController: FlightPlansListViewController?
-    private let missionProviderViewModel: MissionProviderViewModel = MissionProviderViewModel()
-
     // MARK: - Private Enums
     private enum Constants {
         static let textFieldMaximumLength: Int = 50
     }
 
-    // MARK: - Setup
-    static func instantiate(coordinator: FlightPlanManagerCoordinator?) -> ManagePlansViewController {
-        let viewController = StoryboardScene.ManagePlans.initialScene.instantiate()
-        viewController.coordinator = coordinator
+    // MARK: - Private properties
+    private var viewModel: ManagePlansViewModelInput!
+    private var cancellables = [AnyCancellable]()
+    private(set) weak var flightPlansListViewController: FlightPlansListViewController?
 
+    // MARK: - Setup
+    static func instantiate(viewModel: ManagePlansViewModel) -> ManagePlansViewController {
+        let viewController = StoryboardScene.ManagePlans.initialScene.instantiate()
+        viewController.viewModel = viewModel
         return viewController
     }
 
-    // MARK: - Deinit
-    deinit {
-        FlightPlanManager.shared.unregister(flightPlanListener)
+    // MARK: - Private Funcs
+    private func bindViewModel() {
+        viewModel.statePublisher
+            .sink { [unowned self] state in
+                var isEnabled: Bool
+                switch state {
+                case .noFlightPlan:
+                    isEnabled = false
+                    textfield.text = ""
+                case .flightPlan(let flightPlan):
+                    isEnabled = true
+                    textfield.text = flightPlan.state.value.title
+                }
+                duplicateButton.isEnabled = isEnabled
+                deleteButton.isEnabled = isEnabled
+                openButton.isEnabled = isEnabled
+                textfield.isEnabled = isEnabled
+            }
+            .store(in: &cancellables)
+
+        viewModel.resetTitlePublisher
+            .sink { [unowned self] text in
+                textfield.text = text
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Override Funcs
@@ -123,16 +144,7 @@ final class ManagePlansViewController: UIViewController {
         // Setup textfield.
         textfield.text = nil
         textfield.delegate = self
-        // Setup flight plan.
-        let currentFlightPlan = FlightPlanManager.shared.currentFlightPlanViewModel
-        if let uCurrentFlightPlan = currentFlightPlan {
-            self.update(flightPlanViewModel: uCurrentFlightPlan)
-        }
-        // Setup button regarding current flight plan.
-        duplicateButton.isEnabled = currentFlightPlan != nil
-        deleteButton.isEnabled = currentFlightPlan != nil
-        openButton.isEnabled = currentFlightPlan != nil
-        textfield.isEnabled = currentFlightPlan != nil
+        bindViewModel() 
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -144,11 +156,11 @@ final class ManagePlansViewController: UIViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         super.prepare(for: segue, sender: sender)
-
-        if let destination = segue.destination as? FlightPlansListViewController {
+        if let destination = segue.destination as? FlightPlansListViewController,
+           let flightPlansViewModel = self.viewModel.flightPlanListviewModel as? (FlightPlansListViewModelUIInput & FlightPlanListHeaderDelegate) {
             flightPlansListViewController = destination
-            flightPlansListViewController?.displayMode = .compact
-            flightPlansListViewController?.delegate = self
+            viewModel.setToCompactMode()
+            flightPlansListViewController?.setupViewModel(with: flightPlansViewModel)
         }
     }
 
@@ -164,62 +176,23 @@ final class ManagePlansViewController: UIViewController {
 // MARK: - Actions
 private extension ManagePlansViewController {
     @IBAction func openButtonTouchedUpInside(_ sender: Any) {
-        self.flightPlanViewModel?.setAsLastUsed()
-        FlightPlanManager.shared.currentFlightPlanViewModel = self.flightPlanViewModel
-        coordinator?.closeManagePlans(shouldStartEdition: false)
+        viewModel?.openSelectedFlightPlan()
     }
 
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
-        coordinator?.closeManagePlans(shouldStartEdition: false)
+        viewModel?.closeManagePlans()
     }
 
     @IBAction func duplicateTouchUpInside(_ sender: Any) {
-        guard let flightplan = self.flightPlanViewModel else { return }
-
-        FlightPlanManager.shared.duplicate(flightPlan: flightplan)
-
-        if let currentFlightPlan = FlightPlanManager.shared.currentFlightPlanViewModel {
-            update(flightPlanViewModel: currentFlightPlan)
-        }
+        viewModel?.duplicateSelectedFlightPlan()
     }
 
     @IBAction func deleteTouchUpInside(_ sender: Any) {
-        guard let flightplan = self.flightPlanViewModel,
-              !flightplan.runFlightPlanViewModel.state.value.runState.isActive else {
-            return
-        }
-
-        // Delete current FP, then load latest opened one.
-        FlightPlanManager.shared.delete(flightPlan: flightplan)
-        FlightPlanManager.shared.loadLastOpenedFlightPlan(state: missionProviderViewModel.state.value)
-
-        if let currentFlightPlan = FlightPlanManager.shared.currentFlightPlanViewModel {
-            update(flightPlanViewModel: currentFlightPlan)
-        }
+        viewModel?.deleteSelectedFlightPlan()
     }
 
     @IBAction func newTouchUpInside(_ sender: Any) {
-        // Create new FP then close current VC to directly start editing.
-        guard let flightPlanProvider = missionProviderViewModel.state.value.mode?.flightPlanProvider else { return }
-
-        FlightPlanManager.shared.new(flightPlanProvider: flightPlanProvider)
-        coordinator?.closeManagePlans(shouldStartEdition: true)
-    }
-}
-
-// MARK: - FlightPlansListViewControllerDelegate
-extension ManagePlansViewController: FlightPlansListViewControllerDelegate {
-    func didSelect(flightPlan: FlightPlanViewModel) {
-        update(flightPlanViewModel: flightPlan)
-    }
-}
-
-// MARK: - Private Funcs
-private extension ManagePlansViewController {
-    func update(flightPlanViewModel: FlightPlanViewModel) {
-        self.flightPlanViewModel = flightPlanViewModel
-        flightPlansListViewController?.selectedFlightPlanUuid = flightPlanViewModel.state.value.uuid
-        textfield.text = flightPlanViewModel.state.value.title
+        viewModel?.newFlightPlan()
     }
 }
 
@@ -228,7 +201,7 @@ extension ManagePlansViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         if let name = textField.text, !name.isEmpty {
-            flightPlanViewModel?.rename(name)
+            viewModel?.renameSelectedFlightPlan(name)
         }
         return true
     }

@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Shows information about drone cellular access.
 final class DroneDetailsCellularViewController: UIViewController {
@@ -48,6 +49,8 @@ final class DroneDetailsCellularViewController: UIViewController {
     // MARK: - Private Properties
     private weak var coordinator: DroneCoordinator?
     private let viewModel = DroneDetailsCellularViewModel()
+    private var cancellables = Set<AnyCancellable>()
+    private var currentDrone = Services.hub.currentDroneHolder
 
     // MARK: - Setup
     static func instantiate(coordinator: DroneCoordinator) -> DroneDetailsCellularViewController {
@@ -60,9 +63,8 @@ final class DroneDetailsCellularViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         initView()
-        initViewModel()
+        bindToViewModel()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -89,7 +91,7 @@ private extension DroneDetailsCellularViewController {
     }
 
     @IBAction func actionButtonTouchedUpInside(_ sender: Any) {
-        switch viewModel.state.value.cellularStatus {
+        switch viewModel.cellularStatus {
         case .simLocked:
             logEvent(with: LogEvent.LogKeyDroneDetailsCellular.enterPinCode)
             self.view.backgroundColor = .clear
@@ -99,6 +101,15 @@ private extension DroneDetailsCellularViewController {
         case .userNotPaired:
             logEvent(with: LogEvent.LogKeyDroneDetailsCellular.pairDevice)
             coordinator?.pairUser()
+
+        case .noData:
+            self.view.backgroundColor = .clear
+            coordinator?.dismiss {
+                self.viewModel.activateLTE()
+                if self.viewModel.shouldDisplayPinCodeModal() {
+                    self.coordinator?.displayCellularPinCode()
+                }
+            }
         default:
             break
         }
@@ -141,11 +152,8 @@ private extension DroneDetailsCellularViewController {
                                         borderWidth: Style.mediumBorderWidth)
     }
 
-    /// Inits the view model.
-    func initViewModel() {
-        viewModel.state.valueChanged = { [weak self] _ in
-            self?.updateView()
-        }
+    /// Calls the different function to bind the view model.
+    func bindToViewModel() {
         viewModel.updatesPairedUsersCount()
         updateView()
     }
@@ -156,24 +164,48 @@ private extension DroneDetailsCellularViewController {
         coordinator?.dismiss()
     }
 
-    /// Updates view with datas from drone.
+    /// Binds the view model to the views.
     func updateView() {
-        let state = viewModel.state.value
+        viewModel.$unpairState
+            .sink { [unowned self] unpairState in
+                if unpairState.shouldShowError {
+                    forgotErrorLabel.isHidden = false
+                    forgotErrorLabel.text = unpairState.title
+                } else {
+                    forgotErrorLabel.isHidden = true
+                }
+            }
+            .store(in: &cancellables)
 
-        if state.unpairState.shouldShowError {
-            forgotErrorLabel.isHidden = false
-            forgotErrorLabel.text = state.unpairState.title
-        } else {
-            forgotErrorLabel.isHidden = true
-        }
+        viewModel.$cellularStatus
+            .sink { [unowned self] cellularStatus in
+                bindCellularStatus(cellularStatus: cellularStatus)
+            }
+            .store(in: &cancellables)
 
-        actionButton.isHidden = !state.cellularStatus.shouldShowActionButton
-        reinitializeButton.isEnabled = state.cellularStatus == .cellularConnected
-        connectionStateLabel.text = state.cellularStatus.cellularDetailsTitle
-        connectionStateLabel.textColor = state.cellularStatus.detailsTextColor.color
+        viewModel.$usersCount
+            .sink { [unowned self] usersCount in
+                if usersCount > 1 {
+                    usersCountDescriptionLabel.text = L10n.drone4gUserAccessPlural(usersCount)
+                } else {
+                    usersCountDescriptionLabel.text = L10n.drone4gUserAccessSingular(usersCount)
+                }
+                usersCountLabel.text = "\(usersCount)"
+            }
+            .store(in: &cancellables)
+    }
 
-        if state.cellularStatus.isStatusError {
-            connectionStateDescriptionLabel.text = state.cellularStatus.cellularDetailsDescription
+    /// Binds the cellular status to the controller views.
+    ///
+    /// - Parameter cellularStatus: The current cellular status.
+    func bindCellularStatus(cellularStatus: DetailsCellularStatus) {
+        actionButton.isHidden = !cellularStatus.shouldShowActionButton
+        reinitializeButton.isEnabled = cellularStatus == .cellularConnected
+        connectionStateLabel.text = cellularStatus.cellularDetailsTitle
+        connectionStateLabel.textColor = cellularStatus.detailsTextColor.color
+
+        if cellularStatus.isStatusError {
+            connectionStateDescriptionLabel.text = cellularStatus.cellularDetailsDescription
             usersCountDescriptionLabel.text = Style.dash
             reinitializeButton.cornerRadiusedWith(backgroundColor: .clear,
                                                   borderColor: ColorName.white20.color ,
@@ -186,17 +218,10 @@ private extension DroneDetailsCellularViewController {
                                                   borderColor: .white ,
                                                   radius: Style.largeCornerRadius,
                                                   borderWidth: Style.mediumBorderWidth)
-            connectionStateDescriptionLabel.text = state.operatorName
-            // Description text depends of the number of connected user.
-            if state.usersCount > 1 {
-                usersCountDescriptionLabel.text = L10n.drone4gUserAccessPlural(state.usersCount)
-            } else {
-                usersCountDescriptionLabel.text = L10n.drone4gUserAccessSingular(state.usersCount)
-            }
+            connectionStateDescriptionLabel.text = viewModel.operatorName
         }
 
-        usersCountLabel.text = "\(state.usersCount)"
-        actionButton.setTitle(state.cellularStatus.actionButtonTitle, for: .normal)
+        actionButton.setTitle(cellularStatus.actionButtonTitle, for: .normal)
     }
 
     /// Calls log event.

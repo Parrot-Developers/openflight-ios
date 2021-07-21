@@ -31,14 +31,12 @@
 import Reusable
 
 /// Protocol for `MediaVideoBottomBar`.
-
-protocol MediaVideoBottomBarViewDelegate: class {
+protocol MediaVideoBottomBarViewDelegate: AnyObject {
     /// Called when slider moved.
     func didUpdateSlider(newPositionValue: TimeInterval)
 }
 
 /// Class definition for `MediaVideoBottomBarView`.
-
 final class MediaVideoBottomBarView: UIView, NibOwnerLoadable {
 
     // MARK: - Outlets

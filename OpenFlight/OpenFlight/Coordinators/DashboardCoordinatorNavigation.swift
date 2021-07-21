@@ -29,8 +29,7 @@
 //    SUCH DAMAGE.
 
 /// Defines DashboardCoordinator navigation Protocol.
-
-protocol DashboardCoordinatorNavigation: class {
+protocol DashboardCoordinatorNavigation: AnyObject {
     func startParrotDebug()
     func startDroneInfos()
     func startRemoteInfos()
@@ -39,9 +38,7 @@ protocol DashboardCoordinatorNavigation: class {
     func startMyFlights(_ viewModel: MyFlightsViewModel)
     func startFlightDetails(viewModel: FlightDataViewModel)
     func startConfidentiality()
-    func startThirdPartyProcess(service: ThirdPartyService)
+    func startMyAccount()
     func startMapPreloading()
-    func startLogin()
-    func startProviderProfile()
     func dismissDashboard(completion: (() -> Void)?)
 }

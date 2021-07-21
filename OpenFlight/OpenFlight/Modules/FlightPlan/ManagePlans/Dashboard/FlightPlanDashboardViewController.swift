@@ -150,6 +150,8 @@ private extension FlightPlanDashboardViewController {
         mapView.addSubview(controller.view)
         self.view.layoutIfNeeded()
         controller.didMove(toParent: self)
+        // Clean potential previous FP.
+        controller.flightPlanViewModel = nil
         mapController = controller
     }
 
@@ -163,7 +165,12 @@ private extension FlightPlanDashboardViewController {
         openButton.backgroundColor = ColorName.white12.color
         openButton.makeup(with: .large, color: ColorName.white)
         openButton.setTitle(L10n.flightPlanOpenLabel, for: .normal)
-        durationTitleLabel.text = Style.dash
+
+        if let duration = flightPlan?.estimations.formattedDuration {
+            durationTitleLabel.text = duration
+        } else {
+            durationTitleLabel.text = Style.dash
+        }
         durationTitleLabel.makeUp()
         durationTimeLabel.text = ""
         durationTimeLabel.makeUp(and: .black40)
@@ -174,7 +181,7 @@ private extension FlightPlanDashboardViewController {
         addCloseButton(onTapAction: #selector(closeButtonTouchUpInside),
                        targetView: headerView,
                        style: .cross)
-        //FIXME: Do not allow share for the moment...
+        // FIXME: Do not allow share for the moment...
         shareButton.isHidden = true
     }
 
@@ -182,11 +189,9 @@ private extension FlightPlanDashboardViewController {
     func displayFlightPlan() {
         if let flightPlan = flightPlan,
            let type = flightPlan.state.value.type {
-            // 1) Deduce modeKey from type (Can be a custom Flight Plan).
-            let modeKey = FlightPlanTypeManager.shared.missionModeKey(for: type)
-            // 2) Set Flight Plan mission mode.
-            mapController?.currentMissionProviderState?.mode = MissionsManager.shared.missionSubModeFor(key: modeKey)
-            // 3) Display Flight Plan.
+            // 1) Set Flight Plan mission mode.
+            mapController?.currentMissionProviderState?.mode = type.missionMode
+            // 2) Display Flight Plan.
             mapController?.displayFlightPlan(flightPlan, shouldReloadCamera: true)
             mapController?.sceneView.isUserInteractionEnabled = false
         }

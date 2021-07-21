@@ -37,53 +37,21 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var dateView: UIView!
     @IBOutlet private weak var dateStackView: UIStackView!
-    @IBOutlet private weak var monthLabel: UILabel! {
-        didSet {
-            monthLabel.makeUp(with: .large)
-        }
-    }
-    @IBOutlet private weak var yearLabel: UILabel! {
-        didSet {
-            yearLabel.makeUp(and: .white50)
-        }
-    }
+    @IBOutlet private weak var monthLabel: UILabel!
+    @IBOutlet private weak var yearLabel: UILabel!
     @IBOutlet private weak var bgView: UIView! {
         didSet {
-            bgView.backgroundColor = ColorName.white10.color
-            bgView.applyCornerRadius(Style.mediumCornerRadius)
+            bgView.customCornered(corners: [.allCorners], radius: Style.mediumCornerRadius)
         }
     }
-    @IBOutlet private weak var mapImage: UIImageView! {
-        didSet {
-            mapImage.applyCornerRadius()
-        }
-    }
-    @IBOutlet private weak var dateLabel: UILabel! {
-        didSet {
-            dateLabel.makeUp(with: .large)
-        }
-    }
-    @IBOutlet private weak var locationLabel: UILabel! {
-        didSet {
-            locationLabel.makeUp(and: .white50)
-        }
-    }
-    @IBOutlet private weak var photoLabel: UILabel! {
-        didSet {
-            photoLabel.makeUp(with: .tiny)
-        }
-    }
-    @IBOutlet private weak var videoLabel: UILabel! {
-        didSet {
-            videoLabel.makeUp(with: .tiny)
-        }
-    }
+    @IBOutlet private weak var mapImage: UIImageView!
+    @IBOutlet private weak var dateLabel: UILabel!
+    @IBOutlet private weak var locationLabel: UILabel!
+    @IBOutlet private weak var durationLabel: UILabel!
+    @IBOutlet private weak var photoLabel: UILabel!
+    @IBOutlet private weak var videoLabel: UILabel!
     @IBOutlet private weak var warningStackView: UIStackView!
-    @IBOutlet private weak var warningLabel: UILabel! {
-        didSet {
-            warningLabel.makeUp(and: .redTorch)
-        }
-    }
+    @IBOutlet private weak var warningLabel: UILabel!
 
     // MARK: - Internal Funcs
     /// Configure cell.
@@ -105,7 +73,7 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
         }
         dateLabel.text = viewModel.state.value.formattedDate
         locationLabel.text = viewModel.state.value.flightLocationDescription
-
+        durationLabel.text = viewModel.state.value.longFormattedDuration
         warningStackView.isHidden = !viewModel.state.value.hasIssues
         if viewModel.state.value.hasIssues {
             // TODO: read gutma and update label accordingly.
@@ -116,6 +84,7 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
         viewModel.state.valueChanged = { [weak self] state in
             self?.updateMapImage(state: state)
             self?.locationLabel.text = state.flightDescription
+            self?.durationLabel.text = state.longFormattedDuration
         }
         viewModel.requestThumbnail()
         viewModel.requestPlacemark()

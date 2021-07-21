@@ -102,7 +102,13 @@ final class CellularPairingProcessViewModel: DroneWatcherViewModel<CellularPairi
     // MARK: - Internal Properties
     /// Returns true if a pin code is needed.
     var isPinCodeRequested: Bool {
-        return drone?.getPeripheral(Peripherals.cellular)?.isPinCodeRequested == true
+        if drone?.getPeripheral(Peripherals.cellular)?.isSimCardInserted == false {
+            return false
+        } else if drone?.getPeripheral(Peripherals.cellular)?.isActivated == false {
+            return false
+        } else {
+            return drone?.getPeripheral(Peripherals.cellular)?.isPinCodeRequested == true
+        }
     }
 
     // MARK: - Private Properties
@@ -116,7 +122,6 @@ final class CellularPairingProcessViewModel: DroneWatcherViewModel<CellularPairi
     // MARK: - Init
     override init() {
         super.init()
-
         listenReachability()
         updateLoggingState()
         listenPairingProcessRequest()
@@ -163,6 +168,8 @@ final class CellularPairingProcessViewModel: DroneWatcherViewModel<CellularPairi
             }
 
             performAssociationRequest(with: token)
+        case .associationRequestSuccess:
+            updateGsdkUserAccount()
         default:
             startPairingProcess()
         }
@@ -176,6 +183,7 @@ private extension CellularPairingProcessViewModel {
         pairingRequestObserver = NotificationCenter.default.addObserver(forName: .requestCellularPairingProcess,
                                                                         object: nil,
                                                                         queue: nil) { [weak self] _ in
+            self?.updateLoggingState()
             self?.startPairingProcess()
         }
     }
@@ -284,13 +292,34 @@ private extension CellularPairingProcessViewModel {
                 return
             }
 
-            self.updateProcessStep(step: .pairingProcessSuccess)
+            self.updateProcessStep(step: .associationRequestSuccess)
 
             guard let uid = self.drone?.uid else { return }
 
             var dronePairedListSet = Set(Defaults.cellularPairedDronesList)
             dronePairedListSet.insert(uid)
             Defaults.cellularPairedDronesList = Array(dronePairedListSet)
+
+            self.updateGsdkUserAccount()
+        }
+    }
+
+    /// Updates GroundSdk user account with drone list retrieved from Academy.
+    func updateGsdkUserAccount() {
+        academyAPIManager.performPairedDroneListRequest { droneList in
+            guard droneList != nil,
+                  let jsonString = ParserUtils.jsonString(droneList),
+                  let userAccount = GroundSdk().getFacility(Facilities.userAccount) else {
+                self.updateProcessError(error: .unableToConnect)
+                return
+            }
+
+            self.updateProcessStep(step: .pairingProcessSuccess)
+
+            // User account update should be done on the main Thread.
+            DispatchQueue.main.async {
+                userAccount.set(droneList: jsonString)
+            }
         }
     }
 

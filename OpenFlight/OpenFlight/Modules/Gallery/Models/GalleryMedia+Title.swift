@@ -33,27 +33,11 @@ import UIKit
 /// Gallery media title related functions and properties.
 
 extension GalleryMedia {
-    // Stack view used to display media title in a navigation bar.
-    var titleStackView: UIStackView? {
-        let text = date.formattedString(dateStyle: .long, timeStyle: .medium)
-        guard let image = type.filterImage else { return nil }
-        let titleLabel = UILabel()
-        titleLabel.textColor = ColorName.white.color
-        titleLabel.makeUp(with: .large)
-        titleLabel.text = text
-        let titleImageView = UIImageView()
-        titleImageView.contentMode = .center
-        titleImageView.image = image
-        let titleStackView = UIStackView(arrangedSubviews: [titleImageView, titleLabel])
-        titleStackView.axis = .horizontal
-        titleStackView.spacing = Style.attributedTitleViewSpacing
-        return titleStackView
-    }
-
     // Attributed string used to display media title in a label.
     var titleAttributedString: NSMutableAttributedString? {
         let text = date.formattedString(dateStyle: .long, timeStyle: .medium)
         guard let image = type.filterImage else { return nil }
+
         return NSMutableAttributedString(withImage: image, text: text, offset: Style.attributedTitleViewTitleOffset)
     }
 }

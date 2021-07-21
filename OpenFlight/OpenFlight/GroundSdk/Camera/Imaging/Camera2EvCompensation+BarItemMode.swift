@@ -111,7 +111,7 @@ extension Camera2EvCompensation: BarItemMode, RulerDisplayable, Sortable {
     var rulerBackgroundColor: UIColor? {
         switch self {
         case .ev0_00:
-            return ColorName.white.color
+            return ColorName.sambuca.color
         default:
             return nil
         }

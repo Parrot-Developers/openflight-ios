@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina6_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
     <scenes>
         <!--Gallery View Controller-->
         <scene sceneID="gAF-Wg-Bhz">
@@ -28,9 +33,10 @@
                                         <subviews>
                                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nSb-Gs-Xk9">
                                                 <rect key="frame" x="0.0" y="50" width="253.33333333333334" height="340"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </containerView>
                                         </subviews>
-                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="bottom" secondItem="nSb-Gs-Xk9" secondAttribute="bottom" id="CuL-8I-aow"/>
                                             <constraint firstAttribute="trailing" secondItem="nSb-Gs-Xk9" secondAttribute="trailing" id="bPP-fP-iBh"/>
@@ -62,9 +68,9 @@
                                                                             <constraint firstAttribute="width" constant="100" id="1yf-Kx-7Dw"/>
                                                                             <constraint firstAttribute="height" constant="37" id="oKk-d5-Eam"/>
                                                                         </constraints>
-                                                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                                         <state key="normal" title="Button">
-                                                                            <color key="titleColor" systemColor="darkTextColor"/>
+                                                                            <color key="titleColor" name="sambuca"/>
                                                                         </state>
                                                                         <connections>
                                                                             <action selector="formatButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="hun-Ja-pAS"/>
@@ -76,9 +82,9 @@
                                                                             <constraint firstAttribute="height" constant="37" id="B9k-gH-IVZ"/>
                                                                             <constraint firstAttribute="width" constant="140" id="CFn-e7-X3V"/>
                                                                         </constraints>
-                                                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                                         <state key="normal" title="Button">
-                                                                            <color key="titleColor" systemColor="darkTextColor"/>
+                                                                            <color key="titleColor" name="sambuca_50"/>
                                                                         </state>
                                                                         <connections>
                                                                             <action selector="selectButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="nlt-UT-AcD"/>
@@ -113,7 +119,7 @@
                                                 </constraints>
                                             </stackView>
                                         </subviews>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <color key="backgroundColor" name="alabaster"/>
                                         <constraints>
                                             <constraint firstItem="Ais-to-DRU" firstAttribute="leading" secondItem="a5W-m5-Nsz" secondAttribute="leading" id="PzR-zU-Xty"/>
                                             <constraint firstAttribute="bottom" secondItem="Ais-to-DRU" secondAttribute="bottom" id="Tc4-Q2-ZRV"/>
@@ -125,8 +131,8 @@
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hhc-4e-s2x">
                                 <rect key="frame" x="548.66666666666663" y="195" width="0.0" height="0.0"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                <color key="textColor" name="sambuca"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1JU-d2-DRe">
@@ -135,15 +141,16 @@
                                     <constraint firstAttribute="width" constant="39" id="Cc1-c8-BJ7"/>
                                     <constraint firstAttribute="height" constant="39" id="m6S-UD-Nq1"/>
                                 </constraints>
+                                <color key="tintColor" name="sambuca"/>
                                 <state key="normal" image="ic_back"/>
                                 <connections>
                                     <action selector="closeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="3a5-x6-eZ5"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="d1Y-yh-SCi">
-                                <rect key="frame" x="67" y="22.333333333333336" width="41.333333333333343" height="20.333333333333336"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <rect key="frame" x="67" y="23" width="42" height="19"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                <color key="textColor" name="sambuca"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
@@ -192,7 +199,6 @@
                     </view>
                     <connections>
                         <outlet property="bgLeftView" destination="xDK-5o-m29" id="v6Q-G7-ABA"/>
-                        <outlet property="bgView" destination="a5W-m5-Nsz" id="DWb-vp-imq"/>
                         <outlet property="bottomContainerHeightConstraint" destination="owA-ri-kQF" id="L5U-uQ-GUg"/>
                         <outlet property="bottomSourcesContainer" destination="5yp-Sc-mRP" id="RFm-TZ-TcE"/>
                         <outlet property="closeButton" destination="1JU-d2-DRe" id="WkR-7C-13I"/>
@@ -213,11 +219,14 @@
     </scenes>
     <resources>
         <image name="ic_back" width="21" height="21"/>
-        <systemColor name="darkTextColor">
-            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
+        <namedColor name="alabaster">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="sambuca">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="sambuca_50">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

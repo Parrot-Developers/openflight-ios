@@ -58,12 +58,15 @@
 }
 
 -(instancetype)init {
-    self.libMoser = [[LibMoserApiBridge alloc] init];
+    self = [super init];
+    if (self) {
+        _libMoser = [[LibMoserApiBridge alloc] init];
+    }
     return self;
 }
 
 -(void)dealloc {
-    self.libMoser = NULL;
+    _libMoser = nil;
 }
 
 /**

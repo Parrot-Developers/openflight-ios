@@ -80,9 +80,7 @@ private extension FrontRightButtonViewModel {
     func takeOffOrLandDrone() {
         guard let drone = drone else { return }
 
-        if drone.isManualPilotingActive {
-            drone.getPilotingItf(PilotingItfs.manualCopter)?.smartTakeOffLand()
-        } else {
+        if !drone.isManualPilotingActive {
             // Deactivates RTH if it is the current pilotingItf.
             if drone.getPilotingItf(PilotingItfs.returnHome)?.state == .active {
                 _ = drone.getPilotingItf(PilotingItfs.returnHome)?.deactivate()
@@ -90,5 +88,6 @@ private extension FrontRightButtonViewModel {
                 _ = drone.getPilotingItf(PilotingItfs.manualCopter)?.activate()
             }
         }
+        drone.getPilotingItf(PilotingItfs.manualCopter)?.smartTakeOffLand()
     }
 }

@@ -30,7 +30,7 @@
 import UIKit
 
 // MARK: - Protocols
-protocol HUDTopBarViewControllerNavigation: class {
+protocol HUDTopBarViewControllerNavigation: AnyObject {
     /// Called when dashboard should be opened.
     func openDashboard()
     /// Called when settings should be opened.

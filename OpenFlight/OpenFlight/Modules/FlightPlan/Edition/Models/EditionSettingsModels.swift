@@ -48,7 +48,7 @@ protocol EditionSettingsCellModel {
 }
 
 /// Protocol describing setting cell delegate.
-public protocol EditionSettingsCellModelDelegate: class {
+public protocol EditionSettingsCellModelDelegate: AnyObject {
     /// Updates current settings value.
     ///
     /// - Parameters:

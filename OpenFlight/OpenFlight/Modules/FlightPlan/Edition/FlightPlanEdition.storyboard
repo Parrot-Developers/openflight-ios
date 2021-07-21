@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina6_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -121,7 +121,7 @@
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rIt-5N-twX">
                                                 <rect key="frame" x="0.0" y="0.0" width="88" height="50"/>
-                                                <state key="normal" image="icUndo"/>
+                                                <state key="normal" title="Undo"/>
                                                 <connections>
                                                     <action selector="undoButtonTouchedUpInside:" destination="l6C-73-gMO" eventType="touchUpInside" id="X0M-0H-XMr"/>
                                                 </connections>
@@ -172,12 +172,12 @@
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="IIN-DW-uT1"/>
                         <constraints>
+                            <constraint firstAttribute="bottom" secondItem="E4L-K4-ZSC" secondAttribute="bottom" constant="80" id="3tH-7L-DfG"/>
                             <constraint firstItem="Hyb-ae-qAw" firstAttribute="top" secondItem="Uol-bj-mg6" secondAttribute="top" id="84L-7p-J6W"/>
                             <constraint firstItem="Hyb-ae-qAw" firstAttribute="bottom" secondItem="Uol-bj-mg6" secondAttribute="bottom" id="EJv-nY-vp0"/>
                             <constraint firstItem="Hyb-ae-qAw" firstAttribute="leading" secondItem="Uol-bj-mg6" secondAttribute="leading" id="ImM-em-mAt"/>
                             <constraint firstItem="4pP-P7-8sJ" firstAttribute="top" secondItem="E4L-K4-ZSC" secondAttribute="top" id="MJO-YW-AEv"/>
                             <constraint firstAttribute="bottom" secondItem="V7B-cJ-LQm" secondAttribute="bottom" id="X4D-TP-5w1"/>
-                            <constraint firstItem="V7B-cJ-LQm" firstAttribute="top" secondItem="E4L-K4-ZSC" secondAttribute="bottom" id="cLj-pE-CSU"/>
                             <constraint firstAttribute="trailing" secondItem="Hyb-ae-qAw" secondAttribute="trailing" id="iu2-dW-4mN"/>
                             <constraint firstItem="V7B-cJ-LQm" firstAttribute="leading" secondItem="Uol-bj-mg6" secondAttribute="leading" id="kpc-5e-u4r"/>
                             <constraint firstItem="E4L-K4-ZSC" firstAttribute="top" secondItem="Uol-bj-mg6" secondAttribute="top" id="m6R-Yd-7Gg"/>
@@ -188,6 +188,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="bottomTableViewContraint" destination="3tH-7L-DfG" id="aET-Ex-omH"/>
                         <outlet property="closeButton" destination="4pP-P7-8sJ" id="GkN-dr-i9g"/>
                         <outlet property="deleteButton" destination="fYp-zW-LmG" id="ee8-Ku-PW2"/>
                         <outlet property="tableView" destination="E4L-K4-ZSC" id="pAH-Ep-C0u"/>
@@ -231,7 +232,7 @@
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3jS-g9-JKC">
                                                 <rect key="frame" x="0.0" y="0.0" width="88" height="50"/>
-                                                <state key="normal" image="icUndo"/>
+                                                <state key="normal" title="Undo"/>
                                                 <connections>
                                                     <action selector="undoTouchUpInside:" destination="yCT-Lz-HV2" eventType="touchUpInside" id="z5B-Br-pFR"/>
                                                 </connections>
@@ -299,7 +300,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="icUndo" width="22" height="20"/>
         <image name="ic_back" width="21" height="21"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

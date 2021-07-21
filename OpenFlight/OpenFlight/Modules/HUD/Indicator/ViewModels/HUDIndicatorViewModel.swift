@@ -30,6 +30,7 @@
 
 import UIKit
 import GroundSdk
+import Combine
 
 // MARK: - HUDIndicatorState
 /// State for `HUDIndicatorViewMode`.
@@ -116,7 +117,7 @@ final class HUDIndicatorViewModel: DroneStateViewModel<HUDIndicatorState> {
     private var splitModeObserver: Any?
     private var bottomBarModeObserver: Any?
     private var missionLauncherModeObserver: Any?
-    private var joysticksAvailabilityObserver: Any?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     /// Init.
@@ -132,7 +133,8 @@ final class HUDIndicatorViewModel: DroneStateViewModel<HUDIndicatorState> {
         listenSplitModeChanges()
         listenBottomBarModeChanges()
         listenMissionLauncherModeChanges()
-        listenJoysticksAvailabilityChanges()
+        // TODO: wrong injection
+        listenJoysticksAvailabilityChanges(joysticksAvailabilityService: Services.hub.ui.joysticksAvailabilityService)
     }
 
     // MARK: - Deinit
@@ -143,8 +145,6 @@ final class HUDIndicatorViewModel: DroneStateViewModel<HUDIndicatorState> {
         bottomBarModeObserver = nil
         NotificationCenter.default.remove(observer: missionLauncherModeObserver)
         missionLauncherModeObserver = nil
-        NotificationCenter.default.remove(observer: joysticksAvailabilityObserver)
-        joysticksAvailabilityObserver = nil
     }
 
     // MARK: - Internal Funcs
@@ -211,19 +211,15 @@ private extension HUDIndicatorViewModel {
         }
     }
 
-    /// Starts watcher for joysticks availability changes.
-    func listenJoysticksAvailabilityChanges() {
-        joysticksAvailabilityObserver = NotificationCenter.default.addObserver(forName: .joysticksAvailabilityDidChange,
-                                                                             object: nil,
-                                                                             queue: nil) { [weak self] notification in
-            guard let joysticksAvailable = notification.userInfo?[JoysticksStateNotifications.joysticksAvailabilityNotificationKey] as? Bool else {
-                return
-            }
-            let copy = self?.state.value.copy()
-            copy?.isJoysticksVisible = joysticksAvailable
-            self?.state.set(copy)
-            self?.updateIndicatorVisibility()
+    /// Starts watching for joysticks visibility changes.
+    func listenJoysticksAvailabilityChanges(joysticksAvailabilityService: JoysticksAvailabilityService) {
+        joysticksAvailabilityService.showJoysticksPublisher.sink { [unowned self] in
+            let copy = state.value.copy()
+            copy.isJoysticksVisible = $0
+            state.set(copy)
+            updateIndicatorVisibility()
         }
+        .store(in: &cancellables)
     }
 
     /// Computes indicator visibility.

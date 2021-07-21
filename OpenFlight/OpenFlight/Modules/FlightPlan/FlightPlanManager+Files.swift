@@ -141,10 +141,11 @@ extension FlightPlanManager {
             // It could take long: do it in a background thread.
             let flightPlans = self?.loadAllFlightPlans(afterDate: Defaults.flightPlanLastSyncDate)
                 .map({ plan -> FlightPlanViewModel in
-                    if let existingFlightPlan = persistedFlightPlans
-                        .first(where: { $0.state.value.uuid == plan.uuid }) {
+                    if let existingFlightPlan = persistedFlightPlans.first(where: { $0.state.value.uuid == plan.uuid }),
+                       // TODO missing injection
+                       let type = Services.hub.flightPlanTypeStore.typeForKey(plan.type) {
                         // Update existing flight plan.
-                        let state = existingFlightPlan.state.value.updated(flightPlan: plan)
+                        let state = existingFlightPlan.state.value.updated(flightPlan: plan, type: type)
                         existingFlightPlan.state.set(state)
                         existingFlightPlan.save()
                         return existingFlightPlan
@@ -189,8 +190,11 @@ extension FlightPlanManager {
     func generateMavlinkCommands(for flightPlan: SavedFlightPlan) -> [MavlinkStandard.MavlinkCommand] {
         var commands = [MavlinkStandard.MavlinkCommand]()
         var currentSpeed: Double?
+        var currentTilt: Double?
         var currentViewMode: MavlinkStandard.SetViewModeCommand.Mode?
         var lastRoiCommand: MavlinkStandard.SetRoiLocationCommand?
+        var didAddStartCaptureCommand = false
+        var shouldAddRoi = false
 
         // Insert first speed command based on first waypoint speed.
         if let firstSpeedCommand = flightPlan.plan.wayPoints.first?.speedMavlinkCommand {
@@ -203,7 +207,14 @@ extension FlightPlanManager {
             commands.append($0.mavlinkCommand)
         }
 
-        var didAddStartCaptureCommand = false
+        // Video recording should start before traveling to the first waypoint.
+        // Any other capture mode starts after reaching it.
+        if flightPlan.plan.captureModeEnum == .video,
+            let captureCommand = flightPlan.plan.startCaptureCommand {
+                commands.append(captureCommand)
+                didAddStartCaptureCommand = true
+        }
+
         flightPlan.plan.wayPoints.forEach {
             let speed = $0.speedMavlinkCommand.speed
             if speed != currentSpeed {
@@ -215,17 +226,28 @@ extension FlightPlanManager {
             // Point of interest & View mode.
             let viewMode = $0.viewModeCommand.mode
             if $0.poiCommand != lastRoiCommand {
-                if let poiCommand = $0.poiCommand {
-                    commands.append(poiCommand)
-                } else {
+                // Request ROI, but only add it on second point
+                // to preserve the previous view mode during translation.
+                // This ensures that the POI only starts on the requested waypoint.
+                shouldAddRoi = $0.poiCommand != nil
+
+                if lastRoiCommand != nil {
                     // Switching to no point of interest.
+                    // Even between POIs, we want the ViewMode to be respected between them.
                     commands.append(MavlinkStandard.SetRoiNoneCommand())
                     commands.append($0.viewModeCommand)
                     currentViewMode = viewMode
                 }
 
                 lastRoiCommand = $0.poiCommand
-            } else if $0.poiCommand == nil && viewMode != currentViewMode {
+                currentTilt = nil   // Tilt is not managed while on poi
+            } else if $0.poiCommand != nil {
+                // If poiCommand is still active and the same try to add the poiCommand
+                if let poiCommand = $0.poiCommand, shouldAddRoi {
+                    commands.append(poiCommand)
+                    shouldAddRoi = false
+                }
+            } else if viewMode != currentViewMode {
                 // Update view mode if needed when no point of interest is set.
                 commands.append($0.viewModeCommand)
                 currentViewMode = $0.viewModeCommand.mode
@@ -235,9 +257,20 @@ extension FlightPlanManager {
             commands.append($0.wayPointMavlinkCommand)
 
             $0.actions?.forEach {
-                guard !(lastRoiCommand == nil && $0.type == .tilt) else { return } // No tilt during poi
+                // Only send tilt command if new tilt is different from current.
+                // Send tilt only for the first element of POI (before enabling POI)
+                guard $0.type == .tilt &&
+                        (lastRoiCommand == nil || shouldAddRoi) &&
+                        $0.angle != currentTilt else {
+                    return
+                }
                 // Insert all waypoint actions commands.
                 commands.append($0.mavlinkCommand)
+
+                if $0.type == .tilt {
+                    // Update current tilt.
+                    currentTilt = $0.angle
+                }
             }
 
             // Start capture if needed.
@@ -253,12 +286,21 @@ extension FlightPlanManager {
             }
         }
 
-        // End capture.
-        commands.append(flightPlan.plan.endCaptureCommand)
+        // Stop capture if capture mode is different from video.
+        // Recording should always continue during rth.
+        if didAddStartCaptureCommand && flightPlan.plan.captureModeEnum != .video {
+            commands.append(flightPlan.plan.endCaptureCommand)
+            didAddStartCaptureCommand = false
+        }
 
         if let returnToLaunchCommand = flightPlan.plan.returnToLaunchCommand {
             // Insert return to launch command if FlightPlan is buckled.
             commands.append(returnToLaunchCommand)
+        }
+
+        // Stop capture if still in progress.
+        if didAddStartCaptureCommand {
+            commands.append(flightPlan.plan.endCaptureCommand)
         }
 
         return commands

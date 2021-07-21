@@ -91,6 +91,43 @@ enum FlyingState {
 	FS_EMERGENCY = 5;
 }
 
+enum LinkType {
+	/* Unknown */
+	LINK_TYPE_UNKNOWN = 0;
+
+	/* Reserved */
+	LINK_TYPE_LO = 1;
+
+	/* Reserved */
+	LINK_TYPE_LAN = 2;
+
+	/* Wlan (Wi-Fi) interface */
+	LINK_TYPE_WLAN = 3;
+
+	/* Cellular (4G) interface */
+	LINK_TYPE_CELLULAR = 4;
+}
+
+enum LinkStatus {
+	/* Interface is down */
+	LINK_STATUS_DOWN = 0;
+
+	/* Interface is up with IP connectivity */
+	LINK_STATUS_UP = 1;
+
+	/* Starfish session established on the link */
+	LINK_STATUS_RUNNING = 2;
+
+	/* Link is ready to connect or accept connections */
+	LINK_STATUS_READY = 3;
+
+	/* Connection in progress */
+	LINK_STATUS_CONNECTING = 4;
+
+	/* Link error */
+	LINK_STATUS_ERROR = 5;
+}
+
 
 /**
  * Commonly used structures
@@ -120,6 +157,13 @@ message Location {
 	/* GPS Satellite vehicle count, only set if location comes at least
 	 * partially from a GPS sensor */
 	uint32 sv_count = 4;
+}
+
+/* Generic 3 component vector */
+message Vector3 {
+	float x = 1;
+	float y = 2;
+	float z = 3;
 }
 
 /* 3 component vector, in NED frame */
@@ -173,6 +217,16 @@ message DroneMetadata {
 	 * not available), this position jumps on the first absolute position
 	 * measurement available. */
 	NED position = 9;
+
+	/* Estimated position of the drone in the local frame (m).
+	 * The local frame is not NED: X and Y axis are arbitrary, but the Z
+	 * axis is guaranteed to point down.
+	 * The position is initialized at first take off. This position is
+	 * guaranteed not to jump, even when a new absolute position (usually
+	 * GPS) is avaiable. Instead, the origin of the local frame jumps in
+	 * order to ensure the continuity of the local position.
+	 */
+	Vector3 local_position = 10;
 
 	/* Speed vector in NED (North-East-Down) (m/s) */
 	NED speed = 4;
@@ -258,10 +312,37 @@ message WifiLinkMetadata {
 	sint32 rssi = 3;
 }
 
+message StarfishLinkInfo {
+	/* Type of link */
+	LinkType type = 1;
+
+	/* Link status */
+	LinkStatus status = 2;
+
+	/* Link quality indication: 1 (lower) to 5 (better),
+	 * 0 if not available */
+	int32 quality = 3;
+
+	/* Link active status */
+	bool active = 4;
+}
+
+message StarfishLinkMetadata {
+	/* Links */
+	repeated StarfishLinkInfo links = 1;
+
+	/* Global link quality indication: 1 (lower) to 5 (better),
+	 * 0 if not available */
+	int32 quality = 2;
+}
+
 message LinkMetadata {
 	oneof protocol {
 		/* Wifi link metadata */
 		WifiLinkMetadata wifi = 1;
+
+		/* Starfish link metadata */
+		StarfishLinkMetadata starfish = 2;
 	}
 }
 

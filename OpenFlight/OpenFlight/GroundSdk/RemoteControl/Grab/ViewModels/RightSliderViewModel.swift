@@ -153,20 +153,9 @@ private extension RightSliderViewModel {
     ///     - state: Sky controller event state
     ///     - newValue: new zoom velocity value
     func updateZoomVelocity(_ state: SkyCtrl4ButtonEventState = .pressed, newValue: Double) {
-        guard state == .pressed,
-              let zoom = drone?.currentCamera?.zoom,
-              let camera = drone?.currentCamera else {
+        guard state == .pressed else {
             return
         }
-
-        let isLossyAllowed = camera.config[Camera2Params.zoomVelocityControlQualityMode]?.value.isLossyAllowed == true
-
-        if zoom.isZoomMaxReached(isLossyAllowed: isLossyAllowed) && newValue > 0.0 {
-            NotificationCenter.default.post(name: .remoteControlDidOverZoom,
-                                            object: nil)
-        } else {
-            zoom.control(mode: Camera2ZoomControlMode.velocity,
-                         target: newValue)
-        }
+        Services.hub.drone.zoomService.setZoomVelocity(newValue)
     }
 }

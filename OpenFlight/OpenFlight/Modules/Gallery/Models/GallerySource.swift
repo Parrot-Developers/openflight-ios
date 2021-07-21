@@ -46,6 +46,19 @@ enum GallerySourceType: CaseIterable {
             return nil
          }
     }
+
+    var title: String {
+        switch self {
+        case .droneSdCard:
+            return L10n.gallerySourceDroneSd
+        case .droneInternal:
+            return L10n.gallerySourceDroneInternal
+        case .mobileDevice:
+            return L10n.gallerySourceMobile
+        default:
+            return ""
+        }
+    }
 }
 
 /// Gallery source model.
@@ -66,19 +79,6 @@ struct GallerySource {
             return Asset.Dashboard.icPhoneLight.image
         default:
             return nil
-        }
-    }
-
-    var title: String {
-        switch type {
-        case .droneSdCard:
-            return L10n.gallerySourceDroneSd
-        case .droneInternal:
-            return L10n.gallerySourceDroneInternal
-        case .mobileDevice:
-            return L10n.gallerySourceMobile
-        default:
-            return ""
         }
     }
 

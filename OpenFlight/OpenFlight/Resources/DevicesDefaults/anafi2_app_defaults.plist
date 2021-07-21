@@ -3376,7 +3376,7 @@
 			<key>Antiflicker</key>
 			<dict>
 				<key>mode</key>
-				<string>auto</string>
+				<string>off</string>
 			</dict>
 			<key>Camera2-0</key>
 			<dict>

@@ -55,14 +55,12 @@ extension WayPoint {
         }
     }
 
-    /// Returns duration to get to next waypoint, 0.0 if no next waypoint or inconsistent data.
-    var navigateToNextDuration: Double {
-        guard let nextWayPointLocation = nextWayPoint?.agsPoint,
-              let distance = AGSGeometryEngine.standardGeodeticDistance(between: self.agsPoint,
-                                                                        and: nextWayPointLocation)?.distance,
-              speed > 0.0 else { return 0.0 }
+    /// Returns distance to get to next waypoint, 0.0 if no next waypoint or inconsistent data.
+    var navigateToNextDistance: Double {
+        guard let nextWayPointLocation = nextWayPoint?.agsPoint else { return 0.0 }
 
-        return distance / speed
+        let distance = self.agsPoint.distanceToPoint(nextWayPointLocation)
+        return distance
     }
 
     // MARK: - Private Enums
@@ -97,7 +95,7 @@ extension WayPoint {
     /// - Returns: computed graphic
     func markerGraphic(index: Int) -> FlightPlanWayPointGraphic {
         return FlightPlanWayPointGraphic(wayPoint: self,
-                                         index: index)
+                                         index: index, heading: 0)
     }
 
     /// Computes arrow graphic for waypoint.
@@ -111,17 +109,5 @@ extension WayPoint {
                                               poiPoint: poiPoint,
                                               poiIndex: poiIndex,
                                               angle: Float(yaw ?? 0.0))
-    }
-
-    /// Computes label graphic for waypoint.
-    /// Altitude is displayed in the large circle,
-    /// index is displayed in the small offseted circle.
-    ///
-    /// - Parameters:
-    ///    - index: waypoint's index
-    /// - Returns: computed graphic
-    func labelsGraphic(index: Int) -> FlightPlanWayPointLabelsGraphic {
-        return FlightPlanWayPointLabelsGraphic(wayPoint: self,
-                                                  index: index)
     }
 }

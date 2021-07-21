@@ -28,6 +28,11 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+public protocol PairingCoordinatorDelegate: AnyObject {
+    /// Calls when the pairing finished.
+    func pairingDidFinish()
+}
+
 /// Coordinator for Pairing part.
 public final class PairingCoordinator: Coordinator {
     // MARK: - Public Properties
@@ -36,11 +41,14 @@ public final class PairingCoordinator: Coordinator {
     public var parentCoordinator: Coordinator?
 
     // MARK: - Private Properties
+    private weak var delegate: PairingCoordinatorDelegate?
     private var duringOnboarding: Bool = false
 
     // MARK: - Init
-    public init(navigationController: NavigationController? = nil) {
+    public init(navigationController: NavigationController? = nil,
+                delegate: PairingCoordinatorDelegate) {
         self.navigationController = navigationController
+        self.delegate = delegate
     }
 
     // MARK: - Public Funcs
@@ -64,7 +72,7 @@ public final class PairingCoordinator: Coordinator {
 extension PairingCoordinator {
     /// Dismisses the pairing menu.
     func dismissPairing() {
-        duringOnboarding == true ? showHUDScreen() : parentCoordinator?.dismissChildCoordinator()
+        delegate?.pairingDidFinish()
     }
 
     /// Dismisses connect drone with remote screen.
@@ -108,17 +116,5 @@ extension PairingCoordinator {
     func startRemoteConnectDroneDetail(droneModel: RemoteConnectDroneModel) {
         let viewController = PairingConnectDroneDetailViewController.instantiate(coordinator: self, droneModel: droneModel)
         self.push(viewController)
-    }
-
-    /// Used to show HUD from pairing process.
-    func showHUDScreen() {
-        // Remove Pairing coordinator.
-        if let pairingCoordinatorIndex = childCoordinators.firstIndex(where: ({ $0 is PairingCoordinator })) {
-            childCoordinators.remove(at: pairingCoordinatorIndex)
-        }
-
-        let hudCoordinator = HUDCoordinator()
-        hudCoordinator.parentCoordinator = self
-        self.start(childCoordinator: hudCoordinator)
     }
 }

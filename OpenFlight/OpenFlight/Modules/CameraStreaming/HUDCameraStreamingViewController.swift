@@ -29,6 +29,7 @@
 
 import UIKit
 import GroundSdk
+import Combine
 
 // MARK: - Internal Enums
 enum HUDCameraStreamingMode {
@@ -37,7 +38,7 @@ enum HUDCameraStreamingMode {
 }
 
 // MARK: - Protocols
-protocol HUDCameraStreamingViewControllerDelegate: class {
+protocol HUDCameraStreamingViewControllerDelegate: AnyObject {
     /// Called when the stream content zone changes.
     func didUpdate(contentZone: CGRect?)
 }
@@ -55,12 +56,14 @@ final class HUDCameraStreamingViewController: UIViewController {
 
     // MARK: - Private Properties
     private var contentZone: CGRect = .zero
+    private var cancellables = Set<AnyCancellable>()
+    // TODO: wrong injection
+    private unowned var currentMissionManager = Services.hub.currentMissionManager
     // Views.
     private var borderView: UIView?
     private var proposalAndTrackingView: ProposalAndTrackingView?
     // ViewModels.
     private let cameraStreamingViewModel = HUDCameraStreamingViewModel()
-    private let missionLauncherViewModel = MissionLauncherViewModel()
     private var trackingViewModel: TrackingViewModel? {
         didSet {
             guard self.trackingViewModel == nil else { return }
@@ -162,33 +165,34 @@ private extension HUDCameraStreamingViewController {
         self.cameraStreamingViewModel.cameraLiveUpdateCallback = onCameraLiveUpdate
         self.onStateUpdate(cameraStreamingViewModel.state.value)
 
-        self.missionLauncherViewModel.state.valueChanged = { [weak self] state in
-            self?.updateMissionLauncherState(state)
-        }
-        updateMissionLauncherState(missionLauncherViewModel.state.value)
+        listenMissionMode()
     }
 
-    /// Updates with current mission launcher state.
-    ///
-    /// - Parameters:
-    ///    - state: mission launcher state
-    func updateMissionLauncherState(_ state: MissionLauncherState) {
-        if state.mode?.isTrackingMode == true {
-            guard trackingViewModel == nil else { return }
-
-            setupTrackingViewModel()
-        } else {
-            clearTracking()
+    /// Listen current mission mode
+    func listenMissionMode() {
+        currentMissionManager.modePublisher.sink { [unowned self] in
+            if $0.isTrackingMode {
+                setupTrackingViewModel()
+            } else {
+                clearTracking()
+            }
         }
+        .store(in: &cancellables)
     }
 
     /// Sets up tracking view model.
     func setupTrackingViewModel() {
-        self.trackingViewModel = TrackingViewModel()
-        self.trackingViewModel?.enableMonitoring(true)
-        self.proposalAndTrackingView = ProposalAndTrackingView(frame: CGRect.zero,
+        if trackingViewModel == nil {
+            self.trackingViewModel = TrackingViewModel()
+            self.trackingViewModel?.enableMonitoring(true)
+        }
+
+        if proposalAndTrackingView == nil {
+            self.proposalAndTrackingView = ProposalAndTrackingView(frame: CGRect.zero,
                                                                delegate: self)
-        self.view.addSubview(self.proposalAndTrackingView)
+            self.proposalAndTrackingView?.updateFrame(self.contentZone)
+            self.view.addSubview(self.proposalAndTrackingView)
+        }
         self.trackingViewModel?.state.valueChanged = { [weak self] state in
             if let currentTilt = state.tilt {
                 self?.proposalAndTrackingView?.updateTilt(currentTilt)
@@ -218,7 +222,7 @@ private extension HUDCameraStreamingViewController {
 
         if !state.streamEnabled {
             self.clearTracking()
-        } else if self.missionLauncherViewModel.state.value.mode?.isTrackingMode == true,
+        } else if currentMissionManager.mode.isTrackingMode,
             self.trackingViewModel == nil {
             self.setupTrackingViewModel()
             self.proposalAndTrackingView?.updateFrame(self.contentZone)

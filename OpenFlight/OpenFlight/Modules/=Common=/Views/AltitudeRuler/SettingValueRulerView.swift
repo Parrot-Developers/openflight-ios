@@ -33,7 +33,7 @@ import Reusable
 
 // MARK: - Protocols
 /// Delegate for custom setting ruler view.
-public protocol SettingValueRulerViewDelegate: class {
+public protocol SettingValueRulerViewDelegate: AnyObject {
     /// Called when ruler value changed.
     ///
     /// - Parameters:
@@ -295,6 +295,8 @@ private extension SettingValueRulerView {
     /// - Parameters:
     ///    - indexPath: indexPath of the selection
     func updateValue(indexPath: IndexPath) {
+        guard indexPath.row < model.values.count else { return }
+
         let newValue = model.values[indexPath.row]
         if newValue != model.value {
             model.value = newValue

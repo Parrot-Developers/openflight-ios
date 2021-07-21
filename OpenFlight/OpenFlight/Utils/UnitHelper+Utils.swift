@@ -395,4 +395,20 @@ public final class UnitHelper: NSObject {
     static func speedToFloat(_ speed: Float) -> Float {
         return Float(doubleSpeedWithDouble(Double(speed)))
     }
+
+    /// Creates a string to display a time duration in seconds.
+    ///
+    /// - Parameters:
+    ///    - seconds: value in seconds
+    /// - Returns: a string containing the value and the unit
+    static func formatSeconds(_ seconds: Double) -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.locale = Locale.current
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.maximumFractionDigits = 1
+        let formattedValue = numberFormatter.string(from: NSNumber(value: seconds)) ?? Style.dash
+        return String(format: "%@%@",
+                      formattedValue,
+                      L10n.unitSecond)
+    }
 }

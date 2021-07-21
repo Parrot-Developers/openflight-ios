@@ -32,7 +32,7 @@ import UIKit
 
 // MARK: - Protocols
 /// Delegate that notify state change in the main view model.
-protocol GalleryViewDelegate: class {
+protocol GalleryViewDelegate: AnyObject {
     /// Handle change in state.
     ///
     /// - Parameters:
@@ -55,39 +55,20 @@ protocol GalleryViewDelegate: class {
 /// Gallery home.
 final class GalleryViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var bgLeftView: UIView! {
-        didSet {
-            bgLeftView.backgroundColor = ColorName.black.color
-        }
-    }
-    @IBOutlet private weak var bgView: UIView! {
-        didSet {
-            bgView.backgroundColor = ColorName.black80.color
-        }
-    }
+    @IBOutlet private weak var bgLeftView: UIView!
     @IBOutlet private weak var closeButton: UIButton!
     @IBOutlet private weak var titleLabel: UILabel! {
         didSet {
-            titleLabel.makeUp(with: .huge)
             titleLabel.text = L10n.galleryTitle
         }
     }
     @IBOutlet private weak var filterContainer: UIView!
     @IBOutlet private weak var filtersContainerHeightConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var formatButton: UIButton! {
-        didSet {
-            formatButton.makeup(with: .large, color: .white)
-        }
-    }
-    @IBOutlet private weak var selectButton: UIButton! {
-        didSet {
-            selectButton.makeup(with: .large, color: .white)
-        }
-    }
+    @IBOutlet private weak var formatButton: UIButton!
+    @IBOutlet private weak var selectButton: UIButton!
     @IBOutlet private weak var mediasInfosLabel: UILabel! {
         didSet {
             mediasInfosLabel.text = L10n.galleryNoMedia
-            mediasInfosLabel.makeUp()
         }
     }
     @IBOutlet private weak var leftSourcesContainer: UIView!
@@ -262,11 +243,11 @@ private extension GalleryViewController {
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = false
-        self.navigationController?.navigationBar.tintColor = ColorName.white.color
-        self.navigationController?.navigationBar.barTintColor = ColorName.black.color
+        self.navigationController?.navigationBar.tintColor = ColorName.sambuca.color
+        self.navigationController?.navigationBar.barTintColor = .white
         self.navigationController?.navigationBar.titleTextAttributes = [
             NSAttributedString.Key.font: ParrotFontStyle.huge.font,
-            NSAttributedString.Key.foregroundColor: ColorName.white.color
+            NSAttributedString.Key.foregroundColor: ColorName.sambuca.color
         ]
 
         // Add left button to come back to the HUD.
@@ -285,11 +266,11 @@ private extension GalleryViewController {
                                               action: #selector(selectButtonTouchedUpInside))
         selectBarButton.setTitleTextAttributes([
             NSAttributedString.Key.font: ParrotFontStyle.large.font,
-            NSAttributedString.Key.foregroundColor: ColorName.white.color
+            NSAttributedString.Key.foregroundColor: ColorName.sambuca.color
         ], for: .normal)
         selectBarButton.setTitleTextAttributes([
             NSAttributedString.Key.font: ParrotFontStyle.large.font,
-            NSAttributedString.Key.foregroundColor: ColorName.white50.color
+            NSAttributedString.Key.foregroundColor: ColorName.sambuca50.color
         ], for: .disabled)
         self.navigationItem.rightBarButtonItem = selectBarButton
 
@@ -310,7 +291,7 @@ private extension GalleryViewController {
         guard let viewModel = viewModel else { return }
 
         self.formatButton.isHidden = !viewModel.shouldDisplayFormatOptions
-        self.formatButton.setTitle(L10n.galleryFormat, for: .normal)
+        self.formatButton.setTitle(L10n.galleryFormatSdCard, for: .normal)
     }
 
     /// Updates select button and medias infos label.
@@ -326,8 +307,8 @@ private extension GalleryViewController {
         self.selectButton.setTitle(buttonText, for: .normal)
 
         let titleColor: UIColor = numberOfMedias != 0
-            ? ColorName.white.color
-            : ColorName.white10.color
+            ? ColorName.sambuca.color
+            : ColorName.sambuca50.color
         mediasInfosLabel.isHidden = numberOfMedias != 0
         selectButton.isEnabled = numberOfMedias != 0
         selectButton.setTitleColor(titleColor, for: .normal)

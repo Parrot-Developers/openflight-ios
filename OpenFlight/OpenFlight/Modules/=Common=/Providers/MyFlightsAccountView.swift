@@ -29,7 +29,7 @@
 //    SUCH DAMAGE.
 
 /// Protocol for MyFlightsAccountView.
-public protocol MyFlightsAccountViewDelegate: class {
+public protocol MyFlightsAccountViewDelegate: AnyObject {
     /// Function called when the view is clicked.
     func didClickOnAccount()
 }
@@ -38,4 +38,7 @@ public protocol MyFlightsAccountViewDelegate: class {
 open class MyFlightsAccountView: UIView {
     // MARK: - Open Properties
     open weak var delegate: MyFlightsAccountViewDelegate?
+
+    /// View will appear
+    open func viewWillAppear() { }
 }

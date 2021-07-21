@@ -43,6 +43,8 @@ final class RemoteInfosState: ViewModelState {
     fileprivate(set) var remoteConnectionState: Observable<DeviceState.ConnectionState> = Observable(DeviceState.ConnectionState.disconnected)
     /// Observable for remote update.
     fileprivate(set) var remoteNeedUpdate: Observable<Bool> = Observable(false)
+    /// Observable for remote update.
+    fileprivate(set) var remoteUpdateVersion: Observable<String> = Observable(String())
     /// Observable for remote calibration.
     fileprivate(set) var remoteNeedCalibration: Observable<Bool> = Observable(false)
 }
@@ -72,11 +74,13 @@ final class RemoteInfosViewModel: RemoteControlWatcherViewModel<RemoteInfosState
     ///    - nameDidChange: called when device name changes
     ///    - stateDidChange: called when state changes
     ///    - needUpdateDidChange: called when remote update availability changes
+    ///    - remoteUpdateVersionDidChange: called when remote update version changes
     ///    - needCalibrationDidChange: called when remote calibration availability changes
     init(batteryLevelDidChange: ((BatteryValueModel) -> Void)? = nil,
          nameDidChange: ((String) -> Void)? = nil,
          stateDidChange: ((DeviceState.ConnectionState) -> Void)? = nil,
          needUpdateDidChange: ((Bool) -> Void)? = nil,
+         remoteUpdateVersionDidChange: ((String) -> Void)? = nil,
          needCalibrationDidChange: ((Bool) -> Void)? = nil) {
         super.init()
 
@@ -84,6 +88,7 @@ final class RemoteInfosViewModel: RemoteControlWatcherViewModel<RemoteInfosState
         state.value.remoteName.valueChanged = nameDidChange
         state.value.remoteConnectionState.valueChanged = stateDidChange
         state.value.remoteNeedUpdate.valueChanged = needUpdateDidChange
+        state.value.remoteUpdateVersion.valueChanged = remoteUpdateVersionDidChange
         state.value.remoteNeedCalibration.valueChanged = needCalibrationDidChange
     }
 
@@ -105,17 +110,18 @@ private extension RemoteInfosViewModel {
     /// - Parameters:
     ///    - remoteControl: current Remote
     func listenBatteryLevel(remoteControl: RemoteControl) {
-        batteryInfoRef = remoteControl.getInstrument(Instruments.batteryInfo) { [weak self] _ in
-            self?.updateBatteryLevel(remoteControl)
+        batteryInfoRef = remoteControl.getInstrument(Instruments.batteryInfo) { [weak self] batteryInfo in
+            self?.updateBatteryLevel(batteryInfo)
         }
     }
 
-    /// Update current battery level and state.
+    /// Updates current battery level and state.
     ///
     /// - Parameters:
-    ///    - remoteControl: current Remote
-    func updateBatteryLevel(_ remoteControl: RemoteControl) {
-        state.value.remoteBatteryLevel.set(remoteControl.getInstrument(Instruments.batteryInfo)?.batteryValueModel)
+    ///    - batteryInfo: GroundSdk battery info instrument if available, `nil` otherwise
+    func updateBatteryLevel(_ batteryInfo: BatteryInfo?) {
+        let batteryValueModel = BatteryValueModel(currentValue: batteryInfo?.batteryLevel)
+        state.value.remoteBatteryLevel.set(batteryValueModel)
     }
 
     /// Starts watcher for remote name.
@@ -147,10 +153,12 @@ private extension RemoteInfosViewModel {
         updaterRef = remoteControl.getPeripheral(Peripherals.updater) { [weak self] updater in
             guard let updater = updater else {
                 self?.state.value.remoteNeedUpdate.set(false)
+                self?.state.value.remoteUpdateVersion.set(nil)
                 return
             }
 
             self?.state.value.remoteNeedUpdate.set(!updater.isUpToDate)
+            self?.state.value.remoteUpdateVersion.set(updater.idealVersion?.description)
         }
     }
 

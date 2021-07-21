@@ -46,7 +46,11 @@ final class DynamicRangeItemView: UIControl, NibOwnerLoadable {
         }
     }
     /// Corners to round when view is selected.
-    var roundedCorners: UIRectCorner = [.topRight, .bottomRight]
+    var roundedCorners: UIRectCorner = [.topRight, .bottomRight] {
+        didSet {
+            updateCorners()
+        }
+    }
 
     // MARK: - Override Properties
     override var isHighlighted: Bool {
@@ -80,8 +84,16 @@ private extension DynamicRangeItemView {
             let dynamicRange = model.mode as? DynamicRange else {
                 return
         }
-        backgroundColor = model.isSelected.value ? ColorName.greenSpring20.color : .clear
-        customCornered(corners: roundedCorners, radius: Style.mediumCornerRadius)
         dynamicRangeLabel.text = dynamicRange.title
+        backgroundColor = model.isSelected.value ? ColorName.greenMediumSea.color : ColorName.white90.color
+        let color = model.isSelected.value ? .white : ColorName.sambuca.color
+        dynamicRangeLabel.textColor = color
+        dynamicRangeImageView.tintColor = color
+
+        updateCorners()
+    }
+
+    func updateCorners() {
+        customCornered(corners: roundedCorners, radius: Style.mediumCornerRadius)
     }
 }

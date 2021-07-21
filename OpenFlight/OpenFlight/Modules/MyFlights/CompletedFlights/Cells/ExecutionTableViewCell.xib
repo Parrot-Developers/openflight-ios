@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
@@ -18,6 +24,7 @@
                 <subviews>
                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icClassicMissionMode" translatesAutoresizingMaskIntoConstraints="NO" id="hCv-4v-UJs">
                         <rect key="frame" x="8" y="15" width="30" height="30"/>
+                        <color key="tintColor" name="sambuca"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="30" id="nif-3s-JLU"/>
                             <constraint firstAttribute="width" secondItem="hCv-4v-UJs" secondAttribute="height" multiplier="1:1" id="qFJ-OC-e7n"/>
@@ -27,24 +34,24 @@
                         <rect key="frame" x="46" y="8" width="246" height="44"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nRv-Lr-ca2">
-                                <rect key="frame" x="0.0" y="0.0" width="37.5" height="22"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                <nil key="textColor"/>
+                                <rect key="frame" x="0.0" y="0.0" width="37" height="24.5"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                <color key="textColor" name="sambuca"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="oXu-3r-iI7">
-                                <rect key="frame" x="0.0" y="26" width="83" height="18"/>
+                                <rect key="frame" x="0.0" y="28.5" width="72" height="15.5"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="F2x-9p-Ym8">
-                                        <rect key="frame" x="0.0" y="0.0" width="37.5" height="18"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                        <nil key="textColor"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="32" height="15.5"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                        <color key="textColor" name="sambuca"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yfr-QS-UTl">
-                                        <rect key="frame" x="45.5" y="0.0" width="37.5" height="18"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                        <nil key="textColor"/>
+                                        <rect key="frame" x="40" y="0.0" width="32" height="15.5"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                        <color key="textColor" name="sambuca"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
@@ -59,7 +66,7 @@
                         </constraints>
                     </imageView>
                 </subviews>
-                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <color key="backgroundColor" name="alabaster"/>
                 <constraints>
                     <constraint firstItem="ewW-6F-kB6" firstAttribute="leading" secondItem="hCv-4v-UJs" secondAttribute="trailing" constant="8" id="Fi5-pP-bWt"/>
                     <constraint firstAttribute="bottom" secondItem="ewW-6F-kB6" secondAttribute="bottom" constant="8" id="LVJ-44-SAT"/>
@@ -81,7 +88,13 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="icClassicMissionMode" width="21" height="21"/>
+        <image name="icClassicMissionMode" width="28" height="28"/>
         <image name="icCollapse" width="12" height="20"/>
+        <namedColor name="alabaster">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="sambuca">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

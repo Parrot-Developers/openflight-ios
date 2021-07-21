@@ -27,53 +27,83 @@
 //    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
-
 import UIKit
 import Reusable
-
+import Lottie
 /// Custom view for calibration instruction.
 final class DroneCalibrationInstructionsView: UIView, NibOwnerLoadable {
-
     // MARK: - Outlets
     @IBOutlet private weak var imageView: UIImageView!
+    @IBOutlet private weak var imageViewHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var firstLabel: UILabel!
     @IBOutlet private weak var secondLabel: UILabel!
-
+    @IBOutlet private weak var itemsStackView: UIStackView!
+    @IBOutlet private weak var animationView: UIView!
     // MARK: - Internal Properties
     var viewModel: DroneCalibrationInstructionsModel! {
         didSet {
             fill(with: viewModel)
         }
     }
-
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         self.commonInitDroneCalibrationInstructionsView()
     }
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.commonInitDroneCalibrationInstructionsView()
     }
 }
-
 // MARK: - Private Funcs
 private extension DroneCalibrationInstructionsView {
-
     /// Basic init.
     func commonInitDroneCalibrationInstructionsView() {
         self.loadNibContent()
+        imageView.isHidden = false
+        animationView.isHidden = true
     }
-
     /// Update the UI for a specific view model.
     ///
     /// - Parameters:
     ///    - viewModel: view model for the view.
     func fill(with viewModel: DroneCalibrationInstructionsModel) {
         imageView.image = viewModel.image
+        imageViewHeightConstraint.priority = (viewModel.image == nil) ? UILayoutPriority(rawValue: 500) : UILayoutPriority(rawValue: 1000)
         firstLabel.text = viewModel.firstLabel
-        secondLabel.text = viewModel.secondLabel
         firstLabel.textColor = viewModel.firstLabelColor
+        firstLabel.textAlignment = viewModel.firstLabelAlignment
+        secondLabel.text = viewModel.secondLabel
+        secondLabel.textAlignment = viewModel.secondLabelAlignment
+        itemsStackView.removeSubViews()
+        for item in viewModel.items {
+            let view = DroneCalibrationInstructionItemView()
+            view.text = item
+            itemsStackView.addArrangedSubview(view)
+        }
+    }
+}
+// MARK: - Internal Funcs
+extension DroneCalibrationInstructionsView {
+    /// Plays drone calibration animation.
+    ///
+    /// - Parameters:
+    ///     - jsonFilePath: json file path.
+    func playAnimation(filePath: String) {
+        self.animationView.removeSubViews()
+        self.animationView.isHidden = false
+        self.imageView.isHidden = true
+        let lottieAnimationView = AnimationView()
+        lottieAnimationView.animation = Animation.filepath(filePath)
+        lottieAnimationView.loopMode = .loop
+        animationView.addWithConstraints(subview: lottieAnimationView)
+        lottieAnimationView.play()
+    }
+
+    /// Clears animation view.
+    func clearAnimation() {
+        let lottieAnimationView = animationView.subviews.first(where: { $0 is AnimationView })
+        lottieAnimationView?.removeFromSuperview()
+        imageView.isHidden = false
     }
 }

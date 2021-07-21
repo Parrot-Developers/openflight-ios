@@ -38,6 +38,12 @@ open class FlightPlanGraphic: EditableAGSGraphic {
         return .none
     }
 
+    /// Constants definitions.
+    enum Constants {
+        /// Angle factor for rotation
+        static let rotationFactor: Float = -1.0
+    }
+
     // MARK: - Override Properties
     public override var isSelected: Bool {
         didSet {

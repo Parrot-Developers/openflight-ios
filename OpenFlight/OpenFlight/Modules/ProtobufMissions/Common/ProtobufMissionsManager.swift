@@ -41,7 +41,6 @@ public final class ProtobufMissionsManager {
     // MARK: - Private Properties
     /// The current listeners.
     private var listeners: Set<ProtobufMissionListener> = []
-    private let missionLauncher = MissionLauncherViewModel()
 
     /// Missions to load at the drone connection.
     public var missionsToLoadAtDroneConnection: [ProtobufMissionSignature] = [
@@ -170,7 +169,7 @@ private extension ProtobufMissionsManager {
         // Check if drone would activate de mission on launch.
         if let activeMissionUid = protobufMissionState.currentActiveMissionUID,
            activeMissionUid != DefaultMissionSignature().missionUID {
-            missionLauncher.updateActiveMissionIfNeeded(activeMissionUid: activeMissionUid)
+            Services.hub.currentMissionManager.updateActiveMissionIfNeeded(activeMissionUid: activeMissionUid)
         }
 
         guard let lastMessageReceived = protobufMissionState.lastMessageReceived else {
@@ -184,7 +183,7 @@ private extension ProtobufMissionsManager {
         }
 
         // In case we have a last message receive, let's notify each listener about its mission state AND find the mission that needs to receive the message.
-        let lastMessageReceivedMissionUID = lastMessageReceived.uid
+        let lastMessageReceivedMissionUID = lastMessageReceived.missionUid
         listeners.forEach {
             let missionState = state(for: $0.mission)
             let isActivationSuggested = protobufMissionState.suggestedActivationMissionUID == $0.mission.missionUID

@@ -36,8 +36,8 @@ public extension Camera2 {
     /// Returns true if a gpslapse is currently in progress.
     var isGpsLapseStarted: Bool {
         if let photoState = self.photoCapture?.state,
-            photoState.isStarted,
-            self.config[Camera2Params.photoMode]?.value == .gpsLapse {
+           photoState.isStarted,
+           self.config[Camera2Params.photoMode]?.value == .gpsLapse {
             return true
         } else {
             return false
@@ -52,7 +52,7 @@ public extension Camera2 {
     /// Returns `TimeLapseMode` depending on drone current timelapse capture interval value.
     var timeLapseMode: TimeLapseMode? {
         guard let timelapseCaptureInterval = self.config[Camera2Params.photoTimelapseInterval]?.value else { return nil }
-        return TimeLapseMode(rawValue: Int(timelapseCaptureInterval))
+        return TimeLapseMode(interval: timelapseCaptureInterval)
     }
 
     /// Returns `GpsLapseMode` depending on drone current GPS Lapse capture interval value.
@@ -72,33 +72,50 @@ public extension Camera2 {
         }
     }
 
-    /// Returns true if Hdr is available.
-    var hdrAvailable: Bool {
-        guard let currentMode = mode else { return false }
-        switch currentMode {
-        case .photo:
-            return photoHdrAvailable
-        case .recording:
-            return recordingHdrAvailable
-        }
+    /// Returns true if photo HDR is available for the current photo mode.
+    var photoHdrAvailableForPhotoMode: Bool {
+        let editor = config.edit(fromScratch: true)
+        editor[Camera2Params.photoMode]?.value = config[Camera2Params.photoMode]?.value
+
+        let hdrAvailable = editor[Camera2Params.photoDynamicRange]?.currentSupportedValues.contains(.hdr8)
+
+        return hdrAvailable == true
     }
 
-    /// Returns true if photo Hdr is available for the current photo mode, format and file format.
-    var photoHdrAvailable: Bool {
+    /// Returns true if photo Hdr is available for the current photo resolution
+    var photoHdrAvailableForResolution: Bool {
         let editor = config.edit(fromScratch: true)
         editor[Camera2Params.photoResolution]?.value = config[Camera2Params.photoResolution]?.value
-        editor[Camera2Params.photoFormat]?.value = config[Camera2Params.photoFormat]?.value
-        editor[Camera2Params.photoFileFormat]?.value = config[Camera2Params.photoFileFormat]?.value
 
-        let hdr8Available = editor[Camera2Params.photoDynamicRange]?.currentSupportedValues.contains(.hdr8)
+        let hdrAvailable = editor[Camera2Params.photoDynamicRange]?.currentSupportedValues.contains(.hdr8)
 
-        return hdr8Available == true
+        return hdrAvailable == true
     }
 
-    /// Returns true if video recording Hdr is available for the current recording resolution and framerate.
-    var recordingHdrAvailable: Bool {
+    /// Returns true if photo Hdr is available for the current photo format
+    var photoHdrAvailableForFileFormat: Bool {
+        let editor = config.edit(fromScratch: true)
+        editor[Camera2Params.photoFileFormat]?.value = config[Camera2Params.photoFileFormat]?.value
+
+        let hdrAvailable = editor[Camera2Params.photoDynamicRange]?.currentSupportedValues.contains(.hdr8)
+
+        return hdrAvailable == true
+    }
+
+    /// Returns true if video recording Hdr is available for the current video resolution
+    var recordingHdrAvailableForResolution: Bool {
         let editor = config.edit(fromScratch: true)
         editor[Camera2Params.videoRecordingResolution]?.value = config[Camera2Params.videoRecordingResolution]?.value
+
+        let hdr10Available = editor[Camera2Params.videoRecordingDynamicRange]?.currentSupportedValues.contains(.hdr10)
+        let hdr8Available = editor[Camera2Params.videoRecordingDynamicRange]?.currentSupportedValues.contains(.hdr8)
+
+        return hdr10Available == true || hdr8Available == true
+    }
+
+    /// Returns true if video recording Hdr is available for the current video framerate
+    var recordingHdrAvailableForFramerate: Bool {
+        let editor = config.edit(fromScratch: true)
         editor[Camera2Params.videoRecordingFramerate]?.value = config[Camera2Params.videoRecordingFramerate]?.value
 
         let hdr10Available = editor[Camera2Params.videoRecordingDynamicRange]?.currentSupportedValues.contains(.hdr10)
@@ -139,6 +156,12 @@ public extension Camera2 {
     /// Returns camera media meta data component.
     var mediaMetadata: Camera2MediaMetadata? {
         return getComponent(Camera2Components.mediaMetadata)
+    }
+
+    /// Resets custom media meta data.
+    func resetCustomMediaMetadata() {
+        mediaMetadata?.customId = ""
+        mediaMetadata?.customTitle = ""
     }
 }
 
@@ -216,13 +239,10 @@ public extension Camera2Editor {
         applyValueIfUndefined(config, Camera2Params.photoTimelapseInterval)
         applyValueIfUndefined(config, Camera2Params.shutterSpeed)
         applyValueIfUndefined(config, Camera2Params.storagePolicy)
-        applyValueIfUndefined(config, Camera2Params.streamingCodec)
-        applyValueIfUndefined(config, Camera2Params.streamingMode)
         applyValueIfUndefined(config, Camera2Params.videoRecordingBitrate)
         applyValueIfUndefined(config, Camera2Params.videoRecordingCodec)
         applyValueIfUndefined(config, Camera2Params.videoRecordingDynamicRange)
         applyValueIfUndefined(config, Camera2Params.videoRecordingFramerate)
-        applyValueIfUndefined(config, Camera2Params.videoRecordingHyperlapse)
         applyValueIfUndefined(config, Camera2Params.videoRecordingMode)
         applyValueIfUndefined(config, Camera2Params.videoRecordingResolution)
         applyValueIfUndefined(config, Camera2Params.whiteBalanceMode)

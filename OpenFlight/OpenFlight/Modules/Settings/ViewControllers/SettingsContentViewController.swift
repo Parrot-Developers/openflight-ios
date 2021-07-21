@@ -247,7 +247,8 @@ private extension SettingsContentViewController {
     func configureResetAllButtonCell(at indexPath: IndexPath) -> UITableViewCell {
         let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsResetAllButtonCell
         cell.delegate = self
-        cell.configureCell(title: resetCellLabel?.uppercased() ?? "")
+        cell.configureCell(title: resetCellLabel?.uppercased() ?? "",
+                           isEnabled: !(viewModel?.isUpdating ?? false))
 
         return cell
     }
@@ -314,6 +315,10 @@ extension SettingsContentViewController: SettingsResetAllButtonCellDelegate {
 // MARK: - Settings Segmented Cell Delegate
 extension SettingsContentViewController: SettingsSegmentedCellDelegate {
     @objc func settingsSegmentedCellDidChange(selectedSegmentIndex: Int, atIndexPath indexPath: IndexPath) {
+         guard selectedSegmentIndex >= 0 else {
+            // invalid parameter
+            return
+        }
         let settingEntry = filteredSettings[indexPath.row]
 
         // TODO: Add others key when logs will be added

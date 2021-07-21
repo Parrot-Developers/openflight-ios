@@ -31,14 +31,21 @@
 import Foundation
 import CoreData
 
+/// Protocol for flight plan execution persistence functions
+public protocol FlightPlanExecutionDataProtocol: AnyObject {
+
+    /// Fetch executions matching a recovery id
+    /// - Parameter forRecoveryId: the recoveryId
+    func executions(forRecoveryId: String) -> [FlightPlanExecution]
+}
+
 /// CoreDataManager Flight plan execution utilities.
-extension CoreDataManager {
+extension CoreDataManager: FlightPlanExecutionDataProtocol {
     /// Persists flight plan execution.
     ///
     /// - Parameters:
     ///     - execution: flight plan execution
-    ///     - isFromRun: Saved from a run or not
-    public func saveOrUpdate(execution: FlightPlanExecution, isFromRun: Bool = false) {
+    public func saveOrUpdate(execution: FlightPlanExecution) {
         // 1 - Prepare content to save.
         guard let managedContext = currentContext else { return }
 
@@ -88,12 +95,6 @@ extension CoreDataManager {
         }
 
         execution.settings = finalSettings
-
-        if execution.state == .initialized, isFromRun == false {
-            // State should not be nil (ex: sync from server)
-            // except if a execution has just been started.
-            execution.state = .error
-        }
 
         data.setValue(execution.startDate, forKeyPath: #keyPath(FlightPlanExecutionDataModel.startDate))
         data.setValue(execution.endDate, forKeyPath: #keyPath(FlightPlanExecutionDataModel.endDate))
