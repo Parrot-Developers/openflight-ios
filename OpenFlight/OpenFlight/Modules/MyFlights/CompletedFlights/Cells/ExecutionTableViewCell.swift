@@ -76,10 +76,10 @@ extension ExecutionTableViewCell {
                                                                 timeStyle: .medium) ?? Style.dash
         if fpExecution?.state != .completed {
             completionLabel.text = L10n.flightPlanRunStopped
-            completionLabel.textColor = ColorName.tomato.color
+            completionLabel.textColor = ColorName.warningColor.color
         } else {
             completionLabel.text = L10n.flightPlanRunCompleted
-            completionLabel.textColor = ColorName.greenMediumSea.color
+            completionLabel.textColor = ColorName.highlightColor.color
         }
     }
 }

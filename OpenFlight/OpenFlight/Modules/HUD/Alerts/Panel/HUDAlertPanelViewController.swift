@@ -152,6 +152,7 @@ private extension HUDAlertPanelViewController {
 
         startView.isHidden = alert.startViewIsVisible == false
         stopView.style = alert.stopViewStyle ?? .classic
+        stopView.isHidden = alert.stopViewStyle == .none
         actionButton.setupView(state: alert,
                                showActionLabel: alert.actionLabelIsVisible == true,
                                withText: alert.actionLabelText)

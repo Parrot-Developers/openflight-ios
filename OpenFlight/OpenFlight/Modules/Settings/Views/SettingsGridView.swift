@@ -34,6 +34,7 @@ import UIKit
 class SettingsGridView: UIView {
     // MARK: - Internal Properties
     var isYAxisHidden: Bool = false
+    var isXAxisHidden: Bool = false
 
     // MARK: - Private Properties
     private var path = UIBezierPath()
@@ -55,11 +56,11 @@ class SettingsGridView: UIView {
     // MARK: - Override Funcs
     override func draw(_ rect: CGRect) {
         drawGrid()
-        ColorName.white20.color.setStroke()
+        ColorName.defaultTextColor20.color.setStroke()
         path.stroke()
 
         drawGridAxes()
-        ColorName.white.color.setStroke()
+        ColorName.defaultTextColor.color.setStroke()
         path.stroke()
     }
 
@@ -117,15 +118,17 @@ private extension SettingsGridView {
         path.lineWidth = Constants.axisLineWidth
 
         // X axis
-        var start = CGPoint(x: 0, y: bounds.height)
-        var end = CGPoint(x: bounds.width, y: bounds.height)
-        path.move(to: start)
-        path.addLine(to: end)
+        if !isXAxisHidden {
+            let start = CGPoint(x: 0, y: bounds.height)
+            let end = CGPoint(x: bounds.width, y: bounds.height)
+            path.move(to: start)
+            path.addLine(to: end)
+        }
 
         // Y axis
         if !isYAxisHidden {
-            start = CGPoint(x: 0, y: 0)
-            end = CGPoint(x: 0, y: bounds.height)
+            let start = CGPoint(x: 0, y: 0)
+            let end = CGPoint(x: 0, y: bounds.height)
             path.move(to: start)
             path.addLine(to: end)
         }

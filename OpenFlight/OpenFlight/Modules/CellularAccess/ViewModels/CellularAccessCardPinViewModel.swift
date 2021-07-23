@@ -45,11 +45,11 @@ enum CellularConnectionState {
     var descriptionColor: UIColor? {
         switch self {
         case .searching:
-            return ColorName.greenMediumSea.color
+            return ColorName.highlightColor.color
         case .denied:
             return ColorName.redTorch.color
         case .none:
-            return ColorName.sambuca.color
+            return ColorName.defaultTextColor.color
         default:
             return nil
         }
@@ -148,6 +148,8 @@ private extension CellularAccessCardPinViewModel {
         switch (cellular.simStatus, cellular.registrationStatus) {
         case (.ready, _):
             cellularConnectionState = .ready
+        case(.absent, _):
+            cellularConnectionState = CellularConnectionState.none
         case(_, .searching):
             cellularConnectionState = .searching
             descriptionTitle = L10n.pinModalUnlocking

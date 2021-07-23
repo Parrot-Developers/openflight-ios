@@ -50,7 +50,6 @@ final class DeviceConfirmUpdateViewController: UIViewController {
         let viewController = StoryboardScene.DeviceUpdate.deviceConfirmUpdate.instantiate()
         viewController.model = model
         viewController.coordinator = coordinator
-
         return viewController
     }
 

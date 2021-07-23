@@ -79,7 +79,7 @@ extension CellularStrength: SignalStrength {
              .ok2On4,
              .ok3On4,
              .ok4On4:
-            return .greenMediumSea20
+            return .disabledHighlightColor
         }
     }
 
@@ -93,7 +93,7 @@ extension CellularStrength: SignalStrength {
              .ok2On4,
              .ok3On4,
              .ok4On4:
-            return .greenMediumSea
+            return .highlightColor
         }
     }
 
@@ -105,15 +105,15 @@ extension CellularStrength: SignalStrength {
             return Asset.Cellular.icon4GOffline.image
         case .ko0On4:
             return isLinkActive
-                ? Asset.Cellular.ic4GInactiveQuality1.image
+                ? Asset.Cellular.ic4GQuality1.image
                 : Asset.Cellular.icon4GOffline.image
         case .ok1On4:
             return isLinkActive
-                ? Asset.Cellular.ic4GInactiveQuality2.image
+                ? Asset.Cellular.ic4GQuality2.image
                 : Asset.Cellular.icon4GOffline.image
         case .ok2On4:
             return isLinkActive
-                ? Asset.Cellular.ic4GInactiveQuality3.image
+                ? Asset.Cellular.ic4GQuality3.image
                 : Asset.Cellular.icon4GOffline.image
         case .ok3On4:
             return isLinkActive

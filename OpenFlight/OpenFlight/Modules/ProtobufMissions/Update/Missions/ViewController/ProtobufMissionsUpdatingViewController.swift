@@ -298,7 +298,7 @@ private extension ProtobufMissionsUpdatingViewController {
         cancelButton.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
                                         borderColor: .clear,
                                         radius: 0.0,
-                                        borderWidth: 0.0)
+                                        borderWidth: Style.noBorderWidth)
         setupTableView()
         resetUI()
     }

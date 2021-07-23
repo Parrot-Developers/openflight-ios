@@ -67,6 +67,7 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
         case initial
         case downloadingFirmware
         case uploadingFirmware
+        case processingFirmware
         case waitingForRebootAfterFirmwareUpdate
         case uploadingMissions
         case waitingForRebootAfterMissionsUpdate
@@ -149,7 +150,8 @@ private extension FirmwareAndMissionsUpdateViewController {
              .uploadingFirmware,
              .uploadingMissions:
             presentCancelAlertViewController()
-        case .waitingForRebootAfterFirmwareUpdate,
+        case .processingFirmware,
+             .waitingForRebootAfterFirmwareUpdate,
              .waitingForRebootAfterMissionsUpdate:
             presentQuitRebootAlertViewController()
         default:
@@ -200,8 +202,13 @@ private extension FirmwareAndMissionsUpdateViewController {
             } else {
                 updateProgress()
             }
-        case .waitingForReboot:
+        case .processing:
             if globalUpdateState == .uploadingFirmware {
+                globalUpdateState = .processingFirmware
+                updateProgress()
+            }
+        case .waitingForReboot:
+            if globalUpdateState == .processingFirmware {
                 // After the reboot, a connection with the drone must be established to finish the processes.
                 globalUpdateState = .waitingForRebootAfterFirmwareUpdate
                 displayRebootUI()
@@ -216,6 +223,7 @@ private extension FirmwareAndMissionsUpdateViewController {
         case .error:
             if globalUpdateState == .downloadingFirmware
                 || globalUpdateState == .uploadingFirmware
+                || globalUpdateState == .processingFirmware
                 || globalUpdateState == .waitingForRebootAfterFirmwareUpdate {
                 // This instruction may be triggered during the process or after the new connection of the drone
                 // following a reboot.
@@ -303,7 +311,6 @@ private extension FirmwareAndMissionsUpdateViewController {
         let cancelSucceeded = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
         self.cancelButton.isHidden = cancelSucceeded
         if cancelSucceeded {
-            // FIXME: restart process instead in next gerrit.
             self.quitProcesses()
         }
     }
@@ -357,7 +364,7 @@ private extension FirmwareAndMissionsUpdateViewController {
         cancelButton.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
                                         borderColor: .clear,
                                         radius: 0.0,
-                                        borderWidth: 0.0)
+                                        borderWidth: Style.noBorderWidth)
         setupTableView()
         resetUI()
     }

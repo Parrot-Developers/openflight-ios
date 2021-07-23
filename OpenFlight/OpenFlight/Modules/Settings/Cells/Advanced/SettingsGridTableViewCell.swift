@@ -41,23 +41,11 @@ protocol SettingsGridActionViewDelegate: AnyObject {
 /// Manages drone gesture and display.
 class SettingsGridActionView: UIView {
     // MARK: - Outlets
-    @IBOutlet private weak var positionView: UIView! {
-        didSet {
-            positionView.backgroundColor = ColorName.white20.color
-        }
-    }
+    @IBOutlet private weak var positionView: UIView!
     @IBOutlet private weak var userImage: UIImageView!
     @IBOutlet private weak var droneImage: UIImageView!
-    @IBOutlet private weak var heightLabel: UILabel! {
-        didSet {
-            heightLabel.makeUp(with: .large, and: .white50)
-        }
-    }
-    @IBOutlet private weak var distanceLabel: UILabel! {
-        didSet {
-            distanceLabel.makeUp(with: .large, and: .white50)
-        }
-    }
+    @IBOutlet private weak var heightLabel: UILabel!
+    @IBOutlet private weak var distanceLabel: UILabel!
 
     // MARK: - Private Properties
     private weak var delegate: SettingsGridActionViewDelegate?
@@ -78,6 +66,20 @@ class SettingsGridActionView: UIView {
         return viewModel?.state.value.minDistance ?? GeofencePreset.minDistance
     }
     private var viewModel: GeofenceViewModel?
+
+    var isEnabled: Bool = false {
+        didSet {
+            let textColor = isEnabled ? ColorName.highlightColor.color : ColorName.disabledHighlightColor.color
+            let imageAlpha: CGFloat = isEnabled ? 1.0 : 0.5
+            heightLabel.textColor = textColor
+            distanceLabel.textColor = textColor
+            positionView.backgroundColor = isEnabled ? ColorName.disabledHighlightColor.color : ColorName.defaultTextColor80.color
+            positionView.alpha = isEnabled ? 1.0 : 0.1
+            droneImage.alpha = imageAlpha
+            userImage.alpha = imageAlpha
+            setNeedsDisplay()
+        }
+    }
 
     // MARK: - Private Enums
     private enum Constants {
@@ -123,7 +125,7 @@ class SettingsGridActionView: UIView {
 
         dashedLinePath.lineCapStyle = .butt
         dashedLinePath.close()
-        ColorName.white.color.setStroke()
+        isEnabled ? ColorName.highlightColor.color.setStroke() : ColorName.disabledHighlightColor.color.setStroke()
         dashedLinePath.stroke()
     }
 
@@ -290,15 +292,11 @@ final class SettingsGridTableViewCell: UITableViewCell, NibReusable {
 
     // MARK: - Private Properties
     /// View used to apply disable style (grayed) on the cell.
-    private let grayedView = UIView()
     private weak var delegate: SettingsGridActionViewDelegate?
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-
-        grayedView.backgroundColor = ColorName.black40.color
-        actionView.addWithConstraints(subview: grayedView)
 
         enableView(isEnabled: false)
     }
@@ -326,7 +324,7 @@ private extension SettingsGridTableViewCell {
     /// - Parameters:
     ///     - isEnabled: Is enable
     func enableView(isEnabled: Bool) {
-        grayedView.isHidden = isEnabled
+        actionView.isEnabled = isEnabled
         self.isUserInteractionEnabled = isEnabled
     }
 }

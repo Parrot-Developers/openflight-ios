@@ -42,17 +42,9 @@ final class SettingsResetAllButtonCell: UITableViewCell, NibReusable {
     @IBOutlet private weak var resetButton: UIButton! {
         didSet {
             resetButton.roundCornered()
-            resetButton.backgroundColor = ColorName.white12.color
-            resetButton.makeup(with: .regular, color: ColorName.white)
-            resetButton.setTitleColor(ColorName.white.color, for: .normal)
-            resetButton.setTitleColor(ColorName.white30.color, for: .disabled)
+            resetButton.setTitleColor(ColorName.defaultTextColor.color, for: .normal)
+            resetButton.setTitleColor(ColorName.defaultTextColor80.color, for: .disabled)
         }
-    }
-    @IBOutlet private weak var topConstraint: NSLayoutConstraint!
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let topMargin: CGFloat = 40.0
     }
 
     // MARK: - Internal Properties
@@ -64,9 +56,7 @@ final class SettingsResetAllButtonCell: UITableViewCell, NibReusable {
     /// - Parameters:
     ///    - title: cell title
     ///    - isEnabled: whether reset button is enabled
-    ///    - hasNoMargin: tells if there are margins
-    func configureCell(title: String, isEnabled: Bool, hasNoMargin: Bool = false) {
-        topConstraint.constant = hasNoMargin ? 0.0 : Constants.topMargin
+    func configureCell(title: String, isEnabled: Bool) {
         resetButton.setTitle(title, for: .normal)
         resetButton.setTitle(title, for: .highlighted)
         resetButton.setTitle(title, for: .disabled)

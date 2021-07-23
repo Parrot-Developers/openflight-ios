@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -16,13 +16,14 @@
                 <rect key="frame" x="0.0" y="0.0" width="367" height="125"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I13-J7-MRg">
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I13-J7-MRg" userLabel="bgView">
                         <rect key="frame" x="16" y="0.0" width="335" height="125"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Tfs-mI-IUZ">
                                 <rect key="frame" x="0.0" y="0.0" width="335" height="125"/>
                             </stackView>
                         </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="Tfs-mI-IUZ" firstAttribute="leading" secondItem="I13-J7-MRg" secondAttribute="leading" id="OoY-lm-kJL"/>
                             <constraint firstItem="Tfs-mI-IUZ" firstAttribute="top" secondItem="I13-J7-MRg" secondAttribute="top" id="Phm-hz-xsk"/>
@@ -31,6 +32,7 @@
                         </constraints>
                     </view>
                 </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
                     <constraint firstItem="I13-J7-MRg" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="2wH-me-aQt"/>
                     <constraint firstAttribute="trailing" secondItem="I13-J7-MRg" secondAttribute="trailing" constant="16" id="VPb-JE-W1g"/>
@@ -38,8 +40,9 @@
                     <constraint firstAttribute="bottom" secondItem="I13-J7-MRg" secondAttribute="bottom" id="r6F-dP-WbA"/>
                 </constraints>
             </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
-                <outlet property="bgView" destination="I13-J7-MRg" id="MOf-KO-QaX"/>
+                <outlet property="bgView" destination="I13-J7-MRg" id="2lo-Cn-90e"/>
                 <outlet property="stackView" destination="Tfs-mI-IUZ" id="QGP-ND-exg"/>
             </connections>
             <point key="canvasLocation" x="100" y="183.05847076461771"/>

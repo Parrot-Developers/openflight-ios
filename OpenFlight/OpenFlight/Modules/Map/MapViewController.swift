@@ -93,7 +93,7 @@ open class MapViewController: UIViewController {
 
     // MARK: - Internal Properties
     var shouldUpdateMapType: Bool = true
-    var flightPlanEditionViewController: FlightPlanEditionViewController?
+    public var flightPlanEditionViewController: FlightPlanEditionViewController?
 
     // MARK: - Private Enums
     private enum Constants {

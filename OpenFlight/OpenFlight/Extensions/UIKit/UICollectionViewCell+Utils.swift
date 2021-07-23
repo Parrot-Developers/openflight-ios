@@ -90,7 +90,7 @@ extension UICollectionView {
         let placeholderImageView = UIImageView()
         placeholderImageView.image = Asset.Dashboard.icGalleryEmpty.image
         placeholderImageView.contentMode = .scaleAspectFit
-        placeholderImageView.tintColor = ColorName.sambuca.color
+        placeholderImageView.tintColor = ColorName.defaultTextColor.color
         self.backgroundView = placeholderImageView
         // Auto Layout
         placeholderImageView.translatesAutoresizingMaskIntoConstraints = false

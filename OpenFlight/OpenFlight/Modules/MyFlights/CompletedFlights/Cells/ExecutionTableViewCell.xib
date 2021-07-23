@@ -24,7 +24,7 @@
                 <subviews>
                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icClassicMissionMode" translatesAutoresizingMaskIntoConstraints="NO" id="hCv-4v-UJs">
                         <rect key="frame" x="8" y="15" width="30" height="30"/>
-                        <color key="tintColor" name="sambuca"/>
+                        <color key="tintColor" name="default_text_color"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="30" id="nif-3s-JLU"/>
                             <constraint firstAttribute="width" secondItem="hCv-4v-UJs" secondAttribute="height" multiplier="1:1" id="qFJ-OC-e7n"/>
@@ -36,7 +36,7 @@
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nRv-Lr-ca2">
                                 <rect key="frame" x="0.0" y="0.0" width="37" height="24.5"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                <color key="textColor" name="sambuca"/>
+                                <color key="textColor" name="default_text_color"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="oXu-3r-iI7">
@@ -45,13 +45,13 @@
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="F2x-9p-Ym8">
                                         <rect key="frame" x="0.0" y="0.0" width="32" height="15.5"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                        <color key="textColor" name="sambuca"/>
+                                        <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yfr-QS-UTl">
                                         <rect key="frame" x="40" y="0.0" width="32" height="15.5"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                        <color key="textColor" name="sambuca"/>
+                                        <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
@@ -66,7 +66,7 @@
                         </constraints>
                     </imageView>
                 </subviews>
-                <color key="backgroundColor" name="alabaster"/>
+                <color key="backgroundColor" name="default_bgcolor"/>
                 <constraints>
                     <constraint firstItem="ewW-6F-kB6" firstAttribute="leading" secondItem="hCv-4v-UJs" secondAttribute="trailing" constant="8" id="Fi5-pP-bWt"/>
                     <constraint firstAttribute="bottom" secondItem="ewW-6F-kB6" secondAttribute="bottom" constant="8" id="LVJ-44-SAT"/>
@@ -90,10 +90,10 @@
     <resources>
         <image name="icClassicMissionMode" width="28" height="28"/>
         <image name="icCollapse" width="12" height="20"/>
-        <namedColor name="alabaster">
+        <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>

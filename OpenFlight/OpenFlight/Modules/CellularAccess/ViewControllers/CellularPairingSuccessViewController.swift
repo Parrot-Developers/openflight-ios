@@ -91,7 +91,7 @@ private extension CellularPairingSuccessViewController {
         closeButton.setImage(Asset.Common.Icons.icClose.image, for: .normal)
         titleLabel.text = L10n.cellularConfigurationSucceed
         descriptionLabel.text = L10n.cellularConfigurationSucceedReadyToUse
-        okButton.cornerRadiusedWith(backgroundColor: ColorName.greenMediumSea.color,
+        okButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                     radius: Style.largeCornerRadius)
         okButton.setTitle(L10n.ok, for: .normal)
     }

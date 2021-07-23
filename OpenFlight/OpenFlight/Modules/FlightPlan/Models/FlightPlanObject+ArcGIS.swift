@@ -67,8 +67,9 @@ extension FlightPlanObject {
                                                    speedMin: speedMin)
 
                 let speed = min(speedClamped, speedBound)
-                let pieceDuration = pieceDurationOptimistic(distance: distance,
-                                                                speed: (speed != 0 ? speed : speedMin))
+                let pieceDuration = pieceDurationPessimistic(distance: distance,
+                                                                speed: (speed != 0 ? speed : speedMin),
+                                                                accelerationMax: maxAcceleration)
                 totalTime += pieceDuration
                 totalDistance += distance
             }
@@ -76,7 +77,6 @@ extension FlightPlanObject {
         }
         estimations.distance = totalDistance
         estimations.duration = totalTime
-        // TODO: memory size in next gerrit (need more informations)
 
         return estimations
     }

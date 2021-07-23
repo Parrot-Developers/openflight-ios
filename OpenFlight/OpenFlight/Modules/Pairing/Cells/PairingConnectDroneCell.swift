@@ -82,31 +82,29 @@ final class PairingConnectDroneCell: UITableViewCell, NibReusable {
         if unpairStatus?.shouldShowError == true {
             errorView.isHidden = false
             errorLabel.text = unpairStatus?.title
-            errorLabel.textColor = UIColor(named: .redTorch)
+            errorLabel.textColor = UIColor(named: .errorColor)
         } else if failedToConnect {
             errorView.isHidden = false
             errorLabel.text = L10n.pairingRemoteDroneFailedConnectDrone
-            errorLabel.textColor = UIColor(named: .redTorch)
+            errorLabel.textColor = UIColor(named: .errorColor)
         } else if isConnecting {
             errorView.isHidden = false
             errorLabel.text = L10n.connecting
-            errorLabel.textColor = UIColor(named: .greenSpring)
+            errorLabel.textColor = UIColor(named: .highlightColor)
         }
 
+        let textColor = droneModel.isDroneConnected ? .white : ColorName.defaultTextColor.color
         forgetButton.isHidden = !droneModel.isKnown
         cellularAvailableImageView.isHidden = !droneModel.isDronePaired
+        cellularAvailableImageView.tintColor = textColor
         nameLabel.text = droneModel.droneName
+        nameLabel.textColor = textColor
         wifiImageView.image = droneModel.rssiImage
-
-        if droneModel.isDroneConnected {
-            droneView.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
-                                         borderColor: ColorName.greenSpring.color,
-                                         radius: Style.largeCornerRadius,
-                                         borderWidth: Style.mediumBorderWidth)
-        } else {
-            droneView.cornerRadiusedWith(backgroundColor: UIColor(named: .white10),
-                                         radius: Style.largeCornerRadius)
-        }
+        wifiImageView.tintColor = textColor
+        droneView.cornerRadiusedWith(backgroundColor: droneModel.isDroneConnected ? ColorName.highlightColor.color : .white,
+                                     borderColor: .clear,
+                                     radius: Style.largeCornerRadius,
+                                     borderWidth: Style.noBorderWidth)
     }
 }
 
@@ -121,9 +119,7 @@ private extension PairingConnectDroneCell {
 private extension PairingConnectDroneCell {
     /// Inits view.
     func initView() {
-        errorView.backgroundColor = .clear
-        forgetButton.makeup(color: .redTorch,
-                            and: .normal)
+        droneView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
         forgetButton.setTitle(L10n.commonForget, for: .normal)
     }
 

@@ -268,7 +268,7 @@ private extension FlightDetailsViewController {
         if mapController == nil {
             initMap()
         }
-        backButton.tintColor = UIApplication.isLandscape ? ColorName.sambuca.color : .white
+        backButton.tintColor = UIApplication.isLandscape ? ColorName.defaultTextColor.color : .white
         portraitContainer.isHidden = UIApplication.isLandscape
         landscapeContainer.isHidden = !UIApplication.isLandscape
         contentStackViewLeadingConstraint.constant = UIApplication.isLandscape ? Constants.landscapeContentLeading : Constants.landscapeContentLeading / 2.0

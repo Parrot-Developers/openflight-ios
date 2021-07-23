@@ -54,7 +54,7 @@
                     </view>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nFP-i0-hR0" customClass="DownloadButton" customModule="OpenFlight" customModuleProvider="target">
                         <rect key="frame" x="58" y="92" width="58" height="24"/>
-                        <color key="backgroundColor" name="green_medium_sea"/>
+                        <color key="backgroundColor" name="highlight_color"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="24" id="q5K-A6-pNF"/>
                         </constraints>
@@ -98,7 +98,7 @@
     <resources>
         <image name="iconSelected" width="20" height="20"/>
         <image name="mediaDownload" width="7" height="8"/>
-        <namedColor name="green_medium_sea">
+        <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="suva_grey">

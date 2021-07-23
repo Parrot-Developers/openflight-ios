@@ -169,16 +169,15 @@ final class FirmwareUpdaterWrapper: DroneStateViewModel<FirmwareUpdaterWrapperSt
         }
 
         switch updateState {
-        case .uploading,
-             .processing:
+        case .uploading:
             ULog.d(.missionUpdateTag, "Firmware update cancelled")
-
             return updater.cancelUpdate()
         case .canceled,
              .failed,
              .success:
             return true
-        case .waitingForReboot:
+        case .processing,
+             .waitingForReboot:
             return false
         }
     }

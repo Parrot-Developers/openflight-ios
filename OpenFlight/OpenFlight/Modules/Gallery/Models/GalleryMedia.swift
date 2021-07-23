@@ -57,7 +57,7 @@ enum GalleryMediaDownloadState: CaseIterable {
     var backgroundColor: UIColor {
         switch self {
         case .toDownload:
-            return ColorName.greenMediumSea.color
+            return ColorName.highlightColor.color
         case .downloaded:
             return .white
         case .downloading:
@@ -75,7 +75,7 @@ enum GalleryMediaDownloadState: CaseIterable {
             return ColorName.greenSpring.color
         case .downloaded,
              .error:
-            return ColorName.greenMediumSea.color
+            return ColorName.highlightColor.color
         }
     }
 

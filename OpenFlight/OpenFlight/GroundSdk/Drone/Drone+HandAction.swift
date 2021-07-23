@@ -32,13 +32,6 @@ import GroundSdk
 /// Utility extension for Drone Hand Launch and Hand Land actions.
 extension Drone {
     // MARK: - Internal Properties
-    /// Returns true if drone can Hand Land.
-    var canHandLand: Bool {
-        guard let manualPiloting = self.getPilotingItf(PilotingItfs.manualCopter) else { return false }
-
-        return manualPiloting.canHandLand
-    }
-
     /// Returns true if Hand Launch is available.
     var isHandLaunchAvailable: Bool {
         guard let manualPiloting = self.getPilotingItf(PilotingItfs.manualCopter),
@@ -68,10 +61,5 @@ extension Drone {
     /// Starts Hand Launch.
     func startHandLaunch() {
         self.getPilotingItf(PilotingItfs.manualCopter)?.thrownTakeOff()
-    }
-
-    /// Start Hand Land.
-    func startHandLand() {
-        self.getPilotingItf(PilotingItfs.manualCopter)?.handLand()
     }
 }

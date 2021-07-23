@@ -28,58 +28,68 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Foundation
+import Combine
 import GroundSdk
 
-/// State for `RemoteShutdownAlertState`.
-final class RemoteShutdownAlertState: DeviceConnectionState {
-    // MARK: - Internal Properties
+final class RemoteShutdownAlertViewModel {
+
+    // MARK: - Published Properties
+
     /// Duration before mpp shutdown.
-    fileprivate(set) var durationBeforeShutDown: TimeInterval = 0.0
+    @Published private(set) var durationBeforeShutDown: TimeInterval = 0.0
+    @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
+    @Published private var firstTimeButtonPressed: Bool = true
+    @Published private(set) var isShutdownProcessDone: Bool = false
+    @Published var isShutdownButtonPressed: Bool = false
+
     /// Helpes to know if the alert has to be displayed.
-    var canShowModal: Bool {
-        return durationBeforeShutDown > 0.0 && connectionState == .connected
+    var canShowModal: AnyPublisher<Bool, Never> {
+        $connectionState
+            .combineLatest($durationBeforeShutDown)
+            .map { (connectionState, durationBeforeShutDown) in
+                return durationBeforeShutDown > 0.0 && connectionState == .connected
+            }
+            .eraseToAnyPublisher()
     }
 
-    // MARK: - Init
-    required init() {
-        super.init()
+    // MARK: - Private properties
+
+    private var remoteControleStateRef: Ref<DeviceState>?
+    private var connectedRemote = Services.hub.connectedRemoteControlHolder
+    private var cancellables = Set<AnyCancellable>()
+
+    init() {
+        connectedRemote.remoteControlPublisher
+            .compactMap { $0 }
+            .sink { [unowned self] remoteControl in
+                listenRemoteControl(remoteControl: remoteControl)
+            }
+            .store(in: &cancellables)
+
+        $firstTimeButtonPressed
+            .combineLatest($connectionState, $durationBeforeShutDown)
+            .sink { [weak self] (firstTimeButtonPressed, connectionState, durationBeforeShutDown) in
+                self?.isShutdownButtonPressed = durationBeforeShutDown == 0.0
+                    && firstTimeButtonPressed == false
+                    && connectionState == .connected
+            }
+            .store(in: &cancellables)
     }
 
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - connectionState: current remote connection state
-    ///    - durationBeforeShutDown: duration before remote shutdown
-    init(connectionState: DeviceState.ConnectionState, durationBeforeShutDown: TimeInterval) {
-        super.init(connectionState: connectionState)
-
-        self.durationBeforeShutDown = durationBeforeShutDown
+    func updateFirstTimeButton() {
+        firstTimeButtonPressed = false
     }
 
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? RemoteShutdownAlertState else { return false }
-
-        return super.isEqual(to: other)
-            && self.durationBeforeShutDown == other.durationBeforeShutDown
+    func updateShutdownProcess() {
+        isShutdownProcessDone = true
     }
 
-    override func copy() -> RemoteShutdownAlertState {
-        let copy = RemoteShutdownAlertState(connectionState: self.connectionState,
-                                            durationBeforeShutDown: self.durationBeforeShutDown)
-        return copy
-    }
-}
-
-// MARK: - RemoteShutdownAlertViewModel
-/// ViewModel for Remote shutdown alert, notifies on connection state of the remote.
-final class RemoteShutdownAlertViewModel: RemoteControlStateViewModel<RemoteShutdownAlertState> {
-    // MARK: - Override Funcs
-    override func remoteControlStateDidChange(state: DeviceState) {
-        super.remoteControlStateDidChange(state: state)
-
-        let copy = self.state.value.copy()
-        copy.durationBeforeShutDown = state.durationBeforeShutDown
-        self.state.set(copy)
+    private func listenRemoteControl(remoteControl: RemoteControl) {
+        remoteControleStateRef = remoteControl.getState { [weak self] deviceState in
+            guard let remoteState = deviceState else { return }
+            self?.connectionState = remoteState.connectionState
+            self?.durationBeforeShutDown = remoteState.durationBeforeShutDown
+        }
     }
 }

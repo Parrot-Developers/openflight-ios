@@ -50,7 +50,6 @@ final class RemoteDetailsButtonsViewController: UIViewController {
     static func instantiate(coordinator: RemoteCoordinator) -> RemoteDetailsButtonsViewController {
         let viewController = StoryboardScene.RemoteDetailsButtons.initialScene.instantiate()
         viewController.coordinator = coordinator
-
         return viewController
     }
 
@@ -106,9 +105,12 @@ private extension RemoteDetailsButtonsViewController {
 private extension RemoteDetailsButtonsViewController {
     /// Inits the view.
     func initView() {
-        currentDroneButtonView.applyCornerRadius(Style.largeCornerRadius)
-        calibrationButtonView.applyCornerRadius(Style.largeCornerRadius)
-        softwareVersionButtonView.applyCornerRadius(Style.largeCornerRadius)
+        currentDroneButtonView.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
+        currentDroneButtonView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
+        calibrationButtonView.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
+        calibrationButtonView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
+        softwareVersionButtonView.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
+        softwareVersionButtonView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
     }
 
     /// Inits the view model.

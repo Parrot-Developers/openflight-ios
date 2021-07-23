@@ -35,7 +35,6 @@ final class SettingsSectionCell: UITableViewCell, NibReusable {
     @IBOutlet fileprivate weak var iconImageView: UIImageView!
     @IBOutlet fileprivate weak var titleLabel: UILabel! {
         didSet {
-            titleLabel.makeUp()
             titleLabel.adjustsFontSizeToFitWidth = true
         }
     }
@@ -45,7 +44,6 @@ final class SettingsSectionCell: UITableViewCell, NibReusable {
         super.awakeFromNib()
 
         // setup cell display.
-        self.contentView.applyCornerRadius()
         self.selectionStyle = .none
     }
 
@@ -65,13 +63,13 @@ final class SettingsSectionCell: UITableViewCell, NibReusable {
     ///    - isSelected: is selected
     func selectCell(_ isSelected: Bool) {
         if isSelected {
-            contentView.backgroundColor = ColorName.white.color
-            iconImageView.tintColor = ColorName.black.color
-            titleLabel.textColor = ColorName.black.color
-        } else {
-            contentView.backgroundColor = ColorName.black.color
+            contentView.backgroundColor = ColorName.highlightColor.color
             iconImageView.tintColor = ColorName.white.color
             titleLabel.textColor = ColorName.white.color
+        } else {
+            contentView.backgroundColor = .clear
+            iconImageView.tintColor = ColorName.defaultTextColor.color
+            titleLabel.textColor = ColorName.defaultTextColor.color
         }
     }
 }

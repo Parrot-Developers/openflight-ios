@@ -43,7 +43,6 @@ final class SettingsPresetsView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var presetTitle: UILabel! {
         didSet {
-            presetTitle.makeUp(with: .tiny, and: .white)
             presetTitle.text = L10n.settingsBehaviourMode.uppercased()
         }
     }
@@ -57,10 +56,6 @@ final class SettingsPresetsView: UIView, NibOwnerLoadable {
     private enum Constants {
         static let buttonWidth: CGFloat = 96.0
         static let imageEdgeInsets: CGFloat = 8.0
-        static let activeBgColor: UIColor = ColorName.greenPea.color
-        static let normalBgColor: UIColor = .clear
-        static let activeTintColor: UIColor = ColorName.greenSpring.color
-        static let normalTintColor: UIColor = .white
     }
 
     // MARK: - Override Funcs
@@ -101,14 +96,14 @@ final class SettingsPresetsView: UIView, NibOwnerLoadable {
             button.setTitle(item.title, for: .normal)
             button.setImage(item.image, for: .normal)
             button.imageEdgeInsets.right = Constants.imageEdgeInsets
-            button.customCornered(corners: [.topLeft, .topRight],
-                                  radius: Style.smallCornerRadius)
+            button.customCornered(corners: [.topLeft, .topRight], radius: Style.smallCornerRadius)
             button.tag = index
             index += 1
             button.addTarget(self, action: #selector(modeTouchedUpInside(sender:)), for: .touchUpInside)
-            button.makeup(with: .regular, color: item == selectedMode ? .greenSpring : .white)
-            button.tintColor = item == selectedMode ? Constants.activeTintColor : Constants.normalTintColor
-            button.backgroundColor = item == selectedMode ? Constants.activeBgColor : Constants.normalBgColor
+            let textColor: ColorName = item == selectedMode ? .white : .defaultTextColor
+            button.backgroundColor = item == selectedMode ? ColorName.highlightColor.color : .clear
+            button.tintColor = textColor.color
+            button.makeup(with: .regular, color: textColor)
             presetStackView.addArrangedSubview(button)
         }
     }
@@ -120,15 +115,11 @@ private extension SettingsPresetsView {
         // Reset buttons colors.
         for view in presetStackView.arrangedSubviews {
             guard let button = view as? UIButton else { break }
-
-            button.backgroundColor = Constants.normalBgColor
-            button.tintColor = Constants.normalTintColor
-            button.setTitleColor((button == sender ? ColorName.greenSpring.color : .white), for: .normal)
+            let textColor = sender == button ? ColorName.white.color : ColorName.defaultTextColor.color
+            button.backgroundColor = sender == button ? ColorName.highlightColor.color : .clear
+            button.tintColor = textColor
+            button.setTitleColor(textColor, for: .normal)
         }
-        // Set selected button background color.
-        sender.backgroundColor = Constants.activeBgColor
-        // Set selected button image tint color.
-        sender.tintColor = Constants.activeTintColor
         // Notify delegate.
         let index = sender.tag
         if index < items.count, index >= 0 {
@@ -142,6 +133,5 @@ private extension SettingsPresetsView {
     /// Init content.
     func commonInitPresetsView() {
         self.loadNibContent()
-        self.backgroundColor = .black
     }
 }

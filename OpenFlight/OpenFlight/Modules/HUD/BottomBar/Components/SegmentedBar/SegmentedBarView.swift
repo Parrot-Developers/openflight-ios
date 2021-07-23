@@ -113,8 +113,6 @@ final class SegmentedBarView<T: BarButtonState>: UIView, NibOwnerLoadable, NibLo
 
     func commonInit() {
         self.loadNibContent()
-        self.backgroundColor = ColorName.white90.color
-        self.applyCornerRadius(Style.largeCornerRadius)
         updateModels()
     }
 

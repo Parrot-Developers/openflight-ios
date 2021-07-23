@@ -97,31 +97,22 @@ private extension SettingsCellularDataCell {
         configureConnectionNetworkModeCell()
         configureConnectionNetworkSelectionCell()
 
-        self.contentView.backgroundColor = .clear
-        titleLabel.makeUp()
-        bgView.applyCornerRadius(Style.largeCornerRadius)
-        bgView.backgroundColor = ColorName.white20.color
+        bgView.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
         [accessNameTextField, usernameTextField, passwordTextField].forEach { textField in
-            textField?.makeUp(bgColor: .black40)
             textField?.delegate = self
         }
         accessNameTextField.attributedPlaceholder = NSAttributedString(string: L10n.settingsConnectionApn,
-                                                                       attributes: [NSAttributedString.Key.foregroundColor: ColorName.white20.color])
+                                                                       attributes: [NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor80.color])
         usernameTextField.attributedPlaceholder = NSAttributedString(string: L10n.settingsConnectionUserName,
-                                                                     attributes: [NSAttributedString.Key.foregroundColor: ColorName.white20.color])
+                                                                     attributes: [NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor80.color])
         passwordTextField.attributedPlaceholder = NSAttributedString(string: L10n.commonPassword,
-                                                                     attributes: [NSAttributedString.Key.foregroundColor: ColorName.white20.color])
-
+                                                                     attributes: [NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor80.color])
     }
 
     /// Inits segmented control.
     func initSegmentedControl() {
-        segmentedControl.backgroundColor = .clear
-        segmentedControl.layer.backgroundColor = UIColor.clear.cgColor
-        segmentedControl.customMakeup(normalBackgroundColor: ColorName.clear,
-                                      selectedBackgroundColor: ColorName.greenSpring20,
-                                      selectedFontColor: ColorName.greenSpring)
-        segmentedControl.roundCornered()
+        segmentedControl.applyCornerRadius(Style.largeCornerRadius)
+        segmentedControl.customMakeup()
     }
 
     /// Inits the view model.
@@ -135,16 +126,12 @@ private extension SettingsCellularDataCell {
 
     /// Updates the view when cellular data is off and when a sim card is inserted.
     func updateView() {
-        cellularAccessAndNetworkModeStackView.removeSubViews()
-        cellularAccessAndNetworkModeStackView.addArrangedSubview(cellularAccessSegment.contentView)
-        cellularAccessAndNetworkModeStackView.addArrangedSubview(connectionNetworkModeSegment.contentView)
-        cellularAccessAndNetworkModeStackView.addSeparators()
-
         // Adds/removes cell segments if cellular data access is activated/desactivated
         cellularAccessAndNetworkModeStackView.removeSubViews()
         cellularAccessAndNetworkModeStackView.addArrangedSubview(cellularAccessSegment.contentView)
         cellularAccessAndNetworkModeStackView.addArrangedSubview(connectionNetworkModeSegment.contentView)
-        cellularAccessAndNetworkModeStackView.addSeparators()
+        cellularAccessAndNetworkModeStackView.addSeparators(backColor: ColorName.defaultBgcolor.color)
+
         networkSelectionStackView.isHidden = false
         networkSelectionViewHeightConstraint.constant = Constants.networkSelectionViewHeightConstraint
         manualSelectionViewHeightConstraint.constant = Constants.manualSelectionViewHeightConstraint

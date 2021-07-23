@@ -41,7 +41,7 @@
                             </constraints>
                         </view>
                     </subviews>
-                    <color key="backgroundColor" name="green_medium_sea"/>
+                    <color key="backgroundColor" name="highlight_color"/>
                     <constraints>
                         <constraint firstItem="71B-Wf-dTL" firstAttribute="top" secondItem="e4e-1L-4R7" secondAttribute="top" id="Dpg-y6-2yH"/>
                         <constraint firstItem="uOg-gy-09n" firstAttribute="centerX" secondItem="e4e-1L-4R7" secondAttribute="centerX" id="SdN-tU-JuP"/>
@@ -82,7 +82,7 @@
         </view>
     </objects>
     <resources>
-        <namedColor name="green_medium_sea">
+        <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="white_90">

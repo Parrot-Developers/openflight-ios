@@ -40,12 +40,13 @@ final class ImagingBarWhiteBalanceBarView: UIView, NibOwnerLoadable, BarItemMode
     @IBOutlet private weak var autoButton: UIButton!
     @IBOutlet private weak var presetsLabel: UILabel! {
         didSet {
-            presetsLabel.makeUp(with: .large)
+            presetsLabel.makeUp(with: .large, and: ColorName.defaultTextColor)
             presetsLabel.text = L10n.commonPresets
         }
     }
-
-    @IBOutlet private weak var mainTopConstraint: NSLayoutConstraint!
+    @IBOutlet weak var whiteBalanceStackView: UIStackView!
+    @IBOutlet weak var rulerStackView: UIStackView!
+    @IBOutlet weak var presetsView: UIView!
 
     // MARK: - Internal Properties
     weak var viewModel: ImagingBarWhiteBalanceViewModel? {
@@ -102,6 +103,8 @@ private extension ImagingBarWhiteBalanceBarView {
     /// Common init.
     func commonInitImagingBarWhiteBalanceBarView() {
         self.loadNibContent()
+        self.layer.cornerRadius = Style.largeCornerRadius
+        self.layer.masksToBounds = true
         secondaryViewModel.state.valueChanged = { [weak self] state in
             self?.updateAutomaticMode(isAutomatic: state.mode as? Camera2WhiteBalanceMode == .automatic)
             self?.segmentedBarView?.updateModels()
@@ -136,10 +139,11 @@ private extension ImagingBarWhiteBalanceBarView {
     /// - Parameters:
     ///    - isAutomatic: boolean describing if setting is monitored automatically.
     func updateAutomaticMode(isAutomatic: Bool) {
-        autoButton.cornerRadiusedWith(backgroundColor: isAutomatic ? ColorName.greenMediumSea.color : ColorName.white90.color,
+        autoButton.cornerRadiusedWith(backgroundColor: isAutomatic ? ColorName.highlightColor.color : ColorName.white90.color,
                                       borderColor: .clear,
                                       radius: Style.largeCornerRadius)
-        autoButton.tintColor = isAutomatic ? .white : ColorName.sambuca.color
+        autoButton.layer.masksToBounds = true
+        autoButton.tintColor = isAutomatic ? .white : ColorName.defaultTextColor.color
         centeredRulerBarView?.isAutomatic = isAutomatic
     }
 
@@ -148,11 +152,13 @@ private extension ImagingBarWhiteBalanceBarView {
     /// - Parameters:
     ///    - showCustom: boolean describing whether custom temperatures should be displayed.
     func updateBarMode(showCustom: Bool) {
-        UIView.animate(withDuration: Constants.animationDuration,
-                       animations: {
-                        self.mainTopConstraint.constant = showCustom ? -self.frame.height : 0.0
-                        self.layoutIfNeeded()
-        })
+        if showCustom == true {
+            presetsView.isHidden = true
+            rulerStackView.isHidden = false
+        } else {
+            rulerStackView.isHidden = true
+            presetsView.isHidden = false
+        }
     }
 }
 

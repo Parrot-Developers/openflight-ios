@@ -114,6 +114,10 @@ private extension BottomBarContainerViewController {
                   strongSelf.isPanoramaInProgress != state.inProgress else {
                 return
             }
+            if state.progress == Int(Values.oneHundred) {
+                self?.panoramaProgressView.finishProgressBar()
+            }
+
             strongSelf.isPanoramaInProgress = state.inProgress
         }
     }

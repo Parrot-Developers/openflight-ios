@@ -29,14 +29,14 @@
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.90000000000000002" translatesAutoresizingMaskIntoConstraints="NO" id="kZg-lD-KvI">
                     <rect key="frame" x="246.5" y="16.5" width="37" height="17.5"/>
                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                    <color key="textColor" name="sambuca"/>
+                    <color key="textColor" name="default_text_color"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pef-qk-j1f">
                     <rect key="frame" x="20" y="10" width="46" height="30"/>
                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                     <state key="normal" title="Button">
-                        <color key="titleColor" name="valencia"/>
+                        <color key="titleColor" name="error_color"/>
                     </state>
                     <connections>
                         <action selector="deleteButtonDidTouchUpInside:" destination="-1" eventType="touchUpInside" id="nrB-zn-dxJ"/>
@@ -54,7 +54,7 @@
                     <rect key="frame" x="404" y="10" width="106" height="30"/>
                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                     <state key="normal" title="Button">
-                        <color key="titleColor" name="green_medium_sea"/>
+                        <color key="titleColor" name="highlight_color"/>
                     </state>
                     <connections>
                         <action selector="shareButtonDidTouchUpInside:" destination="-1" eventType="touchUpInside" id="Lyd-fv-hxa"/>
@@ -80,13 +80,13 @@
         </view>
     </objects>
     <resources>
-        <namedColor name="green_medium_sea">
+        <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="valencia">
+        <namedColor name="error_color">
             <color red="0.8901960784313725" green="0.30980392156862746" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>

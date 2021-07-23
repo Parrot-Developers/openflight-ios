@@ -58,11 +58,7 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
             }
         }
     }
-    @IBOutlet private weak var settingTitle: UILabel! {
-        didSet {
-            settingTitle.makeUp()
-        }
-    }
+    @IBOutlet private weak var settingTitle: UILabel!
 
     // MARK: - Internal Properties
     weak var delegate: SettingsQuickCollectionViewCellDelegate?
@@ -97,10 +93,10 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
         self.animationImage.frame = self.settingImage.frame
         self.addSubview(animationImage)
         self.resetCellContent()
-        self.cornerRadiusedWith(backgroundColor: ColorName.black60.color,
-                                borderColor: ColorName.white80.color,
+        self.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
+                                borderColor: .clear,
                                 radius: Style.largeCornerRadius,
-                                borderWidth: Style.smallBorderWidth)
+                                borderWidth: Style.noBorderWidth)
 
         // Setup swipe gesture recognizer.
         let leftSwipeRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(didSwipe))
@@ -136,21 +132,21 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
         self.settingImage.image = segmentModel.segments.elementAt(index: selectedIndex)?.image
 
         if segmentModel.isBoolean {
+            let textColor = (selectedIndex == 0) ? ColorName.disabledTextColor : ColorName.defaultTextColor
             self.settingTitle.text = settingEntry.title
-            self.contentView.backgroundColor = (selectedIndex == 0) ? ColorName.black60.color : ColorName.white20.color
-            let textColor = (selectedIndex == 0) ? ColorName.white80 : ColorName.white
+            self.contentView.backgroundColor = (selectedIndex == 0) ? ColorName.whiteAlbescent.color : ColorName.white.color
+            self.settingImage.tintColor = textColor.color
             settingTitle.makeUp(with: .regular, and: textColor)
-            self.layer.borderColor = selectedIndex == 0 ? ColorName.clear.color.cgColor :ColorName.white.color.cgColor
         } else {
             var title = segmentModel.segments.elementAt(index: selectedIndex)?.title ?? Style.dash
             if let cellTitle = settingEntry.title {
                 title = "\(cellTitle) : " + title
             }
             self.settingTitle.text = title
-            self.contentView.backgroundColor = ColorName.white20.color
+            self.contentView.backgroundColor = ColorName.white.color
+            self.settingImage.tintColor = ColorName.defaultTextColor.color
             self.pageControl.numberOfPages = segmentModel.segments.count
             self.pageControl.currentPage = selectedIndex
-            self.layer.borderColor = ColorName.white.color.cgColor
         }
 
         self.isSwipeAllowed = !segmentModel.isBoolean
@@ -168,7 +164,8 @@ private extension SettingsQuickCollectionViewCell {
         self.settingImage.image = nil
         self.isEnabled = false
         self.pageControl.isHidden = true
-        self.contentView.backgroundColor = ColorName.black60.color
+        self.contentView.backgroundColor = ColorName.whiteAlbescent.color
+        self.settingImage.tintColor = ColorName.disabledTextColor.color
         self.settingImage.center = Constants.defaultImagePosition
         self.animationImage.center = CGPoint(x: -self.frame.width, y: self.settingImage.center.y)
     }

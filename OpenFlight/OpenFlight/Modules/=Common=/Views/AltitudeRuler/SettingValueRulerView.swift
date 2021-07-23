@@ -71,7 +71,7 @@ public enum RulerDisplayType {
         case .number:
             return ColorName.clear.color
         case .string:
-            return ColorName.greyDark60.color
+            return ColorName.whiteAlbescent.color
         }
     }
 
@@ -80,12 +80,12 @@ public enum RulerDisplayType {
         case .number:
             return ColorName.clear.color
         case .string:
-            return ColorName.greenPea50.color
+            return ColorName.highlightColor.color
         }
     }
 
     var textColor: UIColor {
-        ColorName.white.color
+        ColorName.defaultTextColor.color
     }
 
     var selectedTextColor: UIColor {
@@ -93,7 +93,7 @@ public enum RulerDisplayType {
         case .number:
             return ColorName.white.color
         case .string:
-            return ColorName.greenSpring.color
+            return ColorName.white.color
         }
     }
 
@@ -211,7 +211,7 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
     ///
     /// - Parameters:
     ///     - orientation: ruler view orientation
-    init(orientation: RulerOrientation = .vertical) {
+    public init(orientation: RulerOrientation = .vertical) {
         self.orientation = orientation
         super.init(frame: CGRect.zero)
         self.commonInitSettingValueRulerView()
@@ -267,7 +267,7 @@ private extension SettingValueRulerView {
             collectionView.collectionViewLayout = layout
         }
         titleLabel.isHidden = orientation.isHorizontal
-        titleLabel.makeUp()
+        titleLabel.makeUp(and: .defaultTextColor)
         verticalSelectionView.isHidden = orientation.isHorizontal
         horizontalSelectionView.isHidden = !verticalSelectionView.isHidden
     }

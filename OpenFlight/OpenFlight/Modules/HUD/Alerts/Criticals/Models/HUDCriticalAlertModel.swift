@@ -121,10 +121,10 @@ extension HUDCriticalAlertType: CriticalAlertModel {
              .tooMuchAngle:
             return nil
         case .droneCalibrationRequired:
-            return .tomato
+            return .warningColor
         case .droneUpdateRequired,
              .droneAndRemoteUpdateRequired:
-            return .sambuca
+            return .defaultTextColor
         case .highTemperature,
              .lowTemperature:
             return .white
@@ -141,7 +141,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
         case .droneUpdateRequired,
              .droneAndRemoteUpdateRequired,
              .droneCalibrationRequired:
-            return .sambuca
+            return .defaultTextColor
         }
     }
 
@@ -151,7 +151,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
              .highTemperature,
              .tooMuchAngle,
              .lowTemperature:
-            return .valencia
+            return .errorColor
         case .droneUpdateRequired,
              .droneAndRemoteUpdateRequired,
              .droneCalibrationRequired:
@@ -234,7 +234,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return .white
         case .tooMuchAngle,
              .verticalCameraFailure:
-            return .sambuca
+            return .defaultTextColor
         }
     }
 
@@ -242,14 +242,14 @@ extension HUDCriticalAlertType: CriticalAlertModel {
         switch self {
         case .highTemperature,
              .lowTemperature:
-            return .tomato
+            return .warningColor
         case .tooMuchAngle,
              .verticalCameraFailure:
             return .whiteAlbescent
         case .droneUpdateRequired,
              .droneAndRemoteUpdateRequired,
              .droneCalibrationRequired:
-            return .greenMediumSea
+            return .highlightColor
         }
     }
 }

@@ -53,7 +53,7 @@ final class ImagingBarItemView: UIControl, NibOwnerLoadable {
     }
 
     /// Background color to use when the view is selected.
-    var selectedBackgroundColor: UIColor = ColorName.greenMediumSea.color {
+    var selectedBackgroundColor: UIColor = ColorName.highlightColor.color {
         didSet {
             updateColors()
         }
@@ -74,7 +74,7 @@ final class ImagingBarItemView: UIControl, NibOwnerLoadable {
     }
 
     /// Text color to use when the view is not selected.
-    var unselectedTextColor: UIColor = ColorName.sambuca.color {
+    var unselectedTextColor: UIColor = ColorName.defaultTextColor.color {
         didSet {
             updateColors()
         }

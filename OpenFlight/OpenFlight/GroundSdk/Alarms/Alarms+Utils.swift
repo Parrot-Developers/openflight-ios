@@ -93,8 +93,10 @@ extension Alarms {
             alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceTooDark)
         }
 
-        // Check alert for manual piloting with poor gps quality and with obstacle avoidance in degraded mode.
-        if getAlarm(kind: Alarm.Kind.obstacleAvoidanceDegraded).hasError {
+        // Check alert for manual piloting with poor gps quality or strong wind
+        // and with obstacle avoidance in degraded mode.
+        if getAlarm(kind: Alarm.Kind.obstacleAvoidancePoorGps).hasError
+            || getAlarm(kind: Alarm.Kind.obstacleAvoidanceStrongWind).hasError {
             alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceDeteriorated)
         }
 

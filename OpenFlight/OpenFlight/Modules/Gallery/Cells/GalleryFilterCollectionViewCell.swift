@@ -56,11 +56,11 @@ internal extension GalleryFilterCollectionViewCell {
     ///    - itemCount: number of item of this type
     ///    - highlight: boolean to determine if we need to apply the highlight theme
     func setup(type: GalleryMediaType, itemCount: Int, highlight: Bool) {
-        let tintColor = highlight ? .white : ColorName.sambuca.color
-        bgView.cornerRadiusedWith(backgroundColor: (highlight ? ColorName.greenMediumSea.color : .white),
+        let tintColor = highlight ? .white : ColorName.defaultTextColor.color
+        bgView.cornerRadiusedWith(backgroundColor: (highlight ? ColorName.highlightColor.color : .white),
                                   borderColor: .clear,
                                   radius: Style.mediumCornerRadius,
-                                  borderWidth: 0.0)
+                                  borderWidth: Style.noBorderWidth)
         image.image = type.filterImage
         image.tintColor = tintColor
         imageWidthConstraint.constant = type.preferredWidth

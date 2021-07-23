@@ -31,7 +31,7 @@
                 </view>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rGS-3N-pVq">
                     <rect key="frame" x="150" y="240" width="300" height="120"/>
-                    <color key="backgroundColor" name="green_medium_sea"/>
+                    <color key="backgroundColor" name="highlight_color"/>
                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                     <state key="normal" title="Se connecter">
                         <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -57,7 +57,7 @@
         </view>
     </objects>
     <resources>
-        <namedColor name="green_medium_sea">
+        <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <systemColor name="systemBackgroundColor">

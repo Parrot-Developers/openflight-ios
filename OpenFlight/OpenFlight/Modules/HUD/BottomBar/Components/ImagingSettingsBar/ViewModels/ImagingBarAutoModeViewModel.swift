@@ -45,7 +45,7 @@ final class ImagingBarAutoModeState: ViewModelState, EquatableState, Copying {
     var imageTintColor: UIColor {
         return isActive
             ? .white
-            : ColorName.sambuca.color
+            : ColorName.defaultTextColor.color
     }
 
     // MARK: - Init

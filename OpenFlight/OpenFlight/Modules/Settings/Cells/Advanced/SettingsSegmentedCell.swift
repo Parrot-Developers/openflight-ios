@@ -40,21 +40,13 @@ protocol SettingsSegmentedCellDelegate: AnyObject {
 final class SettingsSegmentedCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var bgView: UIView!
-    @IBOutlet private weak var titleLabel: UILabel! {
-        didSet {
-            titleLabel.makeUp()
-        }
-    }
+    @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var infoLabel: UILabel!
     @IBOutlet private weak var viewContentInfos: UIView!
     @IBOutlet private weak var segmentControl: UISegmentedControl! {
         didSet {
-            segmentControl.backgroundColor = .clear
-            segmentControl.layer.backgroundColor = UIColor.clear.cgColor
-            segmentControl.customMakeup(normalBackgroundColor: ColorName.clear,
-                                        selectedBackgroundColor: ColorName.greenSpring20,
-                                        selectedFontColor: ColorName.greenSpring)
-            segmentControl.roundCornered()
+            segmentControl.applyCornerRadius(Style.largeCornerRadius)
+            segmentControl.customMakeup()
         }
     }
     @IBOutlet private weak var subtitleLabel: UILabel!
@@ -88,7 +80,6 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        self.contentView.backgroundColor = .clear
         self.infoTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(infoLabelTouchedUpInside(sender:)))
         if let infoTapGestureRecognizer = self.infoTapGestureRecognizer {
             self.infoLabel.addGestureRecognizer(infoTapGestureRecognizer)
@@ -118,7 +109,7 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
                        subtitle: String?,
                        isEnabled: Bool = true,
                        alpha: CGFloat = 1.0,
-                       subtitleColor: UIColor = ColorName.white.color,
+                       subtitleColor: UIColor = ColorName.defaultTextColor.color,
                        showInfo: (() -> Void)? = nil,
                        infoText: String? = nil,
                        atIndexPath indexPath: IndexPath,
@@ -164,8 +155,8 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
         if showInfo != nil {
             let attrs: [NSAttributedString.Key: Any] = [.font: ParrotFontStyle.regular.font,
                                                         .underlineStyle: NSUnderlineStyle.single.rawValue,
-                                                        .foregroundColor: ColorName.white.color,
-                                                        .underlineColor: ColorName.white.color]
+                                                        .foregroundColor: ColorName.defaultTextColor.color,
+                                                        .underlineColor: ColorName.defaultTextColor.color]
             let attributeString = NSMutableAttributedString(string: infoText ?? L10n.commonInfos, attributes: attrs)
             infoLabel.attributedText = attributeString
         } else {
@@ -193,7 +184,7 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
     func setupBackground(shouldShow: Bool) {
         bgView.applyCornerRadius(Style.largeCornerRadius)
         bgView.backgroundColor = shouldShow
-            ? ColorName.white20.color
+            ? ColorName.white.color
             : .clear
     }
 }

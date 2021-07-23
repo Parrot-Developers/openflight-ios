@@ -65,6 +65,8 @@ public enum Style {
     public static let mediumCornerRadius: CGFloat = 6.0
     /// Corner radius = 9.0.
     public static let largeCornerRadius: CGFloat = 9.0
+    /// Border width = 0.0
+    public static let noBorderWidth: CGFloat = 0.0
     /// Border width = 0.5
     public static let smallBorderWidth: CGFloat = 0.5
     /// Border width = 1.0

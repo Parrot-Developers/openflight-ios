@@ -68,7 +68,7 @@ private extension MyAccountView {
 
         self.connectButton.setTitle(L10n.commonLogIn, for: .normal)
         self.connectButton.makeup()
-        self.connectButton.cornerRadiusedWith(backgroundColor: ColorName.greenMediumSea.color,
+        self.connectButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                               radius: Style.smallCornerRadius)
     }
 }

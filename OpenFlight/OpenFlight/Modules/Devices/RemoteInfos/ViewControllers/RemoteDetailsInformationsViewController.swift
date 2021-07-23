@@ -99,10 +99,9 @@ private extension RemoteDetailsInformationsViewController {
 private extension RemoteDetailsInformationsViewController {
     /// Inits the view.
     func initView() {
-        resetButton.cornerRadiusedWith(backgroundColor: UIColor(named: .white20),
+        resetButton.cornerRadiusedWith(backgroundColor: UIColor(named: .whiteAlbescent),
                                        radius: Style.largeCornerRadius)
-        resetButton.setTitle(L10n.commonReset,
-                             for: .normal)
+        resetButton.setTitle(L10n.commonReset, for: .normal)
     }
 
     /// Inits the remote information view model.
@@ -119,13 +118,13 @@ private extension RemoteDetailsInformationsViewController {
     ///    - state: current remote information state
     func updateView(_ state: RemoteDetailsInformationsState) {
         resetButton.isEnabled = state.isConnected()
-        let resetColor: ColorName = state.isConnected() ? ColorName.white : ColorName.white20
+        let resetColor: ColorName = state.isConnected() ? ColorName.defaultTextColor : ColorName.disabledTextColor
 
         resetButton.makeup(with: .large, color: resetColor)
-        resetButton.cornerRadiusedWith(backgroundColor: .clear,
-                                       borderColor: resetColor.color,
+        resetButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
+                                       borderColor: .clear,
                                        radius: Style.largeCornerRadius,
-                                       borderWidth: Style.largeBorderWidth)
+                                       borderWidth: Style.noBorderWidth)
 
         serialNumberView.model = DeviceInformationsModel(title: L10n.remoteDetailsSerialNumber,
                                                          description: state.serialNumber)

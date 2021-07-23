@@ -21,7 +21,7 @@
             <subviews>
                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icClassicMissionMode" translatesAutoresizingMaskIntoConstraints="NO" id="dWX-sE-dvS">
                     <rect key="frame" x="32.5" y="32.5" width="35" height="35"/>
-                    <color key="tintColor" name="sambuca"/>
+                    <color key="tintColor" name="default_text_color"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="35" id="Jkx-bC-2Im"/>
                         <constraint firstAttribute="height" constant="35" id="NF4-Ar-gyD"/>
@@ -41,7 +41,7 @@
     </objects>
     <resources>
         <image name="icClassicMissionMode" width="28" height="28"/>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>

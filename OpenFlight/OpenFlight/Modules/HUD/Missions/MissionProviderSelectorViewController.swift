@@ -39,7 +39,7 @@ final class MissionProviderSelectorViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel! {
         didSet {
-            titleLabel.makeUp(with: .regular, and: ColorName.sambuca)
+            titleLabel.makeUp(with: .regular, and: ColorName.defaultTextColor)
             titleLabel.text = L10n.missionSelectLabel.uppercased()
         }
     }

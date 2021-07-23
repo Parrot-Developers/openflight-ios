@@ -43,27 +43,24 @@ final class SettingsNetworkNameCell: UITableViewCell, NibReusable {
     @IBOutlet private weak var bgView: UIView! {
         didSet {
             bgView.applyCornerRadius(Style.largeCornerRadius)
-            bgView.backgroundColor = ColorName.white20.color
         }
     }
     @IBOutlet private weak var cellTitle: UILabel! {
         didSet {
             cellTitle.text = L10n.settingsConnectionNetworkName
-            cellTitle.makeUp()
         }
     }
-    @IBOutlet private weak var textfield: UITextField! {
-        didSet {
-            textfield.makeUp()
-        }
-    }
+    @IBOutlet private weak var textfield: UITextField!
     @IBOutlet private weak var passwordButton: UIButton! {
         didSet {
-            passwordButton.makeup(with: .small, color: .white)
-            passwordButton.makeup(with: .small, color: .black40, and: .disabled)
+            passwordButton.makeup(with: .small, color: .defaultTextColor)
+            passwordButton.makeup(with: .small, color: .defaultTextColor80, and: .disabled)
             passwordButton.setTitle(L10n.commonPassword.uppercased(), for: .normal)
-            passwordButton.backgroundColor = ColorName.white20.color
-            passwordButton.applyCornerRadius(Style.mediumCornerRadius)
+            passwordButton.cornerRadiusedWith(backgroundColor: .white,
+                                              borderColor: ColorName.defaultBgcolor.color,
+                                              radius: Style.mediumCornerRadius,
+                                              borderWidth: Style.mediumBorderWidth)
+            passwordButton.addShadow(shadowColor: ColorName.whiteAlbescent.color)
         }
     }
 

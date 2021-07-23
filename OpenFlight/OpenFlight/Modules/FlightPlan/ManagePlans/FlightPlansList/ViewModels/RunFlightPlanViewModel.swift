@@ -383,7 +383,7 @@ private extension RunFlightPlanViewModel {
             copy.unavailabilityReasons = pilotingItf.unavailabilityReasons
             copy.isFileKnownByDrone = pilotingItf.flightPlanFileIsKnown
 
-            // Find largest mavlink item between skipped and executed
+            // Find largest mavlink index between latest skipped and executed items
             var largestMissionItem: Int?
             if let latestSkipped = pilotingItf.latestMissionItemSkipped {
                 if let latestExecuted = pilotingItf.latestMissionItemExecuted {
@@ -396,13 +396,14 @@ private extension RunFlightPlanViewModel {
             }
 
             // Update latest item executed only if received idx is greater than current idx
+            // Otherwise, if latestMissionItemExecuted is nil, reset local copy as well
             if let receivedItemExecuted = largestMissionItem,
                let latestItemExecuted = copy.latestItemExecuted,
                receivedItemExecuted > latestItemExecuted {
                 copy.latestItemExecuted = receivedItemExecuted
                 strongSelf.updateFlightPlanItemExecution(receivedItemExecuted)
-
-            } else if copy.latestItemExecuted == nil {
+            } else if copy.latestItemExecuted == nil ||
+                        pilotingItf.latestMissionItemExecuted == nil {
                 copy.latestItemExecuted = pilotingItf.latestMissionItemExecuted
             }
 
@@ -411,16 +412,14 @@ private extension RunFlightPlanViewModel {
                strongSelf.state.value.runState == .playing,
                strongSelf.didStartExecution == false {
                 strongSelf.startFlightPlanExecution()
-            } else if pilotingItf.state == .idle,
-                      strongSelf.state.value.runState == .userStopped {
-                strongSelf.handleFlightEnds(state: &copy)
             }
 
             switch pilotingItf.state {
             case .unavailable:
                 // Reset run state.
                 copy.runState = .stopped
-            case .idle where self?.state.value.runState == .playing:
+            case .idle where self?.state.value.runState == .playing ||
+                    self?.state.value.runState == .userStopped:
                 // Ends Flight Plan.
                 copy.runState = .stopped
                 copy.completed = true
@@ -787,6 +786,7 @@ private extension RunFlightPlanViewModel {
 
         let newCopy = self.state.value.copy()
         newCopy.flightPlanExecutionEndingState = .notEnded
+        newCopy.latestItemExecuted = nil
         self.state.set(newCopy)
 
         lastExecutionId = nil

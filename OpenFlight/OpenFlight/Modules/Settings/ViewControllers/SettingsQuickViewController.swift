@@ -84,7 +84,6 @@ final class SettingsQuickViewController: UIViewController, StoryboardBased {
 private extension SettingsQuickViewController {
     /// setup collection.
     func setupCollection() {
-        collection.backgroundColor = self.view.backgroundColor
         if let flowLayout = collection.collectionViewLayout as? UICollectionViewFlowLayout {
             flowLayout.itemSize = Constants.cellSize
             flowLayout.estimatedItemSize = CGSize.zero // use fixed size

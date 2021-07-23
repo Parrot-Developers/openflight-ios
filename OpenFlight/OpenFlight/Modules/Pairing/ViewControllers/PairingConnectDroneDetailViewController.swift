@@ -42,7 +42,6 @@ final class PairingConnectDroneDetailViewController: UIViewController {
     @IBOutlet private weak var passwordField: UITextField!
     @IBOutlet private weak var passwordErrorView: UIView!
     @IBOutlet private weak var passwordErrorLabel: UILabel!
-    @IBOutlet private weak var backgroundView: UIView!
     @IBOutlet private weak var passwordDescriptionView: UIView!
     @IBOutlet private weak var passwordSecurityButton: UIButton!
     @IBOutlet private weak var passwordDescriptionLabel: UILabel!
@@ -92,15 +91,8 @@ final class PairingConnectDroneDetailViewController: UIViewController {
     /// Change button style when orientation changed.
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        if UIApplication.isLandscape {
-            connectButton.cornerRadiusedWith(backgroundColor: .clear,
-                                             borderColor: .clear,
-                                             radius: 0.0)
-        } else {
-            connectButton.cornerRadiusedWith(backgroundColor: UIColor(named: .greenSpring20),
-                                             borderColor: .clear,
-                                             radius: Style.largeCornerRadius)
-        }
+
+        updateConnectButton()
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -135,13 +127,13 @@ private extension PairingConnectDroneDetailViewController {
 private extension PairingConnectDroneDetailViewController {
     /// Init the view.
     func initView() {
-        passwordView.cornerRadiusedWith(backgroundColor: UIColor(named: .white20),
+        passwordView.cornerRadiusedWith(backgroundColor: .white,
                                         borderColor: .clear,
                                         radius: Style.largeCornerRadius)
+        passwordView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
         passwordField.attributedPlaceholder = NSAttributedString(string: L10n.commonPassword,
-                                                                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.white])
+                                                                 attributes: [NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor.color])
         passwordField.delegate = self
-        passwordField.backgroundColor = .clear
         passwordDescriptionLabel.text = L10n.pairingRemoteDroneForgotPassword
         passwordErrorLabel.text = L10n.pairingRemoteDronePasswordIncorrect
         titleLabel.text = L10n.pairingRemoteDroneConnectTo(droneModel?.droneName ?? "")
@@ -149,13 +141,11 @@ private extension PairingConnectDroneDetailViewController {
         // Connection state visibility.
         connectButton.setTitle(L10n.pairingRemoteDroneConnect, for: .normal)
         connectButton.isHidden = false
-        connectButton.makeup(with: .large, color: .greenSpring, and: .normal)
-        connectButton.makeup(with: .large, color: .white20, and: .disabled)
+        connectButton.applyCornerRadius(Style.largeCornerRadius)
         connectionStateImageView.isHidden = true
         connectionStateLabel.isHidden = true
+        updateConnectButton()
         enabledButtonInteraction()
-        backgroundView.backgroundColor = UIColor(named: .white10)
-        self.view.backgroundColor  = UIColor(named: .black)
     }
 
     /// Update with pairing connect drone state.
@@ -208,6 +198,15 @@ private extension PairingConnectDroneDetailViewController {
         } else {
             connectButton.isEnabled = true
         }
+    }
+
+    /// Update the connecting button
+    func updateConnectButton() {
+        connectButton.cornerRadiusedWith(backgroundColor: UIApplication.isLandscape ? .clear : ColorName.highlightColor.color,
+                                         borderColor: .clear,
+                                         radius: Style.largeCornerRadius)
+        connectButton.makeup(with: .large, color: UIApplication.isLandscape ? .highlightColor : .white, and: .normal)
+        connectButton.makeup(with: .large, color: UIApplication.isLandscape ? .disabledHighlightColor : .white20, and: .disabled)
     }
 }
 

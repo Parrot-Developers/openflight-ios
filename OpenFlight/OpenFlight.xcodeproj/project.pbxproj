@@ -4195,9 +4195,9 @@
 			children = (
 				6A6C9504236B3E500027842D /* SettingsButtonCell.swift */,
 				6A6C9500236B3E500027842D /* SettingsButtonCell.xib */,
-				6A6C94E9236B3C1D0027842D /* SettingsResetAllButtonCell.swift */,
 				E42AC25B261CB7DE00A77201 /* SettingsCellularDataCell.swift */,
 				E42AC25A261CB7DE00A77201 /* SettingsCellularDataCell.xib */,
+				6A6C94E9236B3C1D0027842D /* SettingsResetAllButtonCell.swift */,
 				6A6C94E6236B3C1D0027842D /* SettingsResetAllButtonCell.xib */,
 				6A6C94E5236B3C1C0027842D /* SettingsTitleCell.swift */,
 				6A6C94E7236B3C1D0027842D /* SettingsTitleCell.xib */,

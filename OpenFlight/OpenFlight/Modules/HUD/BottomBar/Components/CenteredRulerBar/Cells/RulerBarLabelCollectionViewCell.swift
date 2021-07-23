@@ -50,7 +50,7 @@ final class RulerBarLabelCollectionViewCell: UICollectionViewCell, NibReusable {
     func fill(with mode: RulerDisplayable, isEnabled: Bool) {
         mainLabel.text = mode.rulerText
         mainLabel.backgroundColor = mode.rulerBackgroundColor ?? .clear
-        mainLabel.textColor = mode.rulerBackgroundColor == nil ? ColorName.sambuca.color : ColorName.white.color
+        mainLabel.textColor = mode.rulerBackgroundColor == nil ? ColorName.defaultTextColor.color : ColorName.white.color
         self.isUserInteractionEnabled = isEnabled
         self.mainLabel.alphaWithEnabledState(isEnabled)
     }

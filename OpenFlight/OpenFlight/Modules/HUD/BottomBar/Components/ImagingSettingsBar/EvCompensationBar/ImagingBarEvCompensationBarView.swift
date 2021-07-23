@@ -68,7 +68,7 @@ private extension ImagingBarEvCompensationBarView {
                                                  radius: Style.largeCornerRadius,
                                                  backgroundColor: ColorName.white90.color,
                                                  borderColor: .clear,
-                                                 borderWidth: 0.0)
+                                                 borderWidth: Style.noBorderWidth)
     }
 
     func addRulerBar() {

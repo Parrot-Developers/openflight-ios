@@ -89,8 +89,8 @@ private extension MissionLauncherButton {
     func updateView(selected: Bool? = nil, image: UIImage? = nil) {
         let isSelected = selected ?? model.selected
         let cornerRadius = frame.width / 2
-        let backgroundColor = isSelected ? ColorName.greenMediumSea.color : ColorName.white90.color
-        let tintColor = isSelected ? .white : ColorName.sambuca.color
+        let backgroundColor = isSelected ? ColorName.highlightColor.color : ColorName.white90.color
+        let tintColor = isSelected ? .white : ColorName.defaultTextColor.color
         missionImageView.image = image ?? model.image
         missionImageView.tintColor = tintColor
         customCornered(corners: .allCorners,

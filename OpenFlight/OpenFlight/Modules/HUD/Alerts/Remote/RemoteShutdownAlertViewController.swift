@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Displays remote shutdown alert on the HUD.
 final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProvider {
@@ -47,18 +48,12 @@ final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProv
 
     // MARK: - Private Properties
     private let viewModel = RemoteShutdownAlertViewModel()
+    private var cancellables = Set<AnyCancellable>()
     private weak var coordinator: Coordinator?
-    private var firstTimeButtonPressed: Bool = true
-    private var isShutdownProcessDone: Bool = false
-    private var isShutdownButtonPressed: Bool {
-        return self.viewModel.state.value.durationBeforeShutDown == 0.0
-            && self.firstTimeButtonPressed == false
-            && self.viewModel.state.value.isConnected() == true
-    }
 
     // MARK: - Private Enums
     private enum Constants {
-        static var timer: Int = 2
+        static var timer: Int = 3
         static var dismissRemoteShutdownAlertTaskKey: String = "DimissRemoteShutdownAlert"
     }
 
@@ -80,11 +75,7 @@ final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProv
         super.viewDidLoad()
 
         initView()
-        initViewModel()
-
-        self.addCloseButton(onTapAction: #selector(closeButtonTouchedUpInside(_:)),
-                            targetView: panelView,
-                            style: .cross)
+        bindViewModel()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -106,8 +97,7 @@ private extension RemoteShutdownAlertViewController {
         dismissRemoteAlertShutdown()
     }
 
-    // Called when user touches the close button.
-    @objc func closeButtonTouchedUpInside(_ sender: UIButton) {
+    @IBAction func closeButtonTouchedUpInside(_ sender: UIButton) {
         dismissRemoteAlertShutdown()
     }
 }
@@ -116,48 +106,42 @@ private extension RemoteShutdownAlertViewController {
 private extension RemoteShutdownAlertViewController {
     /// Inits panel view.
     func initView() {
-        alertInstructionLabel.makeUp()
         alertInstructionLabel.text = L10n.remoteAlertShutdownInstruction
         sliderStepLabel.text = String(Constants.timer)
-        panelView.addBlurEffect()
-        bgSlider.roundCorneredWith(backgroundColor: OpenFlight.ColorName.redTorch.color)
+        panelView.layer.cornerRadius = Style.largeCornerRadius
+        panelView.layer.masksToBounds = true
+        bgSlider.roundCorneredWith(backgroundColor: OpenFlight.ColorName.errorColor.color)
         sliderStepView.roundCornered()
     }
 
-    /// Init remote shutdown alert ViewModel.
-    func initViewModel() {
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.updateRemoteShutdownState(state)
-        }
-        updateRemoteShutdownState(viewModel.state.value)
-    }
+    /// Binds the view model to the views.
+    func bindViewModel() {
+        viewModel.$connectionState
+            .combineLatest(viewModel.$isShutdownProcessDone, viewModel.$durationBeforeShutDown, viewModel.$isShutdownButtonPressed)
+            .sink { [unowned self] (connectionState, isShutdownProcessDone, durationBeforeShutdown, isShutdownButtonPressed) in
+                if connectionState != .connected || viewModel.isShutdownButtonPressed {
+                    if isShutdownProcessDone {
+                        updateView(shouldHide: true)
+                        setupDelayedTask(dismissRemoteAlertShutdown,
+                                         delay: Double(Constants.timer),
+                                         key: Constants.dismissRemoteShutdownAlertTaskKey)
+                    } else {
+                        sliderStepView.layer.removeAllAnimations()
+                        updateView(shouldHide: false)
+                        dismissRemoteAlertShutdown()
+                    }
+                    return
+                }
 
-    /// Update with remote shutdown alert state.
-    ///
-    /// - Parameters:
-    ///    - state: remote shutdown alert state
-    func updateRemoteShutdownState(_ state: RemoteShutdownAlertState) {
-        // Check if remote is disconnected or if remote shutdown button is unpressed.
-        if state.isConnected() == false || isShutdownButtonPressed {
-            if isShutdownProcessDone {
-                updateView(shouldHide: true)
-                setupDelayedTask(dismissRemoteAlertShutdown,
-                                 delay: Double(Constants.timer),
-                                 key: Constants.dismissRemoteShutdownAlertTaskKey)
-            } else {
-                sliderStepView.layer.removeAllAnimations()
-                updateView(shouldHide: false)
-                dismissRemoteAlertShutdown()
+                if connectionState == .connected && durationBeforeShutdown != 0.0 {
+                    animateSlider(timer: Constants.timer)
+                    viewModel.updateFirstTimeButton()
+                } else {
+                    self.dismissRemoteAlertShutdown()
+                    return
+                }
             }
-
-            return
-        }
-
-        // Start animation.
-        if state.isConnected() == true && state.durationBeforeShutDown != 0.0 {
-            animateSlider(timer: Constants.timer)
-            firstTimeButtonPressed = false
-        }
+            .store(in: &cancellables)
     }
 
     /// Animates remote slider shutdown view.
@@ -165,6 +149,12 @@ private extension RemoteShutdownAlertViewController {
     /// - Parameters:
     ///     - timer: Animation duration
     func animateSlider(timer: Int) {
+        // Check if animation is ended or not.
+        if viewModel.isShutdownButtonPressed {
+            dismissRemoteAlertShutdown()
+            return
+        }
+
         UIView.animate(withDuration: Style.longAnimationDuration, delay: 0.0, options: .curveLinear) { () in
             self.sliderStepView.center.x += (self.sliderStepView.bounds.width / 2.0)
                 + self.sliderStepViewDefaultConstraint.constant
@@ -172,17 +162,11 @@ private extension RemoteShutdownAlertViewController {
         } completion: { _ in
             let newTimerValue = timer - 1
 
-            // Check if animation is ended or not.
-            if self.isShutdownButtonPressed {
-                self.dismissRemoteAlertShutdown()
-                return
-            }
-
             if newTimerValue > 0 {
                 self.sliderStepLabel.text = String(newTimerValue)
                 self.animateSlider(timer: newTimerValue)
             } else {
-                self.isShutdownProcessDone = true
+                self.viewModel.updateShutdownProcess()
                 self.updateView(shouldHide: true)
             }
         }

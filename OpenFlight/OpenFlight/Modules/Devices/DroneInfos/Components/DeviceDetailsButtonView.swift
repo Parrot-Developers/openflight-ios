@@ -40,6 +40,8 @@ struct DeviceDetailsButtonModel {
     var subtitle: String?
     var complementarySubtitle: String?
     var backgroundColor: ColorName?
+    var mainImageTintColor: ColorName?
+    var titleColor: ColorName?
     var subtitleColor: ColorName?
 
     // MARK: - Init
@@ -58,14 +60,20 @@ struct DeviceDetailsButtonModel {
          subImage: UIImage? = nil,
          subtitle: String? = Style.dash,
          complementarySubtitle: String? = nil,
-         backgroundColor: ColorName = .white10,
-         subtitleColor: ColorName = .white50) {
+         backgroundColor: ColorName = .white,
+         mainImageTintColor: ColorName = .defaultTextColor,
+         titleColor: ColorName = .defaultTextColor,
+         subtitleColor: ColorName = .defaultTextColor80,
+         subImageTintColor: ColorName = .highlightColor
+    ) {
         self.mainImage = mainImage
         self.title = title
         self.subImage = subImage
         self.subtitle = subtitle
         self.complementarySubtitle = complementarySubtitle
         self.backgroundColor = backgroundColor
+        self.mainImageTintColor = mainImageTintColor
+        self.titleColor = titleColor
         self.subtitleColor = subtitleColor
     }
 }
@@ -107,21 +115,19 @@ private extension DeviceDetailsButtonView {
     /// Common init.
     func commonInitDeviceDetailsButtonView() {
         self.loadNibContent()
-
-        titleLabel.makeUp()
-        subtitleLabel.makeUp(and: .white50)
-        complementarySubtitleLabel.makeUp(and: .greenSpring)
     }
 
     /// Fills up the view with current model.
     func fill() {
         mainImageView.image = model?.mainImage
+        mainImageView.tintColor = model?.mainImageTintColor?.color
         titleLabel.text = model?.title
         subImageView.image = model?.subImage
         subtitleLabel.text = model?.subtitle
         complementarySubtitleLabel.text = model?.complementarySubtitle
         subStackView.isHidden = model?.subtitle == nil
         subImageView.isHidden = model?.subImage == nil
+        titleLabel.textColor = model?.titleColor?.color
         subtitleLabel.textColor = model?.subtitleColor?.color
         backgroundColor = model?.backgroundColor?.color
     }

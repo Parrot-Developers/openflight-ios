@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
-    <device id="retina3_5" orientation="portrait" appearance="light"/>
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
@@ -25,39 +25,39 @@
                         <viewControllerLayoutGuide type="bottom" id="zGs-At-gSm"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="Wf3-fd-o0X">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uye-IR-SVa">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="302"/>
+                                <rect key="frame" x="0.0" y="44" width="414" height="674"/>
                                 <connections>
                                     <action selector="backgroundButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="4uM-yK-hhg"/>
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TaX-5s-bHd">
-                                <rect key="frame" x="16" y="302" width="288" height="178"/>
+                                <rect key="frame" x="20" y="718" width="374" height="178"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="TA2-sV-n0q">
-                                        <rect key="frame" x="48" y="20" width="192" height="126"/>
+                                        <rect key="frame" x="63" y="20" width="248" height="126"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="9Hz-QJ-zLc">
-                                                <rect key="frame" x="0.0" y="0.0" width="192" height="19"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="248" height="19"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
-                                                <color key="textColor" name="sambuca"/>
+                                                <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.40000000000000002" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Dm-B6-qHz">
-                                                <rect key="frame" x="0.0" y="39" width="192" height="17"/>
+                                                <rect key="frame" x="0.0" y="39" width="248" height="17"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="17"/>
-                                                <color key="textColor" name="sambuca"/>
+                                                <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="40" translatesAutoresizingMaskIntoConstraints="NO" id="TnN-l7-kSR">
-                                                <rect key="frame" x="0.0" y="76" width="192" height="50"/>
+                                                <rect key="frame" x="0.0" y="76" width="248" height="50"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="XpA-IC-AVo">
-                                                        <rect key="frame" x="0.0" y="0.0" width="76" height="50"/>
-                                                        <color key="backgroundColor" name="valencia"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="104" height="50"/>
+                                                        <color key="backgroundColor" name="error_color"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="50" id="Pof-uo-2hn"/>
                                                         </constraints>
@@ -70,8 +70,8 @@
                                                         </connections>
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="Cgn-cf-gWb">
-                                                        <rect key="frame" x="116" y="0.0" width="76" height="50"/>
-                                                        <color key="backgroundColor" name="green_medium_sea"/>
+                                                        <rect key="frame" x="144" y="0.0" width="104" height="50"/>
+                                                        <color key="backgroundColor" name="highlight_color"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                         <state key="normal" title="Button">
                                                             <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -88,12 +88,26 @@
                                             </stackView>
                                         </subviews>
                                     </stackView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aqZ-ZV-H7Z">
+                                        <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="60" id="AgZ-aD-KMq"/>
+                                            <constraint firstAttribute="width" secondItem="aqZ-ZV-H7Z" secondAttribute="height" multiplier="1:1" id="O1H-qE-FOV"/>
+                                        </constraints>
+                                        <color key="tintColor" name="default_text_color"/>
+                                        <state key="normal" image="icCloseMedium"/>
+                                        <connections>
+                                            <action selector="closeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="xtk-zo-TWf"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="bottom" secondItem="TA2-sV-n0q" secondAttribute="bottom" constant="32" id="M2H-DU-p98"/>
+                                    <constraint firstItem="aqZ-ZV-H7Z" firstAttribute="leading" secondItem="TaX-5s-bHd" secondAttribute="leading" id="d6N-Hi-Ooh"/>
                                     <constraint firstItem="TA2-sV-n0q" firstAttribute="centerX" secondItem="TaX-5s-bHd" secondAttribute="centerX" id="lR2-7E-f2f"/>
                                     <constraint firstItem="TA2-sV-n0q" firstAttribute="top" secondItem="TaX-5s-bHd" secondAttribute="top" constant="20" id="sEK-zV-OSe"/>
+                                    <constraint firstItem="aqZ-ZV-H7Z" firstAttribute="top" secondItem="TaX-5s-bHd" secondAttribute="top" id="sTR-Dh-1rB"/>
                                 </constraints>
                             </view>
                         </subviews>
@@ -117,6 +131,7 @@
                         <outlet property="bgContentBottomConstraint" destination="O28-xo-10g" id="3Bu-xE-sW7"/>
                         <outlet property="buttonsStackView" destination="TnN-l7-kSR" id="aKJ-cf-1NX"/>
                         <outlet property="cancelButton" destination="XpA-IC-AVo" id="3bt-cW-UDy"/>
+                        <outlet property="closeButton" destination="aqZ-ZV-H7Z" id="Pb8-6t-CAK"/>
                         <outlet property="contentStackViewBottomConstraint" destination="M2H-DU-p98" id="kyJ-We-x9N"/>
                         <outlet property="validateButton" destination="Cgn-cf-gWb" id="Ywg-yq-tEy"/>
                     </connections>
@@ -127,14 +142,15 @@
         </scene>
     </scenes>
     <resources>
-        <namedColor name="green_medium_sea">
-            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-        </namedColor>
-        <namedColor name="sambuca">
+        <image name="icCloseMedium" width="17" height="17"/>
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="valencia">
+        <namedColor name="error_color">
             <color red="0.8901960784313725" green="0.30980392156862746" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="highlight_color">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
     </resources>
 </document>

@@ -291,13 +291,13 @@ public enum Asset {
       ]
     }
     public enum Remote {
-      public static let icRemoteShutdownAlertOn = ImageAsset(name: "icRemoteShutdownAlertOn")
       public static let icShutdown = ImageAsset(name: "icShutdown")
+      public static let icShutdownAlertOn = ImageAsset(name: "icShutdownAlertOn")
       public static let icSliderMppShutdownAlert = ImageAsset(name: "icSliderMppShutdownAlert")
       public static let icWhiteCercle = ImageAsset(name: "icWhiteCercle")
       public static let allValues: [ImageAsset] = [
-        icRemoteShutdownAlertOn,
         icShutdown,
+        icShutdownAlertOn,
         icSliderMppShutdownAlert,
         icWhiteCercle,
       ]
@@ -498,11 +498,11 @@ public enum Asset {
     public enum Checks {
       public static let icCheckDisabled = ImageAsset(name: "icCheckDisabled")
       public static let icCheckUnchecked = ImageAsset(name: "icCheckUnchecked")
-      public static let iconCheck = ImageAsset(name: "iconCheck")
+      public static let icChecked = ImageAsset(name: "icChecked")
       public static let allValues: [ImageAsset] = [
         icCheckDisabled,
         icCheckUnchecked,
-        iconCheck,
+        icChecked,
       ]
     }
     public enum Icons {
@@ -671,16 +671,16 @@ public enum Asset {
     public static let icDrone = ImageAsset(name: "icDrone")
     public static let icDroneWhite = ImageAsset(name: "icDroneWhite")
     public static let icGalleryEmpty = ImageAsset(name: "icGalleryEmpty")
+    public static let icGetUpdate = ImageAsset(name: "icGetUpdate")
     public static let icPhone = ImageAsset(name: "icPhone")
     public static let icPhoneLight = ImageAsset(name: "icPhoneLight")
     public static let icPhoneMini = ImageAsset(name: "icPhoneMini")
     public static let icPhoto = ImageAsset(name: "icPhoto")
     public static let icPhotoMini = ImageAsset(name: "icPhotoMini")
-    public static let icRemote = ImageAsset(name: "icRemote")
+    public static let icRemoteAlertShutdown = ImageAsset(name: "icRemoteAlertShutdown")
     public static let icSkywardDashboard = ImageAsset(name: "icSkywardDashboard")
     public static let icTimePassedMini = ImageAsset(name: "icTimePassedMini")
     public static let icTotalDistance = ImageAsset(name: "icTotalDistance")
-    public static let icUpdate = ImageAsset(name: "icUpdate")
     public static let icUserNoPhoto = ImageAsset(name: "icUserNoPhoto")
     public static let icVideoMini = ImageAsset(name: "icVideoMini")
     public static let allValues: [ImageAsset] = [
@@ -689,16 +689,16 @@ public enum Asset {
       icDrone,
       icDroneWhite,
       icGalleryEmpty,
+      icGetUpdate,
       icPhone,
       icPhoneLight,
       icPhoneMini,
       icPhoto,
       icPhotoMini,
-      icRemote,
+      icRemoteAlertShutdown,
       icSkywardDashboard,
       icTimePassedMini,
       icTotalDistance,
-      icUpdate,
       icUserNoPhoto,
       icVideoMini,
     ]
@@ -1147,7 +1147,6 @@ public enum Asset {
     public static let icBatteryLow = ImageAsset(name: "icBatteryLow")
     public static let icBatteryMedium = ImageAsset(name: "icBatteryMedium")
     public static let icBatteryNone = ImageAsset(name: "icBatteryNone")
-    public static let icChecked = ImageAsset(name: "icChecked")
     public static let icErrorUpdate = ImageAsset(name: "icErrorUpdate")
     public static let icLoaderMini = ImageAsset(name: "icLoaderMini")
     public static let icRemoteBigConnected = ImageAsset(name: "icRemoteBigConnected")
@@ -1161,7 +1160,6 @@ public enum Asset {
       icBatteryLow,
       icBatteryMedium,
       icBatteryNone,
-      icChecked,
       icErrorUpdate,
       icLoaderMini,
       icRemoteBigConnected,
@@ -1237,6 +1235,7 @@ public enum Asset {
       public static let autorecordInactive = ImageAsset(name: "autorecordInactive")
       public static let geofenceActive = ImageAsset(name: "geofenceActive")
       public static let geofenceInactive = ImageAsset(name: "geofenceInactive")
+      public static let grid3x3 = ImageAsset(name: "grid3x3")
       public static let grid6x6 = ImageAsset(name: "grid6x6")
       public static let gridNone = ImageAsset(name: "gridNone")
       public static let icStartAudio = ImageAsset(name: "icStartAudio")
@@ -1252,6 +1251,7 @@ public enum Asset {
         autorecordInactive,
         geofenceActive,
         geofenceInactive,
+        grid3x3,
         grid6x6,
         gridNone,
         icStartAudio,

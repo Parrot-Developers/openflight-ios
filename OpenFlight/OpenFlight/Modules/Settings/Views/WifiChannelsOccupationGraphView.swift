@@ -93,8 +93,8 @@ final class WifiChannelsOccupationGraphView: WifiChannelsOccupationView {
 
                 context.addPath(path)
 
-                let strokeColor = ColorName.white20.color.cgColor
-                let fillColor = ColorName.white20.color.cgColor
+                let strokeColor = UIColor.clear.cgColor
+                let fillColor = ColorName.disabledHighlightColor.color.cgColor
                 context.setStrokeColor(strokeColor)
                 context.setFillColor(fillColor)
                 context.drawPath(using: .fillStroke)

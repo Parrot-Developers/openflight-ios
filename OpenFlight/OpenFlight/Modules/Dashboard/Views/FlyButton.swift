@@ -96,7 +96,7 @@ private extension FlyButton {
     func activateFlyAnimation() {
         // Stop current animation if one.
         flyImageView.stopAnimating()
-        globalView.cornerRadiusedWith(backgroundColor: ColorName.tomato.color,
+        globalView.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color,
                                       radius: Style.largeCornerRadius)
         flyLabel.makeUp(with: .veryHuge, and: .white)
         flyLabel.text = L10n.commonFly.uppercased()
@@ -112,9 +112,9 @@ private extension FlyButton {
         flyImageView.stopAnimating()
         globalView.cornerRadiusedWith(backgroundColor: .white,
                                       radius: Style.largeCornerRadius)
-        flyLabel.makeUp(with: .veryHuge, and: .tomato)
+        flyLabel.makeUp(with: .veryHuge, and: .warningColor)
         flyImageView.image = Asset.Common.Icons.icRightArrow.image
-        flyImageView.tintColor = ColorName.tomato.color
+        flyImageView.tintColor = ColorName.warningColor.color
         flyLabel.text = L10n.commonFly.uppercased()
     }
 }

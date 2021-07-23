@@ -54,7 +54,7 @@ public extension UIView {
     func cornerRadiusedWith(backgroundColor: UIColor,
                             borderColor: UIColor = .clear,
                             radius: CGFloat,
-                            borderWidth: CGFloat = 0.0) {
+                            borderWidth: CGFloat = Style.noBorderWidth) {
         self.layer.cornerRadius = radius
         self.layer.borderWidth = borderWidth
         self.layer.borderColor = borderColor.cgColor
@@ -68,7 +68,7 @@ public extension UIView {
     ///    - borderColor: The border color
     func roundCorneredWith(backgroundColor: UIColor,
                            borderColor: UIColor = .clear,
-                           borderWidth: CGFloat = 0.0) {
+                           borderWidth: CGFloat = Style.noBorderWidth) {
         self.layer.cornerRadius = self.frame.height / 2
         self.layer.borderWidth = borderWidth
         self.layer.borderColor = borderColor.cgColor

@@ -44,7 +44,7 @@ final class DownloadButton: UIButton {
     func setup() {
         self.makeup(with: .regular)
         self.applyCornerRadius(Style.mediumCornerRadius)
-        self.backgroundColor = ColorName.greenMediumSea.color
+        self.backgroundColor = ColorName.highlightColor.color
         self.tintColor = .white
         self.contentEdgeInsets = Constants.contentEdgeInsets
         self.imageEdgeInsets = Constants.imageEdgeInsets

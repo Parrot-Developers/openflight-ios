@@ -33,7 +33,7 @@
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="OlV-fA-1Ha">
                                                 <rect key="frame" x="0.0" y="26" width="20" height="20"/>
-                                                <color key="tintColor" name="sambuca"/>
+                                                <color key="tintColor" name="default_text_color"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="20" id="69v-Ev-OmG"/>
                                                     <constraint firstAttribute="width" secondItem="OlV-fA-1Ha" secondAttribute="height" multiplier="1:1" id="xqP-kF-QQ3"/>
@@ -53,13 +53,13 @@
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="g1E-xh-7zv">
                                                 <rect key="frame" x="0.0" y="0.0" width="120" height="55"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                <color key="textColor" name="sambuca"/>
+                                                <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7dS-eT-o0G">
                                                 <rect key="frame" x="0.0" y="59" width="120" height="13"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                <color key="textColor" name="sambuca"/>
+                                                <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                         </subviews>
@@ -122,7 +122,7 @@
         </collectionViewCell>
     </objects>
     <resources>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>

@@ -45,7 +45,7 @@ final class WifiChannelsOccupationGridView: WifiChannelsOccupationView {
         static let lineWidth: CGFloat = 0.5
         static let extraRoundingPosition: CGFloat = 0.5
         static let labelRectMargin: CGFloat = 2.0
-        static let defaultColor: UIColor = ColorName.white50.color
+        static let defaultColor: UIColor = ColorName.defaultTextColor.color.withAlphaComponent(0.5)
         static let dotSize: CGSize = CGSize(width: 1.0, height: 1.0)
     }
 
@@ -80,7 +80,7 @@ final class WifiChannelsOccupationGridView: WifiChannelsOccupationView {
                 var color = Constants.defaultColor
                 var font = ParrotFontStyle.largeMedium.font
                 if channel == currentChannel {
-                    color = ColorName.greenSpring.color
+                    color = ColorName.white.color
                     font = ParrotFontStyle.large.font
                 }
                 let ssidString = NSAttributedString(string: textToDisplay,
@@ -127,8 +127,8 @@ final class WifiChannelsOccupationGridView: WifiChannelsOccupationView {
                                        y: self.frame.size.height - 1.0,
                                        width: Constants.dotSize.width,
                                        height: Constants.dotSize.height)
-                context.setFillColor(UIColor.white.cgColor)
-                context.setStrokeColor(UIColor.white.cgColor)
+                context.setFillColor(ColorName.defaultTextColor.color.cgColor)
+                context.setStrokeColor(ColorName.defaultTextColor.color.cgColor)
                 context.fill(rectangle)
             }
         }
@@ -163,14 +163,8 @@ private extension WifiChannelsOccupationGridView {
                                    width: range,
                                    height: frame.size.height)
 
-            let color1 = UIColor(named: .greenPea50)
-            let color2 = UIColor(named: .greenPea)
-
-            ctx.setFillColor(color1.cgColor)
-            ctx.setStrokeColor(color2.cgColor)
-
+            ctx.setFillColor(ColorName.highlightColor.color.cgColor)
             ctx.fill(rectangle)
-            ctx.stroke(rectangle)
         }
     }
 }

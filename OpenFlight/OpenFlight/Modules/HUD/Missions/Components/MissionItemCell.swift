@@ -79,8 +79,8 @@ final class MissionItemCell: UITableViewCell, NibReusable {
     func setup(with model: MissionItemCellModel) {
         missionLabel?.text = model.title
         missionImage?.image = model.image
-        let bgColor = model.isSelected ? ColorName.greenMediumSea.color : ColorName.white90.color
-        let textColor = model.isSelected ? .white : ColorName.sambuca.color
+        let bgColor = model.isSelected ? ColorName.highlightColor.color : ColorName.white90.color
+        let textColor = model.isSelected ? .white : ColorName.defaultTextColor.color
         customBackgroundView.backgroundColor = bgColor
         missionLabel?.textColor = textColor
         missionImage?.tintColor = textColor

@@ -37,16 +37,10 @@ final class SettingsViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var sectionsTableView: UITableView! {
         didSet {
-            sectionsTableView.backgroundColor = ColorName.black.color
-            sectionsTableView.contentInset.top = Constants.topInset
+            sectionsTableView.backgroundColor = .white
         }
     }
-    @IBOutlet private weak var containerBackgroundView: UIView!
-    @IBOutlet private weak var containerView: UIView! {
-        didSet {
-            containerView.backgroundColor = ColorName.white10.color
-        }
-    }
+    @IBOutlet private weak var containerView: UIView!
     @IBOutlet private weak var segmentedControl: UISegmentedControl! {
         didSet {
             segmentedControl.customMakeup()
@@ -54,7 +48,7 @@ final class SettingsViewController: UIViewController {
     }
     @IBOutlet private weak var topBar: UIView! {
         didSet {
-            topBar.backgroundColor = ColorName.black80.color
+            topBar.addShadow(shadowColor: ColorName.whiteAlbescent.color)
         }
     }
     @IBOutlet private weak var sectionWidthConstraint: NSLayoutConstraint!
@@ -68,11 +62,6 @@ final class SettingsViewController: UIViewController {
     fileprivate var sections = [SettingsType]()
 
     private let viewModel = DroneStateViewModel<DeviceConnectionState>()
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let topInset: CGFloat = 5.0
-    }
 
     // MARK: - Init
     /// init view controller with coordinator and settings type
@@ -94,18 +83,7 @@ final class SettingsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.view.backgroundColor = .white
-        // Prevent from safe area display issue if device has safeAreaInsets.
-        sectionWidthConstraint.constant += UIApplication.shared.keyWindow?.safeAreaInsets.left ?? 0.0
-
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.refreshContent(state)
-        }
-
-        sectionsTableView.register(cellType: SettingsSectionCell.self)
-
-        setupSegmentedControl()
-        reloadPanelContent(settingsType: selectedSection)
+        initView()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -150,6 +128,21 @@ private extension SettingsViewController {
 
 // MARK: - Private Funcs
 private extension SettingsViewController {
+
+    /// Initializes view controller
+    func initView() {
+        // Prevent from safe area display issue if device has safeAreaInsets.
+        sectionWidthConstraint.constant += UIApplication.shared.keyWindow?.safeAreaInsets.left ?? 0.0
+
+        viewModel.state.valueChanged = { [weak self] state in
+            self?.refreshContent(state)
+        }
+
+        sectionsTableView.register(cellType: SettingsSectionCell.self)
+
+        setupSegmentedControl()
+        reloadPanelContent(settingsType: selectedSection)
+    }
 
     /// Setup segmented control.
     func setupSegmentedControl() {
@@ -244,9 +237,6 @@ private extension SettingsViewController {
 extension SettingsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         self.sectionsTableView.isHidden = sections.count <= 1
-        self.containerBackgroundView.backgroundColor = sections.count <= 1 ? ColorName.black80.color : .black
-        self.containerView.backgroundColor = sections.count <= 1 ? .clear : ColorName.white10.color
-
         return sections.count
     }
 

@@ -49,6 +49,7 @@ final class FirmwareUpdatingViewController: UIViewController {
     private var firmwareUpdateListener: FirmwareUpdaterListener?
     private var dataSource = FirmwareUpdatingDataSource()
     private var updateOngoing: Bool = false
+    private var isProcessCancelable: Bool = true
     private var isWaitingForDroneReconnection: Bool = false
     private var shouldRestartProcesses: Bool = false
     private var droneStateViewModel = DroneStateViewModel()
@@ -137,7 +138,7 @@ extension FirmwareUpdatingViewController: UpdatingDoneFooterDelegate {
 // MARK: - Actions
 private extension FirmwareUpdatingViewController {
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
-        if isWaitingForDroneReconnection == false {
+        if isProcessCancelable {
             presentCancelAlertViewController()
         } else {
             presentQuitRebootAlertViewController()
@@ -185,6 +186,9 @@ private extension FirmwareUpdatingViewController {
             } else {
                 updateProgress()
             }
+        case .processing:
+            isProcessCancelable = false
+            updateProgress()
         case .waitingForReboot:
             // After the reboot, a connection with the drone must be established to finish the processes
             reloadUI()
@@ -229,7 +233,7 @@ private extension FirmwareUpdatingViewController {
 
     /// Cancel operation in progress.
     @objc func cancelProcesses() {
-        guard !isWaitingForDroneReconnection else { return }
+        guard isProcessCancelable else { return }
 
         let cancelSucceeded = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
         self.cancelButton.isHidden = cancelSucceeded

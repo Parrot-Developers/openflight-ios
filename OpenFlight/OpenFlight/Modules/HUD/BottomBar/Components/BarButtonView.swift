@@ -37,17 +37,17 @@ public class BarButtonView: UIControl, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var title: UILabel! {
         didSet {
-            title.makeUp(with: .small, and: .sambuca)
+            title.makeUp(with: .small, and: .defaultTextColor)
         }
     }
     @IBOutlet public weak var currentMode: UILabel! {
         didSet {
-            currentMode.makeUp(and: .sambuca)
+            currentMode.makeUp(and: .defaultTextColor)
         }
     }
     @IBOutlet private weak var subTitle: UILabel! {
         didSet {
-            subTitle.makeUp(and: .sambuca)
+            subTitle.makeUp(and: .defaultTextColor)
         }
     }
     @IBOutlet private weak var modeView: UIView!
@@ -116,11 +116,11 @@ private extension BarButtonView {
     func updateIcon() {
         imageView.image = model.subMode?.image ?? model.image
         imageView.isHidden = model.image == nil
-        imageView.tintColor = model.isSelected.value ? .white : ColorName.sambuca.color
+        imageView.tintColor = model.isSelected.value ? .white : ColorName.defaultTextColor.color
     }
 
     func updateTextColor() {
-        let textColor = model.isSelected.value ? .white : ColorName.sambuca.color
+        let textColor = model.isSelected.value ? .white : ColorName.defaultTextColor.color
         title.textColor = textColor
         currentMode.textColor = textColor
         subTitle.textColor = textColor
@@ -128,11 +128,11 @@ private extension BarButtonView {
 
     func updateBackgroundColor() {
         let isSelected = model.isSelected.value == true
-        let backgroundColor = isSelected ? ColorName.greenMediumSea.color : ColorName.white90.color
+        let backgroundColor = isSelected ? ColorName.highlightColor.color : ColorName.white90.color
         customCornered(corners: roundedCorners,
                        radius: Style.largeCornerRadius,
                        backgroundColor: backgroundColor,
                        borderColor: .clear,
-                       borderWidth: 0.0)
+                       borderWidth: Style.noBorderWidth)
     }
 }

@@ -55,11 +55,7 @@ private extension FrontRightButtonViewModel {
         guard let drone = drone else { return }
 
         if drone.isStateFlying {
-            if drone.canHandLand {
-                drone.startHandLand()
-            } else {
-                takeOffOrLandDrone()
-            }
+            takeOffOrLandDrone()
         } else {
             // Notifies that takeOff is requested.
             NotificationCenter.default.post(name: .takeOffRequestedDidChange,

@@ -160,7 +160,7 @@ private extension CellularAccessCardPinViewController {
         fieldView.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
                                      borderColor: .clear,
                                      radius: Style.largeCornerRadius,
-                                     borderWidth: 0.0)
+                                     borderWidth: Style.noBorderWidth)
         titleLabel.text = L10n.pinModalSimCardPin
         updateOkButton(isEnabled: pinCode.count >= Constants.requiredPinNumber)
     }
@@ -170,7 +170,9 @@ private extension CellularAccessCardPinViewController {
         viewModel.$cellularConnectionState
             .removeDuplicates()
             .sink { [unowned self] connectionState in
-                if connectionState == .ready {
+                if connectionState == CellularConnectionState.none {
+                    coordinator?.dismiss(animated: true, completion: nil)
+                } else if connectionState == CellularConnectionState.ready {
                     coordinator?.dismiss {
                         (self.coordinator as? HUDCoordinator)?.displayPairingSuccess()
                     }
@@ -222,7 +224,7 @@ private extension CellularAccessCardPinViewController {
     ///     - isEnabled: tells if ok button need to be enabled
     func updateOkButton(isEnabled: Bool) {
         let pinNumberIsCompleted: Bool = pinCode.count >= Constants.requiredPinNumber
-        let backgroundColor = pinNumberIsCompleted ? ColorName.greenMediumSea.color : ColorName.greenMediumSea20.color
+        let backgroundColor = pinNumberIsCompleted ? ColorName.highlightColor.color : ColorName.disabledHighlightColor.color
         okButton.isEnabled = pinNumberIsCompleted
         okButton.cornerRadiusedWith(backgroundColor: backgroundColor,
                                     radius: Style.largeCornerRadius)

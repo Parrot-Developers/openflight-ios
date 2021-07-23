@@ -35,61 +35,51 @@ import GroundSdk
 /// Dedicated view controller to edit drone wifi password.
 final class SettingsPasswordEditionViewController: UIViewController, StoryboardBased {
     // MARK: - Outlets
-    @IBOutlet private weak var bgView: UIView! {
-        didSet {
-            bgView.backgroundColor = ColorName.white10.color
-        }
-    }
     @IBOutlet private weak var titleLabel: UILabel! {
         didSet {
-            titleLabel.makeUp(with: .huge)
             titleLabel.text = L10n.settingsEditPasswordTitle
         }
     }
     @IBOutlet private weak var warningLabel: UILabel! {
         didSet {
-            warningLabel.makeUp(with: .big, and: .orangePeel)
             warningLabel.text = L10n.settingsEditPasswordWarning
         }
     }
     @IBOutlet private weak var passwordTextField: UITextField! {
         didSet {
-            passwordTextField.makeUp(style: .large, bgColor: .white20)
+            passwordTextField.addShadow(shadowColor: ColorName.whiteAlbescent.color)
             passwordTextField.attributedPlaceholder = NSAttributedString(
                 string: L10n.settingsEditPasswordTitle,
-                attributes: [NSAttributedString.Key.foregroundColor: ColorName.white50.color])
-        }
-    }
-    @IBOutlet private weak var passwordWarningLabel: UILabel! {
-        didSet {
-            passwordWarningLabel.makeUp()
-            passwordWarningLabel.text = L10n.settingsEditPasswordSecurityDescription
+                attributes: [NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor80.color])
         }
     }
     @IBOutlet private weak var confirmPasswordTextField: UITextField! {
         didSet {
-            confirmPasswordTextField.makeUp(style: .large, bgColor: .white20)
+            confirmPasswordTextField.addShadow(shadowColor: ColorName.whiteAlbescent.color)
             confirmPasswordTextField.attributedPlaceholder = NSAttributedString(
                 string: L10n.settingsEditPasswordConfirmPassword,
-                attributes: [NSAttributedString.Key.foregroundColor: ColorName.white50.color])
+                attributes: [NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor80.color])
+        }
+    }
+    @IBOutlet private weak var passwordWarningLabel: UILabel! {
+        didSet {
+            passwordWarningLabel.text = L10n.settingsEditPasswordSecurityDescription
         }
     }
     @IBOutlet private weak var changePasswordButton: UIButton! {
         didSet {
-            changePasswordButton.makeup(with: .large)
-            changePasswordButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
-                                                    borderColor: ColorName.greenSpring20.color,
+            changePasswordButton.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color,
+                                                    borderColor: .clear,
                                                     radius: Style.mediumCornerRadius)
             changePasswordButton.setTitle(L10n.settingsEditPasswordChangePassword, for: .normal)
         }
     }
     @IBOutlet private weak var cancelButton: UIButton! {
         didSet {
-            cancelButton.makeup(with: .large)
-            cancelButton.cornerRadiusedWith(backgroundColor: .clear,
-                                            borderColor: ColorName.white.color,
+            cancelButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
+                                            borderColor: .clear,
                                             radius: Style.mediumCornerRadius,
-                                            borderWidth: Style.largeBorderWidth)
+                                            borderWidth: Style.noBorderWidth)
             cancelButton.setTitle(L10n.cancel, for: .normal)
         }
     }
@@ -108,7 +98,7 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
             isValid = true
         }
         passwordWarningLabel.text = L10n.settingsEditPasswordSecurityDescription
-        passwordWarningLabel.textColor = isValid ? ColorName.white50.color : ColorName.redTorch50.color
+        passwordWarningLabel.textColor = isValid ? ColorName.defaultTextColor.color : ColorName.errorColor.color
 
         return isValid
     }
@@ -121,7 +111,7 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
             isValid = true
         } else {
             passwordWarningLabel.text = L10n.settingsEditPasswordMatchError
-            passwordWarningLabel.textColor = ColorName.redTorch50.color
+            passwordWarningLabel.textColor = ColorName.errorColor.color
         }
         return isValid
     }

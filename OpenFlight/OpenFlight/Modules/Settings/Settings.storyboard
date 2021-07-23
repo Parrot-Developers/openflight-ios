@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="HdM-Xz-FlC">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="HdM-Xz-FlC">
     <device id="ipad9_7" orientation="landscape" layout="fullscreen" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -40,46 +41,34 @@
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="O1Y-1Q-Gey" secondAttribute="height" multiplier="1:1" id="leg-dj-4oV"/>
                                         </constraints>
+                                        <color key="tintColor" name="default_text_color"/>
                                         <state key="normal" image="ic_back"/>
                                         <connections>
                                             <action selector="closeButtonTouchedUpInside:" destination="HdM-Xz-FlC" eventType="touchUpInside" id="7vI-At-LCq"/>
                                         </connections>
                                     </button>
-                                    <view alpha="0.20000000000000001" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="P7q-wx-gr8" userLabel="separator">
-                                        <rect key="frame" x="0.0" y="54" width="1024" height="1"/>
-                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="1" id="Ne0-Mu-hL1"/>
-                                        </constraints>
-                                    </view>
                                 </subviews>
-                                <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstItem="P7q-wx-gr8" firstAttribute="leading" secondItem="h2z-4a-MJA" secondAttribute="leading" id="3v7-ur-vkT"/>
-                                    <constraint firstAttribute="trailing" secondItem="P7q-wx-gr8" secondAttribute="trailing" id="46R-1X-V0E"/>
                                     <constraint firstAttribute="height" constant="55" id="5K8-9G-YJx"/>
                                     <constraint firstItem="O1Y-1Q-Gey" firstAttribute="leading" secondItem="h2z-4a-MJA" secondAttribute="leading" constant="8" id="Cxe-LO-Maa"/>
                                     <constraint firstAttribute="bottom" secondItem="O1Y-1Q-Gey" secondAttribute="bottom" constant="8" id="RjU-ci-FrD"/>
                                     <constraint firstItem="Naq-Cv-WfJ" firstAttribute="centerX" secondItem="h2z-4a-MJA" secondAttribute="centerX" id="df5-RJ-BQL"/>
                                     <constraint firstItem="Naq-Cv-WfJ" firstAttribute="centerY" secondItem="h2z-4a-MJA" secondAttribute="centerY" id="lYz-NQ-P6g"/>
                                     <constraint firstItem="O1Y-1Q-Gey" firstAttribute="top" secondItem="h2z-4a-MJA" secondAttribute="top" constant="8" id="mcX-kx-UBT"/>
-                                    <constraint firstAttribute="bottom" secondItem="P7q-wx-gr8" secondAttribute="bottom" id="rYh-1A-zCf"/>
                                 </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gPB-bQ-Krn">
-                                <rect key="frame" x="0.0" y="55" width="1024" height="713"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="C8h-Y6-7pw">
                                 <rect key="frame" x="0.0" y="55" width="1024" height="713"/>
                                 <subviews>
                                     <tableView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="50" estimatedRowHeight="-1" sectionHeaderHeight="1" sectionFooterHeight="1" translatesAutoresizingMaskIntoConstraints="NO" id="UsN-wu-xZJ">
                                         <rect key="frame" x="0.0" y="0.0" width="120" height="713"/>
-                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="120" id="0pY-yW-gpu"/>
                                             <constraint firstAttribute="width" constant="120" id="X6g-XS-Hw4"/>
                                         </constraints>
+                                        <inset key="scrollIndicatorInsets" minX="0.0" minY="5" maxX="0.0" maxY="0.0"/>
                                         <variation key="default">
                                             <mask key="constraints">
                                                 <exclude reference="0pY-yW-gpu"/>
@@ -101,27 +90,23 @@
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </containerView>
                                 </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
                         </subviews>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <viewLayoutGuide key="safeArea" id="pUW-SG-rCb"/>
+                        <color key="backgroundColor" name="default_bgcolor"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="gPB-bQ-Krn" secondAttribute="trailing" id="0MM-1R-JLB"/>
-                            <constraint firstAttribute="bottom" secondItem="gPB-bQ-Krn" secondAttribute="bottom" id="DTs-qX-H0W"/>
-                            <constraint firstItem="C8h-Y6-7pw" firstAttribute="trailing" secondItem="gPB-bQ-Krn" secondAttribute="trailing" id="F9M-ET-M0L"/>
                             <constraint firstItem="h2z-4a-MJA" firstAttribute="leading" secondItem="71P-5X-q8t" secondAttribute="leading" id="GDX-Ln-1ea"/>
                             <constraint firstItem="h2z-4a-MJA" firstAttribute="top" secondItem="71P-5X-q8t" secondAttribute="top" id="IXy-qA-C4n"/>
-                            <constraint firstItem="gPB-bQ-Krn" firstAttribute="top" secondItem="h2z-4a-MJA" secondAttribute="bottom" id="JY6-qh-GVh"/>
                             <constraint firstItem="C8h-Y6-7pw" firstAttribute="bottom" secondItem="71P-5X-q8t" secondAttribute="bottom" id="RXu-Tm-RTS"/>
                             <constraint firstItem="C8h-Y6-7pw" firstAttribute="leading" secondItem="71P-5X-q8t" secondAttribute="leading" id="UF9-NL-C1h"/>
                             <constraint firstItem="C8h-Y6-7pw" firstAttribute="top" secondItem="h2z-4a-MJA" secondAttribute="bottom" id="fgS-DW-bm5"/>
                             <constraint firstItem="h2z-4a-MJA" firstAttribute="trailing" secondItem="71P-5X-q8t" secondAttribute="trailing" id="gxq-Fn-8pk"/>
-                            <constraint firstItem="gPB-bQ-Krn" firstAttribute="leading" secondItem="71P-5X-q8t" secondAttribute="leading" id="wB2-8d-Zx7"/>
+                            <constraint firstAttribute="trailing" secondItem="C8h-Y6-7pw" secondAttribute="trailing" id="ju1-JA-ZZS"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="pUW-SG-rCb"/>
                     </view>
                     <navigationItem key="navigationItem" id="S9B-Ph-ZuK"/>
                     <connections>
-                        <outlet property="containerBackgroundView" destination="gPB-bQ-Krn" id="5wh-iz-IKk"/>
                         <outlet property="containerView" destination="JRZ-Xt-hJA" id="3lg-dJ-krG"/>
                         <outlet property="sectionWidthConstraint" destination="X6g-XS-Hw4" id="hAs-NU-p9o"/>
                         <outlet property="sectionsTableView" destination="UsN-wu-xZJ" id="dqn-0i-Bw1"/>
@@ -136,5 +121,11 @@
     </scenes>
     <resources>
         <image name="ic_back" width="21" height="21"/>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

@@ -39,8 +39,8 @@ protocol CircleProgressViewDelegate: AnyObject {
 /// View displaying a circle representing a progress value.
 final class CircleProgressView: UIView, NibOwnerLoadable {
     // MARK: - Internal Properties
-    var strokeColor: UIColor = UIColor(named: .greenSpring)
-    var bgStokeColor: UIColor = UIColor(named: .white20) {
+    var strokeColor: UIColor = UIColor(named: .highlightColor)
+    var bgStokeColor: UIColor = UIColor(named: .whiteAlbescent) {
         didSet {
             progressLayerBackground.strokeColor = bgStokeColor.cgColor
         }
@@ -79,8 +79,8 @@ final class CircleProgressView: UIView, NibOwnerLoadable {
     override func layoutSubviews() {
         super.layoutSubviews()
         progressLayer.removeFromSuperlayer()
-        drawProgressLayer(strokeColor: strokeColor, progress: 0.0, animated: false)
         drawBackgroundProgressLayer()
+        drawProgressLayer(strokeColor: strokeColor, progress: 0.0, animated: false)
     }
 
     // MARK: - Internal Funcs

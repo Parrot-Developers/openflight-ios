@@ -70,11 +70,11 @@ final class GalleryPanoramaViewModel: NSObject {
                                                        text: panoType.generatingText,
                                                        textColor: ColorName.white))
         default:
-            modelArray.append(GalleryPanoramaStepModel(image: Asset.Common.Checks.iconCheck.image,
+            modelArray.append(GalleryPanoramaStepModel(image: Asset.Common.Checks.icChecked.image,
                                                        text: L10n.galleryPanoramaDownloadingFiles,
                                                        textColor: ColorName.greenSpring))
             panoGenerationStatus == .success
-                ? modelArray.append(GalleryPanoramaStepModel(image: Asset.Common.Checks.iconCheck.image,
+                ? modelArray.append(GalleryPanoramaStepModel(image: Asset.Common.Checks.icChecked.image,
                                                              text: panoType.generatingText,
                                                              textColor: ColorName.greenSpring))
                 : modelArray.append(GalleryPanoramaStepModel(image: panoType.image,

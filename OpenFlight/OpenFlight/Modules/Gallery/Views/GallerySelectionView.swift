@@ -136,23 +136,23 @@ internal extension GallerySelectionView {
     /// - Parameters:
     ///    - selectedMedias: tells if medias are selected
     func updateButtons(selectedMedias: [GalleryMedia]) {
-        let allMediasDownloaded = allMediasDownloaded(selectedMedias: selectedMedias)
-        let downloadColor = allMediasDownloaded ? ColorName.greenMediumSea20 : ColorName.greenMediumSea
+        let allMediasAreDownloaded = allMediasDownloaded(selectedMedias: selectedMedias)
+        let downloadColor = allMediasAreDownloaded ? ColorName.disabledHighlightColor : ColorName.highlightColor
         downloadButton.setTitleColor(downloadColor.color, for: .normal)
 
-        let downloadTitle = allMediasDownloaded ? L10n.commonDownloaded : L10n.commonDownload
+        let downloadTitle = allMediasAreDownloaded ? L10n.commonDownloaded : L10n.commonDownload
         downloadButton.setTitle(downloadTitle, for: .normal)
-        downloadButton.isEnabled = !allMediasDownloaded
+        downloadButton.isEnabled = !allMediasAreDownloaded
 
-        let deleteColor = selectedMedias.isEmpty ? ColorName.valencia30 : ColorName.valencia
+        let deleteColor = selectedMedias.isEmpty ? ColorName.disabledErrorColor : ColorName.errorColor
         deleteButton.setTitleColor(deleteColor.color, for: .normal)
         deleteButton.isEnabled = !selectedMedias.isEmpty
 
-        let shareColor = selectedMedias.isEmpty ? ColorName.greenMediumSea20 : ColorName.greenMediumSea
+        let shareColor = selectedMedias.isEmpty ? ColorName.disabledHighlightColor : ColorName.highlightColor
         shareButton.setTitleColor(shareColor.color, for: .normal)
         shareButton.isEnabled = !selectedMedias.isEmpty
 
-        infoLabel.textColor = selectedMedias.isEmpty ? ColorName.sambuca50.color : ColorName.sambuca.color
+        infoLabel.textColor = selectedMedias.isEmpty ? ColorName.disabledTextColor.color : ColorName.defaultTextColor.color
     }
 }
 

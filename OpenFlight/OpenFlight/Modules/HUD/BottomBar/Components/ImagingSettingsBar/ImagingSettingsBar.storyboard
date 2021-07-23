@@ -106,7 +106,7 @@
                                                                 </constraints>
                                                             </view>
                                                         </subviews>
-                                                        <color key="backgroundColor" name="sambuca"/>
+                                                        <color key="backgroundColor" name="default_text_color"/>
                                                     </stackView>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AOE-bk-gzw">
                                                         <rect key="frame" x="187.5" y="0.0" width="91.5" height="34"/>
@@ -131,7 +131,7 @@
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </stackView>
                                         </subviews>
-                                        <color key="backgroundColor" name="sambuca"/>
+                                        <color key="backgroundColor" name="default_text_color"/>
                                         <constraints>
                                             <constraint firstItem="nSx-HT-EQn" firstAttribute="width" secondItem="E8W-Nc-Kbm" secondAttribute="width" multiplier="0.719" id="nSU-Hu-fU7"/>
                                             <constraint firstItem="86D-eP-m08" firstAttribute="width" secondItem="E8W-Nc-Kbm" secondAttribute="width" multiplier="0.28" id="y4W-eY-S1b"/>
@@ -179,7 +179,7 @@
                                                 </constraints>
                                             </view>
                                         </subviews>
-                                        <color key="backgroundColor" name="sambuca"/>
+                                        <color key="backgroundColor" name="default_text_color"/>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dft-1C-WQZ">
                                         <rect key="frame" x="618.5" y="0.0" width="122.5" height="34"/>
@@ -225,7 +225,7 @@
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </stackView>
                                         </subviews>
-                                        <color key="backgroundColor" name="sambuca"/>
+                                        <color key="backgroundColor" name="default_text_color"/>
                                     </stackView>
                                 </subviews>
                                 <constraints>
@@ -283,7 +283,7 @@
     <resources>
         <image name="iconManualAutoManual" width="35" height="18"/>
         <image name="lockAElocked" width="9" height="13"/>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="yellow_sea">

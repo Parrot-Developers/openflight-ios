@@ -115,10 +115,10 @@ private extension ImagingBarAutomatableRulerBarView {
     func updateAutomaticMode(isAutomatic: Bool) {
         autoButton.customCornered(corners: [.topLeft, .bottomLeft],
                                   radius: Style.largeCornerRadius,
-                                  backgroundColor: isAutomatic ? ColorName.greenMediumSea.color : ColorName.white90.color,
+                                  backgroundColor: isAutomatic ? ColorName.highlightColor.color : ColorName.white90.color,
                                   borderColor: .clear,
-                                  borderWidth: 0.0)
-        autoButton.tintColor = isAutomatic ? .white : ColorName.sambuca.color
+                                  borderWidth: Style.noBorderWidth)
+        autoButton.tintColor = isAutomatic ? .white : ColorName.defaultTextColor.color
         centeredRulerBarView?.isAutomatic = isAutomatic
     }
 }

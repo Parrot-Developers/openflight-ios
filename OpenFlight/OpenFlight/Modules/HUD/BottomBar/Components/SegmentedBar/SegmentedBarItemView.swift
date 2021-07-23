@@ -144,14 +144,14 @@ private extension SegmentedBarItemView {
         imageView.isHidden = !hasImage
         imageViewContainer.isHidden = !hasImage
         imageView.image = model?.image
-        imageView.tintColor = isSelected ? .white : ColorName.sambuca.color
+        imageView.tintColor = isSelected ? .white : ColorName.defaultTextColor.color
     }
 
     func updateLabel() {
         let isSelected = model.isSelected.value == true
         let hasImage = model.image != nil
         label.text = model.subtext
-        label.textColor = isSelected ? .white : ColorName.sambuca.color
+        label.textColor = isSelected ? .white : ColorName.defaultTextColor.color
         label.isHidden = model.subtext?.isEmpty ?? true
         label.font = (hasImage ? ParrotFontStyle.regular : ParrotFontStyle.large).font
     }
@@ -159,7 +159,7 @@ private extension SegmentedBarItemView {
     /// Updates bar item background.
     func updateBackgroundColor() {
         let isSelected = model.isSelected.value == true
-        backgroundColor = isSelected ? ColorName.greenMediumSea.color : .clear
+        backgroundColor = isSelected ? ColorName.highlightColor.color : .clear
         if isSelected {
             applyCornerRadius(Style.largeCornerRadius)
         }

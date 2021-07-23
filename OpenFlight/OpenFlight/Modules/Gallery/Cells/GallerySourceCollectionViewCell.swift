@@ -97,20 +97,20 @@ internal extension GallerySourceCollectionViewCell {
         let isStorageCriticalLimitReached: Bool = storageRatio > Constants.criticalStorageLimit
         // Setup labels display.
         if isCompact {
-            titleLabel.makeUp(and: .sambuca)
-            storageLabel.makeUp(and: .sambuca)
+            titleLabel.makeUp(and: .defaultTextColor)
+            storageLabel.makeUp(and: .defaultTextColor)
         } else {
-            titleLabel.makeUp(with: .large, and: .sambuca)
-            storageLabel.makeUp(and: .sambuca)
+            titleLabel.makeUp(with: .large, and: .defaultTextColor)
+            storageLabel.makeUp(and: .defaultTextColor)
         }
         titleLabel.textAlignment = isCompact ? .center : .left
         storageLabel.textAlignment = isCompact ? .center : .left
 
         // Setup labels colors.
-        bgView.backgroundColor = isSelected ? ColorName.greenMediumSea.color : .clear
-        iconImageView.tintColor = isSelected ? .white : ColorName.sambuca.color
-        titleLabel.textColor = isSelected ? .white : ColorName.sambuca.color
-        let normalColor = isSelected ? .white : ColorName.sambuca50.color
+        bgView.backgroundColor = isSelected ? ColorName.highlightColor.color : .clear
+        iconImageView.tintColor = isSelected ? .white : ColorName.defaultTextColor.color
+        titleLabel.textColor = isSelected ? .white : ColorName.defaultTextColor.color
+        let normalColor = isSelected ? .white : ColorName.disabledTextColor.color
         if isStorageCriticalLimitReached && isCompact {
             updateStorageLabelColor(AlertLevel.critical.radarColor)
         } else if isStorageWarningLimitReached && isCompact {
@@ -158,9 +158,9 @@ private extension GallerySourceCollectionViewCell {
     func offlineSetup(source: GallerySource) {
         bgView.backgroundColor = .clear
         iconImageView.image = source.image
-        iconImageView.tintColor = ColorName.sambuca50.color
+        iconImageView.tintColor = ColorName.disabledTextColor.color
         titleLabel.text = source.type.title
-        titleLabel.textColor = ColorName.sambuca50.color
+        titleLabel.textColor = ColorName.disabledTextColor.color
         storageLabel.text = L10n.commonOffline
         storageLabel.textColor = ColorName.white50.color
         storageRatio = 0.0

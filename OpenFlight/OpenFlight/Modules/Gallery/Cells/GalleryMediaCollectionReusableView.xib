@@ -22,7 +22,7 @@
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uFb-Sf-Co6">
                     <rect key="frame" x="20" y="8" width="326" height="22"/>
                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                    <color key="textColor" name="sambuca"/>
+                    <color key="textColor" name="default_text_color"/>
                     <nil key="highlightedColor"/>
                 </label>
             </subviews>
@@ -42,7 +42,7 @@
         </view>
     </objects>
     <resources>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>

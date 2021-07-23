@@ -25,7 +25,7 @@
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="a2k-Rf-EC3" secondAttribute="height" multiplier="1:1" id="dWo-e6-mmZ"/>
                                         </constraints>
-                                        <color key="tintColor" name="sambuca"/>
+                                        <color key="tintColor" name="default_text_color"/>
                                         <state key="normal" image="ic_back"/>
                                         <connections>
                                             <action selector="closeButtonTouchedUpInside:" destination="HVb-73-rfU" eventType="touchUpInside" id="Zhm-gm-UwJ"/>
@@ -61,7 +61,7 @@
                             </containerView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="kST-uB-INM"/>
-                        <color key="backgroundColor" name="alabaster"/>
+                        <color key="backgroundColor" name="default_bgcolor"/>
                         <constraints>
                             <constraint firstItem="jif-ps-qad" firstAttribute="top" secondItem="kST-uB-INM" secondAttribute="top" id="1Dc-TG-tBj"/>
                             <constraint firstItem="jif-ps-qad" firstAttribute="bottom" secondItem="OUg-iQ-Uqx" secondAttribute="top" id="GpH-Xw-wJu"/>
@@ -87,10 +87,10 @@
     </scenes>
     <resources>
         <image name="ic_back" width="21" height="21"/>
-        <namedColor name="alabaster">
+        <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>

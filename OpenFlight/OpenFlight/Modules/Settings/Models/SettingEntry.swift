@@ -116,7 +116,7 @@ class SettingEntry: Equatable {
          savedValue: Float? = nil,
          isEnabled: Bool = true,
          alpha: CGFloat = 1.0,
-         subtitleColor: UIColor = .white,
+         subtitleColor: UIColor = ColorName.defaultTextColor.color,
          bgColor: UIColor? = nil,
          showInfo: (() -> Void)? = nil,
          infoText: String? = nil,

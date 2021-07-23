@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Z5v-SI-ncC">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Z5v-SI-ncC">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -22,8 +22,9 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Apw-60-wsj">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Apw-60-wsj" userLabel="bgView">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                                <color key="backgroundColor" name="default_bgcolor"/>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tUd-DT-3qz">
                                 <rect key="frame" x="16" y="44" width="382" height="55"/>
@@ -35,6 +36,7 @@
                                             <constraint firstAttribute="width" secondItem="zjh-XT-JbZ" secondAttribute="height" multiplier="1:1" id="eIp-hq-ojv"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                        <color key="tintColor" name="default_text_color"/>
                                         <state key="normal" image="ic_back"/>
                                         <connections>
                                             <action selector="backButtonTouchedUpInside:" destination="Z5v-SI-ncC" eventType="touchUpInside" id="fsE-Xu-8hA"/>
@@ -43,11 +45,12 @@
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UJg-Vq-7bm" userLabel="Title">
                                         <rect key="frame" x="170" y="25" width="42" height="25"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icloading" translatesAutoresizingMaskIntoConstraints="NO" id="AaQ-jw-24a">
                                         <rect key="frame" x="220" y="25" width="21" height="25"/>
+                                        <color key="tintColor" name="highlight_color"/>
                                     </imageView>
                                 </subviews>
                                 <constraints>
@@ -63,9 +66,9 @@
                                 </constraints>
                             </view>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsVerticalScrollIndicator="NO" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="X2D-hU-JJS">
-                                <rect key="frame" x="41.5" y="99" width="331" height="739"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                <color key="sectionIndexBackgroundColor" systemColor="viewFlipsideBackgroundColor"/>
+                                <rect key="frame" x="10.5" y="99" width="393" height="739"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <connections>
                                     <outlet property="dataSource" destination="Z5v-SI-ncC" id="Nw6-Ne-6Pq"/>
                                     <outlet property="delegate" destination="Z5v-SI-ncC" id="QEU-V7-lVX"/>
@@ -80,15 +83,25 @@
                             <constraint firstItem="Apw-60-wsj" firstAttribute="leading" secondItem="jEc-bP-WKf" secondAttribute="leading" id="JqT-Wd-eUc"/>
                             <constraint firstItem="tUd-DT-3qz" firstAttribute="leading" secondItem="jEc-bP-WKf" secondAttribute="leading" constant="16" id="dYF-c0-XQu"/>
                             <constraint firstItem="tUd-DT-3qz" firstAttribute="top" secondItem="WrZ-Pg-ws9" secondAttribute="top" id="dua-ua-jkH"/>
-                            <constraint firstItem="X2D-hU-JJS" firstAttribute="width" secondItem="jEc-bP-WKf" secondAttribute="width" multiplier="0.8" id="imK-JT-b4c"/>
+                            <constraint firstItem="X2D-hU-JJS" firstAttribute="width" secondItem="jEc-bP-WKf" secondAttribute="width" multiplier="0.8" priority="999" id="imK-JT-b4c"/>
+                            <constraint firstItem="X2D-hU-JJS" firstAttribute="width" secondItem="jEc-bP-WKf" secondAttribute="width" multiplier="0.95" id="kNt-xz-BdB"/>
                             <constraint firstItem="X2D-hU-JJS" firstAttribute="top" secondItem="tUd-DT-3qz" secondAttribute="bottom" id="oA2-XM-ca2"/>
                             <constraint firstItem="Apw-60-wsj" firstAttribute="top" secondItem="jEc-bP-WKf" secondAttribute="top" id="rO4-p1-QQw"/>
                             <constraint firstAttribute="bottom" secondItem="Apw-60-wsj" secondAttribute="bottom" id="zEi-Y9-wZd"/>
                             <constraint firstAttribute="trailing" secondItem="Apw-60-wsj" secondAttribute="trailing" id="zdW-hV-BlK"/>
                         </constraints>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="kNt-xz-BdB"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=compact">
+                            <mask key="constraints">
+                                <include reference="kNt-xz-BdB"/>
+                            </mask>
+                        </variation>
                     </view>
                     <connections>
-                        <outlet property="backgroundView" destination="Apw-60-wsj" id="1Ad-KW-qMN"/>
                         <outlet property="loadingImageView" destination="AaQ-jw-24a" id="3wI-Em-rsF"/>
                         <outlet property="tableView" destination="X2D-hU-JJS" id="bhN-eI-Nfv"/>
                         <outlet property="titleLabel" destination="UJg-Vq-7bm" id="Hbs-s1-7iK"/>
@@ -102,11 +115,14 @@
     <resources>
         <image name="ic_back" width="21" height="21"/>
         <image name="icloading" width="21" height="21"/>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
-        <systemColor name="viewFlipsideBackgroundColor">
-            <color red="0.1215686275" green="0.12941176469999999" blue="0.14117647059999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="highlight_color">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

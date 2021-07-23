@@ -34,12 +34,12 @@
                                 <constraint firstAttribute="width" constant="68" id="szW-i2-Fbn"/>
                             </constraints>
                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                            <color key="textColor" name="sambuca"/>
+                            <color key="textColor" name="default_text_color"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="2" minValue="0.0" maxValue="20" translatesAutoresizingMaskIntoConstraints="NO" id="yeT-fT-kNB" customClass="SettingsSlider" customModule="OpenFlight" customModuleProvider="target">
                             <rect key="frame" x="66" y="0.0" width="426" height="88"/>
-                            <color key="tintColor" name="green_medium_sea"/>
+                            <color key="tintColor" name="highlight_color"/>
                             <color key="thumbTintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <connections>
                                 <action selector="sliderValueDidChange:" destination="-1" eventType="valueChanged" id="PvK-Fc-EeW"/>
@@ -51,7 +51,7 @@
                                 <constraint firstAttribute="width" constant="68" id="GBD-tc-6Yx"/>
                             </constraints>
                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                            <color key="textColor" name="sambuca"/>
+                            <color key="textColor" name="default_text_color"/>
                             <nil key="highlightedColor"/>
                         </label>
                     </subviews>
@@ -76,10 +76,10 @@
         </designable>
     </designables>
     <resources>
-        <namedColor name="green_medium_sea">
+        <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>

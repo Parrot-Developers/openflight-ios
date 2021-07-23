@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="AEW-eS-09H">
-    <device id="retina4_0" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="AEW-eS-09H">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -13,35 +14,48 @@
             <objects>
                 <viewController storyboardIdentifier="RemoteDetailsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="AEW-eS-09H" customClass="RemoteDetailsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="jFE-hM-eNJ">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3YJ-lB-zfi">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                                <color key="backgroundColor" name="default_bgcolor"/>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="99u-X2-swi">
-                                <rect key="frame" x="24" y="28" width="272" height="528"/>
-                                <variation key="heightClass=compact-widthClass=compact" spacing="4"/>
+                                <rect key="frame" x="24" y="28" width="366" height="840"/>
                                 <variation key="heightClass=regular-widthClass=compact" axis="vertical" distribution="fillProportionally"/>
                             </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bLD-tE-nlA">
+                                <rect key="frame" x="0.0" y="44" width="60" height="60"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="60" id="6NU-nJ-AZQ"/>
+                                    <constraint firstAttribute="width" secondItem="bLD-tE-nlA" secondAttribute="height" multiplier="1:1" id="gQB-ZU-Iw7"/>
+                                </constraints>
+                                <color key="tintColor" name="default_text_color"/>
+                                <state key="normal" image="ic_back"/>
+                                <connections>
+                                    <action selector="backButtonTouchedUpInside:" destination="AEW-eS-09H" eventType="touchUpInside" id="HdV-KN-byn"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="q9n-XG-Io2"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="bLD-tE-nlA" firstAttribute="leading" secondItem="q9n-XG-Io2" secondAttribute="leading" id="01e-7C-KwA"/>
                             <constraint firstItem="99u-X2-swi" firstAttribute="top" secondItem="jFE-hM-eNJ" secondAttribute="top" constant="24" id="08j-U5-r6T">
                                 <variation key="heightClass=regular-widthClass=compact" constant="28"/>
                             </constraint>
-                            <constraint firstAttribute="bottom" secondItem="99u-X2-swi" secondAttribute="bottom" constant="12" id="1wQ-ig-mhE"/>
+                            <constraint firstAttribute="bottom" secondItem="99u-X2-swi" secondAttribute="bottom" constant="28" id="1wQ-ig-mhE"/>
                             <constraint firstItem="99u-X2-swi" firstAttribute="leading" secondItem="q9n-XG-Io2" secondAttribute="leading" constant="24" id="4tA-RT-aKI"/>
                             <constraint firstItem="3YJ-lB-zfi" firstAttribute="leading" secondItem="jFE-hM-eNJ" secondAttribute="leading" id="Doz-1M-9h6"/>
                             <constraint firstItem="q9n-XG-Io2" firstAttribute="trailing" secondItem="99u-X2-swi" secondAttribute="trailing" constant="24" id="PJ7-pd-BeD"/>
                             <constraint firstItem="3YJ-lB-zfi" firstAttribute="top" secondItem="jFE-hM-eNJ" secondAttribute="top" id="XBI-FT-TUj"/>
                             <constraint firstAttribute="trailing" secondItem="3YJ-lB-zfi" secondAttribute="trailing" id="bqM-fx-m1H"/>
                             <constraint firstAttribute="bottom" secondItem="3YJ-lB-zfi" secondAttribute="bottom" id="f8W-1J-qQ5"/>
+                            <constraint firstItem="bLD-tE-nlA" firstAttribute="top" secondItem="q9n-XG-Io2" secondAttribute="top" id="xbn-mg-ccL"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="bgView" destination="3YJ-lB-zfi" id="XrP-6l-UuA"/>
                         <outlet property="stackView" destination="99u-X2-swi" id="Kl5-Vp-xUE"/>
                     </connections>
                 </viewController>
@@ -50,4 +64,13 @@
             <point key="canvasLocation" x="-1504" y="230"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="ic_back" width="21" height="21"/>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
 </document>

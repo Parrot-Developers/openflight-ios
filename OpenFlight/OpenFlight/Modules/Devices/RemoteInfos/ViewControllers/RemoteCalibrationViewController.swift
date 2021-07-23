@@ -39,7 +39,6 @@ final class RemoteCalibrationViewController: UIViewController {
     @IBOutlet private weak var calibrationButton: UIButton!
     @IBOutlet private weak var okButton: UIButton!
     @IBOutlet private weak var remoteImageView: UIImageView!
-    @IBOutlet private weak var backgroundView: UIView!
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
@@ -54,7 +53,6 @@ final class RemoteCalibrationViewController: UIViewController {
     static func instantiate(coordinator: Coordinator) -> RemoteCalibrationViewController {
         let viewController = StoryboardScene.RemoteCalibration.initialScene.instantiate()
         viewController.coordinator = coordinator
-
         return viewController
     }
 
@@ -117,15 +115,14 @@ private extension RemoteCalibrationViewController {
 private extension RemoteCalibrationViewController {
     /// Init the view.
     func initView() {
-        backgroundView.backgroundColor = ColorName.white10.color
         titleLabel.text = L10n.remoteCalibrationTitle
         descriptionLabel.text = L10n.remoteCalibrationDescription
         descriptionLabel.isHidden = true
         okButton.setTitle(L10n.remoteCalibrationReadyToFly, for: .normal)
         calibrationButton.setTitle(L10n.remoteCalibrationCalibrate, for: .normal)
-        calibrationButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
+        calibrationButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                              radius: Style.largeCornerRadius)
-        okButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
+        okButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                     radius: Style.largeCornerRadius)
     }
 

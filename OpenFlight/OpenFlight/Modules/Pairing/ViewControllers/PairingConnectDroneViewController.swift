@@ -37,7 +37,6 @@ final class PairingConnectDroneViewController: UIViewController {
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var loadingImageView: UIImageView!
-    @IBOutlet private weak var backgroundView: UIView!
 
     // MARK: - Private Properties
     private weak var coordinator: PairingCoordinator?
@@ -156,9 +155,6 @@ private extension PairingConnectDroneViewController {
     /// Init the view.
     func initView() {
         tableView.contentInset.top = Constants.topInset
-        tableView.backgroundColor = .clear
-        backgroundView.backgroundColor = UIColor(named: .white10)
-        self.view.backgroundColor  = UIColor(named: .black)
         tableView.register(cellType: PairingConnectDroneCell.self)
         titleLabel.text = L10n.pairingLookingForDrone
         // Instantiate the footer.

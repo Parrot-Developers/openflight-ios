@@ -151,8 +151,6 @@ open class HUDAlertPanelViewModel<T: HUDAlertPanelState>: BaseViewModel<T> {
     open func startAction() {
         if handLaunchViewModel.state.value.state == .available {
             handLaunchViewModel.startAction()
-        } else if handLandViewModel.state.value.state == .available {
-            handLandViewModel.startAction()
         } else if returnHomeViewModel.state.value.state == .available {
             returnHomeViewModel.startAction()
         }
@@ -162,7 +160,6 @@ open class HUDAlertPanelViewModel<T: HUDAlertPanelState>: BaseViewModel<T> {
     open func cancelAction() {
         handLaunchViewModel.cancelAction()
         returnHomeViewModel.cancelAction()
-        handLandViewModel.cancelAction()
     }
 }
 

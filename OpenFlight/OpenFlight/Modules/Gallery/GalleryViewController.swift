@@ -243,11 +243,11 @@ private extension GalleryViewController {
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = false
-        self.navigationController?.navigationBar.tintColor = ColorName.sambuca.color
+        self.navigationController?.navigationBar.tintColor = ColorName.defaultTextColor.color
         self.navigationController?.navigationBar.barTintColor = .white
         self.navigationController?.navigationBar.titleTextAttributes = [
             NSAttributedString.Key.font: ParrotFontStyle.huge.font,
-            NSAttributedString.Key.foregroundColor: ColorName.sambuca.color
+            NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor.color
         ]
 
         // Add left button to come back to the HUD.
@@ -266,11 +266,11 @@ private extension GalleryViewController {
                                               action: #selector(selectButtonTouchedUpInside))
         selectBarButton.setTitleTextAttributes([
             NSAttributedString.Key.font: ParrotFontStyle.large.font,
-            NSAttributedString.Key.foregroundColor: ColorName.sambuca.color
+            NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor.color
         ], for: .normal)
         selectBarButton.setTitleTextAttributes([
             NSAttributedString.Key.font: ParrotFontStyle.large.font,
-            NSAttributedString.Key.foregroundColor: ColorName.sambuca50.color
+            NSAttributedString.Key.foregroundColor: ColorName.disabledTextColor.color
         ], for: .disabled)
         self.navigationItem.rightBarButtonItem = selectBarButton
 
@@ -307,8 +307,8 @@ private extension GalleryViewController {
         self.selectButton.setTitle(buttonText, for: .normal)
 
         let titleColor: UIColor = numberOfMedias != 0
-            ? ColorName.sambuca.color
-            : ColorName.sambuca50.color
+            ? ColorName.defaultTextColor.color
+            : ColorName.disabledTextColor.color
         mediasInfosLabel.isHidden = numberOfMedias != 0
         selectButton.isEnabled = numberOfMedias != 0
         selectButton.setTitleColor(titleColor, for: .normal)

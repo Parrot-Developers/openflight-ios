@@ -204,9 +204,10 @@ private extension FirmwareUpdaterManager {
             globalState = .downloading
         } else {
             switch firmwareUpdaterWrapper.state.value.updateState {
-            case .uploading,
-                 .processing:
+            case .uploading:
                 globalState = .uploading
+            case .processing:
+                globalState = .processing
             case .waitingForReboot:
                 globalState = .waitingForReboot
             default:

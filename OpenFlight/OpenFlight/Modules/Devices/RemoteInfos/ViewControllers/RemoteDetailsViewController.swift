@@ -33,7 +33,6 @@ import UIKit
 /// View Controller used to display details about Remote.
 final class RemoteDetailsViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var bgView: UIView!
     @IBOutlet private weak var stackView: UIStackView!
 
     // MARK: - Private Properties
@@ -46,7 +45,6 @@ final class RemoteDetailsViewController: UIViewController {
     static func instantiate(coordinator: RemoteCoordinator) -> RemoteDetailsViewController {
         let viewController = StoryboardScene.RemoteDetails.initialScene.instantiate()
         viewController.coordinator = coordinator
-
         return viewController
     }
 
@@ -80,7 +78,7 @@ final class RemoteDetailsViewController: UIViewController {
 
 // MARK: - Actions
 private extension RemoteDetailsViewController {
-    @objc func backButtonTouchedUpInside(_ sender: UIButton) {
+    @IBAction func backButtonTouchedUpInside(_ sender: Any) {
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .simpleButton)
         coordinator?.dismissChildCoordinator()
     }
@@ -90,9 +88,7 @@ private extension RemoteDetailsViewController {
 private extension RemoteDetailsViewController {
     /// Inits the view.
     func initView() {
-        addCloseButton(onTapAction: #selector(backButtonTouchedUpInside(_:)))
         setupViewControllers()
-        bgView.backgroundColor = ColorName.white10.color
         updateStackView()
     }
 
@@ -132,7 +128,7 @@ private extension RemoteDetailsViewController {
             return
         }
 
-        if UIApplication.isLandscape {
+        if self.isRegularSizeClass || UIApplication.isLandscape {
             [infoView,
              deviceView,
              buttonView].forEach { view in

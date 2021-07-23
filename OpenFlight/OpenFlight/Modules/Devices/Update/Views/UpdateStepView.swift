@@ -81,15 +81,15 @@ private extension UpdateStepView {
         switch model.state {
         case .doing:
             stepIcon.startRotate()
-            updateView(.yellowSea, Asset.Remote.icLoaderMini.image)
+            updateView(.highlightColor, Asset.Remote.icLoaderMini.image)
         case .done:
             stepIcon.stopRotate()
-            updateView(.yellowSea, Asset.Remote.icChecked.image)
+            updateView(.highlightColor, Asset.Common.Checks.icChecked.image)
         case .error:
             stepIcon.stopRotate()
-            updateView(.redTorch, Asset.Remote.icErrorUpdate.image)
+            updateView(.errorColor, Asset.Remote.icErrorUpdate.image)
         default:
-            updateView(.white50, nil)
+            updateView(.disabledTextColor, nil)
         }
     }
 

@@ -71,24 +71,18 @@ public extension UISegmentedControl {
     ///     - selectedBackgroundColor: background color for selected state
     ///     - normalFontColor: font color for normal state
     ///     - selectedFontColor: font color for selected state
-    final func customMakeup(normalBackgroundColor: ColorName = ColorName.black,
-                            selectedBackgroundColor: ColorName = ColorName.white,
-                            normalFontColor: ColorName = ColorName.white,
-                            selectedFontColor: ColorName = ColorName.black) {
-        if #available(iOS 13.0, *) {
-            self.backgroundColor = normalBackgroundColor.color
-            self.selectedSegmentTintColor = selectedBackgroundColor.color
-        } else {
-            // iOS 13 prior special case
-            self.setBackgroundImage(normalBackgroundColor.color.asImage(),
-                                    for: .normal,
-                                    barMetrics: .default)
-            self.setBackgroundImage(selectedBackgroundColor.color.asImage(),
-                                    for: .selected,
-                                    barMetrics: .default)
-            self.layer.cornerRadius = 4.0
-            self.clipsToBounds = true
-        }
+    final func customMakeup(normalBackgroundColor: ColorName = ColorName.defaultBgcolor,
+                            selectedBackgroundColor: ColorName = ColorName.highlightColor,
+                            normalFontColor: ColorName = ColorName.defaultTextColor,
+                            selectedFontColor: ColorName = ColorName.white) {
+        self.setBackgroundImage(normalBackgroundColor.color.withAlphaComponent(0.8).asImage(), for: [.normal, .disabled], barMetrics: .default)
+        self.setBackgroundImage(normalBackgroundColor.color.asImage(), for: .normal, barMetrics: .default)
+        self.setBackgroundImage(selectedBackgroundColor.color.withAlphaComponent(0.8).asImage(), for: [.selected, .disabled], barMetrics: .default)
+        self.setBackgroundImage(selectedBackgroundColor.color.asImage(), for: .selected, barMetrics: .default)
+
+        self.backgroundColor = .clear
+        self.selectedSegmentTintColor = .clear
+
         self.setDividerImage(UIImage(),
                              forLeftSegmentState: .normal,
                              rightSegmentState: .normal,

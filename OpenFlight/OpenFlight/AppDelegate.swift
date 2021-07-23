@@ -81,7 +81,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         /// Configure Main Window of the App.
         self.window = UIWindow(frame: UIScreen.main.bounds)
-        self.window?.backgroundColor = ColorName.alabaster.color
+        self.window?.backgroundColor = ColorName.defaultBgcolor.color
         self.window?.rootViewController = self.appCoordinator.navigationController
         self.window?.makeKeyAndVisible()
 

@@ -55,7 +55,6 @@ final class RemoteDetailsDeviceViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        initView()
         observeViewModel()
     }
 
@@ -74,17 +73,10 @@ final class RemoteDetailsDeviceViewController: UIViewController {
 
 // MARK: - Private Funcs
 private extension RemoteDetailsDeviceViewController {
-    /// Inits the view.
-    func initView() {
-        batteryImageView.image = Asset.Remote.icBatteryFull.image
-        modelLabel.makeUp(with: .huge)
-        nameLabel.makeUp(with: .large, and: .white20)
-    }
-
     /// Observes the remote infos view model.
     func observeViewModel() {
         viewModel = RemoteInfosViewModel(batteryLevelDidChange: { [weak self] battery in
-            self?.batteryLevelChanged(battery)
+            self?.batteryLevelChanged(battery, self?.viewModel?.state.value.remoteConnectionState.value == .connected)
         }, nameDidChange: { [weak self] name in
             self?.nameChanged(name)
         }, stateDidChange: { [weak self] connectionState in
@@ -92,9 +84,11 @@ private extension RemoteDetailsDeviceViewController {
         })
 
         if let state = viewModel?.state.value {
-            batteryLevelChanged(state.remoteBatteryLevel.value)
+            let isConnected = state.remoteConnectionState.value == .connected
+            let batteryLevel = state.remoteBatteryLevel.value
+            batteryLevelChanged(batteryLevel, isConnected)
             nameChanged(state.remoteName.value)
-            updateVisibility(state.remoteConnectionState.value == .connected)
+            updateVisibility(isConnected)
         }
     }
 
@@ -127,8 +121,8 @@ private extension RemoteDetailsDeviceViewController {
     ///
     /// - Parameters:
     ///     - battery: current battery value
-    func batteryLevelChanged(_ battery: BatteryValueModel) {
+    func batteryLevelChanged(_ battery: BatteryValueModel, _ isConnected: Bool) {
         batteryValueLabel.attributedText = NSMutableAttributedString(withBatteryLevel: battery.currentValue)
-        batteryImageView.image = battery.batteryImage
+        batteryImageView.image = isConnected ? battery.batteryImage : Asset.Common.Icons.icBattery.image
     }
 }

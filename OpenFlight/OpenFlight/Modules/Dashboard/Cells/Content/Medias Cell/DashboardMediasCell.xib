@@ -33,13 +33,13 @@
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icCardMini" translatesAutoresizingMaskIntoConstraints="NO" id="OZs-V5-SEP">
                                                 <rect key="frame" x="73" y="19.666666666666668" width="11" height="13.666666666666668"/>
-                                                <color key="tintColor" name="green_medium_sea"/>
+                                                <color key="tintColor" name="highlight_color"/>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gY5-ON-63G">
                                                 <rect key="frame" x="86" y="20" width="7" height="13"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                <color key="textColor" name="sambuca"/>
+                                                <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                                 <variation key="heightClass=regular-widthClass=regular">
                                                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
@@ -76,12 +76,12 @@
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icPhotoMini" translatesAutoresizingMaskIntoConstraints="NO" id="Xpf-XI-o8a">
                                                         <rect key="frame" x="78.666666666666671" y="20.333333333333329" width="11" height="9"/>
-                                                        <color key="tintColor" name="sambuca"/>
+                                                        <color key="tintColor" name="default_text_color"/>
                                                     </imageView>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LiM-FY-Gae">
                                                         <rect key="frame" x="91.666666666666671" y="18.333333333333329" width="7" height="13"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="sambuca"/>
+                                                        <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
                                                         <variation key="heightClass=regular-widthClass=regular">
                                                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
@@ -101,12 +101,12 @@
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icVideoMini" translatesAutoresizingMaskIntoConstraints="NO" id="uwU-pX-5Bs">
                                                         <rect key="frame" x="0.0" y="17.333333333333329" width="15" height="15"/>
-                                                        <color key="tintColor" name="sambuca"/>
+                                                        <color key="tintColor" name="default_text_color"/>
                                                     </imageView>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oul-2r-qpQ">
                                                         <rect key="frame" x="16.999999999999986" y="18.333333333333329" width="7" height="13"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="sambuca"/>
+                                                        <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
                                                         <variation key="heightClass=regular-widthClass=regular">
                                                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
@@ -165,10 +165,10 @@
         <image name="icCardMini" width="11" height="13.666666984558105"/>
         <image name="icPhotoMini" width="11" height="9"/>
         <image name="icVideoMini" width="15" height="15"/>
-        <namedColor name="green_medium_sea">
+        <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <systemColor name="systemBackgroundColor">

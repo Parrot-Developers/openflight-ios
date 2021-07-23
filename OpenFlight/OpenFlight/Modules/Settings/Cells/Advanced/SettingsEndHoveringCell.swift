@@ -56,11 +56,9 @@ final class SettingsEndHoveringCell: UITableViewCell, NibReusable {
 private extension SettingsEndHoveringCell {
     /// Inits the view.
     func initView() {
-        self.backgroundColor = .clear
+        bgView.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
         segmentedCell.delegate = self
         sliderCell.delegate = self
-        bgView.applyCornerRadius(Style.largeCornerRadius)
-        bgView.backgroundColor = ColorName.white20.color
     }
 
     /// Inits the hovering mode view model.
@@ -79,7 +77,7 @@ private extension SettingsEndHoveringCell {
         configureSliderCell()
         stackView.addArrangedSubview(segmentedCell.contentView)
         stackView.addArrangedSubview(sliderCell.contentView)
-        stackView.addSeparators()
+        stackView.addSeparators(backColor: ColorName.defaultBgcolor.color)
     }
 
     /// Configures the segmented cell.

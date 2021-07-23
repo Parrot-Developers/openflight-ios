@@ -114,14 +114,14 @@ private extension CameraWidgetView {
     }
 
     func updateTextColor() {
-        let textColor = model.isSelected.value ? .white : ColorName.sambuca.color
+        let textColor = model.isSelected.value ? .white : ColorName.defaultTextColor.color
         cameraWidgetLabel1.textColor = textColor
         cameraWidgetLabel2.textColor = textColor
     }
 
     func updateBackgroundColor() {
         let isSelected = model.isSelected.value == true
-        let backgroundColor = isSelected ? ColorName.greenMediumSea.color : ColorName.white90.color
+        let backgroundColor = isSelected ? ColorName.highlightColor.color : ColorName.white90.color
         customCornered(corners: [.topRight, .bottomRight],
                        radius: Style.largeCornerRadius,
                        backgroundColor: backgroundColor,

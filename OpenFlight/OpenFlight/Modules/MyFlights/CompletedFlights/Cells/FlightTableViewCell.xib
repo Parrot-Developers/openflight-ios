@@ -24,7 +24,7 @@
                 <subviews>
                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="cloudNotStored" translatesAutoresizingMaskIntoConstraints="NO" id="IuO-d1-3XR">
                         <rect key="frame" x="450" y="58" width="20" height="20"/>
-                        <color key="tintColor" name="sambuca"/>
+                        <color key="tintColor" name="default_text_color"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="20" id="alR-Ix-Viq"/>
                             <constraint firstAttribute="width" constant="20" id="leg-aQ-B9V"/>
@@ -42,13 +42,13 @@
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tbw-F1-SEw">
                                                 <rect key="frame" x="0.0" y="8" width="50" height="17.5"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                <color key="textColor" name="sambuca"/>
+                                                <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Year" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wda-vh-11P">
                                                 <rect key="frame" x="0.0" y="29.5" width="23.5" height="14"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="12"/>
-                                                <color key="textColor" name="sambuca"/>
+                                                <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                         </subviews>
@@ -82,13 +82,13 @@
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="acQ-sZ-lMo">
                                                                 <rect key="frame" x="0.0" y="0.0" width="124" height="38"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                                <color key="textColor" name="sambuca"/>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xfY-d0-hbO">
                                                                 <rect key="frame" x="0.0" y="42" width="124" height="38"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                                <color key="textColor" name="sambuca"/>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="SWv-Ll-z4F">
@@ -96,7 +96,7 @@
                                                                 <subviews>
                                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="252" verticalHuggingPriority="251" image="icWarningRed" translatesAutoresizingMaskIntoConstraints="NO" id="EVC-F6-HWH">
                                                                         <rect key="frame" x="0.0" y="0.0" width="15" height="20"/>
-                                                                        <color key="tintColor" name="tomato"/>
+                                                                        <color key="tintColor" name="warning_color"/>
                                                                     </imageView>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bUr-C8-g1H">
                                                                         <rect key="frame" x="23" y="0.0" width="101" height="20"/>
@@ -104,7 +104,7 @@
                                                                             <constraint firstAttribute="height" constant="20" id="aMT-MM-pwE"/>
                                                                         </constraints>
                                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
-                                                                        <color key="textColor" name="sambuca"/>
+                                                                        <color key="textColor" name="default_text_color"/>
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
                                                                 </subviews>
@@ -120,12 +120,12 @@
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I1R-yy-eql">
                                                                         <rect key="frame" x="0.0" y="0.0" width="32" height="12"/>
                                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                                        <color key="textColor" name="sambuca"/>
+                                                                        <color key="textColor" name="default_text_color"/>
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
                                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icPhotoMini" translatesAutoresizingMaskIntoConstraints="NO" id="jY5-DQ-kK6">
                                                                         <rect key="frame" x="36" y="0.0" width="12" height="12"/>
-                                                                        <color key="tintColor" name="sambuca"/>
+                                                                        <color key="tintColor" name="default_text_color"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="height" constant="12" id="pZa-L1-3Lj"/>
                                                                             <constraint firstAttribute="width" secondItem="jY5-DQ-kK6" secondAttribute="height" multiplier="1:1" id="qLe-RW-7UX"/>
@@ -139,12 +139,12 @@
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Nf-G6-e6D">
                                                                         <rect key="frame" x="0.0" y="0.0" width="10" height="15"/>
                                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                                        <color key="textColor" name="sambuca"/>
+                                                                        <color key="textColor" name="default_text_color"/>
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
                                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icVideoMini" translatesAutoresizingMaskIntoConstraints="NO" id="dIe-y1-VPr">
                                                                         <rect key="frame" x="14" y="0.0" width="15" height="15"/>
-                                                                        <color key="tintColor" name="sambuca"/>
+                                                                        <color key="tintColor" name="default_text_color"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="width" secondItem="dIe-y1-VPr" secondAttribute="height" multiplier="1:1" id="hX9-1t-ayO"/>
                                                                         </constraints>
@@ -157,12 +157,12 @@
                                                                     <constraint firstAttribute="width" constant="50" id="M9y-5t-de0"/>
                                                                 </constraints>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                                <color key="textColor" name="sambuca"/>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRightArrow" translatesAutoresizingMaskIntoConstraints="NO" id="ABU-CD-2G8">
                                                                 <rect key="frame" x="151" y="3" width="9" height="9"/>
-                                                                <color key="tintColor" name="sambuca"/>
+                                                                <color key="tintColor" name="default_text_color"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" secondItem="ABU-CD-2G8" secondAttribute="height" multiplier="1:1" id="kb2-vA-BgF"/>
                                                                 </constraints>
@@ -238,10 +238,10 @@
         <image name="icRightArrow" width="9" height="16"/>
         <image name="icVideoMini" width="15" height="15"/>
         <image name="icWarningRed" width="15" height="12"/>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="tomato">
+        <namedColor name="warning_color">
             <color red="1" green="0.44705882352941179" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>

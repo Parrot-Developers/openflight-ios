@@ -24,7 +24,7 @@
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1nr-cT-BKd">
                                 <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
-                                <color key="backgroundColor" name="alabaster"/>
+                                <color key="backgroundColor" name="default_bgcolor"/>
                             </view>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="BaE-Db-FrJ">
                                 <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
@@ -55,7 +55,7 @@
                                                         <constraint firstAttribute="width" constant="25" id="EdI-mm-pXt"/>
                                                         <constraint firstAttribute="height" constant="25" id="aP6-gr-Zu9"/>
                                                     </constraints>
-                                                    <color key="tintColor" name="sambuca"/>
+                                                    <color key="tintColor" name="default_text_color"/>
                                                     <state key="normal" image="ic_back"/>
                                                     <connections>
                                                         <action selector="backButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="PDM-DR-l2f"/>
@@ -70,13 +70,13 @@
                                                                 <constraint firstAttribute="height" constant="20.5" id="qgv-ba-VBj"/>
                                                             </constraints>
                                                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                            <color key="textColor" name="sambuca"/>
+                                                            <color key="textColor" name="default_text_color"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icCameraModePhoto" translatesAutoresizingMaskIntoConstraints="NO" id="9C7-6d-r5o">
                                                             <rect key="frame" x="8" y="7" width="18" height="16"/>
                                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                            <color key="tintColor" name="sambuca"/>
+                                                            <color key="tintColor" name="default_text_color"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="width" constant="18" id="7Rp-bs-Ts4"/>
                                                                 <constraint firstAttribute="height" constant="16" id="ePz-vg-xtg"/>
@@ -99,7 +99,7 @@
                                                         <constraint firstAttribute="height" constant="17" id="fbD-Nh-W30"/>
                                                     </constraints>
                                                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                    <color key="textColor" name="sambuca"/>
+                                                    <color key="textColor" name="default_text_color"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rM3-Lr-C9P" userLabel="Actions View">
@@ -112,7 +112,7 @@
                                                                 <constraint firstAttribute="width" constant="13" id="MTd-5e-Jqu"/>
                                                             </constraints>
                                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                                            <color key="tintColor" name="sambuca"/>
+                                                            <color key="tintColor" name="default_text_color"/>
                                                             <state key="normal" image="iconTrashWhite"/>
                                                             <connections>
                                                                 <action selector="topDeleteButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="sVT-2Q-oKO"/>
@@ -135,7 +135,7 @@
                                                                 <constraint firstAttribute="height" constant="22" id="l5H-0M-bGa"/>
                                                                 <constraint firstAttribute="width" constant="13" id="lXs-Js-rSs"/>
                                                             </constraints>
-                                                            <color key="tintColor" name="sambuca"/>
+                                                            <color key="tintColor" name="default_text_color"/>
                                                             <state key="normal" image="icExport"/>
                                                             <connections>
                                                                 <action selector="topShareButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="FTf-Mx-cQy"/>
@@ -206,7 +206,7 @@
                                             <subviews>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WKm-uG-RNM">
                                                     <rect key="frame" x="395.66666666666669" y="15" width="105" height="50"/>
-                                                    <color key="backgroundColor" name="tomato"/>
+                                                    <color key="backgroundColor" name="warning_color"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="50" id="tdg-ef-wj4"/>
                                                     </constraints>
@@ -228,7 +228,7 @@
                                                                 <constraint firstAttribute="height" constant="40" id="O5F-vG-qLf"/>
                                                                 <constraint firstAttribute="width" constant="40" id="vL4-Cb-hR8"/>
                                                             </constraints>
-                                                            <color key="tintColor" name="sambuca"/>
+                                                            <color key="tintColor" name="default_text_color"/>
                                                             <state key="normal" image="iconTrashWhite"/>
                                                             <connections>
                                                                 <action selector="bottomDeleteButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="g2V-3w-cHb"/>
@@ -241,7 +241,7 @@
                                                     <subviews>
                                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mkD-Gx-VAd">
                                                             <rect key="frame" x="0.0" y="0.0" width="13" height="28"/>
-                                                            <color key="tintColor" name="sambuca"/>
+                                                            <color key="tintColor" name="default_text_color"/>
                                                             <state key="normal" image="icExport"/>
                                                             <connections>
                                                                 <action selector="bottomShareButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="nHX-Sp-rFG"/>
@@ -251,7 +251,7 @@
                                                             <rect key="frame" x="21" y="0.0" width="41" height="28"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                                             <state key="normal" title="Button">
-                                                                <color key="titleColor" name="sambuca"/>
+                                                                <color key="titleColor" name="default_text_color"/>
                                                             </state>
                                                             <connections>
                                                                 <action selector="bottomDownloadButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="2X1-M2-bPt"/>
@@ -469,7 +469,7 @@
                                     </imageView>
                                     <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="FX0-zo-dfd">
                                         <rect key="frame" x="429.66666666666669" y="188.66666666666666" width="37" height="37"/>
-                                        <color key="color" name="green_medium_sea"/>
+                                        <color key="color" name="highlight_color"/>
                                     </activityIndicatorView>
                                 </subviews>
                                 <constraints>
@@ -500,7 +500,7 @@
                                     <pickerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ddo-gl-kDY">
                                         <rect key="frame" x="53" y="0.0" width="50" height="414"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <color key="tintColor" name="sambuca"/>
+                                        <color key="tintColor" name="default_text_color"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="50" id="WPZ-nA-jfo"/>
                                             <constraint firstAttribute="height" constant="200" id="v08-Lt-wxp"/>
@@ -517,7 +517,7 @@
                                         </variation>
                                     </pickerView>
                                 </subviews>
-                                <color key="backgroundColor" name="alabaster"/>
+                                <color key="backgroundColor" name="default_bgcolor"/>
                                 <constraints>
                                     <constraint firstItem="Ddo-gl-kDY" firstAttribute="top" secondItem="Odu-Nc-xBU" secondAttribute="top" id="2Gv-xA-QSQ"/>
                                     <constraint firstItem="Ddo-gl-kDY" firstAttribute="centerX" secondItem="Odu-Nc-xBU" secondAttribute="centerX" id="3sw-HV-CLk"/>
@@ -544,7 +544,7 @@
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mkE-f1-CPw">
                                         <rect key="frame" x="12" y="182" width="132" height="50"/>
-                                        <color key="backgroundColor" name="tomato"/>
+                                        <color key="backgroundColor" name="warning_color"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="Q8b-gd-i94"/>
                                         </constraints>
@@ -560,14 +560,14 @@
                                             <constraint firstAttribute="height" constant="50" id="8ZV-hS-a1p"/>
                                             <constraint firstAttribute="width" constant="50" id="Q7u-oN-uOv"/>
                                         </constraints>
-                                        <color key="tintColor" name="sambuca"/>
+                                        <color key="tintColor" name="default_text_color"/>
                                         <state key="normal" image="icFullScreen"/>
                                         <connections>
                                             <action selector="generateFullScreenButtonTouchedUpInside:" destination="d6B-eB-ewA" eventType="touchUpInside" id="YOZ-4r-H4x"/>
                                         </connections>
                                     </button>
                                 </subviews>
-                                <color key="backgroundColor" name="alabaster"/>
+                                <color key="backgroundColor" name="default_bgcolor"/>
                                 <constraints>
                                     <constraint firstItem="tNa-9x-t6J" firstAttribute="centerX" secondItem="Bm4-8H-5lg" secondAttribute="centerX" id="5Ue-9S-Bg3"/>
                                     <constraint firstAttribute="trailing" secondItem="mkE-f1-CPw" secondAttribute="trailing" constant="12" id="M5Z-Oq-32T"/>
@@ -701,16 +701,16 @@
         <image name="icGyroscope" width="26" height="26"/>
         <image name="ic_back" width="21" height="21"/>
         <image name="iconTrashWhite" width="12" height="16"/>
-        <namedColor name="alabaster">
+        <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="green_medium_sea">
+        <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="tomato">
+        <namedColor name="warning_color">
             <color red="1" green="0.44705882352941179" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="white_70">

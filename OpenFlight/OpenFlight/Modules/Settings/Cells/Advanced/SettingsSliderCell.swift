@@ -52,16 +52,8 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var bgView: UIView!
     @IBOutlet private weak var settingImage: UIImageView!
-    @IBOutlet private weak var titleLabel: UILabel! {
-        didSet {
-            titleLabel.makeUp()
-        }
-    }
-    @IBOutlet private weak var percentLabel: UILabel! {
-        didSet {
-            percentLabel.makeUp()
-        }
-    }
+    @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet private weak var percentLabel: UILabel!
     @IBOutlet private weak var slider: SettingsSlider!
     /// Leading constraint used for the stack view.
     @IBOutlet private weak var stackViewLeadingConstraint: NSLayoutConstraint!
@@ -79,7 +71,7 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
     private var indexPath: IndexPath!
     private var isEnabled: Bool = true {
         didSet {
-            titleLabel.textColor = self.isEnabled ? ColorName.white.color : ColorName.white50.color
+            titleLabel.textColor = self.isEnabled ? ColorName.defaultTextColor.color : ColorName.defaultTextColor80.color
             updateSliderView()
             slider.isEnabled = self.isEnabled
         }
@@ -161,12 +153,12 @@ private extension SettingsSliderCell {
         percentLabel.text = formattedValue
 
         if !isEnabled {
-            percentLabel.textColor = ColorName.white50.color
+            percentLabel.textColor = ColorName.disabledHighlightColor.color
         } else if let sliderOverLimitValue = sliderOverLimitValue,
                   slider.value >= sliderOverLimitValue {
-            percentLabel.textColor = .orange
+            percentLabel.textColor = ColorName.warningColor.color
         } else {
-            percentLabel.textColor = ColorName.greenSpring.color
+            percentLabel.textColor = ColorName.highlightColor.color
         }
     }
 
@@ -203,7 +195,7 @@ private extension SettingsSliderCell {
     func setupBackground(shouldShow: Bool) {
         bgView.applyCornerRadius(Style.largeCornerRadius)
         bgView.backgroundColor = shouldShow
-            ? ColorName.white20.color
+            ? ColorName.white.color
             : .clear
     }
 }

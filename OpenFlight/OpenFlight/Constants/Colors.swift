@@ -18,9 +18,6 @@ public struct ColorName {
   public let rgbaValue: UInt32
   public var color: Color { return Color(named: self) }
 
-  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#f0eee4"></span>
-  /// Alpha: 100% <br/> (0xf0eee4ff)
-  public static let alabaster = ColorName(rgbaValue: 0xf0eee4ff)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#000000"></span>
   /// Alpha: 100% <br/> (0x000000ff)
   public static let black = ColorName(rgbaValue: 0x000000ff)
@@ -45,24 +42,45 @@ public struct ColorName {
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#000000"></span>
   /// Alpha: 0% <br/> (0x00000000)
   public static let clear = ColorName(rgbaValue: 0x00000000)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#f0eee4"></span>
+  /// Alpha: 100% <br/> (0xf0eee4ff)
+  public static let defaultBgcolor = ColorName(rgbaValue: 0xf0eee4ff)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#3b302a"></span>
+  /// Alpha: 100% <br/> (0x3b302aff)
+  public static let defaultTextColor = ColorName(rgbaValue: 0x3b302aff)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#3b302a"></span>
+  /// Alpha: 20% <br/> (0x3b302a33)
+  public static let defaultTextColor20 = ColorName(rgbaValue: 0x3b302a33)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#3b302a"></span>
+  /// Alpha: 80% <br/> (0x3b302acc)
+  public static let defaultTextColor80 = ColorName(rgbaValue: 0x3b302acc)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#e34f45"></span>
+  /// Alpha: 30% <br/> (0xe34f454d)
+  public static let disabledErrorColor = ColorName(rgbaValue: 0xe34f454d)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#34c175"></span>
+  /// Alpha: 20% <br/> (0x34c17533)
+  public static let disabledHighlightColor = ColorName(rgbaValue: 0x34c17533)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#3b302a"></span>
+  /// Alpha: 50% <br/> (0x3b302a80)
+  public static let disabledTextColor = ColorName(rgbaValue: 0x3b302a80)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#ff7245"></span>
+  /// Alpha: 20% <br/> (0xff724533)
+  public static let disabledWarningColor = ColorName(rgbaValue: 0xff724533)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#22916f"></span>
   /// Alpha: 100% <br/> (0x22916fff)
   public static let elfGreen = ColorName(rgbaValue: 0x22916fff)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#41cf82"></span>
   /// Alpha: 100% <br/> (0x41cf82ff)
   public static let emerald = ColorName(rgbaValue: 0x41cf82ff)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#e34f45"></span>
+  /// Alpha: 100% <br/> (0xe34f45ff)
+  public static let errorColor = ColorName(rgbaValue: 0xe34f45ff)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#f8d000"></span>
   /// Alpha: 100% <br/> (0xf8d000ff)
   public static let gold = ColorName(rgbaValue: 0xf8d000ff)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#00a157"></span>
   /// Alpha: 100% <br/> (0x00a157ff)
   public static let greenHaze = ColorName(rgbaValue: 0x00a157ff)
-  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#34c175"></span>
-  /// Alpha: 100% <br/> (0x34c175ff)
-  public static let greenMediumSea = ColorName(rgbaValue: 0x34c175ff)
-  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#34c175"></span>
-  /// Alpha: 20% <br/> (0x34c17533)
-  public static let greenMediumSea20 = ColorName(rgbaValue: 0x34c17533)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#1a513d"></span>
   /// Alpha: 100% <br/> (0x1a513dff)
   public static let greenPea = ColorName(rgbaValue: 0x1a513dff)
@@ -87,6 +105,12 @@ public struct ColorName {
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#bebebe"></span>
   /// Alpha: 100% <br/> (0xbebebeff)
   public static let greySilver = ColorName(rgbaValue: 0xbebebeff)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#34c175"></span>
+  /// Alpha: 100% <br/> (0x34c175ff)
+  public static let highlightColor = ColorName(rgbaValue: 0x34c175ff)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#2f2f2f"></span>
+  /// Alpha: 80% <br/> (0x2f2f2fcc)
+  public static let nightRider80 = ColorName(rgbaValue: 0x2f2f2fcc)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#ff9900"></span>
   /// Alpha: 100% <br/> (0xff9900ff)
   public static let orangePeel = ColorName(rgbaValue: 0xff9900ff)
@@ -105,27 +129,9 @@ public struct ColorName {
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#ff1d45"></span>
   /// Alpha: 50% <br/> (0xff1d4580)
   public static let redTorch50 = ColorName(rgbaValue: 0xff1d4580)
-  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#3b302a"></span>
-  /// Alpha: 100% <br/> (0x3b302aff)
-  public static let sambuca = ColorName(rgbaValue: 0x3b302aff)
-  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#3b302a"></span>
-  /// Alpha: 50% <br/> (0x3b302a80)
-  public static let sambuca50 = ColorName(rgbaValue: 0x3b302a80)
-  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#3b302a"></span>
-  /// Alpha: 80% <br/> (0x3b302acc)
-  public static let sambuca80 = ColorName(rgbaValue: 0x3b302acc)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#ff7245"></span>
   /// Alpha: 100% <br/> (0xff7245ff)
-  public static let tomato = ColorName(rgbaValue: 0xff7245ff)
-  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#ff7245"></span>
-  /// Alpha: 20% <br/> (0xff724533)
-  public static let tomato20 = ColorName(rgbaValue: 0xff724533)
-  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#e34f45"></span>
-  /// Alpha: 100% <br/> (0xe34f45ff)
-  public static let valencia = ColorName(rgbaValue: 0xe34f45ff)
-  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#e34f45"></span>
-  /// Alpha: 30% <br/> (0xe34f454d)
-  public static let valencia30 = ColorName(rgbaValue: 0xe34f454d)
+  public static let warningColor = ColorName(rgbaValue: 0xff7245ff)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#ffffff"></span>
   /// Alpha: 100% <br/> (0xffffffff)
   public static let white = ColorName(rgbaValue: 0xffffffff)

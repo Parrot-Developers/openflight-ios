@@ -206,7 +206,7 @@ private extension GalleryMediaPlayerViewController {
         subtitleLabel.text = ""
         titleViewTopConstraint.constant = Constants.titleViewWithoutSubtitleLabelTopConstraint
         generateButton.setTitle(L10n.galleryPanoramaGenerate, for: .normal)
-        generateButton.cornerRadiusedWith(backgroundColor: ColorName.tomato.color, radius: Style.largeCornerRadius)
+        generateButton.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color, radius: Style.largeCornerRadius)
         topDownloadButton.setup()
         bottomDownloadButton.setup()
     }

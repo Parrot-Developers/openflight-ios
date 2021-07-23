@@ -105,6 +105,11 @@ final class CenteredRulerBarView<T: BarButtonState>: UIView, NibOwnerLoadable, N
                                                         right: self.collectionView.frame.size.width/2)
     }
 
+    override func setNeedsLayout() {
+        collectionView.collectionViewLayout.invalidateLayout()
+        collectionView.collectionViewLayout.prepare()
+    }
+
     // MARK: - UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return models.count

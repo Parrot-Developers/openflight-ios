@@ -256,7 +256,7 @@ private extension GalleryImageViewController {
 
     /// Setup picker view.
     func setupPickerView() {
-        pickerSelectionView.cornerRadiusedWith(backgroundColor: ColorName.greenMediumSea.color, radius: Style.largeCornerRadius)
+        pickerSelectionView.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color, radius: Style.largeCornerRadius)
         pickerSideView.isHidden = true
         pickerView.dataSource = self
         pickerView.selectRow(imageIndex, inComponent: 0, animated: false)
@@ -283,7 +283,7 @@ private extension GalleryImageViewController {
             generateSideView.isHidden = viewModel.shouldHideGenerationOption(currentMedia: currentMedia)
         }
         generateButton.setTitle(L10n.galleryPanoramaGenerate, for: .normal)
-        generateButton.cornerRadiusedWith(backgroundColor: ColorName.tomato.color, radius: Style.largeCornerRadius)
+        generateButton.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color, radius: Style.largeCornerRadius)
         generateFullScreenButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
         generateFullScreenButton.isHidden = true
         if let imageUrl = imageUrl {
@@ -362,7 +362,7 @@ extension GalleryImageViewController: UIPickerViewDelegate {
                     imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.pickerRowSize, height: Constants.pickerRowSize))
                 }
                 imageView.contentMode = .center
-                imageView.tintColor = ColorName.sambuca.color
+                imageView.tintColor = ColorName.defaultTextColor.color
                 imageView.isUserInteractionEnabled = false
 
                 switch PanoramaMediaType(rawValue: title) {
@@ -390,7 +390,7 @@ extension GalleryImageViewController: UIPickerViewDelegate {
                 } else {
                     label = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.pickerRowSize, height: Constants.pickerRowSize))
                 }
-                label.makeUp(with: .large, and: .sambuca)
+                label.makeUp(with: .large, and: .defaultTextColor)
                 label.textAlignment = .center
                 label.text = title
                 label.isUserInteractionEnabled = false

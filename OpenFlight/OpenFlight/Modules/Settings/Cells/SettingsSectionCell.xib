@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
-        <array key="Rajdhani-Medium.ttf">
-            <string>Rajdhani-Medium</string>
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
         </array>
     </customFonts>
     <objects>
@@ -23,19 +24,20 @@
                 <subviews>
                     <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconSettingsBehaviour" translatesAutoresizingMaskIntoConstraints="NO" id="Y55-nZ-kUX">
                         <rect key="frame" x="8" y="13" width="24" height="24"/>
+                        <color key="tintColor" name="default_text_color"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="24" id="XK2-Vl-pLL"/>
                             <constraint firstAttribute="height" constant="24" id="fm9-wp-gcb"/>
                         </constraints>
                     </imageView>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="473-S7-mvq">
-                        <rect key="frame" x="40" y="19.5" width="229" height="11"/>
-                        <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="11"/>
-                        <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <rect key="frame" x="40" y="17.5" width="229" height="15.5"/>
+                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                        <color key="textColor" name="default_text_color"/>
                         <nil key="highlightedColor"/>
                     </label>
                 </subviews>
-                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
                     <constraint firstItem="473-S7-mvq" firstAttribute="leading" secondItem="Y55-nZ-kUX" secondAttribute="trailing" constant="8" id="FtA-go-f82"/>
                     <constraint firstItem="Y55-nZ-kUX" firstAttribute="leading" secondItem="vdK-uZ-L9c" secondAttribute="leading" constant="8" id="Gue-Wa-y4W"/>
@@ -54,5 +56,8 @@
     </objects>
     <resources>
         <image name="iconSettingsBehaviour" width="19" height="19"/>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

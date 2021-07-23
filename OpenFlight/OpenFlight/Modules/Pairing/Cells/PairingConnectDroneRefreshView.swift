@@ -47,11 +47,6 @@ final class PairingConnectDroneRefreshView: UIView, NibOwnerLoadable {
     // MARK: - Internal Properties
     weak var navDelegate: DroneListDelegate?
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let borderWidth: CGFloat = 1.0
-    }
-
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -76,10 +71,10 @@ private extension PairingConnectDroneRefreshView {
     /// Init the view.
     func initView() {
         loadNibContent()
-        refreshButton.cornerRadiusedWith(backgroundColor: UIColor.clear,
-                                         borderColor: UIColor(named: .white),
+        refreshButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
+                                         borderColor: .clear,
                                          radius: Style.largeCornerRadius,
-                                         borderWidth: Constants.borderWidth)
+                                         borderWidth: Style.noBorderWidth)
         refreshButton.setTitle(L10n.pairingRefreshDroneList, for: .normal)
     }
 }

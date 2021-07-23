@@ -153,7 +153,6 @@ private extension SettingsContentViewController {
         settingsTableView.delaysContentTouches = false
         settingsTableView.contentInset.top = Constants.tableViewTopInset
         settingsTableView.contentInset.bottom = Constants.tableViewTopInset
-        settingsTableView.backgroundColor = .clear
     }
 
     /// Builds cells regarding there type.
@@ -234,7 +233,9 @@ private extension SettingsContentViewController {
     func configureTitleCell(at indexPath: IndexPath) -> UITableViewCell {
         let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsTitleCell
         let settingEntry = filteredSettings[indexPath.row]
-        cell.configureCell(cellTitle: settingEntry.title, cellImage: settingEntry.setting as? UIImage)
+        cell.configureCell(cellTitle: settingEntry.title,
+                           cellImage: settingEntry.setting as? UIImage,
+                           isFirst: indexPath.row == 0)
 
         return cell
     }

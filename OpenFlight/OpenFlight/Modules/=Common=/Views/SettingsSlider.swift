@@ -41,7 +41,7 @@ final class SettingsSlider: UISlider {
     }
 
     // MARK: - Private Properties
-    private var underLimitColor: UIColor = ColorName.greenMediumSea.color {
+    private var underLimitColor: UIColor = ColorName.highlightColor.color {
         didSet {
             updateSliderTint()
         }
@@ -66,7 +66,7 @@ final class SettingsSlider: UISlider {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let overLimitColor: UIColor = ColorName.tomato.color
+        static let overLimitColor: UIColor = ColorName.warningColor.color
         static let trackHeight: CGFloat = 2.0
         static let leadingTrailingMargin: CGFloat = 6.0
         static let overLimitMarkerHeight: CGFloat = 9.0
@@ -79,7 +79,7 @@ final class SettingsSlider: UISlider {
         updateThumbImage(self.thumbImage)
 
         self.minimumTrackTintColor = underLimitColor
-        self.maximumTrackTintColor = ColorName.sambuca.color
+        self.maximumTrackTintColor = ColorName.defaultTextColor.color
 
         if let unwpThumbView = self.thumbView {
             unwpThumbView.tintColor = underLimitColor

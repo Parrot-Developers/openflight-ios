@@ -419,7 +419,7 @@ extension GalleryMediaViewController: GallerySelectionDelegate {
                                        })
         let cancelAction = AlertAction(title: L10n.cancel,
                                        style: .cancel,
-                                       cancelCustomColor: .greenMediumSea,
+                                       cancelCustomColor: .highlightColor,
                                        actionHandler: {})
         let message: String = String(format: L10n.galleryRemoveSdConfirm, viewModel?.sourceType?.title ?? "")
         showAlert(title: L10n.commonDelete,

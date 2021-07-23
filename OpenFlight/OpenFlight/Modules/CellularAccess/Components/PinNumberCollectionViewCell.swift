@@ -100,9 +100,9 @@ private extension PinNumberCollectionViewCell {
     ///     - isSelected: tells if the view is selected
     func updateView(isSelected: Bool = false) {
         let cornerRadius = mainView.frame.width / 2
-        let backgroundColor = isSelected ? ColorName.greenMediumSea.color : .clear
+        let backgroundColor = isSelected ? ColorName.highlightColor.color : .clear
         numberButton.cornerRadiusedWith(backgroundColor: backgroundColor,
-                                        borderColor: ColorName.sambuca.color,
+                                        borderColor: ColorName.defaultTextColor.color,
                                         radius: cornerRadius,
                                         borderWidth: Style.mediumBorderWidth)
     }

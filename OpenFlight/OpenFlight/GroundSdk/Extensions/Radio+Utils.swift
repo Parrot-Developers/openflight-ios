@@ -66,7 +66,7 @@ extension WifiStrength: SignalStrength {
              .ok2On4,
              .ok3On4,
              .ok4On4:
-            return .greenMediumSea20
+            return .disabledHighlightColor
         default:
             return .clear
         }
@@ -78,7 +78,7 @@ extension WifiStrength: SignalStrength {
              .ok2On4,
              .ok3On4,
              .ok4On4:
-            return .greenMediumSea
+            return .highlightColor
         default:
             return .clear
         }

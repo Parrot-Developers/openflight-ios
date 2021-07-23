@@ -34,24 +34,12 @@ import Reusable
 /// Manages return to home gesture and display.
 final class SettingsRthActionView: UIView {
     // MARK: - Outlets
-    @IBOutlet private weak var positionView: UIView! {
-        didSet {
-            positionView.backgroundColor = ColorName.white20.color
-        }
-    }
+    @IBOutlet private weak var positionView: UIView!
     @IBOutlet private weak var homeImage: UIImageView!
     @IBOutlet private weak var droneImage: UIImageView!
     @IBOutlet private weak var pointImage: UIImageView!
-    @IBOutlet private weak var infoLabel: UILabel! {
-        didSet {
-            infoLabel.makeUp(with: .large, and: .greenSpring)
-        }
-    }
-    @IBOutlet private weak var lineView: UIView! {
-        didSet {
-            lineView.backgroundColor = ColorName.greenSpring.color
-        }
-    }
+    @IBOutlet private weak var infoLabel: UILabel!
+    @IBOutlet private weak var lineView: UIView!
 
     // MARK: - Private Enums
     private enum Constants {
@@ -101,7 +89,7 @@ final class SettingsRthActionView: UIView {
 
         dashedLinePath.lineCapStyle = .butt
         dashedLinePath.close()
-        ColorName.white.color.setStroke()
+        ColorName.defaultTextColor.color.setStroke()
         dashedLinePath.stroke()
 
         // Draw arrow.
@@ -118,7 +106,7 @@ final class SettingsRthActionView: UIView {
         dashedLinePath.move(to: start)
         dashedLinePath.addLine(to: end)
         dashedLinePath.close()
-        ColorName.white.color.setStroke()
+        ColorName.defaultTextColor.color.setStroke()
         dashedLinePath.stroke()
     }
 
@@ -250,6 +238,7 @@ final class SettingsRthCell: UITableViewCell, NibReusable {
         super.awakeFromNib()
 
         gridView.isYAxisHidden = true
+        gridView.isXAxisHidden = true
     }
 
     // MARK: - Internal Funcs

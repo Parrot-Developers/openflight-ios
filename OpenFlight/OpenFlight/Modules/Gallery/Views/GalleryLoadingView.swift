@@ -102,7 +102,7 @@ private extension GalleryLoadingView {
         self.loadNibContent()
         self.isHidden = true
         progressView.setProgress(0.0, animated: false)
-        progressView.progressTintColor = ColorName.greenMediumSea20.color
+        progressView.progressTintColor = ColorName.disabledHighlightColor.color
         progressView.trackTintColor = .clear
         infoLabel.text = L10n.commonDownloading
     }

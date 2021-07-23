@@ -74,8 +74,7 @@ public extension UIViewController {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setSizeConstraints(size)
-        button.setImage(style.image,
-                        for: .normal)
+        button.setImage(style.image, for: .normal)
 
         // Add to main view.
         containerView?.addSubview(button)

@@ -75,10 +75,8 @@ private extension DeviceInformationsView {
     func commonInitDroneInformationsView() {
         self.loadNibContent()
 
-        titleLabel.makeUp(with: .large)
         titleLabel.adjustsFontSizeToFitWidth = true
         titleLabel.minimumScaleFactor = Style.minimumScaleFactor
-        descriptionLabel.makeUp(with: .regular, and: .white50)
         descriptionLabel.adjustsFontSizeToFitWidth = true
         descriptionLabel.minimumScaleFactor = Style.minimumScaleFactor
     }

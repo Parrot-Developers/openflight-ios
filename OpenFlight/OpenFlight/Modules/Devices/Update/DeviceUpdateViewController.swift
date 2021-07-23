@@ -149,7 +149,7 @@ private extension DeviceUpdateViewController {
                                                 title: model.sendingStep)
         rebootingStepView.model = UpdateStepModel(state: .todo, title: L10n.remoteUpdateRebootStep)
         progressView.updateDeviceImage(model: model)
-        continueButton.cornerRadiusedWith(backgroundColor: .white,
+        continueButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                           borderColor: .clear,
                                           radius: Style.largeCornerRadius)
     }
@@ -265,6 +265,10 @@ private extension DeviceUpdateViewController {
                                     ? L10n.commonContinue
                                     : L10n.commonRetry,
                                 for: .normal)
+        continueButton.setTitleColor(isUpdateFinished ? .white : ColorName.defaultTextColor.color, for: .normal)
+        continueButton.cornerRadiusedWith(backgroundColor: isUpdateFinished ? ColorName.highlightColor.color : ColorName.whiteAlbescent.color,
+                                          borderColor: .clear,
+                                          radius: Style.largeCornerRadius)
         continueButton.isHidden = false
     }
 

@@ -110,7 +110,7 @@ public extension UIStackView {
                index > firstIndex,
                index < arrangedSubviews.count {
                 // Add separators after the first visible element.
-                let separator = SeparatorView(size: size, orientation: self.axis)
+                let separator = SeparatorView(size: size, orientation: self.axis, backColor: backColor)
                 insertArrangedSubview(separator, at: index)
             }
         }

@@ -112,6 +112,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         coordinator?.hudCriticalAlertDelegate = self
 
         listenMissionMode()
+        listenRemoteShutdownAlert()
 
         // Handle rotation when coming from Onboarding.
         let value = UIInterfaceOrientation.landscapeRight.rawValue
@@ -204,6 +205,18 @@ private extension HUDViewController {
         .store(in: &cancellables)
     }
 
+    /// Listens if modal popup can be shown
+    func listenRemoteShutdownAlert() {
+        remoteShutdownAlertViewModel.canShowModal
+            .removeDuplicates()
+            .sink { [weak self] canShowModal in
+                if canShowModal {
+                    self?.showRemoteShutdownAlert()
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     /// Sets up right panel for flight plans.
     func setupFlightPlanPanel() {
         let flightPlanPanelVC = FlightPlanPanelViewController.instantiate(coordinator: flightPlanPanelCoordinator)
@@ -270,16 +283,13 @@ private extension HUDViewController {
 
     /// Shows remote alert shutdown process.
     func showRemoteShutdownAlert() {
-        guard remoteShutdownAlertViewModel.state.value.canShowModal else { return }
+//        guard remoteShutdownAlertViewModel.canShowModal else { return }
 
         coordinator?.displayRemoteAlertShutdown()
     }
 
     /// Updates view models values.
     func updateViewModels() {
-        remoteShutdownAlertViewModel.state.valueChanged = { [weak self] _ in
-            self?.showRemoteShutdownAlert()
-        }
         helloWorldViewModel?.state.valueChanged = { [weak self] state in
             self?.showHelloWorldIfNeeded(state: state)
         }
@@ -308,7 +318,7 @@ private extension HUDViewController {
             self?.updateCellularProcess()
         }
         updateLandingView(with: landingViewModel.state.value)
-        showRemoteShutdownAlert()
+
         if let state = helloWorldViewModel?.state.value {
             showHelloWorldIfNeeded(state: state)
         }
@@ -330,7 +340,6 @@ private extension HUDViewController {
         joysticksViewModel.state.valueChanged = nil
         flightReportViewModel.state.valueChanged = nil
         criticalAlertViewModel.state.valueChanged = nil
-        remoteShutdownAlertViewModel.state.valueChanged = nil
         helloWorldViewModel?.state.valueChanged = nil
         landingViewModel.state.valueChanged = nil
         cellularPairingAvailabilityViewModel.state.valueChanged = nil

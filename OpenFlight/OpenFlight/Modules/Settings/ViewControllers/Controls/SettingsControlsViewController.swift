@@ -122,8 +122,7 @@ private extension SettingsControlsViewController {
         let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsResetAllButtonCell
         cell.delegate = self
         cell.configureCell(title: resetCellLabel?.uppercased() ?? "",
-                           isEnabled: !(viewModel?.isUpdating ?? false),
-                           hasNoMargin: true)
+                           isEnabled: !(viewModel?.isUpdating ?? false))
 
         return cell
     }

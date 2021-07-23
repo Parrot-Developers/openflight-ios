@@ -42,7 +42,7 @@
                                                         <constraints>
                                                             <constraint firstAttribute="width" constant="50" id="S35-m7-eJB"/>
                                                         </constraints>
-                                                        <color key="tintColor" name="sambuca"/>
+                                                        <color key="tintColor" name="default_text_color"/>
                                                         <inset key="imageEdgeInsets" minX="17" minY="17" maxX="17" maxY="17"/>
                                                         <state key="normal" image="icClose"/>
                                                         <connections>
@@ -55,7 +55,7 @@
                                                             <constraint firstAttribute="width" constant="200" id="rbp-Kj-WT6"/>
                                                         </constraints>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
-                                                        <color key="textColor" name="sambuca"/>
+                                                        <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                 </subviews>
@@ -80,7 +80,7 @@
                                                                 <subviews>
                                                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" minimumFontSize="12" translatesAutoresizingMaskIntoConstraints="NO" id="yCH-6P-wdf">
                                                                         <rect key="frame" x="6" y="4" width="141" height="42"/>
-                                                                        <color key="textColor" name="sambuca"/>
+                                                                        <color key="textColor" name="default_text_color"/>
                                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                                         <textInputTraits key="textInputTraits" secureTextEntry="YES"/>
                                                                     </textField>
@@ -90,7 +90,7 @@
                                                                             <constraint firstAttribute="width" constant="21" id="4gl-ZI-0LV"/>
                                                                             <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="20" id="W4z-8q-LhG"/>
                                                                         </constraints>
-                                                                        <color key="tintColor" name="sambuca"/>
+                                                                        <color key="tintColor" name="default_text_color"/>
                                                                         <state key="normal" image="icPasswordShow"/>
                                                                         <connections>
                                                                             <action selector="pinVisibilityButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="flz-Kf-gfd"/>
@@ -114,7 +114,7 @@
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" constant="40" id="lWu-ky-pk2"/>
                                                                 </constraints>
-                                                                <color key="tintColor" name="sambuca"/>
+                                                                <color key="tintColor" name="default_text_color"/>
                                                                 <state key="normal" image="icRemoveLastCharacter"/>
                                                                 <connections>
                                                                     <action selector="cancelButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="HsY-zl-mgz"/>
@@ -122,14 +122,14 @@
                                                             </button>
                                                             <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icloading" translatesAutoresizingMaskIntoConstraints="NO" id="3ts-Jd-lrW">
                                                                 <rect key="frame" x="236.5" y="0.0" width="50" height="50"/>
-                                                                <color key="tintColor" name="green_medium_sea"/>
+                                                                <color key="tintColor" name="highlight_color"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" secondItem="3ts-Jd-lrW" secondAttribute="height" multiplier="1:1" id="yyc-5q-HZf"/>
                                                                 </constraints>
                                                             </imageView>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D6O-AN-Mdf">
                                                                 <rect key="frame" x="242" y="0.0" width="65" height="50"/>
-                                                                <color key="backgroundColor" name="green_medium_sea"/>
+                                                                <color key="backgroundColor" name="highlight_color"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" constant="65" id="oiO-CC-A4l"/>
                                                                 </constraints>
@@ -263,13 +263,13 @@
         <image name="icPasswordShow" width="21" height="14"/>
         <image name="icRemoveLastCharacter" width="29" height="16"/>
         <image name="icloading" width="21" height="21"/>
-        <namedColor name="green_medium_sea">
+        <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="red_torch">
             <color red="1" green="0.11372549019607843" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="sambuca">
+        <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="white_albescent">

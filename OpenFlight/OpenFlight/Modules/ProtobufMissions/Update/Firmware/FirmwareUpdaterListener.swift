@@ -37,6 +37,7 @@ enum FirmwareGlobalUpdatingState {
     case ongoing
     case downloading
     case uploading
+    case processing
     case waitingForReboot
     case success
     case error

@@ -426,7 +426,7 @@ private extension CameraShutterButton {
     ///     - progress: capture progress
     ///     - photoCount: number of photos taken during the session
     func applyLapseModeInProgressStyle(progress: CGFloat, photoCount: Int) {
-        self.setBorder(borderColor: .clear, borderWidth: 0.0)
+        self.setBorder(borderColor: .clear, borderWidth: Style.noBorderWidth)
         updateStyle(outerCornerRadius: Style.largeCornerRadius,
                     innerCornerRadius: Style.mediumCornerRadius,
                     innerBackgroundColor: Constants.defaultPhotoCaptureColor,

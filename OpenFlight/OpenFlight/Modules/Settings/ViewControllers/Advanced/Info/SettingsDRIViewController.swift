@@ -31,7 +31,11 @@
 /// Dedicated view controller to show settings DRI infos.
 final class SettingsDRIViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var backgroundView: UIView!
+    @IBOutlet private weak var backgroundView: UIView! {
+        didSet {
+            backgroundView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
+        }
+    }
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var titleDescriptionLabel: UILabel!
     @IBOutlet private weak var descriptionLabel: UILabel!
@@ -83,12 +87,6 @@ private extension SettingsDRIViewController {
 private extension SettingsDRIViewController {
     /// Initializes UI and wordings.
     func initUI() {
-        self.titleLabel.makeUp(with: .huge)
-        self.titleDescriptionLabel.makeUp(with: .big)
-        self.descriptionLabel.makeUp(with: .large)
-        self.backgroundView.applyCornerRadius(Style.largeCornerRadius,
-                                              maskedCorners: [.layerMinXMinYCorner,
-                                                              .layerMaxXMinYCorner])
         self.titleLabel.text = L10n.settingsConnectionBroadcastDri
         self.titleDescriptionLabel.text = L10n.settingsConnectionDriDialogTitle
         self.descriptionLabel.text = L10n.settingsConnectionDriDialogText
@@ -96,7 +94,6 @@ private extension SettingsDRIViewController {
 
     /// Closes the view.
     func closeView() {
-        self.view.backgroundColor = .clear
         coordinator?.dismiss()
     }
 }

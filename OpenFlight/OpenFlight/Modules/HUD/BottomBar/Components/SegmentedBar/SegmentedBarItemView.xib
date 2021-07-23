@@ -68,7 +68,7 @@
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tie-HV-xct">
                                     <rect key="frame" x="0.0" y="49" width="50" height="13"/>
                                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="11"/>
-                                    <color key="textColor" name="tomato"/>
+                                    <color key="textColor" name="warning_color"/>
                                     <nil key="highlightedColor"/>
                                     <variation key="heightClass=regular-widthClass=regular">
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
@@ -103,7 +103,7 @@
     </objects>
     <resources>
         <image name="icCameraModePhoto" width="17" height="14"/>
-        <namedColor name="tomato">
+        <namedColor name="warning_color">
             <color red="1" green="0.44705882352941179" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>

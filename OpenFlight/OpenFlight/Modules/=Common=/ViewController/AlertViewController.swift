@@ -75,19 +75,19 @@ public final class AlertViewController: UIViewController {
             cancelButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
                                             borderColor: .clear,
                                             radius: Style.mediumCornerRadius,
-                                            borderWidth: 0.0)
+                                            borderWidth: Style.noBorderWidth)
             cancelButton.setTitle(L10n.cancel, for: .normal)
-            cancelButton.setTitleColor(ColorName.sambuca.color, for: .normal)
+            cancelButton.setTitleColor(ColorName.defaultTextColor.color, for: .normal)
         }
     }
     @IBOutlet private weak var validateButton: UIButton! {
         didSet {
             validateButton.titleLabel?.adjustsFontSizeToFitWidth = true
             validateButton.titleLabel?.minimumScaleFactor = Constants.minimumFontScale
-            validateButton.cornerRadiusedWith(backgroundColor: ColorName.greenMediumSea.color,
+            validateButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                               borderColor: .clear,
                                               radius: Style.mediumCornerRadius,
-                                              borderWidth: 0.0)
+                                              borderWidth: Style.noBorderWidth)
             validateButton.setTitle(L10n.commonYes, for: .normal)
             validateButton.setTitleColor(.white, for: .normal)
         }
@@ -103,11 +103,12 @@ public final class AlertViewController: UIViewController {
             contentStackViewBottomConstraint.constant += Constants.cornerRadius
         }
     }
+    @IBOutlet private weak var closeButton: UIButton!
 
     // MARK: - Private Properties
     private var message: String?
     private var closeButtonStyle: CloseButtonStyle?
-    private var messageColor: ColorName = .sambuca
+    private var messageColor: ColorName = .defaultTextColor
     private var cancelAction: AlertAction?
     private var validateAction: AlertAction?
 
@@ -131,7 +132,7 @@ public final class AlertViewController: UIViewController {
     ///     - validateAction: Validate action
     public static func instantiate(title: String,
                                    message: String,
-                                   messageColor: ColorName = .sambuca,
+                                   messageColor: ColorName = .defaultTextColor,
                                    closeButtonStyle: CloseButtonStyle? = nil,
                                    cancelAction: AlertAction? = nil,
                                    validateAction: AlertAction?) -> AlertViewController {
@@ -160,7 +161,7 @@ public final class AlertViewController: UIViewController {
         UIView.animate(withDuration: Style.shortAnimationDuration,
                        delay: Style.shortAnimationDuration,
                        animations: {
-                        self.view.backgroundColor = ColorName.black80.color
+                        self.view.backgroundColor = ColorName.nightRider80.color
                        })
     }
 
@@ -189,6 +190,11 @@ public final class AlertViewController: UIViewController {
         self.view.backgroundColor = .clear
         self.dismiss(animated: animated, completion: completion)
     }
+    @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
+        dismissAlert { [weak self] in
+            self?.cancel()
+        }
+    }
 }
 
 // MARK: - Actions
@@ -212,11 +218,6 @@ private extension AlertViewController {
         dismissAlert { [weak self] in
             self?.validateAction?.actionHandler?()
         }
-    }
-
-    /// Called when user touches the close button.
-    @objc func closeButtonTouchedUpInside(_ sender: UIButton) {
-        dismissAlert()
     }
 }
 
@@ -246,10 +247,9 @@ private extension AlertViewController {
         }
 
         if let closeStyle = closeButtonStyle {
-            addCloseButton(onTapAction: #selector(closeButtonTouchedUpInside(_:)),
-                           targetView: alertBackground,
-                           style: closeStyle)
+            closeButton.setImage(closeStyle.image.withRenderingMode(.alwaysTemplate), for: .normal)
         }
+        closeButton.isHidden = closeButtonStyle == nil
 
         setupButton(validateButton, with: validateAction?.style ?? .default)
         updateButtonsStackView()
@@ -280,22 +280,22 @@ private extension AlertViewController {
                      cancelCustomColor: ColorName? = nil) {
         guard let style = style else { return }
 
-        var color: UIColor = ColorName.greenMediumSea.color
+        var color: UIColor = ColorName.highlightColor.color
         var textColor: UIColor = .white
 
         switch style {
         case .destructive:
-            color = ColorName.tomato.color
+            color = ColorName.errorColor.color
             textColor = .white
         case .cancel:
             if let backgroundColor = cancelCustomColor {
                 color = backgroundColor.color
             } else {
                 color = ColorName.whiteAlbescent.color
-                textColor = ColorName.sambuca.color
+                textColor = ColorName.defaultTextColor.color
             }
         case .default:
-            color = ColorName.greenMediumSea.color
+            color = ColorName.highlightColor.color
             textColor = .white
         @unknown default:
             break
@@ -304,7 +304,7 @@ private extension AlertViewController {
         button.cornerRadiusedWith(backgroundColor: color,
                                   borderColor: .clear,
                                   radius: Style.mediumCornerRadius,
-                                  borderWidth: 0.0)
+                                  borderWidth: Style.noBorderWidth)
         button.setTitleColor(textColor, for: .normal)
     }
 }

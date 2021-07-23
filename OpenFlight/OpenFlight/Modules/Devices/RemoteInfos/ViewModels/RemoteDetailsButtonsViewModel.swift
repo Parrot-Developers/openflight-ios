@@ -108,31 +108,40 @@ final class RemoteDetailsButtonsState: DevicesConnectionState {
 extension RemoteDetailsButtonsState {
     /// Returns a model for remote calibration device view.
     var calibrationModel: DeviceDetailsButtonModel {
+        let backgroundColor: ColorName = needCalibration ? .errorColor : .white
+        let titleColor: ColorName = needCalibration ? .white : .defaultTextColor
+        let subtitleColor: ColorName = needCalibration ? .white : .highlightColor
         return DeviceDetailsButtonModel(mainImage: Asset.Common.Icons.icRemoteControl.image,
                                         title: L10n.remoteDetailsCalibration,
                                         subtitle: needCalibration ? L10n.remoteCalibrationRequired : L10n.droneDetailsCalibrationOk,
-                                        backgroundColor: needCalibration ? .redTorch25 : .white10,
-                                        subtitleColor: needCalibration ? .redTorch : .greenSpring)
+                                        backgroundColor: backgroundColor,
+                                        mainImageTintColor: titleColor,
+                                        titleColor: titleColor,
+                                        subtitleColor: subtitleColor)
     }
 
     /// Returns a model for drone status linked to remote connection state.
     var droneStatusModel: DeviceDetailsButtonModel {
         let isRemoteConnected = remoteControlConnectionState?.isConnected() == true
-
-        if droneConnectionState?.isConnected() == true && isRemoteConnected {
-            return DeviceDetailsButtonModel(mainImage: wifiStrength.signalIcon(),
+        let isDroneConnected = droneConnectionState?.isConnected() == true
+        if isRemoteConnected {
+            let backgroundColor: ColorName = isDroneConnected ? .white : .highlightColor
+            let titleColor: ColorName = isDroneConnected ? .defaultTextColor : .white
+            let subtitleColor: ColorName = isDroneConnected ? .highlightColor : .white
+            return DeviceDetailsButtonModel(mainImage: Asset.Common.Icons.icWifi.image,
                                             title: L10n.settingsAdvancedCategoryConnection,
-                                            subtitle: droneName,
-                                            backgroundColor: .greenSpring20,
-                                            subtitleColor: .greenSpring)
+                                            subtitle: isDroneConnected ? droneName : L10n.pairingLookingForDrone,
+                                            backgroundColor: backgroundColor,
+                                            mainImageTintColor: titleColor,
+                                            titleColor: titleColor,
+                                            subtitleColor: subtitleColor)
         } else {
             return DeviceDetailsButtonModel(mainImage: Asset.Remote.icSdCardUsb.image,
                                             title: L10n.settingsAdvancedCategoryConnection,
-                                            subtitle: isRemoteConnected
-                                                ? L10n.pairingLookingForDrone
-                                                : L10n.disconnected,
-                                            backgroundColor: .white10,
-                                            subtitleColor: .white20)
+                                            subtitle: L10n.disconnected,
+                                            backgroundColor: .white,
+                                            subtitleColor: .defaultTextColor80)
+
         }
     }
 
@@ -140,13 +149,9 @@ extension RemoteDetailsButtonsState {
     var softwareModel: DeviceDetailsButtonModel {
         return DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDownload.image,
                                         title: L10n.remoteDetailsSoftware,
-                                        subImage: needUpdate
-                                            ? nil
-                                            : Asset.Common.Checks.iconCheck.image,
+                                        subImage: needUpdate ? nil : Asset.Common.Checks.icChecked.image,
                                         subtitle: softwareVersion,
-                                        complementarySubtitle: needUpdate ? idealVersion : nil,
-                                        backgroundColor: needUpdate ? .greenSpring20 : .white10,
-                                        subtitleColor: .white20)
+                                        complementarySubtitle: needUpdate ? idealVersion : nil)
     }
 }
 

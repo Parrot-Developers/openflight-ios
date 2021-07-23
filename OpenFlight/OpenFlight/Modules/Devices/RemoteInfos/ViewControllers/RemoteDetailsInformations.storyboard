@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Hiy-MS-qF2">
-    <device id="retina6_1" orientation="landscape" appearance="light"/>
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
@@ -13,42 +13,79 @@
             <objects>
                 <viewController storyboardIdentifier="RemoteDetailsInformations" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Hiy-MS-qF2" customClass="RemoteDetailsInformationsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="APM-4l-0ws">
-                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yO1-p2-TMW">
-                                <rect key="frame" x="0.0" y="0.0" width="200" height="414"/>
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="FOF-Fh-hPz">
-                                        <rect key="frame" x="0.0" y="83" width="200" height="248"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="FOF-Fh-hPz">
+                                        <rect key="frame" x="0.0" y="33.5" width="375" height="600"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="wW4-A6-DaI">
-                                                <rect key="frame" x="0.0" y="0.0" width="200" height="114.5"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="177.5" height="600"/>
                                                 <subviews>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GFf-x6-SMF" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="200" height="47"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="177.5" height="290"/>
                                                     </view>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iWr-Cy-YoU" userLabel="Firmware Version Container View" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="67" width="200" height="47.5"/>
+                                                        <rect key="frame" x="0.0" y="310" width="177.5" height="290"/>
                                                     </view>
                                                 </subviews>
                                                 <variation key="heightClass=compact-widthClass=compact" spacing="6"/>
                                             </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="C39-eC-OqH">
-                                                <rect key="frame" x="0.0" y="134.5" width="200" height="113.5"/>
+                                                <rect key="frame" x="197.5" y="0.0" width="177.5" height="600"/>
                                                 <subviews>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2fj-uR-yxm" customClass="DeviceInformationsView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="200" height="47"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="177.5" height="290"/>
                                                     </view>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1TF-4r-HqB">
-                                                        <rect key="frame" x="0.0" y="67" width="200" height="46.5"/>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OXq-fo-rp4">
+                                                        <rect key="frame" x="0.0" y="310" width="177.5" height="290"/>
+                                                        <subviews>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1TF-4r-HqB">
+                                                                <rect key="frame" x="0.0" y="125" width="140" height="40"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" constant="155" id="6vN-3E-vvl"/>
+                                                                    <constraint firstAttribute="width" constant="140" id="9AU-V8-bok"/>
+                                                                    <constraint firstAttribute="height" constant="40" id="TZ4-BW-OAb"/>
+                                                                </constraints>
+                                                                <variation key="default">
+                                                                    <mask key="constraints">
+                                                                        <exclude reference="6vN-3E-vvl"/>
+                                                                        <exclude reference="9AU-V8-bok"/>
+                                                                    </mask>
+                                                                </variation>
+                                                                <variation key="heightClass=compact-widthClass=compact">
+                                                                    <mask key="constraints">
+                                                                        <include reference="9AU-V8-bok"/>
+                                                                    </mask>
+                                                                </variation>
+                                                                <variation key="heightClass=compact-widthClass=regular">
+                                                                    <mask key="constraints">
+                                                                        <include reference="6vN-3E-vvl"/>
+                                                                    </mask>
+                                                                </variation>
+                                                                <variation key="heightClass=regular-widthClass=compact">
+                                                                    <mask key="constraints">
+                                                                        <include reference="9AU-V8-bok"/>
+                                                                    </mask>
+                                                                </variation>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <mask key="constraints">
+                                                                        <include reference="6vN-3E-vvl"/>
+                                                                    </mask>
+                                                                </variation>
+                                                                <connections>
+                                                                    <action selector="resetButtonTouchedUpInside:" destination="Hiy-MS-qF2" eventType="touchUpInside" id="W8X-Io-Pl9"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" relation="lessThanOrEqual" constant="200" id="AvX-L3-TTH"/>
+                                                            <constraint firstItem="1TF-4r-HqB" firstAttribute="centerY" secondItem="OXq-fo-rp4" secondAttribute="centerY" id="AbN-Gy-rGU"/>
+                                                            <constraint firstItem="1TF-4r-HqB" firstAttribute="leading" secondItem="OXq-fo-rp4" secondAttribute="leading" id="brm-gn-1ua"/>
                                                         </constraints>
-                                                        <connections>
-                                                            <action selector="resetButtonTouchedUpInside:" destination="Hiy-MS-qF2" eventType="touchUpInside" id="W8X-Io-Pl9"/>
-                                                        </connections>
-                                                    </button>
+                                                    </view>
                                                 </subviews>
                                                 <variation key="heightClass=compact-widthClass=compact" spacing="6"/>
                                             </stackView>
@@ -58,46 +95,51 @@
                                     </stackView>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="centerY" secondItem="yO1-p2-TMW" secondAttribute="centerY" id="PSC-mx-4r3"/>
-                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="height" secondItem="yO1-p2-TMW" secondAttribute="height" multiplier="0.9" id="RAT-he-YlY"/>
-                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="leading" secondItem="yO1-p2-TMW" secondAttribute="leading" id="jaH-0M-Wxt"/>
-                                    <constraint firstAttribute="trailing" secondItem="FOF-Fh-hPz" secondAttribute="trailing" id="nSx-6B-laf"/>
+                                    <constraint firstAttribute="trailing" secondItem="FOF-Fh-hPz" secondAttribute="trailing" id="DeX-I1-It8"/>
+                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="height" secondItem="yO1-p2-TMW" secondAttribute="height" multiplier="0.9" id="EDS-Vj-xQ8"/>
+                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="height" secondItem="yO1-p2-TMW" secondAttribute="height" multiplier="0.3" id="Uvq-eH-gb2"/>
+                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="centerY" secondItem="yO1-p2-TMW" secondAttribute="centerY" id="a1w-ac-2ri"/>
+                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="leading" secondItem="yO1-p2-TMW" secondAttribute="leading" id="cNF-F5-aFJ"/>
+                                    <constraint firstItem="FOF-Fh-hPz" firstAttribute="height" secondItem="yO1-p2-TMW" secondAttribute="height" multiplier="0.8" id="dh7-r8-3s2"/>
                                     <constraint firstItem="FOF-Fh-hPz" firstAttribute="height" secondItem="yO1-p2-TMW" secondAttribute="height" multiplier="0.6" id="ogn-5r-ESg"/>
                                 </constraints>
                                 <variation key="default">
                                     <mask key="constraints">
-                                        <exclude reference="RAT-he-YlY"/>
+                                        <exclude reference="EDS-Vj-xQ8"/>
+                                        <exclude reference="Uvq-eH-gb2"/>
+                                        <exclude reference="dh7-r8-3s2"/>
+                                        <exclude reference="ogn-5r-ESg"/>
+                                    </mask>
+                                </variation>
+                                <variation key="heightClass=compact-widthClass=compact">
+                                    <mask key="constraints">
+                                        <include reference="dh7-r8-3s2"/>
+                                    </mask>
+                                </variation>
+                                <variation key="heightClass=compact-widthClass=regular">
+                                    <mask key="constraints">
+                                        <include reference="ogn-5r-ESg"/>
                                     </mask>
                                 </variation>
                                 <variation key="heightClass=regular-widthClass=compact">
                                     <mask key="constraints">
-                                        <include reference="RAT-he-YlY"/>
-                                        <exclude reference="ogn-5r-ESg"/>
+                                        <include reference="EDS-Vj-xQ8"/>
+                                    </mask>
+                                </variation>
+                                <variation key="heightClass=regular-widthClass=regular">
+                                    <mask key="constraints">
+                                        <include reference="Uvq-eH-gb2"/>
                                     </mask>
                                 </variation>
                             </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="sJo-EM-Tmm"/>
                         <constraints>
-                            <constraint firstItem="yO1-p2-TMW" firstAttribute="centerY" secondItem="APM-4l-0ws" secondAttribute="centerY" id="0ot-VG-6Y2"/>
-                            <constraint firstItem="yO1-p2-TMW" firstAttribute="top" secondItem="APM-4l-0ws" secondAttribute="top" id="Emh-fD-xBx"/>
+                            <constraint firstItem="sJo-EM-Tmm" firstAttribute="top" secondItem="yO1-p2-TMW" secondAttribute="top" id="219-E0-wcZ"/>
+                            <constraint firstItem="yO1-p2-TMW" firstAttribute="bottom" secondItem="APM-4l-0ws" secondAttribute="bottom" id="24g-IN-TP0"/>
                             <constraint firstAttribute="trailing" secondItem="yO1-p2-TMW" secondAttribute="trailing" id="NF2-Y3-YkT"/>
-                            <constraint firstItem="yO1-p2-TMW" firstAttribute="centerX" secondItem="APM-4l-0ws" secondAttribute="centerX" id="XdH-XM-kqr"/>
-                            <constraint firstAttribute="bottom" secondItem="yO1-p2-TMW" secondAttribute="bottom" id="Za5-mV-qoC"/>
                             <constraint firstItem="yO1-p2-TMW" firstAttribute="leading" secondItem="APM-4l-0ws" secondAttribute="leading" id="s0n-Kt-oDq"/>
                         </constraints>
-                        <variation key="default">
-                            <mask key="constraints">
-                                <exclude reference="NF2-Y3-YkT"/>
-                                <exclude reference="XdH-XM-kqr"/>
-                            </mask>
-                        </variation>
-                        <variation key="heightClass=regular-widthClass=compact">
-                            <mask key="constraints">
-                                <include reference="NF2-Y3-YkT"/>
-                                <include reference="XdH-XM-kqr"/>
-                            </mask>
-                        </variation>
                     </view>
                     <connections>
                         <outlet property="firmwareVersionView" destination="iWr-Cy-YoU" id="3E1-eV-ehG"/>

@@ -56,12 +56,12 @@ class FlightPlanListHeaderCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet weak var countLabel: UILabel! {
         didSet {
-            countLabel.makeUp(with: .regular, and: .sambuca)
+            countLabel.makeUp(with: .regular, and: .defaultTextColor)
         }
     }
     @IBOutlet weak var missionType: UILabel! {
         didSet {
-            missionType.makeUp(with: .regular, and: .sambuca)
+            missionType.makeUp(with: .regular, and: .defaultTextColor)
         }
     }
     @IBOutlet private weak var logo: UIImageView!
@@ -76,8 +76,8 @@ class FlightPlanListHeaderCell: UICollectionViewCell, NibReusable {
     // MARK: - Private Funcs
     /// Update selection of cell with changing colors of IBoutlet
     private func setupSelection(_ state: Bool) {
-        let textColor = state ? .white : ColorName.sambuca.color
-        let backgroundColor = state ? ColorName.greenMediumSea.color : ColorName.white90.color
+        let textColor = state ? .white : ColorName.defaultTextColor.color
+        let backgroundColor = state ? ColorName.highlightColor.color : ColorName.white90.color
         bgView.backgroundColor = backgroundColor
         bgView.applyCornerRadius(Style.largeCornerRadius)
         countLabel.textColor = textColor

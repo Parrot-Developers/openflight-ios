@@ -103,7 +103,7 @@ private extension CellularConfigurationViewController {
             + Style.newLine
             + L10n.cellularConnectionAvailableConfigureNow
         titleLabel.text = L10n.cellularConnectionAvailable
-        configureButton.cornerRadiusedWith(backgroundColor: ColorName.greenMediumSea.color,
+        configureButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                            radius: Style.largeCornerRadius)
         laterButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
                                        radius: Style.largeCornerRadius)

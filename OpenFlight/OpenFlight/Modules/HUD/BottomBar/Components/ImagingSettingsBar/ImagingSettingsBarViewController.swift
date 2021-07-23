@@ -196,13 +196,13 @@ private extension ImagingSettingsBarViewController {
         // Sets up item bar colors
         shutterSpeedItemView.unselectedBackgroundColor = ColorName.yellowSea30.color
         shutterSpeedItemView.selectedBackgroundColor = ColorName.yellowSea.color
-        shutterSpeedItemView.unselectedTextColor = ColorName.sambuca.color
-        shutterSpeedItemView.selectedTextColor = ColorName.sambuca.color
+        shutterSpeedItemView.unselectedTextColor = ColorName.defaultTextColor.color
+        shutterSpeedItemView.selectedTextColor = ColorName.defaultTextColor.color
 
         cameraIsoItemView.unselectedBackgroundColor = ColorName.yellowSea30.color
         cameraIsoItemView.selectedBackgroundColor = ColorName.yellowSea.color
-        cameraIsoItemView.unselectedTextColor = ColorName.sambuca.color
-        cameraIsoItemView.selectedTextColor = ColorName.sambuca.color
+        cameraIsoItemView.unselectedTextColor = ColorName.defaultTextColor.color
+        cameraIsoItemView.selectedTextColor = ColorName.defaultTextColor.color
     }
 
     /// Sets up all imaging bar view models.
@@ -336,7 +336,7 @@ private extension ImagingSettingsBarViewController {
         isAutoExposureLocked = isLocked
         autoExposureButton.backgroundColor = isLocked ? ColorName.yellowSea.color : ColorName.white90.color
         autoExposurePadlockImageView.image = isLocked ? Asset.BottomBar.Icons.lockAElocked.image : Asset.BottomBar.Icons.lockAEEnabled.image
-        autoExposurePadlockImageView.tintColor = ColorName.sambuca.color
+        autoExposurePadlockImageView.tintColor = ColorName.defaultTextColor.color
     }
 
     /// Updates lockAEButton visibility.

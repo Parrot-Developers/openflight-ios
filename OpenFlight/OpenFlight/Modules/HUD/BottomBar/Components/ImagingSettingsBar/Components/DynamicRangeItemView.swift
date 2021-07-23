@@ -85,8 +85,8 @@ private extension DynamicRangeItemView {
                 return
         }
         dynamicRangeLabel.text = dynamicRange.title
-        backgroundColor = model.isSelected.value ? ColorName.greenMediumSea.color : ColorName.white90.color
-        let color = model.isSelected.value ? .white : ColorName.sambuca.color
+        backgroundColor = model.isSelected.value ? ColorName.highlightColor.color : ColorName.white90.color
+        let color = model.isSelected.value ? .white : ColorName.defaultTextColor.color
         dynamicRangeLabel.textColor = color
         dynamicRangeImageView.tintColor = color
 

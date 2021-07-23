@@ -101,11 +101,11 @@ extension FirmwareAndMissionToUpdateModel {
         switch self {
         case .upToDate,
              .notInitialized:
-            return Asset.Common.Checks.iconCheck.image
+            return Asset.Common.Checks.icChecked.image
         case .firmware,
              .singleMission,
              .missions:
-            return Asset.Dashboard.icUpdate.image
+            return Asset.Dashboard.icGetUpdate.image
         }
     }
 
@@ -114,11 +114,11 @@ extension FirmwareAndMissionToUpdateModel {
         switch self {
         case .upToDate,
              .notInitialized:
-            return .greenMediumSea
+            return .highlightColor
         case .firmware,
              .missions,
              .singleMission:
-            return .tomato
+            return .warningColor
         }
     }
 }

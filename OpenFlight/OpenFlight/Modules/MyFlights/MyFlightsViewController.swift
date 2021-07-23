@@ -159,7 +159,7 @@ private extension MyFlightsViewController {
 private extension MyFlightsViewController {
     /// Instantiate basic UI.
     func initUI() {
-        topBar.addShadow(shadowColor: ColorName.sambuca.color)
+        topBar.addShadow(shadowColor: ColorName.defaultTextColor.color)
         setupSegmentedControl()
         reloadContainerView()
         setupAccountView()
@@ -201,10 +201,7 @@ private extension MyFlightsViewController {
                                                 animated: false)
         }
         self.segmentedControl.selectedSegmentIndex = MyFlightsPanelType.index(for: selectedPanel)
-        segmentedControl.customMakeup(normalBackgroundColor: .alabaster,
-                                      selectedBackgroundColor: .greenMediumSea,
-                                      normalFontColor: .sambuca,
-                                      selectedFontColor: .white)
+        segmentedControl.customMakeup()
     }
 
     /// Remove all child views and viewControllers and insert the new ones

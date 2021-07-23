@@ -37,21 +37,41 @@ extension DiscoveredDrone {
     // MARK: - Internal Properties
     /// Returns wifi image regarding rssi value.
     var image: UIImage {
-        if rssi > Constants.rssi50 {
-            return Asset.Wifi.icWifiOff44.image
-        } else if rssi >= Constants.rssi50 {
-            return Asset.Wifi.icWifiOff34.image
+        if rssi > Constants.rssi40 {
+            return Asset.Wifi.icWifiQuality5.image
+        } else if rssi >= Constants.rssi40 {
+            return Asset.Wifi.icWifiQuality4.image
+        } else if rssi > Constants.rssi50 && rssi <= Constants.rssi40 {
+            return Asset.Wifi.icWifiQuality3.image
         } else if rssi > Constants.rssi60 && rssi <= Constants.rssi50 {
-            return Asset.Wifi.icWifiOff24.image
+            return Asset.Wifi.icWifiQuality2.image
         } else if rssi > Constants.rssi70 && rssi <= Constants.rssi60 {
-            return Asset.Wifi.icWifiOff14.image
+            return Asset.Wifi.icWifiQuality1.image
         } else {
-            return Asset.Wifi.icWifiNoSignal.image
+            return Asset.Wifi.icWifiOffline.image
+        }
+    }
+
+    /// Returns wifi hightlighted image regarding rssi value.
+    var highlightImage: UIImage {
+        if rssi > Constants.rssi40 {
+            return Asset.Wifi.icWifiInactiveQuality5.image
+        } else if rssi >= Constants.rssi40 {
+            return Asset.Wifi.icWifiInactiveQuality4.image
+        } else if rssi > Constants.rssi50 && rssi <= Constants.rssi40 {
+            return Asset.Wifi.icWifiInactiveQuality3.image
+        } else if rssi > Constants.rssi60 && rssi <= Constants.rssi50 {
+            return Asset.Wifi.icWifiQuality2.image
+        } else if rssi > Constants.rssi70 && rssi <= Constants.rssi60 {
+            return Asset.Wifi.icWifiQuality1.image
+        } else {
+            return Asset.Wifi.icWifiOffline.image
         }
     }
 
     // MARK: - Private Enums
     private enum Constants {
+        static let rssi40: Int = -40
         static let rssi50: Int = -50
         static let rssi60: Int = -60
         static let rssi70: Int = -70

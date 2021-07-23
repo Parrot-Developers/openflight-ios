@@ -128,7 +128,7 @@ private extension HUDCriticalAlertViewController {
         alertTopView.cornerRadiusedWith(backgroundColor: .white, radius: Style.mediumCornerRadius)
         alertTopView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
         cancelButton.setTitle(L10n.cancel, for: .normal)
-        actionButton.cornerRadiusedWith(backgroundColor: ColorName.greenMediumSea.color,
+        actionButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                         radius: Style.largeCornerRadius)
         cancelButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
                                         radius: Style.largeCornerRadius)

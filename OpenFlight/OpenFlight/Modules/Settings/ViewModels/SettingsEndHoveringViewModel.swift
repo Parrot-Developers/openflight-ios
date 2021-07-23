@@ -116,7 +116,7 @@ private extension SettingsEndHoveringViewModel {
                                  supportedValues: ReturnHomeEndingBehavior.allValues,
                                  currentValue: endingBehavior?.behavior,
                                  isUpdating: false) { [weak self] mode in
-            if let mode = mode as? ReturnHomeEndingBehavior {
+            if let mode = mode as? ReturnHomeEndingBehavior {   
                 self?.drone?.getPilotingItf(PilotingItfs.returnHome)?.endingBehavior.behavior = mode
             }
         }

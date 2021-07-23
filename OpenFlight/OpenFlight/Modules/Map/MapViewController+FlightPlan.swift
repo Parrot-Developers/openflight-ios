@@ -100,7 +100,7 @@ public extension MapViewController {
         }
         // Update graphics for current camera.
         updateElevationVisibility()
-        flightPlanOverlay?.update(heading: flightPlanOverlay?.cameraHeading ?? 0)
+        flightPlanOverlay?.update(heading: self.sceneView.currentViewpointCamera().heading)
         // insert user and drone locations graphics to flight plan overlay
         insertUserGraphic()
         insertDroneGraphic()
@@ -383,7 +383,7 @@ private extension MapViewController {
         flightPlan.plan.addWaypoint(wayPoint)
         let index = flightPlan.plan.wayPoints.count - 1
         let wayPointGraphic = wayPoint.markerGraphic(index: index)
-        wayPointGraphic.update(heading: flightPlanOverlay?.cameraHeading ?? 0)
+        wayPointGraphic.update(heading: self.sceneView.currentViewpointCamera().heading)
         flightPlanOverlay?.graphics.add(wayPointGraphic)
 
         let angle = wayPoint.yaw ?? Constants.defaultWayPointYaw
@@ -418,7 +418,7 @@ private extension MapViewController {
         let index = flightPlan.plan.pois.count - 1
         poi.addIndex(index: index)
         let poiGraphic = poi.markerGraphic(index: index)
-        poiGraphic.update(heading: flightPlanOverlay?.cameraHeading ?? 0)
+        poiGraphic.update(heading: self.sceneView.currentViewpointCamera().heading)
         flightPlanOverlay?.graphics.add(poiGraphic)
         flightPlanViewModel?.didChangePointOfView()
         flightPlanViewModel?.didTapGraphicalItem(poiGraphic)

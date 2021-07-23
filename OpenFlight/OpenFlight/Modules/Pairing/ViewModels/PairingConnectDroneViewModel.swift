@@ -279,12 +279,13 @@ private extension PairingConnectDroneViewModel {
 
             // Fill the state with the discoveredDrones list returned by droneFinder.
             copy.discoveredDronesList = discoveredDrones.map { drone -> RemoteConnectDroneModel in
+                let isConnected = isDroneConnected(uid: drone.uid)
                 return RemoteConnectDroneModel(droneUid: drone.uid,
                                                droneName: drone.name,
                                                isKnown: drone.known,
-                                               rssiImage: drone.image,
+                                               rssiImage: isConnected ? drone.highlightImage : drone.image,
                                                isDronePaired: false,
-                                               isDroneConnected: isDroneConnected(uid: drone.uid),
+                                               isDroneConnected: isConnected,
                                                commonName: "")
             }
 

@@ -33,12 +33,15 @@ import Reusable
 /// Settings Title Cell.
 final class SettingsTitleCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
-    @IBOutlet private weak var titleLabel: UILabel! {
-        didSet {
-            titleLabel.makeUp(with: .largeMedium)
-        }
-    }
+    @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var titleImageView: UIImageView!
+    @IBOutlet private weak var topConstraint: NSLayoutConstraint!
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let firstTopConstraint: CGFloat = 5.0
+        static let topConstraint: CGFloat = 20
+    }
 
     // MARK: - Internal Funcs
     /// Configure cell.
@@ -46,8 +49,10 @@ final class SettingsTitleCell: UITableViewCell, NibReusable {
     /// - Parameters:
     ///    - cellTitle: cell title
     ///    - cellImage: cell image
-    func configureCell(cellTitle: String?, cellImage: UIImage?) {
+    func configureCell(cellTitle: String?, cellImage: UIImage?, isFirst: Bool = false) {
         titleLabel.text = cellTitle
+        titleImageView.isHidden = cellImage == nil
         titleImageView.image = cellImage
+        topConstraint.constant = isFirst ? Constants.firstTopConstraint : Constants.topConstraint
     }
 }

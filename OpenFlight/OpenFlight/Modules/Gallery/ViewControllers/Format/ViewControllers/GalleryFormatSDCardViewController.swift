@@ -120,11 +120,11 @@ private extension GalleryFormatSDCardViewController {
     /// Sets up all the UI for the view controller.
     func setupUI() {
         self.primaryLabel.text = L10n.galleryFormatSdCard
-        self.secondaryLabel.makeUp(with: .large, and: ColorName.sambuca50)
+        self.secondaryLabel.makeUp(with: .large, and: ColorName.disabledTextColor)
         self.secondaryLabel.text = L10n.galleryFormatDataErased
         self.mainView.applyCornerRadius(Style.largeCornerRadius, maskedCorners: [.layerMinXMinYCorner, .layerMaxXMinYCorner])
         self.circleProgressView.bgStokeColor = ColorName.whiteAlbescent.color
-        self.circleProgressView.strokeColor = ColorName.greenMediumSea.color
+        self.circleProgressView.strokeColor = ColorName.highlightColor.color
         self.quickFormatChoiceView.customCornered(corners: [.allCorners],
                                                   radius: Style.largeCornerRadius,
                                                   backgroundColor: .white,
@@ -139,23 +139,23 @@ private extension GalleryFormatSDCardViewController {
     func setupChoicesModels() {
         self.quickFormatChoiceView.model = GalleryFormatSDCardChoiceModel(image: Asset.Common.Icons.icSdCardFormatQuick.image,
                                                                           text: L10n.galleryFormatQuick,
-                                                                          textColor: ColorName.sambuca,
+                                                                          textColor: ColorName.defaultTextColor,
                                                                           subText: L10n.galleryFormatRecommended,
-                                                                          subTextColor: ColorName.greenMediumSea)
+                                                                          subTextColor: ColorName.highlightColor)
         self.fullFormatChoiceView.model = GalleryFormatSDCardChoiceModel(image: Asset.Common.Icons.icSdCardFormatFull.image,
                                                                          text: L10n.galleryFormatFull,
-                                                                         textColor: ColorName.sambuca,
+                                                                         textColor: ColorName.defaultTextColor,
                                                                          subText: L10n.galleryFormatWritingProblems,
-                                                                         subTextColor: ColorName.sambuca50)
+                                                                         subTextColor: ColorName.disabledTextColor)
         self.firstStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icErasing.image,
                                                                 text: L10n.galleryFormatErasingPartition,
-                                                                textColor: ColorName.sambuca50)
+                                                                textColor: ColorName.disabledTextColor)
         self.secondStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icReset.image,
                                                                  text: L10n.galleryFormatResetting,
-                                                                 textColor: ColorName.sambuca50)
+                                                                 textColor: ColorName.disabledTextColor)
         self.thirdStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icCreate.image,
                                                                 text: L10n.galleryFormatCreatingPartition,
-                                                                textColor: ColorName.sambuca50)
+                                                                textColor: ColorName.disabledTextColor)
     }
 
     /// Sets up main view model.
@@ -165,15 +165,15 @@ private extension GalleryFormatSDCardViewController {
             case .partitioning:
                 self.firstStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icErasing.image,
                                                                         text: L10n.galleryFormatErasingPartition,
-                                                                        textColor: ColorName.greenMediumSea)
+                                                                        textColor: ColorName.highlightColor)
             case .clearingData:
                 self.secondStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icReset.image,
                                                                          text: L10n.galleryFormatResetting,
-                                                                         textColor: ColorName.greenMediumSea)
+                                                                         textColor: ColorName.highlightColor)
             case .creatingFs:
                 self.thirdStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icCreate.image,
                                                                         text: L10n.galleryFormatCreatingPartition,
-                                                                        textColor: ColorName.greenMediumSea)
+                                                                        textColor: ColorName.highlightColor)
             }
             self.circleProgressView.setProgress(progress)
             if formattingState == .done {

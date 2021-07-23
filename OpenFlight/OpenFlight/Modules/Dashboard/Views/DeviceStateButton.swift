@@ -53,7 +53,7 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
         fileprivate var backgroundColor: Color {
             switch self {
             case .updateAvailable:
-                return ColorName.tomato.color
+                return ColorName.warningColor.color
             case .calibrationRequired:
                 return ColorName.redTorch.color
             case .calibrationNeeded:
@@ -61,12 +61,12 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
             case .disconnected:
                 return ColorName.clear.color
             default:
-                return ColorName.greenMediumSea.color
+                return ColorName.highlightColor.color
             }
         }
 
         fileprivate var textColor: Color {
-            return self == .disconnected ? ColorName.sambuca50.color : ColorName.white.color
+            return self == .disconnected ? ColorName.disabledTextColor.color : ColorName.white.color
         }
 
         fileprivate var leftImageVisible: Bool {
@@ -93,7 +93,7 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
                        radius: Style.smallCornerRadius,
                        backgroundColor: .clear,
                        borderColor: .clear,
-                       borderWidth: 0.0)
+                       borderWidth: Style.noBorderWidth)
     }
 
     /// Sets up the title of the button.

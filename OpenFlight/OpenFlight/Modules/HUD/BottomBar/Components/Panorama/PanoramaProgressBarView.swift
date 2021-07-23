@@ -61,6 +61,10 @@ final class PanoramaProgressBarView: UIView, NibOwnerLoadable {
         super.init(frame: frame)
         self.commonInitPanoramaProgressBarView()
     }
+
+    func finishProgressBar() {
+        self.progressBarWidthConstraint.constant = self.progressBarBackView.frame.width * (CGFloat(Values.oneHundred) / CGFloat(Values.oneHundred))
+    }
 }
 
 // MARK: - Private Funcs
