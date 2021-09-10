@@ -31,8 +31,14 @@
 import GroundSdk
 
 /// View model for imaging settings custom white balance bar.
-
 final class ImagingBarWhiteBalanceCustomViewModel: BarButtonViewModel<ImagingBarState> {
+
+    // MARK: - init
+    /// Constructor.
+    init() {
+        super.init(barId: "WhiteBalanceCustom")
+    }
+
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
 

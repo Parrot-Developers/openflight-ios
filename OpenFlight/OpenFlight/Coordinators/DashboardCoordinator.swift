@@ -31,7 +31,7 @@ import SafariServices
 import SwiftyUserDefaults
 
 /// Coordinator for Dashboard part.
-public final class DashboardCoordinator: Coordinator {
+open class DashboardCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
@@ -40,19 +40,23 @@ public final class DashboardCoordinator: Coordinator {
     public unowned var services: ServiceHub
 
     // MARK: - Init
-    init(services: ServiceHub) {
+    public init(services: ServiceHub) {
         self.services = services
     }
 
     // MARK: - Public Funcs
     public func start() {
-        let dashboardViewModel = DashboardViewModel(services: self.services)
+        let dashboardViewModel = DashboardViewModel(service: services.ui.variableAssetsService)
         let viewController = DashboardViewController.instantiate(coordinator: self, viewModel: dashboardViewModel)
         // Prevents not fullscreen presentation style since iOS 13.
         viewController.modalPresentationStyle = .fullScreen
         self.navigationController = NavigationController(rootViewController: viewController)
         self.navigationController?.isNavigationBarHidden = true
         self.navigationController?.modalPresentationStyle = .fullScreen
+    }
+
+    open func startPhotogrammetryDebug() {
+
     }
 }
 
@@ -87,10 +91,16 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
     /// - Parameters:
     ///     - model: device model
     func startUpdate(model: DeviceUpdateModel) {
-        let updateCoordinator = UpdateCoordinator(model: model)
-        updateCoordinator.parentCoordinator = self
-        updateCoordinator.start()
-        self.present(childCoordinator: updateCoordinator)
+        switch model {
+        case .drone:
+            let updateCoordinator = ProtobufMissionUpdateCoordinator()
+            updateCoordinator.parentCoordinator = self
+            updateCoordinator.start()
+            self.present(childCoordinator: updateCoordinator, overFullScreen: true)
+        case .remote:
+            let viewController = RemoteUpdateViewController.instantiate(coordinator: self)
+            self.push(viewController)
+        }
     }
 
     /// Starts Medias gallery.
@@ -105,13 +115,22 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
     ///
     /// - Parameters:
     ///     - viewModel: MyFlights view model
-    func startMyFlights(_ viewModel: MyFlightsViewModel) {
-        let viewController = MyFlightsViewController.instantiate(coordinator: self, viewModel: viewModel)
+    func startMyFlights() {
+        let viewController = MyFlightsViewController.instantiate(coordinator: self)
         self.push(viewController)
     }
 
     /// Starts flights details.
-    func startFlightDetails(viewModel: FlightDataViewModel) {
+    func startFlightDetailsExecution(execution: FlightPlanModel) {
+//        let viewController = ExecutionSummaryViewController.instantiate(coordinator: self, viewModel: nil, execution: execution)
+//        self.push(viewController)
+    }
+
+    /// Starts flights details.
+    func startFlightDetails(flight: FlightModel) {
+        let viewModel = FlightDetailsViewModel(service: services.flight.service,
+                                               flight: flight,
+                                               flightPlanTypeStore: services.flightPlan.typeStore)
         let viewController = FlightDetailsViewController.instantiate(coordinator: self, viewModel: viewModel)
         self.push(viewController)
     }
@@ -162,30 +181,50 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
     /// Starts Flight Plan Dashboard.
     ///
     /// - Parameters:
+    /// TODO Used when new screen developped
+    ///     - projectModel: flightPlan project
+//    func startFlightPlanDashboard(projectModel: ProjectModel) {
+//        let viewController = FlightPlanDashboardViewController.instantiate(coordinator: self,
+//                                                                           projectModel: projectModel)
+//        self.presentModal(viewController: viewController)
+//    }
+
     ///     - viewModel: flightPlan view model
-    func startFlightPlanDashboard(viewModel: FlightPlanViewModel) {
-        let viewController = FlightPlanDashboardViewController.instantiate(coordinator: self,
-                                                                           viewModel: viewModel)
-        self.presentModal(viewController: viewController)
+    func startFlightPlanDashboard(projectModel: ProjectModel) {
+        let viewController = ExecutionsListViewController.instantiate(
+            delegate: self,
+            flightPlanHandler: Services.hub.flightPlan.manager,
+            projectModel: projectModel,
+            tableType: .fullHistory)
+        self.push(viewController)
     }
 
+    func startFlightPlanDashboard(flightPlan: FlightPlanModel) {
+        guard let project = services.flightPlan.projectManager.project(for: flightPlan) else { return }
+        startFlightPlanDashboard(projectModel: project)
+    }
+}
+
+extension DashboardCoordinator: ExecutionsListDelegate {
     /// Starts Flight Plan.
     ///
     /// - Parameters:
-    ///     - viewModel: Flight Plan view model
-    func showFlightPlan(viewModel: FlightPlanViewModel?) {
-        guard let type = viewModel?.state.value.type else { return }
-
-        // Set Flight Plan as last used to be automatically open
-        // if the current mission is not related to a Flight Plan.
-        viewModel?.setAsLastUsed()
-        // Set Flight Plan as current.
-        FlightPlanManager.shared.currentFlightPlanViewModel = viewModel
-
+    ///     - flightPlan: Flight Plan
+    public func open(flightPlan: FlightPlanModel) {
         dismissDashboard {
-            // Setup Mission as a Flight Plan mission (may be custom).
-            Services.hub.currentMissionManager.set(provider: type.missionProvider)
-            Services.hub.currentMissionManager.set(mode: type.missionMode)
+            self.services.flightPlan.projectManager.loadEverythingAndOpen(flightPlan: flightPlan)
         }
+    }
+
+    public func backDisplay() {
+        self.back()
+    }
+
+    public func startFlightDetails(flightPlan: FlightPlanModel) {
+//        startFlightDetails(viewModel: T##FlightDataViewModel)
+    }
+
+    public func handleHistoryCellAction(with: FlightPlanModel, actionType: HistoryMediasActionType?) {
+
     }
 }

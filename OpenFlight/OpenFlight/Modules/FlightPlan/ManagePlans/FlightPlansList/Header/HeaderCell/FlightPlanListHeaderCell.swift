@@ -56,12 +56,12 @@ class FlightPlanListHeaderCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet weak var countLabel: UILabel! {
         didSet {
-            countLabel.makeUp(with: .regular, and: .defaultTextColor)
+            countLabel.makeUp(and: .defaultTextColor)
         }
     }
     @IBOutlet weak var missionType: UILabel! {
         didSet {
-            missionType.makeUp(with: .regular, and: .defaultTextColor)
+            missionType.makeUp(and: .defaultTextColor)
         }
     }
     @IBOutlet private weak var logo: UIImageView!

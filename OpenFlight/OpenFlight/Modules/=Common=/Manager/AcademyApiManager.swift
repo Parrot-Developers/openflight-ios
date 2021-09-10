@@ -29,78 +29,26 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
-// MARK: - AcademyApiManager
-/// Manager that handles all methods relative to Academy API.
-public class AcademyApiManager {
-    // MARK: - Public Properties
+public protocol AcademyApiService: AnyObject {
+
     /// Returns base url for Academy API.
-    public static var baseURL: String {
-        return AcademyURL.prodBaseURL
-    }
+    var baseURL: String { get }
 
-    // MARK: - Init
-    public init() { }
-}
+    /// Indicates if can perform authenticated Academy request or not
+    var canPerformAcademyRequest: Bool { get set }
 
-// MARK: - Private Enums
-private extension AcademyApiManager {
-    /// Stores Academy base url.
-    enum AcademyURL {
-        static let prodBaseURL: String = "https://academy.parrot.com"
-        static let mediaProdBaseURL: String = "\(prodBaseURL)/media/"
-    }
+    /// Contains Error returned from Academy API call
+    /// Authentication or Server Error
+    var academyError: Error? { get set }
 
-    /// Stores Academy end points url.
-    enum AcademyEndPoints {
-        static let getChallenge = "/apiv1/4g/pairing/challenge?operation=associate"
-        static let getDroneList = "/apiv1/drone/list"
-        static let commonPairingEndpoint = "/apiv1/4g/pairing"
-    }
-}
+    /// Publisher of academyError
+    var academyErrorPublisher: AnyPublisher<Error?, Never> { get }
 
-// MARK: - Public Enums
-public extension AcademyApiManager {
-    /// Stores academy API errors.
-    enum AcademyApiManagerError: Int, Error {
-        case unknownError
-        case serverError
-        case jsonError
-        case badURL
-        case badParameters
-        case badImage
-        case badResponseCode
-        case badData
-        case noData
-        case authenticationError
-        case accessDenied
-        case preconditionFailed
-    }
-}
-
-// MARK: - Private Funcs
-private extension AcademyApiManager {
-    /// Returns a custom URLSession to communicate with Academy API.
-    func authSession() -> URLSession {
-        var token: String = ""
-        if UserInformation.current.token.isEmpty,
-           !SecureKeyStorage.current.temporaryToken.isEmpty {
-            token = SecureKeyStorage.current.temporaryToken
-        } else {
-            token = UserInformation.current.token
-        }
-
-        let config = URLSessionConfiguration.default
-        config.httpAdditionalHeaders = [RequestHeaderFields.authorization: AuthenticationUtils.bearer(token: token),
-                                        RequestHeaderFields.contentType: RequestHeaderFields.appJson,
-                                        RequestHeaderFields.xApiKey: ServicesConstants.academySecretKey]
-
-        return URLSession(configuration: config)
-    }
-}
-
-// MARK: - Public Funcs
-public extension AcademyApiManager {
+    /// Cancel all current authenticated API calls
+    /// To use when encountering an Authentification or a Server Academy Error
+    func cancelAllCurrentTasks()
 
     /// Makes a DELETE request with parameters and returns the response.
     ///
@@ -111,25 +59,7 @@ public extension AcademyApiManager {
     ///    - completion: Callback with the server response.
     func delete(_ endpoint: String,
                 session: URLSession,
-                completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
-        //TODO: Change competion type to Result<Data, Error>
-
-        guard let url = URL(string: AcademyApiManager.baseURL + endpoint) else {
-            completion(nil, AcademyApiManagerError.badURL)
-            return
-        }
-
-        var request: URLRequest = URLRequest(url: url)
-        request.httpMethod = RequestType.delete
-        request.setValue(RequestHeaderFields.appJson, forHTTPHeaderField: RequestHeaderFields.contentType)
-
-        session.dataTask(with: request) { data, response, error in
-            self.treatResponse(data: data,
-                               response: response,
-                               error: error,
-                               completion: completion)
-        }.resume()
-    }
+                completion: @escaping (_ data: Data?, _ error: Error?) -> Void)
 
     /// Makes a GET request with custom parameters and returns a callback with the response.
     ///
@@ -137,17 +67,9 @@ public extension AcademyApiManager {
     ///    - endpoint: Academy API endpoint to reach.
     ///    - session: Custom session.
     ///    - completion: Callback with the server response.
-    func get(_ endpoint: String, session: URLSession, completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
-        guard let url = URL(string: AcademyApiManager.baseURL + endpoint) else {
-            completion(nil, AcademyApiManagerError.badURL)
-            return
-        }
-
-        let task = session.dataTask(with: url) { data, response, error in
-            self.treatResponse(data: data, response: response, error: error, completion: completion)
-        }
-        task.resume()
-    }
+    func get(_ endpoint: String,
+             session: URLSession,
+             completion: @escaping (_ data: Data?, _ error: Error?) -> Void)
 
     /// Makes a POST request with parameters and returns the response.
     ///
@@ -159,29 +81,7 @@ public extension AcademyApiManager {
     func post(_ endpoint: String,
               params: [String: Any],
               session: URLSession,
-              completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
-        guard let url = URL(string: AcademyApiManager.baseURL + endpoint) else {
-            completion(nil, AcademyApiManagerError.badURL)
-            return
-        }
-
-        var request: URLRequest = URLRequest(url: url)
-        request.httpMethod = RequestType.post
-        request.setValue(RequestHeaderFields.appJson, forHTTPHeaderField: RequestHeaderFields.contentType)
-
-        do {
-            let httpBody = try JSONSerialization.data(withJSONObject: params, options: [])
-            request.httpBody = httpBody
-            session.dataTask(with: request) { data, response, error in
-                self.treatResponse(data: data,
-                                   response: response,
-                                   error: error,
-                                   completion: completion)
-            }.resume()
-        } catch let error {
-            completion(nil, error)
-        }
-    }
+              completion: @escaping (_ data: Data?, _ error: Error?) -> Void)
 
     /// Makes a PUT request with parameters and returns the response.
     ///
@@ -193,29 +93,7 @@ public extension AcademyApiManager {
     func put(_ endpoint: String,
              params: [String: Any],
              session: URLSession,
-             completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
-        guard let url = URL(string: AcademyApiManager.baseURL + endpoint) else {
-            completion(nil, AcademyApiManagerError.badURL)
-            return
-        }
-
-        var request: URLRequest = URLRequest(url: url)
-        request.httpMethod = RequestType.put
-        request.setValue(RequestHeaderFields.appJson, forHTTPHeaderField: RequestHeaderFields.contentType)
-
-        do {
-            let httpBody = try JSONSerialization.data(withJSONObject: params, options: [])
-            request.httpBody = httpBody
-            session.dataTask(with: request) { data, response, error in
-                self.treatResponse(data: data,
-                                   response: response,
-                                   error: error,
-                                   completion: completion)
-            }.resume()
-        } catch let error {
-            completion(nil, error)
-        }
-    }
+             completion: @escaping (_ data: Data?, _ error: Error?) -> Void)
 
     /// Handles the Data response with multiple verifications and returns the response in a Data object if it's correct.
     ///
@@ -227,12 +105,279 @@ public extension AcademyApiManager {
     func treatResponse(data: Data?,
                        response: URLResponse?,
                        error: Error?,
+                       completion: @escaping (_ jsonDict: Data?, _ error: Error?) -> Void)
+
+    /// Gets paired drones list.
+    ///
+    /// - Parameters:
+    ///     - completion: callback which returns the paired drones list
+    func performPairedDroneListRequest(completion: @escaping (([PairedDroneListResponse]?) -> Void))
+
+    /// Performs the challenge request.
+    ///
+    /// - Parameters:
+    ///     - action: create a challenge with our selected action (pair or unpair)
+    ///     - completion: callback which returns challenge request result and error
+    func performChallengeRequest(action: PairingAction,
+                                 completion: @escaping ((String?, Error?) -> Void))
+
+    /// Performs the pairing association request.
+    ///
+    /// - Parameters:
+    ///     - token: the json string signed by the drone divided in three base64 part
+    ///     - completion: callback which returns true if association is complete
+    func performAssociationRequest(token: String,
+                                   completion: @escaping ((Bool) -> Void))
+
+    /// Unpairs current associated 4G drone.
+    ///
+    /// - Parameters:
+    ///     - commonName: drone common name
+    ///     - completion: callback which returns data and error
+    func unpairDrone(commonName: String,
+                     completion: @escaping (_ data: Data?, _ error: Error?) -> Void)
+
+    /// Unpairs all users associated to the current drone.
+    ///
+    /// - Parameters:
+    ///     - token: the json string signed by the drone divided in three base64 part
+    ///     - completion: callback which returns data and error
+    func unpairAllUsers(token: String,
+                        completion: @escaping (_ data: Data?, _ error: Error?) -> Void)
+
+    /// Gets paired users count for a selected drone.
+    ///
+    /// - Parameters:
+    ///     - commonName: drone common name
+    ///     - completion: callback which returns number of paired users and a potential error
+    func pairedUsersCount(commonName: String,
+                          completion: @escaping (_ usersCount: Int?, _ error: Error?) -> Void)
+
+}
+
+// MARK: - AcademyApiServiceImpl
+/// Manager that handles all methods relative to Academy API.
+public class AcademyApiServiceImpl: AcademyApiService {
+
+    // MARK: - Properties
+
+    public var baseURL: String {
+        return AcademyURL.prodBaseURL
+    }
+
+    public var canPerformAcademyRequest: Bool = true
+
+    public var academyError: Error?
+
+    public var academyErrorPublisher: AnyPublisher<Error?, Never> { academyErrorSubject.eraseToAnyPublisher() }
+
+    private let academyErrorSubject = CurrentValueSubject<Error?, Never>(nil)
+
+    /// Queue to synchronize API calls
+    private(set) var requestQueue: ApiRequestQueue
+
+    // MARK: - Init
+    public init (requestQueue: ApiRequestQueue) {
+        self.academyErrorSubject.value = academyError
+        self.requestQueue = requestQueue
+    }
+}
+
+// MARK: - Enums
+public extension AcademyApiServiceImpl {
+    /// Stores Academy base url.
+    enum AcademyURL {
+        public static let prodBaseURL: String = "https://academy.parrot.com"
+        static let mediaProdBaseURL: String = "\(prodBaseURL)/media/"
+    }
+
+    /// Stores Academy end points url.
+    enum AcademyEndPoints {
+        static let getChallenge = "/apiv1/4g/pairing/challenge?operation=associate"
+        static let getUnpairChallenge = "/apiv1/4g/pairing/challenge?operation=unpair_all"
+        static let getDroneList = "/apiv1/drone/list"
+        static let commonPairingEndpoint = "/apiv1/4g/pairing"
+    }
+}
+
+// MARK: - Public Enums
+public extension AcademyApiServiceImpl {
+    /// Stores academy API errors.
+    enum AcademyApiManagerError: Int, Error {
+        case notSynchro
+        case synchroOk
+        case unknownError
+        case serverError
+        case jsonError
+        case badURL
+        case badParameters
+        case badImage
+        case ressourceNotFound
+        case badResponseCode
+        case badData
+        case noData
+        case authenticationError
+        case accessDenied
+        case preconditionFailed
+        case cancelled
+
+    }
+}
+
+// MARK: - Private Funcs
+private extension AcademyApiServiceImpl {
+    /// Returns a custom URLSession to communicate with Academy API.
+    func authSession() -> URLSession {
+        var token: String = ""
+        if Services.hub.userInformation.token.isEmpty,
+           !SecureKeyStorage.current.temporaryToken.isEmpty {
+            token = SecureKeyStorage.current.temporaryToken
+        } else {
+            token = Services.hub.userInformation.token
+        }
+
+        let config = URLSessionConfiguration.default
+        config.httpAdditionalHeaders = [RequestHeaderFields.authorization: AuthenticationUtils.bearer(token: token),
+                                        RequestHeaderFields.contentType: RequestHeaderFields.appJson,
+                                        RequestHeaderFields.xApiKey: ServicesConstants.academySecretKey]
+        config.addUserAgentHeader()
+        return URLSession(configuration: config)
+    }
+}
+
+// MARK: - Public Funcs
+public extension AcademyApiServiceImpl {
+
+    func cancelAllCurrentTasks() {
+        requestQueue.cancelAcademyRequest()
+    }
+
+    func delete(_ endpoint: String,
+                session: URLSession,
+                completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
+        // TODO: Change completion type to Result<Data, Error>
+
+        guard canPerformAcademyRequest else {
+            completion(nil, AcademyApiManagerError.cancelled)
+            return
+        }
+
+        guard let url = URL(string: AcademyURL.prodBaseURL + endpoint) else {
+            completion(nil, AcademyApiManagerError.badURL)
+            return
+        }
+
+        var request: URLRequest = URLRequest(url: url)
+        request.httpMethod = RequestType.delete
+        request.setValue(RequestHeaderFields.appJson, forHTTPHeaderField: RequestHeaderFields.contentType)
+        requestQueue.execute(request, session) { data, response, error in
+            self.treatResponse(data: data,
+                               response: response,
+                               error: error,
+                               completion: completion)
+        }
+
+    }
+
+    func get(_ endpoint: String,
+             session: URLSession,
+             completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
+
+        guard canPerformAcademyRequest else {
+            completion(nil, AcademyApiManagerError.cancelled)
+            return
+        }
+
+        guard let url = URL(string: AcademyURL.prodBaseURL + endpoint) else {
+            completion(nil, AcademyApiManagerError.badURL)
+            return
+        }
+
+        requestQueue.execute(URLRequest(url: url), session) { data, response, error in
+            self.treatResponse(data: data, response: response, error: error, completion: completion)
+        }
+    }
+
+    func post(_ endpoint: String,
+              params: [String: Any],
+              session: URLSession,
+              completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
+
+        guard canPerformAcademyRequest else {
+            completion(nil, AcademyApiManagerError.cancelled)
+            return
+        }
+
+        guard let url = URL(string: AcademyURL.prodBaseURL + endpoint) else {
+            completion(nil, AcademyApiManagerError.badURL)
+            return
+        }
+
+        var request: URLRequest = URLRequest(url: url)
+        request.httpMethod = RequestType.post
+        request.setValue(RequestHeaderFields.appJson, forHTTPHeaderField: RequestHeaderFields.contentType)
+
+        do {
+            let httpBody = try JSONSerialization.data(withJSONObject: params, options: [])
+            request.httpBody = httpBody
+
+            requestQueue.execute(request, session) { data, response, error in
+                self.treatResponse(data: data,
+                                   response: response,
+                                   error: error,
+                                   completion: completion)
+            }
+        } catch let error {
+            completion(nil, error)
+        }
+    }
+
+    func put(_ endpoint: String,
+             params: [String: Any],
+             session: URLSession,
+             completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
+
+        guard canPerformAcademyRequest else {
+            completion(nil, AcademyApiManagerError.cancelled)
+            return
+        }
+
+        guard let url = URL(string: AcademyURL.prodBaseURL + endpoint) else {
+            completion(nil, AcademyApiManagerError.badURL)
+            return
+        }
+
+        var request: URLRequest = URLRequest(url: url)
+        request.httpMethod = RequestType.put
+        request.setValue(RequestHeaderFields.appJson, forHTTPHeaderField: RequestHeaderFields.contentType)
+
+        do {
+            let httpBody = try JSONSerialization.data(withJSONObject: params, options: [])
+            request.httpBody = httpBody
+            requestQueue.execute(request, session) { data, response, error in
+                self.treatResponse(data: data,
+                                   response: response,
+                                   error: error,
+                                   completion: completion)
+            }
+        } catch let error {
+            completion(nil, error)
+        }
+    }
+
+    func treatResponse(data: Data?,
+                       response: URLResponse?,
+                       error: Error?,
                        completion: @escaping (_ jsonDict: Data?, _ error: Error?) -> Void) {
-        //TODO: Change competion type to Result<Data, Error>
+        // TODO: Change competion type to Result<Data, Error>
+
+        guard canPerformAcademyRequest else {
+            completion(nil, AcademyApiManagerError.cancelled)
+            return
+        }
 
         guard error == nil else {
             ULog.e(.academyApiTag, "AcademyAPI Response error : \(error?.localizedDescription ?? "")")
-
             return completion(nil, AcademyApiManagerError.unknownError)
         }
 
@@ -247,11 +392,21 @@ public extension AcademyApiManager {
             returnError = .preconditionFailed
         case 401:
             DispatchQueue.main.async {
-                // UserInformation.current.disconnect() // TODO: Find a solution to disconnect user in FF
+                // UserInformationImpl.current.disconnect() // TODO: Find a solution to disconnect user in FF
             }
             returnError = .authenticationError
+            academyErrorSubject.value = returnError
+            completion(nil, returnError)
+            return
+
         case 403:
             returnError = .accessDenied
+            academyErrorSubject.value = returnError
+            completion(nil, returnError)
+            return
+
+        case 404:
+            returnError = .ressourceNotFound
         case 0..<200:
             returnError = .badResponseCode
         case 300...1000:
@@ -272,10 +427,6 @@ public extension AcademyApiManager {
         }
     }
 
-    /// Gets paired drones list.
-    ///
-    /// - Parameters:
-    ///     - completion: callback which returns the paired drones list
     func performPairedDroneListRequest(completion: @escaping (([PairedDroneListResponse]?) -> Void)) {
         let session = self.authSession()
 
@@ -298,15 +449,21 @@ public extension AcademyApiManager {
 }
 
 // MARK: - Internal Funcs
-extension AcademyApiManager {
-    /// Performs the challenge request.
-    ///
-    /// - Parameters:
-    ///     - completion: callback which returns challenge request result and error
-    func performChallengeRequest(completion: @escaping ((String?, Error?) -> Void)) {
-        let session = self.authSession()
+public extension AcademyApiServiceImpl {
 
-        get(AcademyEndPoints.getChallenge, session: session) { data, error in
+    func performChallengeRequest(action: PairingAction, completion: @escaping ((String?, Error?) -> Void)) {
+        let session = self.authSession()
+        var endpoint = ""
+
+        switch action {
+        case .pairUser:
+            endpoint = AcademyEndPoints.getChallenge
+
+        case .unpairUser:
+            endpoint = AcademyEndPoints.getUnpairChallenge
+        }
+
+        get(endpoint, session: session) { data, error in
             guard error == nil else {
                 completion(nil, error)
                 return
@@ -322,11 +479,6 @@ extension AcademyApiManager {
         }
     }
 
-    /// Performs the pairing association request.
-    ///
-    /// - Parameters:
-    ///     - token: the json string signed by the drone divided in three base64 part
-    ///     - completion: callback which returns true if association is complete
     func performAssociationRequest(token: String, completion: @escaping ((Bool) -> Void)) {
         let session = self.authSession()
         guard let data = token.data(using: .utf8),
@@ -347,15 +499,10 @@ extension AcademyApiManager {
         }
     }
 
-    /// Unpairs current associated 4G drone.
-    ///
-    /// - Parameters:
-    ///     - commonName: drone common name
-    ///     - completion: callback which returns data and error
     func unpairDrone(commonName: String, completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
         let session = self.authSession()
 
-        guard let url = URL(string: AcademyApiManager.baseURL + AcademyEndPoints.commonPairingEndpoint + "/" + commonName) else {
+        guard let url = URL(string: AcademyURL.prodBaseURL + AcademyEndPoints.commonPairingEndpoint + "/" + commonName) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }
@@ -369,16 +516,43 @@ extension AcademyApiManager {
         }.resume()
     }
 
-    /// Gets paired users count for a selected drone.
-    ///
-    /// - Parameters:
-    ///     - commonName: drone common name
-    ///     - completion: callback which returns number of paired users and a potential error
-    func pairedUsersCounts(commonName: String,
-                           completion: @escaping (_ usersCount: Int?, _ error: Error?) -> Void) {
+    func unpairAllUsers(token: String, completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
         let session = self.authSession()
 
-        guard let url = URL(string: AcademyApiManager.baseURL + AcademyEndPoints.commonPairingEndpoint + "/" + commonName) else {
+        guard let data = token.data(using: .utf8),
+              let body = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+            completion(nil, AcademyApiManagerError.badParameters)
+            return
+        }
+
+        guard let url = URL(string: AcademyURL.prodBaseURL + AcademyEndPoints.commonPairingEndpoint) else {
+            completion(nil, AcademyApiManagerError.badURL)
+            return
+        }
+
+        var request: URLRequest = URLRequest(url: url)
+        request.httpMethod = RequestType.delete
+        request.setValue(RequestHeaderFields.appJson, forHTTPHeaderField: RequestHeaderFields.contentType)
+
+        do {
+            let httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+            request.httpBody = httpBody
+            session.dataTask(with: request) { data, response, error in
+                self.treatResponse(data: data,
+                                   response: response,
+                                   error: error,
+                                   completion: completion)
+            }.resume()
+        } catch let error {
+            completion(nil, error)
+        }
+    }
+
+    func pairedUsersCount(commonName: String,
+                          completion: @escaping (_ usersCount: Int?, _ error: Error?) -> Void) {
+        let session = self.authSession()
+
+        guard let url = URL(string: AcademyURL.prodBaseURL + AcademyEndPoints.commonPairingEndpoint + "/" + commonName) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }

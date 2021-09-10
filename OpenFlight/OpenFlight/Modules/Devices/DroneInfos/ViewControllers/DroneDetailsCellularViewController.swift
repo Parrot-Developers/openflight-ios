@@ -45,6 +45,7 @@ final class DroneDetailsCellularViewController: UIViewController {
     @IBOutlet private weak var usersCountLabel: UILabel!
     @IBOutlet private weak var usersCountDescriptionLabel: UILabel!
     @IBOutlet private weak var forgotErrorLabel: UILabel!
+    @IBOutlet private weak var showDebugButton: UIButton!
 
     // MARK: - Private Properties
     private weak var coordinator: DroneCoordinator?
@@ -56,7 +57,6 @@ final class DroneDetailsCellularViewController: UIViewController {
     static func instantiate(coordinator: DroneCoordinator) -> DroneDetailsCellularViewController {
         let viewController = StoryboardScene.DroneDetailsCellular.initialScene.instantiate()
         viewController.coordinator = coordinator
-
         return viewController
     }
 
@@ -67,12 +67,20 @@ final class DroneDetailsCellularViewController: UIViewController {
         bindToViewModel()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        UIView.animate(withDuration: Style.shortAnimationDuration) {
+            self.view.backgroundColor = ColorName.greyDark60.color
+        }
+    }
+
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -117,7 +125,13 @@ private extension DroneDetailsCellularViewController {
 
     @IBAction func reinitializeButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyDroneDetailsCellular.reinitialize)
-        viewModel.forgetDrone()
+        viewModel.unpairAllUsers()
+    }
+
+    @IBAction func showDebugButtonTouchedUpInside(_ sender: Any) {
+        coordinator?.dismiss {
+            self.coordinator?.displayCellularDebug()
+        }
     }
 }
 
@@ -130,26 +144,29 @@ private extension DroneDetailsCellularViewController {
                                                    .layerMaxXMinYCorner])
         // Labels.
         titleLabel.text = L10n.droneDetailsCellularAccess
-        titleLabel.makeUp(with: .huge)
         forgotErrorLabel.makeUp(and: ColorName.redTorch)
         connectionSubtitleLabel.text = L10n.commonConnectionState
         accessSubtitleLabel.text = L10n.cellularInfoAccess
-        connectionSubtitleLabel.makeUp(and: .white50)
-        accessSubtitleLabel.makeUp(and: .white50)
-        connectionStateLabel.makeUp(with: .huge)
-        usersCountLabel.makeUp(with: .huge)
-        connectionStateDescriptionLabel.makeUp()
-        usersCountDescriptionLabel.makeUp()
         usersCountDescriptionLabel.text = L10n.drone4gUserAccessSingular(0)
 
         // Buttons.
-        actionButton.makeup()
-        reinitializeButton.setTitle(L10n.drone4gReinitializeConnections, for: .normal)
         actionButton.titleLabel?.textAlignment = .center
-        actionButton.cornerRadiusedWith(backgroundColor: .clear,
-                                        borderColor: .white ,
-                                        radius: Style.largeCornerRadius,
-                                        borderWidth: Style.mediumBorderWidth)
+        actionButton.cornerRadiusedWith(backgroundColor: UIColor(named: .whiteAlbescent),
+                                        radius: Style.largeCornerRadius)
+
+        reinitializeButton.setTitle(L10n.drone4gReinitializeConnections, for: .normal)
+        reinitializeButton.setTitleColor(ColorName.defaultTextColor.color, for: .normal)
+        reinitializeButton.setTitleColor(ColorName.disabledTextColor.color, for: .disabled)
+        reinitializeButton.titleLabel?.textAlignment = .center
+        reinitializeButton.cornerRadiusedWith(backgroundColor: UIColor(named: .whiteAlbescent),
+                                              radius: Style.largeCornerRadius)
+
+        showDebugButton.setTitle(L10n.drone4gShowDebug, for: .normal)
+        showDebugButton.titleLabel?.textAlignment = .center
+        showDebugButton.cornerRadiusedWith(backgroundColor: .clear,
+                                           borderColor: .black,
+                                           radius: Style.largeCornerRadius,
+                                           borderWidth: Style.mediumBorderWidth)
     }
 
     /// Calls the different function to bind the view model.
@@ -207,17 +224,7 @@ private extension DroneDetailsCellularViewController {
         if cellularStatus.isStatusError {
             connectionStateDescriptionLabel.text = cellularStatus.cellularDetailsDescription
             usersCountDescriptionLabel.text = Style.dash
-            reinitializeButton.cornerRadiusedWith(backgroundColor: .clear,
-                                                  borderColor: ColorName.white20.color ,
-                                                  radius: Style.largeCornerRadius,
-                                                  borderWidth: Style.mediumBorderWidth)
-            reinitializeButton.makeup(color: .white50)
         } else {
-            reinitializeButton.makeup()
-            reinitializeButton.cornerRadiusedWith(backgroundColor: .clear,
-                                                  borderColor: .white ,
-                                                  radius: Style.largeCornerRadius,
-                                                  borderWidth: Style.mediumBorderWidth)
             connectionStateDescriptionLabel.text = viewModel.operatorName
         }
 

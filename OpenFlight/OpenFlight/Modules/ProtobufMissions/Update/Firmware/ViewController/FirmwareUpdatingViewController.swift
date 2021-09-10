@@ -48,10 +48,10 @@ final class FirmwareUpdatingViewController: UIViewController {
     private let firmwareUpdaterManager = FirmwareUpdaterManager.shared
     private var firmwareUpdateListener: FirmwareUpdaterListener?
     private var dataSource = FirmwareUpdatingDataSource()
+    private var globalUpdateState = FirmwareGlobalUpdatingState.notInitialized
     private var updateOngoing: Bool = false
     private var isProcessCancelable: Bool = true
-    private var isWaitingForDroneReconnection: Bool = false
-    private var shouldRestartProcesses: Bool = false
+    private var isUpdateCancelledAlertShown: Bool = false
     private var droneStateViewModel = DroneStateViewModel()
 
     // MARK: - Private Enums
@@ -59,7 +59,6 @@ final class FirmwareUpdatingViewController: UIViewController {
         static let minProgress: Float = 0.0
         static let tableViewHeight: CGFloat = 50.0
         static let rebootDuration: TimeInterval = 120.0
-        static let missionUpdateTag: String = "Firmware Update drone reconnected"
     }
 
     // MARK: - Setup
@@ -82,15 +81,10 @@ final class FirmwareUpdatingViewController: UIViewController {
         initUI()
         listenToFirmwareUpdateManager()
         startProcesses()
-        listenToDroneReconnection()
 
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(cancelProcesses),
+                                               selector: #selector(didEnterBackground),
                                                name: UIApplication.didEnterBackgroundNotification,
-                                               object: nil)
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(restartProcesses),
-                                               name: UIApplication.willEnterForegroundNotification,
                                                object: nil)
     }
 
@@ -99,7 +93,7 @@ final class FirmwareUpdatingViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 }
 
@@ -130,41 +124,31 @@ extension FirmwareUpdatingViewController: UITableViewDelegate {
 // MARK: - UpdatingDoneFooterDelegate
 extension FirmwareUpdatingViewController: UpdatingDoneFooterDelegate {
     func quitProcesses() {
-        RemoteControlGrabManager.shared.enableRemoteControl()
-        coordinator?.back()
+        quitProcesses(closeFirmwareList: false)
     }
 }
 
 // MARK: - Actions
 private extension FirmwareUpdatingViewController {
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
-        if isProcessCancelable {
-            presentCancelAlertViewController()
-        } else {
-            presentQuitRebootAlertViewController()
-        }
+        showCancelAlert()
     }
 }
 
 // MARK: - Private Funcs
 private extension FirmwareUpdatingViewController {
+    /// Listens to the Firmware Update Manager.
+    func listenToFirmwareUpdateManager() {
+        firmwareUpdateListener = firmwareUpdaterManager
+            .register(firmwareToUpdateCallback: { [weak self] ( firmwareGlobalUpdatingState) in
+                self?.handleFirmwareProcesses(firmwareGlobalUpdatingState: firmwareGlobalUpdatingState)
+            })
+    }
+
     /// Starts the download and update firmware processes.
     func startProcesses() {
         RemoteControlGrabManager.shared.disableRemoteControl()
         firmwareUpdaterManager.startFirmwareProcesses()
-    }
-
-    /// Listens to the Firmware Update Manager .
-    func listenToFirmwareUpdateManager() {
-        firmwareUpdateListener = firmwareUpdaterManager
-            .register(firmwareToUpdateCallback: { [weak self] ( firmwareGlobalUpdatingState) in
-                guard let strongSelf = self,
-                      !strongSelf.shouldRestartProcesses else {
-                    return
-                }
-
-                strongSelf.handleFirmwareProcesses(firmwareGlobalUpdatingState: firmwareGlobalUpdatingState)
-            })
     }
 
     /// Handles firmware update processes callback from the manager.
@@ -187,8 +171,13 @@ private extension FirmwareUpdatingViewController {
                 updateProgress()
             }
         case .processing:
-            isProcessCancelable = false
-            updateProgress()
+            if isProcessCancelable {
+                isProcessCancelable = false
+                cancelButton.isHidden = true
+                reloadUI()
+            } else {
+                updateProgress()
+            }
         case .waitingForReboot:
             // After the reboot, a connection with the drone must be established to finish the processes
             reloadUI()
@@ -202,67 +191,62 @@ private extension FirmwareUpdatingViewController {
             // a reboot.
             reloadUI()
             displayErrorUI()
+
+            if globalUpdateState == .uploading
+                && droneStateViewModel.state.value.connectionState != .connected {
+                showUpdateCancelledAlert()
+            }
         }
+
+        globalUpdateState = firmwareGlobalUpdatingState
     }
 
     /// Waits for reboot of the drone
     func waitForReboot() {
-        cancelButton.isHidden = false
-        isWaitingForDroneReconnection = true
+        cancelButton.isHidden = true
         progressView.setFakeRebootProgress(duration: Constants.rebootDuration)
     }
 
-    /// This is the last step of the processes.
-    func listenToDroneReconnection() {
-        droneStateViewModel.state.valueChanged = { [weak self] state in
-            guard let strongSelf = self,
-                  state.connectionState == .connected else {
-                return
-            }
-
-            if strongSelf.shouldRestartProcesses {
-                strongSelf.restartProcesses()
-            } else if strongSelf.isWaitingForDroneReconnection {
-                // After the reboot and the new connection of the drone, func handleFirmwareProcesses() is expected to
-                // be called and finalize the UI.
-                strongSelf.isWaitingForDroneReconnection = false
-                ULog.d(.missionUpdateTag, Constants.missionUpdateTag)
-            }
+    /// Called when the app enters background.
+    @objc func didEnterBackground() {
+        let cancelled = cancelProcesses()
+        if cancelled {
+            showUpdateCancelledAlert()
+        } else {
+            quitProcesses(closeFirmwareList: true)
         }
     }
 
     /// Cancel operation in progress.
-    @objc func cancelProcesses() {
-        guard isProcessCancelable else { return }
+    func cancelProcesses() -> Bool {
+        guard isProcessCancelable else { return false }
 
         let cancelSucceeded = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
         self.cancelButton.isHidden = cancelSucceeded
+        return cancelSucceeded
     }
 
-    /// Restart operation in progress.
-    @objc func restartProcesses() {
-        guard !isWaitingForDroneReconnection,
-              firmwareUpdateListener != nil else { return }
-
-        resetUI()
-
-        // Drone should be connected to restart FW update (depends on operation in progress).
-        if droneStateViewModel.state.value.isConnected() == false,
-           firmwareUpdaterManager.remainingOperationsRequiresDrone() {
-            shouldRestartProcesses = true
+    /// Quits the updating processes.
+    ///
+    /// - Parameter closeFirmwareList: `true` to close the firmware list as well
+    func quitProcesses(closeFirmwareList: Bool) {
+        RemoteControlGrabManager.shared.enableRemoteControl()
+        if closeFirmwareList {
+            coordinator?.quitUpdateProcesses()
         } else {
-            shouldRestartProcesses = false
-            startProcesses()
+            coordinator?.back()
         }
     }
 
     /// Shows an alert view when user tries to cancel update.
-    func presentCancelAlertViewController() {
+    func showCancelAlert() {
         let validateAction = AlertAction(
             title: L10n.firmwareMissionUpdateQuitInstallationValidateAction,
             actionHandler: { [weak self] in
-                self?.cancelProcesses()
-                self?.quitProcesses()
+                let cancelled = self?.cancelProcesses()
+                if cancelled == true {
+                    self?.quitProcesses(closeFirmwareList: true)
+                }
             })
         let cancelAction = AlertAction(title: L10n.cancel, actionHandler: nil)
         let alert = AlertViewController.instantiate(
@@ -273,20 +257,21 @@ private extension FirmwareUpdatingViewController {
         present(alert, animated: true, completion: nil)
     }
 
-    /// Shows an alert view when user tries to quit drone reboot.
-    func presentQuitRebootAlertViewController() {
-        let validateAction = AlertAction(
-            title: L10n.firmwareAndMissionQuitRebootValidateAction,
-            actionHandler: {
-                self.quitProcesses()
-            })
-        let cancelAction = AlertAction(title: L10n.firmwareMissionUpdateQuitInstallationCancelAction,
-                                       actionHandler: nil)
+    /// Shows an alert view when update has been cancelled while entering background or disconnecting.
+    func showUpdateCancelledAlert() {
+        guard !isUpdateCancelledAlertShown else {
+            return
+        }
 
+        isUpdateCancelledAlertShown = true
+        let validateAction = AlertAction(
+            title: L10n.ok,
+            actionHandler: { [weak self] in
+                self?.quitProcesses(closeFirmwareList: false)
+            })
         let alert = AlertViewController.instantiate(
-            title: L10n.firmwareAndMissionQuitRebootTitle,
-            message: L10n.firmwareAndMissionQuitRebootDroneMessage,
-            cancelAction: cancelAction,
+            title: L10n.firmwareAndMissionUpdateCancelledTitle,
+            message: L10n.firmwareAndMissionUpdateCancelledDroneMessage,
             validateAction: validateAction)
         present(alert, animated: true, completion: nil)
     }
@@ -297,13 +282,8 @@ private extension FirmwareUpdatingViewController {
     /// Inits the UI.
     func initUI() {
         titleLabel.text = L10n.firmwareMissionUpdateFirmwareUpdate
-        subtitleLabel.textColor = ColorName.white50.color
         subtitleLabel.text = dataSource.subtitle
         cancelButton.setTitle(L10n.cancel, for: .normal)
-        cancelButton.makeup(with: .large)
-        cancelButton.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
-                                        radius: 0.0)
-        view.backgroundColor = ColorName.greyShark.color
         setupTableView()
         resetUI()
     }
@@ -354,7 +334,6 @@ private extension FirmwareUpdatingViewController {
         tableView.allowsSelection = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.makeUp(backgroundColor: ColorName.greyShark.color)
         tableView.tableHeaderView = UIView()
         tableView.separatorColor = .clear
         tableView.register(cellType: ProtobufMissionUpdatingTableViewCell.self)

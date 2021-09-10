@@ -31,69 +31,33 @@
 import GroundSdk
 import Combine
 
-/// State for `ReturnHomeBottomBarState`.
-final class ReturnHomeBottomBarState: ViewModelState, EquatableState, Copying {
-    // MARK: - Internal Properties
-    /// Provides rth type description. Depends on the mission mode.
-    fileprivate(set) var rthTypeDescription: Observable<String> = Observable(String())
+final class ReturnHomeBottomBarViewModel {
 
-    // MARK: - Init
-    required init() { }
+    /// Current target to RTH
+    @Published private(set) var rthPreferredTarget: String?
 
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - rthTypeDescription: rth title to display
-    init(rthTypeDescription: Observable<String>) {
-        self.rthTypeDescription = rthTypeDescription
-    }
-
-    // MARK: - Copying
-    func copy() -> ReturnHomeBottomBarState {
-        return ReturnHomeBottomBarState(rthTypeDescription: rthTypeDescription)
-    }
-
-    // MARK: - Equatable
-    func isEqual(to other: ReturnHomeBottomBarState) -> Bool {
-        return self.rthTypeDescription.value == other.rthTypeDescription.value
-    }
-}
-
-/// View model which observes Return to Home state.
-final class ReturnHomeBottomBarViewModel: DroneWatcherViewModel<ReturnHomeBottomBarState> {
     // MARK: - Private Properties
+    private let currentDrone = Services.hub.currentDroneHolder
+    private let currentMissionManager = Services.hub.currentMissionManager
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
-    override init() {
-        super.init()
-
-        listenDefaults()
+    init() {
+        // Listen Setting : RTH
+        currentDrone.dronePublisher
+            .combineLatest(currentMissionManager.modePublisher)
+            .sink { [unowned self] (drone, missionMode) in
+                returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { rth in
+                    rthPreferredTarget = missionMode.rthTitle(rth?.preferredTarget.target) // default
+                }
+            }
+            .store(in: &cancellables)
     }
-
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) { }
 
     // MARK: - Internal Funcs
     /// Stops Return Home.
     func stopReturnHome() {
-        _ = drone?.cancelReturnHome()
-    }
-}
-
-// MARK: - Private Funcs
-private extension ReturnHomeBottomBarViewModel {
-    /// Listen updates on user defaults to detect mission mode changes.
-    func listenDefaults() {
-        Services.hub.currentMissionManager.modePublisher.sink { [unowned self] _ in
-            updateRthTypeDescription()
-        }.store(in: &cancellables)
-    }
-
-    /// Updates Rth description.
-    func updateRthTypeDescription() {
-        let currentMode = Services.hub.currentMissionManager.mode
-        state.value.rthTypeDescription.set(currentMode.rthTypeTitle)
+        currentDrone.drone.cancelReturnHome()
     }
 }

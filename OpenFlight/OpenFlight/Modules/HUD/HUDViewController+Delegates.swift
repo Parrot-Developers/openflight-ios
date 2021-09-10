@@ -69,15 +69,3 @@ extension HUDViewController: HUDIndicatorViewControllerNavigation {
         self.coordinator?.startPairing()
     }
 }
-
-// MARK: - BottomBarViewControllerDelegate
-extension HUDViewController: BottomBarViewControllerDelegate {
-
-    func showAETargetZone() {
-        videoControls.showAETargetZone()
-    }
-
-    func hideAETargetZone() {
-        videoControls.hideAETargetZone()
-    }
-}

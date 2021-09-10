@@ -26,6 +26,8 @@ internal enum L10n {
   internal static let alertAvoidanceDeteriorated = L10n.tr("Localizable", "alert_avoidance_deteriorated")
   /// Check that nothing is blocking the camera
   internal static let alertCameraError = L10n.tr("Localizable", "alert_camera_error")
+  /// Obstacle avoidance deteriorated – Strong winds
+  internal static let alertDeterioratedAvoidanceStrongWinds = L10n.tr("Localizable", "alert_deteriorated_avoidance_strong_winds")
   /// Obstacle avoidance - Drone was not able to find a path
   internal static let alertDroneStuck = L10n.tr("Localizable", "alert_drone_stuck")
   /// Geofence reached
@@ -46,8 +48,10 @@ internal enum L10n {
   internal static let alertHandLaunch = L10n.tr("Localizable", "alert_hand_launch")
   /// Launch
   internal static let alertHandLaunchLaunch = L10n.tr("Localizable", "alert_hand_launch_launch")
-  /// Magnetic perturbations - autonomous flights are unavailable
-  internal static let alertHeadingLockKo = L10n.tr("Localizable", "alert_heading_lock_ko")
+  /// Champ magnétique terrestre trop faible - vols autonomes indisponibles
+  internal static let alertHeadingLockKoEarthMagnetic = L10n.tr("Localizable", "alert_heading_lock_ko_earth_magnetic")
+  /// Perturbations magnétiques - vols autonomes indisponibles
+  internal static let alertHeadingLockKoPerturbationMagnetic = L10n.tr("Localizable", "alert_heading_lock_ko_perturbation_magnetic")
   /// Obstacle avoidance - High deviation
   internal static let alertHighDeviation = L10n.tr("Localizable", "alert_high_deviation")
   /// Vibrations detected . Check that propellers are tightly screwed.
@@ -96,13 +100,17 @@ internal enum L10n {
   }
   /// Returning Home
   internal static let alertReturnHomeTitle = L10n.tr("Localizable", "alert_return_home_title")
-  /// SD Error - Switching to internal memory
-  internal static let alertSdErrorSwitchingInternal = L10n.tr("Localizable", "alert_sd_error_switching_internal")
-  /// SD Full - Switching to internal memory
-  internal static let alertSdFullSwitchingInternal = L10n.tr("Localizable", "alert_sd_full_switching_internal")
+  /// Returning to Pilot
+  internal static let alertReturnPilotTitle = L10n.tr("Localizable", "alert_return_pilot_title")
+  /// Returning to Vehicle
+  internal static let alertReturnVehicleTitle = L10n.tr("Localizable", "alert_return_vehicle_title")
+  /// SD Error 
+  internal static let alertSdError = L10n.tr("Localizable", "alert_sd_error")
+  /// SD Full
+  internal static let alertSdFull = L10n.tr("Localizable", "alert_sd_full")
   /// SD Slow
   internal static let alertSdSlow = L10n.tr("Localizable", "alert_sd_slow")
-  /// SD too slow - Switching to internal memory
+  /// SD too slow
   internal static let alertSdcardTooSlow = L10n.tr("Localizable", "alert_sdcard_too_slow")
   /// Select a subject
   internal static let alertSelectSubject = L10n.tr("Localizable", "alert_select_subject")
@@ -164,7 +172,7 @@ internal enum L10n {
   internal static let cameraModeTimelapse = L10n.tr("Localizable", "camera_mode_timelapse")
   /// Video
   internal static let cameraModeVideo = L10n.tr("Localizable", "camera_mode_video")
-  /// Unavailable in P-Log mode
+  /// Unavailable in photo mode
   internal static let cameraPlogUnavailable = L10n.tr("Localizable", "camera_plog_unavailable")
   /// HDR Off
   internal static let cameraRangeHdrOff = L10n.tr("Localizable", "camera_range_hdr_off")
@@ -718,10 +726,14 @@ internal enum L10n {
   }
   /// Cellular access is active
   internal static let drone4gCellularAccessActive = L10n.tr("Localizable", "drone_4g_cellular_access_active")
+  /// Connection debug
+  internal static let drone4gConnectionDebug = L10n.tr("Localizable", "drone_4g_connection_debug")
   /// Enter PIN
   internal static let drone4gEnterPin = L10n.tr("Localizable", "drone_4g_enter_pin")
   /// Reinitialize connections
   internal static let drone4gReinitializeConnections = L10n.tr("Localizable", "drone_4g_reinitialize_connections")
+  /// Show debug
+  internal static let drone4gShowDebug = L10n.tr("Localizable", "drone_4g_show_debug")
   /// SIM blocked
   internal static let drone4gSimBlocked = L10n.tr("Localizable", "drone_4g_sim_blocked")
   /// SIM card is locked
@@ -864,6 +876,12 @@ internal enum L10n {
   internal static let firmwareAndMissionQuitRebootTitle = L10n.tr("Localizable", "firmware_and_mission_quit_reboot_title")
   /// Leave screen
   internal static let firmwareAndMissionQuitRebootValidateAction = L10n.tr("Localizable", "firmware_and_mission_quit_reboot_validate_action")
+  /// The controller update has been cancelled.
+  internal static let firmwareAndMissionUpdateCancelledControllerMessage = L10n.tr("Localizable", "firmware_and_mission_update_cancelled_controller_message")
+  /// The drone update has been cancelled.
+  internal static let firmwareAndMissionUpdateCancelledDroneMessage = L10n.tr("Localizable", "firmware_and_mission_update_cancelled_drone_message")
+  /// Update cancelled
+  internal static let firmwareAndMissionUpdateCancelledTitle = L10n.tr("Localizable", "firmware_and_mission_update_cancelled_title")
   /// An error occurred. Please try again later.
   internal static let firmwareMissionUpdateAlertCommonMessage = L10n.tr("Localizable", "firmware_mission_update_alert_common_message")
   /// Your drone is currently flying. Please land the drone to proceed safely with the update
@@ -1042,6 +1060,14 @@ internal enum L10n {
   internal static func flightPlanDefaultTitle(_ p1: Int) -> String {
     return L10n.tr("Localizable", "flight_plan_default_title", p1)
   }
+  /// Delete %@ ?
+  internal static func flightPlanDelete(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "flight_plan_delete", String(describing: p1))
+  }
+  /// You are about to delete this %@ locally and on the cloud.\nDo you wish to continue ?
+  internal static func flightPlanDeleteDescription(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "flight_plan_delete_description", String(describing: p1))
+  }
   /// Duplicate
   internal static let flightPlanDuplicate = L10n.tr("Localizable", "flight_plan_duplicate")
   /// As you are connected, all plans and flights will be saved in Parrot Cloud
@@ -1144,7 +1170,7 @@ internal enum L10n {
   internal static let flightPlanSettingsProgressiveRaceShort = L10n.tr("Localizable", "flight_plan_settings_progressive_race_short")
   /// Resolution
   internal static let flightPlanSettingsResolution = L10n.tr("Localizable", "flight_plan_settings_resolution")
-  /// RTH on last point
+  /// RTH
   internal static let flightPlanSettingsRthOnLastPoint = L10n.tr("Localizable", "flight_plan_settings_rth_on_last_point")
   /// RTH
   internal static let flightPlanSettingsRthOnLastPointShort = L10n.tr("Localizable", "flight_plan_settings_rth_on_last_point_short")
@@ -1152,6 +1178,8 @@ internal enum L10n {
   internal static let flightPlanSettingsTitle = L10n.tr("Localizable", "flight_plan_settings_title")
   /// White balance
   internal static let flightPlanSettingsWhiteBalance = L10n.tr("Localizable", "flight_plan_settings_white_balance")
+  /// flight plan
+  internal static let flightPlanTitle = L10n.tr("Localizable", "flight_plan_title")
   /// Get Support
   internal static let flightReportGetSupport = L10n.tr("Localizable", "flight_report_get_support")
   /// Flight report
@@ -1276,7 +1304,9 @@ internal enum L10n {
   internal static let galleryVerticalPathComponent = L10n.tr("Localizable", "gallery_vertical_path_component")
   /// Video
   internal static let galleryVideoPathComponent = L10n.tr("Localizable", "gallery_video_path_component")
-  /// Calibrating
+  /// 8k camera calibration
+  internal static let gimbalCalibration8kCameraMessage = L10n.tr("Localizable", "gimbal_calibration_8k_camera_message")
+  /// Calibrating…
   internal static let gimbalCalibrationCalibrating = L10n.tr("Localizable", "gimbal_calibration_calibrating")
   /// Place the drone on a plane surface then tap start.
   internal static let gimbalCalibrationDescription = L10n.tr("Localizable", "gimbal_calibration_description")
@@ -1284,10 +1314,8 @@ internal enum L10n {
   internal static let gimbalCalibrationError = L10n.tr("Localizable", "gimbal_calibration_error")
   /// Calibration failed. Check that nothing is blocking the gimbal
   internal static let gimbalCalibrationFailed = L10n.tr("Localizable", "gimbal_calibration_failed")
-  /// Calibrating main camera
-  internal static let gimbalCalibrationMainCamMessage = L10n.tr("Localizable", "gimbal_calibration_main_cam_message")
-  /// Calibrating sensors
-  internal static let gimbalCalibrationSensorMessage = L10n.tr("Localizable", "gimbal_calibration_sensor_message")
+  /// LOVE camera calibration
+  internal static let gimbalCalibrationLoveCameraMessage = L10n.tr("Localizable", "gimbal_calibration_love_camera_message")
   /// Calibration succeed!
   internal static let gimbalCalibrationSucceed = L10n.tr("Localizable", "gimbal_calibration_succeed")
   /// Gimbal calibration
@@ -1314,26 +1342,54 @@ internal enum L10n {
   internal static let liveStreamingQualityPriority = L10n.tr("Localizable", "live_streaming_quality_priority")
   /// Lock AE
   internal static let lockAe = L10n.tr("Localizable", "lock_ae")
+  /// Reaching %@m
+  internal static func loveCalibrationAscending(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "love_calibration_ascending", String(describing: p1))
+  }
+  /// Reaching ground
+  internal static let loveCalibrationDescending = L10n.tr("Localizable", "love_calibration_descending")
   /// Finish
   internal static let loveCalibrationFinish = L10n.tr("Localizable", "love_calibration_finish")
+  /// Please update the drone before taking off.
+  internal static let loveCalibrationFirmware = L10n.tr("Localizable", "love_calibration_firmware")
+  /// Drone is currently flying. Please land the drone to start the calibration.
+  internal static let loveCalibrationFlying = L10n.tr("Localizable", "love_calibration_flying")
+  /// GPS signal too weak to start the calibration.
+  internal static let loveCalibrationGps = L10n.tr("Localizable", "love_calibration_gps")
   /// Hold position
   internal static let loveCalibrationHoldPosition = L10n.tr("Localizable", "love_calibration_hold_position")
   /// Hold the Smart Board above the drone with the pattern facing downward
   internal static let loveCalibrationHoldSmartboardMessage = L10n.tr("Localizable", "love_calibration_hold_smartboard_message")
+  /// Waiting
+  internal static let loveCalibrationIdle = L10n.tr("Localizable", "love_calibration_idle")
+  /// Calibration failed
+  internal static let loveCalibrationKo = L10n.tr("Localizable", "love_calibration_ko")
+  /// Please try again in a different area or with a clear weather. Make sure that the avoidance sensors cameras are clean. 
+  internal static let loveCalibrationKoAdvice = L10n.tr("Localizable", "love_calibration_ko_advice")
   /// Move the board around to get started
   internal static let loveCalibrationMoveBoardAround = L10n.tr("Localizable", "love_calibration_move_board_around")
   /// Move the board to fill the empty frame
   internal static let loveCalibrationMoveBoardToFillEmptyFrame = L10n.tr("Localizable", "love_calibration_move_board_to_fill_empty_frame")
   /// Move the board to fill the frame
   internal static let loveCalibrationMoveBoardToFillFrame = L10n.tr("Localizable", "love_calibration_move_board_to_fill_frame")
+  /// Calibration completed
+  internal static let loveCalibrationOk = L10n.tr("Localizable", "love_calibration_ok")
+  /// Please make sure you are in an open area before starting the calibration.
+  internal static let loveCalibrationReady = L10n.tr("Localizable", "love_calibration_ready")
   /// required
   internal static let loveCalibrationRequired = L10n.tr("Localizable", "love_calibration_required")
   /// Please, try again
   internal static let loveCalibrationRetry = L10n.tr("Localizable", "love_calibration_retry")
+  /// To calibrate the obstacle avoidance sensors, the drone will take off and fly up to 
+  internal static let loveCalibrationSetupMessage = L10n.tr("Localizable", "love_calibration_setup_message")
   /// Before you start put your Anafi Ai on a leveled ground
   internal static let loveCalibrationStartMessage = L10n.tr("Localizable", "love_calibration_start_message")
+  /// Taking off
+  internal static let loveCalibrationTakeoff = L10n.tr("Localizable", "love_calibration_takeoff")
   /// Target partially hidden
   internal static let loveCalibrationTargetPartiallyHidden = L10n.tr("Localizable", "love_calibration_target_partially_hidden")
+  /// Executing rotation
+  internal static let loveCalibrationTurning = L10n.tr("Localizable", "love_calibration_turning")
   /// Mission
   internal static let mission = L10n.tr("Localizable", "mission")
   /// Please land the drone to enter %@ mission
@@ -1360,7 +1416,7 @@ internal enum L10n {
   internal static let pairingConnectToTheController = L10n.tr("Localizable", "pairing_connect_to_the_controller")
   /// Controller not recognized?
   internal static let pairingControllerNotRecognized = L10n.tr("Localizable", "pairing_controller_not_recognized")
-  /// Connect your phone to the drone’s Wi-Fi
+  /// Connect to the drone’s Wi-Fi
   internal static let pairingDroneConnectToWifi = L10n.tr("Localizable", "pairing_drone_connect_to_wifi")
   /// Go to iPhone's settings
   internal static let pairingDroneGoToWifiSettings = L10n.tr("Localizable", "pairing_drone_go_to_wifi_settings")
@@ -1388,6 +1444,8 @@ internal enum L10n {
   internal static let pairingPairAutomaticallyWithUsb = L10n.tr("Localizable", "pairing_pair_automatically_with_usb")
   /// If you are not able to use this method, you can enter manually the Wi-Fi password.
   internal static let pairingPairManuallyWithPassword = L10n.tr("Localizable", "pairing_pair_manually_with_password")
+  /// Pilot !
+  internal static let pairingPilot = L10n.tr("Localizable", "pairing_pilot")
   /// 1. Try unplugging and plugging again the USB cable.
   internal static let pairingPlugUsbCable = L10n.tr("Localizable", "pairing_plug_usb_cable")
   /// Refresh list
@@ -1730,8 +1788,8 @@ internal enum L10n {
   internal static let settingsControlsMappingElevationLateral = L10n.tr("Localizable", "settings_controls_mapping_elevation_lateral")
   /// Elevation\nand rotation
   internal static let settingsControlsMappingElevationRotation = L10n.tr("Localizable", "settings_controls_mapping_elevation_rotation")
-  /// EV or Shutter speed
-  internal static let settingsControlsMappingEvShutter = L10n.tr("Localizable", "settings_controls_mapping_ev_shutter")
+  /// Exposure
+  internal static let settingsControlsMappingExposure = L10n.tr("Localizable", "settings_controls_mapping_exposure")
   /// Record
   internal static let settingsControlsMappingRecord = L10n.tr("Localizable", "settings_controls_mapping_record")
   /// Reset
@@ -1742,6 +1800,12 @@ internal enum L10n {
   internal static let settingsControlsOptionEvTrigger = L10n.tr("Localizable", "settings_controls_option_ev_trigger")
   /// Inverse joys
   internal static let settingsControlsOptionInverseJoys = L10n.tr("Localizable", "settings_controls_option_inverse_joys")
+  /// Joystick mode
+  internal static let settingsControlsOptionJoystickMode = L10n.tr("Localizable", "settings_controls_option_joystick_mode")
+  /// Mode %d
+  internal static func settingsControlsOptionJoystickModeNumber(_ p1: Int) -> String {
+    return L10n.tr("Localizable", "settings_controls_option_joystick_mode_number", p1)
+  }
   /// Reverse tilt
   internal static let settingsControlsOptionReverseTilt = L10n.tr("Localizable", "settings_controls_option_reverse_tilt")
   /// Special
@@ -1864,6 +1928,8 @@ internal enum L10n {
   }
   /// °C
   internal static let unitCelsius = L10n.tr("Localizable", "unit_celsius")
+  /// cm/px
+  internal static let unitCentimeterPerPixel = L10n.tr("Localizable", "unit_centimeter_per_pixel")
   /// °
   internal static let unitDegree = L10n.tr("Localizable", "unit_degree")
   /// °/s

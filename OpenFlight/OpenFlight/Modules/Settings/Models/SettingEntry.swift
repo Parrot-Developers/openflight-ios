@@ -66,6 +66,13 @@ struct SettingsBoolChoice {
     let secondChoiceName: String
 }
 
+/// Define a model to add a range stepper on the slider
+struct SettingStepperSlider {
+    let limitIntervalChange: Float
+    let leftIntervalStep: Float
+    let rightIntervalStep: Float
+}
+
 /// Model defines to display setting in cells for specific settings.
 class SettingEntry: Equatable {
     // MARK: - Internal Properties
@@ -105,6 +112,8 @@ class SettingEntry: Equatable {
     var itemLogKey: String?
     /// Choice names for boolean setting.
     var settingsBoolChoice: SettingsBoolChoice
+    /// Setting Stepper slider
+    var settingStepperSlider: SettingStepperSlider?
 
     // MARK: - Init
     init(setting: Any? = nil,
@@ -124,8 +133,9 @@ class SettingEntry: Equatable {
          imageDisabled: UIImage? = nil,
          isSubMode: Bool? = false,
          itemLogKey: String? = nil,
-         settingsBoolChoice: SettingsBoolChoice = SettingsBoolChoice(firstChoiceName: L10n.commonNo,
-                                                                     secondChoiceName: L10n.commonYes)) {
+         settingsBoolChoice: SettingsBoolChoice = SettingsBoolChoice(firstChoiceName: L10n.commonNo, secondChoiceName: L10n.commonYes),
+         settingStepperSlider: SettingStepperSlider? = nil
+         ) {
         self.setting = setting
         self.title = title
         self.subtitle = subtitle
@@ -144,6 +154,7 @@ class SettingEntry: Equatable {
         self.isSubMode = isSubMode
         self.itemLogKey = itemLogKey
         self.settingsBoolChoice = settingsBoolChoice
+        self.settingStepperSlider = settingStepperSlider
     }
 
     // MARK: - Equatable Implementation

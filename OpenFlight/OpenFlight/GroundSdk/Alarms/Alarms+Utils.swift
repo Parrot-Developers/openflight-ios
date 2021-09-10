@@ -58,7 +58,11 @@ extension Alarms {
         }
 
         if getAlarm(kind: .magnetometerPertubation).hasError {
-            alerts.append(HUDBannerCriticalAlertType.headingLockedKo)
+            alerts.append(HUDBannerCriticalAlertType.headingLockedKoPerturbationMagnetic)
+        }
+
+        if getAlarm(kind: .magnetometerLowEarthField).hasError {
+            alerts.append(HUDBannerCriticalAlertType.headingLockedKoEarthMagnetic)
         }
 
         if getAlarm(kind: .wind).hasError {
@@ -93,10 +97,9 @@ extension Alarms {
             alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceTooDark)
         }
 
-        // Check alert for manual piloting with poor gps quality or strong wind
+        // Check alert for manual piloting with poor gps quality
         // and with obstacle avoidance in degraded mode.
-        if getAlarm(kind: Alarm.Kind.obstacleAvoidancePoorGps).hasError
-            || getAlarm(kind: Alarm.Kind.obstacleAvoidanceStrongWind).hasError {
+        if getAlarm(kind: Alarm.Kind.obstacleAvoidancePoorGps).hasError {
             alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceDeteriorated)
         }
 
@@ -108,6 +111,11 @@ extension Alarms {
         // Check alert for high deviation
         if getAlarm(kind: .highDeviation).hasError {
             alerts.append(HUDBannerWarningAlertType.highDeviation)
+        }
+
+        // Check alert for strong wind with obstacle avoidance
+        if getAlarm(kind: .obstacleAvoidanceStrongWind).hasError {
+            alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceStrongWind)
         }
 
         return alerts

@@ -31,139 +31,333 @@
 import GroundSdk
 import Combine
 
-/// State for `FlightPlanPanelViewModel`.
-final class FlightPlanPanelState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    /// Keeps current mission mode.
-    fileprivate(set) var missionMode: MissionMode = FlightPlanMissionMode.standard.missionMode
-    /// Flight plan id.
-    fileprivate(set) var flightPlanID: String?
-    /// Flight plan has WayPoint.
-    fileprivate(set) var hasWayPoints: Bool = false
-    /// Flight plan estimations.
-    fileprivate(set) var flightPlanEstimations: FlightPlanEstimationsModel?
-    /// Run Flight plan state.
-    fileprivate(set) var runFlightPlanState: RunFlightPlanState?
-
-    /// Boolean describing if a flight plan is currently loaded.
-    var isFlightPlanLoaded: Bool {
-        return flightPlanID != nil
-    }
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - connectionState: drone connection state
-    ///    - flightPlanID: Flight Plan Id
-    ///    - hasWayPoints: has wayPoints
-    ///    - flightPlanEstimations: estimations for Flight Plan
-    ///    - runFlightPlanState: run Flight Plan state
-    init(connectionState: DeviceState.ConnectionState,
-         flightPlanID: String?,
-         hasWayPoints: Bool,
-         flightPlanEstimations: FlightPlanEstimationsModel?,
-         runFlightPlanState: RunFlightPlanState?) {
-        super.init(connectionState: connectionState)
-
-        self.flightPlanID = flightPlanID
-        self.hasWayPoints = hasWayPoints
-        self.flightPlanEstimations = flightPlanEstimations
-        self.runFlightPlanState = runFlightPlanState
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? FlightPlanPanelState else { return false }
-
-        return super.isEqual(to: other)
-            && self.missionMode.key == other.missionMode.key
-            && self.flightPlanID == other.flightPlanID
-            && self.hasWayPoints == other.hasWayPoints
-            && self.flightPlanEstimations == other.flightPlanEstimations
-            && self.runFlightPlanState == other.runFlightPlanState
-    }
-
-    override func copy() -> FlightPlanPanelState {
-        let copy = FlightPlanPanelState(connectionState: self.connectionState,
-                                        flightPlanID: self.flightPlanID,
-                                        hasWayPoints: self.hasWayPoints,
-                                        flightPlanEstimations: self.flightPlanEstimations,
-                                        runFlightPlanState: self.runFlightPlanState)
-        copy.missionMode = missionMode
-
-        return copy
-    }
-}
-
 /// View model for flight plan menu.
-final class FlightPlanPanelViewModel: DroneStateViewModel<FlightPlanPanelState> {
+final class FlightPlanPanelViewModel {
+
+    @Published private(set) var buttonsState: ButtonsInformation = ButtonsInformation.defaultInfo
+
+    @Published private(set) var titleProject: String?
+
+    @Published private(set) var newButtonTitle: String?
+
+    @Published private(set) var createFirstTitle: String?
+
+    @Published private(set) var viewState: ViewState = .creation
+
+    @Published private(set) var progressModel: FlightPlanPanelProgressModel?
+
+    @Published private(set) var extraViews: [UIView] = []
+
+    @Published private(set) var imageRate: ImageRateProvider?
+
+    private weak var coordinator: FlightPlanPanelCoordinator?
+
     // MARK: - Private Properties
-    private var flightPlanListener: FlightPlanListener?
-    private var runFlightPlanViewModelListener: RunFlightPlanListener?
-    private var flightPlanViewModel: FlightPlanViewModel?
+
+    private var projectManager: ProjectManager
+    private var currentMissionManager: CurrentMissionManager
+    private var stateMachine: FlightPlanStateMachine?
+    private(set) var runManager: FlightPlanRunManager
+
     /// Cancellables
     private var cancellables = Set<AnyCancellable>()
+    private var stateMachineCancellable: AnyCancellable?
 
     // MARK: - Override Funcs
-    override init() {
-        super.init()
-
+    init(projectManager: ProjectManager,
+         runStateProgress: FlightPlanRunManager,
+         currentMissionManager: CurrentMissionManager,
+         coordinator: FlightPlanPanelCoordinator) {
+        self.projectManager = projectManager
+        self.runManager = runStateProgress
+        self.currentMissionManager = currentMissionManager
+        self.coordinator = coordinator
         listenMissionMode()
-        initFlightPlanListener()
+        listenSelectedProject()
     }
 
     // MARK: - Internal Funcs
     /// Sends currently loaded flight plan to drone and starts it.
     func startFlightPlan() {
-        flightPlanViewModel?.runFlightPlanViewModel.togglePlayPause()
+        stateMachine?.start()
     }
 
     /// Stops current runnning flight plan.
     func stopFlightPlan() {
-        flightPlanViewModel?.runFlightPlanViewModel.stop()
+        stateMachine?.stop()
+    }
+
+    func pauseFlightPlan() {
+        stateMachine?.pause()
+    }
+
+    func newFlightplan(flightPlanProvider: FlightPlanProvider) {
+        let project = projectManager.newProject(flightPlanProvider: flightPlanProvider)
+        projectManager.loadEverythingAndOpen(project: project)
+    }
+
+    func startEditionMode(_ open: Bool) {
+        stateMachine?.forceEditable()
+        coordinator?.startFlightPlanEdition(shouldCenter: open)
+    }
+
+    func replayFlightPlan() {
+        guard let stateMachine = stateMachine, let flightPlan = stateMachine.currentFlightPlan else { return }
+        stateMachine.open(flightPlan: flightPlan)
+        stateMachine.forceEditable()
+    }
+
+    func getFlightPlanProvider() -> FlightPlanProvider? {
+        currentMissionManager.mode.flightPlanProvider
+    }
+
+    func getProjectModel() -> ProjectModel? {
+        projectManager.currentProject
+    }
+
+    func historyTouchUpInside() {
+        if let projectModel = getProjectModel() {
+            coordinator?.startFlightPlanHistory(projectModel: projectModel)
+        }
+    }
+
+    /// Project button touched up inside.
+    func projectTouchUpInside() {
+        coordinator?.startManagePlans()
+    }
+
+    /// Play button touched up inside.
+    func playButtonTouchedUpInside() {
+        startFlightPlan()
+    }
+
+    /// Edit button touched up inside.
+    @IBAction func editButtonTouchedUpInside() {
+        guard let projectType = currentMissionManager.mode.flightPlanProvider?.projectType else { return }
+        if getProjectModel().map(projectManager.lastFlightPlan) == nil,
+           let flightPlanProvider = getFlightPlanProvider() {
+            // There's no loaded flight plan
+            if projectManager.loadProjects(type: projectType).isEmpty,
+               flightPlanProvider.flightPlanCoordinator != nil {
+                // There's no flight plan at all: display first time menu
+                coordinator?.startNewFlightPlan(flightPlanProvider: flightPlanProvider, creationCompletion: { [weak self] flightPlanCreated in
+                    DispatchQueue.main.async {
+                        guard flightPlanCreated else { return }
+                        self?.newFlightplan(flightPlanProvider: flightPlanProvider)
+                        self?.startEditionMode(false)
+                    }
+                })
+            } else {
+                // There are already flight plans, create a new project and go to edition
+                newFlightplan(flightPlanProvider: flightPlanProvider)
+                startEditionMode(true)
+            }
+        } else {
+            // Edit current project
+            startEditionMode(false)
+        }
     }
 }
 
 // MARK: - Private Funcs
 private extension FlightPlanPanelViewModel {
-    /// Inits flight plan listener.
-    func initFlightPlanListener() {
-        flightPlanListener = FlightPlanManager.shared.register(didChange: { [weak self] flightPlanViewModel in
-            // Stop previous Flight Plan if it has one.
-            if flightPlanViewModel?.state.value.uuid != self?.state.value.flightPlanID {
-                self?.flightPlanViewModel?.runFlightPlanViewModel.stop()
-            }
 
-            self?.flightPlanViewModel?.unregisterRunListener(self?.runFlightPlanViewModelListener)
-            self?.flightPlanViewModel = flightPlanViewModel
-
-            let copy = self?.state.value.copy()
-            copy?.flightPlanID = flightPlanViewModel?.state.value.uuid
-            copy?.hasWayPoints = flightPlanViewModel?.isEmpty == false
-            copy?.flightPlanEstimations = flightPlanViewModel?.estimations
-            self?.state.set(copy)
-
-            self?.runFlightPlanViewModelListener = flightPlanViewModel?.registerRunListener(didChange: { [weak self] state in
-                let copy = self?.state.value.copy()
-                copy?.runFlightPlanState = nil
-                self?.state.set(copy)
-                copy?.runFlightPlanState = state
-                self?.state.set(copy)
-            })
-        })
+    func listenSelectedProject() {
+        projectManager.currentProjectPublisher
+            .sink { [unowned self] project in
+                if let newProject = project {
+                    self.titleProject = newProject.title
+                } else {
+                    imageRate = nil
+                    progressModel = nil
+                    viewState = .creation
+                }
+            }.store(in: &cancellables)
     }
 
-    /// Starts watcher for mission modes.
     func listenMissionMode() {
-        Services.hub.currentMissionManager.modePublisher.sink { [unowned self] mode in
-            let copy = state.value.copy()
-            copy.missionMode = mode
-            state.set(copy)
-        }.store(in: &cancellables)
+        currentMissionManager.modePublisher.sink { [unowned self] in
+            createFirstTitle = $0.flightPlanProvider?.createFirstTitle
+            newButtonTitle = $0.flightPlanProvider?.newButtonTitle
+            listenStateMachine(missionMode: $0)
+        }
+        .store(in: &cancellables)
+
+        currentMissionManager.modePublisher
+            .combineLatest(runManager.statePublisher)
+            .map { return ($0, $1.isActive) }
+            .sink { [unowned self] missionMode, isActive in
+                self.updateExtraViews(missionStatusView: missionMode.missionStatusView, isActive: isActive)
+            }
+            .store(in: &cancellables)
+    }
+
+    private typealias State = (machine: FlightPlanStateMachineState, run: FlightPlanRunningState)
+
+    func listenStateMachine(missionMode: MissionMode) {
+        self.stateMachine = missionMode.stateMachine
+        stateMachineCancellable = missionMode.stateMachine?.state
+            .combineLatest(runManager.statePublisher)
+            .combineLatest(runManager.distancePublisher,
+                           runManager.durationPublisher,
+                           runManager.progressPublisher)
+            .sink { [unowned self] (state: State, distance, duration, progress) in
+
+                self.updateButtonsInformation(state.machine, runState: state.run)
+                self.updateImageRateInformation(state.machine)
+
+                var hasHistory = false
+                if let project = projectManager.currentProject {
+                    hasHistory = !projectManager.executedFlightPlans(for: project).isEmpty
+                }
+                switch state.machine {
+                case .machineStarted, .initialized:
+                    break
+                case .editable:
+                    viewState = .edition(hasHistory: hasHistory)
+                case .resumable:
+                    viewState = .resumable(hasHistory: hasHistory)
+                case let .startedNotFlying(_, mavlinkStatus):
+                    switch mavlinkStatus {
+                    case .sending, .generating:
+                        break
+                    }
+                case .flying:
+                    switch state.run {
+                    case let .playing(_, _, rth) where rth:
+                        viewState = .rth
+                    case .paused:
+                        viewState = .paused
+                    default:
+                        viewState = .playing(time: duration)
+                    }
+                case .end:
+                    break
+                }
+
+                progressModel = FlightPlanPanelProgressModel(runState: state.run,
+                                                             statMachine: state.machine,
+                                                             progress: progress,
+                                                             distance: distance)
+            }
+    }
+
+    func updateImageRateInformation(_ machineState: FlightPlanStateMachineState) {
+        switch machineState {
+        case let .editable(flightPlan, _),
+             let .end(flightPlan),
+             let .flying(flightPlan),
+             let .resumable(flightPlan, _),
+             let .startedNotFlying(flightPlan, _):
+            let settingsProvider = Services.hub.currentMissionManager.mode.flightPlanProvider?.settingsProvider
+            imageRate = ImageRateProvider(
+                dataSettings: flightPlan.dataSetting,
+                settings: settingsProvider?.settings(for: flightPlan))
+        default:
+            imageRate = nil
+        }
+    }
+
+    func updateButtonsInformation(_ machineState: FlightPlanStateMachineState, runState: FlightPlanRunningState) {
+        var buttonInfo: ButtonsInformation
+        switch machineState {
+        case .machineStarted, .initialized, .end:
+            buttonInfo = .defaultInfo
+        case let .editable(flightPlan, startAvailability):
+            let buttonsAreEnabled = startAvailability == .available && flightPlan.isEmpty == false
+            buttonInfo = ButtonsInformation(startButtonState: .canPlay, areEnabled: buttonsAreEnabled)
+        case .resumable(_, startAvailability: let startAvailability):
+            buttonInfo = ButtonsInformation(startButtonState: .paused, areEnabled: startAvailability == .available)
+        case .startedNotFlying:
+            buttonInfo = ButtonsInformation(startButtonState: .canPlay, areEnabled: false)
+        case .flying:
+            switch runState {
+            case .paused(_, let startAvailability):
+                buttonInfo = ButtonsInformation(startButtonState: .paused, areEnabled: startAvailability == .available)
+            case let .playing(droneConnected, _, _):
+                buttonInfo = ButtonsInformation(startButtonState: .canPlay, areEnabled: droneConnected)
+            default:
+                buttonInfo = ButtonsInformation.defaultInfo
+            }
+        }
+        self.buttonsState = buttonInfo
+    }
+
+    /// Updates extra views.
+    ///
+    /// - Parameters:
+    ///     - isActive: tells if flight plan is active
+    func updateExtraViews(missionStatusView: UIView?, isActive: Bool) {
+        var extraViews: [UIView] = []
+        if isActive {
+            let counterView = FlightPlanPanelMediaCounterView()
+            extraViews.append(counterView)
+        }
+
+        if let statusView = missionStatusView {
+            extraViews.append(statusView)
+        }
+
+        self.extraViews = extraViews
+    }
+}
+
+extension FlightPlanPanelViewModel {
+
+    enum StartButtonState {
+        case canPlay
+        case blockingIssue
+        case paused
+    }
+
+    struct ButtonsInformation {
+        let startButtonState: StartButtonState
+        let areEnabled: Bool
+
+        static let defaultInfo = ButtonsInformation(startButtonState: .blockingIssue,
+                                                    areEnabled: false)
+    }
+
+    enum ProgressionState {
+        case progress(FlightPlanModel?)
+    }
+
+    enum ViewState: Equatable {
+        case creation
+        case edition(hasHistory: Bool)
+        case playing(time: TimeInterval)
+        case resumable(hasHistory: Bool)
+        case paused
+        case rth
+
+        static func == (lhs: FlightPlanPanelViewModel.ViewState, rhs: FlightPlanPanelViewModel.ViewState) -> Bool {
+            switch (lhs, rhs) {
+            case (.creation, .creation),
+                 (.resumable, .resumable),
+                 (.playing, .playing),
+                 (.paused, .paused),
+                 (.rth, .rth):
+                return true
+            case let (.edition(hasHistoryLHS), .edition(hasHistoryRHS)):
+                return hasHistoryLHS == hasHistoryRHS
+            default:
+                return false
+            }
+        }
+    }
+
+    struct ImageRateProvider {
+        let dataSettings: FlightPlanDataSetting?
+        let settings: [FlightPlanSetting]?
+
+        init?(dataSettings: FlightPlanDataSetting?,
+              settings: [FlightPlanSetting]?) {
+            guard
+                let dataSettings = dataSettings,
+                let settings = settings
+            else { return nil }
+            self.dataSettings = dataSettings
+            self.settings = settings
+        }
     }
 }

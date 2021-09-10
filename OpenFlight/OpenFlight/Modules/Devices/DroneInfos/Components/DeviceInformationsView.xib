@@ -24,23 +24,22 @@
             <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="1cE-Fn-s6H">
-                    <rect key="frame" x="0.0" y="281" width="600" height="38"/>
+                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="1cE-Fn-s6H">
+                    <rect key="frame" x="0.0" y="280" width="600" height="40"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aYo-5B-lAq">
-                            <rect key="frame" x="0.0" y="0.0" width="600" height="15"/>
+                            <rect key="frame" x="0.0" y="0.0" width="600" height="17.5"/>
                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                             <color key="textColor" name="default_text_color"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iob-pa-TCW">
-                            <rect key="frame" x="0.0" y="23" width="600" height="15"/>
+                            <rect key="frame" x="0.0" y="22.5" width="600" height="17.5"/>
                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                             <color key="textColor" name="default_text_color"/>
                             <nil key="highlightedColor"/>
                         </label>
                     </subviews>
-                    <variation key="heightClass=compact-widthClass=compact" spacing="4"/>
                 </stackView>
             </subviews>
             <constraints>

@@ -98,7 +98,7 @@ private extension FlyButton {
         flyImageView.stopAnimating()
         globalView.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color,
                                       radius: Style.largeCornerRadius)
-        flyLabel.makeUp(with: .veryHuge, and: .white)
+        flyLabel.makeUp(with: .veryHuge)
         flyLabel.text = L10n.commonFly.uppercased()
         let flyAnimationImages: [UIImage] = Asset.Dashboard.Fly.allValues.map { $0.image }
         flyImageView.tintColor = .white

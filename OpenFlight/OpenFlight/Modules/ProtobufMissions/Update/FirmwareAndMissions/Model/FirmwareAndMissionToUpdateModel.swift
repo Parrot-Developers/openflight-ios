@@ -41,6 +41,28 @@ enum FirmwareAndMissionToUpdateModel {
     case missions
     case notInitialized
 
+    /// Tells if any update is needed.
+    var needUpdate: Bool {
+        switch self {
+        case .firmware,
+             .singleMission,
+             .missions:
+            return true
+        default:
+            return false
+        }
+    }
+
+    var needFirmwareUpdate: Bool {
+        switch self {
+        case .firmware:
+            return true
+
+        default:
+            return false
+        }
+    }
+
     // MARK: - Init
     /// Inits.
     ///
@@ -72,8 +94,8 @@ extension FirmwareAndMissionToUpdateModel {
         switch self {
         case let .upToDate(firmwareVersion: firmwareVersion):
             return firmwareVersion
-        case let .firmware(currentVersion: currentVersion, versionToUpdate: _):
-            return currentVersion
+        case let .firmware(currentVersion: currentVersion, versionToUpdate: versionToUpdate):
+            return String(format: "%@%@%@", currentVersion, Style.arrow, versionToUpdate)
         case let .singleMission(missionName: missionName):
             return missionName
         case .missions:
@@ -83,21 +105,8 @@ extension FirmwareAndMissionToUpdateModel {
         }
     }
 
-    /// `DeviceDetailsButtonView` complementarySubtitle.
-    var complementarySubtitle: String? {
-        switch self {
-        case let .firmware(currentVersion: _, versionToUpdate: versionToUpdate):
-            return String(format: "%@%@", Style.arrow, versionToUpdate)
-        case .singleMission,
-             .upToDate,
-             .missions,
-             .notInitialized:
-            return nil
-        }
-    }
-
     /// `DeviceDetailsButtonView` subImage.
-    var subImage: UIImage {
+    var subImage: UIImage? {
         switch self {
         case .upToDate,
              .notInitialized:
@@ -105,7 +114,33 @@ extension FirmwareAndMissionToUpdateModel {
         case .firmware,
              .singleMission,
              .missions:
-            return Asset.Dashboard.icGetUpdate.image
+            return nil
+        }
+    }
+
+    /// `DeviceDetailsButtonView` titleColor.
+    var titleColor: ColorName {
+        switch self {
+        case .upToDate,
+             .notInitialized:
+            return .defaultTextColor
+        case .firmware,
+             .missions,
+             .singleMission:
+            return .white
+        }
+    }
+
+    /// `DeviceDetailsButtonView` subimage tint color.
+    var subImageTintColor: ColorName {
+        switch self {
+        case .upToDate,
+             .notInitialized:
+            return .highlightColor
+        case .firmware,
+             .missions,
+             .singleMission:
+            return .white
         }
     }
 
@@ -114,7 +149,7 @@ extension FirmwareAndMissionToUpdateModel {
         switch self {
         case .upToDate,
              .notInitialized:
-            return .highlightColor
+            return .white
         case .firmware,
              .missions,
              .singleMission:
@@ -125,35 +160,18 @@ extension FirmwareAndMissionToUpdateModel {
 
 // MARK: - Internal Funcs
 extension FirmwareAndMissionToUpdateModel {
-    /// `DashboardDeviceCell` stateDeviceButton title
-    func stateDeviceButtonTitle(deviceConnectionState: DeviceState.ConnectionState) -> String {
+    /// `DashboardDeviceCell` deviceStateButton title
+    var stateButtonTitle: String {
         switch self {
-        case .upToDate:
-            return deviceConnectionState.title
+        case .upToDate,
+             .notInitialized:
+            return ""
         case let .firmware(currentVersion: _, versionToUpdate: versionToUpdate):
             return versionToUpdate
         case let .singleMission(missionName: missionName):
             return missionName
         case .missions:
             return L10n.firmwareMissionUpdateMissions
-        case .notInitialized:
-            return ""
-        }
-    }
-
-    /// `DashboardDeviceCell` stateDeviceLabel textColor.
-    func stateDeviceButtonStatus(
-        deviceConnectionState: DeviceState.ConnectionState
-    ) -> DeviceStateButton.Status {
-        switch self {
-        case .firmware,
-             .singleMission,
-             .missions:
-            return DeviceStateButton.Status.updateAvailable
-        default:
-            return deviceConnectionState == .disconnected
-                ? DeviceStateButton.Status.disconnected
-                : DeviceStateButton.Status.notDisconnected
         }
     }
 }

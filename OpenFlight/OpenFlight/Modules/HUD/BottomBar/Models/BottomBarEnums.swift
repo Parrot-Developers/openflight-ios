@@ -30,14 +30,6 @@
 
 // MARK: - Internal Enums
 
-/// Notifications values for BottomBarViewController
-enum BottomBarViewControllerNotifications {
-    /// Returns unique key for notification.
-    static var notificationKey: String {
-        return "modalPresentDidChange"
-    }
-}
-
 /// Represents bottom bar open/close mode.
 enum BottomBarMode {
     /// Bar is closed.

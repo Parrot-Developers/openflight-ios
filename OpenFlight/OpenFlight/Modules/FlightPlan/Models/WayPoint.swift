@@ -34,7 +34,18 @@ import GroundSdk
 import ArcGIS
 
 /// Class representing a Flight Plan waypoint.
-public final class WayPoint: Codable {
+public final class WayPoint: Codable, Equatable {
+    public static func == (lhs: WayPoint, rhs: WayPoint) -> Bool {
+        return lhs.altitude == rhs.altitude
+            && lhs.yaw == rhs.yaw
+            && lhs.hasCustomYaw == rhs.hasCustomYaw
+            && lhs.speed == rhs.speed
+            && lhs.shouldContinue == rhs.shouldContinue
+            && lhs.shouldFollowPOI == rhs.shouldFollowPOI
+            && lhs.poiIndex == rhs.poiIndex
+            && lhs.actions == rhs.actions
+    }
+
     // MARK: - Public Properties
     var altitude: Double
     var yaw: Double?
@@ -332,11 +343,11 @@ extension WayPoint {
     func updateTiltRelation() {
         if self.poiIndex != nil,
            let poiPoint = self.poiPoint {
-            let dr = AGSGeometryEngine.standardGeodeticDistance(between: self.agsPoint,
+            let planDistance = AGSGeometryEngine.standardGeodeticDistance(between: self.agsPoint,
                                                                 and: poiPoint.agsPoint,
                                                                 distanceUnit: .meters())?.distance ?? 0.0
-            let dz = poiPoint.altitude - self.altitude
-            let degrees = radToDeg(value: atan2(dz, dr))
+            let zDistance = poiPoint.altitude - self.altitude
+            let degrees = radToDeg(value: atan2(zDistance, planDistance))
             let angle = WayPointSettingsProvider.closestAngle(value: degrees)
             self.tilt = Double(angle)
         }

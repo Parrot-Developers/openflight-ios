@@ -141,7 +141,7 @@ final class HUDTopBannerViewModel: DroneStateViewModel<HUDTopBannerState> {
     private var lastPreciseHomeState: PreciseHomeState?
     private var shouldShowHomeSetInfo: Bool = true
     private var isAutoModeActive: Bool = false
-    private let autoModeViewModel = ImagingBarAutoModeViewModel()
+    private let autoModeViewModel: ImagingBarAutoModeViewModel
     /// Combine cancellables.
     private var cancellables = Set<AnyCancellable>()
     /// Camera exposure lock service.
@@ -150,7 +150,8 @@ final class HUDTopBannerViewModel: DroneStateViewModel<HUDTopBannerState> {
     // MARK: - Override Funcs
     override init() {
         // TODO injection
-        exposureLockService = Services.hub.exposureLockService
+        exposureLockService = Services.hub.drone.exposureLockService
+        autoModeViewModel = ImagingBarAutoModeViewModel(exposureLockService: exposureLockService)
 
         super.init()
 
@@ -192,12 +193,12 @@ private extension HUDTopBannerViewModel {
 
     /// Starts watcher for autoModeViewModel.
     func listenAutoModeViewModel() {
-        autoModeViewModel.state.valueChanged = { [weak self] state in
-            self?.isAutoModeActive = state.isActive
-            self?.updateState()
-        }
-        isAutoModeActive = autoModeViewModel.state.value.isActive
-        updateState()
+        autoModeViewModel.$autoExposure
+            .sink { [unowned self] autoExposure in
+                isAutoModeActive = autoExposure
+                updateState()
+            }
+            .store(in: &cancellables)
     }
 
     /// Starts watcher for precise home.

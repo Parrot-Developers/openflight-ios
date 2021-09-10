@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+
+option java_package = "com.parrot.protobuf";
+option java_outer_classname = "Extensions";
+
+extend google.protobuf.FileOptions {
+  string olympe_package = 65000;
+}
+
+extend google.protobuf.MessageOptions {
+  string message_doc = 65001;
+}
+
+extend google.protobuf.FieldOptions {
+  string field_doc = 65002;
+}
+
+extend google.protobuf.MessageOptions {
+  string on_success = 65003;
+}
+
+extend google.protobuf.MessageOptions {
+  string on_failure = 65004;
+}
+
+extend google.protobuf.MessageOptions {
+  repeated string support = 65005;
+}
+
+extend google.protobuf.EnumOptions {
+  string enum_doc = 65006;
+}
+
+extend google.protobuf.EnumValueOptions {
+  string enum_value_doc = 65007;
+}

@@ -44,6 +44,7 @@ public final class FlightPlanEditionCoordinator: Coordinator {
 
     // MARK: - Private Properties
     private weak var overContextModalDelegate: OverContextModalDelegate?
+    private let topBarHiderIdentifier = "FlightPlanEditionCoordinator"
 
     // MARK: - Public Funcs
     public func start() {
@@ -64,9 +65,12 @@ public final class FlightPlanEditionCoordinator: Coordinator {
     func start(panelCoordinator: FlightPlanPanelCoordinator,
                mapViewController: MapViewController,
                mapViewRestorer: MapViewRestorer) {
-        let viewController = mapViewController.editionProvider(coordinator: self,
-                                                               panelCoordinator: panelCoordinator,
-                                                               mapViewRestorer: mapViewRestorer)
+        let viewController = mapViewController
+            .editionProvider(coordinator: self,
+                             panelCoordinator: panelCoordinator,
+                             flightPlanServices: Services.hub.flightPlan,
+                             mapViewRestorer: mapViewRestorer)
+        Services.hub.ui.hudTopBarService.forbidTopBarDisplay(hiderIdentifier: topBarHiderIdentifier)
         self.navigationController = NavigationController(rootViewController: viewController)
         self.navigationController?.isNavigationBarHidden = true
         self.overContextModalDelegate = viewController
@@ -74,18 +78,18 @@ public final class FlightPlanEditionCoordinator: Coordinator {
 
     /// Dismisses flight plan edition view.
     func dismissFlightPlanEdition() {
+        Services.hub.ui.hudTopBarService.allowTopBarDisplay(hiderIdentifier: topBarHiderIdentifier)
         self.parentCoordinator?.dismissChildCoordinator(animated: false)
     }
 }
 
 // MARK: - HistoryMediasActionDelegate
 extension FlightPlanEditionCoordinator: HistoryMediasAction {
-    func handleHistoryCellAction(with fpExecution: FlightPlanExecution,
-                                 actionType: HistoryMediasActionType) {
+    func handleHistoryCellAction(with flightModel: FlightPlanModel, actionType: HistoryMediasActionType) {
         guard let strongParentCoordinator = self.parentCoordinator as? HUDCoordinator else { return }
 
         self.parentCoordinator?.dismissChildCoordinator {
-            strongParentCoordinator.handleHistoryCellAction(with: fpExecution,
+            strongParentCoordinator.handleHistoryCellAction(with: flightModel,
                                                             actionType: actionType)
         }
     }

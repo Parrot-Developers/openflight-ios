@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -17,25 +18,43 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7ZO-q6-9Yb">
-                        <rect key="frame" x="16" y="8" width="288" height="32"/>
+                        <rect key="frame" x="16" y="23" width="288" height="17"/>
                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                        <nil key="textColor"/>
+                        <color key="textColor" name="default_text_color"/>
                         <nil key="highlightedColor"/>
                     </label>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7Z8-2A-125">
+                        <rect key="frame" x="0.0" y="10" width="320" height="1"/>
+                        <color key="backgroundColor" name="disabled_text_color"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="1" id="wFJ-i0-BAY"/>
+                        </constraints>
+                    </view>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
+                    <constraint firstItem="7ZO-q6-9Yb" firstAttribute="top" secondItem="7Z8-2A-125" secondAttribute="bottom" constant="12" id="6ph-2H-Z0p"/>
+                    <constraint firstItem="7Z8-2A-125" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="10" id="Jt7-ND-YGo"/>
                     <constraint firstItem="7ZO-q6-9Yb" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="KXV-NI-csw"/>
-                    <constraint firstItem="7ZO-q6-9Yb" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="8" id="P2M-Aw-yu1"/>
                     <constraint firstAttribute="bottom" secondItem="7ZO-q6-9Yb" secondAttribute="bottom" constant="4" id="bgR-BI-6kF"/>
                     <constraint firstAttribute="trailing" secondItem="7ZO-q6-9Yb" secondAttribute="trailing" constant="16" id="mhd-zV-Ibc"/>
+                    <constraint firstItem="7Z8-2A-125" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="muT-Ry-hmi"/>
+                    <constraint firstAttribute="trailing" secondItem="7Z8-2A-125" secondAttribute="trailing" id="xgC-y4-xFL"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
                 <outlet property="sectionTitle" destination="7ZO-q6-9Yb" id="jwI-Ft-0RP"/>
             </connections>
-            <point key="canvasLocation" x="133" y="68"/>
+            <point key="canvasLocation" x="132.80000000000001" y="67.466266866566727"/>
         </tableViewCell>
     </objects>
+    <resources>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="disabled_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
 </document>

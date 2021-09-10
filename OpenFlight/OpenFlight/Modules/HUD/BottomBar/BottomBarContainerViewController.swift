@@ -54,7 +54,6 @@ final class BottomBarContainerViewController: UIViewController {
     @IBOutlet private weak var panoramaProgressView: PanoramaProgressBarView!
 
     // MARK: - Internal Properties
-    weak var bottomBarDelegate: BottomBarViewControllerDelegate?
     weak var coordinator: HUDCoordinator?
 
     // MARK: - Private Properties
@@ -94,10 +93,8 @@ final class BottomBarContainerViewController: UIViewController {
         if let bottomBarViewControler = segue.destination as? BottomBarViewController {
             bottomBarViewControler.delegate = self
             bottomBarViewControler.coordinator = coordinator
-            bottomBarViewControler.bottomBarDelegate = bottomBarDelegate
         } else if let levelOneViewController = segue.destination as? BottomBarLevelViewController {
             self.levelOneViewController = levelOneViewController
-            self.levelOneViewController.bottomBarDelegate = bottomBarDelegate
         } else if let levelTwoViewController = segue.destination as? BottomBarLevelTwoViewController {
             self.levelTwoViewController = levelTwoViewController
         }
@@ -145,7 +142,6 @@ extension BottomBarContainerViewController: BottomBarContainerDelegate {
         switch viewModel {
         case is CameraWidgetViewModel:
             levelOneViewController.addImagingSettingsBar(delegate: self)
-            bottomBarDelegate?.showAETargetZone()
         default:
             levelOneViewController.addSegmentedBar(viewModel: viewModel)
         }
@@ -174,7 +170,6 @@ extension BottomBarContainerViewController: BottomBarContainerDelegate {
                         switch viewModel {
                         case is CameraWidgetViewModel:
                             self.levelOneViewController.removeImagingSettingsBar()
-                            self.bottomBarDelegate?.hideAETargetZone()
                         default:
                             self.levelOneViewController.removeLevelView()
                         }

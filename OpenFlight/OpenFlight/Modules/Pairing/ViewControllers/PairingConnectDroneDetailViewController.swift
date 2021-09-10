@@ -85,7 +85,7 @@ final class PairingConnectDroneDetailViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     /// Change button style when orientation changed.
@@ -205,7 +205,7 @@ private extension PairingConnectDroneDetailViewController {
         connectButton.cornerRadiusedWith(backgroundColor: UIApplication.isLandscape ? .clear : ColorName.highlightColor.color,
                                          borderColor: .clear,
                                          radius: Style.largeCornerRadius)
-        connectButton.makeup(with: .large, color: UIApplication.isLandscape ? .highlightColor : .white, and: .normal)
+        connectButton.makeup(with: .large, color: UIApplication.isLandscape ? .highlightColor : .white)
         connectButton.makeup(with: .large, color: UIApplication.isLandscape ? .disabledHighlightColor : .white20, and: .disabled)
     }
 }

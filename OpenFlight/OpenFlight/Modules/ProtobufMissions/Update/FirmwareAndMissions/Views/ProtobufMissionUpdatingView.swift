@@ -57,6 +57,7 @@ final class ProtobufMissionUpdatingView: UIView, NibOwnerLoadable {
     ///    - updatingCase: The updating case
     func setup(with updatingCase: CurrentUpdatingStep) {
         updatingImageView.image = updatingCase.image
+        updatingImageView.tintColor = updatingCase.imageTintColor
         switch updatingCase {
         case .waiting,
              .succeeded,

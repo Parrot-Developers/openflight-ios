@@ -38,6 +38,7 @@ extension Project {
 
     // MARK: - Properties
 
+    @NSManaged public var apcId: String!
     @NSManaged public var uuid: String!
     @NSManaged public var title: String?
     @NSManaged public var type: String!
@@ -50,7 +51,7 @@ extension Project {
 
     // MARK: - Relationship
 
-    @NSManaged public var flightPlan: Set<FlightPlan>?
+    @NSManaged public var flightPlans: Set<FlightPlan>?
     @NSManaged public var ofUserParrot: UserParrot?
 
 }
@@ -58,17 +59,17 @@ extension Project {
 // MARK: Generated accessors for flightPlan
 extension Project {
 
-    @objc(addFlightPlanObject:)
-    @NSManaged public func addToFlightPlan(_ value: FlightPlan)
+    @objc(addFlightPlansObject:)
+    @NSManaged public func addToFlightPlans(_ value: FlightPlan)
 
-    @objc(removeFlightPlanObject:)
-    @NSManaged public func removeFromFlightPlan(_ value: FlightPlan)
+    @objc(removeFlightPlansObject:)
+    @NSManaged public func removeFromFlightPlans(_ value: FlightPlan)
 
-    @objc(addFlightPlan:)
-    @NSManaged public func addToFlightPlan(_ values: NSSet)
+    @objc(addFlightPlans:)
+    @NSManaged public func addToFlightPlans(_ values: NSSet)
 
-    @objc(removeFlightPlan:)
-    @NSManaged public func removeFromFlightPlan(_ values: NSSet)
+    @objc(removeFlightPlans:)
+    @NSManaged public func removeFromFlightPlans(_ values: NSSet)
 
 }
 
@@ -77,7 +78,8 @@ extension Project {
 
     /// Return ProjectModel from Project type of NSManagedObject
     func model() -> ProjectModel {
-        return ProjectModel(uuid: uuid,
+        return ProjectModel(apcId: apcId,
+                            uuid: uuid,
                             title: title,
                             type: type,
                             lastUpdated: lastUpdated,
@@ -85,7 +87,6 @@ extension Project {
                             cloudLastUpdate: cloudLastUpdate,
                             parrotCloudToBeDeleted: parrotCloudToBeDeleted,
                             synchroDate: synchroDate,
-                            synchroStatus: synchroStatus,
-                            flightPlanModels: flightPlan?.toArray().map({$0.model()}))
+                            synchroStatus: synchroStatus)
     }
 }

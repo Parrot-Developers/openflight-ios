@@ -29,12 +29,13 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 // MARK: - Protocols
 /// Flight plan Edition menu delegate.
 public protocol FlightPlanEditionMenuDelegate: AnyObject {
     /// Ends editing flight plan.
-    func doneEdition()
+    func doneEdition(_ flightPlan: FlightPlanModel)
     /// Undos action.
     func undoAction()
     /// Shows flight plan settings.
@@ -44,6 +45,8 @@ public protocol FlightPlanEditionMenuDelegate: AnyObject {
     func showSettings(category: FlightPlanSettingCategory)
     /// Shows flight plan project manager.
     func showProjectManager()
+    /// Resets undo stack
+    func resetUndoStack()
 }
 
 /// Flight plan's edition menu.
@@ -52,42 +55,43 @@ final class FlightPlanEditionMenuViewController: UIViewController {
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var doneButton: UIButton! {
         didSet {
-            doneButton.makeup(with: .large, color: .greenSpring)
-            doneButton.backgroundColor = ColorName.greenPea.color
+            doneButton.makeup(with: .large)
+            doneButton.backgroundColor = ColorName.highlightColor.color
             doneButton.applyCornerRadius(Style.largeCornerRadius)
             doneButton.setTitle(L10n.commonDone, for: .normal)
         }
     }
     @IBOutlet private weak var undoButton: UIButton! {
         didSet {
-            undoButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
+            undoButton.cornerRadiusedWith(backgroundColor: ColorName.white.color,
                                           radius: Style.largeCornerRadius)
+            undoButton.makeup(with: .large, color: .defaultTextColor)
             undoButton.setTitle(L10n.commonUndo, for: .normal)
         }
     }
-    @IBOutlet private weak var tableViewTopConstraint: NSLayoutConstraint!
+
     @IBOutlet private weak var tableViewTrailingConstraint: NSLayoutConstraint!
 
     // MARK: - Public Properties
-    public var flightPlanViewModel: FlightPlanViewModel? {
-        didSet {
-            tableView?.reloadData()
-        }
-    }
+    var viewModel: FlightPlanEditionMenuViewModel!
+    private var cancellables = [AnyCancellable]()
+
     public weak var menuDelegate: FlightPlanEditionMenuDelegate?
     public weak var settingsDelegate: EditionSettingsDelegate?
     /// Provider used to get the settings of the flight plan provider.
     public var settingsProvider: FlightPlanSettingsProvider?
+    private var flighPlan: FlightPlanModel?
 
     // MARK: - Private Properties
     private var fpSettings: [FlightPlanSetting]? {
-        if let flightPlan = flightPlanViewModel?.flightPlan,
+        if let flightPlan = flighPlan,
            let settings = settingsProvider?.settings(for: flightPlan) {
             return settings
         } else {
             return settingsProvider?.settings
         }
     }
+
     private var trailingMargin: CGFloat {
         if UIApplication.shared.statusBarOrientation == .landscapeLeft {
             return UIApplication.shared.keyWindow?.safeAreaInsets.right ?? 0.0
@@ -117,6 +121,7 @@ final class FlightPlanEditionMenuViewController: UIViewController {
         } else {
             sections.append(.settings(.common))
         }
+        sections.append(.estimation)
         return sections
     }
 
@@ -126,6 +131,7 @@ final class FlightPlanEditionMenuViewController: UIViewController {
         case mode
         case image
         case settings(FlightPlanSettingCategory)
+        case estimation
 
         var title: String {
             switch self {
@@ -142,6 +148,8 @@ final class FlightPlanEditionMenuViewController: UIViewController {
                 default:
                     return L10n.flightPlanSettingsTitle.uppercased()
                 }
+            case .estimation:
+                return L10n.flightPlanEstimations.uppercased()
             }
         }
     }
@@ -149,8 +157,9 @@ final class FlightPlanEditionMenuViewController: UIViewController {
     // MARK: - Private Enums
     private enum Constants {
         static let cellheight: CGFloat = 70.0
-        static let headerHeight: CGFloat = 24.0
+        static let headerHeight: CGFloat = 44
         static let footerHeight: CGFloat = 1.0
+        static let footerEstimationHeight: CGFloat = 44.0
     }
 
     // MARK: - Override Funcs
@@ -159,8 +168,24 @@ final class FlightPlanEditionMenuViewController: UIViewController {
 
         initView()
         setupOrientationObserver()
-        FlightPlanManager.shared.resetUndoStack()
+        menuDelegate?.resetUndoStack()
         refreshContent()
+        bindViewModel()
+    }
+
+    private func bindViewModel() {
+        viewModel.$viewState
+            .compactMap({ $0 })
+            .sink { [unowned self] state in
+                switch state {
+                case let .update(flighPlan):
+                    self.flighPlan = flighPlan
+                    self.tableView?.reloadData()
+                case .refresh:
+                    self.refreshContent()
+                }
+            }
+            .store(in: &cancellables)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -171,27 +196,19 @@ final class FlightPlanEditionMenuViewController: UIViewController {
         return .landscape
     }
 
-    // MARK: - Public Funcs
+    // MARK: - Private Funcs
     /// Refreshes view data.
-    public func refreshContent() {
+    private func refreshContent() {
         self.tableView.reloadData()
-        undoButton.isEnabled = FlightPlanManager.shared.canUndo()
-        undoButton.alphaWithEnabledState(undoButton.isEnabled)
-    }
-
-    /// Updates the top constraint of the tableview.
-    ///
-    /// - Parameters:
-    ///     - value: contraint value
-    public func updateTopTableViewConstraint(_ value: CGFloat) {
-        self.tableViewTopConstraint.constant = value
+        undoButton.isHidden = !(settingsDelegate?.canUndo() ?? true)
     }
 }
 
 // MARK: - Actions
 private extension FlightPlanEditionMenuViewController {
     @IBAction func doneTouchUpInside(_ sender: Any) {
-        menuDelegate?.doneEdition()
+        guard let flighPlan = flighPlan else { return }
+        menuDelegate?.doneEdition(flighPlan)
     }
 
     @IBAction func undoTouchUpInside(_ sender: Any) {
@@ -207,6 +224,7 @@ private extension FlightPlanEditionMenuViewController {
         tableView.insetsContentViewsToSafeArea = false // Safe area is handled in this VC, not in content
         tableViewTrailingConstraint.constant = trailingMargin
         tableView.register(cellType: SettingsMenuTableViewCell.self)
+        tableView.register(cellType: EstimationMenuTableViewCell.self)
         tableView.register(cellType: ProjectMenuTableViewCell.self)
         tableView.register(cellType: ImageMenuTableViewCell.self)
         tableView.register(cellType: ModesChoiceTableViewCell.self)
@@ -216,7 +234,6 @@ private extension FlightPlanEditionMenuViewController {
         tableView.estimatedRowHeight = Constants.cellheight
         tableView.rowHeight = UITableView.automaticDimension
         tableView.makeUp(backgroundColor: .clear)
-        tableView.tableHeaderView = UIView() // Prevents from extra top space
     }
 
     /// Sets up observer for orientation change.
@@ -246,7 +263,8 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
             return fpSettings?.filter({ $0.category == category }).count ?? 0
         case .mode,
              .image,
-             .project:
+             .project,
+             .estimation:
             return 1
         }
     }
@@ -264,7 +282,8 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
             return cell
         case .image:
             let cell = tableView.dequeueReusableCell(for: indexPath) as ImageMenuTableViewCell
-            cell.setup(flightPlan: flightPlanViewModel?.flightPlan?.plan,
+            let cellProvider = ImageMenuCellProvider(dataSettings: flighPlan?.dataSetting)
+            cell.setup(provider: cellProvider,
                        settings: fpSettings?.filter({ $0.category == .image }) ?? [])
             return cell
         case .mode:
@@ -274,7 +293,11 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
             return cell
         case .project:
             let cell = tableView.dequeueReusableCell(for: indexPath) as ProjectMenuTableViewCell
-            cell.setup(name: flightPlanViewModel?.state.value.title)
+            cell.setup(name: viewModel.getCurrentTitle(with: flighPlan))
+            return cell
+        case .estimation:
+            let cell = tableView.dequeueReusableCell(for: indexPath) as EstimationMenuTableViewCell
+            cell.updateEstimations(estimationModel: flighPlan?.dataSetting?.estimations)
             return cell
         }
     }
@@ -313,6 +336,8 @@ extension FlightPlanEditionMenuViewController: UITableViewDelegate {
         switch type {
         case .mode:
             return CGFloat.leastNormalMagnitude
+        case .project:
+            return 0
         default:
             return Constants.headerHeight
         }
@@ -325,7 +350,13 @@ extension FlightPlanEditionMenuViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return Constants.footerHeight
+        let type = dataSource[section]
+        switch type {
+        case .estimation:
+            return Constants.footerEstimationHeight
+        default:
+            return Constants.footerHeight
+        }
     }
 }
 

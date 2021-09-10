@@ -103,7 +103,7 @@ final class SettingsPresetsView: UIView, NibOwnerLoadable {
             let textColor: ColorName = item == selectedMode ? .white : .defaultTextColor
             button.backgroundColor = item == selectedMode ? ColorName.highlightColor.color : .clear
             button.tintColor = textColor.color
-            button.makeup(with: .regular, color: textColor)
+            button.makeup(color: textColor)
             presetStackView.addArrangedSubview(button)
         }
     }

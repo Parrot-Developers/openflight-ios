@@ -48,6 +48,7 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
     private var droneStateViewModel = DroneStateViewModel()
     private var globalUpdateState = GlobalUpdateState.initial
     private var missionUpdateOngoing = false
+    private var isUpdateCancelledAlertShown = false
 
     private let missionsUpdaterManager = ProtobufMissionsUpdaterManager.shared
     private var missionsUpdateListener: ProtobufAllMissionsUpdaterListener?
@@ -72,6 +73,18 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
         case uploadingMissions
         case waitingForRebootAfterMissionsUpdate
         case finished
+
+        /// Returns true if operation can be cancelled.
+        var isCancellable: Bool {
+            switch self {
+            case .downloadingFirmware,
+                 .uploadingFirmware,
+                 .uploadingMissions:
+                return true
+            default:
+                return false
+            }
+        }
     }
 
     // MARK: - Setup
@@ -96,7 +109,7 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
         listenToDroneReconnection()
 
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(cancelProcesses),
+                                               selector: #selector(didEnterBackground),
                                                name: UIApplication.didEnterBackgroundNotification,
                                                object: nil)
     }
@@ -106,7 +119,7 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 }
 
@@ -137,26 +150,14 @@ extension FirmwareAndMissionsUpdateViewController: UITableViewDelegate {
 // MARK: - UpdatingDoneFooterDelegate
 extension FirmwareAndMissionsUpdateViewController: UpdatingDoneFooterDelegate {
     func quitProcesses() {
-        RemoteControlGrabManager.shared.enableRemoteControl()
-        coordinator?.back()
+        quitProcesses(closeFirmwareList: true)
     }
 }
 
 // MARK: - Actions
 private extension FirmwareAndMissionsUpdateViewController {
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
-        switch globalUpdateState {
-        case .downloadingFirmware,
-             .uploadingFirmware,
-             .uploadingMissions:
-            presentCancelAlertViewController()
-        case .processingFirmware,
-             .waitingForRebootAfterFirmwareUpdate,
-             .waitingForRebootAfterMissionsUpdate:
-            presentQuitRebootAlertViewController()
-        default:
-            return
-        }
+        showCancelAlert()
     }
 }
 
@@ -205,7 +206,8 @@ private extension FirmwareAndMissionsUpdateViewController {
         case .processing:
             if globalUpdateState == .uploadingFirmware {
                 globalUpdateState = .processingFirmware
-                updateProgress()
+                reloadUI()
+                cancelButton.isHidden = true
             }
         case .waitingForReboot:
             if globalUpdateState == .processingFirmware {
@@ -218,9 +220,15 @@ private extension FirmwareAndMissionsUpdateViewController {
                 // After the reboot and the new connection of the drone, this instruction should be triggered.
                 globalUpdateState = .uploadingMissions
                 reloadUI()
+                cancelButton.isHidden = false
                 startMissionsProcesses()
             }
         case .error:
+            if globalUpdateState == .uploadingFirmware
+                && droneStateViewModel.state.value.connectionState != .connected {
+                showUpdateCancelledAlert()
+            }
+
             if globalUpdateState == .downloadingFirmware
                 || globalUpdateState == .uploadingFirmware
                 || globalUpdateState == .processingFirmware
@@ -269,6 +277,10 @@ private extension FirmwareAndMissionsUpdateViewController {
             } else {
                 updateProgress()
             }
+
+            if droneStateViewModel.state.value.connectionState != .connected {
+                showUpdateCancelledAlert()
+            }
         case .done:
             if missionsUpdaterManager.missionsUpdateProcessNeedAReboot() {
                 globalUpdateState = .waitingForRebootAfterMissionsUpdate
@@ -301,26 +313,45 @@ private extension FirmwareAndMissionsUpdateViewController {
     }
 
     /// Cancel operation in progress and leave screen.
-    @objc func cancelProcesses() {
-        guard globalUpdateState == .downloadingFirmware
-                || globalUpdateState == .uploadingFirmware
-                || globalUpdateState == .uploadingMissions else {
-            return
+    @objc func didEnterBackground() {
+        let cancelled = cancelProcesses()
+        if cancelled {
+            showUpdateCancelledAlert()
+        } else {
+            quitProcesses(closeFirmwareList: true)
         }
+    }
+
+    /// Cancel operation in progress.
+    func cancelProcesses() -> Bool {
+        guard globalUpdateState.isCancellable else { return false }
 
         let cancelSucceeded = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
         self.cancelButton.isHidden = cancelSucceeded
-        if cancelSucceeded {
-            self.quitProcesses()
+        return cancelSucceeded
+    }
+
+    /// Quits the updating processes.
+    ///
+    /// - Parameter closeFirmwareList: `true` to close the firmware list as well
+    func quitProcesses(closeFirmwareList: Bool) {
+        RemoteControlGrabManager.shared.enableRemoteControl()
+        if closeFirmwareList {
+            coordinator?.quitUpdateProcesses()
+        } else {
+            coordinator?.back()
         }
     }
 
     /// Shows an alert view when user tries to cancel update.
-    func presentCancelAlertViewController() {
+    func showCancelAlert() {
         let validateAction = AlertAction(
             title: L10n.firmwareMissionUpdateQuitInstallationValidateAction,
             actionHandler: { [weak self] in
-                self?.cancelProcesses()
+                let cancelled = self?.cancelProcesses()
+                if cancelled == true {
+                    self?.quitProcesses(closeFirmwareList: true)
+                }
             })
         let cancelAction = AlertAction(title: L10n.cancel, actionHandler: nil)
 
@@ -332,20 +363,21 @@ private extension FirmwareAndMissionsUpdateViewController {
         present(alert, animated: true, completion: nil)
     }
 
-    /// Shows an alert view when user tries to quit drone reboot.
-    func presentQuitRebootAlertViewController() {
-        let validateAction = AlertAction(
-            title: L10n.firmwareAndMissionQuitRebootValidateAction,
-            actionHandler: {
-                self.quitProcesses()
-            })
-        let cancelAction = AlertAction(title: L10n.firmwareMissionUpdateQuitInstallationCancelAction,
-                                       actionHandler: nil)
+    /// Shows an alert view when update has been cancelled while entering background or disconnecting.
+    func showUpdateCancelledAlert() {
+        guard !isUpdateCancelledAlertShown else {
+            return
+        }
 
+        isUpdateCancelledAlertShown = true
+        let validateAction = AlertAction(
+            title: L10n.ok,
+            actionHandler: { [weak self] in
+                self?.quitProcesses(closeFirmwareList: false)
+            })
         let alert = AlertViewController.instantiate(
-            title: L10n.firmwareAndMissionQuitRebootTitle,
-            message: L10n.firmwareAndMissionQuitRebootDroneMessage,
-            cancelAction: cancelAction,
+            title: L10n.firmwareAndMissionUpdateCancelledTitle,
+            message: L10n.firmwareAndMissionUpdateCancelledDroneMessage,
             validateAction: validateAction)
         present(alert, animated: true, completion: nil)
     }
@@ -356,15 +388,8 @@ private extension FirmwareAndMissionsUpdateViewController {
     /// Inits the UI.
     func initUI() {
         titleLabel.text = L10n.firmwareMissionUpdateFirmwareUpdate
-        subtitleLabel.textColor = ColorName.white50.color
         subtitleLabel.text = dataSource.subtitle
-        view.backgroundColor = ColorName.greyShark.color
         cancelButton.setTitle(L10n.cancel, for: .normal)
-        cancelButton.makeup(with: .large)
-        cancelButton.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
-                                        borderColor: .clear,
-                                        radius: 0.0,
-                                        borderWidth: Style.noBorderWidth)
         setupTableView()
         resetUI()
     }
@@ -402,7 +427,7 @@ private extension FirmwareAndMissionsUpdateViewController {
         progressView.setFakeRebootProgress(progressEnd: dataSource.currentTotalProgress,
                                            duration: duration)
         tableView.reloadData()
-        cancelButton.isHidden = false
+        cancelButton.isHidden = true
     }
 
     /// Displays final UI.
@@ -435,7 +460,6 @@ private extension FirmwareAndMissionsUpdateViewController {
         tableView.allowsSelection = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.makeUp(backgroundColor: ColorName.greyShark.color)
         tableView.tableHeaderView = UIView()
         tableView.separatorColor = .clear
         tableView.register(cellType: ProtobufMissionUpdatingTableViewCell.self)

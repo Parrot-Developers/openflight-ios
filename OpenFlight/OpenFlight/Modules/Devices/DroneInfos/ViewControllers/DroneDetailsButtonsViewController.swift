@@ -113,7 +113,7 @@ private extension DroneDetailsButtonsViewController {
                                                        title: L10n.droneDetailsLastKnownPosition)
         calibrationButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDrone.image,
                                                                title: L10n.remoteDetailsCalibration)
-        firmwareUpdateButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.icUpdateFirmwareAndMission.image,
+        firmwareUpdateButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDownload.image,
                                                                   title: L10n.remoteDetailsSoftware)
         cellularAccessButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconCellularDatas.image,
                                                                   title: L10n.droneDetailsCellularAccess,
@@ -156,26 +156,32 @@ private extension DroneDetailsButtonsViewController {
 
         viewModel.$connectionState
             .sink { [unowned self] connectionState in
-                if connectionState == .connected {
-                    passwordButtonView.isEnabled = true
-                } else {
-                    passwordButtonView.isEnabled = false
-                }
+                passwordButtonView.isEnabled = connectionState == .connected
             }
             .store(in: &cancellables)
 
-        viewModel.calibrationText
-            .sink { [unowned self] calibrationText in calibrationButtonView.model?.subtitle = calibrationText }
-            .store(in: &cancellables)
-
-        viewModel.calibrationTextColor
-            .sink { [unowned self] calibrationTextColor in calibrationButtonView.model?.subtitleColor = calibrationTextColor
+        viewModel.calibrationSubtitle
+            .sink { [unowned self] calibrationSubtitle in
+                calibrationButtonView.model?.subtitle = calibrationSubtitle
             }
             .store(in: &cancellables)
 
-        viewModel.calibrationTextBackgroundColor
-            .sink { [unowned self] calibrationTextBackgroundColor in
-                calibrationButtonView.model?.backgroundColor = calibrationTextBackgroundColor
+        viewModel.calibrationSubtitleColor
+            .sink { [unowned self] calibrationSubtitleColor in
+                calibrationButtonView.model?.subtitleColor = calibrationSubtitleColor
+            }
+            .store(in: &cancellables)
+
+        viewModel.calibrationBackgroundColor
+            .sink { [unowned self] calibrationBackgroundColor in
+                calibrationButtonView.model?.backgroundColor = calibrationBackgroundColor
+            }
+            .store(in: &cancellables)
+
+        viewModel.calibrationTitleColor
+            .sink { [unowned self] calibrationTitleColor in
+                calibrationButtonView.model?.titleColor = calibrationTitleColor
+                calibrationButtonView.model?.mainImageTintColor = calibrationTitleColor
             }
             .store(in: &cancellables)
 
@@ -192,9 +198,12 @@ private extension DroneDetailsButtonsViewController {
     ///    - model: the current `FirmwareAndMissionToUpdateModel`
     func updateFirmwareUpdateButtonView(for model: FirmwareAndMissionToUpdateModel) {
         firmwareUpdateButtonView.model?.subtitle = model.subtitle
-        firmwareUpdateButtonView.model?.complementarySubtitle = model.complementarySubtitle
         firmwareUpdateButtonView.model?.subImage = model.subImage
         firmwareUpdateButtonView.model?.backgroundColor = model.backgroundColor
+        firmwareUpdateButtonView.model?.titleColor = model.titleColor
+        firmwareUpdateButtonView.model?.mainImageTintColor = model.titleColor
+        firmwareUpdateButtonView.model?.subtitleColor = model.titleColor
+        firmwareUpdateButtonView.model?.subimageTintColor = model.subImageTintColor
     }
 
     /// Calls log event.

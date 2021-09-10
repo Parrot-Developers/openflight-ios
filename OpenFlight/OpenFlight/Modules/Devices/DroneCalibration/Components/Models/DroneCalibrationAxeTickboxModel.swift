@@ -35,7 +35,11 @@ struct DroneCalibrationAxeTickboxModel {
 
     // MARK: - Internal Properties
     /// TickBox image.
-    var tickBoxImage: UIImage
+    var tickBoxImage: UIImage = Asset.Common.Checks.icUnchecked.image
     /// Axe label.
-    var axeLabel: String
+    var axeLabel: String = Style.dash
+    /// Background color
+    var backgroundColor: UIColor = .clear
+    /// Label color
+    var labelColor: UIColor = ColorName.defaultTextColor.color
 }

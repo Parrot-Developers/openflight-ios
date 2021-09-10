@@ -94,7 +94,7 @@ private extension GalleryPanoramaChoiceTypeViewController {
         titleLabel.attributedText = currentMedia.titleAttributedString
         textLabel.makeUp(with: .huge)
         textLabel.text = L10n.galleryPanoramaGenerateQuestion
-        generateButton.makeup(with: .large, color: ColorName.white)
+        generateButton.makeup(with: .large)
         generateButton.setTitle(L10n.commonStart, for: .normal)
         generateButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color, radius: Style.largeCornerRadius)
         generateButton.isEnabled = viewModel?.selectedPanoramaMediaType != nil

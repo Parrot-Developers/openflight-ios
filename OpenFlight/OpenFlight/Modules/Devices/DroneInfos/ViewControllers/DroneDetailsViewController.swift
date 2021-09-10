@@ -34,7 +34,6 @@ import GroundSdk
 /// View Controller used to display details about drone.
 final class DroneDetailsViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var bgView: UIView!
     @IBOutlet private weak var stackView: UIStackView!
 
     // MARK: - Private Properties
@@ -71,7 +70,7 @@ final class DroneDetailsViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -81,7 +80,7 @@ final class DroneDetailsViewController: UIViewController {
 
 // MARK: - Actions
 private extension DroneDetailsViewController {
-    @objc func backButtonTouchedUpInside(_ sender: UIButton) {
+    @IBAction func backButtonTouchedUpInside(_ sender: Any) {
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .simpleButton)
         coordinator?.dismissDroneInfos()
     }
@@ -91,9 +90,7 @@ private extension DroneDetailsViewController {
 private extension DroneDetailsViewController {
     /// Inits the view.
     func initView() {
-        addCloseButton(onTapAction: #selector(backButtonTouchedUpInside(_:)))
         setupViewControllers()
-        bgView.backgroundColor = ColorName.white10.color
         updateStackView()
     }
 
@@ -130,7 +127,7 @@ private extension DroneDetailsViewController {
             return
         }
 
-        if UIApplication.isLandscape {
+        if self.isRegularSizeClass || UIApplication.isLandscape {
             [infoView,
              deviceView,
              buttonView].forEach { view in

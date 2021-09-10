@@ -49,17 +49,16 @@ enum CalibratableGimbalState {
     }
 
     /// Image calibration according to gimbal and front stereo calibration state.
-    var calibrationImage: UIImage? {
+    var calibrationImage: UIImage {
         switch self {
-        case .calibrated:
+        case .calibrated,
+             .unavailable:
             return Asset.Drone.icGimbalOk.image
         case .recommended:
             return Asset.Drone.icGimbalWarning.image
         case .needed,
              .error:
             return Asset.Drone.icGimbalError.image
-        case .unavailable:
-            return nil
         }
     }
 }
@@ -81,42 +80,25 @@ extension CalibratableGimbal {
     /// Color for gimbal calibration subtext.
     var subtextColor: ColorName {
         switch self.state {
-        case .calibrated:
-            return .white50
-        case .recommended:
-            return .orangePeel
-        case .needed,
-             .error,
+        case .calibrated,
              .unavailable:
-            return .redTorch
+            return .highlightColor
+        default:
+            return .white
         }
     }
 
     /// Color for gimbal calibration background.
     var backgroundColor: ColorName {
         switch self.state {
-        case .calibrated:
-            return .white10
-        case .recommended:
-            return .orangePeel20
-        case .needed,
-             .error,
+        case .calibrated,
              .unavailable:
-            return .redTorch25
-        }
-    }
-
-    /// Image for gimbal calibration.
-    var calibrationImage: UIImage {
-        switch self.state {
-        case .calibrated:
-            return Asset.Drone.icGimbalOk.image
+            return .white
         case .recommended:
-            return Asset.Drone.icGimbalWarning.image
+            return .warningColor
         case .needed,
-             .error,
-             .unavailable:
-            return Asset.Drone.icGimbalError.image
+             .error:
+            return .errorColor
         }
     }
 }

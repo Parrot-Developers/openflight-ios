@@ -36,9 +36,16 @@ protocol ManagePlansViewModelDelegate: AnyObject {
     /// End manage plans
     ///
     /// - Parameters:
-    ///     - shouldStartEdition: String value of corresponding name
+    ///     - editionPreference: value of corresponding perefrence edition
     ///     - shouldCenter: should center position on map
-    func endManagePlans(shouldStartEdition: Bool, shouldCenter: Bool)
+    ///     - flightPlan: flight plan model
+    func endManagePlans(editionPreference: ManagePlansViewModel.EndManageEditionPreference, shouldCenter: Bool)
+
+    /// Displays popup to delelte project.
+    ///
+    /// - Parameters:
+    ///     - actionHandler: delete action
+    func displayDeletePopup(actionHandler: @escaping () -> Void)
 }
 
 /// Protocol allow to communicate from UIViewController to ViewModel
@@ -47,9 +54,6 @@ protocol ManagePlansViewModelInput {
     /// Child flight plan list ViewModel
     var flightPlanListviewModel: FlightPlansListViewModelParentInput! { get }
 
-    /// Publisher that give new value of title if needed, to reset current textField
-    var resetTitlePublisher: AnyPublisher<String, Never> { get }
-
     /// Publisher that give new value of flight plan state
     var statePublisher: AnyPublisher<ManagePlansState, Never> { get }
 
@@ -57,7 +61,7 @@ protocol ManagePlansViewModelInput {
     ///
     /// - Parameters:
     ///     - name: String value of corresponding name
-    func renameSelectedFlightPlan(_ name: String)
+    func renameSelectedFlightPlan(_ name: String?)
 
     /// User asks for opening the currently selected flight plan
     func openSelectedFlightPlan()
@@ -68,8 +72,8 @@ protocol ManagePlansViewModelInput {
     /// User asks for duplicating the currently selected flight plan
     func duplicateSelectedFlightPlan()
 
-    /// User asks for deleting the currently selected flight plan
-    func deleteSelectedFlightPlan()
+    /// Asks deleting the currently selected flight plan
+    func deleteFlightPlan()
 
     /// User asks for creating a new flight plan
     func newFlightPlan()
@@ -80,8 +84,8 @@ protocol ManagePlansViewModelInput {
 
 /// State flight plan type
 public enum ManagePlansState {
-    case noFlightPlan
-    case flightPlan(name: FlightPlanViewModel)
+    case none
+    case project(name: ProjectModel)
 }
 
 class ManagePlansViewModel {
@@ -92,194 +96,199 @@ class ManagePlansViewModel {
     /// Mainly providing the type of the FPs
     private let flightPlanProvider: FlightPlanProvider
 
-    /// Persistence access for flight plans
-    private let persistence: FlightPlanDataProtocol
-
     /// Child flight plan list ViewModel
     private(set) var flightPlanListviewModel: FlightPlansListViewModelParentInput!
 
     /// Main manager, providing the "current flight plan" management. Do not confuse with the selected flight plan of this VM
-    private let manager: FlightPlanManager
+    private let manager: ProjectManager
 
-    /// Update text to current title, when modification dismissed
-    private var resetTitle = PassthroughSubject<String, Never>()
+    /// State machine of current mode
+    private var stateMachine: FlightPlanStateMachine
+
+    /// Current mission manager
+    private var currentMission: CurrentMissionManager
+
+    /// Flying project
+    private var idFlyingProject: String?
 
     /// State of flight plan
-    @Published private var state: ManagePlansState = .noFlightPlan
+    @Published private var state: ManagePlansState = .none
 
-    /// The flight plan that controls will target
-    private var selectedFlightPlan: FlightPlanViewModel? {
-        didSet {
-            if let flightPlan = selectedFlightPlan {
-                state = .flightPlan(name: flightPlan)
-                flightPlanListviewModel.updateUUID(with: flightPlan.state.value.uuid)
-            } else {
-                state = .noFlightPlan
-                flightPlanListviewModel.updateUUID(with: nil)
-            }
-        }
-    }
+    /// Current search query name
+    @Published private var searchQuery: String?
 
-    /// Just retaining a listener to unregister later
-    private var listener: FlightPlanListener!
+    /// Any Cancellables
+    private var cancellables = [AnyCancellable]()
+
+    /// Delete current
+    private var didDeleteCurrent = false
+
+    /// Published selected project model
+    private var selectedProject = CurrentValueSubject<ProjectModel?, Never>(nil)
 
     /// Constructor
     /// - Parameters:
     ///   - delegate: delegate handling the end of this subprocess
     ///   - flightPlanProvider: contextual provider determining the type of flight plans displayed
-    ///   - persistence: flight plans persistence access
-    ///   - manager: flight plan manager
+    ///   - manager: flight plan project
     init(delegate: ManagePlansViewModelDelegate,
          flightPlanProvider: FlightPlanProvider,
-         persistence: FlightPlanDataProtocol,
-         manager: FlightPlanManager) {
+         manager: ProjectManager,
+         stateMachine: FlightPlanStateMachine,
+         currentMission: CurrentMissionManager ) {
         // Set properties
         self.delegate = delegate
         self.flightPlanProvider = flightPlanProvider
-        self.persistence = persistence
         self.manager = manager
+        self.stateMachine = stateMachine
+        self.currentMission = currentMission
     }
 
     func setupFlightPlanListviewModel(viewModel: FlightPlansListViewModelParentInput) {
         self.flightPlanListviewModel = viewModel
         self.flightPlanListviewModel.setupDelegate(with: self)
-    }
 
-    func start() {
-        // The listener is called immediately
-        self.listener = manager.register(didChange: { [weak self] in
-            // Each time there's a new flight plan considered as current or its attributes change,
-            // we update the selected flight plan to this new value.
-            // This may happen after duplication, deletion, creation, opening...
-            // The inverse is not true : the user may select a flight plan in the UI and not open it
-            self?.selectedFlightPlan = $0
-        })
+        selectedProject
+            .sink { [weak self] project in
+                guard let self = self else { return }
+                if let project = project {
+                    self.state = .project(name: project)
+                    self.flightPlanListviewModel.updateUUID(with: project.uuid)
+                } else {
+                    self.state = .none
+                    self.flightPlanListviewModel.updateUUID(with: nil)
+                }
+            }
+            .store(in: &cancellables)
 
-        // Init data
-        let flightPlans = reloadAllFlightPlans()
-
-        // TODO: observing changes should be done on some manager / store instead of watching the CoreData context directly
-        // Once it's done, delete the exposure of currentContext in the protocol
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(managedObjectContextDidChange),
-                                               name: NSNotification.Name.NSManagedObjectContextObjectsDidChange,
-                                               object: persistence.currentContext)
-        // TODO: this shouldn't be done here OMG. Also, maybe explain why isn't the type of the fps considered ? Anyway the manager should not expect
-        // to get the list of plans from the outside to do this.
-        manager.syncFlightPlansWithFiles(persistedFlightPlans: flightPlans) { [weak self] _ in
-            self?.reloadAllFlightPlans()
+        if manager.currentProject == nil,
+           let project = self.manager.loadProjects(type: currentMission.mode.flightPlanProvider?.projectType).first {
+            self.manager.setCurrent(project)
         }
-    }
 
-    deinit {
-        manager.unregister(listener)
-    }
+        manager.currentProjectPublisher.sink { [unowned self] in
+            selectedProject.value = $0
+        }
+        .store(in: &cancellables)
 
-}
+        self.manager.projectsPublisher
+            .sink { [weak self] updatedProjects in
+                self?.flightPlanListviewModel.setupProjects(with: updatedProjects)
+            }
+            .store(in: &cancellables)
 
-// MARK: - Private funcs
-private extension ManagePlansViewModel {
+        self.stateMachine.state
+            .sink(receiveValue: { [unowned self] state in
+                switch state {
+                case let .flying(flightPlan):
+                    idFlyingProject = flightPlan.projectUuid
+                default:
+                    idFlyingProject = nil
+                }
+            })
+            .store(in: &cancellables)
 
-    @discardableResult
-    func reloadAllFlightPlans() -> [FlightPlanViewModel] {
-        let allFlightPlans = persistence.loadAllFlightPlanViewModels(predicate: flightPlanProvider.filterPredicate)
-        flightPlanListviewModel.setupFlightPlans(with: allFlightPlans)
-        return allFlightPlans
+        $searchQuery
+            .debounce(for: 0.3, scheduler: DispatchQueue.main)
+            .sink(receiveValue: { [unowned self] text in
+                storeCurrentText(text)
+            })
+            .store(in: &cancellables)
     }
 }
 
 // MARK: - ManagePlansViewControllerDelegate
 extension ManagePlansViewModel: ManagePlansViewModelInput {
 
+    enum EndManageEditionPreference {
+        case start
+        case stop
+        case keep
+    }
+
     var statePublisher: AnyPublisher<ManagePlansState, Never> {
         $state.eraseToAnyPublisher()
     }
 
-    var resetTitlePublisher: AnyPublisher<String, Never> {
-        resetTitle.eraseToAnyPublisher()
-    }
-
-    func renameSelectedFlightPlan(_ name: String) {
-        guard let oldTitle = selectedFlightPlan?.state.value.title else { return }
-        let correctTitle = manager.setupTitle(name, oldTitle: oldTitle)
-        guard oldTitle != correctTitle else {
-            resetTitle.send(oldTitle)
-            return
-        }
-        selectedFlightPlan?.rename(correctTitle)
+    func renameSelectedFlightPlan(_ name: String?) {
+        searchQuery = name
     }
 
     func openSelectedFlightPlan() {
-        guard let flightPlan = self.selectedFlightPlan else { return }
-        flightPlan.setAsLastUsed()
-        manager.currentFlightPlanViewModel = flightPlan
-        delegate?.endManagePlans(shouldStartEdition: false, shouldCenter: flightPlan.isEmpty)
+        guard let project = selectedProject.value,
+              let flightPlan = manager.lastFlightPlan(for: project) else { return }
+        if project.uuid != idFlyingProject {
+            manager.loadEverythingAndOpen(flightPlan: flightPlan)
+        }
+        delegate?.endManagePlans(editionPreference: .stop, shouldCenter: flightPlan.isEmpty)
     }
 
     func closeManagePlans() {
-        delegate?.endManagePlans(shouldStartEdition: false, shouldCenter: false)
+        delegate?.endManagePlans(editionPreference: didDeleteCurrent ? .stop : .keep, shouldCenter: false)
     }
 
     func duplicateSelectedFlightPlan() {
-        guard let flightPlan = self.selectedFlightPlan else { return }
-        manager.duplicate(flightPlan: flightPlan)
+        guard let project = selectedProject.value else { return }
+        manager.duplicate(project: project)
     }
 
-    func deleteSelectedFlightPlan() {
-        guard let flightplan = self.selectedFlightPlan,
-                      !flightplan.runFlightPlanViewModel.state.value.runState.isActive else {
-            // TODO display anything ?
-            // Else should just prevent this action properly
-                return
-            }
-        self.selectedFlightPlan = nil
-        manager.delete(flightPlan: flightplan)
-        // The manager may have set a new flight plan as current, causing this VM to already update its selected flight plan
-        // Else, we can try this fallback
-        if self.selectedFlightPlan == nil {
-            self.selectedFlightPlan = manager.currentFlightPlanViewModel
+    func deleteFlightPlan() {
+        guard canDeleteProject() else { return }
+
+        delegate?.displayDeletePopup { [weak self] in
+            self?.performDeleteSelectedFlightPlan()
+        }
+    }
+
+    func canDeleteProject() -> Bool {
+        guard
+            let project = selectedProject.value,
+            project.uuid != idFlyingProject else {
+            return false
+        }
+        return true
+    }
+
+    func performDeleteSelectedFlightPlan() {
+        guard
+            let project = selectedProject.value else { return }
+        if project.uuid == manager.currentProject?.uuid {
+            didDeleteCurrent = true
+        }
+        selectedProject.value = nil
+        manager.delete(project: project)
+        selectedProject.value = manager.currentProject
+        if selectedProject.value == nil {
+            selectedProject.value = manager.loadProjects(type: project.type).first
         }
     }
 
     func newFlightPlan() {
-        manager.new(flightPlanProvider: flightPlanProvider)
-        delegate?.endManagePlans(shouldStartEdition: true, shouldCenter: true)
+        let newProject = manager.newProject(flightPlanProvider: self.flightPlanProvider)
+        manager.loadEverythingAndOpen(project: newProject)
+        delegate?.endManagePlans(editionPreference: .start, shouldCenter: true)
     }
 
     func setToCompactMode() {
         flightPlanListviewModel.setupDisplayMode(with: .compact)
     }
+
+    private func storeCurrentText(_ text: String?) {
+        if let text = text,
+           !text.isEmpty,
+           let project = selectedProject.value {
+            manager.rename(project, title: text)
+        }
+    }
 }
 
 // MARK: - FlightPlansListViewControllerDelegate
 extension ManagePlansViewModel: FlightPlansListViewModelDelegate {
-    func didDoubleTapOn(flightplan: FlightPlanViewModel) {
+    func didSelect(project: ProjectModel) {
+        selectedProject.value = project
+    }
+
+    func didDoubleTapOn(project: ProjectModel) {
         openSelectedFlightPlan()
-    }
-
-    func didSelect(flightPlan: FlightPlanViewModel) {
-        self.selectedFlightPlan = flightPlan
-    }
-}
-
-// MARK: - Notifications
-private extension ManagePlansViewModel {
-
-    /// Listen CoreData's FlightPlanModel add and remove to refresh view.
-    @objc func managedObjectContextDidChange(notification: NSNotification) {
-        guard let userInfo = notification.userInfo else { return }
-
-        // Check inserts.
-        if let inserts = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject>,
-           inserts.contains(where: { $0 is FlightPlanModel }) {
-            reloadAllFlightPlans()
-        } else if let updates = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject>,
-            updates.contains(where: { $0 is FlightPlanModel }) {
-            reloadAllFlightPlans()
-        }// Check deletes.
-        else if let deletes = userInfo[NSDeletedObjectsKey] as? Set<NSManagedObject>,
-            deletes.contains(where: { $0 is FlightPlanModel }) {
-            reloadAllFlightPlans()
-        }
     }
 }

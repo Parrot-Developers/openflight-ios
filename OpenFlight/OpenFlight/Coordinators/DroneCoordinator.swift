@@ -57,21 +57,10 @@ extension DroneCoordinator {
     func startCalibration() {
         let droneCalibrationCoordinator = DroneCalibrationCoordinator()
         droneCalibrationCoordinator.parentCoordinator = self
+        droneCalibrationCoordinator.delegate = self
         droneCalibrationCoordinator.start()
         self.present(childCoordinator: droneCalibrationCoordinator,
                      overFullScreen: true)
-    }
-
-    /// Starts update screen.
-    ///
-    /// - Parameters:
-    ///     - deviceUpdateType: type of the update
-    func startUpdate(deviceUpdateType: DeviceUpdateType) {
-        let updateCoordinator = UpdateCoordinator(model: .drone)
-        updateCoordinator.parentCoordinator = self
-        updateCoordinator.deviceUpdateType = deviceUpdateType
-        updateCoordinator.start()
-        self.present(childCoordinator: updateCoordinator)
     }
 
     /// Starts cellular information.
@@ -82,6 +71,13 @@ extension DroneCoordinator {
     /// Displays cellular pin code modal.
     func displayCellularPinCode() {
         presentModal(viewController: CellularAccessCardPinViewController.instantiate(coordinator: self))
+    }
+
+    /// Displays cellular debug logs.
+    func displayCellularDebug() {
+        let viewController = CellularDebugLogsViewController.instantiate(coordinator: self,
+                                                                         viewModel: CellularDebugLogsViewModel())
+        push(viewController)
     }
 
     /// Dismisses current coordinator.
@@ -102,22 +98,6 @@ extension DroneCoordinator {
         self.push(viewController)
     }
 
-    /// Starts update or version information.
-    ///
-    /// - Parameters:
-    ///     - model: tells if the drone is up to date or not
-    ///     - versionNumber: current version number
-    ///     - versionNeeded: version to update
-    func startFirmwareVersionInformation(model: DroneDetailsUpdateType = .upToDate,
-                                         versionNumber: String?,
-                                         versionNeeded: String?) {
-        let firmwareViewController = DroneDetailsFirmwareViewController.instantiate(coordinator: self,
-                                                                                    versionNumber: versionNumber,
-                                                                                    versionNeeded: versionNeeded,
-                                                                                    model: model)
-        presentModal(viewController: firmwareViewController)
-    }
-
     /// Starts the Firmware and Protobuf Missions updates process.
     func startFimwareAndProtobufMissionsUpdate() {
         let missionUpdateCoordinator = ProtobufMissionUpdateCoordinator()
@@ -125,5 +105,13 @@ extension DroneCoordinator {
         missionUpdateCoordinator.start()
         self.present(childCoordinator: missionUpdateCoordinator,
                      overFullScreen: true)
+    }
+}
+
+// MARK: - Delegate
+extension DroneCoordinator: DroneCalibrationCoordinatorDelegate {
+    func firmwareUpdateRequired() {
+        dismissChildCoordinator()
+        startFimwareAndProtobufMissionsUpdate()
     }
 }

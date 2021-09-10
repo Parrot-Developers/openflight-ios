@@ -68,8 +68,9 @@ final class SettingValuesChoiceTableViewCell: UITableViewCell, NibReusable, Edit
             } else {
                 button.setTitle(value == 0 ? L10n.commonYes : L10n.commonNo, for: .normal)
             }
-            button.makeup(with: .regular, color: .white)
-            button.setTitleColor(ColorName.greenSpring.color, for: .selected)
+            button.makeup(color: .defaultTextColor)
+            button.tintColor = ColorName.defaultTextColor.color
+            button.setTitleColor(ColorName.white.color, for: .selected)
             button.addTarget(self,
                              action: #selector(settingValueButtonTouchedUpInside),
                              for: .touchUpInside)
@@ -102,7 +103,7 @@ private extension SettingValuesChoiceTableViewCell {
 private extension SettingValuesChoiceTableViewCell {
     /// Inits the view.
     func initView() {
-        titleLabel.makeUp()
+        titleLabel.makeUp(and: .defaultTextColor)
     }
 
     /// Resets view.
@@ -122,7 +123,7 @@ private extension SettingValuesChoiceTableViewCell {
             .compactMap { $0 as? UIButton}
             .forEach { button in
             let isSelected = settingValuesStackView?.arrangedSubviews.firstIndex(of: button) == tag
-            let backgroundColor = isSelected ? ColorName.greenSpring20.color : .clear
+            let backgroundColor = isSelected ? ColorName.highlightColor.color : .clear
             button.cornerRadiusedWith(backgroundColor: backgroundColor,
                                       radius: Style.largeCornerRadius,
                                       borderWidth: Style.largeBorderWidth)

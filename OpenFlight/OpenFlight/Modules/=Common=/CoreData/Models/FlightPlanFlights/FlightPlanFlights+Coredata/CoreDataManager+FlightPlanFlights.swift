@@ -36,12 +36,18 @@ public protocol FlightPlanFlightsRepository: AnyObject {
     /// Persist or update FlightPlanFlight into CoreData
     /// - Parameters:
     ///    - flightPlanFlight: FlightPlanFlightsModel to persist
-    func persist(_ flightPlanFlight: FlightPlanFlightsModel)
+    ///    - byUserUpdate: Bool to indicate in case of modifications, if those are made by User or by synchro process.
+    func persist(_ flightPlanFlight: FlightPlanFlightsModel, _ byUserUpdate: Bool)
 
     /// Persist or update flightPlanFlights into CoreData
     /// - Parameters:
     ///    - flightPlansFlightsList: flightsPlansFlightsModel to persist
-    func persist(_ flightPlansFlightsList: [FlightPlanFlightsModel])
+    ///    - byUserUpdate: Bool to indicate in case of modifications, if those are made by User or by synchro process.
+    func persist(_ flightPlansFlightsList: [FlightPlanFlightsModel], _ byUserUpdate: Bool)
+
+    /// Load FlightPlanFlightsModel flagged tobeDeleted from CoreData
+    /// - return:  FlightPlanFlightsModelList
+    func loadFlightPlanFlightToRemove() -> [FlightPlanFlightsModel]
 
     /// Load FlightPlanFlight from CoreData by flightUuid and flightplanUuid
     /// - Parameters:
@@ -51,28 +57,36 @@ public protocol FlightPlanFlightsRepository: AnyObject {
     func loadFlightPlanFlight(_ flightUuid: String, _ flightplanUuid: String) -> FlightPlanFlightsModel?
 
     /// Load FlightPlanFlight from CoreData by Key and Value
-    ///  Example: return flightExecution for a given FlightPlan Uuid
+    ///  Example: return the list of flight executions for a given FlightPlan Uuid
     /// - Parameters:
     ///     - Key:   Key identifier
     ///     - Value: Value of Key
-    /// - return:  [FlightPlanFlightsModel]
+    /// - return:  A list of FlightPlanFlightsModel
     func loadFlightPlanFlightKv(_ key: String, _ value: String) -> [FlightPlanFlightsModel]?
 
     /// Load all FlightsPlansFlights from CoreData
     /// - return : Array of FlightPlanFlightsModel
     func loadAllFlightsPlansFlights() -> [FlightPlanFlightsModel]
+
+    /// Remove FlightPlanFlight from CoreData
+    /// Must have the two following params to can identify a unique FlightPlanFlight to remove
+    /// - Parameters:
+    ///     - flightUuid         : identify the Flight
+    ///     - flightplanUuid: identify the FlightPlan
+    func removeFlightPlanFlight(_ flightUuid: String, _ flightplanUuid: String)
+
+    /// Migrate FlightPlanFlights made by Anonymous user to current logged user
+    /// - Parameter completion: empty block indicates when process is finished
+    func migrateFlightPlanFlightsToLoggedUser(_ completion: @escaping () -> Void)
+
+    /// Migrate FlightPlanFlights made by a Logged user to ANONYMOUS user
+    /// - Parameter completion: empty block indicates when process is finished
+    func migrateFlightPlanFlightsToAnonymous(_ completion: @escaping () -> Void)
 }
 
-public protocol FlightPlanFlightsSynchronizable {
+extension CoreDataServiceIml: FlightPlanFlightsRepository {
 
-    /// Load FlightPlanFlightsList to synchronize with Academy from CoreData
-    /// - return : Array of FlightPlanFlightsModel not synchronized
-    func loadFlightsPlansFlightsListToSync() -> [FlightPlanFlightsModel]
-}
-
-extension CoreDataManager: FlightPlanFlightsRepository {
-
-    public func persist(_ flightPlanFlight: FlightPlanFlightsModel) {
+    public func persist(_ flightPlanFlight: FlightPlanFlightsModel, _ byUserUpdate: Bool = true) {
         // Prepare content to save.
         guard let managedContext = currentContext else { return }
 
@@ -85,34 +99,59 @@ extension CoreDataManager: FlightPlanFlightsRepository {
             flightPlanFlightObject = object
         } else {
             // Create new object.
-            let fetchRequest: NSFetchRequest<FlightPlan> = FlightPlan.fetchRequest()
+            let fetchRequest: NSFetchRequest<FlightPlanFlights> = FlightPlanFlights.fetchRequest()
             guard let name = fetchRequest.entityName else {
                 return
             }
             flightPlanFlightObject = NSEntityDescription.insertNewObject(forEntityName: name, into: managedContext)
         }
 
-        guard let flightPlanFlightObj = flightPlanFlightObject as? FlightPlanFlights else { return }
+        guard let flightPlanFlightObj = flightPlanFlightObject as? FlightPlanFlights else {
+            ULog.e(.dataModelTag, "Failed to find or create flight plan flight")
+            return
+        }
+        guard let flight = flight(flightPlanFlight.flightUuid) else {
+            ULog.w(.dataModelTag, "Couldn't find flight \(flightPlanFlight.flightUuid) to create FlightPlanFlight")
+            return
+        }
+        guard let flightPlan = flightPlan(flightPlanFlight.flightplanUuid) else {
+            ULog.w(.dataModelTag, "Couldn't find flight plan \(flightPlanFlight.flightplanUuid) to create FlightPlanFlight")
+            return
+        }
 
+        // To ensure synchronisation
+        // reset `synchroStatus´ when the modifications are made by User
+        flightPlanFlightObj.synchroStatus = ((byUserUpdate) ? 0 : flightPlanFlight.synchroStatus) ?? 0
+        flightPlanFlightObj.synchroDate = flightPlanFlight.synchroDate
+        flightPlanFlightObj.apcId = flightPlanFlight.apcId
         flightPlanFlightObj.flightUuid = flightPlanFlight.flightUuid
         flightPlanFlightObj.flightplanUuid = flightPlanFlight.flightplanUuid
         flightPlanFlightObj.dateExecutionFlight = flightPlanFlight.dateExecutionFlight
-        flightPlanFlightObj.synchroStatus = flightPlanFlight.synchroStatus ?? 0
-        flightPlanFlightObj.synchroDate = flightPlanFlight.synchroDate
         flightPlanFlightObj.parrotCloudId = flightPlanFlight.parrotCloudId
         flightPlanFlightObj.parrotCloudToBeDeleted = flightPlanFlight.parrotCloudToBeDeleted
+        flightPlanFlightObj.ofFlight = flight
+        flightPlanFlightObj.ofFlightPlan = flightPlan
 
-        do {
-            try managedContext.save()
-        } catch let error {
-            ULog.e(.dataModelTag, "Error during persist FlightPlanFlights into Coredata: \(error.localizedDescription)")
+        managedContext.perform {
+            do {
+                try managedContext.save()
+            } catch let error {
+                let fUuid = flightPlanFlight.flightUuid
+                let fpUuid = flightPlanFlight.flightplanUuid
+                ULog.e(.dataModelTag, "Error during persist FlightPlanFlight of FlightPlan: \(fpUuid) and Flight: \(fUuid) "
+                       + "into Coredata: \(error.localizedDescription)")
+            }
         }
     }
 
-    public func persist(_ flightPlansFlightsList: [FlightPlanFlightsModel]) {
+    public func persist(_ flightPlansFlightsList: [FlightPlanFlightsModel], _ byUserUpdate: Bool = true) {
         for flightPlanFlight in flightPlansFlightsList {
-            self.persist(flightPlanFlight)
+            self.persist(flightPlanFlight, byUserUpdate)
         }
+    }
+
+    public func loadFlightPlanFlightToRemove() -> [FlightPlanFlightsModel] {
+        return self.loadAllFlightsPlansFlights().filter({ $0.parrotCloudToBeDeleted })
     }
 
     public func loadFlightPlanFlight(_ flightUuid: String, _ flightplanUuid: String) -> FlightPlanFlightsModel? {
@@ -124,42 +163,51 @@ extension CoreDataManager: FlightPlanFlightsRepository {
     }
 
     public func loadAllFlightsPlansFlights() -> [FlightPlanFlightsModel] {
-        guard let managedContext = currentContext else {
-            return []
+        // Return FlightsPlansFlights of current User
+        return self.flightPlanFlightKv("apcId", userInformation.apcId).map({$0.model()})
+    }
+
+    public func removeFlightPlanFlight(_ flightUuid: String, _ flightplanUuid: String) {
+        guard let managedContext = currentContext,
+              let flightPlanFlight = self.flightPlanFlight(flightUuid, flightplanUuid) else {
+            return
         }
 
-        let fetchRequest: NSFetchRequest<FlightPlanFlights> = FlightPlanFlights.fetchRequest()
+        managedContext.delete(flightPlanFlight)
 
-        do {
-            return try managedContext.fetch(fetchRequest).compactMap({$0.model()})
-        } catch let error {
-            ULog.e(.dataModelTag, "Error fetching FlightPlanFlight from Coredata: \(error.localizedDescription)")
-            return []
+        managedContext.perform {
+            do {
+                try managedContext.save()
+            } catch let error {
+                ULog.e(.dataModelTag, "Error removing FlightPlanFlights with FlightUuid:\(flightUuid) and FlightPlanUuid:\(flightplanUuid)"
+                       + " from CoreData:\(error.localizedDescription)")
+            }
         }
     }
-}
 
-extension CoreDataManager: FlightPlanFlightsSynchronizable {
-    public func loadFlightsPlansFlightsListToSync() -> [FlightPlanFlightsModel] {
-        guard let managedContext = currentContext else {
-            return []
-        }
-
+    public func migrateFlightPlanFlightsToLoggedUser(_ completion: @escaping () -> Void) {
         let fetchRequest: NSFetchRequest<FlightPlanFlights> = FlightPlanFlights.fetchRequest()
-        let predicate = NSPredicate(format: "synchroStatus == %@", NSNumber(value: false))
-        fetchRequest.predicate = predicate
+        guard let entityName = fetchRequest.entityName else {
+            return
+        }
+        migrateAnonymousDataToLoggedUser(for: entityName) {
+            completion()
+        }
+    }
 
-        do {
-            return try managedContext.fetch(fetchRequest).compactMap({$0.model()})
-        } catch let error {
-            ULog.e(.dataModelTag, "Error fetching FlightPlanFlight from Coredata: \(error.localizedDescription)")
-            return []
+    public func migrateFlightPlanFlightsToAnonymous(_ completion: @escaping () -> Void) {
+        let fetchRequest: NSFetchRequest<FlightPlanFlights> = FlightPlanFlights.fetchRequest()
+        guard let entityName = fetchRequest.entityName else {
+            return
+        }
+        migrateLoggedToAnonymous(for: entityName) {
+            completion()
         }
     }
 }
 
 // MARK: - Utils
-internal extension CoreDataManager {
+internal extension CoreDataServiceIml {
 
     func flightPlanFlight(_ flightUuid: String?, _ flightplanUuid: String?) -> FlightPlanFlights? {
         guard let managedContext = currentContext,

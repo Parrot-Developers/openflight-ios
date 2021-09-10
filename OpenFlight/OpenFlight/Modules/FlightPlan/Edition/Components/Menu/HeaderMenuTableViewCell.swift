@@ -39,7 +39,7 @@ final class HeaderMenuTableViewCell: UITableViewHeaderFooterView, NibReusable {
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-        sectionTitle.makeUp(with: .small, and: .white)
+        sectionTitle.makeUp(with: .small, and: .defaultTextColor)
     }
 
     // MARK: - Public Funcs

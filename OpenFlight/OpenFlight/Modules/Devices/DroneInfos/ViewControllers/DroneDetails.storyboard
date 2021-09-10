@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
-    <device id="retina6_1" orientation="landscape" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina6_5" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -13,41 +14,46 @@
             <objects>
                 <viewController storyboardIdentifier="DroneDetailsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="DroneDetailsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="T2o-SU-ouv">
-                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Tcb-9q-528">
-                                <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                                <color key="backgroundColor" name="default_bgcolor"/>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="3yV-34-XyG">
-                                <rect key="frame" x="60" y="8" width="776" height="400"/>
-                                <variation key="heightClass=compact-widthClass=compact" spacing="4"/>
+                                <rect key="frame" x="24" y="68" width="366" height="804"/>
                                 <variation key="heightClass=regular-widthClass=compact" axis="vertical" distribution="fillProportionally"/>
                             </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KBK-UV-BdE">
+                                <rect key="frame" x="0.0" y="44" width="60" height="60"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="60" id="I39-kv-Nz1"/>
+                                    <constraint firstAttribute="width" secondItem="KBK-UV-BdE" secondAttribute="height" multiplier="1:1" id="d0l-e9-Wft"/>
+                                </constraints>
+                                <color key="tintColor" name="default_text_color"/>
+                                <state key="normal" image="ic_back"/>
+                                <connections>
+                                    <action selector="backButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="HQD-k1-Ohe"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="EF2-dA-vXt"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstAttribute="bottom" secondItem="3yV-34-XyG" secondAttribute="bottom" constant="6" id="0qH-w7-aoy"/>
-                            <constraint firstItem="EF2-dA-vXt" firstAttribute="trailing" secondItem="3yV-34-XyG" secondAttribute="trailing" constant="16" id="2IB-QU-06f">
-                                <variation key="heightClass=compact-widthClass=compact" constant="6"/>
-                                <variation key="heightClass=regular-widthClass=compact" constant="24"/>
-                            </constraint>
+                            <constraint firstAttribute="bottom" secondItem="3yV-34-XyG" secondAttribute="bottom" constant="24" id="0qH-w7-aoy"/>
+                            <constraint firstAttribute="trailing" secondItem="3yV-34-XyG" secondAttribute="trailing" constant="24" id="2IB-QU-06f"/>
                             <constraint firstAttribute="trailing" secondItem="Tcb-9q-528" secondAttribute="trailing" id="OPi-0I-3ch"/>
-                            <constraint firstItem="3yV-34-XyG" firstAttribute="leading" secondItem="EF2-dA-vXt" secondAttribute="leading" constant="16" id="YLF-Ke-97F">
-                                <variation key="heightClass=compact-widthClass=compact" constant="6"/>
-                                <variation key="heightClass=regular-widthClass=compact" constant="24"/>
-                            </constraint>
-                            <constraint firstItem="3yV-34-XyG" firstAttribute="top" secondItem="EF2-dA-vXt" secondAttribute="top" constant="8" id="Zbd-oa-wG1">
-                                <variation key="heightClass=compact-widthClass=compact" constant="6"/>
-                            </constraint>
+                            <constraint firstItem="KBK-UV-BdE" firstAttribute="top" secondItem="EF2-dA-vXt" secondAttribute="top" id="Q3K-HM-wt0"/>
+                            <constraint firstItem="3yV-34-XyG" firstAttribute="leading" secondItem="EF2-dA-vXt" secondAttribute="leading" constant="24" id="YLF-Ke-97F"/>
+                            <constraint firstItem="3yV-34-XyG" firstAttribute="top" secondItem="EF2-dA-vXt" secondAttribute="top" constant="24" id="Zbd-oa-wG1"/>
+                            <constraint firstItem="KBK-UV-BdE" firstAttribute="leading" secondItem="EF2-dA-vXt" secondAttribute="leading" id="fmF-ML-3VW"/>
                             <constraint firstAttribute="bottom" secondItem="Tcb-9q-528" secondAttribute="bottom" id="mF6-g3-LUt"/>
                             <constraint firstItem="Tcb-9q-528" firstAttribute="top" secondItem="T2o-SU-ouv" secondAttribute="top" id="xR3-Sh-aQO"/>
                             <constraint firstItem="Tcb-9q-528" firstAttribute="leading" secondItem="T2o-SU-ouv" secondAttribute="leading" id="yi4-2q-Hf0"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="bgView" destination="Tcb-9q-528" id="QDg-8f-YXH"/>
                         <outlet property="stackView" destination="3yV-34-XyG" id="NiN-qS-UeQ"/>
                     </connections>
                 </viewController>
@@ -56,4 +62,13 @@
             <point key="canvasLocation" x="-1368" y="254"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="ic_back" width="21" height="21"/>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
 </document>

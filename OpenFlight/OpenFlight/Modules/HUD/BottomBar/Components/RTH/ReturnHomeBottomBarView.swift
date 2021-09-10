@@ -30,9 +30,9 @@
 
 import UIKit
 import Reusable
+import Combine
 
 /// Bottom bar widget for Return Home feature.
-
 final class ReturnHomeBottomBarView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var barButtonView: BarButtonView!
@@ -40,48 +40,52 @@ final class ReturnHomeBottomBarView: UIView, NibOwnerLoadable {
 
     // MARK: - Private Properties
     private var viewModel: ReturnHomeBottomBarViewModel = ReturnHomeBottomBarViewModel()
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitReturnHomeBottomBarView()
+        self.commonInit()
     }
-
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitReturnHomeBottomBarView()
+        self.commonInit()
     }
 }
 
 // MARK: - Private Funcs
 private extension ReturnHomeBottomBarView {
     /// Common init.
-    func commonInitReturnHomeBottomBarView() {
+    func commonInit() {
         initView()
-        initViewModel()
+        bindViewModel()
+        setupUI()
     }
-
     /// Inits the view.
     func initView() {
-        self.loadNibContent()
-        self.stopView.style = .bottomBar
-        self.stopView.delegate = self
+        loadNibContent()
+        stopView.style = .bottomBar
+        stopView.delegate = self
     }
-
-    /// Inits the view model which is in charge of updating the view.
-    func initViewModel() {
-        viewModel.state.value.rthTypeDescription.valueChanged = { [weak self] _ in
-            self?.updateView()
-        }
-        updateView()
+    /// Setup view
+    func setupUI() {
+        barButtonView.currentMode.adjustsFontSizeToFitWidth = true
+        barButtonView.currentMode.minimumScaleFactor = Style.minimumScaleFactor
+        barButtonView.customCornered(corners: [.topRight, .bottomRight], radius: Style.noBorderWidth)
+        barButtonView.customCornered(corners: [.topLeft, .bottomLeft], radius: Style.largeFitCornerRadius)
+        barButtonView.backgroundColor = ColorName.greyLightReturn.color
     }
-
-    /// Updates the view.
-    func updateView() {
-        barButtonView.model = BottomBarButtonState(title: L10n.settingsAdvancedCategoryRth.uppercased(),
-                                                   subtext: viewModel.state.value.rthTypeDescription.value)
-        self.barButtonView.currentMode.adjustsFontSizeToFitWidth = true
-        self.barButtonView.currentMode.minimumScaleFactor = Style.minimumScaleFactor
+    /// bind the viewmodel
+    func bindViewModel() {
+        viewModel.$rthPreferredTarget
+            .sink { [unowned self] rthValue in
+                // update model of returnHomeBottomBarView
+                barButtonView.model = BottomBarButtonState(
+                    title: L10n.settingsAdvancedCategoryRth.uppercased(),
+                    subtext: rthValue)
+                setupUI()
+            }
+            .store(in: &cancellables)
     }
 }
 

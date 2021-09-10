@@ -42,9 +42,8 @@ final class ImagingBarAutomatableRulerBarView<T: AutomatableRulerImagingBarState
     static var nib: UINib {
         return UINib(nibName: "ImagingBarAutomatableRulerBarView", bundle: Bundle.currentBundle(for: self))
     }
-    var modeKey: String? {
-        return self.viewModel?.state.value.mode?.key
-    }
+
+    var barId: String? { viewModel?.barId }
 
     // MARK: - Private Properties
     private var viewModel: AutomatableBarButtonViewModel<T>?

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -16,38 +16,81 @@
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view contentMode="scaleToFill" id="C7r-VV-aeE">
-            <rect key="frame" x="0.0" y="0.0" width="486" height="112"/>
+            <rect key="frame" x="0.0" y="0.0" width="486" height="323"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="scO-P8-1Y6">
-                    <rect key="frame" x="0.0" y="0.0" width="486" height="112"/>
+                    <rect key="frame" x="0.0" y="0.0" width="486" height="323"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lFF-p9-9lF">
-                            <rect key="frame" x="0.0" y="0.0" width="93" height="112"/>
+                            <rect key="frame" x="0.0" y="0.0" width="486" height="0.0"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="height" id="5PH-pD-ylx"/>
+                            </constraints>
+                            <variation key="default">
+                                <mask key="constraints">
+                                    <exclude reference="5PH-pD-ylx"/>
+                                </mask>
+                            </variation>
+                            <variation key="heightClass=regular-widthClass=compact">
+                                <mask key="constraints">
+                                    <include reference="5PH-pD-ylx"/>
+                                </mask>
+                            </variation>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="100" placeholderIntrinsicHeight="112" translatesAutoresizingMaskIntoConstraints="NO" id="jVv-SU-oqa" customClass="DroneCalibrationAxeTickBoxView" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="60.5" width="486" height="27"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="27" id="kam-uL-ieF"/>
+                            </constraints>
+                            <variation key="default">
+                                <mask key="constraints">
+                                    <exclude reference="kam-uL-ieF"/>
+                                </mask>
+                            </variation>
+                            <variation key="heightClass=regular-widthClass=compact">
+                                <mask key="constraints">
+                                    <include reference="kam-uL-ieF"/>
+                                </mask>
+                            </variation>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="100" placeholderIntrinsicHeight="112" translatesAutoresizingMaskIntoConstraints="NO" id="c9T-jo-PXQ" customClass="DroneCalibrationAxeTickBoxView" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="148" width="486" height="27"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </view>
-                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="100" placeholderIntrinsicHeight="112" translatesAutoresizingMaskIntoConstraints="NO" id="jVv-SU-oqa" customClass="DroneCalibrationAxeTickBoxView" customModule="FreeFlight6" customModuleProvider="target">
-                            <rect key="frame" x="93" y="0.0" width="100" height="112"/>
-                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        </view>
-                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="100" placeholderIntrinsicHeight="112" translatesAutoresizingMaskIntoConstraints="NO" id="c9T-jo-PXQ" customClass="DroneCalibrationAxeTickBoxView" customModule="FreeFlight6" customModuleProvider="target">
-                            <rect key="frame" x="193" y="0.0" width="100" height="112"/>
-                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        </view>
-                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="100" placeholderIntrinsicHeight="112" translatesAutoresizingMaskIntoConstraints="NO" id="4oH-r9-cZS" customClass="DroneCalibrationAxeTickBoxView" customModule="FreeFlight6" customModuleProvider="target">
-                            <rect key="frame" x="293" y="0.0" width="100" height="112"/>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="100" placeholderIntrinsicHeight="112" translatesAutoresizingMaskIntoConstraints="NO" id="4oH-r9-cZS" customClass="DroneCalibrationAxeTickBoxView" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="235.5" width="486" height="27"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </view>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ael-tw-OL7">
-                            <rect key="frame" x="393" y="0.0" width="93" height="112"/>
+                            <rect key="frame" x="0.0" y="323" width="486" height="0.0"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="height" id="QnF-ev-SHk"/>
+                            </constraints>
+                            <variation key="default">
+                                <mask key="constraints">
+                                    <exclude reference="QnF-ev-SHk"/>
+                                </mask>
+                            </variation>
+                            <variation key="heightClass=regular-widthClass=compact">
+                                <mask key="constraints">
+                                    <include reference="QnF-ev-SHk"/>
+                                </mask>
+                            </variation>
                         </view>
                     </subviews>
                     <constraints>
                         <constraint firstItem="ael-tw-OL7" firstAttribute="width" secondItem="lFF-p9-9lF" secondAttribute="width" id="7JO-nq-NGK"/>
+                        <constraint firstItem="jVv-SU-oqa" firstAttribute="height" secondItem="c9T-jo-PXQ" secondAttribute="height" id="NrV-HZ-s4h"/>
+                        <constraint firstItem="c9T-jo-PXQ" firstAttribute="height" secondItem="4oH-r9-cZS" secondAttribute="height" id="tJH-Fp-b5u"/>
                     </constraints>
+                    <variation key="heightClass=regular-widthClass=compact" axis="vertical" distribution="equalSpacing"/>
                 </stackView>
             </subviews>
+            <viewLayoutGuide key="safeArea" id="pRG-Td-6sW"/>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
                 <constraint firstAttribute="bottom" secondItem="scO-P8-1Y6" secondAttribute="bottom" id="IJA-if-oOV"/>
@@ -56,8 +99,7 @@
                 <constraint firstItem="pRG-Td-6sW" firstAttribute="trailing" secondItem="scO-P8-1Y6" secondAttribute="trailing" id="iXq-gf-Sn1"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <viewLayoutGuide key="safeArea" id="pRG-Td-6sW"/>
-            <point key="canvasLocation" x="89" y="-224"/>
+            <point key="canvasLocation" x="88" y="-129.98500749625188"/>
         </view>
     </objects>
 </document>

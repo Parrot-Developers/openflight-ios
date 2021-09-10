@@ -103,8 +103,8 @@ public final class ProtobufMissionUpdateViewModel: BaseViewModel<ProtobufMission
              .failed,
              .updateDone:
             return true
-        case let .onGoingUpdate(missionUpdateTast):
-            guard let task = missionUpdateTast.task else {
+        case let .onGoingUpdate(missionUpdateTask):
+            guard let task = missionUpdateTask.task else {
                 // Cancelation impossible.
                 return false
             }
@@ -121,8 +121,8 @@ public final class ProtobufMissionUpdateViewModel: BaseViewModel<ProtobufMission
         case .waitingForUpdate,
              .notInUpdateList:
             return Constants.minProgress
-        case let .onGoingUpdate(missionUpdateTast):
-            return missionUpdateTast.progress
+        case let .onGoingUpdate(missionUpdateTask):
+            return missionUpdateTask.progress
         case .failed,
              .updateDone:
             return Constants.maxProgress

@@ -113,16 +113,16 @@ private extension GalleryPanoramaDownloadViewController {
 
         downloadImage.image = Asset.Gallery.Panorama.icDownloadBig.image
 
-        downloadInfoLabel.makeUp(with: .big, and: .white)
+        downloadInfoLabel.makeUp(with: .big)
         downloadInfoLabel.text = L10n.galleryPanoramaDownloadWarning
 
-        downloadButton.makeup(with: .regular, color: .greenSpring)
+        downloadButton.makeup(color: .greenSpring)
         downloadButton.applyCornerRadius(Style.mediumCornerRadius)
         downloadButton.backgroundColor = ColorName.greenSpring20.color
         downloadButton.tintColor = ColorName.greenSpring20.color
         downloadButton.setTitle(L10n.commonDownload, for: .normal)
 
-        cancelButton.makeup(with: .regular, color: .white)
+        cancelButton.makeup()
         cancelButton.applyCornerRadius(Style.mediumCornerRadius)
         cancelButton.setBorder(borderColor: ColorName.white.color, borderWidth: Style.mediumBorderWidth)
         cancelButton.backgroundColor = .clear

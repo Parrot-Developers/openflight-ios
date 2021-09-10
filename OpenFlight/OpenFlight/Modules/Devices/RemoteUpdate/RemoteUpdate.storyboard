@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Remote Update View Controller-->
+        <scene sceneID="izL-Sb-vLp">
+            <objects>
+                <viewController storyboardIdentifier="RemoteUpdate" useStoryboardIdentifierAsRestorationIdentifier="YES" id="BQF-ET-c84" customClass="RemoteUpdateViewController" customModule="OpenFlight" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="OVl-td-Vay">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PUH-Vi-fac" userLabel="Top Bar">
+                                <rect key="frame" x="44" y="0.0" width="808" height="75"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="rfa-hm-AVa">
+                                        <rect key="frame" x="20" y="14" width="47" height="47"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" secondItem="rfa-hm-AVa" secondAttribute="height" multiplier="1:1" id="JS3-f8-dps"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                        <state key="normal" title="Cancel">
+                                            <color key="titleColor" name="default_text_color"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="backButtonTouchedUpInside:" destination="BQF-ET-c84" eventType="touchUpInside" id="Rcg-EK-bX9"/>
+                                        </connections>
+                                    </button>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="jVU-Xo-4e1">
+                                        <rect key="frame" x="381" y="15" width="46.5" height="45"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fwQ-wi-FSA" userLabel="Title">
+                                                <rect key="frame" x="0.0" y="0.0" width="46.5" height="22.5"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                <color key="textColor" name="default_text_color"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FKX-pD-twH">
+                                                <rect key="frame" x="4.5" y="27.5" width="37" height="17.5"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <color key="textColor" name="default_text_color"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="rfa-hm-AVa" firstAttribute="centerY" secondItem="PUH-Vi-fac" secondAttribute="centerY" id="2Qh-G9-4Pp"/>
+                                    <constraint firstItem="jVU-Xo-4e1" firstAttribute="centerX" secondItem="PUH-Vi-fac" secondAttribute="centerX" id="dtp-FF-BTA"/>
+                                    <constraint firstItem="jVU-Xo-4e1" firstAttribute="centerY" secondItem="PUH-Vi-fac" secondAttribute="centerY" id="jzU-zd-5Q6"/>
+                                    <constraint firstItem="rfa-hm-AVa" firstAttribute="leading" secondItem="PUH-Vi-fac" secondAttribute="leading" constant="20" id="mbe-bc-YKg"/>
+                                    <constraint firstAttribute="height" constant="75" id="orA-PG-8Vj">
+                                        <variation key="heightClass=regular-widthClass=compact" constant="110"/>
+                                    </constraint>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bhp-kx-R8I">
+                                <rect key="frame" x="44" y="75" width="808" height="318"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tIO-RH-RZ6" userLabel="Left View" customClass="RemoteImageView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="404" height="318"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="300" id="X3d-v0-sOC"/>
+                                        </constraints>
+                                        <variation key="default">
+                                            <mask key="constraints">
+                                                <exclude reference="X3d-v0-sOC"/>
+                                            </mask>
+                                        </variation>
+                                        <variation key="heightClass=regular-widthClass=compact">
+                                            <mask key="constraints">
+                                                <include reference="X3d-v0-sOC"/>
+                                            </mask>
+                                        </variation>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kYL-AM-NAO" userLabel="RightView">
+                                        <rect key="frame" x="404" y="0.0" width="404" height="318"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="center" axis="vertical" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="u6Q-kW-o1w">
+                                                <rect key="frame" x="0.0" y="64" width="404" height="150"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dEp-bU-Yjl" userLabel="Step 1" customClass="UpdateStepView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="404" height="46.5"/>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Kwa-Dt-WT3" userLabel="Step 2" customClass="UpdateStepView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="51.5" width="404" height="47"/>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wpK-Oj-my4" userLabel="Step 3" customClass="UpdateStepView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="103.5" width="404" height="46.5"/>
+                                                    </view>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="150" id="NfP-lv-Y8N"/>
+                                                </constraints>
+                                                <variation key="heightClass=regular-widthClass=compact" alignment="center"/>
+                                            </stackView>
+                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9dC-gO-aKu">
+                                                <rect key="frame" x="10" y="224" width="200" height="40"/>
+                                                <color key="backgroundColor" name="highlight_color"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="200" id="Jtt-am-b2z"/>
+                                                    <constraint firstAttribute="height" constant="40" id="d2a-1S-xNX"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                <state key="normal" title="Button">
+                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="stateButtonTouchedUpInside:" destination="BQF-ET-c84" eventType="touchUpInside" id="FnF-mh-J0W"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="u6Q-kW-o1w" firstAttribute="leading" secondItem="kYL-AM-NAO" secondAttribute="leading" id="7oM-3p-6FA"/>
+                                            <constraint firstItem="9dC-gO-aKu" firstAttribute="leading" secondItem="kYL-AM-NAO" secondAttribute="leading" constant="10" id="Sn2-Vn-aQi"/>
+                                            <constraint firstAttribute="trailing" secondItem="u6Q-kW-o1w" secondAttribute="trailing" id="kjU-pl-R39"/>
+                                            <constraint firstItem="u6Q-kW-o1w" firstAttribute="centerY" secondItem="kYL-AM-NAO" secondAttribute="centerY" constant="-20" id="o5t-o9-1U0"/>
+                                            <constraint firstItem="9dC-gO-aKu" firstAttribute="top" secondItem="u6Q-kW-o1w" secondAttribute="bottom" constant="10" id="tGU-Ea-v9j"/>
+                                            <constraint firstItem="9dC-gO-aKu" firstAttribute="centerX" secondItem="kYL-AM-NAO" secondAttribute="centerX" id="y8o-kd-VXI"/>
+                                        </constraints>
+                                        <variation key="default">
+                                            <mask key="constraints">
+                                                <exclude reference="y8o-kd-VXI"/>
+                                            </mask>
+                                        </variation>
+                                        <variation key="heightClass=regular-widthClass=compact">
+                                            <mask key="constraints">
+                                                <exclude reference="Sn2-Vn-aQi"/>
+                                                <include reference="y8o-kd-VXI"/>
+                                            </mask>
+                                        </variation>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="kYL-AM-NAO" secondAttribute="bottom" id="3Jd-bp-X6Q"/>
+                                    <constraint firstItem="tIO-RH-RZ6" firstAttribute="leading" secondItem="bhp-kx-R8I" secondAttribute="leading" id="CSS-zt-2Uz"/>
+                                    <constraint firstAttribute="trailing" secondItem="kYL-AM-NAO" secondAttribute="trailing" id="RuT-00-OlW"/>
+                                    <constraint firstAttribute="bottom" secondItem="tIO-RH-RZ6" secondAttribute="bottom" id="SWw-KV-Iss"/>
+                                    <constraint firstItem="tIO-RH-RZ6" firstAttribute="width" secondItem="bhp-kx-R8I" secondAttribute="width" multiplier="0.5" id="Xhg-Kr-b48"/>
+                                    <constraint firstItem="kYL-AM-NAO" firstAttribute="width" secondItem="bhp-kx-R8I" secondAttribute="width" multiplier="0.5" id="XjH-5w-ltE"/>
+                                    <constraint firstItem="kYL-AM-NAO" firstAttribute="top" secondItem="tIO-RH-RZ6" secondAttribute="bottom" id="evu-MG-sya"/>
+                                    <constraint firstItem="kYL-AM-NAO" firstAttribute="top" secondItem="bhp-kx-R8I" secondAttribute="top" id="fGj-iA-R0G"/>
+                                    <constraint firstItem="kYL-AM-NAO" firstAttribute="leading" secondItem="bhp-kx-R8I" secondAttribute="leading" id="hBS-jH-CMW"/>
+                                    <constraint firstAttribute="trailing" secondItem="tIO-RH-RZ6" secondAttribute="trailing" id="rpZ-N4-7Sd"/>
+                                    <constraint firstItem="tIO-RH-RZ6" firstAttribute="top" secondItem="bhp-kx-R8I" secondAttribute="top" id="wlB-wr-i2j"/>
+                                </constraints>
+                                <variation key="default">
+                                    <mask key="constraints">
+                                        <exclude reference="rpZ-N4-7Sd"/>
+                                        <exclude reference="evu-MG-sya"/>
+                                        <exclude reference="hBS-jH-CMW"/>
+                                    </mask>
+                                </variation>
+                                <variation key="heightClass=regular-widthClass=compact">
+                                    <mask key="constraints">
+                                        <exclude reference="SWw-KV-Iss"/>
+                                        <exclude reference="Xhg-Kr-b48"/>
+                                        <include reference="rpZ-N4-7Sd"/>
+                                        <exclude reference="XjH-5w-ltE"/>
+                                        <include reference="evu-MG-sya"/>
+                                        <exclude reference="fGj-iA-R0G"/>
+                                        <include reference="hBS-jH-CMW"/>
+                                    </mask>
+                                </variation>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="LLT-Zz-dxM"/>
+                        <color key="backgroundColor" name="default_bgcolor"/>
+                        <constraints>
+                            <constraint firstItem="bhp-kx-R8I" firstAttribute="leading" secondItem="LLT-Zz-dxM" secondAttribute="leading" id="3uG-Dq-r7u"/>
+                            <constraint firstItem="LLT-Zz-dxM" firstAttribute="trailing" secondItem="PUH-Vi-fac" secondAttribute="trailing" id="JyM-gh-uYy"/>
+                            <constraint firstItem="bhp-kx-R8I" firstAttribute="top" secondItem="PUH-Vi-fac" secondAttribute="bottom" id="KzK-TI-E0f"/>
+                            <constraint firstItem="PUH-Vi-fac" firstAttribute="top" secondItem="LLT-Zz-dxM" secondAttribute="top" id="OBg-QA-Dj6"/>
+                            <constraint firstItem="PUH-Vi-fac" firstAttribute="leading" secondItem="LLT-Zz-dxM" secondAttribute="leading" id="Yvg-34-UpO"/>
+                            <constraint firstItem="LLT-Zz-dxM" firstAttribute="trailing" secondItem="bhp-kx-R8I" secondAttribute="trailing" id="pEd-SA-wf8"/>
+                            <constraint firstItem="LLT-Zz-dxM" firstAttribute="bottom" secondItem="bhp-kx-R8I" secondAttribute="bottom" id="tng-4y-2iJ"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="backButton" destination="rfa-hm-AVa" id="vzG-aI-TVM"/>
+                        <outlet property="continueButton" destination="9dC-gO-aKu" id="x6t-aR-tBH"/>
+                        <outlet property="downloadingStepView" destination="dEp-bU-Yjl" id="Ocq-sU-EX3"/>
+                        <outlet property="progressView" destination="tIO-RH-RZ6" id="pWS-DS-W4U"/>
+                        <outlet property="rebootingStepView" destination="wpK-Oj-my4" id="LP7-7V-FZL"/>
+                        <outlet property="sendingStepView" destination="Kwa-Dt-WT3" id="RyJ-g4-Lft"/>
+                        <outlet property="subtitleLabel" destination="FKX-pD-twH" id="Ez1-h4-Jxr"/>
+                        <outlet property="titleLabel" destination="fwQ-wi-FSA" id="ebI-VA-uIm"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="gO1-FO-njV" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="105.69715142428787" y="-725.60000000000002"/>
+        </scene>
+    </scenes>
+    <resources>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="highlight_color">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
+    </resources>
+</document>

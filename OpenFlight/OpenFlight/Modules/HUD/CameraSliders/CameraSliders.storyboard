@@ -4,6 +4,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -31,25 +32,58 @@
                                             <constraint firstAttribute="width" constant="33" id="568-TB-2wm"/>
                                         </constraints>
                                     </view>
-                                    <view hidden="YES" alpha="0.0" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mbl-yM-FB7">
+                                    <view hidden="YES" alpha="0.0" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mbl-yM-FB7" userLabel="TiltSliderContainerView">
                                         <rect key="frame" x="0.0" y="0.0" width="40" height="150"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="s61-IX-cxD" customClass="TiltSliderView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="40" height="150"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="C8E-rq-ddM">
+                                                <rect key="frame" x="0.0" y="0.0" width="120" height="150"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="s61-IX-cxD" userLabel="TiltSliderView" customClass="TiltSliderView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="50" height="150"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="50" id="QwC-Q7-In4"/>
+                                                            <constraint firstAttribute="height" priority="750" constant="150" id="sho-ZJ-cwg"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="f2E-vA-VM1" userLabel="ContainerMaxTiltView">
+                                                        <rect key="frame" x="50" y="0.0" width="70" height="150"/>
+                                                        <subviews>
+                                                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Max tilt" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PDV-ei-r2q" userLabel="maxTiltSliderLabel" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="140" width="70" height="30"/>
+                                                                <color key="backgroundColor" name="white_90"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="30" id="Vhf-xM-8t2"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <color key="textColor" name="default_icon_color"/>
+                                                                <color key="highlightedColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            </label>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="50" id="2Nz-jf-a26"/>
+                                                            <constraint firstItem="PDV-ei-r2q" firstAttribute="top" secondItem="f2E-vA-VM1" secondAttribute="top" constant="-20" id="M40-xv-Tca" userLabel="maxTiltSliderLabelUpConstraint"/>
+                                                            <constraint firstItem="PDV-ei-r2q" firstAttribute="leading" secondItem="f2E-vA-VM1" secondAttribute="leading" id="PUs-TA-3DU"/>
+                                                            <constraint firstAttribute="trailing" secondItem="PDV-ei-r2q" secondAttribute="trailing" id="S3a-fv-qWM"/>
+                                                            <constraint firstAttribute="bottom" secondItem="PDV-ei-r2q" secondAttribute="bottom" constant="-20" id="e1y-bA-uKa" userLabel="maxTiltSliderLabeldownConstraint"/>
+                                                            <constraint firstAttribute="height" constant="150" id="ulc-AO-Iv4"/>
+                                                        </constraints>
+                                                        <variation key="default">
+                                                            <mask key="constraints">
+                                                                <exclude reference="M40-xv-Tca"/>
+                                                            </mask>
+                                                        </variation>
+                                                    </view>
+                                                </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" priority="750" constant="150" id="sho-ZJ-cwg"/>
-                                                </constraints>
-                                            </view>
+                                            </stackView>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="s61-IX-cxD" secondAttribute="bottom" id="0KN-7m-L7g"/>
                                             <constraint firstAttribute="width" constant="40" id="Ge6-KZ-xUM"/>
-                                            <constraint firstAttribute="trailing" secondItem="s61-IX-cxD" secondAttribute="trailing" id="ZDr-Tv-t2p"/>
-                                            <constraint firstItem="s61-IX-cxD" firstAttribute="centerY" secondItem="Mbl-yM-FB7" secondAttribute="centerY" id="a1j-05-AVC"/>
-                                            <constraint firstItem="s61-IX-cxD" firstAttribute="top" relation="greaterThanOrEqual" secondItem="Mbl-yM-FB7" secondAttribute="top" id="feb-VQ-6cB"/>
-                                            <constraint firstItem="s61-IX-cxD" firstAttribute="leading" secondItem="Mbl-yM-FB7" secondAttribute="leading" id="ocs-xk-hqT"/>
+                                            <constraint firstItem="C8E-rq-ddM" firstAttribute="top" secondItem="Mbl-yM-FB7" secondAttribute="top" id="aGP-yf-tsv"/>
+                                            <constraint firstItem="C8E-rq-ddM" firstAttribute="leading" secondItem="Mbl-yM-FB7" secondAttribute="leading" id="rvG-rl-hPx"/>
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="isA-wO-5rC">
@@ -57,12 +91,12 @@
                                         <subviews>
                                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Zoom max reached" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qKA-eY-Yh4" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
                                                 <rect key="frame" x="38" y="59.5" width="101.5" height="31"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="backgroundColor" name="white_90"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="31" id="Ctw-z2-ZQH"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="textColor" name="default_icon_color"/>
                                                 <nil key="highlightedColor"/>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="bottomInset">
@@ -80,14 +114,14 @@
                                                 </userDefinedRuntimeAttributes>
                                             </label>
                                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Max Tilt" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ydd-Y8-qtH" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="38" y="110.5" width="41.5" height="31"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <rect key="frame" x="38" y="73.5" width="41.5" height="31"/>
+                                                <color key="backgroundColor" name="white_90"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="31" id="R73-a7-w7k"/>
                                                     <constraint firstAttribute="height" constant="31" id="cPl-HZ-yg4"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="textColor" name="default_icon_color"/>
                                                 <nil key="highlightedColor"/>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="bottomInset">
@@ -104,12 +138,22 @@
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
                                             </label>
+                                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="10" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LMP-tc-3wq" userLabel="Info Tilt Label">
+                                                <rect key="frame" x="40" y="112.5" width="31" height="31"/>
+                                                <color key="backgroundColor" name="white_90"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" secondItem="LMP-tc-3wq" secondAttribute="height" id="bj8-IR-XHV"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                <color key="textColor" name="default_icon_color"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="xwO-H2-OhT">
                                                 <rect key="frame" x="0.0" y="8.5" width="31" height="133"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="e40-LM-tfB">
                                                         <rect key="frame" x="0.0" y="0.0" width="31" height="31"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <color key="backgroundColor" name="white_90"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="31" id="WYo-VC-oJV"/>
                                                         </constraints>
@@ -123,13 +167,13 @@
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cs1-aQ-xCZ">
                                                         <rect key="frame" x="0.0" y="51" width="31" height="31"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <color key="backgroundColor" name="white_90"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="31" id="GhV-RV-3sZ"/>
                                                         </constraints>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                         <state key="normal" title="1×">
-                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            <color key="titleColor" name="default_icon_color"/>
                                                         </state>
                                                         <connections>
                                                             <action selector="zoomButtonTouchedUpInside:" destination="zxS-jz-EQH" eventType="touchUpInside" id="iqV-s8-dSX"/>
@@ -137,7 +181,7 @@
                                                     </button>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hIo-6M-owq" customClass="TiltButton" customModule="OpenFlight" customModuleProvider="target">
                                                         <rect key="frame" x="0.0" y="102" width="31" height="31"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <color key="backgroundColor" name="white_90"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="31" id="kHB-iB-ong"/>
                                                         </constraints>
@@ -151,6 +195,7 @@
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstItem="hIo-6M-owq" firstAttribute="trailing" secondItem="Ydd-Y8-qtH" secondAttribute="leading" constant="-7" id="30T-E8-Rp6"/>
+                                            <constraint firstItem="LMP-tc-3wq" firstAttribute="top" secondItem="hIo-6M-owq" secondAttribute="top" constant="2" id="34V-Bi-InR"/>
                                             <constraint firstItem="xwO-H2-OhT" firstAttribute="centerY" secondItem="isA-wO-5rC" secondAttribute="centerY" id="5Ip-wL-bxE"/>
                                             <constraint firstItem="xwO-H2-OhT" firstAttribute="top" relation="greaterThanOrEqual" secondItem="isA-wO-5rC" secondAttribute="top" id="626-Y3-AA0"/>
                                             <constraint firstItem="cs1-aQ-xCZ" firstAttribute="trailing" secondItem="qKA-eY-Yh4" secondAttribute="leading" constant="-7" id="6vd-8I-Dt4"/>
@@ -158,21 +203,23 @@
                                             <constraint firstItem="qKA-eY-Yh4" firstAttribute="top" secondItem="isA-wO-5rC" secondAttribute="top" constant="2" id="9TG-1R-UY1"/>
                                             <constraint firstAttribute="trailing" secondItem="xwO-H2-OhT" secondAttribute="trailing" id="P7q-Uj-tYa"/>
                                             <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="xwO-H2-OhT" secondAttribute="bottom" id="VKP-SH-7an"/>
-                                            <constraint firstItem="Ydd-Y8-qtH" firstAttribute="top" secondItem="hIo-6M-owq" secondAttribute="top" id="dbP-dq-kmM"/>
+                                            <constraint firstItem="Ydd-Y8-qtH" firstAttribute="top" secondItem="hIo-6M-owq" secondAttribute="top" constant="-37" id="dbP-dq-kmM"/>
                                             <constraint firstAttribute="width" constant="31" id="hjP-K1-IYL"/>
                                             <constraint firstItem="Ydd-Y8-qtH" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" id="icQ-k3-Oho"/>
+                                            <constraint firstItem="LMP-tc-3wq" firstAttribute="width" secondItem="hIo-6M-owq" secondAttribute="width" id="j9O-VV-Stm"/>
                                             <constraint firstItem="xwO-H2-OhT" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" id="k2k-P0-65u"/>
                                             <constraint firstItem="hIo-6M-owq" firstAttribute="bottom" secondItem="Ydd-Y8-qtH" secondAttribute="top" priority="750" constant="-10" id="lvu-o9-bIZ"/>
                                             <constraint firstItem="cs1-aQ-xCZ" firstAttribute="top" secondItem="qKA-eY-Yh4" secondAttribute="top" id="rZM-fm-qNJ"/>
                                             <constraint firstItem="Ydd-Y8-qtH" firstAttribute="bottom" secondItem="hIo-6M-owq" secondAttribute="top" priority="750" constant="-10" id="uwZ-oZ-rIq"/>
+                                            <constraint firstItem="LMP-tc-3wq" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" constant="40" id="wze-8E-Nws"/>
                                         </constraints>
                                         <variation key="default">
                                             <mask key="constraints">
                                                 <exclude reference="9SN-hX-w34"/>
                                                 <exclude reference="9TG-1R-UY1"/>
-                                                <exclude reference="lvu-o9-bIZ"/>
                                                 <exclude reference="icQ-k3-Oho"/>
                                                 <exclude reference="uwZ-oZ-rIq"/>
+                                                <exclude reference="lvu-o9-bIZ"/>
                                             </mask>
                                         </variation>
                                     </view>
@@ -190,11 +237,13 @@
                     </view>
                     <size key="freeformSize" width="31" height="150"/>
                     <connections>
+                        <outlet property="infoTiltLabel" destination="LMP-tc-3wq" id="C9Z-5u-19W"/>
                         <outlet property="joysticksButton" destination="e40-LM-tfB" id="RnC-lf-jJF"/>
-                        <outlet property="maxTiltLabel" destination="Ydd-Y8-qtH" id="thn-4y-4KQ"/>
-                        <outlet property="maxTiltLabelOpenLeadingConstraint" destination="icQ-k3-Oho" id="0vE-ha-EmB"/>
-                        <outlet property="maxTiltLabelOpenNegativeVerticalConstraint" destination="lvu-o9-bIZ" id="JxF-hj-9Ft"/>
-                        <outlet property="maxTiltLabelOpenPositiveVerticalConstraint" destination="uwZ-oZ-rIq" id="W52-QA-ZMw"/>
+                        <outlet property="leadingInfoTiltLabelConstraint" destination="wze-8E-Nws" id="2Eb-6h-6gE"/>
+                        <outlet property="maxTiltRemoteLabel" destination="Ydd-Y8-qtH" id="thn-4y-4KQ"/>
+                        <outlet property="maxTiltSliderLabel" destination="PDV-ei-r2q" id="I8K-q8-2qS"/>
+                        <outlet property="maxTiltSliderLabelDownConstraint" destination="e1y-bA-uKa" id="G1t-j1-lUr"/>
+                        <outlet property="maxTiltSliderLabelUpConstraint" destination="M40-xv-Tca" id="QcZ-uh-Qx2"/>
                         <outlet property="overzoomLabel" destination="qKA-eY-Yh4" id="SJp-Pg-VJ0"/>
                         <outlet property="tiltButton" destination="hIo-6M-owq" id="smE-I4-wr2"/>
                         <outlet property="tiltSliderContainerView" destination="Mbl-yM-FB7" id="w5f-c8-sjC"/>
@@ -205,16 +254,17 @@
                         <outletCollection property="overzoomLabelOpenConstraints" destination="9TG-1R-UY1" collectionClass="NSMutableArray" id="WdQ-P3-mHb"/>
                         <outletCollection property="overzoomLabelClosedConstraints" destination="6vd-8I-Dt4" collectionClass="NSMutableArray" id="kqg-Ae-759"/>
                         <outletCollection property="overzoomLabelClosedConstraints" destination="rZM-fm-qNJ" collectionClass="NSMutableArray" id="9Pr-jH-YrQ"/>
-                        <outletCollection property="maxTiltLabelClosedConstraints" destination="30T-E8-Rp6" collectionClass="NSMutableArray" id="tJ3-Ih-aQj"/>
-                        <outletCollection property="maxTiltLabelClosedConstraints" destination="dbP-dq-kmM" collectionClass="NSMutableArray" id="kNK-Dk-6Pc"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="OUf-o0-KZb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="35" y="175"/>
+            <point key="canvasLocation" x="34.057971014492757" y="174.77678571428569"/>
         </scene>
     </scenes>
     <designables>
+        <designable name="PDV-ei-r2q">
+            <size key="intrinsicContentSize" width="40" height="13"/>
+        </designable>
         <designable name="Ydd-Y8-qtH">
             <size key="intrinsicContentSize" width="41.5" height="13"/>
         </designable>
@@ -222,4 +272,12 @@
             <size key="intrinsicContentSize" width="101.5" height="13"/>
         </designable>
     </designables>
+    <resources>
+        <namedColor name="default_icon_color">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="white_90">
+            <color red="1" green="1" blue="1" alpha="0.89999997615814209" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
 </document>

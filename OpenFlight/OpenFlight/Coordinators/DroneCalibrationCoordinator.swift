@@ -28,13 +28,18 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+protocol DroneCalibrationCoordinatorDelegate: AnyObject {
+    func firmwareUpdateRequired()
+}
+
 /// Coordinator for drone calibration screens.
 public final class DroneCalibrationCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
     public var parentCoordinator: Coordinator?
-
+    weak var delegate: DroneCalibrationCoordinatorDelegate?
+    
     public func start() {
         let viewController = DroneCalibrationViewController.instantiate(coordinator: self)
         self.navigationController = NavigationController(rootViewController: viewController)
@@ -58,7 +63,7 @@ extension DroneCalibrationCoordinator {
 
     /// Start magnetometer calibration.
     func startMagnetometerCalibration() {
-        let controller = MagnetometerCalibrationViewController.instantiate(isRequired: false, coordinator: self)
+        let controller = MagnetometerCalibrationViewController.instantiate(coordinator: self)
         self.push(controller)
     }
 
@@ -73,24 +78,9 @@ extension DroneCalibrationCoordinator {
 
     /// Starts Stereo Vision calibration.
     func startStereoVisionCalibration() {
-        let controller = StereoVisionCalibViewController.instantiate(coordinator: self)
+        let viewModel = StereoCalibrationViewModel(coordinator: self)
+        let controller = StereoCalibrationViewController.instantiate(viewModel: viewModel)
         self.push(controller)
-    }
-
-    /// Starts Stereo Vision calibration steps.
-    func startStereoVisionCalibrationSteps() {
-        let controller = StereoVisionCalibStepsViewController.instantiate(coordinator: self)
-        self.push(controller)
-    }
-
-    /// Shows calibration Stereo Vision result.
-    ///
-    /// - Parameters:
-    ///    - isCalibrated: Bool that indicates if the stereo vision sensor is calibrated.
-    func startStereoVisionCalibrationResult(isCalibrated: Bool) {
-        let controller = StereoVisionCalibResultViewController.instantiate(coordinator: self)
-        controller.isCalibrated = isCalibrated
-        push(controller)
     }
 
     /// Starts Horizon correction.
@@ -104,5 +94,27 @@ extension DroneCalibrationCoordinator {
 extension DroneCalibrationCoordinator: HorizonCorrectionCoordinator {
     func calibrationDidStop() {
         back()
+    }
+}
+
+// MARK: - Delegate
+extension DroneCalibrationCoordinator: HUDCriticalAlertDelegate {
+    func displayCriticalAlert() {
+        let criticalAlertVC = HUDCriticalAlertViewController.instantiate(with: .droneUpdateRequired)
+        criticalAlertVC.delegate = self
+        self.presentModal(viewController: criticalAlertVC)
+    }
+
+    func dismissAlert() {
+        dismiss()
+    }
+
+    func performAlertAction(alert: HUDCriticalAlertType?) {
+        switch alert {
+        case .droneUpdateRequired:
+            delegate?.firmwareUpdateRequired()
+        default:
+            return
+        }
     }
 }

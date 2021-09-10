@@ -68,16 +68,16 @@ final class FlightPlanPhotoCountState: ViewModelState, EquatableState, Copying {
 /// Flight plan photo count view model.
 final class FlightPlanPhotoCountViewModel: DroneWatcherViewModel<FlightPlanPhotoCountState> {
     // MARK: - Private Properties
-    private var fpExecution: FlightPlanExecution?
+    private var flightModel: FlightPlanModel?
     private var mediaListRef: Ref<[MediaItem]>?
 
     // MARK: - Init
     /// Inits
     ///
     /// - Parameters:
-    ///     - fpExecution: current flight plan execution
-    init(fpExecution: FlightPlanExecution) {
-        self.fpExecution = fpExecution
+    ///     - flightModel: current flight plan model
+    init(flightModel: FlightPlanModel) {
+        self.flightModel = flightModel
 
         super.init()
     }
@@ -109,7 +109,7 @@ private extension FlightPlanPhotoCountViewModel {
     /// - Parameters:
     ///     - medias: list of drone medias
     func updatePhotoCount(medias: [MediaItem]) {
-        let correspondingMedias = medias.filter { $0.customId == fpExecution?.executionId }
+        let correspondingMedias = medias.filter { $0.customId == flightModel?.uuid }
         let copy = state.value.copy()
         copy.photoNumber = correspondingMedias.count
         state.set(copy)

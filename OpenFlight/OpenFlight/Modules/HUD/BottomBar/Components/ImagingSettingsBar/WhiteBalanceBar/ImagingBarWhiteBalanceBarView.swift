@@ -56,9 +56,8 @@ final class ImagingBarWhiteBalanceBarView: UIView, NibOwnerLoadable, BarItemMode
             updateAutomaticMode(isAutomatic: viewModel?.state.value.mode as? Camera2WhiteBalanceMode == .automatic)
         }
     }
-    var modeKey: String? {
-        return self.viewModel?.state.value.mode?.key
-    }
+
+    var barId: String? { viewModel?.barId }
 
     // MARK: - Private Properties
     private var segmentedBarView: SegmentedBarView<ImagingBarState>?
@@ -139,9 +138,10 @@ private extension ImagingBarWhiteBalanceBarView {
     /// - Parameters:
     ///    - isAutomatic: boolean describing if setting is monitored automatically.
     func updateAutomaticMode(isAutomatic: Bool) {
-        autoButton.cornerRadiusedWith(backgroundColor: isAutomatic ? ColorName.highlightColor.color : ColorName.white90.color,
-                                      borderColor: .clear,
-                                      radius: Style.largeCornerRadius)
+        autoButton.customCornered(corners: [.bottomLeft, .topLeft],
+                                  radius: Style.largeCornerRadius,
+                                  backgroundColor: isAutomatic ? ColorName.highlightColor.color : ColorName.white90.color,
+                                  borderColor: .clear)
         autoButton.layer.masksToBounds = true
         autoButton.tintColor = isAutomatic ? .white : ColorName.defaultTextColor.color
         centeredRulerBarView?.isAutomatic = isAutomatic

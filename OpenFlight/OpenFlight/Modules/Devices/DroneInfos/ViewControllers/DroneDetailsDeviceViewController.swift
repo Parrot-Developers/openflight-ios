@@ -43,7 +43,6 @@ final class DroneDetailsDeviceViewController: UIViewController {
     @IBOutlet private weak var batteryImageView: UIImageView!
     @IBOutlet private weak var satelliteImageView: UIImageView!
     @IBOutlet private weak var networkImageView: UIImageView!
-    @IBOutlet private weak var separatorView: UIView!
 
     // MARK: - Private Properties
     private let droneInfoViewModel = DroneInfosViewModel()
@@ -55,7 +54,6 @@ final class DroneDetailsDeviceViewController: UIViewController {
     static func instantiate(coordinator: Coordinator) -> DroneDetailsDeviceViewController {
         let viewController = StoryboardScene.DroneDetailsDevice.initialScene.instantiate()
         viewController.coordinator = coordinator
-
         return viewController
     }
 
@@ -63,7 +61,6 @@ final class DroneDetailsDeviceViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        initView()
         bindToViewModel()
     }
 
@@ -72,7 +69,7 @@ final class DroneDetailsDeviceViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -83,14 +80,6 @@ final class DroneDetailsDeviceViewController: UIViewController {
 // MARK: - Private Funcs
 private extension DroneDetailsDeviceViewController {
 
-    /// Inits the view.
-    func initView() {
-        separatorView.backgroundColor = UIColor(named: .white20)
-        modelLabel.makeUp(with: .huge)
-        nameLabel.makeUp(with: .large, and: .white20)
-        separatorView.backgroundColor = ColorName.white20.color
-    }
-
     /// Binds the UI element to their counterpart in the view model
     ///
     /// If a value is updated in the view model the UI will be updated too automaticaly
@@ -98,6 +87,7 @@ private extension DroneDetailsDeviceViewController {
         bindBattery()
         bindGpsStrength()
         bindDroneName()
+        bindDroneModelName()
         bindCellularStrength()
         bindGimbalStatus()
         bindFrontStereoGimbalStatus()
@@ -133,6 +123,16 @@ private extension DroneDetailsDeviceViewController {
         droneInfoViewModel.$droneName
             .sink { [unowned self] name in
                 nameLabel.text = name
+                nameLabel.isHidden = name.isEmpty
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Binds the drone's model name from the view model to the modelLabel
+    func bindDroneModelName() {
+        droneInfoViewModel.$droneModelName
+            .sink { [unowned self] modelName in
+                modelLabel.text = modelName ?? L10n.droneDetailsDroneInfo
             }
             .store(in: &cancellables)
     }
@@ -150,8 +150,8 @@ private extension DroneDetailsDeviceViewController {
     /// Binds the gimbal status from the view model to the componentStatusView model
     func bindGimbalStatus() {
         droneInfoViewModel.$gimbalStatus
-            .sink { [unowned self] gimballStatus in
-                componentsStatusView.model.droneGimbalStatus = gimballStatus
+            .sink { [unowned self] status in
+                componentsStatusView.model.droneGimbalStatus = status
             }
             .store(in: &cancellables)
     }
@@ -197,8 +197,8 @@ private extension DroneDetailsDeviceViewController {
         droneInfoViewModel.$satelliteCount
             .sink { [unowned self] satelliteCount in
                 let isConnected = droneInfoViewModel.connectionState == .connected
-                nbSatelliteLabel.text = isConnected ? String(satelliteCount ?? 0) : Style.dash
-                satelliteImageView.image = isConnected ? Asset.Drone.icSatellite.image : Asset.Drone.icSatelliteUnavailable.image
+                nbSatelliteLabel.text = ": " + (isConnected ? String(satelliteCount ?? 0) : Style.dash)
+                satelliteImageView.tintColor = ColorName.defaultTextColor.color
             }
             .store(in: &cancellables)
     }

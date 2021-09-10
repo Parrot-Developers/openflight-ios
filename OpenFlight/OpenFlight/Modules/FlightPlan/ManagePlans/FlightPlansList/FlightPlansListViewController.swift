@@ -134,7 +134,7 @@ extension FlightPlansListViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(for: indexPath) as FlightPlanCollectionViewCell
         guard let cellProvider = viewModel.getFlightPlan(at: indexPath.row) else { return cell }
-        cell.configureCell(viewModel: cellProvider.flightPlan,
+        cell.configureCell(project: cellProvider.project,
                            isSelected: cellProvider.isSelected,
                            index: indexPath.row)
         cell.delegate = self
@@ -157,7 +157,7 @@ extension FlightPlansListViewController: UICollectionViewDelegateFlowLayout {
         let nbColumnsLadscape = viewModel.displayMode == .full ? Constants.nbColumnsLandscapeFull : Constants.nbColumnsLandscapeCompact
         let nbColumns = UIApplication.isLandscape ? nbColumnsLadscape : Constants.nbColumnsPortrait
         let width = collectionViewWidth / nbColumns - Constants.itemSpacing
-        let size = CGSize(width: width, height: width * Constants.cellWidthRatio)
+        let size = CGSize(width: width, height: width)
         return size
     }
 

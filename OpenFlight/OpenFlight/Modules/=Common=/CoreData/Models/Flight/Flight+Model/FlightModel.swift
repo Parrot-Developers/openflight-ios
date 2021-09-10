@@ -32,11 +32,10 @@ import Foundation
 public struct FlightModel {
 
     // MARK: - Properties
-
     public var uuid: String
     public var title: String?
     public var version: String
-    public var gutmaFile: String
+    public var gutmaFile: String?
     public var photoCount: Int16
     public var videoCount: Int16
     public var startLatitude: Double
@@ -46,47 +45,46 @@ public struct FlightModel {
     public var distance: Double
     public var duration: Double
 
+    // MARK: - Synchro Properties
+
+    /// - apcId: to identify data's user
+    public var apcId: String
+
     /// - parrotCloudId: Id of Flight on server: Set only if synchronized
     public var parrotCloudId: Int64
 
-    /// - parrotCloudToBeDeleted: True if a Delete Request was triguerred without success
-    public var parrotCloudToBeDeleted: Bool?
+    /// - True if a Delete Request was triguerred without success
+    public var parrotCloudToBeDeleted: Bool
 
-    /// - parrotCloudUploadUrl: Url to upload Gutma File
+    /// - Url to upload Gutma File
     public var parrotCloudUploadUrl: String?
 
-    /// - fileSynchroStatus: Contains 0 if not yet synchronized, 1 if yes
-        /// statusCode if sync failed
+    /// - fileSynchroStatus contains:
+    ///     - 0 Not yet synchronized
+    ///     - 1 Synchronized
+    ///     - 2 Upload Url is taped
+    ///     - StatusCode if sync failed
     public var fileSynchroStatus: Int16?
+
+    /// - fileSynchroDate: Date of synchro file
+    public var fileSynchroDate: Date?
 
     /// - cloudLastUpdate: Last modification date of Flight
     public var cloudLastUpdate: Date?
 
-    /// - synchroDate: contains the Date of last synchro trying if is not succeeded
+    /// - Ccontains the Date of last synchro trying if is not succeeded
     public var synchroDate: Date?
 
-    /// - synchroStatus: Contains 0 if not yet synchronized, 1 if yes
+    /// - Contains 0 if not yet synchronized, 1 if yes
         /// statusCode if sync failed
     public var synchroStatus: Int16?
 
-    // MARK: - Relationship
-
-    /// Date of Flight's Execution
-    /// managed by FlightPlanFlights entity
-    public var dateExecutionFlight: Date?
-
-    /// UUID of the executed FlightPlan
-    /// managed by FlightPlan entity
-    public var flightPlanUuid: String?
-
-    public var flightPlanFlights: [FlightPlanFlightsModel]?
-
     // MARK: - Public init
 
-    public init(title: String?,
+    public init(apcId: String,
+                title: String?,
                 uuid: String,
                 version: String,
-                flightPlanUuid: String?,
                 photoCount: Int16,
                 videoCount: Int16,
                 startLatitude: Double,
@@ -95,21 +93,20 @@ public struct FlightModel {
                 batteryConsumption: Int16,
                 distance: Double,
                 duration: Double,
-                gutmaFile: String,
+                gutmaFile: String?,
                 parrotCloudId: Int64 = 0,
                 parrotCloudToBeDeleted: Bool = false,
-                parrotCloudUploadUrl: String?,
+                parrotCloudUploadUrl: String? = nil,
                 synchroDate: Date? = nil,
                 synchroStatus: Int16? = 0,
-                cloudLastUpdate: Date?,
+                cloudLastUpdate: Date? = nil,
                 fileSynchroStatus: Int16? = 0,
-                dateExecutionFlight: Date?,
-                flightPlanFlights: [FlightPlanFlightsModel]? = nil) {
+                fileSynchroDate: Date? = nil) {
 
+        self.apcId = apcId
         self.title = title
         self.uuid = uuid
         self.version = version
-        self.flightPlanUuid = flightPlanUuid
         self.photoCount = photoCount
         self.videoCount = videoCount
         self.startLatitude = startLatitude
@@ -125,8 +122,7 @@ public struct FlightModel {
         self.synchroDate = synchroDate
         self.synchroStatus = synchroStatus
         self.fileSynchroStatus = fileSynchroStatus
-        self.dateExecutionFlight = dateExecutionFlight
+        self.fileSynchroDate = fileSynchroDate
         self.cloudLastUpdate = cloudLastUpdate
-        self.flightPlanFlights = flightPlanFlights
     }
 }

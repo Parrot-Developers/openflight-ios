@@ -37,7 +37,12 @@ public struct FlightPlanFlightsModel {
     public var flightplanUuid: String
     public var dateExecutionFlight: Date
 
-    /// - parrotCloudId: Id of Flight on server: Set only if synchronized
+    // MARK: - Synchro Properties
+
+    /// - apcId: to identify data's user
+    public var apcId: String
+
+    /// - parrotCloudId: Id of FlightPlanFlight (linkId) on server: Set only if synchronized
     public var parrotCloudId: Int64
 
     /// - synchroStatus: Contains 0 if not yet synchronized, 1 if yes
@@ -52,7 +57,8 @@ public struct FlightPlanFlightsModel {
 
     // MARK: - Public init
 
-    public init(flightUuid: String,
+    public init(apcId: String,
+                flightUuid: String,
                 flightplanUuid: String,
                 dateExecutionFlight: Date,
                 synchroStatus: Int16? = 0,
@@ -60,6 +66,7 @@ public struct FlightPlanFlightsModel {
                 parrotCloudId: Int64 = 0,
                 parrotCloudToBeDeleted: Bool = false) {
 
+        self.apcId = apcId
         self.flightUuid = flightUuid
         self.flightplanUuid = flightplanUuid
         self.dateExecutionFlight = dateExecutionFlight

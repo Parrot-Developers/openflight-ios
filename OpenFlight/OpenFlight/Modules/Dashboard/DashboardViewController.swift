@@ -70,7 +70,7 @@ final class DashboardViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var shouldAutorotate: Bool {
@@ -115,7 +115,7 @@ extension DashboardViewController: UICollectionViewDelegate {
         switch item {
         case .content(.myFlights):
             logEvent(with: LogEvent.LogKeyDashboardButton.myFlights)
-            self.coordinator?.startMyFlights(self.viewModel.myFlightsViewModel)
+            self.coordinator?.startMyFlights()
         case .content(.remoteInfos):
             logEvent(with: LogEvent.LogKeyDashboardButton.controllerDetails)
             self.coordinator?.startRemoteInfos()
@@ -125,6 +125,8 @@ extension DashboardViewController: UICollectionViewDelegate {
         case .content(.galleryMedia):
             logEvent(with: LogEvent.LogKeyDashboardButton.gallery)
             self.coordinator?.startMedias()
+        case .content(.photogrammetryDebug):
+            self.coordinator?.startPhotogrammetryDebug()
         default:
             break
         }
@@ -180,7 +182,9 @@ extension DashboardViewController: UICollectionViewDataSource {
         case .content(.galleryMedia):
             return createMediasCell(self.viewModel.galleryMediaViewModel, indexPath)
         case .content(.myFlights):
-            return createMyFlightsCell(self.viewModel.myFlightsViewModel, indexPath)
+            return createMyFlightsCell(indexPath)
+        case .content(.photogrammetryDebug):
+            return createPhotogrammetryDebugCell(indexPath: indexPath)
         default:
             assertionFailure("\(String(describing: contentType)) not yet implemented")
         }
@@ -317,11 +321,17 @@ private extension DashboardViewController {
     /// - Parameters:
     ///    - viewModel: ViewModel for the cell
     /// - Returns: DashboardInfosCell
-    func createMyFlightsCell(_ viewModel: MyFlightsViewModel, _ indexPath: IndexPath) -> DashboardMyFlightsCell {
+    func createMyFlightsCell(_ indexPath: IndexPath) -> DashboardMyFlightsCell {
         let myFlightCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardMyFlightsCell
-        myFlightCell.setup(state: viewModel.state.value)
-
+        myFlightCell.setup(viewModel: DashboardMyFlightsCellModel(service: Services.hub.flight.service))
         return myFlightCell
+    }
+
+    func createPhotogrammetryDebugCell(indexPath: IndexPath) -> DashboardPhotogrammetryDebugCell {
+        let cell = collectionView.dequeueReusableCell(for: indexPath) as
+            DashboardPhotogrammetryDebugCell
+        cell.delegate = self
+        return cell
     }
 
     /// Instantiates the Footer Cell.
@@ -355,6 +365,7 @@ private extension DashboardViewController {
         collectionView.register(cellType: DashboardMyFlightsCell.self)
         collectionView.register(cellType: DashboardFooterCell.self)
         collectionView.register(cellType: DashboardMediasCell.self)
+        collectionView.register(cellType: DashboardPhotogrammetryDebugCell.self)
     }
 
     /// bind View Model.
@@ -384,15 +395,10 @@ private extension DashboardViewController {
 // MARK: - DashboardDeviceCellDelegate
 extension DashboardViewController: DashboardDeviceCellDelegate {
     func startUpdate(_ model: DeviceUpdateModel) {
-        switch model {
-        case .drone:
-            // FIXME: StartUpdate is not functional for drone.
-            logEvent(with: LogEvent.LogKeyDashboardButton.droneUpdate)
-            self.coordinator?.startDroneInfos()
-        case .remote:
-            logEvent(with: LogEvent.LogKeyDashboardButton.remoteUpdate)
-            coordinator?.startUpdate(model: model)
-        }
+        logEvent(with: model == .drone
+                    ? LogEvent.LogKeyDashboardButton.droneUpdate
+                    : LogEvent.LogKeyDashboardButton.remoteUpdate)
+        coordinator?.startUpdate(model: model)
     }
 }
 
@@ -416,5 +422,11 @@ extension DashboardViewController: DashboardFooterCellDelegate {
         LogEvent.logAppEvent(itemName: LogEvent.EventLoggerScreenConstants.debugLogs,
                              logType: .simpleButton)
         coordinator?.startParrotDebug()
+    }
+}
+
+extension DashboardViewController: DashboardPhotogrammetryDebugCellDelegate {
+    func startPhotogrammetryDebug() {
+        coordinator?.startPhotogrammetryDebug()
     }
 }

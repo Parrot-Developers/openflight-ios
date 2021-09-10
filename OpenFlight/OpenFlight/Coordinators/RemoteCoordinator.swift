@@ -64,10 +64,8 @@ extension RemoteCoordinator {
 
     /// Starts update coordinator.
     func startUpdate() {
-        let updateCoordinator = UpdateCoordinator(model: .remote)
-        updateCoordinator.parentCoordinator = self
-        updateCoordinator.start()
-        self.present(childCoordinator: updateCoordinator)
+        let viewController = RemoteUpdateViewController.instantiate(coordinator: self)
+        self.push(viewController)
     }
 }
 

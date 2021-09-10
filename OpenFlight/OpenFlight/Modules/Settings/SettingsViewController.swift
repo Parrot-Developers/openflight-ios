@@ -51,7 +51,6 @@ final class SettingsViewController: UIViewController {
             topBar.addShadow(shadowColor: ColorName.whiteAlbescent.color)
         }
     }
-    @IBOutlet private weak var sectionWidthConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
     private var selectedSection: SettingsType = SettingsType.defaultType
@@ -131,9 +130,6 @@ private extension SettingsViewController {
 
     /// Initializes view controller
     func initView() {
-        // Prevent from safe area display issue if device has safeAreaInsets.
-        sectionWidthConstraint.constant += UIApplication.shared.keyWindow?.safeAreaInsets.left ?? 0.0
-
         viewModel.state.valueChanged = { [weak self] state in
             self?.refreshContent(state)
         }

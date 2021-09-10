@@ -26,7 +26,7 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PFX-pe-4V0">
-                        <rect key="frame" x="0.0" y="4" width="585" height="73"/>
+                        <rect key="frame" x="0.0" y="5" width="601" height="71"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="NSB-10-X62">
                                 <rect key="frame" x="0.0" y="7" width="236.5" height="38"/>
@@ -66,7 +66,7 @@
                                 </constraints>
                             </stackView>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="1QW-Pg-x9u">
-                                <rect key="frame" x="244.5" y="10" width="340.5" height="33"/>
+                                <rect key="frame" x="244.5" y="10" width="356.5" height="33"/>
                                 <color key="backgroundColor" name="default_bgcolor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="32" id="Bfh-iZ-1x5"/>
@@ -81,10 +81,7 @@
                                 </connections>
                             </segmentedControl>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5qT-M2-AVF">
-                                <rect key="frame" x="244.5" y="42" width="340.5" height="21"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="21" id="HcB-Fk-kpQ"/>
-                                </constraints>
+                                <rect key="frame" x="244.5" y="42" width="356.5" height="19"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="14"/>
                                 <color key="textColor" name="default_text_color"/>
                                 <nil key="highlightedColor"/>
@@ -107,21 +104,19 @@
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
                     <constraint firstItem="PFX-pe-4V0" firstAttribute="leading" secondItem="Dsm-W2-s55" secondAttribute="leading" id="iEQ-tm-Fg2"/>
-                    <constraint firstAttribute="trailing" secondItem="PFX-pe-4V0" secondAttribute="trailing" constant="16" id="oVe-pN-sK0"/>
-                    <constraint firstItem="PFX-pe-4V0" firstAttribute="top" secondItem="Dsm-W2-s55" secondAttribute="top" constant="4" id="sKF-eI-PpZ"/>
-                    <constraint firstAttribute="bottom" secondItem="PFX-pe-4V0" secondAttribute="bottom" constant="4" id="yhI-2b-e5X"/>
+                    <constraint firstAttribute="trailing" secondItem="PFX-pe-4V0" secondAttribute="trailing" id="oVe-pN-sK0"/>
+                    <constraint firstItem="PFX-pe-4V0" firstAttribute="top" secondItem="Dsm-W2-s55" secondAttribute="top" constant="5" id="sKF-eI-PpZ"/>
+                    <constraint firstAttribute="bottom" secondItem="PFX-pe-4V0" secondAttribute="bottom" constant="5" id="yhI-2b-e5X"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
             <connections>
                 <outlet property="bgView" destination="PFX-pe-4V0" id="fui-by-5le"/>
-                <outlet property="bgViewLeadingConstraint" destination="iEQ-tm-Fg2" id="NOn-RD-e21"/>
                 <outlet property="infoLabel" destination="65N-KA-0di" id="1vf-gP-zKO"/>
                 <outlet property="segmentControl" destination="1QW-Pg-x9u" id="wtq-gv-Z5V"/>
                 <outlet property="segmentControlTrailingConstraint" destination="WyF-52-nn9" id="FZJ-Ug-AcT"/>
                 <outlet property="stackViewLeadingConstraint" destination="OAr-CA-1Kc" id="5Nz-gL-rmB"/>
                 <outlet property="subtitleLabel" destination="5qT-M2-AVF" id="lt5-WJ-ApJ"/>
-                <outlet property="subtitleLabelHeight" destination="HcB-Fk-kpQ" id="LQX-QN-XGw"/>
                 <outlet property="titleLabel" destination="Tgt-Mh-30q" id="0aW-FL-2uT"/>
                 <outlet property="viewContentInfos" destination="R6g-95-YxT" id="tHD-Zu-prd"/>
             </connections>

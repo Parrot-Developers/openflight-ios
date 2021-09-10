@@ -72,7 +72,7 @@ final class CenteredRulerTableViewCell: UITableViewCell, NibReusable, EditionSet
 private extension CenteredRulerTableViewCell {
     /// Inits the view.
     func initView() {
-        titleLabel.makeUp()
+        titleLabel.makeUp(and: .defaultTextColor)
     }
 
     /// Resets view.
@@ -88,19 +88,14 @@ private extension CenteredRulerTableViewCell {
         let displayType: RulerDisplayType = settingType?.category != .image ? .number : .string
         let allValues: [Double]
         let currentValue: Double
-        if let step = settingType?.step,
-           let divider = settingType?.divider,
-           divider < 1.0,
-           let first: Int = settingType?.allValues.first,
-           let last: Int = settingType?.allValues.last {
-            allValues = Array(stride(from: Double(first) * divider,
-                                     through: Double(last) * divider,
-                                     by: step))
-            currentValue = Double(settingType?.currentValue ?? 0) * divider
-        } else {
-            allValues = settingType?.allValues.map({Double($0)}) ?? []
-            currentValue = Double(settingType?.currentValue ?? 0)
+
+        var divider = 1.0
+        if let dividerSetting = settingType?.divider, dividerSetting < 1.0 {
+            divider = dividerSetting
         }
+        allValues = settingType?.allValues.map({Double($0) * divider}) ?? []
+        currentValue = Double(settingType?.currentValue ?? 0) * divider
+
         ruler.model = SettingValueRulerModel(value: Double(currentValue),
                                              range: allValues,
                                              rangeDescriptions: settingType?.valueDescriptions ?? [],

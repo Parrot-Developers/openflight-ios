@@ -41,24 +41,31 @@ open class MapViewController: UIViewController {
     @IBOutlet private weak var leadingMapConstraint: NSLayoutConstraint!
 
     // MARK: - Public Properties
+    public var flightEditionService: FlightPlanEditionService?
+    public weak var flightDelegate: FlightEditionDelegate?
     public weak var editionDelegate: FlightPlanEditionViewControllerDelegate?
     public weak var settingsDelegate: EditionSettingsDelegate?
     public var currentMissionProviderState: MissionProviderState?
+    /// Arcgis magic value to fix heading orientationn.
+    public let arcgisMagicValueToFixHeading: Float = -1
+    public var currentMapAltitude: Double = 0.0
+    public var errorMapAltitude: Bool = false
+
     public var currentMapMode: MapMode = .standard {
         didSet {
             updateElevationVisibility()
         }
     }
 
-    /// Returns true if flight plan is currently draped.
-    public var isFlightPlanDraped: Bool {
-        return flightPlanOverlay?.sceneProperties?.surfacePlacement == .drapedFlat
+    /// Whether elevation is enabled.
+    public var isElevationEnabled: Bool {
+        sceneView?.scene?.baseSurface?.isEnabled == true
     }
 
-    open var flightPlanViewModel: FlightPlanViewModel? {
+    open var flightPlan: FlightPlanModel? {
         didSet {
-            let fileChanged = oldValue?.state.value.uuid != flightPlanViewModel?.state.value.uuid
-            didUpdateFlightPlan(flightPlanViewModel, fileChanged)
+            let fileChanged = oldValue?.uuid != flightPlan?.uuid
+            didUpdateFlightPlan(flightPlan, fileChanged)
         }
     }
 
@@ -68,12 +75,12 @@ open class MapViewController: UIViewController {
     }
 
     // MARK: - Internal Properties
-    internal var flightPlanListener: FlightPlanListener?
     internal weak var customControls: CustomHUDControls?
     internal weak var splitControls: SplitControls?
 
     // MARK: - Private Properties
-    private var cancellables = Set<AnyCancellable>()
+    var cancellables = Set<AnyCancellable>()
+    var editionCancellable: AnyCancellable?
     // TODO: Wrong injection
     public var viewModel = MapViewModel(locationsTracker: Services.hub.locationsTracker)
     private var currentMapType: SettingsMapDisplayType?
@@ -81,6 +88,8 @@ open class MapViewController: UIViewController {
     public var droneLocationGraphic: AGSGraphic?
     private var userLocationGraphic: AGSGraphic?
     private var ignoreCameraAdjustments: Bool = false
+    private var droneIsInLocationOverlay: Bool = false
+    private var userIsInLocationOverlay: Bool = false
     private var defaultCamera: AGSCamera {
         return AGSCamera(latitude: MapConstants.defaultLocation.latitude,
                          longitude: MapConstants.defaultLocation.longitude,
@@ -135,11 +144,6 @@ open class MapViewController: UIViewController {
         viewController.currentMapMode = mapMode
 
         return viewController
-    }
-
-    // MARK: - Deinit
-    deinit {
-        FlightPlanManager.shared.unregister(flightPlanListener)
     }
 
     // MARK: - Override Funcs
@@ -229,7 +233,7 @@ open class MapViewController: UIViewController {
 
     /// Edition view closed.
     open func editionViewClosed() {
-        FlightPlanManager.shared.resetUndoStack()
+        flightEditionService?.resetUndoStack()
     }
 
     // MARK: - Public Funcs
@@ -242,19 +246,22 @@ open class MapViewController: UIViewController {
     /// - Returns: FlightPlanEditionViewController
     open func editionProvider(coordinator: FlightPlanEditionCoordinator,
                               panelCoordinator: FlightPlanPanelCoordinator,
+                              flightPlanServices: FlightPlanServices,
                               mapViewRestorer: MapViewRestorer?) -> FlightPlanEditionViewController {
         let flightPlanProvider = currentMissionProviderState?.mode?.flightPlanProvider
-        let viewController = FlightPlanEditionViewController.instantiate(coordinator: coordinator,
-                                                                         panelCoordinator: panelCoordinator,
-                                                                         mapViewController: self,
-                                                                         mapViewRestorer: mapViewRestorer,
-                                                                         flightPlanProvider: flightPlanProvider)
+        let viewController = FlightPlanEditionViewController.instantiate(
+            coordinator: coordinator,
+            panelCoordinator: panelCoordinator,
+            flightPlanServices: flightPlanServices,
+            mapViewController: self,
+            mapViewRestorer: mapViewRestorer,
+            flightPlanProvider: flightPlanProvider)
         flightPlanEditionViewController = viewController
         return viewController
     }
 
-    open func didUpdateFlightPlan(_ flightPlan: FlightPlanViewModel?, _ fileChanged: Bool) {
-        guard let newFlightPlanViewModel = flightPlan else {
+    open func didUpdateFlightPlan(_ flightPlan: FlightPlanModel?, _ fileChanged: Bool) {
+        guard let newFlightPlan = flightPlan else {
                 // Future value is nil: remove Flight Plan graphic overlay.
                 self.removeFlightPlanGraphicOverlay()
                 return
@@ -262,8 +269,8 @@ open class MapViewController: UIViewController {
 
         if fileChanged {
             // Future value is a new FP view model: update graphic overlay.
-            self.displayFlightPlan(newFlightPlanViewModel, shouldReloadCamera: true)
-            if newFlightPlanViewModel.isEmpty {
+            self.displayFlightPlan(newFlightPlan, shouldReloadCamera: true)
+            if newFlightPlan.isEmpty {
                 self.centerMapOnDroneOrUser()
             }
         }
@@ -283,9 +290,9 @@ open class MapViewController: UIViewController {
     open func didTapOnUndo() {
         let selectedGraphic = self.flightPlanOverlay?.currentSelection
         let selectedIndex = self.flightPlanOverlay?.selectedGraphicIndex(for: selectedGraphic?.itemType ?? .none)
-        FlightPlanManager.shared.undo()
-        if let flightPlanViewModel = flightPlanViewModel {
-            self.displayFlightPlan(flightPlanViewModel, shouldReloadCamera: false)
+        flightEditionService?.undo()
+        if let flightPlan = flightPlan {
+            self.displayFlightPlan(flightPlan, shouldReloadCamera: false)
             if let selectedGraphic = selectedGraphic {
                 self.restoreSelectedItem(selectedGraphic,
                                          at: selectedIndex)
@@ -402,6 +409,42 @@ open class MapViewController: UIViewController {
         return currentMapMode.isAllowingPitch ? MapConstants.maxPitchValue : 0.0
     }
 
+    /// Updates origin graphic if needed
+    ///
+    /// - Parameters:
+    ///    - camera: current camera
+    public func updateOriginGraphicIfNeeded(camera: AGSCamera) {
+        guard let originGraphic = (flightPlanOverlay?.graphics.first(where: { $0 is FlightPlanOriginGraphic }) as? FlightPlanOriginGraphic) else { return }
+
+        let zoom = camera.location.z
+
+        originGraphic.update(magicNumber:
+            flightPlanOverlay?.sceneProperties?.surfacePlacement == .drapedFlat ? arcgisMagicValueToFixHeading : 1)
+
+        let originAltitude = originGraphic.originWayPoint?.altitude ?? 0
+        let minimalZoom: Double = 1500
+
+        // remove origin if zoom is too high
+        if errorMapAltitude {
+            // 8849 meters max altitude possible
+            if zoom < minimalZoom + 8849 + originAltitude {
+                originGraphic.hidden(false)
+            } else {
+                originGraphic.hidden(true)
+            }
+        } else {
+            if zoom < minimalZoom + currentMapAltitude + originAltitude {
+                originGraphic.hidden(false)
+            } else {
+                originGraphic.hidden(true)
+            }
+        }
+
+        // refresh graphic
+        flightPlanOverlay?.graphics.remove(originGraphic)
+        flightPlanOverlay?.graphics.add(originGraphic)
+    }
+
     /// Updates current camera if needed.
     ///
     /// - Parameters:
@@ -437,6 +480,7 @@ open class MapViewController: UIViewController {
             shouldReloadCamera = true
         }
         flightPlanOverlay?.update(heading: camera.heading)
+
         // Reload camera if needed.
         if shouldReloadCamera {
             if !removePitch {
@@ -451,6 +495,8 @@ open class MapViewController: UIViewController {
                 removeCameraPitchAnimated(camera: camera)
             }
         }
+
+        updateOriginGraphicIfNeeded(camera: camera)
     }
 
     /// Disables auto center.
@@ -459,6 +505,11 @@ open class MapViewController: UIViewController {
     ///    - isDisabled: whether autocenter should be disabled
     public func disableAutoCenter(_ isDisabled: Bool) {
         viewModel.disableAutoCenter(isDisabled)
+    }
+
+    open func unplug() {
+        cancellables.forEach { $0.cancel() }
+        editionCancellable?.cancel()
     }
 }
 
@@ -480,12 +531,14 @@ extension MapViewController {
 
     /// Inserts user location graphic into locations overlay or flight plan overlay, depending on map mode.
     func insertUserGraphic() {
+        userIsInLocationOverlay = true
         if let flightPlanOverlay = flightPlanOverlay {
             // if flight plan overlay is present,
             // remove user location from location overlay
             if let graphic = userLocationGraphic {
                 getGraphicOverlay(forKey: MapConstants.locationsOverlayKey)?
                     .graphics.remove(graphic)
+                userIsInLocationOverlay = false
             }
             // insert user location into flight plan overlay
             flightPlanOverlay.setUserGraphic(userLocationGraphic)
@@ -499,6 +552,7 @@ extension MapViewController {
 
     /// Inserts drone location graphic into locations overlay or flight plan overlay, depending on map mode.
     func insertDroneGraphic() {
+        droneIsInLocationOverlay = true
         if let flightPlanOverlay = flightPlanOverlay {
             // if flight plan overlay is present,
             // remove drone location from location overlay
@@ -508,6 +562,7 @@ extension MapViewController {
             }
             // insert drone location into flight plan overlay
             flightPlanOverlay.setDroneGraphic(droneLocationGraphic)
+            droneIsInLocationOverlay = false
         } else if let graphic = droneLocationGraphic {
             // if flight plan overlay is not present,
             // insert drone location into location overlay
@@ -635,6 +690,7 @@ private extension MapViewController {
             shouldUpdateMapType = false
             disableLocations()
             updateMapType(.hybrid)
+            viewModel.disableAutoCenter(true)
         case .standard:
             viewModel.forceHideCenterButton(false)
             centerMapOnDroneOrUserIfNeeded()
@@ -717,13 +773,13 @@ private extension MapViewController {
     func updateUserLocationGraphic(location: CLLocationCoordinate2D,
                                    heading: CLLocationDegrees) {
         let geometry = AGSPoint(clLocationCoordinate2D: location)
-        let camera = self.sceneView.currentViewpointCamera()
-
-        var headingWithMapOrientation = Float(Int(heading) % 360)
-        if !isFlightPlanDraped {
-            headingWithMapOrientation -= Float(camera.heading)
-        } else {
-            headingWithMapOrientation *= -1
+        var headingWithMapOrientation = Float(heading)
+        if userIsInLocationOverlay {
+            if getGraphicOverlay(forKey: MapConstants.locationsOverlayKey)?.sceneProperties?.surfacePlacement == .drapedFlat {
+                headingWithMapOrientation *= arcgisMagicValueToFixHeading
+            }
+        } else if flightPlanOverlay?.sceneProperties?.surfacePlacement == .drapedFlat {
+            headingWithMapOrientation *= arcgisMagicValueToFixHeading
         }
         if let userLocationGraphic = userLocationGraphic {
             // create graphic for user location
@@ -737,6 +793,7 @@ private extension MapViewController {
             let graphic = AGSGraphic(geometry: geometry, symbol: symbol, attributes: attributes)
             userLocationGraphic = graphic
             insertUserGraphic()
+            updateUserLocationGraphic(location: location, heading: heading)
         }
     }
 
@@ -748,12 +805,14 @@ private extension MapViewController {
     func updateDroneLocationGraphic(location: Location3D,
                                     heading: CLLocationDegrees) {
         let geometry = location.agsPoint
-        let camera = self.sceneView.currentViewpointCamera()
         var headingWithMapOrientation = Float(heading)
-        if !isFlightPlanDraped {
-            headingWithMapOrientation -= Float(camera.heading)
-        } else {
-            headingWithMapOrientation *= -1
+
+        if droneIsInLocationOverlay {
+            if getGraphicOverlay(forKey: MapConstants.locationsOverlayKey)?.sceneProperties?.surfacePlacement == .drapedFlat {
+                headingWithMapOrientation *= arcgisMagicValueToFixHeading
+            }
+        } else if flightPlanOverlay?.sceneProperties?.surfacePlacement == .drapedFlat {
+            headingWithMapOrientation *= arcgisMagicValueToFixHeading
         }
         if let droneLocationGraphic = droneLocationGraphic {
             // create graphic for drone location
@@ -767,6 +826,7 @@ private extension MapViewController {
             let graphic = AGSGraphic(geometry: geometry, symbol: symbol, attributes: attributes)
             droneLocationGraphic = graphic
             insertDroneGraphic()
+            updateDroneLocationGraphic(location: location, heading: heading)
         }
     }
 }
@@ -845,5 +905,89 @@ extension MapViewController: AGSGeoViewTouchDelegate {
         if currentMapMode == .flightPlanEdition {
             flightPlanHandleTouchUp(geoView, didTouchUpAtScreenPoint: screenPoint, mapPoint: mapPoint)
         }
+    }
+}
+
+extension MapViewController: MapViewEditionControllerDelegate {
+    public var polygonPointsValue: [AGSPoint] {
+        return polygonPoints()
+    }
+
+    public func insertWayPoint(_ wayPoint: WayPoint, index: Int) -> FlightPlanWayPointGraphic? {
+        return flightPlanOverlay?.insertWayPoint(wayPoint,
+                                                 at: index)
+    }
+
+    public func toggleRelation(between wayPointGraphic: FlightPlanWayPointGraphic,
+                               and selectedPoiPointGraphic: FlightPlanPoiPointGraphic) {
+        flightPlanOverlay?.toggleRelation(between: wayPointGraphic,
+                                          and: selectedPoiPointGraphic)
+    }
+
+    public func updateVisibility() {
+        updateElevationVisibility()
+    }
+
+    public func updateGraphicSelection(_ graphic: FlightPlanGraphic, isSelected: Bool) {
+        flightPlanOverlay?.updateGraphicSelection(graphic,
+                                                  isSelected: isSelected)
+    }
+
+    public func updatePoiPointAltitude(at index: Int, altitude: Double) {
+        flightPlanOverlay?.updatePoiPointAltitude(at: index, altitude: altitude)
+    }
+
+    public func updateWayPointAltitude(at index: Int, altitude: Double) {
+        flightPlanOverlay?.updateWayPointAltitude(at: index, altitude: altitude)
+    }
+
+    public func updateModeSettings(tag: Int) {
+        settingsDelegate?.updateMode(tag: tag)
+    }
+
+    public func didFinishCornerEditionMode() {
+        didFinishCornerEdition()
+    }
+
+    public func removeWayPointAt(_ index: Int) {
+        removeWayPoint(at: index)
+    }
+
+    public func removePOIAt(_ index: Int) {
+        removePOI(at: index)
+    }
+
+    public func didTapDeleteCorner() {
+        didDeleteCorner()
+    }
+
+    public func updateChoiceSettings(for key: String?, value: Bool) {
+        updateChoiceSetting(for: key, value: value)
+    }
+
+    public func updateSettingsValue(for key: String?, value: Int) {
+        updateSettingValue(for: key, value: value)
+    }
+
+    public func restoreMapToOrigianlContainer() {
+        setMapMode(.flightPlan)
+        editionViewClosed()
+        flightPlanEditionViewController = nil
+    }
+
+    public func lastManuallySelectedGraphic() {
+        flightPlanOverlay?.lastManuallySelectedGraphic = nil
+    }
+
+    public func deselectAllGraphics() {
+        flightPlanOverlay?.deselectAllGraphics()
+    }
+
+    public func undoAction() {
+        didTapOnUndo()
+    }
+
+    public func endEdition() {
+        setMapMode(.flightPlan)
     }
 }

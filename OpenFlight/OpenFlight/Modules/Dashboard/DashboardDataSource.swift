@@ -67,7 +67,8 @@ struct DashboardDataSource {
                     .content(.droneInfos),
                     .content(.userDevice),
                     .content(.myFlights),
-                    .content(.galleryMedia)
+                    .content(.galleryMedia),
+                    .content(.photogrammetryDebug)
                 ]
             }
         }
@@ -88,6 +89,7 @@ struct DashboardDataSource {
         case userDevice
         case myFlights
         case galleryMedia
+        case photogrammetryDebug
     }
 }
 
@@ -299,8 +301,8 @@ extension DashboardDataSource.Item {
     }
 }
 
-extension Array {
-    public subscript(safeIndex index: Int) -> Iterator.Element? {
+fileprivate extension Array {
+    subscript(safeIndex index: Int) -> Iterator.Element? {
         guard index >= 0, index < endIndex, index < count else {
             return nil
         }

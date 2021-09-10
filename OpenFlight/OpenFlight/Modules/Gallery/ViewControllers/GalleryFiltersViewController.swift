@@ -90,7 +90,7 @@ final class GalleryFiltersViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override func viewDidLayoutSubviews() {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="OqT-Ih-8Qb">
-    <device id="retina5_5" orientation="portrait" appearance="light"/>
+    <device id="retina6_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
@@ -22,15 +22,15 @@
             <objects>
                 <viewController storyboardIdentifier="RemoteCalibration" useStoryboardIdentifierAsRestorationIdentifier="YES" id="OqT-Ih-8Qb" customClass="RemoteCalibrationViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="scG-L2-eWQ">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YcC-Io-Mjq" userLabel="bgView">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                                 <color key="backgroundColor" name="default_bgcolor"/>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="g5N-wU-uvg" userLabel="BackView">
-                                <rect key="frame" x="20" y="0.0" width="374" height="60"/>
+                                <rect key="frame" x="44" y="0.0" width="852" height="60"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dLL-N7-Qg3">
                                         <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
@@ -44,7 +44,7 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="l6H-ph-7Jo">
-                                        <rect key="frame" x="169.33333333333334" y="19" width="35.666666666666657" height="22.333333333333329"/>
+                                        <rect key="frame" x="408.33333333333331" y="19" width="35.666666666666686" height="22.333333333333329"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
@@ -61,13 +61,19 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Z0b-YH-8Qu" customClass="RemoteCalibrationInstructionsView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="68" width="414" height="200"/>
+                                <rect key="frame" x="427.33333333333331" y="68" width="41.666666666666686" height="225"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRemoteCalibration16" translatesAutoresizingMaskIntoConstraints="NO" id="UgG-DP-Q7W">
-                                        <rect key="frame" x="20" y="0.0" width="394" height="180"/>
+                                        <rect key="frame" x="-94.333333333333314" y="41" width="230" height="143"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="230" id="7Ju-tU-0UQ">
+                                                <variation key="heightClass=regular-widthClass=regular" constant="432"/>
+                                            </constraint>
+                                            <constraint firstAttribute="width" secondItem="UgG-DP-Q7W" secondAttribute="height" multiplier="1.61" id="fei-Qz-C47"/>
+                                        </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="4" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qem-kg-i4U">
-                                        <rect key="frame" x="50" y="180" width="314" height="20"/>
+                                        <rect key="frame" x="0.0" y="184" width="41.666666666666664" height="20"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="17"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
@@ -76,13 +82,11 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="200" id="Dme-3P-BW5"/>
-                                    <constraint firstAttribute="trailing" secondItem="UgG-DP-Q7W" secondAttribute="trailing" id="PPh-lt-dmv"/>
-                                    <constraint firstAttribute="trailing" secondItem="Qem-kg-i4U" secondAttribute="trailing" constant="50" id="Zd2-6m-J9p"/>
-                                    <constraint firstItem="UgG-DP-Q7W" firstAttribute="leading" secondItem="Z0b-YH-8Qu" secondAttribute="leading" constant="20" id="aNZ-vQ-LMT"/>
-                                    <constraint firstItem="UgG-DP-Q7W" firstAttribute="top" secondItem="Z0b-YH-8Qu" secondAttribute="top" id="cU6-ka-HAl"/>
+                                    <constraint firstItem="UgG-DP-Q7W" firstAttribute="centerX" secondItem="Z0b-YH-8Qu" secondAttribute="centerX" id="MIi-bK-bhU"/>
+                                    <constraint firstItem="UgG-DP-Q7W" firstAttribute="centerY" secondItem="Z0b-YH-8Qu" secondAttribute="centerY" id="TCs-vr-i5I"/>
+                                    <constraint firstItem="Qem-kg-i4U" firstAttribute="leading" secondItem="Z0b-YH-8Qu" secondAttribute="leading" id="eqA-yG-BYq"/>
+                                    <constraint firstAttribute="trailing" secondItem="Qem-kg-i4U" secondAttribute="trailing" id="fCh-fC-bPN"/>
                                     <constraint firstItem="Qem-kg-i4U" firstAttribute="top" secondItem="UgG-DP-Q7W" secondAttribute="bottom" id="kbj-nn-gVt"/>
-                                    <constraint firstAttribute="bottom" secondItem="Qem-kg-i4U" secondAttribute="bottom" id="oaf-yT-7E2"/>
-                                    <constraint firstItem="Qem-kg-i4U" firstAttribute="leading" secondItem="Z0b-YH-8Qu" secondAttribute="leading" constant="50" id="obx-UG-sL3"/>
                                 </constraints>
                                 <variation key="default">
                                     <mask key="constraints">
@@ -96,16 +100,16 @@
                                 </variation>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="L3s-gK-d3o" userLabel="ProgressView">
-                                <rect key="frame" x="127" y="268" width="160" height="448"/>
+                                <rect key="frame" x="44" y="293" width="808" height="80"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wco-33-ByX">
-                                        <rect key="frame" x="0.0" y="20" width="160" height="428"/>
+                                        <rect key="frame" x="0.0" y="20" width="808" height="50"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="g6w-ev-EG3">
-                                                <rect key="frame" x="-20" y="0.0" width="200" height="50"/>
+                                                <rect key="frame" x="279" y="0.0" width="250" height="50"/>
                                                 <color key="backgroundColor" name="highlight_color"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" constant="200" id="dx3-bl-pmN"/>
+                                                    <constraint firstAttribute="width" constant="250" id="dx3-bl-pmN"/>
                                                     <constraint firstAttribute="height" constant="50" id="jLT-6h-tSK"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
@@ -117,7 +121,7 @@
                                                 </connections>
                                             </button>
                                             <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NpR-xI-i2t" customClass="RemoteCalibrationAxesView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="160" height="428"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="808" height="50"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="3y8-gU-Peh"/>
@@ -129,10 +133,10 @@
                                                 </variation>
                                             </view>
                                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6XB-zH-YKE">
-                                                <rect key="frame" x="-20" y="0.0" width="200" height="50"/>
+                                                <rect key="frame" x="279" y="0.0" width="250" height="50"/>
                                                 <color key="backgroundColor" name="highlight_color"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" constant="200" id="53H-1a-7PB"/>
+                                                    <constraint firstAttribute="width" constant="250" id="53H-1a-7PB"/>
                                                     <constraint firstAttribute="height" constant="50" id="ca3-cp-HjH"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
@@ -193,21 +197,20 @@
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="Z0b-YH-8Qu" firstAttribute="top" secondItem="g5N-wU-uvg" secondAttribute="bottom" constant="8" id="3ob-fi-VwN"/>
+                            <constraint firstItem="g5N-wU-uvg" firstAttribute="top" secondItem="XGp-99-t9X" secondAttribute="top" id="8aS-NJ-oSw"/>
                             <constraint firstItem="L3s-gK-d3o" firstAttribute="top" secondItem="Z0b-YH-8Qu" secondAttribute="bottom" id="DSI-jh-DT2"/>
                             <constraint firstItem="YcC-Io-Mjq" firstAttribute="top" secondItem="scG-L2-eWQ" secondAttribute="top" id="Dpx-XT-0bn"/>
-                            <constraint firstItem="g5N-wU-uvg" firstAttribute="top" secondItem="XGp-99-t9X" secondAttribute="top" id="Kof-xu-Nq1"/>
                             <constraint firstItem="YcC-Io-Mjq" firstAttribute="leading" secondItem="scG-L2-eWQ" secondAttribute="leading" id="Qom-VC-2gQ"/>
                             <constraint firstItem="XGp-99-t9X" firstAttribute="bottom" secondItem="Z0b-YH-8Qu" secondAttribute="bottom" constant="100" id="RQ7-1T-krg"/>
                             <constraint firstItem="L3s-gK-d3o" firstAttribute="leading" secondItem="XGp-99-t9X" secondAttribute="leading" id="S9R-dD-Usn"/>
-                            <constraint firstItem="XGp-99-t9X" firstAttribute="trailing" secondItem="Z0b-YH-8Qu" secondAttribute="trailing" id="SQN-lU-f4g"/>
                             <constraint firstItem="XGp-99-t9X" firstAttribute="trailing" secondItem="L3s-gK-d3o" secondAttribute="trailing" id="bDK-MA-4qb"/>
                             <constraint firstAttribute="bottom" secondItem="YcC-Io-Mjq" secondAttribute="bottom" id="by7-Bs-s86"/>
                             <constraint firstItem="XGp-99-t9X" firstAttribute="bottom" secondItem="L3s-gK-d3o" secondAttribute="bottom" constant="20" id="dBX-NM-3TP"/>
                             <constraint firstAttribute="trailing" secondItem="YcC-Io-Mjq" secondAttribute="trailing" id="dHC-FA-lZG"/>
-                            <constraint firstItem="g5N-wU-uvg" firstAttribute="leading" secondItem="scG-L2-eWQ" secondAttribute="leading" constant="20" id="dzB-R9-2oA"/>
+                            <constraint firstItem="g5N-wU-uvg" firstAttribute="leading" secondItem="XGp-99-t9X" secondAttribute="leading" id="dzB-R9-2oA"/>
                             <constraint firstItem="L3s-gK-d3o" firstAttribute="centerX" secondItem="XGp-99-t9X" secondAttribute="centerX" id="shu-ZR-BlP"/>
-                            <constraint firstAttribute="trailing" secondItem="g5N-wU-uvg" secondAttribute="trailing" constant="20" id="w12-2g-xlO"/>
-                            <constraint firstItem="Z0b-YH-8Qu" firstAttribute="leading" secondItem="XGp-99-t9X" secondAttribute="leading" id="zNo-7J-mGj"/>
+                            <constraint firstAttribute="trailing" secondItem="g5N-wU-uvg" secondAttribute="trailing" id="w12-2g-xlO"/>
+                            <constraint firstItem="Z0b-YH-8Qu" firstAttribute="centerX" secondItem="XGp-99-t9X" secondAttribute="centerX" id="yaJ-Zb-TSE"/>
                         </constraints>
                         <variation key="heightClass=regular-widthClass=compact">
                             <mask key="constraints">
@@ -228,7 +231,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="luu-qE-rtM" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="65" y="211"/>
+            <point key="canvasLocation" x="64.402173913043484" y="210.1449275362319"/>
         </scene>
     </scenes>
     <resources>
@@ -237,11 +240,11 @@
         <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="highlight_color">
-            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-        </namedColor>
         <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="highlight_color">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
     </resources>
 </document>

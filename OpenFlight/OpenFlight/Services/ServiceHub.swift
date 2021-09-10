@@ -28,6 +28,8 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import CoreData
+
 /// Service hub that presents services through their protocols
 ///
 /// Architecture rules:
@@ -41,8 +43,10 @@
 /// While refactoring for this to be possible, we keep a singleton of this hub, but any new code should use proper injection as much as possible
 public protocol ServiceHub: AnyObject {
 
-    /// Store of available flight plan types
-    var flightPlanTypeStore: FlightPlanTypeStore { get }
+    /// Store and load current user information in Keychain
+    var userInformation: UserInformation { get }
+    /// Synchronise API calls
+    var apiRequestQueue: ApiRequestQueue { get }
     /// Store of available missions
     var missionsStore: MissionsStore { get }
     /// Current mission manager
@@ -53,33 +57,38 @@ public protocol ServiceHub: AnyObject {
     var currentDroneHolder: CurrentDroneHolder { get }
     /// OpenFlight wrapper over Obstacle Avoidance peripheral
     var obstacleAvoidanceMonitor: ObstacleAvoidanceMonitor { get }
-    /// Access to camera exposure lock feature
-    var exposureLockService: ExposureLockService { get }
     /// Access to the current remote control if any
     var currentRemoteControlHolder: CurrentRemoteControlHolder { get }
     /// Access to the connected remote control if any
     var connectedRemoteControlHolder: ConnectedRemoteControlHolder { get }
-    /// Access to the active flight plan watcher
-    var activeFlightPlanWatcher: ActiveFlightPlanExecutionWatcher { get }
-    /// Access to the flight plan camera settings handler
-    var flightPlanCameraSettingsHandler: FlightPlanCameraSettingsHandler { get }
     /// Access to locations tracking
     var locationsTracker: LocationsTracker { get }
     /// Access to the Data Repositories
     var repos: Repositories { get }
     /// Access to UI services
+    // swiftlint:disable:next identifier_name
     var ui: UIServices { get }
     /// Access to drone peripherals and instruments services
     var drone: DroneServices { get }
+    /// Access to flight plan services
+    var flightPlan: FlightPlanServices { get }
+    /// Access to flight services
+    var flight: FlightServices { get }
+    /// Access to mission catch up service
+    var missionCatchUp: MissionCatchUpService { get }
+    /// Access to Academy API service
+    var academyApiService: AcademyApiService { get }
 }
 
-/// Namespace to present the service hub (until refactor is complete)
+/// Namespace to expose the service hub (until refactor is complete)
 public enum Services {
     /// The service hub
     public private(set) static var hub: ServiceHub!
 
-    public static func createInstance(variableAssetsService: VariableAssetsService) {
-        hub = ServiceHubImpl(variableAssetsService: variableAssetsService)
+    public static func createInstance(variableAssetsService: VariableAssetsService,
+                                      persistentContainer: NSPersistentContainer) -> ServiceHub {
+        hub = ServiceHubImpl(variableAssetsService: variableAssetsService, persistentContainer: persistentContainer)
+        return hub
     }
 }
 
@@ -88,13 +97,13 @@ public struct Repositories {
 
     public let user: UserRepository
     public let drone: DroneDataRepository
-    public let challengeSecure: ChallengeSecureElementRepository
     public let project: ProjectRepository
     public let flight: FlightRepository
     public let flightPlanFlight: FlightPlanFlightsRepository
     public let flightPlan: FlightPlanRepository
     public let thumbnail: ThumbnailRepository
-    public let pgyProject: PgyProjectsRepository
+    public let pgyProject: PgyProjectRepository
+
 }
 
 /// UI services
@@ -103,6 +112,10 @@ public struct UIServices {
     let joysticksAvailabilityService: JoysticksAvailabilityService
     /// Variable assets service
     let variableAssetsService: VariableAssetsService
+    /// HUD top bar service
+    let hudTopBarService: HudTopBarService
+    /// UI components display reporter
+    let uiComponentsDisplayReporter: UIComponentsDisplayReporter
 }
 
 /// Drone services (instruments and peripherals related)
@@ -111,31 +124,83 @@ public struct DroneServices {
     let zoomService: ZoomService
     /// Gimbal tilt service
     let gimbalTiltService: GimbalTiltService
+    /// Cellular pairing service
+    let cellularPairingService: CellularPairingService
+    /// Cellular pairing availability service
+    let cellularPairingAvailabilityService: CellularPairingAvailabilityService
+    /// Camera exposure service
+    let exposureService: ExposureService
+    /// Camera exposure lock service
+    let exposureLockService: ExposureLockService
+}
+
+/// Flight plan services
+public struct FlightPlanServices {
+    /// Access to the project manager
+    public var projectManager: ProjectManager
+    /// Access to the flight plan manager
+    public var manager: FlightPlanManager
+    /// Flight plan state machine
+    public var stateMachine: FlightPlanStateMachine
+    /// Access to the active flight plan watcher
+    public var activeFlightPlanWatcher: ActiveFlightPlanExecutionWatcher
+    /// Access to the flight plan camera settings handler
+    public var cameraSettingsHandler: FlightPlanCameraSettingsHandler
+    /// Store of available flight plan types
+    public var typeStore: FlightPlanTypeStore
+    /// Edition of flight plan
+    public var edition: FlightPlanEditionService
+    /// Run Manager of flight plan
+    public var run: FlightPlanRunManager
+    /// Mavlink generator
+    public var mavlinkGenerator: MavlinkGenerator
+    /// Mavlink sender
+    public var mavlinkSender: MavlinkDroneSender
+    /// Flight plan start availability watcher
+    public var startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher
+    /// Flight plan files manager
+    public var filesManager: FlightPlanFilesManager
+}
+
+/// Flight services
+public struct FlightServices {
+    /// Access to gutma watcher
+    public let gutmaWatcher: GutmaWatcher
+    /// Access to flight service
+    public let service: FlightService
 }
 
 /// Implementation of the service hub
 private class ServiceHubImpl: ServiceHub {
 
+    let userInformation: UserInformation
+    let apiRequestQueue: ApiRequestQueue
     let flightPlanTypeStore: FlightPlanTypeStore
     let missionsStore: MissionsStore
     let currentMissionManager: CurrentMissionManager
     let connectedDroneHolder: ConnectedDroneHolder
     let currentDroneHolder: CurrentDroneHolder
     let obstacleAvoidanceMonitor: ObstacleAvoidanceMonitor
-    let exposureLockService: ExposureLockService
     let currentRemoteControlHolder: CurrentRemoteControlHolder
     let connectedRemoteControlHolder: ConnectedRemoteControlHolder
-    let activeFlightPlanWatcher: ActiveFlightPlanExecutionWatcher
-    let flightPlanCameraSettingsHandler: FlightPlanCameraSettingsHandler
     let locationsTracker: LocationsTracker
     let repos: Repositories
+    // swiftlint:disable:next identifier_name
     let ui: UIServices
     let drone: DroneServices
+    let flightPlan: FlightPlanServices
+    let missionCatchUp: MissionCatchUpService
+    let flight: FlightServices
+    let academyApiService: AcademyApiService
 
     /// Legacy drone store, implements some side effects of current drone change
     private let legacyCurrentDroneStore: LegacyCurrentDroneStore
 
-    fileprivate init(variableAssetsService: VariableAssetsService) {
+    fileprivate init(variableAssetsService: VariableAssetsService, persistentContainer: NSPersistentContainer) {
+
+        userInformation = UserInformationImpl()
+
+        apiRequestQueue = ApiRequestQueueImpl()
 
         flightPlanTypeStore = FlightPlanTypeStoreImpl()
 
@@ -150,44 +215,136 @@ private class ServiceHubImpl: ServiceHub {
         legacyCurrentDroneStore = LegacyCurrentDroneStore(droneHolder: currentDroneHolder,
                                                           currentMissionManager: currentMissionManager)
 
+        academyApiService = AcademyApiServiceImpl(requestQueue: apiRequestQueue)
+
         connectedRemoteControlHolder = ConnectedRemoteControlHolderImpl()
 
         currentRemoteControlHolder = CurrentRemoteControlHolderImpl(connectedRemoteControlHolder: connectedRemoteControlHolder)
 
-        // TODO: Rework on Singleton
-        let coreDataManager = CoreDataManager.shared
-        repos = Repositories(user: coreDataManager,
-                             drone: coreDataManager,
-                             challengeSecure: coreDataManager,
-                             project: coreDataManager,
-                             flight: coreDataManager,
-                             flightPlanFlight: coreDataManager,
-                             flightPlan: coreDataManager,
-                             thumbnail: coreDataManager,
-                             pgyProject: coreDataManager)
+        let coredataService = CoreDataServiceIml(with: persistentContainer,
+                                                 userInformation: userInformation)
+        repos = Repositories(user: coredataService,
+                             drone: coredataService,
+                             project: coredataService,
+                             flight: coredataService,
+                             flightPlanFlight: coredataService,
+                             flightPlan: coredataService,
+                             thumbnail: coredataService,
+                             pgyProject: coredataService)
 
-        // TODO change flight plan repository with new model's repository
-        activeFlightPlanWatcher = ActiveFlightPlanExecutionWatcherImpl(currentDroneHolder: currentDroneHolder,
-                                                                       flightPlanRepository: CoreDataManager.shared,
-                                                                       flightPlanExecutionRepository: CoreDataManager.shared)
+        let activeFlightPlanWatcher = ActiveFlightPlanExecutionWatcherImpl(flightPlanRepository: repos.flightPlan)
 
         obstacleAvoidanceMonitor = ObstacleAvoidanceMonitorImpl(currentDroneHolder: currentDroneHolder,
                                                                 activeFlightPlanWatcher: activeFlightPlanWatcher)
 
-        exposureLockService = ExposureLockServiceImpl(currentDroneHolder: currentDroneHolder)
-
-        flightPlanCameraSettingsHandler = FlightPlanCameraSettingsHandlerImpl(activeFlightPlanWatcher: activeFlightPlanWatcher,
-                                                                              currentDroneHolder: currentDroneHolder)
         locationsTracker = LocationsTrackerImpl(connectedDroneHolder: connectedDroneHolder,
                                                 connectedRcHolder: connectedRemoteControlHolder)
         let joysticksAvailabilityService = JoysticksAvailabilityServiceImpl(currentMissionManager: currentMissionManager,
                                                                             connectedDroneHolder: connectedDroneHolder,
                                                                             connectedRemoteControlHolder: connectedRemoteControlHolder)
-        ui = UIServices(joysticksAvailabilityService: joysticksAvailabilityService, variableAssetsService: variableAssetsService)
+
+        let uiComponentsDisplayReporter = UIComponentsDisplayReporterImpl()
+
+        let hudTopBarService = HudTopBarServiceImpl(uiComponentsDisplayReporter: uiComponentsDisplayReporter)
+
+        ui = UIServices(joysticksAvailabilityService: joysticksAvailabilityService,
+                        variableAssetsService: variableAssetsService,
+                        hudTopBarService: hudTopBarService,
+                        uiComponentsDisplayReporter: uiComponentsDisplayReporter)
+
         let zoomService = ZoomServiceImpl(currentDroneHolder: currentDroneHolder,
                                           activeFlightPlanWatcher: activeFlightPlanWatcher)
         let gimbalTiltService = GimbalTiltServiceImpl(connectedDroneHolder: connectedDroneHolder,
                                                       activeFlightPlanWatcher: activeFlightPlanWatcher)
-        drone = DroneServices(zoomService: zoomService, gimbalTiltService: gimbalTiltService)
+        let cellularPairingService = CellularPairingServiceImpl(currentDroneHolder: currentDroneHolder,
+                                                                userRepo: repos.user,
+                                                                connectedDroneHolder: connectedDroneHolder,
+                                                                academyApiService: academyApiService)
+        let cellularPairingAvailabilityService = CellularPairingAvailabilityServiceImpl(currentDroneHolder: currentDroneHolder,
+                                                                                        connectedDroneHolder: connectedDroneHolder,
+                                                                                        academyApiService: academyApiService)
+        let exposureService = ExposureServiceImpl(currentDroneHolder: currentDroneHolder)
+        let exposureLockService = ExposureLockServiceImpl(currentDroneHolder: currentDroneHolder)
+
+        drone = DroneServices(zoomService: zoomService,
+                              gimbalTiltService: gimbalTiltService,
+                              cellularPairingService: cellularPairingService,
+                              cellularPairingAvailabilityService: cellularPairingAvailabilityService,
+                              exposureService: exposureService,
+                              exposureLockService: exposureLockService)
+
+        let flightPlanStartAvailabilityWatcher = FlightPlanStartAvailabilityWatcherImpl(currentDroneHolder: currentDroneHolder)
+
+        let flightPlanFilesManager = FlightPlanFilesManagerImpl()
+
+        let flightPlanManager = FlightPlanManagerImpl(persistenceFlightPlan: repos.flightPlan,
+                                                      currentUser: userInformation,
+                                                      filesManager: flightPlanFilesManager)
+
+        let flightPlanEditionService = FlightPlanEditionServiceImpl(flightPlanRepo: repos.flightPlan,
+                                                                    typeStore: flightPlanTypeStore,
+                                                                    currentMissionManager: currentMissionManager,
+                                                                    currentUser: userInformation,
+                                                                    filesManager: flightPlanFilesManager)
+
+        let projectManager = ProjectManagerImpl(missionsStore: missionsStore,
+                                                flightPlanTypeStore: flightPlanTypeStore,
+                                                persistenceProject: repos.project,
+                                                flightPlanRepo: repos.flightPlan,
+                                                editionService: flightPlanEditionService,
+                                                currentMissionManager: currentMissionManager,
+                                                currentUser: userInformation,
+                                                filesManager: flightPlanFilesManager)
+
+        let flightPlanCameraSettingsHandler = FlightPlanCameraSettingsHandlerImpl(activeFlightPlanWatcher: activeFlightPlanWatcher,
+                                                                                  currentDroneHolder: currentDroneHolder,
+                                                                                  projectManager: projectManager)
+
+        let mavlinkGenerator = MavlinkGeneratorImpl(typeStore: flightPlanTypeStore, filesManager: flightPlanFilesManager)
+
+        let mavlinkSender = MavlinkDroneSenderImpl(typeStore: flightPlanTypeStore, currentDroneHolder: currentDroneHolder)
+
+        let flightPlanRunManager = FlightPlanRunManagerImpl(typeStore: flightPlanTypeStore,
+                                                            projectRepo: repos.project,
+                                                            currentDroneHolder: currentDroneHolder,
+                                                            activeFlightPlanWatcher: activeFlightPlanWatcher,
+                                                            flightPlanManager: flightPlanManager,
+                                                            startAvailabilityWatcher: flightPlanStartAvailabilityWatcher)
+
+        let flightPlanStateMachine = FlightPlanStateMachineImpl(manager: flightPlanManager,
+                                                                runManager: flightPlanRunManager,
+                                                                mavlinkGenerator: mavlinkGenerator,
+                                                                mavlinkSender: mavlinkSender,
+                                                                startAvailabilityWatcher: flightPlanStartAvailabilityWatcher,
+                                                                edition: flightPlanEditionService)
+        
+        flightPlan = FlightPlanServices(projectManager: projectManager,
+                                        manager: flightPlanManager,
+                                        stateMachine: flightPlanStateMachine,
+                                        activeFlightPlanWatcher: activeFlightPlanWatcher,
+                                        cameraSettingsHandler: flightPlanCameraSettingsHandler,
+                                        typeStore: flightPlanTypeStore,
+                                        edition: flightPlanEditionService,
+                                        run: flightPlanRunManager,
+                                        mavlinkGenerator: mavlinkGenerator,
+                                        mavlinkSender: mavlinkSender,
+                                        startAvailabilityWatcher: flightPlanStartAvailabilityWatcher,
+                                        filesManager: flightPlanFilesManager)
+        missionCatchUp = MissionCatchUpServiceImpl(connectedDroneHolder: connectedDroneHolder,
+                                                   flightPlanManager: flightPlanManager,
+                                                   projectService: projectManager,
+                                                   missionsStore: missionsStore,
+                                                   currentMissionManager: currentMissionManager)
+
+        let flightService = FlightServiceImpl(repo: repos.flight,
+                                              fpFlightRepo: repos.flightPlanFlight,
+                                              thumbnailRepo: repos.thumbnail,
+                                              userInformation: userInformation)
+
+        let gutmaWatcher = GutmaWatcherImpl(userInfo: userInformation,
+                                            service: flightService,
+                                            currentDroneHolder: currentDroneHolder)
+
+        flight = FlightServices(gutmaWatcher: gutmaWatcher, service: flightService)
     }
 }

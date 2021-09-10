@@ -30,7 +30,7 @@
 
 // MARK: - Internal Enums
 /// Provides different state and errors which occurs when cellular connection got problems.
-enum DetailsCellularStatus: Int {
+public enum DetailsCellularStatus: Int {
     case noState
     case cellularConnected
     case cellularConnecting
@@ -159,7 +159,7 @@ extension DetailsCellularStatus {
     var detailsTextColor: ColorName {
         switch self {
         case .cellularConnected:
-            return ColorName.greenSpring
+            return .highlightColor
         case .simBlocked,
              .userNotPaired,
              .notRegistered,
@@ -169,14 +169,14 @@ extension DetailsCellularStatus {
              .modemStatusOff,
              .simNotRecognized,
              .connectionFailed:
-            return ColorName.redTorch
+            return .errorColor
         case .noData,
              .noState,
              .cellularConnecting:
-            return ColorName.white20
+            return .defaultTextColor
         case .simNotDetected,
              .simLocked:
-            return ColorName.orangePeel
+            return .warningColor
         }
     }
 
@@ -201,7 +201,7 @@ extension DetailsCellularStatus {
 }
 
 /// Stores states which occurs during drone unpairing.
-enum UnpairDroneState: Equatable {
+public enum UnpairDroneState: Equatable {
     case notStarted
     case noInternet(context: UnpairDroneStateContext)
     case forgetError(context: UnpairDroneStateContext)
@@ -236,7 +236,7 @@ enum UnpairDroneState: Equatable {
 }
 
 /// Specify context of drone unpairing.
-enum UnpairDroneStateContext {
+public enum UnpairDroneStateContext {
     case details
     case discover
 }

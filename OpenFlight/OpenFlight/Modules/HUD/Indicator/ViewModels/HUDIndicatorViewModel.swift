@@ -42,7 +42,7 @@ final class HUDIndicatorState: DeviceConnectionState {
     /// Current bottom bar mode.
     fileprivate var currentBottomBarMode = BottomBarMode.preset
     /// Current mission launcher mode.
-    fileprivate var currentMissionLauncherMode = MissionLauncherMode.preset
+    fileprivate var missionMenuDisplayed = false
     /// Boolean to determine if indicator should be force hidden.
     fileprivate var forceHideIndicator = false
     /// Boolean to determine if indicator should be hidden due to joysticks visibility.
@@ -61,21 +61,21 @@ final class HUDIndicatorState: DeviceConnectionState {
     ///    - droneConnectionState: drone connection state
     ///    - currentSplitScreenMode: current split screen mode
     ///    - currentBottomBarMode: current bottom bar mode
-    ///    - currentMissionLauncherMode: current mission launcher mode
+    ///    - missionMenuDisplayed: is mission menu displayed
     ///    - forceHideIndicator: boolean to determine if indicator should be force hidden
     ///    - isJoysticksVisible: boolean to determine if indicator should be hidden due to joysticks view
     ///    - shouldHideIndicator: observable for indicator visibility
     init(droneConnectionState: DeviceState.ConnectionState,
          currentSplitScreenMode: SplitScreenMode,
          currentBottomBarMode: BottomBarMode,
-         currentMissionLauncherMode: MissionLauncherMode,
+         missionMenuDisplayed: Bool,
          forceHideIndicator: Bool,
          isJoysticksVisible: Bool,
          shouldHideIndicator: Observable<Bool>) {
         super.init(connectionState: droneConnectionState)
         self.currentSplitScreenMode = currentSplitScreenMode
         self.currentBottomBarMode = currentBottomBarMode
-        self.currentMissionLauncherMode = currentMissionLauncherMode
+        self.missionMenuDisplayed = missionMenuDisplayed
         self.forceHideIndicator = forceHideIndicator
         self.isJoysticksVisible = isJoysticksVisible
         self.shouldHideIndicator = shouldHideIndicator
@@ -89,7 +89,7 @@ final class HUDIndicatorState: DeviceConnectionState {
         return super.isEqual(to: other)
             && currentSplitScreenMode == other.currentSplitScreenMode
             && currentBottomBarMode == other.currentBottomBarMode
-            && currentMissionLauncherMode == other.currentMissionLauncherMode
+            && missionMenuDisplayed == other.missionMenuDisplayed
             && forceHideIndicator == other.forceHideIndicator
             && isJoysticksVisible == other.isJoysticksVisible
             && shouldHideIndicator.value == other.shouldHideIndicator.value
@@ -100,7 +100,7 @@ final class HUDIndicatorState: DeviceConnectionState {
         let copy = HUDIndicatorState(droneConnectionState: self.connectionState,
                                      currentSplitScreenMode: self.currentSplitScreenMode,
                                      currentBottomBarMode: self.currentBottomBarMode,
-                                     currentMissionLauncherMode: self.currentMissionLauncherMode,
+                                     missionMenuDisplayed: self.missionMenuDisplayed,
                                      forceHideIndicator: self.forceHideIndicator,
                                      isJoysticksVisible: self.isJoysticksVisible,
                                      shouldHideIndicator: self.shouldHideIndicator)
@@ -132,7 +132,7 @@ final class HUDIndicatorViewModel: DroneStateViewModel<HUDIndicatorState> {
         state.value.shouldHideIndicator.valueChanged = indicatorVisibilityDidChange
         listenSplitModeChanges()
         listenBottomBarModeChanges()
-        listenMissionLauncherModeChanges()
+        listenMissionMenuDisplayedChanges()
         // TODO: wrong injection
         listenJoysticksAvailabilityChanges(joysticksAvailabilityService: Services.hub.ui.joysticksAvailabilityService)
     }
@@ -196,19 +196,16 @@ private extension HUDIndicatorViewModel {
         }
     }
 
-    /// Starts watcher for mission launcher mode changes.
-    func listenMissionLauncherModeChanges() {
-        missionLauncherModeObserver = NotificationCenter.default.addObserver(forName: .missionLauncherModeDidChange,
-                                                                             object: nil,
-                                                                             queue: nil) { [weak self] notification in
-            guard let missionLauncherMode = notification.userInfo?[MissionLauncherMode.notificationKey] as? MissionLauncherMode else {
-                return
+    /// Starts watcher for mission menu display changes.
+    func listenMissionMenuDisplayedChanges() {
+        Services.hub.ui.uiComponentsDisplayReporter.isMissionMenuDisplayedPublisher
+            .sink { [weak self] in
+                let copy = self?.state.value.copy()
+                copy?.missionMenuDisplayed = $0
+                self?.state.set(copy)
+                self?.updateIndicatorVisibility()
             }
-            let copy = self?.state.value.copy()
-            copy?.currentMissionLauncherMode = missionLauncherMode
-            self?.state.set(copy)
-            self?.updateIndicatorVisibility()
-        }
+            .store(in: &cancellables)
     }
 
     /// Starts watching for joysticks visibility changes.
@@ -226,7 +223,7 @@ private extension HUDIndicatorViewModel {
     func updateIndicatorVisibility() {
         let shouldHideIndicator = state.value.currentSplitScreenMode == .secondary
             || state.value.currentBottomBarMode != .closed
-            || state.value.currentMissionLauncherMode == .opened
+            || state.value.missionMenuDisplayed
             || state.value.isConnected()
             || state.value.forceHideIndicator
             || state.value.isJoysticksVisible

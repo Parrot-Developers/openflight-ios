@@ -131,7 +131,7 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -219,27 +219,24 @@ private extension GalleryImageViewController {
         guard let url = url else { return }
 
         imageUrl = url
-        activityIndicator.startAnimating()
+
+        let loadImage: (URL, @escaping (UIImage?) -> Void) -> Void
         switch url.pathExtension {
         case GalleryMediaType.photo.pathExtension:
-            AssetUtils.shared.loadImage(withURL: url,
-                                        compression: MediaConstants.defaultImageCompression) { [weak self] (_, image) in
-                self?.activityIndicator.stopAnimating()
-                self?.photoImageView.contentMode = .scaleAspectFit
-                self?.photoImageView.image = image
-                self?.setupPickerView()
-                self?.setupGenerateView()
-            }
+            loadImage = AssetUtils.shared.loadImage
         case GalleryMediaType.dng.pathExtension:
-            AssetUtils.shared.loadRawImage(withURL: url) { [weak self] (_, image) in
-                self?.activityIndicator.stopAnimating()
-                self?.photoImageView.contentMode = .scaleAspectFit
-                self?.photoImageView.image = image
-                self?.setupPickerView()
-                self?.setupGenerateView()
-            }
+            loadImage = AssetUtils.shared.loadRawImage
         default:
-            break
+            return
+        }
+
+        activityIndicator.startAnimating()
+        loadImage(url) { [weak self] image in
+            self?.activityIndicator.stopAnimating()
+            self?.photoImageView.contentMode = .scaleAspectFit
+            self?.photoImageView.image = image
+            self?.setupPickerView()
+            self?.setupGenerateView()
         }
     }
 

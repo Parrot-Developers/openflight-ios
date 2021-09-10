@@ -82,15 +82,11 @@ private extension OnboardingLocalizationViewController {
 private extension OnboardingLocalizationViewController {
     /// Initializes UI and wordings.
     func initUI() {
-        titleLabel.makeUp(with: .huge)
         titleLabel.text = L10n.authorizationsTitle
-        gpsTitleLabel.makeUp(with: .small, and: .greenSpring)
         gpsTitleLabel.text = L10n.commonRequired.uppercased()
-        gpsSubtitleLabel.makeUp(with: .huge)
         gpsSubtitleLabel.text = L10n.permissionGpsPositionTitle
-        gpsDescriptionLabel.makeUp(with: .big)
         gpsDescriptionLabel.text = L10n.permissionGpsPositionContent
-        continueButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
+        continueButton.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color, radius: Style.largeCornerRadius)
         continueButton.setTitle(L10n.commonContinue, for: .normal)
     }
 }

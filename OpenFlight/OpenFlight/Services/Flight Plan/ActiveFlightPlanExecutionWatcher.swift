@@ -32,63 +32,62 @@ import Foundation
 import Combine
 import GroundSdk
 
-public enum ActiveFlightPlanState {
-    case none
-    case activating(flightPlan: SavedFlightPlan)
-    case active(flightPlan: SavedFlightPlan, recoveryId: String)
-}
-
 /// Watches flight plan activation and exposes the active flight plan if any
 ///
 /// When publishing any new value, the matching property should already expose this new value (didSet behavior).
 /// The active flight plan should be published before the activating one is set to nil
 public protocol ActiveFlightPlanExecutionWatcher: AnyObject {
-    /// The couple of the active flight plan and its recoveryId if any
-    var activeFlightPlanAndRecoveryId: (SavedFlightPlan, String)? { get }
+    /// The couple of the active flight plan
+    var activeFlightPlan: FlightPlanModel? { get }
     /// Publisher for the active flight plan
-    var activeFlightPlanAndRecoveryIdPublisher: AnyPublisher<(SavedFlightPlan, String)?, Never> { get }
+    var activeFlightPlanPublisher: AnyPublisher<FlightPlanModel?, Never> { get }
     /// Publisher for an activating flight plan
-    var activatingFlightPlan: AnyPublisher<SavedFlightPlan?, Never> { get }
+    var activatingFlightPlanPublisher: AnyPublisher<FlightPlanModel?, Never> { get }
     /// Publisher to expose whether a flight plan with time or GPS lapse is being executed
     var hasActiveFlightPlanWithTimeOrGpsLapsePublisher: AnyPublisher<Bool, Never> { get }
     /// Whether a flight plan with time or GPS lapse is being executed
     var hasActiveFlightPlanWithTimeOrGpsLapse: Bool { get }
+
     /// The component responsible for activating the flight plan should let this watcher know about it
+    ///
     /// - Parameter flightPlan: the flight plan being activated
-    func flightPlanWillBeActivated(_ flightPlan: SavedFlightPlan)
+    func flightPlanWillBeActivated(_ flightPlan: FlightPlanModel)
+
     /// The component responsible for activating the flight plan should let this watcher know when an activation failed
-    func flightPlanActivationFailed()
+    ///
+    /// - Parameter flightPlan: the flight plan
+    func flightPlanActivationFailed(_ flightPlan: FlightPlanModel)
+
+    /// The component responsible for activating the flight plan should let this watcher know when an activation succeeded
+    ///
+    /// - Parameter flightPlan: the flight plan
+    func flightPlanActivationSucceeded(_ flightPlan: FlightPlanModel)
+
+    /// The component responsible for activating the flight plan should let this watcher know when an execution ended
+    ///
+    /// - Parameter flightPlan: the flight plan
+    func flightPlanDidStop(_ flightPlan: FlightPlanModel)
 }
 
 /// Implementation for ActiveFlightPlanExecutionWatcher
 public class ActiveFlightPlanExecutionWatcherImpl {
     /// Combine cancellables
     private var cancellables = Set<AnyCancellable>()
-    /// Flight plan repository (future model: projects)
-    private unowned var flightPlanRepository: FlightPlanDataProtocol
-    /// Flight plan execution repository (future model: flight plan)
-    private unowned var flightPlanExecutionRepository: FlightPlanExecutionDataProtocol
-    /// GroundSdk ref for flight plan piloting interface
-    private var fpPilotingItfRef: Ref<FlightPlanPilotingItfs.ApiProtocol>?
+    /// Flight plan repository
+    private unowned var flightPlanRepository: FlightPlanRepository
     /// Subject holding active flight plan's id if any
-    private var activeFlightPlanRecoveryIdSubject = CurrentValueSubject<String?, Never>(nil)
+    private var activeFlightPlanUuidSubject = CurrentValueSubject<String?, Never>(nil)
     /// Subject holding activating flight plan if any
-    private var activatingFlightPlanSubject = CurrentValueSubject<SavedFlightPlan?, Never>(nil)
+    private var activatingFlightPlanUuidSubject = CurrentValueSubject<String?, Never>(nil)
 
     // MARK: init
 
     /// Init
+    ///
     /// - Parameters:
-    ///   - currentDroneHolder: drone holder
     ///   - flightPlanRepository: flight plan repository
-    ///   - flightPlanExecutionRepository: the flight plan execution repository
-    public init(currentDroneHolder: CurrentDroneHolder,
-                flightPlanRepository: FlightPlanDataProtocol,
-                flightPlanExecutionRepository: FlightPlanExecutionDataProtocol) {
+    public init(flightPlanRepository: FlightPlanRepository) {
         self.flightPlanRepository = flightPlanRepository
-        self.flightPlanExecutionRepository = flightPlanExecutionRepository
-        // Listen to drone, and active FP changes
-        listen(dronePublisher: currentDroneHolder.dronePublisher)
     }
 }
 
@@ -100,60 +99,19 @@ private extension ULogTag {
 
 // MARK: Private functions
 private extension ActiveFlightPlanExecutionWatcherImpl {
-    /// Listen for the current drone
-    /// - Parameter dronePublisher: the drone publisher
-    func listen(dronePublisher: AnyPublisher<Drone, Never>) {
-        dronePublisher.sink { [unowned self] drone in
-            listenFlightPlanPilotingItf(drone: drone)
-        }
-        .store(in: &cancellables)
-    }
 
-    /// Listen for flight plan piloting itf
-    /// - Parameter drone: current drone
-    func listenFlightPlanPilotingItf(drone: Drone) {
-        // We're interested in monitoring any flightPlan that is being executed
-        // ( meaning itf.state == .active ) with a non-nil flight plan id
-        fpPilotingItfRef = drone.getPilotingItf(PilotingItfs.flightPlan) { [unowned self] pilotingItf in
-            if let pilotingItf = pilotingItf,
-               pilotingItf.state == .active,
-               // TODO: this shouldn't be this way (there's a proper recovery id exposed by GroundSdk) but we have
-               // to match what RunFlightPlanViewModel does (poorly)
-               let recoveryId = pilotingItf.flightPlanId,
-               flightPlanFor(recoveryId: recoveryId) != nil {
-                set(recoveryId: recoveryId)
-            } else {
-                set(recoveryId: nil)
-            }
-        }
-    }
-
-    func set(recoveryId: String?) {
-        guard recoveryId != activeFlightPlanRecoveryIdSubject.value else { return }
-        if let recoveryId = recoveryId {
-            ULog.i(.tag, "Flight plan is active. RecoveryId: \(recoveryId)")
-        } else {
-            ULog.i(.tag, "Flight plan is not active.")
-        }
-        activeFlightPlanRecoveryIdSubject.value = recoveryId
-        // If the flight plan was declared as activating, now it's really active so forget about the activating state
-        if activatingFlightPlanSubject.value != nil {
-            activatingFlightPlanSubject.value = nil
-        }
-    }
-
-    /// Fetch the flight plan associated with the execution's recoveryId
-    /// - Parameter recoveryId: the execution's recoveryId
+    /// Fetch the flight plan for an uuid
+    /// - Parameter uuid: the flight plan's uuid
     /// - Returns: the matching flight plan if any
-    func flightPlanFor(recoveryId: String) -> SavedFlightPlan? {
-        if let execution = flightPlanExecutionRepository.executions(forRecoveryId: recoveryId).first {
-           return flightPlanRepository.savedFlightPlan(for: execution.flightPlanId)
+    func flightPlanFor(uuid: String) -> FlightPlanModel? {
+        if let flightPlan = flightPlanRepository.loadFlightPlans("uuid", uuid).first {
+            return flightPlan
         }
         return nil
     }
 
-    func isInTimeOrGpsLapse(_ flightPlan: (SavedFlightPlan, String)?) -> Bool {
-        guard let mode = flightPlan?.0.plan.captureModeEnum else { return false }
+    func isInTimeOrGpsLapse(_ flightPlan: FlightPlanModel?) -> Bool {
+        guard let mode = flightPlan?.dataSetting?.captureModeEnum else { return false }
         switch mode {
         case .video:
             return false
@@ -166,50 +124,64 @@ private extension ActiveFlightPlanExecutionWatcherImpl {
 // MARK: ActiveFlightPlanExecutionWatcher conformance
 extension ActiveFlightPlanExecutionWatcherImpl: ActiveFlightPlanExecutionWatcher {
 
-    public var activeFlightPlanAndRecoveryId: (SavedFlightPlan, String)? {
-        if let recoveryId = activeFlightPlanRecoveryIdSubject.value,
-           let flightPlan = flightPlanFor(recoveryId: recoveryId) {
-            return (flightPlan, recoveryId)
+    public var activeFlightPlan: FlightPlanModel? {
+        if let uuid = activeFlightPlanUuidSubject.value {
+           return flightPlanFor(uuid: uuid)
         }
         return nil
     }
 
-    public var activeFlightPlanAndRecoveryIdPublisher: AnyPublisher<(SavedFlightPlan, String)?, Never> {
-        activeFlightPlanRecoveryIdSubject
+    public var activeFlightPlanPublisher: AnyPublisher<FlightPlanModel?, Never> {
+        activeFlightPlanUuidSubject
             .map({ [unowned self] in
-                if let recoveryId = $0,
-                   let flightPlan = flightPlanFor(recoveryId: recoveryId) {
-                    return (flightPlan, recoveryId)
+                if let uuid = $0 {
+                   return flightPlanFor(uuid: uuid)
                 }
                 return nil
             })
             .eraseToAnyPublisher()
     }
 
-    public var activatingFlightPlan: AnyPublisher<SavedFlightPlan?, Never> { activatingFlightPlanSubject.eraseToAnyPublisher() }
+    public var activatingFlightPlanPublisher: AnyPublisher<FlightPlanModel?, Never> {
+        activatingFlightPlanUuidSubject.map({ [unowned self] in
+            if let uuid = $0 {
+               return flightPlanFor(uuid: uuid)
+            }
+            return nil
+        }).eraseToAnyPublisher()
+    }
 
     public var hasActiveFlightPlanWithTimeOrGpsLapsePublisher: AnyPublisher<Bool, Never> {
-        activeFlightPlanAndRecoveryIdPublisher.map { [unowned self] in
+        activeFlightPlanPublisher.map { [unowned self] in
             isInTimeOrGpsLapse($0)
         }.eraseToAnyPublisher()
     }
 
     public var hasActiveFlightPlanWithTimeOrGpsLapse: Bool {
-        let couple: (SavedFlightPlan, String)?
-        if let recoveryId = activeFlightPlanRecoveryIdSubject.value,
-           let flightPlan = flightPlanFor(recoveryId: recoveryId) {
-            couple = (flightPlan, recoveryId)
-        } else {
-            couple = nil
+        if let flightPlan = activeFlightPlan {
+            return isInTimeOrGpsLapse(flightPlan)
         }
-        return isInTimeOrGpsLapse(couple)
+        return false
     }
 
-    public func flightPlanWillBeActivated(_ flightPlan: SavedFlightPlan) {
-        activatingFlightPlanSubject.value = flightPlan
+    public func flightPlanWillBeActivated(_ flightPlan: FlightPlanModel) {
+        ULog.i(.tag, "Flight plan will be activated. Uuid: \(flightPlan.uuid)")
+        activatingFlightPlanUuidSubject.value = flightPlan.uuid
     }
 
-    public func flightPlanActivationFailed() {
-        activatingFlightPlanSubject.value = nil
+    public func flightPlanActivationFailed(_ flightPlan: FlightPlanModel) {
+        ULog.i(.tag, "Flight plan activation failed. Uuid: \(flightPlan.uuid)")
+        activatingFlightPlanUuidSubject.value = nil
+    }
+
+    public func flightPlanActivationSucceeded(_ flightPlan: FlightPlanModel) {
+        ULog.i(.tag, "Flight plan is active. Uuid: \(flightPlan.uuid)")
+        activeFlightPlanUuidSubject.value = flightPlan.uuid
+        activatingFlightPlanUuidSubject.value = nil
+    }
+
+    public func flightPlanDidStop(_ flightPlan: FlightPlanModel) {
+        ULog.i(.tag, "Flight plan did finish. Uuid: \(flightPlan.uuid)")
+        activeFlightPlanUuidSubject.value = nil
     }
 }

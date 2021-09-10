@@ -46,9 +46,9 @@ final class ProtobufMissionsUpdatingViewController: UIViewController {
     private weak var coordinator: ProtobufMissionUpdateCoordinator?
     private var dataSource = ProtobufMissionsUpdatingDataSource(manualRebootState: .waiting)
     private var manualRebootStarted: Bool = false
-    private var shouldRestartProcesses: Bool = false
     private var processIsFinished: Bool = false
     private var updateOngoing: Bool = false
+    private var isUpdateCancelledAlertShown: Bool = false
     private var droneStateViewModel = DroneStateViewModel()
     private let missionsUpdaterManager = ProtobufMissionsUpdaterManager.shared
     private var missionsUpdateListener: ProtobufAllMissionsUpdaterListener?
@@ -83,12 +83,8 @@ final class ProtobufMissionsUpdatingViewController: UIViewController {
         listenToDroneReconnection()
 
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(cancelProcesses),
+                                               selector: #selector(didEnterBackground),
                                                name: UIApplication.didEnterBackgroundNotification,
-                                               object: nil)
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(restartProcesses),
-                                               name: UIApplication.willEnterForegroundNotification,
                                                object: nil)
     }
 
@@ -97,7 +93,7 @@ final class ProtobufMissionsUpdatingViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 }
 
@@ -128,19 +124,14 @@ extension ProtobufMissionsUpdatingViewController: UITableViewDelegate {
 // MARK: - UpdatingDoneFooterDelegate
 extension ProtobufMissionsUpdatingViewController: UpdatingDoneFooterDelegate {
     func quitProcesses() {
-        RemoteControlGrabManager.shared.enableRemoteControl()
-        coordinator?.back()
+        quitProcesses(closeFirmwareList: false)
     }
 }
 
 // MARK: - Actions
 private extension ProtobufMissionsUpdatingViewController {
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
-        if manualRebootStarted == false {
-            presentCancelAlertViewController()
-        } else {
-            presentQuitRebootAlertViewController()
-        }
+        showCancelAlert()
     }
 }
 
@@ -156,12 +147,7 @@ private extension ProtobufMissionsUpdatingViewController {
     func listenToMissionsUpdaterManager() {
         missionsUpdaterManager
             .registerGlobalListener(allMissionToUpdateCallback: { [weak self] (missionsGlobalUpdatingState) in
-                guard let strongSelf = self,
-                      strongSelf.droneStateViewModel.state.value.isConnected() else {
-                    return
-                }
-
-                strongSelf.updateMissionsProcesses(missionsGlobalUpdatingState: missionsGlobalUpdatingState)
+                self?.updateMissionsProcesses(missionsGlobalUpdatingState: missionsGlobalUpdatingState)
             })
     }
 
@@ -182,6 +168,10 @@ private extension ProtobufMissionsUpdatingViewController {
                 updateOngoing = false
                 tableView.reloadData()
             }
+
+            if droneStateViewModel.state.value.connectionState != .connected {
+                showUpdateCancelledAlert()
+            }
         case .done:
             if !missionsUpdaterManager.missionsUpdateProcessNeedAReboot() && !processIsFinished {
                 dataSource = ProtobufMissionsUpdatingDataSource(manualRebootState: .failed)
@@ -196,7 +186,7 @@ private extension ProtobufMissionsUpdatingViewController {
 
     /// Triggers manual reboot
     func triggerManualReboot() {
-        cancelButton.isHidden = false
+        cancelButton.isHidden = true
         missionsUpdaterManager.triggerManualReboot()
         dataSource = ProtobufMissionsUpdatingDataSource(manualRebootState: .ongoing)
         tableView.reloadData()
@@ -214,9 +204,7 @@ private extension ProtobufMissionsUpdatingViewController {
                 return
             }
 
-            if strongSelf.shouldRestartProcesses {
-                strongSelf.restartProcesses()
-            } else if strongSelf.manualRebootStarted {
+            if strongSelf.manualRebootStarted {
                 ULog.d(.missionUpdateTag, "Missions Update drone reconnected")
                 strongSelf.dataSource = ProtobufMissionsUpdatingDataSource(manualRebootState: .succeeded)
                 strongSelf.tableView.reloadData()
@@ -225,36 +213,46 @@ private extension ProtobufMissionsUpdatingViewController {
         }
     }
 
+    /// Cancel operation in progress and leave screen.
+    @objc func didEnterBackground() {
+        let cancelled = cancelProcesses()
+        if cancelled {
+            showUpdateCancelledAlert()
+        } else {
+            quitProcesses(closeFirmwareList: true)
+        }
+    }
+
     /// Cancel operation in progress.
-    @objc func cancelProcesses() {
-        guard !manualRebootStarted else { return }
+    func cancelProcesses() -> Bool {
+        guard !manualRebootStarted else { return false }
 
         let cancelSucceeded = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
         self.cancelButton.isHidden = cancelSucceeded
+        return cancelSucceeded
     }
 
-    /// Restart operation in progress.
-    @objc func restartProcesses() {
-        guard !manualRebootStarted else { return }
-
-        resetUI()
-        // Drone must be connected to restart mission update.
-        guard droneStateViewModel.state.value.isConnected() else {
-            shouldRestartProcesses = true
-            return
+    /// Quits the updating processes.
+    ///
+    /// - Parameter closeFirmwareList: `true` to close the firmware list as well
+    func quitProcesses(closeFirmwareList: Bool) {
+        RemoteControlGrabManager.shared.enableRemoteControl()
+        if closeFirmwareList {
+            coordinator?.quitUpdateProcesses()
+        } else {
+            coordinator?.back()
         }
-
-        shouldRestartProcesses = false
-        startProcesses()
     }
 
     /// Shows an alert view when user tries to cancel update.
-    func presentCancelAlertViewController() {
+    func showCancelAlert() {
         let validateAction = AlertAction(
             title: L10n.firmwareMissionUpdateQuitInstallationValidateAction,
             actionHandler: { [weak self] in
-                self?.cancelProcesses()
-                self?.quitProcesses()
+                let cancelled = self?.cancelProcesses()
+                if cancelled == true {
+                    self?.quitProcesses(closeFirmwareList: true)
+                }
             })
         let cancelAction = AlertAction(title: L10n.cancel, actionHandler: nil)
 
@@ -266,20 +264,21 @@ private extension ProtobufMissionsUpdatingViewController {
         present(alert, animated: true, completion: nil)
     }
 
-    /// Shows an alert view when user tries to quit drone reboot.
-    func presentQuitRebootAlertViewController() {
-        let validateAction = AlertAction(
-            title: L10n.firmwareAndMissionQuitRebootValidateAction,
-            actionHandler: {
-                self.quitProcesses()
-            })
-        let cancelAction = AlertAction(title: L10n.firmwareMissionUpdateQuitInstallationCancelAction,
-                                       actionHandler: nil)
+    /// Shows an alert view when update has been cancelled while entering background or disconnecting.
+    func showUpdateCancelledAlert() {
+        guard !isUpdateCancelledAlertShown else {
+            return
+        }
 
+        isUpdateCancelledAlertShown = true
+        let validateAction = AlertAction(
+            title: L10n.ok,
+            actionHandler: { [weak self] in
+                self?.quitProcesses(closeFirmwareList: false)
+            })
         let alert = AlertViewController.instantiate(
-            title: L10n.firmwareAndMissionQuitRebootTitle,
-            message: L10n.firmwareAndMissionQuitRebootDroneMessage,
-            cancelAction: cancelAction,
+            title: L10n.firmwareAndMissionUpdateCancelledTitle,
+            message: L10n.firmwareAndMissionUpdateCancelledDroneMessage,
             validateAction: validateAction)
         present(alert, animated: true, completion: nil)
     }

@@ -38,9 +38,7 @@ final class ImagingBarEvCompensationBarView: UIView, NibOwnerLoadable, BarItemMo
     @IBOutlet private weak var centeredRulerBarContainer: UIView!
 
     // MARK: - Internal Properties
-    var modeKey: String? {
-        return self.viewModel?.state.value.mode?.key
-    }
+    var barId: String? { viewModel?.barId }
 
     // MARK: - Private Properties
     private var viewModel: ImagingBarEvCompensationViewModel?
@@ -61,9 +59,9 @@ final class ImagingBarEvCompensationBarView: UIView, NibOwnerLoadable, BarItemMo
 // MARK: - Private Funcs
 private extension ImagingBarEvCompensationBarView {
     func commonInitImagingBarEvCompensationBarView() {
-        self.loadNibContent()
-        self.viewModel = ImagingBarEvCompensationViewModel()
-        self.addRulerBar()
+        loadNibContent()
+        viewModel = ImagingBarEvCompensationViewModel(exposureLockService: Services.hub.drone.exposureLockService)
+        addRulerBar()
         centeredRulerBarContainer.customCornered(corners: [.allCorners],
                                                  radius: Style.largeCornerRadius,
                                                  backgroundColor: ColorName.white90.color,

@@ -29,9 +29,11 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// View Controller used to display drone calibrations.
 final class DroneCalibrationViewController: UIViewController {
+
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var gimbalCalibrationChoiceView: CalibrationChoiceView!
@@ -44,11 +46,14 @@ final class DroneCalibrationViewController: UIViewController {
     // MARK: - Private Properties
     private weak var coordinator: DroneCalibrationCoordinator?
     private var viewModel = DroneCalibrationViewModel()
+    private var cancellables = Set<AnyCancellable>()
+    private var firmwareAndMissionsUpdateListener: FirmwareAndMissionsListener?
+    private var firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel?
 
     // MARK: - Private Enums
     private enum Constants {
-        static let defaultSubtextColor: ColorName = .white50
-        static let defaultBackgroundColor: ColorName = .white10
+        static let defaultTextColor: ColorName = .defaultTextColor
+        static let defaultBackgroundColor: ColorName = .white
     }
 
     // MARK: - Setup
@@ -62,8 +67,10 @@ final class DroneCalibrationViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.initUI()
-        self.setupViewModels()
+        listenFirmwareUpdate()
+        initUI()
+        setupViewModels()
+        bindViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -76,9 +83,12 @@ final class DroneCalibrationViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        UIView.animate(withDuration: Style.mediumAnimationDuration) {
-            self.view.backgroundColor = ColorName.greyDark60.color
-        }
+        UIView.animate(withDuration: Style.shortAnimationDuration,
+                       delay: Style.shortAnimationDuration,
+                       options: .allowUserInteraction,
+                       animations: {
+                        self.view.backgroundColor = ColorName.nightRider80.color
+                       })
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -94,7 +104,7 @@ final class DroneCalibrationViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -116,7 +126,14 @@ private extension DroneCalibrationViewController {
             self.coordinator?.startMagnetometerCalibration()
         } else if view == obstacleDetectionChoiceView {
             logEvent(with: LogEvent.LogKeyDroneDetailsCalibrationButton.sensorCalibrationTutorial)
-            self.coordinator?.startStereoVisionCalibration()
+            if let firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel {
+                if firmwareAndMissionToUpdateModel.needFirmwareUpdate {
+                    self.coordinator?.displayCriticalAlert()
+                } else {
+                    viewModel.updateIsStereoCalibrationLaunched(isLaunched: true)
+                    self.coordinator?.startStereoVisionCalibration()
+                }
+            }
         }
     }
 
@@ -137,52 +154,117 @@ private extension DroneCalibrationViewController {
 private extension DroneCalibrationViewController {
     /// Initializes all the UI for the view controller.
     func initUI() {
-        self.titleLabel.text = L10n.remoteDetailsCalibration
-        self.mainView.applyCornerRadius(Style.largeCornerRadius,
-                                        maskedCorners: [.layerMinXMinYCorner,
-                                                        .layerMaxXMinYCorner])
+        titleLabel.text = L10n.remoteDetailsCalibration
+        mainView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
     }
 
     /// Sets up view models associated with the view.
     func setupViewModels() {
-        self.gimbalCalibrationChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icGimbal.image,
-                                                                            text: L10n.droneGimbalTitle)
-        self.correctHorizonChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icCorrectHorizon.image,
-                                                                         text: L10n.droneHorizonCalibration)
-        self.magnetometerChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icDroneDetails.image,
-                                                                       text: L10n.droneMagnetometerTitle)
-        self.obstacleDetectionChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icCalibrateStereoVision.image,
-                                                                            text: L10n.droneObstacleDetectionTitle)
-
-        self.viewModel.state.valueChanged = { [weak self] state in
-            self?.updateView(state: state)
-            if let droneState = state.droneState,
-               droneState == .disconnected || droneState == .disconnecting {
-                self?.coordinator?.dismissDroneCalibration()
-            }
-
-            if let flyingState = state.flyingState, flyingState == .flying {
-                self?.coordinator?.dismissDroneCalibration()
-            }
-        }
-        updateView(state: viewModel.state.value)
+        gimbalCalibrationChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icGimbal.image,
+                                                                       text: L10n.droneGimbalTitle)
+        correctHorizonChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icCorrectHorizon.image,
+                                                                    text: L10n.droneHorizonCalibration)
+        magnetometerChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icDroneDetailsAvailable.image,
+                                                                  text: L10n.droneMagnetometerTitle)
+        obstacleDetectionChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icCalibrateStereoVision.image,
+                                                                       text: L10n.droneObstacleDetectionTitle)
     }
 
-    /// Updates the buttons with state.
-    ///
-    /// - Parameters:
-    ///    - state: current state
-    func updateView(state: DroneCalibrationState) {
-        // Calibration button.
-        gimbalCalibrationChoiceView.viewModel?.update(state: viewModel.state.value)
+    /// Binds the view model to the view
+    func bindViewModel() {
+        bindGimbal()
+        bindMagnetometer()
+        bindLoveCalibration()
+        bindFlyingState()
+    }
 
-        magnetometerChoiceView.viewModel?.subText = state.magnetometerState?.description
-        magnetometerChoiceView.viewModel?.subTextColor = state.magnetometerState?.subtextColor ?? Constants.defaultSubtextColor
-        magnetometerChoiceView.viewModel?.backgroundColor = state.magnetometerState?.backgroundColor ?? Constants.defaultBackgroundColor
+    /// Hides the view if the drone is flying
+    func bindFlyingState() {
+        viewModel.$flyingState
+            .compactMap { $0 }
+            .combineLatest(viewModel.$isStereoCalibrationLaunched)
+            .sink { [unowned self] (flyingState, isStereoCalibrationLaunched) in
+                if flyingState == .flying && !isStereoCalibrationLaunched {
+                    coordinator?.dismissDroneCalibration()
+                }
+            }
+            .store(in: &cancellables)
+    }
 
-        obstacleDetectionChoiceView.viewModel?.subText = state.stereoVisionSensorsState?.description
-        obstacleDetectionChoiceView.viewModel?.subTextColor = state.stereoVisionSensorsState?.subtextColor ?? Constants.defaultSubtextColor
-        obstacleDetectionChoiceView.viewModel?.backgroundColor = state.stereoVisionSensorsState?.backgroundColor ?? Constants.defaultBackgroundColor
+    /// Hides the view if the drone is not connected
+    func bindConnectionState() {
+        viewModel.$droneState
+            .compactMap { $0 }
+            .sink { [unowned self] droneState in
+                if droneState == .disconnected || droneState == .disconnecting {
+                    coordinator?.dismissDroneCalibration()
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Updates the gimbal choice view
+    func bindGimbal() {
+        viewModel.$frontStereoGimbalState
+            .combineLatest(viewModel.$frontStereoGimbalCalibrationState,
+                           viewModel.$gimbalCalibrationDescription)
+            .sink { [unowned self]  (gimbalState, calibrationState, calibrationDescription) in
+                if gimbalState == .needed {
+                    gimbalCalibrationChoiceView.viewModel?.subText = calibrationState?.description ?? ""
+                    gimbalCalibrationChoiceView.viewModel?.textColor = ColorName.white.color
+                    gimbalCalibrationChoiceView.viewModel?.subTextColor = .white
+                    gimbalCalibrationChoiceView.viewModel?.backgroundColor = .errorColor
+                } else {
+                    gimbalCalibrationChoiceView.viewModel?.subText = calibrationDescription
+                }
+            }
+            .store(in: &cancellables)
+
+        viewModel.$gimbalCalibrationBackgroundColor
+            .combineLatest(viewModel.$frontStereoGimbalState)
+            .sink { [unowned self] (backgroundColor, gimbalState) in
+                if gimbalState != .needed {
+                    gimbalCalibrationChoiceView.viewModel?.backgroundColor = backgroundColor ?? Constants.defaultBackgroundColor
+                }
+            }
+            .store(in: &cancellables)
+
+        viewModel.$gimbalCalibrationTextColor
+            .combineLatest(viewModel.$frontStereoGimbalState)
+            .sink { [unowned self] (textColor, gimbalState) in
+                if gimbalState != .needed {
+                    let color = textColor ?? Constants.defaultTextColor
+                    gimbalCalibrationChoiceView.viewModel?.textColor = color.color
+                    gimbalCalibrationChoiceView.viewModel?.subTextColor = color
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Updates the magnetometer choice view
+    func bindMagnetometer() {
+        viewModel.$magnetometerState
+            .sink { [unowned self] magnetometerState in
+                let textColor = magnetometerState?.subtextColor ?? Constants.defaultTextColor
+                magnetometerChoiceView.viewModel?.subText = magnetometerState?.description
+                magnetometerChoiceView.viewModel?.textColor = textColor.color
+                magnetometerChoiceView.viewModel?.subTextColor = textColor
+                magnetometerChoiceView.viewModel?.backgroundColor = magnetometerState?.backgroundColor ?? Constants.defaultBackgroundColor
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Updates the love calibration choice view
+    func bindLoveCalibration() {
+        viewModel.$stereoVisionSensorsState
+            .sink { [unowned self] stereoVisionSensorsState in
+                let textColor = stereoVisionSensorsState?.subtextColor ?? Constants.defaultTextColor
+                obstacleDetectionChoiceView.viewModel?.subText = stereoVisionSensorsState?.description
+                obstacleDetectionChoiceView.viewModel?.textColor = textColor.color
+                obstacleDetectionChoiceView.viewModel?.subTextColor = textColor
+                obstacleDetectionChoiceView.viewModel?.backgroundColor = stereoVisionSensorsState?.backgroundColor ?? Constants.defaultBackgroundColor
+            }
+            .store(in: &cancellables)
     }
 
     /// Called when the view needs to be dismissed.
@@ -199,5 +281,12 @@ private extension DroneCalibrationViewController {
         LogEvent.logAppEvent(itemName: itemName,
                              newValue: nil,
                              logType: .button)
+    }
+
+    func listenFirmwareUpdate() {
+        firmwareAndMissionsUpdateListener = FirmwareAndMissionsInteractor.shared
+            .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
+                self?.firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel
+            }
     }
 }

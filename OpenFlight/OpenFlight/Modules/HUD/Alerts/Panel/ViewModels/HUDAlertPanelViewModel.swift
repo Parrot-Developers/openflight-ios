@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import Foundation
+import Combine
 
 /// State for `HUDAlertPanelViewModel`.
 open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
@@ -40,14 +41,14 @@ open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
     fileprivate(set) public var handLandState = HUDAlertPanelHandLandState()
     /// Return Home state.
     fileprivate(set) public var returnHomeState = HUDAlertPanelReturnHomeState()
-    /// Current mission launcher mode.
-    fileprivate(set) public var currentMissionLauncherMode = MissionLauncherMode.preset
+    /// Is mission menu displayed
+    fileprivate(set) public var isMissionMenuDisplayed = false
     /// Boolean describing if an overcontext modal is presented.
     fileprivate(set) public var isOverContextModalPresented: Bool = false
 
     /// Whether alert should be shown.
     open var canShowAlert: Bool {
-        return currentMissionLauncherMode == .closed
+        return !isMissionMenuDisplayed
             && shouldShowAlertPanel
             && !isOverContextModalPresented
     }
@@ -81,17 +82,17 @@ open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
     ///    - handLaunchState: current Hand Launch state
     ///    - handLandState: current Hand Land state
     ///    - returnHomeState: current Return Home state
-    ///    - currentMissionLauncherMode: current mission launcher mode
+    ///    - isMissionMenuDisplayed: is mission menu displayed
     ///    - isOverContextModalPresented: hand launch visibility state when modal is presented
     public init(handLaunchState: HUDAlertPanelHandLaunchState,
                 handLandState: HUDAlertPanelHandLandState,
                 returnHomeState: HUDAlertPanelReturnHomeState,
-                currentMissionLauncherMode: MissionLauncherMode,
+                isMissionMenuDisplayed: Bool,
                 isOverContextModalPresented: Bool) {
         self.handLaunchState = handLaunchState
         self.handLandState = handLandState
         self.returnHomeState = returnHomeState
-        self.currentMissionLauncherMode = currentMissionLauncherMode
+        self.isMissionMenuDisplayed = isMissionMenuDisplayed
         self.isOverContextModalPresented = isOverContextModalPresented
     }
 
@@ -100,7 +101,7 @@ open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
         return self.handLaunchState == other.handLaunchState
             && self.handLandState == other.handLandState
             && self.returnHomeState == other.returnHomeState
-            && self.currentMissionLauncherMode == other.currentMissionLauncherMode
+            && self.isMissionMenuDisplayed == other.isMissionMenuDisplayed
             && self.isOverContextModalPresented == other.isOverContextModalPresented
     }
 
@@ -109,7 +110,7 @@ open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
         if let copy = HUDAlertPanelState(handLaunchState: self.handLaunchState,
                                          handLandState: self.handLandState,
                                          returnHomeState: self.returnHomeState,
-                                         currentMissionLauncherMode: self.currentMissionLauncherMode,
+                                         isMissionMenuDisplayed: self.isMissionMenuDisplayed,
                                          isOverContextModalPresented: self.isOverContextModalPresented) as? Self {
             return copy
         } else {
@@ -125,7 +126,7 @@ open class HUDAlertPanelViewModel<T: HUDAlertPanelState>: BaseViewModel<T> {
     private var handLandViewModel: HUDAlertPanelHandLandViewModel = HUDAlertPanelHandLandViewModel()
     private var returnHomeViewModel: HUDAlertPanelReturnHomeViewModel = HUDAlertPanelReturnHomeViewModel()
     private var missionLauncherModeObserver: Any?
-    private var modalPresentationObserver: Any?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     public override init() {
@@ -134,7 +135,7 @@ open class HUDAlertPanelViewModel<T: HUDAlertPanelState>: BaseViewModel<T> {
         listenHandLaunch()
         listenHandLand()
         listenReturnHome()
-        listenMissionLauncherModeChanges()
+        listenMissionMenuDisplayedChanges()
         observeModalPresentation()
     }
 
@@ -142,8 +143,6 @@ open class HUDAlertPanelViewModel<T: HUDAlertPanelState>: BaseViewModel<T> {
     deinit {
         NotificationCenter.default.remove(observer: missionLauncherModeObserver)
         missionLauncherModeObserver = nil
-        NotificationCenter.default.remove(observer: modalPresentationObserver)
-        modalPresentationObserver = nil
     }
 
     // MARK: - Public Funcs
@@ -194,36 +193,26 @@ private extension HUDAlertPanelViewModel {
         }
     }
 
-    /// Starts watcher for mission launcher mode changes.
-    func listenMissionLauncherModeChanges() {
-        missionLauncherModeObserver = NotificationCenter.default.addObserver(
-            forName: .missionLauncherModeDidChange,
-            object: nil,
-            queue: nil) { [weak self] notification in
-            guard let missionLauncherMode = notification.userInfo?[MissionLauncherMode.notificationKey] as? MissionLauncherMode else {
-                return
+    /// Starts watcher for mission menu display changes.
+    func listenMissionMenuDisplayedChanges() {
+        Services.hub.ui.uiComponentsDisplayReporter.isMissionMenuDisplayedPublisher
+            .sink { [weak self] in
+                let copy = self?.state.value.copy()
+                copy?.isMissionMenuDisplayed = $0
+                self?.state.set(copy)
             }
-
-            let copy = self?.state.value.copy()
-            copy?.currentMissionLauncherMode = missionLauncherMode
-            self?.state.set(copy)
-        }
+            .store(in: &cancellables)
     }
 
     /// Starts watcher for modal presentation.
     func observeModalPresentation() {
-        modalPresentationObserver = NotificationCenter.default.addObserver(
-            forName: .modalPresentDidChange,
-            object: nil,
-            queue: nil) { [weak self] notification in
-            guard let shouldHide = notification.userInfo?[BottomBarViewControllerNotifications.notificationKey] as? Bool else {
-                return
+        Services.hub.ui.uiComponentsDisplayReporter.isModalPresentedPublisher
+            .sink { [weak self] in
+                let copy = self?.state.value.copy()
+                copy?.isOverContextModalPresented = $0
+                self?.state.set(copy)
             }
-
-            let copy = self?.state.value.copy()
-            copy?.isOverContextModalPresented = shouldHide
-            self?.state.set(copy)
-        }
+            .store(in: &cancellables)
     }
 
     /// Notify if the Hand Land or Hand Launch panel is displayed.

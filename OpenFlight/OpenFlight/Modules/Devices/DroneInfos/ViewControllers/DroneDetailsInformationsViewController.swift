@@ -64,11 +64,17 @@ final class DroneDetailsInformationsViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
         return true
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+
+        resetButton.isHidden = !UIApplication.isLandscape
     }
 }
 
@@ -92,6 +98,8 @@ private extension DroneDetailsInformationsViewController {
 private extension DroneDetailsInformationsViewController {
     /// Sets up the view.
     func setupView() {
+        resetButton.cornerRadiusedWith(backgroundColor: UIColor(named: .whiteAlbescent),
+                                           radius: Style.largeCornerRadius)
         resetButton.setTitle(L10n.commonReset, for: .normal)
     }
 
@@ -109,13 +117,13 @@ private extension DroneDetailsInformationsViewController {
     ///    - state: current state
     func updateView(_ state: DroneDetailsInformationsState) {
         resetButton.isEnabled = state.isConnected()
-        let resetColor: ColorName = state.isConnected() ? ColorName.white : ColorName.white20
+        let resetColor: ColorName = state.isConnected() ? ColorName.defaultTextColor : ColorName.disabledTextColor
 
         resetButton.makeup(with: .large, color: resetColor)
-        resetButton.cornerRadiusedWith(backgroundColor: .clear,
-                                       borderColor: resetColor.color,
+        resetButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
+                                       borderColor: .clear,
                                        radius: Style.largeCornerRadius,
-                                       borderWidth: Style.largeBorderWidth)
+                                       borderWidth: Style.noBorderWidth)
 
         serialContainerView.model = DeviceInformationsModel(title: L10n.remoteDetailsSerialNumber,
                                                             description: state.serialNumber)

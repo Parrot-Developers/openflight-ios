@@ -30,12 +30,6 @@
 import SwiftyUserDefaults
 import Combine
 
-// MARK: - Protocol
-protocol HUDCoordinatorCriticalAlertDelegate: AnyObject {
-    /// Called when user dimisses the alert.
-    func onCriticalAlertDismissed()
-}
-
 /// Coordinator for HUD part.
 open class HUDCoordinator: Coordinator, HistoryMediasAction {
     // MARK: - Public Properties
@@ -46,12 +40,13 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
     public var isMissionLauncherShown: Bool { showMissionsLauncherSubject.value }
 
     // MARK: - Internal Properties
-    weak var hudCriticalAlertDelegate: HUDCoordinatorCriticalAlertDelegate?
+    private let criticalAlertViewModel = HUDCriticalAlertViewModel()
 
     // MARK: - Private Properties
-    private unowned var services: ServiceHub
+    public private(set) unowned var services: ServiceHub
     private weak var viewController: HUDViewController?
     private var cameraSlidersCoordinator: CameraSlidersCoordinator?
+    private var cancellables = Set<AnyCancellable>()
     private var showMissionsLauncherSubject = CurrentValueSubject<Bool, Never>(false)
 
     // MARK: - Init
@@ -64,15 +59,46 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
         let viewController = HUDViewController.instantiate(coordinator: self)
         self.viewController = viewController
         self.navigationController?.viewControllers = [viewController]
+        services.flight.gutmaWatcher.flightEnded
+            .sink { [unowned self] in
+                displayFlightReport(flight: $0)
+            }
+            .store(in: &cancellables)
+
+        criticalAlertViewModel.state.valueChanged = { [weak self] state in
+            self?.updateCriticalAlertVisibility(with: state)
+        }
+    }
+
+    /// Changes critical alert modal visibility regarding view model state.
+    ///
+    /// - Parameters:
+    ///     - state: The alert state
+    func updateCriticalAlertVisibility(with state: HUDCriticalAlertState?) {
+        guard state?.canShowAlert == true else {
+            self.viewController?.showCellularPairingIfNeeded()
+            return
+        }
+
+        displayCriticalAlert(alert: state?.currentAlert)
+    }
+
+    open func canShowCellularPairing() -> Bool {
+        return criticalAlertViewModel.state.value.alertStack.isEmpty
     }
 
     open func displayAuthentification() {
         // To override.
     }
 
-    open func handleHistoryCellAction(with fpExecution: FlightPlanExecution,
-                                      actionType: HistoryMediasActionType) {
+    open func handleHistoryCellAction(with flightModel: FlightPlanModel, actionType: HistoryMediasActionType) {
         // To override.
+    }
+
+    /// Starts dashboard coordinator.
+    open func startDashboard() {
+        let dashboardCoordinator = DashboardCoordinator(services: services)
+        self.presentCoordinatorWithAnimation(childCoordinator: dashboardCoordinator, animationDirection: .fromLeft)
     }
 }
 
@@ -84,12 +110,6 @@ extension HUDCoordinator {
     /// - Parameter cameraSlidersViewController: the sliders view controller
     func handleCameraSlidersViewController(_ cameraSlidersViewController: CameraSlidersViewController) {
         cameraSlidersCoordinator = CameraSlidersCoordinator(services: services, viewController: cameraSlidersViewController)
-    }
-
-    /// Starts dashboard coordinator.
-    func startDashboard() {
-        let dashboardCoordinator = DashboardCoordinator(services: services)
-        self.presentCoordinatorWithAnimation(childCoordinator: dashboardCoordinator, animationDirection: .fromLeft)
     }
 
     /// Starts settings coordinator.
@@ -136,6 +156,7 @@ extension HUDCoordinator {
 
     /// Displays cellular pairing available screen.
     func displayCellularPairingAvailable() {
+        dismiss()
         presentModal(viewController: CellularConfigurationViewController.instantiate(coordinator: self))
     }
 
@@ -157,9 +178,12 @@ extension HUDCoordinator {
     /// Displays a flight report on the HUD.
     ///
     /// - Parameters:
-    ///     - flightState: flight state
-    func displayFlightReport(flightState: FlightDataState) {
-        presentModal(viewController: FlightReportViewController.instantiate(flightState: flightState))
+    ///     - flight: flight
+    func displayFlightReport(flight: FlightModel) {
+        let viewModel = FlightDetailsViewModel(service: services.flight.service,
+                                               flight: flight,
+                                               flightPlanTypeStore: services.flightPlan.typeStore)
+        presentModal(viewController: FlightReportViewController.instantiate(viewModel: viewModel))
     }
 
     /// Displays entry coordinator for current MissionMode.
@@ -212,7 +236,8 @@ extension HUDCoordinator {
 extension HUDCoordinator: HUDCriticalAlertDelegate {
     func dismissAlert() {
         dismiss()
-        hudCriticalAlertDelegate?.onCriticalAlertDismissed()
+        criticalAlertViewModel.dimissCurrentAlert()
+        viewController?.showCellularPairingIfNeeded()
     }
 
     func performAlertAction(alert: HUDCriticalAlertType?) {

@@ -38,52 +38,78 @@ public struct ThumbnailModel {
 
     // MARK: - Synchro Properties
 
-    /// - parrotCloudId: Id of project on server: Set only if synchronized
+    /// - To identify data user
+    public var apcId: String
+
+    /// - Last modification date
+    public var lastUpdate: Date?
+
+    /// - Id of project on server: Set only if synchronized
     public var parrotCloudId: Int64
 
-    /// - synchroDate: Contains the Date of last synchro trying if is not succeeded
+    /// - Contains the Date of last synchro trying if is not succeeded
     public var synchroDate: Date?
 
-    /// - synchroStatus: Contains 0 if not yet synchronized, 1 if yes
-        /// statusCode if sync failed
+    /// - Contains
+    ///     - 0 Not synchronized,
+    ///     - 1 Synchronized
+    ///     - StatusCode if sync failed
     public var synchroStatus: Int16?
 
-    /// - fileSynchroStatus: Contains 0 if not yet synchronized, 1 if yes
-        /// statusCode if sync failed
+    /// - Contains:
+    ///     - 0 Not yet synchronized
+    ///     - 1 Synchronized
+    ///     - 2 Upload Url is taped
+    ///     - StatusCode if sync failed
     public var fileSynchroStatus: Int16?
 
-    /// - cloudLastUpdate: remote last modification date of Thumbnail File
+    /// - Date of synchro file
+    public var fileSynchroDate: Date?
+
+    /// - Remote last modification date of Thumbnail File
     public var cloudLastUpdate: Date?
 
-    /// - parrotCloudToBeDeleted: Set True if a Delete Request was triguerred without success
-    public var parrotCloudToBeDeleted: Bool?
+    /// - Set True if a Delete Request was triguerred without success
+    public var parrotCloudToBeDeleted: Bool
 
+    /// - Return Thumbnail data type
     public var thumbnailImageData: Data? {
         return thumbnailImage?.pngData()
     }
 
+    /// Uuid of the flight associated with this thumbnail if any
+    public var flightUuid: String?
+
     // MARK: - Relationship
 
-    //public var ofFlightPlan: FlightPlanModell?
+    public var relatedFlightPlans: [FlightPlanModel] = []
 
     // MARK: - Public init
 
-    public init(uuid: String,
+    public init(apcId: String,
+                uuid: String,
                 thumbnailImage: UIImage?,
-                synchroStatus: Int16 = 0,
-                fileSynchroStatus: Int16 = 0,
+                lastUpdate: Date? = Date(),
+                synchroStatus: Int16? = 0,
+                fileSynchroStatus: Int16? = 0,
+                fileSynchroDate: Date? = nil,
                 cloudLastUpdate: Date? = nil,
                 synchroDate: Date? = nil,
                 parrotCloudId: Int64 = 0,
-                parrotCloudToBeDeleted: Bool = false) {
+                parrotCloudToBeDeleted: Bool = false,
+                flightUuid: String? = nil) {
 
+        self.apcId = apcId
         self.uuid = uuid
         self.thumbnailImage = thumbnailImage
+        self.lastUpdate = lastUpdate
         self.synchroStatus = synchroStatus
         self.fileSynchroStatus = fileSynchroStatus
+        self.fileSynchroDate = fileSynchroDate
         self.cloudLastUpdate = cloudLastUpdate
         self.synchroDate = synchroDate
         self.parrotCloudId = parrotCloudId
         self.parrotCloudToBeDeleted = parrotCloudToBeDeleted
+        self.flightUuid = flightUuid
     }
 }

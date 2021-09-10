@@ -98,10 +98,10 @@ private extension DroneComponentsStatusView {
     func fill(with model: DroneComponentsStatusModel) {
         droneImageView.image = model.isDroneConnected ? Asset.Drone.icDroneDetailsAvailable.image : Asset.Drone.icDroneDetailsUnavailable.image
         allStatusView.forEach { $0.isHidden = !model.isDroneConnected }
-        gimbalImageView.image = model.frontStereoGimbalStatus != .calibrated
+        gimbalImageView.image = model.droneGimbalStatus?.calibrationImage
+        stereoVisionImageView.image = model.frontStereoGimbalStatus != .calibrated
             ? model.frontStereoGimbalStatus?.calibrationImage
-            : model.droneGimbalStatus?.calibrationImage
-        stereoVisionImageView.image = model.stereoVisionStatus?.calibrationImage
+            : model.stereoVisionStatus?.calibrationImage
         frontLeftMotorImageView.image = model.frontLeftMotorStatus?.image
         frontRightMotorImageView.image = model.frontRightMotorStatus?.image
         rearLeftMotorImageView.image = model.rearLeftMotorStatus?.image

@@ -34,9 +34,9 @@ protocol HistoryMediasAction {
     /// Manages touch on history cell.
     ///
     /// - Parameters:
-    ///     - fpExecution: current flight plan execution
+    ///     - flightModel: current flight plan model
     ///     - actionType: type of the action for the selected flight plan execution
-    func handleHistoryCellAction(with fpExecution: FlightPlanExecution,
+    func handleHistoryCellAction(with flightModel: FlightPlanModel,
                                  actionType: HistoryMediasActionType)
 }
 
@@ -48,7 +48,8 @@ final class FlightPlanFullHistoryViewController: UIViewController {
     @IBOutlet private weak var flightPlanSubtitle: UILabel!
 
     // MARK: - Private Properties
-    private var flightPlan: FlightPlanViewModel?
+    private var projectModel: ProjectModel?
+    private var flightPlanTitle: String?
     private weak var coordinator: Coordinator?
 
     // MARK: - Setup
@@ -56,14 +57,17 @@ final class FlightPlanFullHistoryViewController: UIViewController {
     ///
     /// - Parameters:
     ///     - coordinator: Coordinator
-    ///     - viewModel: Flight Plan view model
+    ///     - projectModel: Flight Plan project model
+    ///     - title: title of the last flight plan
     /// - Returns: FlightPlanFullHistoryViewController instance.
     static func instantiate(coordinator: Coordinator,
-                            viewModel: FlightPlanViewModel?) -> FlightPlanFullHistoryViewController {
+                            projectModel: ProjectModel?,
+                            flightPlanTitle: String) -> FlightPlanFullHistoryViewController {
         let viewController = StoryboardScene.FlightPlanDashboardViewController
             .flightPlanFullHistoryViewController.instantiate()
         viewController.coordinator = coordinator
-        viewController.flightPlan = viewModel
+        viewController.projectModel = projectModel
+        viewController.flightPlanTitle = flightPlanTitle
 
         return viewController
     }
@@ -86,14 +90,14 @@ final class FlightPlanFullHistoryViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         super.prepare(for: segue, sender: sender)
 
         if let historyViewController = segue.destination as? FlightPlanHistoryViewController {
-            historyViewController.flightplan = flightPlan
+            historyViewController.project = projectModel
             historyViewController.tableType = .fullHistory
             historyViewController.coordinator = coordinator
             historyViewController.delegate = self
@@ -116,7 +120,7 @@ private extension FlightPlanFullHistoryViewController {
 private extension FlightPlanFullHistoryViewController {
     /// Init view.
     func initView() {
-        flightplanTitle.text = flightPlan?.flightPlan?.title ?? ""
+        flightplanTitle.text = flightPlanTitle
         bgView.backgroundColor = ColorName.black.color
         headerView.backgroundColor = .clear
         flightplanTitle.makeUp(with: .big)
@@ -136,10 +140,10 @@ private extension FlightPlanFullHistoryViewController {
 
 // MARK: - FlightPlanHistoryDelegate
 extension FlightPlanFullHistoryViewController: FlightPlanHistoryDelegate {
-    func didTapOnMedia(fpExecution: FlightPlanExecution, action: HistoryMediasActionType?) {
+    func didTapOnMedia(flightModel: FlightPlanModel, action: HistoryMediasActionType?) {
         guard let strongAction = action else { return }
 
-        (coordinator as? HistoryMediasAction)?.handleHistoryCellAction(with: fpExecution,
+        (coordinator as? HistoryMediasAction)?.handleHistoryCellAction(with: flightModel,
                                                                        actionType: strongAction)
     }
 }

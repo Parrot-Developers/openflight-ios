@@ -26,8 +26,13 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" indicatorStyle="white" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="syX-VS-ANK">
-                                <rect key="frame" x="0.0" y="0.0" width="601" height="330"/>
+                                <rect key="frame" x="60.5" y="0.0" width="480" height="330"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="600" id="WeP-QI-VKL">
+                                        <variation key="heightClass=compact-widthClass=compact" constant="480"/>
+                                    </constraint>
+                                </constraints>
                                 <connections>
                                     <outlet property="dataSource" destination="x2h-l4-S13" id="1Lg-Kl-0IV"/>
                                     <outlet property="delegate" destination="x2h-l4-S13" id="DJS-2h-L6w"/>
@@ -38,9 +43,8 @@
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="syX-VS-ANK" firstAttribute="bottom" secondItem="iTD-wq-BMG" secondAttribute="bottom" id="6j4-We-pfi"/>
-                            <constraint firstItem="syX-VS-ANK" firstAttribute="leading" secondItem="Tn1-5E-eRG" secondAttribute="leading" id="mFi-MH-vFO"/>
+                            <constraint firstItem="syX-VS-ANK" firstAttribute="centerX" secondItem="Tn1-5E-eRG" secondAttribute="centerX" id="nta-0a-HIQ"/>
                             <constraint firstItem="syX-VS-ANK" firstAttribute="top" secondItem="Tn1-5E-eRG" secondAttribute="top" id="wIX-wW-8nz"/>
-                            <constraint firstItem="syX-VS-ANK" firstAttribute="trailing" secondItem="Tn1-5E-eRG" secondAttribute="trailing" id="zUn-Qp-dwr"/>
                         </constraints>
                     </view>
                     <size key="freeformSize" width="601" height="330"/>

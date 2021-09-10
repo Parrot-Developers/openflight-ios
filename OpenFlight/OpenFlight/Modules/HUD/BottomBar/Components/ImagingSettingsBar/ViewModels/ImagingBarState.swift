@@ -75,21 +75,23 @@ class ImagingBarState: BarButtonState, EquatableState, Copying {
 
     // MARK: - Internal Funcs
     func isEqual(to other: ImagingBarState) -> Bool {
-        return self.mode?.key == other.mode?.key
-            && self.subMode?.key == other.subMode?.key
-            && self.supportedModes?.map { $0.key } == other.supportedModes?.map { $0.key }
-            && self.showUnsupportedModes == other.showUnsupportedModes
-            && self.enabled == other.enabled
+        return mode?.key == other.mode?.key
+            && subMode?.key == other.subMode?.key
+            && supportedModes?.map { $0.key } == other.supportedModes?.map { $0.key }
+            && showUnsupportedModes == other.showUnsupportedModes
+            && enabled == other.enabled
+            && unavailableReason == other.unavailableReason
     }
 
     /// Returns a copy of the object.
     func copy() -> Self {
-        if let copy = ImagingBarState(mode: self.mode,
-                                      subMode: self.subMode,
-                                      supportedModes: self.supportedModes,
-                                      showUnsupportedModes: self.showUnsupportedModes,
-                                      isSelected: self.isSelected) as? Self {
-            copy.image = self.image
+        if let copy = ImagingBarState(mode: mode,
+                                      subMode: subMode,
+                                      supportedModes: supportedModes,
+                                      showUnsupportedModes: showUnsupportedModes,
+                                      isSelected: isSelected,
+                                      unavailableReason: unavailableReason) as? Self {
+            copy.image = image
             return copy
         } else {
             fatalError("Must override...")

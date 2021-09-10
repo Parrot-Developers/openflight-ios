@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="N7q-xb-UNM">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Cellular Debug Logs View Controller-->
+        <scene sceneID="38f-48-k4a">
+            <objects>
+                <viewController storyboardIdentifier="CellularDebugLogsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="N7q-xb-UNM" customClass="CellularDebugLogsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="qQ9-Ch-QRk"/>
+                        <viewControllerLayoutGuide type="bottom" id="2xK-nn-Ohr"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="syF-jT-oJw">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KJe-VK-tku">
+                                <rect key="frame" x="5" y="0.0" width="886" height="22"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Mbc-Kn-jZL">
+                                        <rect key="frame" x="0.0" y="0.0" width="22" height="22"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" secondItem="Mbc-Kn-jZL" secondAttribute="height" multiplier="1:1" id="djk-fG-3Ws"/>
+                                        </constraints>
+                                        <color key="tintColor" name="default_text_color"/>
+                                        <state key="normal" image="ic_back"/>
+                                        <connections>
+                                            <action selector="backButtonTouchedUpInside:" destination="N7q-xb-UNM" eventType="touchUpInside" id="Nvo-8G-9Uu"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Connection debug" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z45-oC-V7s">
+                                        <rect key="frame" x="364.5" y="-0.5" width="157.5" height="23"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                        <color key="textColor" name="default_text_color"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="Mbc-Kn-jZL" secondAttribute="bottom" id="7e4-YO-k2N"/>
+                                    <constraint firstAttribute="height" constant="60" id="WLb-ae-53Q"/>
+                                    <constraint firstItem="Z45-oC-V7s" firstAttribute="centerX" secondItem="KJe-VK-tku" secondAttribute="centerX" id="XeD-hB-j8u"/>
+                                    <constraint firstItem="Mbc-Kn-jZL" firstAttribute="top" secondItem="KJe-VK-tku" secondAttribute="top" id="dgy-vv-2Ea"/>
+                                    <constraint firstItem="Mbc-Kn-jZL" firstAttribute="leading" secondItem="KJe-VK-tku" secondAttribute="leading" id="qSp-g8-7LD"/>
+                                    <constraint firstItem="Z45-oC-V7s" firstAttribute="centerY" secondItem="KJe-VK-tku" secondAttribute="centerY" id="tCa-4o-LX3"/>
+                                </constraints>
+                            </view>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" id="7hX-mb-vWG">
+                                <rect key="frame" x="48" y="74" width="800" height="311"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
+                                <color key="textColor" name="default_text_color"/>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="JNM-2x-sNa"/>
+                        <color key="backgroundColor" name="default_bgcolor"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="KJe-VK-tku" secondAttribute="trailing" constant="5" id="0L9-LW-iFO"/>
+                            <constraint firstItem="7hX-mb-vWG" firstAttribute="top" secondItem="KJe-VK-tku" secondAttribute="bottom" id="8Qz-U4-9g2"/>
+                            <constraint firstItem="KJe-VK-tku" firstAttribute="leading" secondItem="syF-jT-oJw" secondAttribute="leading" constant="5" id="9bY-fi-yaF"/>
+                            <constraint firstItem="KJe-VK-tku" firstAttribute="top" secondItem="JNM-2x-sNa" secondAttribute="top" id="FPE-I2-Ugg"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="logsTextView" destination="7hX-mb-vWG" id="R4k-Ug-tTa"/>
+                        <outlet property="titleLabel" destination="Z45-oC-V7s" id="Lq1-LV-RQd"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ak8-fd-Bsp" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="52.173913043478265" y="210.9375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="ic_back" width="21" height="21"/>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

@@ -103,57 +103,46 @@ final class DroneDetailsButtonsViewModel {
     }
 
     // MARK: Helpers
-
-    /// Message to display if a calibration is needed.
-    var calibrationMessage: AnyPublisher<String?, Never> {
+    /// Subtitle to display on calibration button.
+    var calibrationSubtitle: AnyPublisher<String?, Never> {
         $connectionState
             .combineLatest($flyingState)
-            .map { [unowned self] (connectionState, flyingState) in
+            .combineLatest($isMagnetometerCalibrationNeeded,
+                           $isGimbalFrontStereoCalibrationNeeded,
+                           $isStereoVisionSensorCalibrationNeeded)
+            .map { [unowned self] (arg0, isMagnetometerNeeded, isGimbalFrontNeeded, isStereoNeeded) in
+                let (connectionState, flyingState) = arg0
                 if !(connectionState == .connected) || flyingState == .flying {
-                    return Style.dash
-                } else if isMagnetometerCalibrationNeeded {
+                    return L10n.droneDetailsCalibrationOk
+                } else if isMagnetometerNeeded {
                     return L10n.droneDetailsCalibrationRequired
-                } else if isStereoVisionSensorCalibrationNeeded {
+                } else if isStereoNeeded {
                     return L10n.droneDetailsCalibrationLoveRequired
-                } else if isGimbalFrontStereoCalibrationNeeded {
+                } else if isGimbalFrontNeeded {
                     return L10n.droneDetailsCalibrationGimbalRequired
                 } else {
-                    return nil
+                    let gimbalState = currentDrone.drone.getPeripheral(Peripherals.gimbal)?.state
+                    switch gimbalState {
+                    case .needed,
+                         .error:
+                        return L10n.droneDetailsCalibrationGimbalRequired
+                    case .recommended:
+                        return L10n.droneDetailsCalibrationGimbalRecommended
+                    default:
+                        return L10n.droneDetailsCalibrationOk
+                    }
                 }
             }
             .eraseToAnyPublisher()
     }
 
-    /// Message to display on calibration button.
-    var calibrationText: AnyPublisher<String?, Never> {
-        calibrationMessage.map { [unowned self] (calibrationMessage: String?) in
-            if calibrationMessage != nil {
-                return calibrationMessage
-            } else {
-                guard let gimbal = currentDrone.drone.getPeripheral(Peripherals.gimbal) else {
-                    return L10n.droneDetailsCalibrationOk
-                }
-
-                switch gimbal.state {
-                case .calibrated,
-                     .unavailable:
-                    return L10n.droneDetailsCalibrationOk
-                case .needed,
-                     .error:
-                    return L10n.droneDetailsCalibrationGimbalRequired
-                case .recommended:
-                    return L10n.droneDetailsCalibrationGimbalRecommended
-                }
-            }
-        }
-        .eraseToAnyPublisher()
-    }
-
     /// Tells if a calibration is needed.
-    var isCalibrationNeeded: Bool {
-        return isMagnetometerCalibrationNeeded
-            || isStereoVisionSensorCalibrationNeeded
-            || isGimbalFrontStereoCalibrationNeeded
+    var isCalibrationNeeded: AnyPublisher<Bool, Never> {
+        $isMagnetometerCalibrationNeeded
+            .combineLatest($isStereoVisionSensorCalibrationNeeded,
+                           $isGimbalFrontStereoCalibrationNeeded)
+            .map { $0 || $1 || $2 }
+            .eraseToAnyPublisher()
     }
 
     /// Tells if calibration button is available.
@@ -166,33 +155,52 @@ final class DroneDetailsButtonsViewModel {
             .eraseToAnyPublisher()
     }
 
-    /// Background for calibration text cell.
-    var calibrationBackgroundCellColor: AnyPublisher<ColorName?, Never> {
+    /// Title color for calibration.
+    var calibrationTitleColor: AnyPublisher<ColorName?, Never> {
         $connectionState
-            .combineLatest($flyingState)
-            .map { [unowned self] (connectionState, flyingState) in
+            .combineLatest($flyingState,
+                           isCalibrationNeeded)
+            .map { (connectionState, flyingState, isCalibrationNeeded) in
                 if !(connectionState == .connected) || flyingState == .flying {
-                    return .white10
+                    return .defaultTextColor
                 } else if isCalibrationNeeded {
-                    return .redTorch25
+                    return .white
                 } else {
-                    return nil
+                    return .defaultTextColor
+                }
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Background for calibration cell.
+    var calibrationBackgroundColor: AnyPublisher<ColorName?, Never> {
+        $connectionState
+            .combineLatest($flyingState,
+                           isCalibrationNeeded)
+            .map { [unowned self] (connectionState, flyingState, isCalibrationNeeded) in
+                if !(connectionState == .connected) || flyingState == .flying {
+                    return .white
+                } else if isCalibrationNeeded {
+                    return .errorColor
+                } else {
+                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.backgroundColor ?? .white
                 }
             }
             .eraseToAnyPublisher()
     }
 
     /// Color for calibration text cell.
-    var calibrationMessageColor: AnyPublisher<ColorName?, Never> {
+    var calibrationSubtitleColor: AnyPublisher<ColorName?, Never> {
         $connectionState
-            .combineLatest($flyingState)
-            .map { [unowned self] (connectionState, flyingState) in
+            .combineLatest($flyingState,
+                           isCalibrationNeeded)
+            .map { [unowned self] (connectionState, flyingState, isCalibrationNeeded) in
                 if !(connectionState == .connected) || flyingState == .flying {
-                    return .white50
+                    return .defaultTextColor
                 } else if isCalibrationNeeded {
-                    return .redTorch
+                    return .white
                 } else {
-                    return nil
+                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.subtextColor ?? .highlightColor
                 }
             }
             .eraseToAnyPublisher()
@@ -209,37 +217,7 @@ final class DroneDetailsButtonsViewModel {
         return subtitle
     }
 
-    /// Calibration description color.
-    var calibrationTextColor: AnyPublisher<ColorName?, Never> {
-        calibrationMessage.combineLatest(calibrationMessageColor)
-            .map { [unowned self] (calibrationMessage, calibrationMessageColor) in
-                if calibrationMessage != nil {
-                    return calibrationMessageColor
-                } else {
-                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.subtextColor ?? .white10
-                }
-            }
-            .eraseToAnyPublisher()
-    }
-
-    /// Background color for calibration cell.
-    var calibrationTextBackgroundColor: AnyPublisher<ColorName?, Never> {
-        calibrationBackgroundCellColor.map { [unowned self] (calibrationBackgroundCellColor: ColorName?) -> ColorName? in
-            if calibrationBackgroundCellColor != nil {
-                return calibrationBackgroundCellColor
-            } else {
-                guard let gimbal = currentDrone.drone.getPeripheral(Peripherals.gimbal) else {
-                    return .white10
-                }
-
-                return gimbal.backgroundColor
-            }
-        }
-        .eraseToAnyPublisher()
-    }
-
     // MARK: - Internal Funcs
-
     /// Removes current drone uid in the dismissed pairing list.
     /// The pairing process for the current drone could be displayed again in the HUD.
     func resetPairingDroneListIfNeeded() {

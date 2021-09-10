@@ -36,16 +36,16 @@ protocol FlightPlanHistoryCellDelegate: AnyObject {
     /// Called when user taps the media view.
     ///
     /// - Parameters:
-    ///     - fpExecution: the current flight plan execution
+    ///     - flightModel: the current flight plan model
     ///     - action: action to perform
-    func didTapOnMedia(fpExecution: FlightPlanExecution,
+    func didTapOnMedia(flightModel: FlightPlanModel,
                        action: HistoryMediasActionType?)
 
     /// Called when user taps the resumeButton view.
     ///
     /// - Parameters:
-    ///     - fpExecution: the current flight plan execution
-    func didTapOnResume(fpExecution: FlightPlanExecution)
+    ///     - flightModel: the current flight plan model
+    func didTapOnResume(flightModel: FlightPlanModel)
 }
 
 // MARK: - Public Enums
@@ -69,7 +69,7 @@ final class FlightPlanHistoryTableViewCell: UITableViewCell, NibReusable {
     weak var delegate: FlightPlanHistoryCellDelegate?
 
     // MARK: - Private Properties
-    private var fpExecution: FlightPlanExecution?
+    private var flightModel: FlightPlanModel?
     private var currentAction: HistoryMediasActionType?
 
     // MARK: - Private Enums
@@ -88,7 +88,7 @@ final class FlightPlanHistoryTableViewCell: UITableViewCell, NibReusable {
         super.prepareForReuse()
 
         delegate = nil
-        fpExecution = nil
+        flightModel = nil
         currentAction = nil
     }
 }
@@ -96,9 +96,9 @@ final class FlightPlanHistoryTableViewCell: UITableViewCell, NibReusable {
 // MARK: - IBActions
 private extension FlightPlanHistoryTableViewCell {
     @IBAction func resumeTouchedUpInside(_ sender: Any) {
-        guard let execution = fpExecution else { return }
+        guard let flightModel = flightModel else { return }
 
-        delegate?.didTapOnResume(fpExecution: execution)
+        delegate?.didTapOnResume(flightModel: flightModel)
     }
 }
 
@@ -114,18 +114,18 @@ extension FlightPlanHistoryTableViewCell {
     /// Setup cell.
     ///
     /// - Parameters:
-    ///     - fpExecution: Flight Plan execution
+    ///     - flightModel: Flight Plan model
     ///     - mediasView: Flight Plan execution history view
     ///     - tableType: table type
-    func setup(fpExecution: FlightPlanExecution,
+    func setup(flightModel: FlightPlanModel,
                mediasView: HistoryMediasView?,
                tableType: HistoryTableType) {
         let isCompactCell = tableType == .miniHistory
         resumeButton.isHidden = isCompactCell
-        setupExecutionButton(for: fpExecution.state)
-        dateLabel.text = fpExecution.fomattedExecutionDate(isShort: isCompactCell)
-        addPhotoCountView(fpExecution: fpExecution)
-        self.fpExecution = fpExecution
+        setupExecutionButton(for: flightModel.state)
+        dateLabel.text = flightModel.fomattedExecutionDate(isShort: isCompactCell)
+        addPhotoCountView(flightModel: flightModel)
+        self.flightModel = flightModel
 
         guard let view = mediasView?.view else {
             mediaContainerView.removeSubViews()
@@ -142,9 +142,9 @@ extension FlightPlanHistoryTableViewCell {
 private extension FlightPlanHistoryTableViewCell {
     /// Called when user presses media view.
     @objc func didTapOnMedia() {
-        guard let execution = fpExecution else { return }
+        guard let flightModel = flightModel else { return }
 
-        delegate?.didTapOnMedia(fpExecution: execution,
+        delegate?.didTapOnMedia(flightModel: flightModel,
                                 action: currentAction)
     }
 }
@@ -154,17 +154,17 @@ private extension FlightPlanHistoryTableViewCell {
     /// Setup execution button.
     ///
     /// - Parameters:
-    ///     - executionState: execution state
-    func setupExecutionButton(for executionState: FlightPlanExecutionState?) {
+    ///     - executionState: execution state of flight plan model
+    func setupExecutionButton(for executionState: FlightPlanModel.FlightPlanState?) {
         resumeButton.isEnabled = executionState != .completed
         if executionState == .completed {
-            resumeButton.makeup(color: .greenPea, and: .normal)
+            resumeButton.makeup(color: .greenPea)
             resumeButton.setTitle(L10n.flightPlanRunCompleted, for: .normal)
             resumeButton.cornerRadiusedWith(backgroundColor: ColorName.clear.color,
                                             radius: Style.smallCornerRadius)
             resumeButton.contentEdgeInsets = UIEdgeInsets.zero
         } else {
-            resumeButton.makeup(color: .orangePeel, and: .normal)
+            resumeButton.makeup(color: .orangePeel)
             resumeButton.setTitle(L10n.flightPlanRunResume, for: .normal)
             resumeButton.cornerRadiusedWith(backgroundColor: ColorName.orangePeel20.color,
                                             radius: Style.smallCornerRadius)
@@ -190,10 +190,10 @@ private extension FlightPlanHistoryTableViewCell {
     /// Add photo count view for the corresponding execution.
     ///
     /// - Parameters:
-    ///     - fpExecution: The flight plan execution
-    func addPhotoCountView(fpExecution: FlightPlanExecution) {
+    ///     - flightModel: The flight plan model
+    func addPhotoCountView(flightModel: FlightPlanModel) {
         let view = FlightPlanPhotoCountView()
-        view.setup(fpExecution: fpExecution)
+        view.setup(flightModel: flightModel)
         self.photoCountContainerView.addWithConstraints(subview: view)
     }
 }

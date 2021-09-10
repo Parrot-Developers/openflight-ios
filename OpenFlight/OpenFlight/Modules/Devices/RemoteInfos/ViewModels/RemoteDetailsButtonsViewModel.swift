@@ -41,6 +41,7 @@ final class RemoteDetailsButtonsState: DevicesConnectionState {
     fileprivate(set) var softwareVersion: String = Style.dash
     fileprivate(set) var idealVersion: String = Style.dash
     fileprivate(set) var needUpdate: Bool = false
+    fileprivate(set) var needDownload: Bool = false
 
     // MARK: - Init
     required init() {
@@ -57,7 +58,8 @@ final class RemoteDetailsButtonsState: DevicesConnectionState {
     ///    - wifiStrength: wifi signal
     ///    - softwareVersion: software version
     ///    - idealVersion: ideal target software version
-    ///    - needUpdate: check if remote need an update
+    ///    - needUpdate: check if remote needs an update
+    ///    - needDownload: check if ideal firmware needs to be downloaded
     init(droneConnectionState: DeviceConnectionState?,
          remoteControlConnectionState: DeviceConnectionState?,
          droneName: String,
@@ -65,7 +67,8 @@ final class RemoteDetailsButtonsState: DevicesConnectionState {
          wifiStrength: WifiStrength,
          softwareVersion: String,
          idealVersion: String,
-         needUpdate: Bool) {
+         needUpdate: Bool,
+         needDownload: Bool) {
         super.init(droneConnectionState: droneConnectionState,
                    remoteControlConnectionState: remoteControlConnectionState)
 
@@ -75,6 +78,7 @@ final class RemoteDetailsButtonsState: DevicesConnectionState {
         self.softwareVersion = softwareVersion
         self.idealVersion = idealVersion
         self.needUpdate = needUpdate
+        self.needDownload = needDownload
     }
 
     // MARK: - Override Funcs
@@ -88,6 +92,7 @@ final class RemoteDetailsButtonsState: DevicesConnectionState {
             && self.softwareVersion == other.softwareVersion
             && self.idealVersion == other.idealVersion
             && self.needUpdate == other.needUpdate
+            && self.needDownload == other.needDownload
     }
 
     override func copy() -> RemoteDetailsButtonsState {
@@ -98,7 +103,8 @@ final class RemoteDetailsButtonsState: DevicesConnectionState {
                                              wifiStrength: self.wifiStrength,
                                              softwareVersion: self.softwareVersion,
                                              idealVersion: self.idealVersion,
-                                             needUpdate: self.needUpdate)
+                                             needUpdate: self.needUpdate,
+                                             needDownload: self.needDownload)
         return copy
     }
 }
@@ -108,9 +114,10 @@ final class RemoteDetailsButtonsState: DevicesConnectionState {
 extension RemoteDetailsButtonsState {
     /// Returns a model for remote calibration device view.
     var calibrationModel: DeviceDetailsButtonModel {
+        let isRemoteConnected = remoteControlConnectionState?.isConnected() == true
         let backgroundColor: ColorName = needCalibration ? .errorColor : .white
         let titleColor: ColorName = needCalibration ? .white : .defaultTextColor
-        let subtitleColor: ColorName = needCalibration ? .white : .highlightColor
+        let subtitleColor: ColorName = needCalibration ? .white : (isRemoteConnected ? .highlightColor : .defaultTextColor)
         return DeviceDetailsButtonModel(mainImage: Asset.Common.Icons.icRemoteControl.image,
                                         title: L10n.remoteDetailsCalibration,
                                         subtitle: needCalibration ? L10n.remoteCalibrationRequired : L10n.droneDetailsCalibrationOk,
@@ -141,17 +148,21 @@ extension RemoteDetailsButtonsState {
                                             subtitle: L10n.disconnected,
                                             backgroundColor: .white,
                                             subtitleColor: .defaultTextColor80)
-
         }
     }
 
     /// Returns a model for remote software information view.
     var softwareModel: DeviceDetailsButtonModel {
+        let subtitle = needUpdate ? String(format: "%@%@%@", softwareVersion, Style.arrow, idealVersion) : softwareVersion
+        let titleColor: ColorName = needUpdate ? .white : .defaultTextColor
         return DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDownload.image,
                                         title: L10n.remoteDetailsSoftware,
                                         subImage: needUpdate ? nil : Asset.Common.Checks.icChecked.image,
-                                        subtitle: softwareVersion,
-                                        complementarySubtitle: needUpdate ? idealVersion : nil)
+                                        subtitle: subtitle,
+                                        backgroundColor: needUpdate ? .warningColor : .white,
+                                        mainImageTintColor: titleColor,
+                                        titleColor: titleColor,
+                                        subtitleColor: titleColor)
     }
 }
 
@@ -227,6 +238,7 @@ private extension RemoteDetailsButtonsViewModel {
             if let updater = updater {
                 let copy = self?.state.value.copy()
                 copy?.needUpdate = !updater.isUpToDate
+                copy?.needDownload = !updater.downloadableFirmwares.isEmpty
                 copy?.idealVersion = updater.idealVersion?.description ?? ""
                 self?.state.set(copy)
             }

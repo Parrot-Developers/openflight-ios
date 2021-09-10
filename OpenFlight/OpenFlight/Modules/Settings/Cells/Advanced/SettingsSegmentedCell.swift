@@ -50,10 +50,7 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
         }
     }
     @IBOutlet private weak var subtitleLabel: UILabel!
-    @IBOutlet private weak var subtitleLabelHeight: NSLayoutConstraint!
 
-    /// Leading constraint which changes if setting is a submode.
-    @IBOutlet private weak var bgViewLeadingConstraint: NSLayoutConstraint!
     /// Leading constraint used for the stack view.
     @IBOutlet private weak var stackViewLeadingConstraint: NSLayoutConstraint!
     @IBOutlet private weak var segmentControlTrailingConstraint: NSLayoutConstraint!
@@ -68,12 +65,10 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let defaultSubtitleHeight: CGFloat = 35.0
         static let segmentWidth: CGFloat = 78.0
         static let smallTextLength: Int = 10
         static let defaultLeadingConstraint: CGFloat = 16.0
         static let defaultTrailingConstraint: CGFloat = 8.0
-        static let submodeLeadingConstraint: CGFloat = 52.0
     }
 
     // MARK: - Override Funcs
@@ -171,8 +166,7 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
         segmentControl.isEnabled = isEnabled
         subtitleLabel.text = subtitle
         subtitleLabel.textColor = subtitleColor
-        subtitleLabelHeight.constant = subtitle == nil ? 0 : Constants.defaultSubtitleHeight
-        bgViewLeadingConstraint.constant = isSubmode == true ? Constants.submodeLeadingConstraint : Constants.defaultLeadingConstraint
+        subtitleLabel.isHidden = subtitle == nil
         stackViewLeadingConstraint.constant = leadingConstraint
         segmentControlTrailingConstraint.constant = trailingConstraint
     }

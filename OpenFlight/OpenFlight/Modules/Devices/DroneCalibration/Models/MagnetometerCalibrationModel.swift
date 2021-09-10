@@ -46,12 +46,12 @@ enum DroneMagnetometerCalibrationState {
 
     /// Color for magnetometer calibration subtext cell.
     var subtextColor: ColorName {
-        return self == .needed ? .redTorch : .white50
+        return self == .needed ? .white : .defaultTextColor
     }
 
     /// Background color for magnetometer calibration cell.
     var backgroundColor: ColorName {
-        return self == .needed ? .redTorch25 : .white10
+        return self == .needed ? .errorColor : .white
     }
 
     /// Text for magnetometer calibration cell.

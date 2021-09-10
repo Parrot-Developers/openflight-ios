@@ -136,7 +136,7 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
             self.settingTitle.text = settingEntry.title
             self.contentView.backgroundColor = (selectedIndex == 0) ? ColorName.whiteAlbescent.color : ColorName.white.color
             self.settingImage.tintColor = textColor.color
-            settingTitle.makeUp(with: .regular, and: textColor)
+            settingTitle.makeUp(and: textColor)
         } else {
             var title = segmentModel.segments.elementAt(index: selectedIndex)?.title ?? Style.dash
             if let cellTitle = settingEntry.title {

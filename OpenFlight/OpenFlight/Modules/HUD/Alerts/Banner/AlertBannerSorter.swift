@@ -64,6 +64,8 @@ open class AlertBannerSorter {
         // Obstacle avoidance    Stereo calibration requiresd    Obstacle avoidance disabled - Stereo sensors calibration required
         .obstacleAvoidanceDeteriorated,
         // Obstacle avoidance    Manual piloting + No GPS    Obstacle avoidance deteriorated – Poor GPS quality
+        .obstacleAvoidanceStrongWind,
+        // Obstacle avoidance    Strong wind + OA activated    Obstacle avoidance deteriorated – Strong winds
         .cameraError,
         // Components_Camera    Camera critical alert    Check that nothing is blocking the camera.
         .noGpsTooDark,
@@ -72,7 +74,7 @@ open class AlertBannerSorter {
         // Conditions    No GPS + Too high    Flight quality is not optimal - decrease the drone's altitude.
         .noGps,
         // Conditions    No GPS    Poor GPS quality - autonomous flights are unavailable.
-        .headingLockedKo,
+        .headingLockedKoPerturbationMagnetic,
         // Conditions    Heading Locked KO    Magnetic perturbations - autonomous flights are unavailable.
         .noGpsLapse,
         // Conditions    No GPS - GPS lapse    Flight quality is not optimal - GPS lapse is unavailable.

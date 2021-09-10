@@ -30,10 +30,16 @@
 
 import UIKit
 import Reusable
+import GroundSdk
 
 // MARK: - Public Structs
 /// Flight Plan Estimations Model.
-public struct FlightPlanEstimationsModel: Equatable {
+public class FlightPlanEstimationsModel: Equatable {
+    public static func == (lhs: FlightPlanEstimationsModel, rhs: FlightPlanEstimationsModel) -> Bool {
+        return lhs.distance == rhs.distance
+            && lhs.duration == rhs.duration
+    }
+
     // MARK: - Public properties
     /// Flight Plan distance, in meters.
     public var distance: Double?
@@ -48,7 +54,6 @@ public struct FlightPlanEstimationsModel: Equatable {
 
             let formatter = DateComponentsFormatter()
             formatter.allowedUnits = [.minute, .second]
-            formatter.unitsStyle = .abbreviated
             formattedDuration = formatter.string(from: TimeInterval(duration)) ?? Style.dash
         }
     }
@@ -83,11 +88,17 @@ public struct FlightPlanEstimationsModel: Equatable {
 final class FlightPlanPanelEstimationView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet weak var timeImage: UIImageView!
-    @IBOutlet weak var timeLabel: UILabel!
-    @IBOutlet weak var batteryImage: UIImageView!
-    @IBOutlet weak var batteryLabel: UILabel!
+    @IBOutlet weak var timeLabel: UILabel! {
+        didSet {
+            timeLabel.makeUp(and: .defaultTextColor)
+        }
+    }
     @IBOutlet weak var mediaImage: UIImageView!
-    @IBOutlet weak var mediaLabel: UILabel!
+    @IBOutlet weak var mediaLabel: UILabel! {
+        didSet {
+            mediaLabel.makeUp(and: .defaultTextColor)
+        }
+    }
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
@@ -109,8 +120,7 @@ final class FlightPlanPanelEstimationView: UIView, NibOwnerLoadable {
     ///     - model: Flight Plan estimations
     func updateEstimations(model: FlightPlanEstimationsModel?) {
         timeLabel.text = model?.formattedDuration ?? Style.dash
-        batteryLabel.text = Style.dash
-        mediaLabel.text = Style.dash
+        mediaLabel.text = model?.formattedDistance ?? Style.dash
     }
 }
 
@@ -119,18 +129,9 @@ private extension FlightPlanPanelEstimationView {
     /// Common init.
     func commonInitFlightPlanPanelEstimationView() {
         self.loadNibContent()
-
         timeImage.image = Asset.Common.Icons.icFlightPlanTimer.image
             .withRenderingMode(.alwaysTemplate)
-        timeImage.tintColor = ColorName.white50.color
-        timeLabel.makeUp()
-        batteryImage.image = Asset.Common.Icons.icBattery.image
+        mediaImage.image = Asset.MyFlights.distance.image
             .withRenderingMode(.alwaysTemplate)
-        batteryImage.tintColor = ColorName.white50.color
-        batteryLabel.makeUp()
-        mediaImage.image = Asset.Dashboard.icPhotoMini.image
-            .withRenderingMode(.alwaysTemplate)
-        mediaImage.tintColor = ColorName.white50.color
-        mediaLabel.makeUp()
     }
 }

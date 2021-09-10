@@ -32,40 +32,33 @@ import UIKit
 
 /// Settings content sub class dedicated to controls settings.
 final class SettingsControlsViewController: SettingsContentViewController {
-    // MARK: - Outlets
-    @IBOutlet private weak var tableViewTopConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var settingsControlTableView: UITableView!
-
     // MARK: - Private Properties
     private let controlsViewModel = ControlsViewModel()
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let defaultTopBarHeight: CGFloat = 55.0
+        static let regularTopBarHeight: CGFloat = 70.0
+    }
+
+    private var topBarHeight: CGFloat {
+        return isRegularSizeClass ? Constants.regularTopBarHeight : Constants.defaultTopBarHeight
+    }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        resetCellLabel = L10n.settingsControlsMappingReset
         // Setup view model.
         controlsViewModel.state.valueChanged = { [weak self] state in
             self?.updateDataSource(state)
         }
         // Inital data source update.
         self.updateDataSource(controlsViewModel.state.value)
-    }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-
-        tableViewTopConstraint.constant = (self.view.bounds.height - (settingsControlTableView.bounds.height)) / 2.0
-    }
-
-    /// Reset to default settings.
-    override func resetSettings() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls,
-                             itemName: LogEvent.LogKeyControlsSettings.resetControlSettings,
-                             newValue: nil,
-                             logType: LogEvent.LogType.button)
-
-        controlsViewModel.resetSettings()
+        // Disable estimated row height
+        settingsTableView.estimatedRowHeight = 0
+        settingsTableView.rowHeight = self.view.frame.size.height - topBarHeight
     }
 }
 
@@ -78,8 +71,6 @@ internal extension SettingsControlsViewController {
         switch cellType {
         case .controlMode:
             cell = configureControlModeCell(atIndexPath: indexPath)
-        case .resetAllSettingsButton:
-            cell = configureResetAllButtonCell(at: indexPath)
         default:
             cell = super.tableView(tableView, cellForRowAt: indexPath)
         }
@@ -111,19 +102,5 @@ private extension SettingsControlsViewController {
     ///     - state: controls state
     func updateDataSource(_ state: ControlsState = ControlsState()) {
         settings = controlsViewModel.settingEntries
-    }
-
-    /// Configure Reset All Button Cell.
-    ///
-    /// - Parameters:
-    ///     - indexPath: cell indexPath
-    /// - Returns: UITableViewCell
-    func configureResetAllButtonCell(at indexPath: IndexPath) -> UITableViewCell {
-        let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsResetAllButtonCell
-        cell.delegate = self
-        cell.configureCell(title: resetCellLabel?.uppercased() ?? "",
-                           isEnabled: !(viewModel?.isUpdating ?? false))
-
-        return cell
     }
 }

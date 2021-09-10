@@ -95,11 +95,7 @@ private extension UpdatingDoneFooter {
 
     /// Inits the UI.
     func initUI() {
-        continueButton.setTitle(L10n.commonContinue, for: .normal)
-        continueButton.makeup(with: .large)
-        continueButton.cornerRadiusedWith(backgroundColor: .clear,
-                                          borderColor: .white,
-                                          radius: Style.largeCornerRadius,
-                                          borderWidth: Style.mediumBorderWidth)
+        continueButton.setTitle(L10n.ok, for: .normal)
+        continueButton.customCornered(corners: [.allCorners], radius: Style.largeCornerRadius)
     }
 }

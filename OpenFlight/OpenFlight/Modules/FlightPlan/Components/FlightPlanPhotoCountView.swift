@@ -36,7 +36,7 @@ final class FlightPlanPhotoCountView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var photoCountLabel: UILabel! {
         didSet {
-            photoCountLabel.makeUp()
+            photoCountLabel.makeUp(and: .defaultTextColor)
         }
     }
 
@@ -60,9 +60,9 @@ final class FlightPlanPhotoCountView: UIView, NibOwnerLoadable {
     /// Sets up the cell.
     ///
     /// - Parameters:
-    ///     - fpExecution: the flight plan execution
-    func setup(fpExecution: FlightPlanExecution) {
-        initViewModel(fpExecution: fpExecution)
+    ///     - flightModel: the flight plan model
+    func setup(flightModel: FlightPlanModel) {
+        initViewModel(flightModel: flightModel)
     }
 }
 
@@ -79,9 +79,9 @@ private extension FlightPlanPhotoCountView {
     /// Inits the view model.
     ///
     /// - Parameters:
-    ///     - fpExecution: the Flight Plan execution
-    func initViewModel(fpExecution: FlightPlanExecution) {
-        viewModel = FlightPlanPhotoCountViewModel(fpExecution: fpExecution)
+    ///     - flightModel: the flight plan model
+    func initViewModel(flightModel: FlightPlanModel) {
+        viewModel = FlightPlanPhotoCountViewModel(flightModel: flightModel)
         viewModel?.state.valueChanged = { [weak self] state in
             self?.updateView(state: state)
         }

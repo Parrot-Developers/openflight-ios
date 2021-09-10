@@ -29,13 +29,21 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
 /// ViewModel for SDCard formatting.
 
 final class GalleryFormatSDCardViewModel: NSObject {
+
+    // MARK: - Published Properties
+    @Published private(set) var isFlying: Bool = false
+
     // MARK: - Private Properties
     private weak var galleryViewModel: GalleryMediaViewModel?
     private var sdCardListener: GallerySdMediaListener?
+    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var currentDrone = Services.hub.currentDroneHolder
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Internal Properties
     var selectedFormattingType: FormattingType = .quick
@@ -61,6 +69,11 @@ final class GalleryFormatSDCardViewModel: NSObject {
     init(galleryViewModel: GalleryMediaViewModel?) {
         super.init()
         self.galleryViewModel = galleryViewModel
+        currentDrone.dronePublisher
+            .sink { [unowned self] drone in
+                listenFlyingState(drone: drone)
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -103,6 +116,19 @@ extension GalleryFormatSDCardViewModel {
             displayedProgress = currentShareStart + formattingProgressAsFloat * currentShare
             block(formattingStep, displayedProgress, formattingState)
         })
+    }
+
+    /// Starts observing changes for flying indicators and updates the flyingState published property.
+    ///
+    /// - Parameter drone: The current drone
+    func listenFlyingState(drone: Drone) {
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicator in
+            if flyingIndicator?.flyingState == .flying || flyingIndicator?.flyingState == .waiting {
+                self?.isFlying = true
+            } else {
+                self?.isFlying = false
+            }
+        }
     }
 
     /// Called when we need to stop listening to the formatting progress.

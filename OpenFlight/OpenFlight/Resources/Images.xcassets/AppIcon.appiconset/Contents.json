@@ -1,109 +1,109 @@
 {
   "images" : [
     {
-      "filename" : "AppIcon-40.png",
+      "filename" : "appIcon20@2x.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "20x20"
     },
     {
-      "filename" : "AppIcon-60.png",
+      "filename" : "appIcon20@3x.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "20x20"
     },
     {
-      "filename" : "AppIcon-58.png",
+      "filename" : "appIcon29@2x.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "29x29"
     },
     {
-      "filename" : "AppIcon-87.png",
+      "filename" : "appIcon29@3x.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "29x29"
     },
     {
-      "filename" : "AppIcon-80.png",
+      "filename" : "appIcon40@2x.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "40x40"
     },
     {
-      "filename" : "AppIcon-121.png",
+      "filename" : "appIcon40@3x.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "40x40"
     },
     {
-      "filename" : "AppIcon-120.png",
+      "filename" : "appIcon60@2x.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "60x60"
     },
     {
-      "filename" : "AppIcon-180.png",
+      "filename" : "appIcon60@3x.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "60x60"
     },
     {
-      "filename" : "AppIcon-21.png",
+      "filename" : "appIcon20.png",
       "idiom" : "ipad",
       "scale" : "1x",
       "size" : "20x20"
     },
     {
-      "filename" : "AppIcon-41.png",
+      "filename" : "appIcon20@2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "20x20"
     },
     {
-      "filename" : "AppIcon-30.png",
+      "filename" : "appIcon29.png",
       "idiom" : "ipad",
       "scale" : "1x",
       "size" : "29x29"
     },
     {
-      "filename" : "AppIcon-59.png",
+      "filename" : "appIcon29@2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "29x29"
     },
     {
-      "filename" : "AppIcon-42.png",
+      "filename" : "appIcon40.png",
       "idiom" : "ipad",
       "scale" : "1x",
       "size" : "40x40"
     },
     {
-      "filename" : "AppIcon-81.png",
+      "filename" : "appIcon40@2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "40x40"
     },
     {
-      "filename" : "AppIcon-77.png",
+      "filename" : "appIcon76.png",
       "idiom" : "ipad",
       "scale" : "1x",
       "size" : "76x76"
     },
     {
-      "filename" : "AppIcon-153.png",
+      "filename" : "appIcon76@2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "76x76"
     },
     {
-      "filename" : "AppIcon167-1.png",
+      "filename" : "appIcon83@2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "83.5x83.5"
     },
     {
-      "filename" : "OpenFlight-AppIcon-Apple.png",
+      "filename" : "appIcon1024.png",
       "idiom" : "ios-marketing",
       "scale" : "1x",
       "size" : "1024x1024"

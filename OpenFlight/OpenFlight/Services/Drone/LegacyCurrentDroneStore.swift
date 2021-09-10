@@ -61,8 +61,6 @@ private extension LegacyCurrentDroneStore {
         stateRef = drone.getState { [weak self] state in
             guard state?.connectionState == .connected else { return }
             self?.updateDroneState(drone)
-            self?.resetMediaCustomIdIfNecessary(drone: drone)
-            self?.updateFlightPlanExecutionState(drone)
         }
     }
 
@@ -76,103 +74,5 @@ private extension LegacyCurrentDroneStore {
         if let flightCameraRecorder = drone.getPeripheral(Peripherals.flightCameraRecorder) {
             flightCameraRecorder.activePipelines.value = flightCameraRecorder.activePipelines.supportedValues
         }
-    }
-
-    /// Updates Flight Plan execution informations.
-    func updateFlightPlanExecutionState(_ drone: Drone) {
-        // Gets last flight plan information with recovery field.
-        // Database must be updated if recoveryInfo is not nil.
-        guard let pilotingItf = drone.getPilotingItf(PilotingItfs.flightPlan),
-              let recoveryInfo = pilotingItf.recoveryInfo else {
-            return
-        }
-
-        var currentFlightPlanId: String?
-
-        // Gets last execution of the recovered flight plan and update its last item executed.
-        let flightPlanExecution = CoreDataManager
-            .shared
-            .executions(forRecoveryId: recoveryInfo.id)
-            .first
-
-        guard flightPlanExecution?.state != .completed else {
-            pilotingItf.clearRecoveryInfo()
-            return
-        }
-
-        flightPlanExecution?.saveLatestItemExecuted(with: recoveryInfo.latestMissionItemExecuted)
-
-        if let path = flightPlanExecution?.mavlinkUrl?.path,
-           FileManager.default.fileExists(atPath: path),
-           let mavlinkCommands: [MavlinkStandard.MavlinkCommand] = (try? MavlinkStandard.MavlinkFiles.parse(filepath: path)) {
-            var lastItemIndex = mavlinkCommands.count - 1
-
-            // Decrease total item count if there is one Return to Home MavlinkCommand.
-            // RTH usually occurs at the end of the Flight plan.
-            if mavlinkCommands.first(where: {
-                $0 is MavlinkStandard.ReturnToLaunchCommand
-            }) != nil {
-                lastItemIndex -= 1
-            }
-
-            // Updates execution status if Flight Plan is finish.
-            if lastItemIndex == recoveryInfo.latestMissionItemExecuted {
-                flightPlanExecution?.saveExecutionState(with: .completed)
-            }
-        }
-
-        // Save current flight plan Id.
-        currentFlightPlanId = flightPlanExecution?.flightPlanId
-
-        if pilotingItf.state == .active,
-           drone.isStateFlying,
-           !isFlightPlanAlreadyShown,
-           let flightPlanId = currentFlightPlanId {
-
-            if let currentViewModel = CoreDataManager.shared.loadFlightPlan(for: flightPlanId),
-               let type = currentViewModel.state.value.type {
-
-                // Set Flight Plan as last used to be automatically open.
-                currentViewModel.setAsLastUsed()
-
-                // Setup Mission as a Flight Plan mission (may be custom).
-                currentMissionManager.set(provider: type.missionProvider)
-                currentMissionManager.set(mode: type.missionMode)
-                isFlightPlanAlreadyShown = true
-            }
-        } else {
-            // Clear recovery info after execution updates, only if a FP is not active.
-            pilotingItf.clearRecoveryInfo()
-        }
-    }
-
-    /// Resets the media customId if it is necessary.
-    /// Can happen if there is a crash/killing app during a flight plan execution.
-    func resetMediaCustomIdIfNecessary(drone: Drone) {
-        mediaMetadataRef = drone.getPeripheral(Peripherals.mainCamera2)?.getComponent(Camera2Components.mediaMetadata) { [weak self] mediaMetadata in
-            if let mediaCustomId = mediaMetadata?.customId,
-               !mediaCustomId.isEmpty,
-               self?.isDroneStillRunningFlightPlan(drone: drone, executionId: mediaCustomId) == false {
-                drone.getPeripheral(Peripherals.mainCamera2)?.resetCustomMediaMetadata()
-            }
-
-            // Resets the media reference to avoid callback being called more than one time.
-            self?.mediaMetadataRef = nil
-        }
-    }
-
-    /// Checks if drone is running the flight plan after a connection lost.
-    ///
-    /// - Parameters:
-    ///    - drone: drone
-    ///    - executionId: flight plan execution
-    func isDroneStillRunningFlightPlan(drone: Drone, executionId: String) -> Bool {
-        guard drone.getPilotingItf(PilotingItfs.flightPlan)?.state == .active,
-              let executions = FlightPlanManager.shared.currentFlightPlanViewModel?.executions,
-              let execution = executions.first(where: { $0.executionId == executionId }) else {
-            return false
-        }
-
-        return execution.state != .completed
     }
 }

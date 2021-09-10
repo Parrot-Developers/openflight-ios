@@ -74,6 +74,7 @@ private extension DroneCalibrationInstructionsView {
         firstLabel.textColor = viewModel.firstLabelColor
         firstLabel.textAlignment = viewModel.firstLabelAlignment
         secondLabel.text = viewModel.secondLabel
+        secondLabel.textColor = viewModel.secondLabelColor
         secondLabel.textAlignment = viewModel.secondLabelAlignment
         itemsStackView.removeSubViews()
         for item in viewModel.items {

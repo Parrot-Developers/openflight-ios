@@ -4,31 +4,31 @@
 <array>
 	<dict>
 		<key>embeddedPath</key>
-		<string>embedded_missions/com.parrot.missions.samples.hello_7.0.0-rc10.tar.gz</string>
+		<string>embedded_missions/com.parrot.missions.samples.hello_7.0.0-rc18.tar.gz</string>
 		<key>md5</key>
-		<string>98f60f483c60ca25460c41bbdaca9bf4</string>
+		<string>6175cc0a184eb2f2c64e676fbab8d7a5</string>
 		<key>name</key>
 		<string>Hello mission</string>
 		<key>size</key>
-		<integer>41133</integer>
+		<integer>41534</integer>
 		<key>uid</key>
 		<string>com.parrot.missions.samples.hello</string>
 		<key>version</key>
-		<string>7.0.0-rc10</string>
+		<string>7.0.0-rc18</string>
 	</dict>
 	<dict>
 		<key>embeddedPath</key>
-		<string>embedded_missions/com.parrot.missions.ophtalmo_0.0.2.tar.gz</string>
+		<string>embedded_missions/com.parrot.missions.ophtalmo_7.0.0-rc18.tar.gz</string>
 		<key>md5</key>
-		<string>9c88932576666a6f3d1808cc8b8bc280</string>
+		<string>49045317c4b1580b0ab01cf06e13bb66</string>
 		<key>name</key>
 		<string>ophtalmo</string>
 		<key>size</key>
-		<integer>2265574</integer>
+		<integer>2268306</integer>
 		<key>uid</key>
 		<string>com.parrot.missions.ophtalmo</string>
 		<key>version</key>
-		<string>0.0.2</string>
+		<string>7.0.0-rc18</string>
 	</dict>
 </array>
 </plist>

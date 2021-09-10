@@ -50,39 +50,69 @@ final class SplitControls: NSObject, DelayedTaskProvider {
         }
     }
     @IBOutlet private weak var splitViewConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var splitViewIpadConstraint: NSLayoutConstraint!
+
     @IBOutlet private var streamTrailingToSplitViewConstraint: NSLayoutConstraint!
+    @IBOutlet private var streamBottomToSplitViewIpadConstraint: NSLayoutConstraint!
+
     @IBOutlet private var secondaryViewLeadingToSplitViewConstraint: NSLayoutConstraint!
+    @IBOutlet private var secondaryViewTopToSplitViewIpadConstraint: NSLayoutConstraint!
+
     // Constraints shouldn't be deactivated in storyboard due to iOS13 issue with return from background.
     @IBOutlet private var streamTrailingToSuperviewConstraint: NSLayoutConstraint! {
         didSet {
             streamTrailingToSuperviewConstraint.isActive = false
         }
     }
+    @IBOutlet private var streamBottomToSuperviewIpadConstraint: NSLayoutConstraint! {
+        didSet {
+            streamBottomToSuperviewIpadConstraint.isActive = false
+        }
+    }
+
     @IBOutlet private var secondaryViewLeadingToSuperviewConstraint: NSLayoutConstraint! {
         didSet {
             secondaryViewLeadingToSuperviewConstraint.isActive = false
         }
     }
+    @IBOutlet private var secondaryViewTopToSuperviewIpadConstraint: NSLayoutConstraint! {
+        didSet {
+            secondaryViewTopToSuperviewIpadConstraint.isActive = false
+        }
+    }
+
     @IBOutlet private var streamMiniatureLeadingToMissionLauncher: NSLayoutConstraint! {
         didSet {
             streamMiniatureLeadingToMissionLauncher.isActive = false
         }
     }
+
     @IBOutlet private weak var streamButton: UIButton!
     @IBOutlet private weak var secondaryViewButton: UIButton!
 
     @IBOutlet private var streamFullscreenConstraints: [NSLayoutConstraint]!
+    @IBOutlet private var streamFullScreenIpadConstraints: [NSLayoutConstraint]!
+
     @IBOutlet private var streamMiniatureConstraints: [NSLayoutConstraint]!
+
     @IBOutlet private var secondaryViewFullscreenConstraints: [NSLayoutConstraint]!
+    @IBOutlet private var secondaryViewFullscreenIpadConstraints: [NSLayoutConstraint]!
+
     @IBOutlet private var secondaryViewMiniatureConstraints: [NSLayoutConstraint]!
+    @IBOutlet private var secondaryViewMiniatureIpadConstraints: [NSLayoutConstraint]!
+
     @IBOutlet private var secondaryViewMiniatureCenterConstraints: [NSLayoutConstraint]!
+
     @IBOutlet private var secondaryViewHeightRatioConstraints: [NSLayoutConstraint]!
 
     // MARK: - Private Enums
+
     private enum Constants {
+        static let minimumStreamViewHeight: CGFloat = UIScreen.main.bounds.height / 2
         static let minimumStreamViewWidth: CGFloat = 200
         // Secondary view has a minimum width of 15% of the screen, unless it is smaller than 140 points.
         static let minimumSecondaryViewWidth: CGFloat = max(UIScreen.main.bounds.width * 0.15, 140)
+        static let minimumSecondaryViewHeight: CGFloat = max(UIScreen.main.bounds.height * 0.25, 140)
         static let splitToFullscreenAnimationDelay: TimeInterval = 0.8
         static let defaultAnimationDuration: TimeInterval = 0.35
         static let defaultStreamRatio: CGFloat = 4/3
@@ -94,8 +124,10 @@ final class SplitControls: NSObject, DelayedTaskProvider {
     }
 
     // MARK: - Internal Properties
+
     weak var cameraStreamingViewController: HUDCameraStreamingViewController?
     weak var mapViewController: MapViewController?
+    weak var mapOr3DParent: UIViewController?
     var delayedTaskComponents = DelayedTaskComponents()
     weak var delegate: SplitControlsDelegate?
     var isSecondaryContainerEmpty: Bool {
@@ -103,6 +135,82 @@ final class SplitControls: NSObject, DelayedTaskProvider {
     }
 
     // MARK: - Private Properties
+
+    private var splitViewConstraintsGetter: NSLayoutConstraint {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return splitViewIpadConstraint
+
+        default:
+            return splitViewConstraint
+        }
+    }
+
+    private var streamToSplitViewConstraint: NSLayoutConstraint {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return streamBottomToSplitViewIpadConstraint
+
+        default:
+            return streamTrailingToSplitViewConstraint
+        }
+    }
+
+    private var secondaryViewToSplitViewConstraint: NSLayoutConstraint {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return secondaryViewTopToSplitViewIpadConstraint
+
+        default:
+            return secondaryViewLeadingToSplitViewConstraint
+        }
+    }
+
+    private var streamToSuperviewConstraint: NSLayoutConstraint {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return streamBottomToSuperviewIpadConstraint
+        default:
+            return streamTrailingToSuperviewConstraint
+        }
+    }
+
+    private var secondaryViewToSuperviewConstraint: NSLayoutConstraint {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return secondaryViewTopToSuperviewIpadConstraint
+        default:
+            return secondaryViewLeadingToSuperviewConstraint
+        }
+    }
+
+    private var streamFullscreenConstraintsGetter: [NSLayoutConstraint] {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return streamFullScreenIpadConstraints
+        default:
+            return streamFullscreenConstraints
+        }
+    }
+
+    private var secondaryViewFullscreenConstraintsGetter: [NSLayoutConstraint] {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return secondaryViewFullscreenIpadConstraints
+        default:
+            return secondaryViewFullscreenConstraints
+        }
+    }
+
+    private var secondaryViewMiniatureConstraintsGetter: [NSLayoutConstraint] {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return secondaryViewMiniatureIpadConstraints
+        default:
+            return secondaryViewMiniatureConstraints
+        }
+    }
+
     private var longPressGestureRecognizer: UILongPressGestureRecognizer!
     private var cancellables = Set<AnyCancellable>()
     private let viewModel = SplitControlsViewModel()
@@ -110,12 +218,35 @@ final class SplitControls: NSObject, DelayedTaskProvider {
     private unowned var currentMissionManager = Services.hub.currentMissionManager
     private var currentStreamRatio: CGFloat?
     private var preferredSplitPosition: CGFloat {
-        guard let currentStreamRatio = currentStreamRatio else {
-            return .zero
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            guard let currentStreamRatio = currentStreamRatio else {
+                return .zero
+            }
+            let preferredHeight = view.frame.width * currentStreamRatio + self.splitView.frame.height / 2
+
+            // Avoid crash when the app is laucnhed for the first time
+            if Constants.minimumStreamViewHeight >= self.view.frame.height {
+                return ( Constants.minimumStreamViewHeight...self.view.frame.width).clamp(preferredHeight)
+            } else {
+                let height = self.view.frame.height
+                if height - Constants.minimumSecondaryViewHeight >= Constants.minimumStreamViewHeight {
+                    return (Constants.minimumStreamViewHeight...self.view.frame.height - Constants.minimumSecondaryViewHeight)
+                        .clamp(preferredHeight)
+                } else {
+                    return (self.view.frame.height - Constants.minimumSecondaryViewHeight...Constants.minimumStreamViewHeight)
+                        .clamp(preferredHeight)
+                }
+            }
+
+        default:
+            guard let currentStreamRatio = currentStreamRatio else {
+                return .zero
+            }
+            let preferredWidth = view.frame.height * currentStreamRatio + self.splitView.frame.width / 2
+            return (Constants.minimumStreamViewWidth...self.view.frame.width - Constants.minimumSecondaryViewWidth)
+                .clamp(preferredWidth)
         }
-        let preferredWidth = view.frame.height * currentStreamRatio + self.splitView.frame.width / 2
-        return (Constants.minimumStreamViewWidth...self.view.frame.width - Constants.minimumSecondaryViewWidth)
-            .clamp(preferredWidth)
     }
     private var secondaryViewCornerRadius: CGFloat {
         let state = viewModel
@@ -127,6 +258,7 @@ final class SplitControls: NSObject, DelayedTaskProvider {
     private var isMapRequired: Bool { Services.hub.currentMissionManager.mode.isMapRequired }
 
     // MARK: - Internal Funcs
+
     /// Sets up gesture recognizers.
     /// Should be called inside viewDidLoad.
     func start() {
@@ -151,14 +283,27 @@ final class SplitControls: NSObject, DelayedTaskProvider {
         .store(in: &cancellables)
     }
 
+    /// Updates the constraints when returning from background
+    @objc func updateConstraintForForeground() {
+        streamMiniatureLeadingToMissionLauncher.isActive = false
+        streamTrailingToSuperviewConstraint.isActive = false
+        let tempMode = viewModel.mode
+        if tempMode == .secondary {
+            secondaryViewToSplitViewConstraint.isActive = false
+        } else {
+            secondaryViewLeadingToSuperviewConstraint.isActive = false
+        }
+        viewModel.setMode(currentMissionManager.mode.preferredSplitMode)
+        setSplitMode(tempMode, animated: false)
+    }
+
     /// Sets up initial split screen position.
     /// Should be called inside viewDidAppear in
     /// order to have the correct view frame.
     func setupSplitIfNeeded() {
         // Avoid overwrite of previous stream ratio.
-        guard currentStreamRatio == nil else {
-            return
-        }
+        guard currentStreamRatio == nil else { return }
+
         currentStreamRatio = Constants.defaultStreamRatio
         if !viewModel.isJoysticksVisible {
             setupSplitedScreen(atValue: preferredSplitPosition)
@@ -166,24 +311,32 @@ final class SplitControls: NSObject, DelayedTaskProvider {
     }
 
     /// Updates split mode layout according current and new modes.
-    func setSplitMode(_ mode: SplitScreenMode) {
+    func setSplitMode(_ mode: SplitScreenMode, animated: Bool = true) {
         switch (viewModel.mode, mode) {
         case (.stream, .secondary):
-            switchFromStreamingToSecondaryFullScreen()
+            switchFromStreamingToSecondaryFullScreen(animated: animated)
         case (.stream, .splited):
-            switchToSplitScreenFromSecondaryTap()
+            switchToSplitScreenFromSecondaryTap(animated: animated)
         case (.splited, .stream):
-            setupStreamingFullscreen()
+            if animated {
+                setupStreamingFullscreen()
+            } else {
+                setupStreamingFullscreenWithoutAnimation()
+            }
         case (.splited, .secondary):
-            setupSecondaryViewFullscreen()
+            if animated {
+                setupSecondaryViewFullscreen()
+            } else {
+                setupSecondaryViewFullscreenNoAnimation()
+            }
         case (.secondary, .splited):
-            switchToSplitScreenFromStreamTap()
+            switchToSplitScreenFromStreamTap(animated: animated)
         case (.secondary, .stream):
-            switchFromSecondaryToStreamingFullScreen()
+            switchFromSecondaryToStreamingFullScreen(animated: animated)
         default:
             break
         }
-        updateSecondaryViewContent()
+        displayMapOr3DasChild()
     }
 
     /// Switch to full streaming mode if needed.
@@ -202,10 +355,9 @@ final class SplitControls: NSObject, DelayedTaskProvider {
     /// - Parameters:
     ///    - contentZone: content zone used to calculate new ratio
     func setupRatio(withContentZone contentZone: CGRect?) {
-        guard let contentZone = contentZone, contentZone.height != 0 else {
-            return
-        }
+        guard let contentZone = contentZone, contentZone.height != 0 else { return }
         let videoRatio = contentZone.width / contentZone.height
+
         /// Update only if ratio has changed.
         if videoRatio.rounded(toPlaces: Constants.streamRatioPrecision) != currentStreamRatio?.rounded(toPlaces: Constants.streamRatioPrecision) {
             currentStreamRatio = videoRatio
@@ -223,28 +375,6 @@ final class SplitControls: NSObject, DelayedTaskProvider {
         streamButton.isHidden = !enabled
     }
 
-    /// Update secondary view content depending SecondaryScreenType settings.
-    func updateSecondaryViewContent() {
-        var secondaryView: UIView?
-        switch SecondaryScreenType.current {
-        case .map,
-             .threeDimensions where viewModel.mode == .stream,
-             .threeDimensions where isMapRequired:
-            secondaryView = mapViewController?.view
-        case .threeDimensions:
-            if occupancyViewController == nil {
-                occupancyViewController = OccupancyViewController.instantiate()
-            }
-            secondaryView = occupancyViewController?.view
-        }
-
-        if let secondView = secondaryView,
-           secondaryContainerView.subviews.first(where: { $0 == secondView }) == nil {
-            secondaryContainerView.subviews.forEach({ $0.removeFromSuperview() })
-            secondaryContainerView.addWithConstraints(subview: secondView)
-        }
-    }
-
     /// Update centerMapButton status.
     func updateCenterMapButtonStatus(hide: Bool, image: UIImage?) {
         centerMapButton.isHidden = hide
@@ -253,6 +383,7 @@ final class SplitControls: NSObject, DelayedTaskProvider {
 }
 
 // MARK: - Actions
+
 private extension SplitControls {
     @IBAction func streamButtonTouchedUpInside(_ sender: UIButton) {
         switchToSplitScreenFromStreamTap()
@@ -268,6 +399,7 @@ private extension SplitControls {
 }
 
 // MARK: - Gesture Recognizers
+
 private extension SplitControls {
     /// Sets up gesture for long press.
     func setLongPressGesture() {
@@ -278,23 +410,26 @@ private extension SplitControls {
 
     /// Called when a long press on split touch view occurs.
     @objc func onLongPress(sender: UILongPressGestureRecognizer) {
-        guard viewModel.mode == .splited else {
-            return
-        }
+        guard viewModel.mode == .splited else { return }
+
         switch sender.state {
         case .ended, .cancelled, .failed:
             cancelDelayedTask()
             splitView.stopAnimation()
             return
+
         default:
             break
         }
+
         handleLongPress(at: sender.location(in: view))
     }
 }
 
 // MARK: - Private Funcs
+
 private extension SplitControls {
+
     /// Handles long press action. When user moves around, both views
     /// are resized accordingly. If user moves past a specific threshold,
     /// view automatically switches to fullscreen.
@@ -303,79 +438,141 @@ private extension SplitControls {
     ///    - point: point where the event occurs (in main view frame)
     func handleLongPress(at point: CGPoint) {
         let baseFrame = view.frame
-        switch point.x {
-        case 0...Constants.minimumStreamViewWidth:
-            if !isTaskPending() {
-                setupDelayedTask(setupSecondaryViewFullscreen,
-                                 delay: Constants.splitToFullscreenAnimationDelay)
-                splitView.startAnimation()
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            switch point.y {
+            case 0...Constants.minimumStreamViewHeight:
+                if !isTaskPending() {
+                    setupDelayedTask(setupSecondaryViewFullscreen,
+                                     delay: Constants.splitToFullscreenAnimationDelay)
+                    splitView.startAnimation()
+                }
+
+            case Constants.minimumStreamViewHeight...baseFrame.height - Constants.minimumSecondaryViewHeight:
+                cancelDelayedTask()
+                splitView.stopAnimation()
+                setupSplitedScreen(atValue: point.y)
+
+            case baseFrame.height - Constants.minimumSecondaryViewHeight...baseFrame.height:
+                if !isTaskPending() {
+                    setupDelayedTask(setupStreamingFullscreen,
+                                     delay: Constants.splitToFullscreenAnimationDelay)
+                    splitView.startAnimation()
+                }
+
+            default:
+                break
             }
-        case Constants.minimumStreamViewWidth...baseFrame.width - Constants.minimumSecondaryViewWidth:
-            cancelDelayedTask()
-            splitView.stopAnimation()
-            setupSplitedScreen(atValue: point.x)
-        case baseFrame.width - Constants.minimumSecondaryViewWidth...baseFrame.width:
-            if !isTaskPending() {
-                setupDelayedTask(setupStreamingFullscreen,
-                                 delay: Constants.splitToFullscreenAnimationDelay)
-                splitView.startAnimation()
-            }
+
         default:
-            break
+            switch point.x {
+            case 0...Constants.minimumStreamViewWidth:
+                if !isTaskPending() {
+                    setupDelayedTask(setupSecondaryViewFullscreen,
+                                     delay: Constants.splitToFullscreenAnimationDelay)
+                    splitView.startAnimation()
+                }
+
+            case Constants.minimumStreamViewWidth...baseFrame.width - Constants.minimumSecondaryViewWidth:
+                cancelDelayedTask()
+                splitView.stopAnimation()
+                setupSplitedScreen(atValue: point.x)
+
+            case baseFrame.width - Constants.minimumSecondaryViewWidth...baseFrame.width:
+                if !isTaskPending() {
+                    setupDelayedTask(setupStreamingFullscreen,
+                                     delay: Constants.splitToFullscreenAnimationDelay)
+                    splitView.startAnimation()
+                }
+            default:
+                break
+            }
         }
+
     }
 
     /// Updates UI from stream fullscreen to splited mode, and animates changes.
-    func switchToSplitScreenFromSecondaryTap() {
+    ///
+    /// - Parameter animated: If the UI changes should be animated or not
+    func switchToSplitScreenFromSecondaryTap(animated: Bool = true) {
         viewModel.setMode(.splited)
         secondaryViewButton.isUserInteractionEnabled = false
         mapViewController?.disableUserInteraction(false)
         updateSecondaryContainer()
-        updateSecondaryViewContent()
-        UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
-            // Moves secondary view from miniature position to splited position.
-            self.secondaryViewMiniatureConstraints.forEach { $0.isActive = false }
-            self.secondaryViewFullscreenConstraints.forEach { $0.isActive = true }
-            self.secondaryViewLeadingToSplitViewConstraint.isActive = true
-            self.view.layoutIfNeeded()
-        }, completion: { _ in
-            UIView.animate(withDuration: Constants.defaultAnimationDuration) {
-                // Moves stream from fullscreen position to splited position
-                // and updates preferred position.
-                self.streamTrailingToSuperviewConstraint.isActive = false
-                self.streamTrailingToSplitViewConstraint.isActive = true
-                self.setupSplitedScreen(atValue: self.preferredSplitPosition)
+        displayMapOr3DasChild()
+
+        if animated {
+            UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
+                // Moves secondary view from miniature position to splited position.
+
+                self.secondaryViewMiniatureConstraintsGetter.forEach { $0.isActive = false }
+                self.secondaryViewFullscreenConstraintsGetter.forEach { $0.isActive = true }
+                self.secondaryViewToSplitViewConstraint.isActive = true
                 self.view.layoutIfNeeded()
-            }
-        })
+            }, completion: { _ in
+                UIView.animate(withDuration: Constants.defaultAnimationDuration) {
+                    // Moves stream from fullscreen position to splited position
+                    // and updates preferred position.
+
+                    self.streamToSuperviewConstraint.isActive = false
+                    self.streamToSplitViewConstraint.isActive = true
+                    self.setupSplitedScreen(atValue: self.preferredSplitPosition)
+                    self.view.layoutIfNeeded()
+                }
+            })
+        } else {
+            self.secondaryViewMiniatureConstraintsGetter.forEach { $0.isActive = false }
+            self.secondaryViewFullscreenConstraintsGetter.forEach { $0.isActive = true }
+            self.secondaryViewToSplitViewConstraint.isActive = true
+            self.streamToSuperviewConstraint.isActive = false
+            self.streamToSplitViewConstraint.isActive = true
+            self.setupSplitedScreen(atValue: self.preferredSplitPosition)
+            self.view.layoutIfNeeded()
+        }
     }
 
     /// Updates UI from secondary view fullscreen to splited mode, and animates changes.
-    func switchToSplitScreenFromStreamTap() {
+    ///
+    /// - Parameter animated: If the UI changes should be animated or not
+    func switchToSplitScreenFromStreamTap(animated: Bool = true) {
         viewModel.setMode(.splited)
         view.insertSubview(aeLockContainerView, aboveSubview: streamContainerView)
         view.insertSubview(streamContainerView, aboveSubview: secondaryContainerView)
         cameraStreamingViewController?.removeBorder()
         streamButton.isUserInteractionEnabled = false
         mapViewController?.disableUserInteraction(false)
-        UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
-            // Moves stream from miniature to splited position.
-            self.streamMiniatureConstraints.forEach { $0.isActive = false }
-            self.streamFullscreenConstraints.forEach { $0.isActive = true }
-            self.streamTrailingToSplitViewConstraint.isActive = true
-            self.view.layoutIfNeeded()
-        }, completion: { _ in
+
+        if animated {
             UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
-                // Moves secondary view to its position for splited
-                // mode and updates preferred position.
-                self.secondaryViewLeadingToSuperviewConstraint.isActive = false
-                self.secondaryViewLeadingToSplitViewConstraint.isActive = true
-                self.setupSplitedScreen(atValue: self.preferredSplitPosition)
+                // Moves stream from miniature to splited position.
+
+                self.streamMiniatureConstraints.forEach { $0.isActive = false }
+                self.streamFullscreenConstraintsGetter.forEach { $0.isActive = true }
+                self.streamToSplitViewConstraint.isActive = true
                 self.view.layoutIfNeeded()
             }, completion: { _ in
-                self.cameraStreamingViewController?.mode = .fullscreen
+                UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
+                    // Moves secondary view to its position for splited
+                    // mode and updates preferred position.
+
+                    self.secondaryViewToSuperviewConstraint.isActive = false
+                    self.secondaryViewToSplitViewConstraint.isActive = true
+                    self.setupSplitedScreen(atValue: self.preferredSplitPosition)
+                    self.view.layoutIfNeeded()
+                }, completion: { _ in
+                    self.cameraStreamingViewController?.mode = .fullscreen
+                })
             })
-        })
+        } else {
+            self.streamMiniatureConstraints.forEach { $0.isActive = false }
+            self.streamFullscreenConstraintsGetter.forEach { $0.isActive = true }
+            self.streamToSplitViewConstraint.isActive = true
+            self.secondaryViewToSuperviewConstraint.isActive = false
+            self.secondaryViewToSplitViewConstraint.isActive = true
+            self.setupSplitedScreen(atValue: self.preferredSplitPosition)
+            self.view.layoutIfNeeded()
+            self.cameraStreamingViewController?.mode = .fullscreen
+        }
     }
 
     /// Moves currently splited mode to another location.
@@ -385,11 +582,11 @@ private extension SplitControls {
         }
         if animated {
             UIView.animate(withDuration: Style.shortAnimationDuration) {
-                self.splitViewConstraint.constant = value
+                self.splitViewConstraintsGetter.constant = value
                 self.view.layoutIfNeeded()
             }
         } else {
-            splitViewConstraint.constant = value
+            splitViewConstraintsGetter.constant = value
         }
         streamSizeDidChange()
     }
@@ -405,20 +602,40 @@ private extension SplitControls {
 
         UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
             // Moves secondary view from splited position to fullscreen position.
-            self.secondaryViewLeadingToSplitViewConstraint.isActive = false
-            self.secondaryViewLeadingToSuperviewConstraint.isActive = true
+
+            self.secondaryViewToSplitViewConstraint.isActive = false
+            self.secondaryViewToSuperviewConstraint.isActive = true
             self.view.layoutIfNeeded()
         }, completion: { _ in
             UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
                 // Moves stream from splited position to miniature position.
-                self.streamTrailingToSplitViewConstraint.isActive = false
-                self.streamFullscreenConstraints.forEach { $0.isActive = false }
+
+                self.streamToSplitViewConstraint.isActive = false
+                self.streamFullscreenConstraintsGetter.forEach { $0.isActive = false }
                 self.streamMiniatureConstraints.forEach { $0.isActive = true }
                 self.view.layoutIfNeeded()
             }, completion: { _ in
                 self.cameraStreamingViewController?.addBorder()
             })
         })
+    }
+
+    /// Updates UI for secondary view fullscreen mode without animation.
+    func setupSecondaryViewFullscreenNoAnimation() {
+        splitView.stopAnimation()
+        viewModel.setMode(.secondary)
+        view.insertSubview(streamContainerView, aboveSubview: secondaryContainerView)
+        streamButton.isUserInteractionEnabled = true
+        mapViewController?.disableUserInteraction(false)
+        cameraStreamingViewController?.mode = .preview
+
+        self.secondaryViewToSplitViewConstraint.isActive = false
+        self.secondaryViewToSuperviewConstraint.isActive = true
+        self.streamToSplitViewConstraint.isActive = false
+        self.streamFullscreenConstraintsGetter.forEach { $0.isActive = false }
+        self.streamMiniatureConstraints.forEach { $0.isActive = true }
+        self.view.layoutIfNeeded()
+        self.cameraStreamingViewController?.addBorder()
     }
 
     /// Updates UI for stream fullscreen mode.
@@ -429,83 +646,144 @@ private extension SplitControls {
         view.insertSubview(secondaryContainerView, aboveSubview: streamContainerView)
         mapViewController?.disableUserInteraction(true)
         secondaryViewButton.isUserInteractionEnabled = true
-        updateSecondaryViewContent()
+        displayMapOr3DasChild()
+
         UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
             // Moves stream from splited postion to fullscreen position.
-            self.streamTrailingToSplitViewConstraint.isActive = false
-            self.streamTrailingToSuperviewConstraint.isActive = true
+
+            self.streamToSplitViewConstraint.isActive = false
+            self.streamToSuperviewConstraint.isActive = true
             self.view.layoutIfNeeded()
         }, completion: { _ in
             UIView.animate(withDuration: Constants.defaultAnimationDuration) {
                 // Moves secondary view from splited position to miniature position.
-                self.secondaryViewLeadingToSplitViewConstraint.isActive = false
-                self.secondaryViewFullscreenConstraints.forEach { $0.isActive = false }
-                self.secondaryViewMiniatureConstraints.forEach { $0.isActive = true }
+
+                self.secondaryViewToSplitViewConstraint.isActive = false
+                self.secondaryViewFullscreenConstraintsGetter.forEach { $0.isActive = false }
+                self.secondaryViewMiniatureConstraintsGetter.forEach { $0.isActive = true }
                 self.updateSecondaryContainer()
                 self.view.layoutIfNeeded()
             }
         })
     }
 
+    /// Updated UI for stream fullscreen mode without animation.
+    func setupStreamingFullscreenWithoutAnimation() {
+        splitView.stopAnimation()
+        viewModel.setMode(.stream)
+        view.insertSubview(aeLockContainerView, aboveSubview: streamContainerView)
+        view.insertSubview(secondaryContainerView, aboveSubview: streamContainerView)
+        mapViewController?.disableUserInteraction(true)
+        secondaryViewButton.isUserInteractionEnabled = true
+        displayMapOr3DasChild()
+
+        self.streamToSplitViewConstraint.isActive = false
+        self.streamToSuperviewConstraint.isActive = true
+        self.secondaryViewToSplitViewConstraint.isActive = false
+        self.secondaryViewFullscreenConstraintsGetter.forEach { $0.isActive = false }
+        self.secondaryViewMiniatureConstraintsGetter.forEach { $0.isActive = true }
+        self.updateSecondaryContainer()
+        self.view.layoutIfNeeded()
+    }
+
     /// Updates UI from secondary to stream fullscreen mode.
-    func switchFromSecondaryToStreamingFullScreen() {
+    ///
+    /// - Parameter animated: If the UI changes should be animated or not
+    func switchFromSecondaryToStreamingFullScreen(animated: Bool = true) {
         viewModel.setMode(.stream)
         cameraStreamingViewController?.removeBorder()
         streamButton.isUserInteractionEnabled = false
         mapViewController?.disableUserInteraction(true)
-        UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
-            // Moves stream from miniature to full screen position.
-            self.streamMiniatureConstraints.forEach { $0.isActive = false }
-            self.streamFullscreenConstraints.forEach { $0.isActive = true }
-            self.streamTrailingToSuperviewConstraint.isActive = true
-            self.view.layoutIfNeeded()
-        }, completion: { _ in
+
+        if animated {
             UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
-                // Moves secondary view from full screen to miniature position.
-                self.secondaryViewLeadingToSuperviewConstraint.isActive = false
-                self.secondaryViewLeadingToSplitViewConstraint.isActive = false
-                self.secondaryViewFullscreenConstraints.forEach { $0.isActive = false }
-                self.secondaryViewMiniatureConstraints.forEach { $0.isActive = true }
-                self.updateSecondaryContainer()
+                // Moves stream from miniature to full screen position.
+
+                self.streamMiniatureConstraints.forEach { $0.isActive = false }
+                self.streamFullscreenConstraintsGetter.forEach { $0.isActive = true }
+                self.streamToSuperviewConstraint.isActive = true
                 self.view.layoutIfNeeded()
             }, completion: { _ in
-                self.view.insertSubview(self.aeLockContainerView, aboveSubview: self.streamContainerView)
-                self.view.insertSubview(self.secondaryContainerView, aboveSubview: self.streamContainerView)
-                self.secondaryViewButton.isUserInteractionEnabled = true
-                self.cameraStreamingViewController?.mode = .fullscreen
+                UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
+                    // Moves secondary view from full screen to miniature position.
+
+                    self.secondaryViewToSuperviewConstraint.isActive = false
+                    self.secondaryViewToSplitViewConstraint.isActive = false
+                    self.secondaryViewFullscreenConstraintsGetter.forEach { $0.isActive = false }
+                    self.secondaryViewMiniatureConstraintsGetter.forEach { $0.isActive = true }
+                    self.updateSecondaryContainer()
+                    self.view.layoutIfNeeded()
+                }, completion: { _ in
+                    self.view.insertSubview(self.aeLockContainerView, aboveSubview: self.streamContainerView)
+                    self.view.insertSubview(self.secondaryContainerView, aboveSubview: self.streamContainerView)
+                    self.secondaryViewButton.isUserInteractionEnabled = true
+                    self.cameraStreamingViewController?.mode = .fullscreen
+                })
             })
-        })
+        } else {
+            self.streamMiniatureConstraints.forEach { $0.isActive = false }
+            self.streamFullscreenConstraintsGetter.forEach { $0.isActive = true }
+            self.streamToSuperviewConstraint.isActive = true
+            self.secondaryViewToSuperviewConstraint.isActive = false
+            self.secondaryViewToSplitViewConstraint.isActive = false
+            self.secondaryViewFullscreenConstraintsGetter.forEach { $0.isActive = false }
+            self.secondaryViewMiniatureConstraintsGetter.forEach { $0.isActive = true }
+            self.updateSecondaryContainer()
+            self.view.layoutIfNeeded()
+            self.view.insertSubview(self.aeLockContainerView, aboveSubview: self.streamContainerView)
+            self.view.insertSubview(self.secondaryContainerView, aboveSubview: self.streamContainerView)
+            self.secondaryViewButton.isUserInteractionEnabled = true
+            self.cameraStreamingViewController?.mode = .fullscreen
+        }
     }
 
     /// Updates UI from stream to secondary fullscreen mode.
-    func switchFromStreamingToSecondaryFullScreen() {
+    ///
+    /// - Parameter animated: If the UI changes should be animated or not
+    func switchFromStreamingToSecondaryFullScreen(animated: Bool = true) {
         viewModel.setMode(.secondary)
         secondaryViewButton.isUserInteractionEnabled = false
         mapViewController?.disableUserInteraction(false)
         updateSecondaryContainer()
         cameraStreamingViewController?.mode = .preview
 
-        UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
-            // Moves secondary view from miniature position to full screen position.
-            self.secondaryViewMiniatureConstraints.forEach { $0.isActive = false }
-            self.secondaryViewFullscreenConstraints.forEach { $0.isActive = true }
-            self.secondaryViewLeadingToSplitViewConstraint.isActive = false
-            self.secondaryViewLeadingToSuperviewConstraint.isActive = true
-            self.view.layoutIfNeeded()
-        }, completion: { _ in
+        if animated == true {
             UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
-                // Moves stream from fullscreen position to miniature position
-                // and updates preferred position.
-                self.streamTrailingToSuperviewConstraint.isActive = false
-                self.streamFullscreenConstraints.forEach { $0.isActive = false }
-                self.streamMiniatureConstraints.forEach { $0.isActive = true }
+                // Moves secondary view from miniature position to full screen position.
+
+                self.secondaryViewMiniatureConstraintsGetter.forEach { $0.isActive = false }
+                self.secondaryViewFullscreenConstraintsGetter.forEach { $0.isActive = true }
+                self.secondaryViewToSplitViewConstraint.isActive = false
+                self.secondaryViewToSuperviewConstraint.isActive = true
                 self.view.layoutIfNeeded()
             }, completion: { _ in
-                self.cameraStreamingViewController?.addBorder()
-                self.streamButton.isUserInteractionEnabled = true
-                self.view.insertSubview(self.streamContainerView, aboveSubview: self.secondaryContainerView)
+                UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: {
+                    // Moves stream from fullscreen position to miniature position
+                    // and updates preferred position.
+
+                    self.streamToSuperviewConstraint.isActive = false
+                    self.streamFullscreenConstraintsGetter.forEach { $0.isActive = false }
+                    self.streamMiniatureConstraints.forEach { $0.isActive = true }
+                    self.view.layoutIfNeeded()
+                }, completion: { _ in
+                    self.cameraStreamingViewController?.addBorder()
+                    self.streamButton.isUserInteractionEnabled = true
+                    self.view.insertSubview(self.streamContainerView, aboveSubview: self.secondaryContainerView)
+                })
             })
-        })
+        } else {
+            self.secondaryViewMiniatureConstraintsGetter.forEach { $0.isActive = false }
+            self.secondaryViewFullscreenConstraintsGetter.forEach { $0.isActive = true }
+            self.secondaryViewToSplitViewConstraint.isActive = false
+            self.secondaryViewToSuperviewConstraint.isActive = true
+            self.streamToSuperviewConstraint.isActive = false
+            self.streamFullscreenConstraintsGetter.forEach { $0.isActive = false }
+            self.streamMiniatureConstraints.forEach { $0.isActive = true }
+            self.cameraStreamingViewController?.addBorder()
+            self.view.layoutIfNeeded()
+            self.streamButton.isUserInteractionEnabled = true
+            self.view.insertSubview(self.streamContainerView, aboveSubview: self.secondaryContainerView)
+        }
     }
 
     /// Notifies delegate when stream size did change.
@@ -515,9 +793,7 @@ private extension SplitControls {
     func streamSizeDidChange(afterDelay: TimeInterval = Style.shortAnimationDuration) {
         // Inform about an update in stream view size.
         DispatchQueue.main.asyncAfter(deadline: .now() + afterDelay) { [weak self] in
-            guard let weakSelf = self else {
-                return
-            }
+            guard let weakSelf = self else { return }
             weakSelf.delegate?.streamSizeDidChange(width: weakSelf.streamContainerView.frame.width)
         }
     }
@@ -540,15 +816,24 @@ private extension SplitControls {
     func updateJogs() {
         splitTouchView.isUserInteractionEnabled = !viewModel.isJoysticksVisible
         updateMapMiniaturePosition()
+
         // Setup a splited value when joysticks are visible and if the mode is not full stream.
         if viewModel.mode == .stream {
             // Update radius of the minimap if mode is stream
             secondaryContainerView.applyCornerRadius(secondaryViewCornerRadius)
         } else if viewModel.mode == .splited {
-            let value = viewModel.isJoysticksVisible
-                ? UIScreen.main.bounds.width - Constants.minimumSecondaryViewWidth
-                : preferredSplitPosition
-            setupSplitedScreen(atValue: value)
+            switch UIDevice.current.userInterfaceIdiom {
+            case .pad:
+                let value = viewModel.isJoysticksVisible
+                    ? UIScreen.main.bounds.height - Constants.minimumSecondaryViewHeight
+                    : preferredSplitPosition
+                setupSplitedScreen(atValue: value)
+            default:
+                let value = viewModel.isJoysticksVisible
+                    ? UIScreen.main.bounds.width - Constants.minimumSecondaryViewWidth
+                    : preferredSplitPosition
+                setupSplitedScreen(atValue: value)
+            }
         }
     }
 
@@ -558,7 +843,8 @@ private extension SplitControls {
     ///     - state: current split controls state
     func updateMapMiniaturePosition() {
         let needToCenterSecondaryView = viewModel.isJoysticksVisible == true && viewModel.mode == .stream
-        secondaryViewMiniatureConstraints.forEach { $0.isActive = !needToCenterSecondaryView }
+        secondaryViewTopToSuperviewIpadConstraint.isActive = !needToCenterSecondaryView
+        secondaryViewMiniatureConstraintsGetter.forEach { $0.isActive = !needToCenterSecondaryView }
         secondaryViewMiniatureCenterConstraints.forEach { $0.isActive = needToCenterSecondaryView }
 
         // Deactivate first height ratio's constraint when minimap is centered.
@@ -569,28 +855,66 @@ private extension SplitControls {
 }
 
 // MARK: - MapViewRestorer
+
 extension SplitControls: MapViewRestorer {
-    func addMap(_ map: UIViewController, parent: UIViewController) {
+    func addMap(_ map: MapViewController, parent: UIViewController) {
+
         // Prevent from double calls.
-        guard let map = map as? MapViewController,
-            map != mapViewController
-            else {
+        guard parent != mapOr3DParent || map != mapViewController else {
                 return
         }
-        // Remove old map, if exists.
+        // remove if needed
         mapViewController?.remove()
-        // Add map.
+        mapViewController?.unplug()
+
+        // keep map and parent
         mapViewController = map
         mapViewController?.splitControls = self
-        parent.addChild(map)
-        secondaryContainerView.addWithConstraints(subview: map.view)
-        map.didMove(toParent: parent)
+        // keep parent (in order to add Map ou 3D view as child)
+        mapOr3DParent = parent
+        displayMapOr3DasChild()
+    }
+
+    /// Update the right pannel with Map or 3D View
+    func displayMapOr3DasChild() {
+        guard mapViewController != nil, let parent = mapOr3DParent else {
+            return
+        }
+        var vcToDisplay: UIViewController?
+        switch SecondaryScreenType.current {
+        case .map,
+             .threeDimensions where isMapRequired:
+            vcToDisplay = mapViewController
+
+        case .threeDimensions:
+            if occupancyViewController == nil {
+                occupancyViewController = OccupancyViewController.instantiate()
+            }
+            vcToDisplay = occupancyViewController
+        }
+
+        if vcToDisplay?.parent == parent {
+            // the requested ViewController is currently displayed
+            return
+        } else {
+            // remove the previous
+            mapViewController?.remove()
+            occupancyViewController?.remove()
+            // we do not keep the occupancyViewController if it is not necessary
+            if vcToDisplay != occupancyViewController {
+                occupancyViewController = nil
+            }
+            // add the vcToDisplay as child
+            if let vcToDisplay = vcToDisplay {
+                parent.addChild(vcToDisplay)
+                secondaryContainerView.addWithConstraints(subview: vcToDisplay.view)
+                vcToDisplay.didMove(toParent: parent)
+            }
+        }
     }
 
     func restoreMapIfNeeded() {
-        guard isSecondaryContainerEmpty,
-            let mapView = mapViewController?.view
-            else {
+        guard isSecondaryContainerEmpty, let mapView = mapViewController?.view else {
                 return
         }
         secondaryContainerView.addWithConstraints(subview: mapView)

@@ -76,8 +76,7 @@ final class ProtobufMissionUpdateStartView: UIView, NibOwnerLoadable {
                droneIsConnected: Bool) {
         self.updateChoice = updateChoice
         self.delegate = delegate
-        refreshUI(with: updateChoice,
-                  droneIsConnected: droneIsConnected)
+        refreshUI(with: updateChoice, droneIsConnected: droneIsConnected)
     }
 }
 
@@ -100,9 +99,7 @@ private extension ProtobufMissionUpdateStartView {
 
     /// Inits the UI.
     func initUI() {
-        backgroundColor = ColorName.greyShark.color
         upToDateLabel.text = L10n.firmwareMissionUpdateUpToDate
-        upToDateImageView.image = Asset.Common.Icons.icValid.image
     }
 
     /// Refreshes the UI.

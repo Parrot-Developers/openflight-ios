@@ -43,16 +43,16 @@ enum FlightPlansListDisplayMode {
 struct CellFlightPlanListProvider {
     /// Selected state
     var isSelected: Bool
-    /// flightPlan model
-    var flightPlan: FlightPlanViewModel
+    /// project model
+    var project: ProjectModel
 }
 
 // MARK: - Protocols
 protocol FlightPlansListViewModelDelegate: AnyObject {
-    /// Called when user selects a Flight Plan.
-    func didSelect(flightPlan: FlightPlanViewModel)
-    /// Called when user double tap on a flight plan
-    func didDoubleTapOn(flightplan: FlightPlanViewModel)
+    /// Called when user selects a `ProjectModel`.
+    func didSelect(project: ProjectModel)
+    /// Called when user double tap on a project
+    func didDoubleTapOn(project: ProjectModel)
 }
 
 /// Protocol allow to communicate from UIViewController to ViewModel
@@ -64,8 +64,8 @@ protocol FlightPlansListViewModelUIInput {
     /// Publisher that give new value of UUID
     var uuidPublisher: AnyPublisher<String?, Never> { get }
 
-    /// Publisher that give  value of changed array of flight plan ViewModel
-    var allFlightPlansPublisher: AnyPublisher<[FlightPlanViewModel], Never> { get }
+    /// Publisher that give  value of changed array of `ProjectModel`
+    var allFlightPlansPublisher: AnyPublisher<[ProjectModel], Never> { get }
 
     /// Select flight plan from flight Plans array.
     ///
@@ -113,8 +113,8 @@ protocol FlightPlansListViewModelParentInput {
     /// Update array of flight plans
     ///
     /// - Parameters:
-    ///     - models: Array of FlightplanViewModel
-    func setupFlightPlans(with models: [FlightPlanViewModel])
+    ///     - models: Array of `ProjectModel`
+    func setupProjects(with models: [ProjectModel])
 
     /// Setup new display mode to corresponding View
     ///
@@ -133,35 +133,41 @@ final class FlightPlansListViewModel {
 
     // MARK: - Private variables
     @Published private var uuid: String?
-    @Published private var filtredFlightPlan: [FlightPlanViewModel] = [FlightPlanViewModel]()
-    private var allFlightPlans: [FlightPlanViewModel] = [FlightPlanViewModel]()
+    @Published private var filteredFlightPlan: [ProjectModel] = [ProjectModel]()
+    private var allFlightPlans: [ProjectModel] = [ProjectModel]()
     private var headerProvider: [FlightPlanListHeaderCellProvider] = []
     private(set) var displayMode: FlightPlansListDisplayMode = .full
-    private let persistence: FlightPlanDataProtocol
     private weak var delegate: FlightPlansListViewModelDelegate?
+    private var flightPlanTypeStore: FlightPlanTypeStore
+    private let manager: ProjectManager
 
-    init(persistence: FlightPlanDataProtocol) {
-        self.persistence = persistence
+    init(manager: ProjectManager,
+         flightPlanTypeStore: FlightPlanTypeStore) {
+        self.manager = manager
+        self.flightPlanTypeStore = flightPlanTypeStore
     }
 
     // MARK: - Private funcs
-    private func getAllFlightPlans() -> [FlightPlanViewModel] {
-        return persistence.loadAllFlightPlanViewModels(predicate: nil)
+    private func getAllFlightPlans() -> [ProjectModel] {
+        if displayMode == .compact {
+            return manager.loadProjects(type: Services.hub.currentMissionManager.mode.flightPlanProvider?.projectType)
+        } else {
+            return manager.loadExecutedProjects()
+        }
     }
 
-    private func didSelect(flightPlan: FlightPlanViewModel) {
-        uuid = flightPlan.state.value.uuid
+    private func didSelect(project: ProjectModel) {
+        uuid = project.uuid
     }
 
-    /// Construct array of `FlightPlanListHeaderCellProvider` from given array of `FlightPlanViewModel`
-    private func buildHeader(_ flights: [FlightPlanViewModel]) {
-        headerProvider = flights
-            // Return array of `FlightPlanState`
-            .compactMap { $0.state.value }
+    /// Construct array of `FlightPlanListHeaderCellProvider` from given array of `ProjectModel`
+    private func buildHeader(_ projects: [ProjectModel]) {
+        headerProvider = projects
             // Return array of `FlightPlanListHeaderCellProvider`
             .reduce([FlightPlanListHeaderCellProvider](), { result, value in
                 // Updating cell provider if existing
-                if let provider = result.first(where: { $0.missionType == value.type?.missionProvider.mission.name }) {
+                let flightStoreProvider = getFligthPlanType(with: manager.lastFlightPlan(for: value)?.type)
+                if let provider = result.first(where: { $0.missionType == flightStoreProvider?.missionProvider.mission.name }) {
                     var otherProvider = provider
                     otherProvider.count = provider.count + 1
                     var otherResult = result
@@ -172,10 +178,10 @@ final class FlightPlansListViewModel {
 
                 // Creat new cell provider
                 let provider = FlightPlanListHeaderCellProvider(
-                    uuid: value.uuid ?? UUID().uuidString,
+                    uuid: value.uuid,
                     count: 1,
-                    missionType: value.type?.missionProvider.mission.name,
-                    logo: value.type?.missionProvider.mission.icon,
+                    missionType: flightStoreProvider?.missionProvider.mission.name,
+                    logo: flightStoreProvider?.missionProvider.mission.icon,
                     isSelected: false
                 )
                 var otherResult = result
@@ -189,22 +195,22 @@ final class FlightPlansListViewModel {
 extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
     func openProject(at index: Int) {
         self.selectedItem(at: index)
-        self.delegate?.didDoubleTapOn(flightplan: filtredFlightPlan[index])
+        self.delegate?.didDoubleTapOn(project: filteredFlightPlan[index])
     }
 
     var uuidPublisher: AnyPublisher<String?, Never> {
         $uuid.eraseToAnyPublisher()
     }
 
-    var allFlightPlansPublisher: AnyPublisher<[FlightPlanViewModel], Never> {
-        $filtredFlightPlan.eraseToAnyPublisher()
+    var allFlightPlansPublisher: AnyPublisher<[ProjectModel], Never> {
+        $filteredFlightPlan.eraseToAnyPublisher()
     }
 
     func selectedItem(at index: Int) {
-        guard index < filtredFlightPlan.count else { return }
-        let flightPlan = filtredFlightPlan[index]
-        didSelect(flightPlan: flightPlan)
-        delegate?.didSelect(flightPlan: flightPlan)
+        guard index < filteredFlightPlan.count else { return }
+        let flightPlan = filteredFlightPlan[index]
+        didSelect(project: flightPlan)
+        delegate?.didSelect(project: flightPlan)
     }
 
     func setupDelegate(with delegate: FlightPlansListViewModelDelegate) {
@@ -217,24 +223,24 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
         case .full:
             allFlightPlans = flight
             buildHeader(allFlightPlans)
-            filtredFlightPlan = allFlightPlans
+            filteredFlightPlan = allFlightPlans
         case .compact:
-            filtredFlightPlan = flight
+            filteredFlightPlan = flight
         }
     }
 
     func getFlightPlan(at index: Int) -> CellFlightPlanListProvider? {
-        if index < filtredFlightPlan.count {
-            let flightPlan = filtredFlightPlan[index]
-            let isSelected = displayMode == .full ? false : uuid == flightPlan.state.value.uuid
-            return CellFlightPlanListProvider(isSelected: isSelected, flightPlan: flightPlan)
+        if index < filteredFlightPlan.count {
+            let project = filteredFlightPlan[index]
+            let isSelected = displayMode == .full ? false : uuid == project.uuid
+            return CellFlightPlanListProvider(isSelected: isSelected, project: project)
         }
 
         return nil
     }
 
     func modelsCount() -> Int {
-        filtredFlightPlan.count
+        filteredFlightPlan.count
     }
 
     func getHeaderProvider() -> [FlightPlanListHeaderCellProvider] {
@@ -248,10 +254,10 @@ extension FlightPlansListViewModel: FlightPlansListViewModelParentInput {
         uuid = selectedUUID
     }
 
-    func setupFlightPlans(with models: [FlightPlanViewModel]) {
-        allFlightPlans = models
-        buildHeader(models)
-        filtredFlightPlan = allFlightPlans
+    func setupProjects(with models: [ProjectModel]) {
+        allFlightPlans = getAllFlightPlans()
+        buildHeader(getAllFlightPlans())
+        filteredFlightPlan = allFlightPlans
     }
 
     func setupDisplayMode(with mode: FlightPlansListDisplayMode) {
@@ -278,13 +284,21 @@ extension FlightPlansListViewModel: FlightPlanListHeaderDelegate {
 
         // if `currentProvider` was `false` before selection then filter the flight plans
         if currentProvider.isSelected == false {
-
-            filtredFlightPlan = allFlightPlans.filter({ provider.missionType == $0.state.value.type?.missionProvider.mission.name })
+            filteredFlightPlan = allFlightPlans.filter {
+                let type = getFligthPlanType(with: manager.lastFlightPlan(for: $0)?.type)
+                return provider.missionType == type?.missionProvider.mission.name
+            }
         }
 
         // if `currentProvider` was `true` before selection then rollback to all flight plan
         else {
-            filtredFlightPlan = allFlightPlans
+            filteredFlightPlan = allFlightPlans
         }
+    }
+}
+
+private extension FlightPlansListViewModel {
+    func getFligthPlanType(with type: String?) -> FlightPlanType? {
+        return Services.hub.flightPlan.typeStore.typeForKey(type)
     }
 }

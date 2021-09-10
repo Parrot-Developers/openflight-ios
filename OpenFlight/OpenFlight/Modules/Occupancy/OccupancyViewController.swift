@@ -50,7 +50,6 @@ final class OccupancyViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         renderer = OccupancyRenderer(sceneView: sceneKitView)
         sceneKitView.delegate = renderer
         self.setupViewModels()
@@ -58,7 +57,6 @@ final class OccupancyViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
         enableMonitoring(true)
     }
 

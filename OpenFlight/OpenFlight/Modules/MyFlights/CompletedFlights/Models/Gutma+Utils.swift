@@ -41,6 +41,12 @@ enum GutmaConstants {
 // MARK: - Gutma helpers.
 
 extension Gutma {
+
+    public struct Model {
+        public let flight: FlightModel
+        public let flightPlanFlights: [FlightPlanFlightsModel]
+    }
+
     var flightLocation: CLLocation? {
         // Last position is used here to get the most accurate value.
         return self.exchange?.message?.flightLogging?.finalPosition
@@ -63,8 +69,8 @@ extension Gutma {
         return self.exchange?.message?.flightData?.flightID
     }
 
-    var batteryConsumption: String {
-        return self.exchange?.message?.flightLogging?.batteryConsumption?.asPercent() ?? Style.dash
+    var batteryConsumption: Double? {
+        return self.exchange?.message?.flightLogging?.batteryConsumption
     }
 
     var distance: Double {
@@ -79,9 +85,95 @@ extension Gutma {
         return self.exchange?.message?.flightLogging?.points ?? []
     }
 
+    var photoCount: Int { exchange?.message?.flightLogging?.events?.filter { $0.eventInfo == "PHOTO" }.count ?? 0 }
+
+    var videoCount: Int { exchange?.message?.flightLogging?.events?.filter { $0.eventInfo == "VIDEO" }.count ?? 0 }
+
+    func flightPlanExecutions(apcId: String, flightUuid: String) -> [FlightPlanFlightsModel] {
+        guard let startDate = startDate else { return [] }
+        return exchange?.message?.flightLogging?.events?
+            .compactMap {
+                if $0.eventInfo == "FLIGHTPLAN",
+                   $0.eventType == "CONTROLLER_FLIGHTPLAN",
+                   $0.step == "START",
+                   let flightPlanUuid = $0.customId,
+                   let timestampString = $0.eventTimestamp,
+                   let timestamp = Double(timestampString) {
+                    let dateExecutionFlight = startDate.addingTimeInterval(timestamp)
+                    return FlightPlanFlightsModel(apcId: apcId,
+                                                  flightUuid: flightUuid,
+                                                  flightplanUuid: flightPlanUuid,
+                                                  dateExecutionFlight: dateExecutionFlight)
+                }
+                return nil
+            } ?? []
+    }
+
     /// Returns Data object from a Gutma.
     public func asData() -> Data? {
         return try? JSONEncoder().encode(self)
+    }
+
+    public func toFlight(apcId: String, gutmaFile: String) -> Model? {
+        guard let uuid = flightId else {
+            return nil
+        }
+        guard let parrotVersion = file?.parrotVersion else { return nil }
+        let startPosition = exchange?.message?.flightLogging?.startPosition
+        let flight = FlightModel(apcId: apcId,
+                                title: nil,
+                                uuid: uuid,
+                                version: parrotVersion,
+                                photoCount: Int16(photoCount),
+                                videoCount: Int16(videoCount),
+                                startLatitude: startPosition?.coordinate.latitude ?? 0,
+                                startLongitude: startPosition?.coordinate.longitude ?? 0,
+                                startTime: startDate,
+                                batteryConsumption: Int16(batteryConsumption ?? 0),
+                                distance: distance,
+                                duration: duration,
+                                gutmaFile: gutmaFile,
+                                parrotCloudId: 0,
+                                parrotCloudToBeDeleted: false,
+                                parrotCloudUploadUrl: nil,
+                                synchroDate: nil,
+                                synchroStatus: nil,
+                                cloudLastUpdate: nil,
+                                fileSynchroStatus: nil,
+                                fileSynchroDate: nil)
+        return Model(flight: flight, flightPlanFlights: flightPlanExecutions(apcId: apcId, flightUuid: uuid))
+    }
+
+    public func update(flight: inout FlightModel) {
+        guard let parrotVersion = file?.parrotVersion else { return }
+        flight.version = parrotVersion
+        let startPosition = exchange?.message?.flightLogging?.startPosition
+        flight.photoCount = Int16(photoCount)
+        flight.videoCount = Int16(videoCount)
+        flight.startLatitude = startPosition?.coordinate.latitude ?? 0
+        flight.startLongitude = startPosition?.coordinate.longitude ?? 0
+        flight.startTime = startDate
+        flight.batteryConsumption = Int16(batteryConsumption ?? 0)
+        flight.distance = distance
+        flight.duration = duration
+    }
+}
+
+// MARK: - `Gutma` helpers
+extension Gutma {
+    func toJSONString() -> String? {
+        guard
+            let jsonData = try? JSONEncoder().encode(self),
+            let stringJson = String(data: jsonData, encoding: .utf8) else { return nil }
+        return stringJson
+    }
+
+    public static func instantiate(with jsonString: String?) -> Self? {
+        guard
+            let jsonString = jsonString,
+            let json = jsonString.data(using: .utf8),
+            let result = try? JSONDecoder().decode(Self.self, from: json) else { return nil }
+        return result
     }
 }
 
@@ -105,7 +197,7 @@ extension Data {
 
 // MARK: - FlightLogging helpers.
 
-extension FlightLogging {
+extension Gutma.FlightLogging {
     /// Start flight date.
     var startDate: Date? {
         if let dateString = self.loggingStartDtg {
@@ -139,6 +231,18 @@ extension FlightLogging {
         let finalBatteryValue = self.item(for: .batteryPercent, atIndex: itemCount - 1) ?? 0.0
 
         return initialBatteryValue - finalBatteryValue
+    }
+
+    /// Returns start position
+    var startPosition: CLLocation? {
+        guard let itemsCount = self.flightLoggingItems?.count,
+              itemsCount > 0 else { return nil }
+        for index in 0...(itemsCount - 1) {
+            if let location = location(at: index), location.isValid {
+                return CLLocation(latitude: location.latitude, longitude: location.longitude)
+            }
+        }
+        return nil
     }
 
     /// Returns final position.
@@ -185,7 +289,7 @@ extension FlightLogging {
 }
 
 // MARK: - Private helpers
-private extension FlightLogging {
+private extension Gutma.FlightLogging {
     /// Return location regarding FlightLogging index
     ///
     /// - Parameters:

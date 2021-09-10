@@ -36,10 +36,40 @@ protocol PairingModel {
     // MARK: - Internal Properties
     // State.
     var pairingState: PairingState { get }
+    // Title.
+    var title: String { get }
     // Background color of the cell corresponding of the pairing state.
     var backgroundColor: UIColor { get }
+    // Border color of the cell corresponding of the pairing state.
+    var borderColor: UIColor { get }
     // Cell Image.
     var image: UIImage { get }
+    // Cell Image tint color.
+    var imageTintColor: UIColor { get }
+    // Action Title.
+    var actionTitle: String? { get }
+}
+
+extension PairingModel {
+    var backgroundColor: UIColor {
+        switch pairingState {
+        case .todo:
+            return UIColor(named: .whiteAlbescent)
+        case .doing,
+             .done:
+            return .white
+        }
+    }
+
+    var borderColor: UIColor {
+        switch pairingState {
+        case .todo,
+             .done:
+            return .clear
+        case .doing:
+            return UIColor(named: .highlightColor)
+        }
+    }
 }
 
 // MARK: - Internal Enums
@@ -61,20 +91,11 @@ enum PairingCellModel {
 class RemotePairingModel: PairingModel {
     // MARK: - Internal Properties
     var pairingState: PairingState
-
-    var backgroundColor: UIColor {
-        switch pairingState {
-        case .todo:
-            return UIColor(named: .white20)
-        case .doing:
-            return UIColor(named: .greenSpring20)
-        case .done:
-            return UIColor(named: .greenPea50)
-        }
-    }
-
     var image: UIImage = Asset.Pairing.icRemotePhoneMediumPairing.image
+    var imageTintColor: UIColor = UIColor(named: .defaultTextColor)
     var title: String = L10n.pairingConnectToTheController
+    var actionTitle: String? = L10n.pairingWithoutController
+
     var errorMessage: String = L10n.pairingControllerNotRecognized
 
     // MARK: - Init
@@ -91,20 +112,11 @@ class RemotePairingModel: PairingModel {
 class DroneWithRemotePairingModel: PairingModel {
     // MARK: - Internal Properties
     var pairingState: PairingState
-
-    var backgroundColor: UIColor {
-        switch pairingState {
-        case .todo:
-            return UIColor(named: .white20)
-        case .doing:
-            return UIColor(named: .greenSpring20)
-        case .done:
-            return UIColor(named: .greenPea50)
-        }
-    }
-
     var image: UIImage = Asset.Pairing.icDronePairing.image
+    var imageTintColor: UIColor = UIColor(named: .defaultTextColor)
     var title: String = L10n.pairingTurnOnDrone
+    var actionTitle: String?
+
     var errorMessage: String = L10n.pairingDroneNotDetected
 
     // MARK: - Init
@@ -121,26 +133,17 @@ class DroneWithRemotePairingModel: PairingModel {
 class FlyPairingModel: PairingModel {
     // MARK: - Internal Properties
     var pairingState: PairingState
-
-    var backgroundColor: UIColor {
+    var image: UIImage = Asset.Pairing.icFly.image
+    var imageTintColor: UIColor {
         switch pairingState {
-        case .todo:
-            return UIColor(named: .white20)
-        case .doing:
-            return UIColor(named: .greenSpring20)
         case .done:
-            return UIColor(named: .greenPea50)
-        }
-    }
-
-    var image: UIImage {
-        switch pairingState {
-        case .doing:
-            return Asset.Pairing.icFly.image
+            return UIColor(named: .highlightColor)
         default:
-            return Asset.Pairing.icNoFly.image
+            return UIColor(named: .defaultTextColor)
         }
     }
+    var title: String = L10n.pairingPilot
+    var actionTitle: String?
 
     // MARK: - Init
     /// Init.
@@ -157,19 +160,11 @@ class WifiPairingModel: PairingModel {
     // MARK: - Internal Properties
     var pairingState: PairingState
 
-    var backgroundColor: UIColor {
-        switch pairingState {
-        case .todo:
-            return UIColor(named: .white20)
-        case .doing:
-            return UIColor(named: .greenSpring20)
-        case .done:
-            return UIColor(named: .greenPea50)
-        }
-    }
-
-    var image: UIImage = Asset.Pairing.icConnectWifi.image
+    var image: UIImage = Asset.Pairing.icPairingPhoneMedium.image
+    var imageTintColor: UIColor = UIColor(named: .defaultTextColor)
     var title: String = L10n.pairingDroneConnectToWifi
+    var actionTitle: String?
+
     var errorMessage: String = L10n.pairingDroneWhereIsWifiPassword
 
     // MARK: - Init
@@ -187,20 +182,15 @@ class DroneWithoutRemotePairingModel: PairingModel {
     // MARK: - Internal Properties
     var pairingState: PairingState
 
-    var backgroundColor: UIColor {
-        switch pairingState {
-        case .todo:
-            return UIColor(named: .white20)
-        case .doing:
-            return UIColor(named: .greenSpring20)
-        case .done:
-            return UIColor(named: .greenPea50)
-        }
-    }
-
     var image: UIImage = Asset.Pairing.icDronePairing.image
+    var imageTintColor: UIColor = UIColor(named: .defaultTextColor)
     var title: String = L10n.pairingTurnOnDrone
+    var actionTitle: String? = L10n.pairingWithController
+
     var errorMessage: String = L10n.commonDone
+    var errorBackgroundColor: UIColor = UIColor(named: .highlightColor)
+    var errorBorderColor: UIColor = .clear
+    var errorTextColor: UIColor = .white
 
     // MARK: - Init
     /// Init.

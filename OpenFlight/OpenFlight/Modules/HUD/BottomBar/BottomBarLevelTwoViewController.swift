@@ -45,7 +45,7 @@ final class BottomBarLevelTwoViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.translatesAutoresizingMaskIntoConstraints = false
+        initUI()
     }
 
     // MARK: - Internal Funcs
@@ -107,12 +107,21 @@ final class BottomBarLevelTwoViewController: UIViewController {
     /// - Parameters:
     ///    - viewModel: the view model
     func isSameBarDisplayed<T: BarButtonState>(viewModel: BarButtonViewModel<T>) -> Bool {
-        return (levelView as? BarItemModeDisplayer)?.modeKey == viewModel.modeKey
+        return (levelView as? BarItemModeDisplayer)?.barId == viewModel.barId
     }
 
     /// Remove active view.
     func removeLevelView() {
         levelView?.removeFromSuperview()
         levelView = nil
+    }
+}
+// MARK: - Private Funcs
+private extension BottomBarLevelTwoViewController {
+    /// Initializes interfaces.
+    func initUI() {
+        self.view.translatesAutoresizingMaskIntoConstraints = false
+        // Sets up corners
+        self.view.customCornered(corners: [.allCorners], radius: Style.fitLargeCornerRadius)
     }
 }

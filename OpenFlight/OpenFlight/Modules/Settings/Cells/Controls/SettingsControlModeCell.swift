@@ -35,93 +35,45 @@ import SwiftyUserDefaults
 /// All the control settings are handled here because there are all linked.
 final class SettingsControlModeCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
-    @IBOutlet private weak var arcadeHelpLabel: UILabel! {
+    @IBOutlet private weak var zoomExpoSegmentedControl: UISegmentedControl! {
         didSet {
-            arcadeHelpLabel.makeUp(and: .orangePeel)
-            arcadeHelpLabel.adjustsFontSizeToFitWidth = true
-            arcadeHelpLabel.isHidden = true
+            setupZoomExpoSegmentedControl()
         }
     }
-    @IBOutlet private weak var remoteJogsView: UIView!
-    @IBOutlet private weak var virtualJogsView: UIView!
+    @IBOutlet private weak var remoteJogsView: UIStackView!
+    @IBOutlet private weak var virtualJogsView: UIStackView!
+    @IBOutlet private weak var inverseJoystickView: UIView! {
+        didSet {
+            inverseJoystickView.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color, radius: Style.largeCornerRadius)
+        }
+    }
     @IBOutlet private weak var inverseJoystickButton: UIButton!
-    @IBOutlet private weak var inverseJoystickLabel: UILabel! {
+    @IBOutlet private weak var inverseJoystickLabel: UILabel!
+    @IBOutlet weak var joystickModeView: UIView! {
         didSet {
-            inverseJoystickLabel.makeUp()
+            joystickModeView.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
         }
     }
-    @IBOutlet private weak var specialModeButton: UIButton!
-    @IBOutlet private weak var specialModeLabel: UILabel! {
+    @IBOutlet private weak var joystickModeSegmentedControl: UISegmentedControl! {
         didSet {
-            specialModeLabel.makeUp()
+            setupJoystickModeSegmentedControl()
         }
     }
-    @IBOutlet private weak var inverseTiltButton: UIButton!
-    @IBOutlet private weak var inverseTiltLabel: UILabel! {
+    @IBOutlet private weak var joystickModeLabel: UILabel! {
         didSet {
-            inverseTiltLabel.makeUp()
-        }
-    }
-    @IBOutlet private weak var inverseTiltView: UIView!
-    @IBOutlet private weak var evTriggerView: UIView!
-    @IBOutlet private weak var evTriggerButton: UIButton!
-    @IBOutlet private weak var evTriggerLabel: UILabel! {
-        didSet {
-            evTriggerLabel.makeUp()
+            joystickModeLabel.text = L10n.settingsControlsOptionJoystickMode
         }
     }
     @IBOutlet private weak var joystickImage: UIImageView!
-    @IBOutlet private weak var controllerCameraLabel: UILabel! {
-        didSet {
-            controllerCameraLabel.makeUp()
-        }
-    }
-    @IBOutlet private weak var controllerSpeedModeLabel: UILabel! {
-        didSet {
-            controllerSpeedModeLabel.makeUp()
-        }
-    }
-    @IBOutlet private weak var controllerZoomLabel: UILabel! {
-        didSet {
-            controllerZoomLabel.makeUp()
-        }
-    }
-    @IBOutlet private weak var controllerRecordLabel: UILabel! {
-        didSet {
-            controllerRecordLabel.makeUp()
-        }
-    }
-    @IBOutlet private weak var controllerLeftJoystickLabel: UILabel! {
-        didSet {
-            controllerLeftJoystickLabel.makeUp()
-        }
-    }
-    @IBOutlet private weak var controllerRightJoystickLabel: UILabel! {
-        didSet {
-            controllerRightJoystickLabel.makeUp()
-        }
-    }
-    @IBOutlet private weak var hudCameraLabel: UILabel! {
-        didSet {
-            hudCameraLabel.makeUp()
-        }
-    }
-    @IBOutlet private weak var hudZoom: UILabel! {
-        didSet {
-            hudZoom.makeUp()
-        }
-    }
-    @IBOutlet private weak var hudLeftJoystick: UILabel! {
-        didSet {
-            hudLeftJoystick.makeUp()
-        }
-    }
-    @IBOutlet private weak var hudRightJoystick: UILabel! {
-        didSet {
-            hudRightJoystick.makeUp()
-        }
-    }
-    @IBOutlet private weak var pilotingModeView: PilotingModeView!
+    @IBOutlet private weak var controllerCameraLabel: UILabel!
+    @IBOutlet private weak var controllerSpeedModeLabel: UILabel!
+    @IBOutlet private weak var controllerRecordLabel: UILabel!
+    @IBOutlet private weak var controllerLeftJoystickLabel: UILabel!
+    @IBOutlet private weak var controllerRightJoystickLabel: UILabel!
+    @IBOutlet private weak var hudCameraLabel: UILabel!
+    @IBOutlet private weak var hudZoom: UILabel!
+    @IBOutlet private weak var hudLeftJoystick: UILabel!
+    @IBOutlet private weak var hudRightJoystick: UILabel!
 
     // MARK: - Private Properties
     private var currentMode: ControlsSettingsMode = ControlsSettingsMode.defaultMode
@@ -134,9 +86,6 @@ final class SettingsControlModeCell: UITableViewCell, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
         initView()
-
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapPilotingView))
-        pilotingModeView.addGestureRecognizer(tapGesture)
     }
 
     // MARK: - Internal Funcs
@@ -144,11 +93,36 @@ final class SettingsControlModeCell: UITableViewCell, NibReusable {
         self.viewModel = viewModel
         self.styleDidChanged(state: viewModel.state.value)
     }
-
 }
 
 // MARK: - Actions
 private extension SettingsControlModeCell {
+    /// zoom exposure segment changed.
+    @IBAction func zoomExpoSegmentDidChange(_ sender: UISegmentedControl) {
+        let evTriggerSettings = sender.selectedSegmentIndex == 0 ? false : true
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls,
+                             itemName: LogEvent.LogKeyControlsSettings.evTrigger,
+                             newValue: String(evTriggerSettings),
+                             logType: LogEvent.LogType.button)
+
+        Defaults.evTriggerSetting = evTriggerSettings
+        deduceCurrentMode()
+        updateJogsDisplay()
+    }
+
+    /// joystick mode segment changed.
+    @IBAction func joystickModeSegmentDidChange(_ sender: UISegmentedControl) {
+        let isSpecialMode = sender.selectedSegmentIndex == 0 ? false : true
+        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls,
+                             itemName: LogEvent.LogKeyControlsSettings.special,
+                             newValue: String(isSpecialMode),
+                             logType: LogEvent.LogType.button)
+
+        self.isSpecialMode = isSpecialMode
+        deduceCurrentMode()
+        updateJogsDisplay()
+    }
+
     /// Inverse button touched.
     @IBAction func inverseButtonTouchedUpInside(_ sender: AnyObject) {
         LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls,
@@ -156,52 +130,9 @@ private extension SettingsControlModeCell {
                              newValue: String(!jogsInversed),
                              logType: LogEvent.LogType.button)
 
-        jogsInversed = !jogsInversed
+        jogsInversed.toggle()
         deduceCurrentMode()
         updateJogsDisplay()
-    }
-
-    /// Tilt button touched.
-    @IBAction func inverseTiltButtonTouchedUpInside(_ sender: AnyObject) {
-        let tiltReversedSetting = Defaults.arcadeTiltReversedSetting
-        Defaults.arcadeTiltReversedSetting = !tiltReversedSetting
-        deduceCurrentMode()
-        updateJogsDisplay()
-    }
-
-    /// Special button touched.
-    @IBAction func specialModeButtonTouchedUpInside(_ sender: AnyObject) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls,
-                             itemName: LogEvent.LogKeyControlsSettings.special,
-                             newValue: String(!isSpecialMode),
-                             logType: LogEvent.LogType.button)
-
-        isSpecialMode.toggle()
-        deduceCurrentMode()
-        updateJogsDisplay()
-    }
-
-    /// EV trigger button touched.
-    @IBAction func evTriggerButtonTouchedUpInside(_ sender: AnyObject) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.controls,
-                             itemName: LogEvent.LogKeyControlsSettings.evTrigger,
-                             newValue: String(!Defaults.evTriggerSetting),
-                             logType: LogEvent.LogType.button)
-
-        Defaults.evTriggerSetting.toggle()
-        deduceCurrentMode()
-        updateJogsDisplay()
-    }
-
-    /// Display why arcade mode is not available on piloting style view tapped.
-    @objc func tapPilotingView(sender: Any) {
-        guard let viewModel = viewModel,
-              viewModel.state.value.isArcadeModeAvailable == false else {
-            return
-        }
-
-        arcadeHelpLabel.text = viewModel.arcadeUnavailabilityHelp
-        arcadeHelpLabel.isHidden = (arcadeHelpLabel.text?.isEmpty ?? true)
     }
 }
 
@@ -211,21 +142,6 @@ private extension SettingsControlModeCell {
     func initView() {
         inverseJoystickLabel.text = L10n.settingsControlsOptionInverseJoys
         inverseJoystickButton.setImage(Asset.Settings.Controls.reverseJoy.image.withRenderingMode(.alwaysTemplate), for: .normal)
-        applyCorneredStyle(inverseJoystickButton)
-
-        inverseTiltLabel.text = L10n.settingsControlsOptionReverseTilt
-        inverseTiltButton.setImage(Asset.Settings.Controls.inverseTilt.image.withRenderingMode(.alwaysTemplate), for: .normal)
-        applyCorneredStyle(inverseTiltButton)
-
-        specialModeLabel.text = L10n.settingsControlsOptionSpecial
-        specialModeButton.setImage(Asset.Settings.Controls.special.image.withRenderingMode(.alwaysTemplate), for: .normal)
-        applyCorneredStyle(specialModeButton)
-
-        evTriggerLabel.text = L10n.settingsControlsOptionEvTrigger
-        evTriggerButton.setImage(Asset.Settings.Controls.evTrigger.image.withRenderingMode(.alwaysTemplate), for: .normal)
-        applyCorneredStyle(evTriggerButton)
-
-        updateEVTriggerButtonColor()
     }
 
     /// Control mode did change.
@@ -238,31 +154,19 @@ private extension SettingsControlModeCell {
         let showVirtualJogs = viewModel.state.value.isVirtualJogsAvailable
         remoteJogsView.isHidden = showVirtualJogs
         virtualJogsView.isHidden = !showVirtualJogs
-        evTriggerView.isHidden = showVirtualJogs
         currentMode = viewModel.currentControlMode
         currentPilotingStyle = currentMode.pilotingStyle
-        inverseTiltView.isHidden = currentPilotingStyle == .classical
+
         updateJogsDisplay()
-        pilotingModeView.setup(with: viewModel)
-        arcadeHelpLabel.text = viewModel.arcadeUnavailabilityHelp
-        // FIXME: Temporary disable arcade mode.
-        pilotingModeView.isHidden = true
     }
 
     /// Update jogs display regarding current mode.
     func updateJogsDisplay() {
-        updateEVTriggerButtonColor()
-        let tiltReversedSetting = Defaults.arcadeTiltReversedSetting
-        let tiltColor = tiltReversedSetting ? ColorName.greenSpring.color : ColorName.white.color
-        setButtonAndLabelColor(button: inverseTiltButton, label: inverseTiltLabel, color: tiltColor)
-
-        let joystickColor = currentMode.jogsInversed ? ColorName.greenSpring.color : ColorName.white.color
-        setButtonAndLabelColor(button: inverseJoystickButton, label: inverseJoystickLabel, color: joystickColor)
-
-        let specialColor = currentMode.isSpecialMode ? ColorName.greenSpring.color : ColorName.white.color
-        setButtonAndLabelColor(button: specialModeButton, label: specialModeLabel, color: specialColor)
-
-        joystickImage.image = currentMode.joystickImage
+        let backgroundColor = currentMode.jogsInversed ? ColorName.highlightColor.color : ColorName.whiteAlbescent.color
+        let textColor = currentMode.jogsInversed ? ColorName.white.color : ColorName.defaultTextColor.color
+        setButtonAndLabelColor(button: inverseJoystickButton, label: inverseJoystickLabel, color: textColor)
+        inverseJoystickView.cornerRadiusedWith(backgroundColor: backgroundColor, radius: Style.largeCornerRadius)
+        joystickImage.image = currentMode.getJoystickImage(isRegularSizeClass: isRegularSizeClass)
         jogsInversed = currentMode.jogsInversed
         isSpecialMode = currentMode.isSpecialMode
         updateJoystickLabels()
@@ -304,20 +208,8 @@ private extension SettingsControlModeCell {
         label.textColor = color
     }
 
-    /// Update EV trigger button color regarding setting.
-    func updateEVTriggerButtonColor() {
-        let evTriggerSetting = Defaults.evTriggerSetting
-        let color = evTriggerSetting ? ColorName.greenSpring.color : ColorName.white.color
-        setButtonAndLabelColor(button: evTriggerButton, label: evTriggerLabel, color: color)
-    }
-
     /// Update joystick labels regarding the current mode.
     func updateJoystickLabels() {
-        let evTriggerSetting = Defaults.evTriggerSetting
-        controllerZoomLabel.text = !evTriggerSetting ?
-            L10n.settingsControlsMappingZoom :
-            L10n.settingsControlsMappingEvShutter
-
         controllerCameraLabel.text = currentMode.controllerCameraText
         controllerLeftJoystickLabel.text = currentMode.controllerLeftJoystickText
         hudLeftJoystick.text = currentMode.hudLeftJoystickText
@@ -327,5 +219,32 @@ private extension SettingsControlModeCell {
         controllerSpeedModeLabel.text = L10n.settingsControlsMappingReset
         controllerRecordLabel.text = L10n.settingsControlsMappingRecord
         hudCameraLabel.text = L10n.settingsControlsMappingCamera
+    }
+
+    /// Setup zoom exposure segmented control.
+    func setupZoomExpoSegmentedControl() {
+        let selectedSegmentIndex = !Defaults.evTriggerSetting ? 0 : 1
+        zoomExpoSegmentedControl.customMakeup(normalBackgroundColor: .whiteAlbescent)
+        zoomExpoSegmentedControl.removeAllSegments()
+        zoomExpoSegmentedControl.insertSegment(withTitle: L10n.settingsControlsMappingZoom,
+                                               at: zoomExpoSegmentedControl.numberOfSegments,
+                                               animated: false)
+        zoomExpoSegmentedControl.insertSegment(withTitle: L10n.settingsControlsMappingExposure,
+                                               at: zoomExpoSegmentedControl.numberOfSegments,
+                                               animated: false)
+        zoomExpoSegmentedControl.selectedSegmentIndex = selectedSegmentIndex
+    }
+    /// Setup joystick mode segmented control.
+    func setupJoystickModeSegmentedControl() {
+        let selectedSegmentIndex = currentMode.isSpecialMode ? 0 : 1
+        joystickModeSegmentedControl.customMakeup()
+        joystickModeSegmentedControl.removeAllSegments()
+        joystickModeSegmentedControl.insertSegment(withTitle: L10n.settingsControlsOptionJoystickModeNumber(1),
+                                                   at: joystickModeSegmentedControl.numberOfSegments,
+                                                   animated: false)
+        joystickModeSegmentedControl.insertSegment(withTitle: L10n.settingsControlsOptionJoystickModeNumber(2),
+                                                   at: joystickModeSegmentedControl.numberOfSegments,
+                                                   animated: false)
+        joystickModeSegmentedControl.selectedSegmentIndex = selectedSegmentIndex
     }
 }

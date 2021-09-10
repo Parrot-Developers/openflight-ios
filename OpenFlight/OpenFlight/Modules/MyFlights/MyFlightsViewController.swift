@@ -87,7 +87,6 @@ final class MyFlightsViewController: UIViewController {
     private var flightPlanViewController: FlightPlansListViewController?
     private var numberOfFlights: Int = 0
     private weak var coordinator: DashboardCoordinator?
-    private var myFlightsViewModel: MyFlightsViewModel?
     private var selectedPanel: MyFlightsPanelType {
         MyFlightsPanelType.type(at: segmentedControl?.selectedSegmentIndex ?? 0)
     }
@@ -99,10 +98,9 @@ final class MyFlightsViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: DashboardCoordinator, viewModel: MyFlightsViewModel) -> MyFlightsViewController {
+    static func instantiate(coordinator: DashboardCoordinator) -> MyFlightsViewController {
         let viewController = StoryboardScene.MyFlightsViewController.initialScene.instantiate()
         viewController.coordinator = coordinator
-        viewController.myFlightsViewModel = viewModel
 
         return viewController
     }
@@ -113,7 +111,6 @@ final class MyFlightsViewController: UIViewController {
 
         self.navigationController?.setNavigationBarHidden(true, animated: false)
         initUI()
-        listenMyFlightsViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -130,7 +127,7 @@ final class MyFlightsViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -163,16 +160,6 @@ private extension MyFlightsViewController {
         setupSegmentedControl()
         reloadContainerView()
         setupAccountView()
-    }
-
-    /// Listen MyFlights ViewModel.
-    func listenMyFlightsViewModel() {
-        myFlightsViewModel?.state.valueChanged = { [weak self] state in
-            if state.numberOfFlights != self?.numberOfFlights {
-                self?.flightsViewController?.loadAllFlights()
-            }
-            self?.numberOfFlights = state.numberOfFlights
-        }
     }
 
     /// Setup account view.
@@ -227,7 +214,9 @@ private extension MyFlightsViewController {
                 controller = flightsViewController
             } else {
                 // Initial case
-                let newViewController = FlightsViewController.instantiate(coordinator: coordinator)
+                guard let coordinator = coordinator else { return }
+                let viewModel = FlightsViewModel(service: Services.hub.flight.service, coordinator: coordinator)
+                let newViewController = FlightsViewController.instantiate(viewModel: viewModel)
                 self.flightsViewController = newViewController
                 controller = newViewController
             }
@@ -239,7 +228,9 @@ private extension MyFlightsViewController {
             } else {
                 // Initial case
                 let newViewController = StoryboardScene.FlightPlansList.flightPlansListViewController.instantiate()
-                newViewController.setupViewModel(with: FlightPlansListViewModel(persistence: CoreDataManager.shared), delegate: self)
+                newViewController.setupViewModel(with: FlightPlansListViewModel(manager: Services.hub.flightPlan.projectManager,
+                                                                                flightPlanTypeStore: Services.hub.flightPlan.typeStore),
+                                                 delegate: self)
                 self.flightPlanViewController = newViewController
                 controller = newViewController
             }
@@ -258,9 +249,9 @@ extension MyFlightsViewController: MyFlightsAccountViewDelegate {
 
 // MARK: - FlightPlansListViewControllerDelegate
 extension MyFlightsViewController: FlightPlansListViewModelDelegate {
-    func didDoubleTapOn(flightplan: FlightPlanViewModel) { }
-
-    func didSelect(flightPlan: FlightPlanViewModel) {
-        coordinator?.startFlightPlanDashboard(viewModel: flightPlan)
+    func didSelect(project: ProjectModel) {
+        coordinator?.startFlightPlanDashboard(projectModel: project)
     }
+
+    func didDoubleTapOn(project: ProjectModel) { }
 }

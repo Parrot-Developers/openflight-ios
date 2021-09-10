@@ -39,7 +39,7 @@ final class ManagePlansViewController: UIViewController {
     @IBOutlet private weak var closeButton: UIButton!
     @IBOutlet private weak var projectTitle: UILabel! {
         didSet {
-            projectTitle.makeUp(with: .largeMedium)
+            projectTitle.makeUp(with: .huge, and: .defaultTextColor)
             projectTitle.text = L10n.flightPlanProjects
         }
     }
@@ -47,22 +47,24 @@ final class ManagePlansViewController: UIViewController {
     @IBOutlet private weak var openRecentView: UIView!
     @IBOutlet private weak var projectName: UILabel! {
         didSet {
-            projectName.makeUp(with: .small, and: .white80)
+            projectName.makeUp(with: .small, and: .defaultTextColor)
             projectName.text = L10n.flightPlanProjectName.uppercased()
         }
     }
     @IBOutlet private weak var textfield: UITextField! {
         didSet {
             textfield.makeUp(style: .largeMedium)
+            textfield.textColor = ColorName.defaultTextColor.color
             textfield.backgroundColor = .clear
         }
     }
     @IBOutlet private weak var duplicateButton: UIButton! {
         didSet {
             duplicateButton.makeup()
-            duplicateButton.makeup(with: .regular, color: .white50, and: .disabled)
+            duplicateButton.makeup(color: .defaultTextColor80, and: .disabled)
+            duplicateButton.makeup(color: .defaultTextColor)
             duplicateButton.applyCornerRadius(Style.largeCornerRadius)
-            duplicateButton.backgroundColor = ColorName.white20.color
+            duplicateButton.backgroundColor = ColorName.white.color
             duplicateButton.setTitle(L10n.flightPlanDuplicate, for: .normal)
         }
     }
@@ -70,23 +72,23 @@ final class ManagePlansViewController: UIViewController {
         didSet {
             deleteButton.makeup()
             deleteButton.applyCornerRadius(Style.largeCornerRadius)
-            deleteButton.backgroundColor = ColorName.redTorch50.color
+            deleteButton.backgroundColor = ColorName.errorColor.color
             deleteButton.tintColor = ColorName.white.color
             deleteButton.setTitle(L10n.commonDelete, for: .normal)
         }
     }
     @IBOutlet private weak var newButton: UIButton! {
         didSet {
-            newButton.makeup(color: .greenSpring)
+            newButton.makeup()
             newButton.applyCornerRadius(Style.largeCornerRadius)
-            newButton.backgroundColor = ColorName.greenSpring20.color
+            newButton.backgroundColor = ColorName.highlightColor.color
             newButton.setTitle(L10n.flightPlanNew, for: .normal)
         }
     }
     @IBOutlet private weak var openButton: UIButton! {
         didSet {
-            openButton.makeup()
-            openButton.cornerRadiusedWith(backgroundColor: ColorName.white50.color,
+            openButton.makeup(color: .defaultTextColor, and: .normal)
+            openButton.cornerRadiusedWith(backgroundColor: ColorName.white.color,
                                           radius: Style.largeCornerRadius)
             openButton.setTitle(L10n.flightPlanOpenLabel, for: .normal)
         }
@@ -115,12 +117,12 @@ final class ManagePlansViewController: UIViewController {
             .sink { [unowned self] state in
                 var isEnabled: Bool
                 switch state {
-                case .noFlightPlan:
+                case .none:
                     isEnabled = false
                     textfield.text = ""
-                case .flightPlan(let flightPlan):
+                case .project(let flightPlan):
                     isEnabled = true
-                    textfield.text = flightPlan.state.value.title
+                    textfield.text = flightPlan.title
                 }
                 duplicateButton.isEnabled = isEnabled
                 deleteButton.isEnabled = isEnabled
@@ -128,23 +130,27 @@ final class ManagePlansViewController: UIViewController {
                 textfield.isEnabled = isEnabled
             }
             .store(in: &cancellables)
+    }
 
-        viewModel.resetTitlePublisher
-            .sink { [unowned self] text in
-                textfield.text = text
-            }
-            .store(in: &cancellables)
+    @objc func textChanged() {
+        viewModel.renameSelectedFlightPlan(textfield.text)
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Setup view.
-        currentProjectView.addBlurEffect(with: .dark, cornerRadius: 0.0)
         // Setup textfield.
         textfield.text = nil
         textfield.delegate = self
-        bindViewModel() 
+        textfield.addTarget(self, action: #selector(textChanged), for: .editingChanged)
+        bindViewModel()
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(didTapOnPincile))
+        textfield.rightView?.addGestureRecognizer(gesture)
+    }
+
+    @objc
+    func didTapOnPincile() {
+
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -188,7 +194,7 @@ private extension ManagePlansViewController {
     }
 
     @IBAction func deleteTouchUpInside(_ sender: Any) {
-        viewModel?.deleteSelectedFlightPlan()
+        viewModel.deleteFlightPlan()
     }
 
     @IBAction func newTouchUpInside(_ sender: Any) {
@@ -200,9 +206,14 @@ private extension ManagePlansViewController {
 extension ManagePlansViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        if let name = textField.text, !name.isEmpty {
-            viewModel?.renameSelectedFlightPlan(name)
-        }
+        return true
+    }
+
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        textField.resignFirstResponder()
+    }
+
+    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
         return true
     }
 
@@ -211,6 +222,7 @@ extension ManagePlansViewController: UITextFieldDelegate {
             let rangeOfTextToReplace = Range(range, in: textFieldText) else {
                 return false
         }
+
         let substringToReplace = textFieldText[rangeOfTextToReplace]
         if substringToReplace.count > string.count {
             // Always allow removing characters.

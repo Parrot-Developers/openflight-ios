@@ -580,8 +580,7 @@ extension GalleryMediaViewModel {
             }
 
             let imageCount = getMediaImageCount(media)
-            let middleEntry = imageCount - (imageCount - 1) / 2
-            let value = middleEntry - index - 1
+            let value = index - (imageCount - 1) / 2
 
             return "\(value > 0 ? "+" : "")\(value)"
         case .dng:

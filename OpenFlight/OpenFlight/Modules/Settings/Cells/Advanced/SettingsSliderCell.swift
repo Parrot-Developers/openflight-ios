@@ -85,10 +85,19 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
             return currentUnit?.value(withFloat: slider.value) ?? ""
         }
     }
+    private var formattedValueStepper: String {
+        switch currentUnit {
+        case .percent?:
+            return currentUnit?.value(withFloat: slider.value.percentValue(min: slider.minimumValue, max: slider.maximumValue)) ?? ""
+        default:
+            return currentUnit?.value(withFloat: slider.value) ?? ""
+        }
+    }
 
     // MARK: - Private Enums
     private enum Constants {
         static let defaultLeadingConstraint: CGFloat = 16.0
+        static let defaultTrailingConstraint: CGFloat = 8.0
     }
 
     // MARK: - Init
@@ -115,11 +124,13 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
     ///     - settingEntry: cell setting entry
     ///     - indexPath: indexPath
     ///     - shouldShowBackground: tells if we must show the background
-    ///     - sideConstraint: leading and trailing constraint value
+    ///    - leadingConstraint: leading constraint for the slider
+    ///    - trailingConstraint: trailing constraint for the slider
     func configureCell(settingEntry: SettingEntry,
                        atIndexPath indexPath: IndexPath,
                        shouldShowBackground: Bool = true,
-                       sideConstraint: CGFloat = Constants.defaultLeadingConstraint) {
+                       leadingConstraint: CGFloat = Constants.defaultLeadingConstraint,
+                       trailingConstraint: CGFloat = Constants.defaultTrailingConstraint) {
         setupBackground(shouldShow: shouldShowBackground)
 
         self.settingEntry = settingEntry
@@ -140,17 +151,48 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
             self.slider.value = settingEntry.savedValue ?? Float(setting.value)
         }
 
-        stackViewLeadingConstraint.constant = sideConstraint
-        sliderTrailingConstraint.constant = sideConstraint
+        stackViewLeadingConstraint.constant = leadingConstraint
+        sliderTrailingConstraint.constant = trailingConstraint
         updateSliderView()
     }
+
+    var currentValueIntervalStep: Float = 0.05
+    var currentValueStepped: Float = 0.0
 }
 
 // MARK: - Private Funcs
 private extension SettingsSliderCell {
+    /// Add A range to slider
+    ///
+    /// - Parameters:
+    ///     - settingStepperSlider: setting stepper to add
+    func actionStepperSlider(_ settingStepperSlider: SettingStepperSlider) {
+        let minValueSlider = slider.minimumValue
+        let maxValueSlider = slider.maximumValue
+        let limitIntervalChange = settingStepperSlider.limitIntervalChange
+        let leftIntervalStep = settingStepperSlider.leftIntervalStep
+        let rightIntervalStep = settingStepperSlider.rightIntervalStep
+        var currentValueSlider = self.slider.value
+        if (minValueSlider...limitIntervalChange).contains(currentValueSlider) {
+            currentValueIntervalStep = leftIntervalStep
+        } else {
+            currentValueIntervalStep = rightIntervalStep
+        }
+        currentValueSlider = currentValueSlider <= minValueSlider ? minValueSlider : currentValueSlider
+        currentValueSlider = currentValueSlider >= maxValueSlider ? maxValueSlider : currentValueSlider
+        let newCurrentValueStepped = roundf(currentValueSlider / currentValueIntervalStep) * currentValueIntervalStep
+        currentValueStepped = newCurrentValueStepped
+        percentLabel.text = currentUnit?.value2f(withFloat: newCurrentValueStepped)
+    }
+
     /// Update label and slider view.
     func updateSliderView() {
-        percentLabel.text = formattedValue
+        if let settingStepperSlider = settingEntry?.settingStepperSlider {
+            actionStepperSlider(settingStepperSlider)
+        } else {
+            // no Stepper available
+            percentLabel.text = formattedValue
+        }
 
         if !isEnabled {
             percentLabel.textColor = ColorName.disabledHighlightColor.color
@@ -208,6 +250,11 @@ private extension SettingsSliderCell {
     }
 
     @IBAction func didFinishEditing(_ sender: AnyObject) {
+        if (settingEntry?.settingStepperSlider) != nil {
+            guard let unwSettingStepperSlider = sender as? UISlider else { return }
+            unwSettingStepperSlider.setValue(currentValueStepped, animated: true)
+        }
+
         delegate?.settingsSliderCellSliderDidFinishEditing(value: slider.value,
                                                            atIndexPath: indexPath)
 

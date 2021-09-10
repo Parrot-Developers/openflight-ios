@@ -30,23 +30,15 @@
 
 import GroundSdk
 
-/// State for `DynamicRangeBarViewModel`.
-
-final class DynamicRangeBarState: ImagingBarState {
-
-    // MARK: - Override Funcs
-    override func copy() -> DynamicRangeBarState {
-        return DynamicRangeBarState(mode: self.mode,
-                                    supportedModes: self.supportedModes,
-                                    showUnsupportedModes: self.showUnsupportedModes,
-                                    isSelected: self.isSelected,
-                                    unavailableReason: self.unavailableReason)
-    }
-}
-
 /// View model for imaging settings bar dynamic range item.
+final class DynamicRangeBarViewModel: BarButtonViewModel<ImagingBarState> {
 
-final class DynamicRangeBarViewModel: BarButtonViewModel<DynamicRangeBarState> {
+    // MARK: - init
+    /// Constructor.
+    init() {
+        super.init(barId: "DynamicRange")
+    }
+
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
 

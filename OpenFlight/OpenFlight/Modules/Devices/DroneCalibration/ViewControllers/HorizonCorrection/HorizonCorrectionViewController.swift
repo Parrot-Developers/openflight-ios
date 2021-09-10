@@ -121,7 +121,6 @@ private extension HorizonCorrectionViewController {
 
     /// Initializes all the UI for the view controller.
     func initUI() {
-        rulerBarView.addBlurEffect()
         createRulerBar()
         backButton.addShadow()
         horizonCorrectionTitle.text = L10n.droneHorizonCalibration

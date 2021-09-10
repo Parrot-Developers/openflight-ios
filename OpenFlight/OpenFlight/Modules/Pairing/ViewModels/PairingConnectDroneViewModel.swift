@@ -107,7 +107,7 @@ final class PairingConnectDroneViewModel: DevicesStateViewModel<PairingConnectDr
     private var droneFinderRef: Ref<DroneFinder>?
     private var droneConnectionStateRef: Ref<DeviceState>?
     private var timer: Timer?
-    private var academyApiManager: AcademyApiManager = AcademyApiManager()
+    private var academyApiService: AcademyApiService = Services.hub.academyApiService
 
     // MARK: - Private Enums
     private enum Constants {
@@ -224,7 +224,7 @@ final class PairingConnectDroneViewModel: DevicesStateViewModel<PairingConnectDr
                         return
                     }
 
-                    academyApiManager.unpairDrone(commonName: drone.commonName) { _, error in
+                    academyApiService.unpairDrone(commonName: drone.commonName) { _, error in
                         guard error == nil else {
                             self.updateUnpairStatus(with: .forgetError(context: .discover))
                             return
@@ -289,7 +289,7 @@ private extension PairingConnectDroneViewModel {
                                                commonName: "")
             }
 
-            academyApiManager.performPairedDroneListRequest { pairedDroneList in
+            academyApiService.performPairedDroneListRequest { pairedDroneList in
                 guard pairedDroneList != nil else {
                     copy.isListScanning = false
                     self.state.set(copy)

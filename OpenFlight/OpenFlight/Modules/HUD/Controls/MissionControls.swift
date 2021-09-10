@@ -37,12 +37,14 @@ final class MissionControls: NSObject {
     @IBOutlet private weak var missionLauncherView: UIView!
 
     // MARK: - Private Properties
-    private var missionLauncherMode: MissionLauncherMode = .preset {
+    private var missionLauncherDisplayed: Bool = false {
         didSet {
-            if oldValue != missionLauncherMode {
-                NotificationCenter.default.post(name: .missionLauncherModeDidChange,
-                                                object: self,
-                                                userInfo: [MissionLauncherMode.notificationKey: missionLauncherMode])
+            if oldValue != missionLauncherDisplayed {
+                if missionLauncherDisplayed {
+                    Services.hub.ui.uiComponentsDisplayReporter.missionMenuIsDisplayed()
+                } else {
+                    Services.hub.ui.uiComponentsDisplayReporter.missionMenuIsHidden()
+                }
             }
         }
     }
@@ -55,7 +57,7 @@ final class MissionControls: NSObject {
     // MARK: - Internal Funcs
     /// Show mission launcher view controller with given viewModel.
     func showMissionLauncher(completion: ((Bool) -> Void)? = nil) {
-        missionLauncherMode = .opened
+        missionLauncherDisplayed = true
         guard missionLauncherView.isHidden == true else { return }
         UIView.animate(withDuration: Constants.animationDuration, animations: {
             self.missionLauncherView.isHidden = false
@@ -68,7 +70,7 @@ final class MissionControls: NSObject {
         UIView.animate(withDuration: Constants.animationDuration, animations: {
             self.missionLauncherView.isHidden = true
         }, completion: { _ in
-            self.missionLauncherMode = .closed
+            self.missionLauncherDisplayed = false
         })
     }
 }

@@ -38,6 +38,7 @@ extension FlightPlanFlights {
 
     // MARK: Properties
 
+    @NSManaged public var apcId: String!
     @NSManaged public var flightUuid: String!
     @NSManaged public var flightplanUuid: String!
     @NSManaged public var dateExecutionFlight: Date!
@@ -58,7 +59,8 @@ extension FlightPlanFlights {
 extension FlightPlanFlights {
     /// Return FlightPlanFlightsModel from FlightPlanFlights type of NSManagedObject
     func model() -> FlightPlanFlightsModel {
-        return FlightPlanFlightsModel(flightUuid: flightUuid,
+        return FlightPlanFlightsModel(apcId: apcId,
+                                      flightUuid: flightUuid,
                                       flightplanUuid: flightplanUuid,
                                       dateExecutionFlight: dateExecutionFlight,
                                       synchroStatus: synchroStatus,

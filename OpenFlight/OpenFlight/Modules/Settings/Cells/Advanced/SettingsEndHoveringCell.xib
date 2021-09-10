@@ -17,10 +17,10 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I13-J7-MRg" userLabel="bgView">
-                        <rect key="frame" x="16" y="0.0" width="335" height="125"/>
+                        <rect key="frame" x="0.0" y="5" width="367" height="115"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Tfs-mI-IUZ">
-                                <rect key="frame" x="0.0" y="0.0" width="335" height="125"/>
+                                <rect key="frame" x="0.0" y="0.0" width="367" height="115"/>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -34,10 +34,10 @@
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="I13-J7-MRg" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="2wH-me-aQt"/>
-                    <constraint firstAttribute="trailing" secondItem="I13-J7-MRg" secondAttribute="trailing" constant="16" id="VPb-JE-W1g"/>
-                    <constraint firstItem="I13-J7-MRg" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="aqj-op-GxQ"/>
-                    <constraint firstAttribute="bottom" secondItem="I13-J7-MRg" secondAttribute="bottom" id="r6F-dP-WbA"/>
+                    <constraint firstItem="I13-J7-MRg" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="2wH-me-aQt"/>
+                    <constraint firstAttribute="trailing" secondItem="I13-J7-MRg" secondAttribute="trailing" id="VPb-JE-W1g"/>
+                    <constraint firstItem="I13-J7-MRg" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="aqj-op-GxQ"/>
+                    <constraint firstAttribute="bottom" secondItem="I13-J7-MRg" secondAttribute="bottom" constant="5" id="r6F-dP-WbA"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

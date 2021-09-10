@@ -82,10 +82,10 @@ private extension ModesChoiceTableViewCell {
     /// Inits the view.
     func initView() {
         backgroundColor = .clear
-        modeLabel.makeUp()
-        titleLabel.makeUp(with: .small, and: .white)
+        modeLabel.makeUp(and: .defaultTextColor)
+        titleLabel.makeUp(with: .small, and: .defaultTextColor)
         titleLabel.text = L10n.commonMode.uppercased()
-        modesBackgroundView.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
+        modesBackgroundView.cornerRadiusedWith(backgroundColor: ColorName.clear.color,
                                                radius: Style.largeCornerRadius)
     }
 
@@ -102,13 +102,15 @@ private extension ModesChoiceTableViewCell {
         guard let tag = tag else { return }
         modesStackView?.arrangedSubviews.forEach { view in
             let isSelected = modesStackView?.arrangedSubviews.firstIndex(of: view) == tag
-            let backgroundColor = isSelected ? ColorName.greenSpring20.color : .clear
-            let borderColor = isSelected ? ColorName.greenSpring.color : .clear
+            let backgroundColor = isSelected ? ColorName.highlightColor.color : .clear
+            let borderColor = isSelected ? ColorName.highlightColor.color : .clear
 
             view.cornerRadiusedWith(backgroundColor: backgroundColor,
                                     borderColor: borderColor,
                                     radius: Style.largeCornerRadius,
                                     borderWidth: Style.mediumBorderWidth)
+            let colorText = isSelected ? ColorName.white.color : ColorName.defaultTextColor.color
+            view.tintColor = colorText
         }
     }
 }
@@ -123,7 +125,7 @@ extension ModesChoiceTableViewCell {
         settingsProvider?.allTypes.forEach { item in
             let button = UIButton(type: UIButton.ButtonType.custom)
             button.tag = item.tag
-            button.setImage(item.icon, for: .normal)
+            button.setImage(item.icon.withRenderingMode(.alwaysTemplate), for: .normal)
             button.addTarget(self,
                              action: #selector(editionModeButtonTouchedUpInside),
                              for: .touchUpInside)

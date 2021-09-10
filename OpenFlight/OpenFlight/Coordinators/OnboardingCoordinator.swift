@@ -55,10 +55,9 @@ open class OnboardingCoordinator: Coordinator {
     // MARK: - Public Funcs
     /// Classical way to start the coordinator with root view.
     open func start() {
-        // TODO: Add other languages later.
-        let filename: String = "of_legal_fr"
-        showTermsOfUseScreen(filename: filename,
-                             termsOfUseKey: DefaultsKeys.areOFTermsOfUseAccepted)
+        // AUTO ACCEPT TERM OF USE FOR OPENFLIGHT
+        Defaults[key: DefaultsKeys.areOFTermsOfUseAccepted] = true
+        showLocalizationAccessScreen()
     }
 
     /// Used to show terms of use screen.

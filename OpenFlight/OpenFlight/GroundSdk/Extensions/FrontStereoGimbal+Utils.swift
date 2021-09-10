@@ -33,6 +33,7 @@ import GroundSdk
 /// Front stereo gimbal calibration state.
 enum FrontStereoGimbalState {
     case calibrated
+    case recommended
     case needed
     case error
     case unavailable
@@ -40,13 +41,14 @@ enum FrontStereoGimbalState {
     /// Image calibration according to front stereo gimbal calibration state.
     var calibrationImage: UIImage? {
         switch self {
-        case .calibrated:
-            return Asset.Drone.icGimbalOk.image
+        case .calibrated,
+             .unavailable:
+            return Asset.Drone.icDroneStereoVisionOk.image
+        case .recommended:
+            return Asset.Drone.icDroneStereoVisionWarning.image
         case .needed,
              .error:
-            return Asset.Drone.icGimbalError.image
-        case .unavailable:
-            return nil
+            return Asset.Drone.icDroneStereoVisionError.image
         }
     }
 }
@@ -55,7 +57,14 @@ enum FrontStereoGimbalState {
 extension FrontStereoGimbal {
     /// Front stereo gimbal calibration state.
     var state: FrontStereoGimbalState {
-        return calibrated && currentErrors.isEmpty ? .calibrated : .needed
+        switch (calibrated, currentErrors.isEmpty) {
+        case (false, true):
+            return .recommended
+        case (_, false):
+            return .needed
+        default:
+            return .calibrated
+        }
     }
 
     /// String describing front stereo vision sensors calibration state.
@@ -64,33 +73,37 @@ extension FrontStereoGimbal {
         case .calibrated,
              .unavailable:
             return ""
+        case .recommended:
+            return L10n.commonRecommended
         case .needed,
              .error:
-            return L10n.loveCalibrationRequired
+            return L10n.commonRequired
         }
     }
 
     /// Color for stereo vision sensors calibration.
     var subtextColor: ColorName {
-        return isCalibrationNeeded ? .redTorch : .white50
+        switch self.state {
+        case .calibrated,
+             .unavailable:
+            return .highlightColor
+        default:
+            return .white
+        }
     }
 
     /// Background color for stereo vision sensors calibration.
     var backgroundColor: ColorName {
-        return isCalibrationNeeded ? .redTorch25 : .white10
-    }
-
-    /// Image for stereo vision sensors calibration.
-    var calibrationImage: UIImage? {
-        switch state {
-        case .calibrated:
-            return Asset.Drone.icDroneStereoVisionOk.image
-        case .needed,
-             .error:
-            return Asset.Drone.icDroneStereoVisionWarning.image
-        case .unavailable:
-            return nil
-        }
+       switch self.state {
+       case .calibrated,
+            .unavailable:
+        return .white
+       case .recommended:
+        return .warningColor
+       case .needed,
+            .error:
+        return .errorColor
+       }
     }
 
     /// Tells is front stereo gimbal calibration is needed or not.

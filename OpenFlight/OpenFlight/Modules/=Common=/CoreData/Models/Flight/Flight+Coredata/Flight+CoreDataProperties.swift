@@ -38,6 +38,7 @@ extension Flight {
 
     // MARK: - Properties
 
+    @NSManaged public var apcId: String!
     @NSManaged public var title: String?
     @NSManaged public var uuid: String!
     @NSManaged public var version: String!
@@ -56,12 +57,31 @@ extension Flight {
     @NSManaged public var synchroDate: Date?
     @NSManaged public var synchroStatus: Int16
     @NSManaged public var fileSynchroStatus: Int16
+    @NSManaged public var fileSynchroDate: Date?
     @NSManaged public var cloudLastUpdate: Date?
 
     // MARK: - Relationship
 
     @NSManaged public var ofUserParrot: UserParrot?
+    @NSManaged public var thumbnail: Thumbnail?
     @NSManaged public var flightPlanFlights: Set<FlightPlanFlights>?
+
+}
+
+// MARK: Generated accessors for flightPlanFlights
+extension Flight {
+
+    @objc(addFlightPlanFlightsObject:)
+    @NSManaged public func addToFlightPlanFlights(_ value: FlightPlanFlights)
+
+    @objc(removeFlightPlanFlightsObject:)
+    @NSManaged public func removeFlightPlanFlights(_ value: FlightPlanFlights)
+
+    @objc(addFlightPlanFlights:)
+    @NSManaged public func addToFlightPlanFlights(_ values: NSSet)
+
+    @objc(removeFlightPlanFlights:)
+    @NSManaged public func removeFromFlightPlanFlights(_ values: NSSet)
 
 }
 
@@ -70,10 +90,10 @@ extension Flight {
 
     /// Return FlightModel from Flight type of NSManagedObject
     func model() -> FlightModel {
-        return FlightModel(title: title,
+        return FlightModel(apcId: apcId,
+                           title: title,
                            uuid: uuid,
                            version: version,
-                           flightPlanUuid: nil,
                            photoCount: photoCount,
                            videoCount: videoCount,
                            startLatitude: startLatitude,
@@ -90,7 +110,6 @@ extension Flight {
                            synchroStatus: synchroStatus,
                            cloudLastUpdate: cloudLastUpdate,
                            fileSynchroStatus: fileSynchroStatus,
-                           dateExecutionFlight: nil,
-                           flightPlanFlights: flightPlanFlights?.toArray().map({$0.model()}))
+                           fileSynchroDate: fileSynchroDate)
     }
 }

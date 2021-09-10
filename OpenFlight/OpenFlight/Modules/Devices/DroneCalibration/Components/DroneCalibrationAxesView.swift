@@ -63,7 +63,9 @@ extension DroneCalibrationAxesView {
     ///    - currentAxis: the current axis to display.
     func displayCurrentAxis(currentAxis: Magnetometer3StepCalibrationProcessState.Axis) {
         for item in items where item.key == currentAxis {
-            item.value.viewModel.tickBoxImage = Asset.Common.Checks.icCheckUnchecked.image
+            item.value.viewModel.tickBoxImage = Asset.Common.Checks.icHighlightUnchecked.image
+            item.value.viewModel.backgroundColor = ColorName.highlightColor.color.withAlphaComponent(0.5)
+            item.value.viewModel.labelColor = .white
         }
     }
 
@@ -72,7 +74,9 @@ extension DroneCalibrationAxesView {
     /// - Parameters:
     ///    - axis: axis calibrated.
     func markAsCalibrated(axis: Magnetometer3StepCalibrationProcessState.Axis) {
-        items[axis]?.viewModel.tickBoxImage = Asset.Pairing.icPairingCheck.image
+        items[axis]?.viewModel.tickBoxImage = Asset.Common.Checks.icFillChecked.image
+        items[axis]?.viewModel.backgroundColor = .clear
+        items[axis]?.viewModel.labelColor = ColorName.defaultTextColor.color
     }
 
     /// Resets all tickboxes to their initial state.
@@ -80,7 +84,11 @@ extension DroneCalibrationAxesView {
     func reset() {
         items
             .compactMap { return $1 }
-            .forEach { $0.viewModel.tickBoxImage = Asset.Common.Checks.icCheckUnchecked.image }
+            .forEach {
+                $0.viewModel.tickBoxImage = Asset.Common.Checks.icUnchecked.image
+                $0.viewModel.backgroundColor = .clear
+                $0.viewModel.labelColor = ColorName.defaultTextColor.color
+            }
     }
 }
 
@@ -95,11 +103,11 @@ private extension DroneCalibrationAxesView {
 
     /// Sets up view models associated with the view.
     func setupViewModels() {
-        self.axeZTickBox.viewModel = DroneCalibrationAxeTickboxModel(tickBoxImage: Asset.Common.Checks.icCheckDisabled.image,
+        self.axeZTickBox.viewModel = DroneCalibrationAxeTickboxModel(tickBoxImage: Asset.Common.Checks.icUnchecked.image,
                                                                      axeLabel: L10n.droneCalibrationYawLabel.uppercased())
-        self.axeYTickBox.viewModel = DroneCalibrationAxeTickboxModel(tickBoxImage: Asset.Common.Checks.icCheckDisabled.image,
+        self.axeYTickBox.viewModel = DroneCalibrationAxeTickboxModel(tickBoxImage: Asset.Common.Checks.icUnchecked.image,
                                                                      axeLabel: L10n.droneCalibrationPitchLabel.uppercased())
-        self.axeXTickBox.viewModel = DroneCalibrationAxeTickboxModel(tickBoxImage: Asset.Common.Checks.icCheckDisabled.image,
+        self.axeXTickBox.viewModel = DroneCalibrationAxeTickboxModel(tickBoxImage: Asset.Common.Checks.icUnchecked.image,
                                                                      axeLabel: L10n.droneCalibrationRollLabel.uppercased())
         items[.yaw] = axeZTickBox
         items[.pitch] = axeYTickBox

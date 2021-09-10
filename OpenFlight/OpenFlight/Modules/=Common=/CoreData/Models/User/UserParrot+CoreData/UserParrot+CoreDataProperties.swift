@@ -55,7 +55,6 @@ extension UserParrot {
 
     // MARK: - Relationship
 
-    @NSManaged public var challengesSecureElement: NSSet?
     @NSManaged public var dronesDatas: NSSet?
     @NSManaged public var flightPlans: NSSet?
     @NSManaged public var flights: NSSet?
@@ -63,23 +62,6 @@ extension UserParrot {
     @NSManaged public var projects: NSSet?
     @NSManaged public var thumbnails: NSSet?
     @NSManaged public var flightPlanFlights: NSSet?
-
-}
-
-// MARK: Generated accessors for challengesSecureElement
-extension UserParrot {
-
-    @objc(addChallengesSecureElementObject:)
-    @NSManaged public func addToChallengesSecureElement(_ value: ChallengesSecureElement)
-
-    @objc(removeChallengesSecureElementObject:)
-    @NSManaged public func removeFromChallengesSecureElement(_ value: ChallengesSecureElement)
-
-    @objc(addChallengesSecureElement:)
-    @NSManaged public func addToChallengesSecureElement(_ values: NSSet)
-
-    @objc(removeChallengesSecureElement:)
-    @NSManaged public func removeFromChallengesSecureElement(_ values: NSSet)
 
 }
 
@@ -137,16 +119,16 @@ extension UserParrot {
 // MARK: Generated accessors for pgyProjects
 extension UserParrot {
 
-    @objc(addPgyProjectsObject:)
-    @NSManaged public func addToPgyProjects(_ value: PgyProjects)
+    @objc(addPgyProjectObject:)
+    @NSManaged public func addToPgyProjects(_ value: PgyProject)
 
-    @objc(removePgyProjectsObject:)
-    @NSManaged public func removeFromPgyProjects(_ value: PgyProjects)
+    @objc(removePgyProjectObject:)
+    @NSManaged public func removeFromPgyProjects(_ value: PgyProject)
 
-    @objc(addPgyProjects:)
+    @objc(addPgyProject:)
     @NSManaged public func addToPgyProjects(_ values: NSSet)
 
-    @objc(removePgyProjects:)
+    @objc(removePgyProject:)
     @NSManaged public func removeFromPgyProjects(_ values: NSSet)
 
 }

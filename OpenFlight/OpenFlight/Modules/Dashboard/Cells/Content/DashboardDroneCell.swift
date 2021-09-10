@@ -78,7 +78,7 @@ class DashboardDroneCell: UICollectionViewCell, NibReusable {
         firmwareAndMissionsUpdateListener = FirmwareAndMissionsInteractor.shared
             .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
                 self?.firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel
-                self?.setStateDeviceButton(with: firmwareAndMissionToUpdateModel)
+                self?.setDeviceStateButton(with: firmwareAndMissionToUpdateModel)
             }
     }
 
@@ -163,7 +163,7 @@ private extension DashboardDroneCell {
         viewModel?.$connectionState
             .sink { [unowned self] _ in
                 if let firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel {
-                    setStateDeviceButton(with: firmwareAndMissionToUpdateModel)
+                    setDeviceStateButton(with: firmwareAndMissionToUpdateModel)
                 }
             }
             .store(in: &cancellables)
@@ -189,25 +189,37 @@ private extension DashboardDroneCell {
 // MARK: - Private Funcs
 private extension DashboardDroneCell {
 
-    /// Sets the state device label.
+    /// Sets the device state button label.
     ///
     /// - Parameters:
     ///    - firmwareAndMissionToUpdateModel: The firmware and mission update model
-    func setStateDeviceButton(with firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel) {
+    func setDeviceStateButton(with firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel) {
         guard let droneInfosViewModel = viewModel else { return }
 
-        let droneCalibrationRequired = droneInfosViewModel.connectionState == .connected
-            && droneInfosViewModel.requiresCalibration
+        let connectionState = droneInfosViewModel.connectionState
+        let status: DeviceStateButton.Status
+        let title: String
 
-        switch firmwareAndMissionToUpdateModel {
-        case .upToDate where droneCalibrationRequired,
-             .notInitialized where droneCalibrationRequired:
-            deviceStateButton.update(with: DeviceStateButton.Status.calibrationRequired, title: L10n.remoteCalibrationRequired)
+        switch connectionState {
+        case .disconnected:
+            status = .disconnected
+            title = L10n.commonNotConnected
+        case .connected:
+            if firmwareAndMissionToUpdateModel.needUpdate {
+                status = .updateAvailable
+                title = firmwareAndMissionToUpdateModel.stateButtonTitle
+            } else if droneInfosViewModel.requiresCalibration {
+                status = .calibrationRequired
+                title = L10n.remoteCalibrationRequired
+            } else {
+                status = .notDisconnected
+                title = connectionState.title
+            }
         default:
-            let connectionState = droneInfosViewModel.connectionState
-            let title = firmwareAndMissionToUpdateModel.stateDeviceButtonTitle(deviceConnectionState: connectionState)
-            let status = firmwareAndMissionToUpdateModel.stateDeviceButtonStatus(deviceConnectionState: connectionState)
-            deviceStateButton.update(with: status, title: title)
+            status = .notDisconnected
+            title = connectionState.title
         }
+
+        deviceStateButton.update(with: status, title: title)
     }
 }

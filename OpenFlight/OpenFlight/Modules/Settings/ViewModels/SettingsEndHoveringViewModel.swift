@@ -74,8 +74,7 @@ final class SettingsEndHoveringViewModel: DroneWatcherViewModel<SettingsEndHover
     }
     /// Returns the setting entry for end Hovering altitude.
     var endHoveringAltitudeEntry: SettingEntry {
-        let returnHome = drone?.getPilotingItf(PilotingItfs.returnHome)
-        return SettingEntry(setting: returnHome?.endingHoveringAltitude,
+        return SettingEntry(setting: returnHomePilotingRef?.value?.endingHoveringAltitude,
                             title: L10n.commonHovering,
                             unit: UnitType.distance,
                             defaultValue: Float(RthPreset.defaultHoveringAltitude),
@@ -100,24 +99,24 @@ final class SettingsEndHoveringViewModel: DroneWatcherViewModel<SettingsEndHover
 private extension SettingsEndHoveringViewModel {
     /// Starts watcher for Return Home.
     func listenReturnHome(_ drone: Drone) {
-        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] rthState in
-            let copy = self?.state.value.copy()
-            copy?.hoveringAltitude = rthState?.endingHoveringAltitude?.value
-            copy?.isHovering = rthState?.endingBehavior.behavior == .hovering
-            self?.state.set(copy)
+        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] returnHome in
+            let copy = state.value.copy()
+            copy.hoveringAltitude = returnHome?.endingHoveringAltitude?.value
+            copy.isHovering = returnHome?.endingBehavior.behavior == .hovering
+            state.set(copy)
         }
     }
 
     /// Returns a setting model for end Hovering mode.
     func endHoveringModel() -> DroneSettingModel {
-        let endingBehavior = drone?.getPilotingItf(PilotingItfs.returnHome)?.endingBehavior
+        let endingBehavior = returnHomePilotingRef?.value?.endingBehavior
 
         return DroneSettingModel(allValues: ReturnHomeEndingBehavior.allValues,
                                  supportedValues: ReturnHomeEndingBehavior.allValues,
                                  currentValue: endingBehavior?.behavior,
                                  isUpdating: false) { [weak self] mode in
-            if let mode = mode as? ReturnHomeEndingBehavior {   
-                self?.drone?.getPilotingItf(PilotingItfs.returnHome)?.endingBehavior.behavior = mode
+            if let mode = mode as? ReturnHomeEndingBehavior {
+                self?.returnHomePilotingRef?.value?.endingBehavior.behavior = mode
             }
         }
     }

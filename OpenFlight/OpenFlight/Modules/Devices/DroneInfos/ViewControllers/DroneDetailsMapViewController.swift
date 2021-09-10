@@ -41,7 +41,6 @@ final class DroneDetailsMapViewController: UIViewController {
     @IBOutlet private weak var coordinateView: UIView!
     @IBOutlet private weak var coordinateButton: UIButton!
     @IBOutlet private weak var bellButton: UIButton!
-    @IBOutlet private weak var topView: UIView!
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
@@ -52,7 +51,6 @@ final class DroneDetailsMapViewController: UIViewController {
     static func instantiate(coordinator: Coordinator) -> DroneDetailsMapViewController {
         let viewController = StoryboardScene.DroneDetailsMap.initialScene.instantiate()
         viewController.coordinator = coordinator
-
         return viewController
     }
 
@@ -68,9 +66,11 @@ final class DroneDetailsMapViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        UIView.animate(withDuration: Style.mediumAnimationDuration) {
-            self.view.backgroundColor = ColorName.greyDark60.color
-        }
+        UIView.animate(withDuration: Style.shortAnimationDuration,
+                       delay: Style.shortAnimationDuration,
+                       animations: {
+                            self.view.backgroundColor = ColorName.nightRider80.color
+                       })
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -78,7 +78,7 @@ final class DroneDetailsMapViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -110,14 +110,11 @@ private extension DroneDetailsMapViewController {
 private extension DroneDetailsMapViewController {
     /// Init view.
     func initView() {
-        mainView.applyCornerRadius(Style.largeCornerRadius,
-                                   maskedCorners: [.layerMinXMinYCorner,
-                                                   .layerMaxXMinYCorner])
-        topView.addBlurEffect(cornerRadius: 0.0)
+        mainView.customCornered(corners: [.topLeft, .topRight],
+                                radius: Style.largeCornerRadius)
         containerView?.isUserInteractionEnabled = false
-        coordinateView.cornerRadiusedWith(backgroundColor: UIColor(named: .black60),
-                                          borderColor: .clear,
-                                          radius: Style.largeCornerRadius)
+        coordinateView.customCornered(corners: [.allCorners],
+                                      radius: Style.largeCornerRadius)
         lastPositionTitleLabel.text = L10n.droneDetailsLastKnownPosition
     }
 
@@ -145,10 +142,8 @@ private extension DroneDetailsMapViewController {
     /// - Parameters:
     ///     - state: drone map state
     func updateView(_ state: DroneDetailsMapState) {
-        bellButton.setImage(state.beeperIsPlaying == true
-            ? Asset.Drone.icBellOn.image
-            : Asset.Drone.icBellOff.image,
-                            for: .normal)
+        let bellImage = state.beeperIsPlaying == true ? Asset.Drone.icBellOn.image : Asset.Drone.icBellOff.image
+        bellButton.setImage(bellImage, for: .normal)
 
         if let location = state.location {
             coordinateButton.setTitle(location.coordinate.convertToDmsCoordinate(),

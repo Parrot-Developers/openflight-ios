@@ -1,26 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17709" systemVersion="19H1217" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="ChallengesSecureElement" representedClassName="ChallengesSecureElement" syncable="YES">
-        <attribute name="challengeSigned" optional="YES" attributeType="String"/>
-        <attribute name="challengeValue" attributeType="String"/>
-        <attribute name="creationDate" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="operationType" attributeType="String"/>
-        <attribute name="synchroDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="synchroStatus" optional="YES" attributeType="Integer 16" minValueString="0" defaultValueString="0" usesScalarValueType="YES"/>
-        <relationship name="ofUserParrot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserParrot" inverseName="challengesSecureElement" inverseEntity="UserParrot"/>
-    </entity>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="18154" systemVersion="20F71" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="DronesData" representedClassName="DronesData" syncable="YES">
+        <attribute name="apcId" attributeType="String" defaultValueString=""/>
         <attribute name="droneCommonName" optional="YES" attributeType="String"/>
         <attribute name="droneSerial" attributeType="String"/>
         <attribute name="modelId" optional="YES" attributeType="String"/>
         <attribute name="pairedFor4G" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="synchroDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="ofUserParrot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserParrot" inverseName="dronesDatas" inverseEntity="UserParrot"/>
     </entity>
     <entity name="Flight" representedClassName="Flight" syncable="YES">
+        <attribute name="apcId" attributeType="String" defaultValueString=""/>
         <attribute name="batteryConsumption" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="cloudLastUpdate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="distance" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="duration" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="fileSynchroDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="fileSynchroStatus" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="gutmaFile" attributeType="String"/>
         <attribute name="parrotCloudId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -36,36 +32,22 @@
         <attribute name="uuid" attributeType="String"/>
         <attribute name="version" attributeType="String"/>
         <attribute name="videoCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <relationship name="flightPlanFlights" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FlightPlanFlights" inverseName="ofFlight" inverseEntity="FlightPlanFlights"/>
+        <relationship name="flightPlanFlights" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FlightPlanFlights" inverseName="ofFlight" inverseEntity="FlightPlanFlights"/>
         <relationship name="ofUserParrot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserParrot" inverseName="flights" inverseEntity="UserParrot"/>
+        <relationship name="thumbnail" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Thumbnail" inverseName="ofFlight" inverseEntity="Thumbnail"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="uuid"/>
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
-    <entity name="FlightDataModel" representedClassName="FlightDataModel" syncable="YES">
-        <attribute name="checked" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="cloudStatus" optional="YES" attributeType="String"/>
-        <attribute name="date" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="distance" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="duration" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="gutmaFileKey" attributeType="String"/>
-        <attribute name="hasIssues" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="lastModified" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="latitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="longitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="numberOfPhotos" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="numberOfVideos" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="thumbnail" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
-        <attribute name="title" optional="YES" attributeType="String"/>
-        <relationship name="gutma" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="GutmaDataModel" inverseName="flightData" inverseEntity="GutmaDataModel"/>
-    </entity>
     <entity name="FlightPlan" representedClassName="FlightPlan" syncable="YES">
+        <attribute name="apcId" attributeType="String" defaultValueString=""/>
         <attribute name="cloudLastUpdate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="customTitle" attributeType="String"/>
         <attribute name="dataString" optional="YES" attributeType="String"/>
         <attribute name="dataStringType" attributeType="String"/>
+        <attribute name="fileSynchroDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="fileSynchroStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="lastMissionItemExecuted" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="lastUpdate" attributeType="Date" usesScalarValueType="NO"/>
@@ -77,41 +59,27 @@
         <attribute name="parrotCloudUploadUrl" optional="YES" attributeType="String"/>
         <attribute name="pgyProjectId" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="projectUuid" attributeType="String"/>
-        <attribute name="recoveryId" optional="YES" attributeType="String"/>
         <attribute name="state" optional="YES" attributeType="String"/>
         <attribute name="synchroDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="synchroStatus" optional="YES" attributeType="Integer 16" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="thumbnailUuid" optional="YES" attributeType="String"/>
+        <attribute name="type" attributeType="String"/>
         <attribute name="uploadAttemptCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="uploadedMediaCount" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="uuid" attributeType="String"/>
         <attribute name="version" attributeType="String"/>
         <relationship name="flightPlanFlights" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FlightPlanFlights" inverseName="ofFlightPlan" inverseEntity="FlightPlanFlights"/>
-        <relationship name="ofProject" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Project" inverseName="flightPlan" inverseEntity="Project"/>
+        <relationship name="ofProject" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Project" inverseName="flightPlans" inverseEntity="Project"/>
         <relationship name="ofUserParrot" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="UserParrot" inverseName="flightPlans" inverseEntity="UserParrot"/>
-        <relationship name="thumbnail" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Thumbnail" inverseName="ofFlightPlan" inverseEntity="Thumbnail"/>
+        <relationship name="thumbnail" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Thumbnail" inverseName="ofFlightPlan" inverseEntity="Thumbnail"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="uuid"/>
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
-    <entity name="FlightPlanDataModel" representedClassName="FlightPlanDataModel" syncable="YES">
-        <attribute name="flightPlanData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
-        <relationship name="flightPlan" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="FlightPlanModel" inverseName="flightPlanData" inverseEntity="FlightPlanModel"/>
-    </entity>
-    <entity name="FlightPlanExecutionDataModel" representedClassName="FlightPlanExecutionDataModel" syncable="YES">
-        <attribute name="endDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="executionId" attributeType="String"/>
-        <attribute name="flightId" optional="YES" attributeType="String"/>
-        <attribute name="flightPlanId" attributeType="String"/>
-        <attribute name="flightPlanRecoveryId" optional="YES" attributeType="String"/>
-        <attribute name="latestItemExecuted" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
-        <attribute name="settings" optional="YES" attributeType="Binary"/>
-        <attribute name="startDate" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="state" optional="YES" attributeType="String"/>
-    </entity>
     <entity name="FlightPlanFlights" representedClassName="FlightPlanFlights" syncable="YES">
+        <attribute name="apcId" attributeType="String" defaultValueString=""/>
         <attribute name="dateExecutionFlight" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="flightplanUuid" attributeType="String"/>
         <attribute name="flightUuid" attributeType="String"/>
@@ -119,28 +87,12 @@
         <attribute name="parrotCloudToBeDeleted" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="synchroDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="synchroStatus" optional="YES" attributeType="Integer 16" defaultValueString="NO" usesScalarValueType="YES"/>
-        <relationship name="ofFlight" optional="YES" maxCount="1" deletionRule="No Action" destinationEntity="Flight" inverseName="flightPlanFlights" inverseEntity="Flight"/>
-        <relationship name="ofFlightPlan" optional="YES" maxCount="1" deletionRule="No Action" destinationEntity="FlightPlan" inverseName="flightPlanFlights" inverseEntity="FlightPlan"/>
+        <relationship name="ofFlight" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Flight" inverseName="flightPlanFlights" inverseEntity="Flight"/>
+        <relationship name="ofFlightPlan" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="FlightPlan" inverseName="flightPlanFlights" inverseEntity="FlightPlan"/>
         <relationship name="ofUserParrot" optional="YES" maxCount="1" deletionRule="No Action" destinationEntity="UserParrot" inverseName="flightPlanFlights" inverseEntity="UserParrot"/>
     </entity>
-    <entity name="FlightPlanModel" representedClassName="FlightPlanModel" syncable="YES">
-        <attribute name="cloudStatus" optional="YES" attributeType="String"/>
-        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="isPhotogrametry" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="lastModified" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="latitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="longitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="thumbnail" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
-        <attribute name="title" optional="YES" attributeType="String"/>
-        <attribute name="type" optional="YES" attributeType="String"/>
-        <attribute name="uuid" optional="YES" attributeType="String"/>
-        <relationship name="flightPlanData" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="FlightPlanDataModel" inverseName="flightPlan" inverseEntity="FlightPlanDataModel"/>
-    </entity>
-    <entity name="GutmaDataModel" representedClassName="GutmaDataModel" syncable="YES">
-        <attribute name="gutmaFile" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
-        <relationship name="flightData" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="FlightDataModel" inverseName="gutma" inverseEntity="FlightDataModel"/>
-    </entity>
-    <entity name="PgyProjects" representedClassName="PgyProjects" syncable="YES">
+    <entity name="PgyProject" representedClassName="PgyProject" syncable="YES">
+        <attribute name="apcId" attributeType="String" defaultValueString=""/>
         <attribute name="cloudToBeDeleted" attributeType="Boolean" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" attributeType="String"/>
         <attribute name="pgyProjectId" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -151,6 +103,7 @@
         <relationship name="ofUserParrot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserParrot" inverseName="pgyProjects" inverseEntity="UserParrot"/>
     </entity>
     <entity name="Project" representedClassName="Project" syncable="YES">
+        <attribute name="apcId" attributeType="String" defaultValueString=""/>
         <attribute name="cloudLastUpdate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="lastUpdated" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="parrotCloudId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -160,7 +113,7 @@
         <attribute name="title" optional="YES" attributeType="String"/>
         <attribute name="type" attributeType="String"/>
         <attribute name="uuid" attributeType="String"/>
-        <relationship name="flightPlan" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FlightPlan" inverseName="ofProject" inverseEntity="FlightPlan"/>
+        <relationship name="flightPlans" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FlightPlan" inverseName="ofProject" inverseEntity="FlightPlan"/>
         <relationship name="ofUserParrot" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserParrot" inverseName="projects" inverseEntity="UserParrot"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -169,15 +122,19 @@
         </uniquenessConstraints>
     </entity>
     <entity name="Thumbnail" representedClassName="Thumbnail" syncable="YES">
+        <attribute name="apcId" attributeType="String" defaultValueString=""/>
         <attribute name="cloudLastUpdate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="fileSynchroStatus" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="fileSynchroDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="fileSynchroStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lastUpdate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="parrotCloudId" attributeType="Integer 64" minValueString="0" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="parrotCloudToBeDeleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="synchroDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="synchroStatus" attributeType="Integer 16" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="thumbnailData" optional="YES" attributeType="Binary"/>
         <attribute name="uuid" attributeType="String"/>
-        <relationship name="ofFlightPlan" optional="YES" maxCount="1" deletionRule="No Action" destinationEntity="FlightPlan" inverseName="thumbnail" inverseEntity="FlightPlan"/>
+        <relationship name="ofFlight" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Flight" inverseName="thumbnail" inverseEntity="Flight"/>
+        <relationship name="ofFlightPlan" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="FlightPlan" inverseName="thumbnail" inverseEntity="FlightPlan"/>
         <relationship name="ofUserParrot" optional="YES" maxCount="1" deletionRule="No Action" destinationEntity="UserParrot" inverseName="thumbnails" inverseEntity="UserParrot"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -200,29 +157,22 @@
         <attribute name="syncWithCloud" optional="YES" attributeType="Boolean" minValueString="0" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="tmpApcUser" optional="YES" attributeType="Boolean" minValueString="0" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="userInfoChanged" optional="YES" attributeType="Boolean" minValueString="0" defaultValueString="0" usesScalarValueType="YES"/>
-        <relationship name="challengesSecureElement" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ChallengesSecureElement" inverseName="ofUserParrot" inverseEntity="ChallengesSecureElement"/>
         <relationship name="dronesDatas" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DronesData" inverseName="ofUserParrot" inverseEntity="DronesData"/>
         <relationship name="flightPlanFlights" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FlightPlanFlights" inverseName="ofUserParrot" inverseEntity="FlightPlanFlights"/>
         <relationship name="flightPlans" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FlightPlan" inverseName="ofUserParrot" inverseEntity="FlightPlan"/>
         <relationship name="flights" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Flight" inverseName="ofUserParrot" inverseEntity="Flight"/>
-        <relationship name="pgyProjects" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PgyProjects" inverseName="ofUserParrot" inverseEntity="PgyProjects"/>
+        <relationship name="pgyProjects" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PgyProject" inverseName="ofUserParrot" inverseEntity="PgyProject"/>
         <relationship name="projects" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Project" inverseName="ofUserParrot" inverseEntity="Project"/>
         <relationship name="thumbnails" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Thumbnail" inverseName="ofUserParrot" inverseEntity="Thumbnail"/>
     </entity>
     <elements>
-        <element name="ChallengesSecureElement" positionX="-965.53125" positionY="-325.58984375" width="128" height="148"/>
-        <element name="DronesData" positionX="-754.765625" positionY="-321.2421875" width="128" height="118"/>
-        <element name="Flight" positionX="-426.24609375" positionY="-55.54296875" width="128" height="358"/>
-        <element name="FlightDataModel" positionX="220.2874755859375" positionY="139.8854217529297" width="128" height="254"/>
-        <element name="FlightPlan" positionX="-237.08984375" positionY="-209.9609375" width="128" height="463"/>
-        <element name="FlightPlanDataModel" positionX="219.4193115234375" positionY="-133.6036987304688" width="128" height="73"/>
-        <element name="FlightPlanExecutionDataModel" positionX="220.68359375" positionY="-52.0546875" width="128" height="178"/>
-        <element name="FlightPlanFlights" positionX="-463.390625" positionY="-319.43359375" width="128" height="193"/>
-        <element name="FlightPlanModel" positionX="230.859130859375" positionY="-161.0943298339844" width="128" height="208"/>
-        <element name="GutmaDataModel" positionX="361.71435546875" positionY="-107.0047912597656" width="128" height="73"/>
-        <element name="PgyProjects" positionX="-782.7890625" positionY="-105.484375" width="128" height="163"/>
-        <element name="Project" positionX="-607.76953125" positionY="-54.265625" width="128" height="208"/>
-        <element name="Thumbnail" positionX="-775.734375" positionY="249.04296875" width="128" height="193"/>
-        <element name="UserParrot" positionX="-982.44140625" positionY="-107.81640625" width="128" height="373"/>
+        <element name="DronesData" positionX="-754.765625" positionY="-321.2421875" width="128" height="149"/>
+        <element name="Flight" positionX="-426.24609375" positionY="-55.54296875" width="128" height="389"/>
+        <element name="FlightPlan" positionX="-145.54296875" positionY="-242.81640625" width="128" height="493"/>
+        <element name="FlightPlanFlights" positionX="-463.390625" positionY="-319.43359375" width="128" height="208"/>
+        <element name="PgyProject" positionX="-782.7890625" positionY="-105.484375" width="128" height="14"/>
+        <element name="Project" positionX="-607.76953125" positionY="-54.265625" width="128" height="223"/>
+        <element name="Thumbnail" positionX="-733.77734375" positionY="221.2265625" width="128" height="239"/>
+        <element name="UserParrot" positionX="-982.44140625" positionY="-107.81640625" width="128" height="358"/>
     </elements>
 </model>

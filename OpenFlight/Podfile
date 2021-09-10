@@ -5,10 +5,10 @@ platform :ios, '12.0'
 
 target 'OpenFlightApp' do
     use_frameworks!
-    pod 'GroundSdk', '~> 2.0.0-beta1'
-    pod 'ArsdkEngine', '~> 2.0.0-beta1'
-    pod 'SdkCore', '~> 2.0.0-beta1'
-    pod 'OpenFlightCore', '~> 7.0.0-beta41'
+    pod 'GroundSdk', '~> 7.0.0-rc2'
+    pod 'ArsdkEngine', '~> 7.0.0-rc2'
+    pod 'SdkCore', '~> 7.0.0-rc2'
+    pod 'OpenFlightCore', '~> 7.0.0-beta53'
     pod 'Reusable'
     pod 'SwiftyUserDefaults'
     pod 'KeychainAccess'

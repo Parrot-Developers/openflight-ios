@@ -1,5 +1,5 @@
 //
-//  Copyright (C) 2020 Parrot Drones SAS.
+//  Copyright (C) 2021 Parrot Drones SAS.
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,6 +33,14 @@ import UIKit
 /// View controller managing remote not recognized screen.
 final class PairingRemoteNotRecognizedViewController: UIViewController {
     // MARK: - Outlets
+    @IBOutlet private weak var panelView: UIView! {
+        didSet {
+            panelView.customCornered(corners: [.topLeft, .topRight],
+                                     radius: Style.largeCornerRadius,
+                                     backgroundColor: .white,
+                                     borderColor: .clear)
+        }
+    }
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var firstStepLabel: UILabel!
     @IBOutlet private weak var secondStepLabel: UILabel!
@@ -58,9 +66,14 @@ final class PairingRemoteNotRecognizedViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
         LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingHowToConnectRemoteToPhone,
                              logType: .screen)
+
+        UIView.animate(withDuration: Style.shortAnimationDuration,
+                       delay: Style.shortAnimationDuration,
+                       animations: {
+                        self.view.backgroundColor = ColorName.nightRider.color
+                       })
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -68,7 +81,7 @@ final class PairingRemoteNotRecognizedViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -78,8 +91,13 @@ final class PairingRemoteNotRecognizedViewController: UIViewController {
 
 // MARK: - Actions
 private extension PairingRemoteNotRecognizedViewController {
-    @IBAction func backButtonTouchedUpInside(_ sender: Any) {
-        coordinator?.back()
+    @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
+        coordinator?.dismiss()
+    }
+
+    /// Background button touched.
+    @IBAction func backgroundButtonTouchedUpInside(_ sender: Any) {
+        coordinator?.dismiss()
     }
 }
 

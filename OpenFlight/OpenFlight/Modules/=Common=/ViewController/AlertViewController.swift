@@ -105,6 +105,21 @@ public final class AlertViewController: UIViewController {
     }
     @IBOutlet private weak var closeButton: UIButton!
 
+    override public var shouldAutorotate: Bool {
+      return false
+    }
+
+    public var supportedOrientation: UIInterfaceOrientationMask = .landscape
+    public var preferredOrientation: UIInterfaceOrientation = .unknown
+
+    override public var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return supportedOrientation
+    }
+
+    override public var preferredInterfaceOrientationForPresentation: UIInterfaceOrientation {
+      return preferredOrientation
+    }
+
     // MARK: - Private Properties
     private var message: String?
     private var closeButtonStyle: CloseButtonStyle?
@@ -167,10 +182,6 @@ public final class AlertViewController: UIViewController {
 
     public override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    public override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
     }
 
     /// Handles orientation.

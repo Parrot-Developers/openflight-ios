@@ -31,6 +31,29 @@
 import UIKit
 import Reusable
 
+struct ImageMenuCellProvider {
+    var captureModeEnum: FlightPlanCaptureMode
+    var gpsLapseDistance: Int?
+    var timeLapseCycle: Int?
+    var whiteBalanceModeTitle: String
+    var resolutionTitle: String
+    var framerateTitle: String
+    var photoResolutionTitle: String
+    var exposureTitle: String
+
+    init?(dataSettings: FlightPlanDataSetting?) {
+        guard let dataSettings = dataSettings else { return nil }
+        self.captureModeEnum = dataSettings.captureModeEnum
+        self.gpsLapseDistance = dataSettings.gpsLapseDistance
+        self.timeLapseCycle = dataSettings.timeLapseCycle
+        self.whiteBalanceModeTitle = dataSettings.whiteBalanceMode.title
+        self.resolutionTitle = dataSettings.resolution.title
+        self.framerateTitle = dataSettings.framerate.title
+        self.photoResolutionTitle = dataSettings.photoResolution.title
+        self.exposureTitle = dataSettings.exposure.title
+    }
+}
+
 /// Image menu table view cell.
 final class ImageMenuTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
@@ -41,7 +64,7 @@ final class ImageMenuTableViewCell: UITableViewCell, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        imageLabel.makeUp()
+        imageLabel.makeUp(and: .defaultTextColor)
         imageLabel.text = Style.dash
     }
 }
@@ -49,13 +72,13 @@ final class ImageMenuTableViewCell: UITableViewCell, NibReusable {
 // MARK: - Internal Funcs
 internal extension ImageMenuTableViewCell {
     /// Setup cell.
-    func setup(flightPlan: FlightPlanObject?, settings: [FlightPlanSetting]) {
-        guard let flightPlan = flightPlan else {
+    func setup(provider: ImageMenuCellProvider?, settings: [FlightPlanSetting]) {
+        guard let provider = provider else {
             imageLabel.text = Style.dash
             return
         }
 
-        let captureMode = flightPlan.captureModeEnum
+        let captureMode = provider.captureModeEnum
         let hasModeImageSetting = settings.contains(where: {$0.key == ClassicFlightPlanSettingType.imageMode.key })
         modeImage.isHidden = !hasModeImageSetting
 
@@ -65,31 +88,31 @@ internal extension ImageMenuTableViewCell {
             modeImage.image = captureMode.image
             switch captureMode {
             case .gpsLapse:
-                if let value = flightPlan.gpsLapseDistance {
+                if let value = provider.gpsLapseDistance {
                     settingDescription += Style.whiteSpace + UnitHelper.stringDistanceWithDouble(Double(value))
                 }
             case .timeLapse:
-                if let value = flightPlan.timeLapseCycle {
+                if let value = provider.timeLapseCycle {
                     settingDescription += Style.whiteSpace + UnitHelper.formatSeconds(Double(value)/1000)
                 }
             case .video:
                 settingDescription += Style.whiteSpace
-                    + flightPlan.resolution.title
+                    + provider.resolutionTitle
                     + Style.whiteSpace
-                    + flightPlan.framerate.title
+                    + provider.framerateTitle
             }
         }
 
         // Add photo resolution description if needed.
         if settings.contains(where: {$0.key == ClassicFlightPlanSettingType.photoResolution.key }) {
-            settingDescription += Style.whiteSpace + flightPlan.photoResolution.title
+            settingDescription += Style.whiteSpace + provider.photoResolutionTitle
         }
 
         // Add exposure and white balance mode description if there is not mode description.
         if !hasModeImageSetting {
             settingDescription += String(format: " %@ %@",
-                                         flightPlan.exposure.title,
-                                         flightPlan.whiteBalanceMode.title)
+                                         provider.exposureTitle,
+                                         provider.whiteBalanceModeTitle)
         }
 
         imageLabel.text = settingDescription

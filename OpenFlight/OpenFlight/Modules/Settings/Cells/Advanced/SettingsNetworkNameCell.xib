@@ -18,21 +18,21 @@
         <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="68" id="KGk-i7-Jjw" customClass="SettingsNetworkNameCell" customModule="OpenFlight" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="599" height="62"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
                 <rect key="frame" x="0.0" y="0.0" width="599" height="62"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dS6-sl-Hp2">
-                        <rect key="frame" x="16" y="4" width="567" height="54"/>
+                        <rect key="frame" x="0.0" y="5" width="599" height="54"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AQD-rJ-j4e">
-                                <rect key="frame" x="16" y="19.5" width="249" height="15"/>
+                                <rect key="frame" x="16" y="18.5" width="281" height="17.5"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                 <color key="textColor" name="default_text_color"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="qOG-81-U1l">
-                                <rect key="frame" x="273" y="12" width="160" height="30"/>
+                                <rect key="frame" x="305" y="12" width="160" height="30"/>
                                 <color key="backgroundColor" name="default_bgcolor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="V9i-B4-vhi"/>
@@ -43,7 +43,7 @@
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="done"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3DB-ef-54f">
-                                <rect key="frame" x="445" y="12" width="110" height="30"/>
+                                <rect key="frame" x="477" y="12" width="110" height="30"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="110" id="Eic-3f-DnI"/>
@@ -73,10 +73,10 @@
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="dS6-sl-Hp2" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="CMu-qj-s0Y"/>
-                    <constraint firstAttribute="trailing" secondItem="dS6-sl-Hp2" secondAttribute="trailing" constant="16" id="aWz-mm-yTP"/>
-                    <constraint firstAttribute="bottom" secondItem="dS6-sl-Hp2" secondAttribute="bottom" constant="4" id="kHt-K9-gnL"/>
-                    <constraint firstItem="dS6-sl-Hp2" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="4" id="t83-QV-JWL"/>
+                    <constraint firstItem="dS6-sl-Hp2" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="CMu-qj-s0Y"/>
+                    <constraint firstAttribute="trailing" secondItem="dS6-sl-Hp2" secondAttribute="trailing" id="aWz-mm-yTP"/>
+                    <constraint firstAttribute="bottom" secondItem="dS6-sl-Hp2" secondAttribute="bottom" constant="5" id="kHt-K9-gnL"/>
+                    <constraint firstItem="dS6-sl-Hp2" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="t83-QV-JWL"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

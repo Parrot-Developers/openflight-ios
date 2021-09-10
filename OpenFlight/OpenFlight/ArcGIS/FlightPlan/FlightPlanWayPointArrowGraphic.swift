@@ -198,16 +198,15 @@ private extension FlightPlanWayPointArrowGraphic {
 }
 
 // Generate a triangle view to add to waypoint
-private class TriangleView: UIView {
+public class TriangleView: UIView {
     private var color: UIColor = .white
+    private var externalColor: UIColor = .white
+    private var borderSize: CGFloat = 2.0
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let borderSize: CGFloat = 2.0
-    }
-
-    init(frame: CGRect, color: UIColor) {
+    public init(frame: CGRect, color: UIColor, externalColor: UIColor = .white, borderSize: CGFloat = 2.0) {
         self.color = color
+        self.externalColor = externalColor
+        self.borderSize = borderSize
         super.init(frame: frame)
     }
 
@@ -215,18 +214,18 @@ private class TriangleView: UIView {
         super.init(coder: aDecoder)
     }
 
-    override func draw(_ rect: CGRect) {
+    override public func draw(_ rect: CGRect) {
         let drawSize = CGSize(width: rect.width, height: rect.height)
         let trianglePath = UIBezierPath()
-        trianglePath.move(to: CGPoint(x: drawSize.width / 2, y: Constants.borderSize))
-        trianglePath.addLine(to: CGPoint(x: Constants.borderSize, y: drawSize.height - Constants.borderSize))
-        trianglePath.addLine(to: CGPoint(x: drawSize.width - Constants.borderSize,
-                                         y: drawSize.height - Constants.borderSize))
+        trianglePath.move(to: CGPoint(x: drawSize.width / 2, y: borderSize))
+        trianglePath.addLine(to: CGPoint(x: borderSize, y: drawSize.height - borderSize))
+        trianglePath.addLine(to: CGPoint(x: drawSize.width - borderSize,
+                                         y: drawSize.height - borderSize))
 
-        trianglePath.lineWidth = Constants.borderSize
+        trianglePath.lineWidth = borderSize
         trianglePath.close()
         color.setFill()
-        UIColor.white.setStroke()
+        externalColor.setStroke()
         trianglePath.stroke()
         trianglePath.fill()
     }

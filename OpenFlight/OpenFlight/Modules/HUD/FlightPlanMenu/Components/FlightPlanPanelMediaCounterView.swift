@@ -65,8 +65,8 @@ private extension FlightPlanPanelMediaCounterView {
 
     /// Sets up initial view display.
     func setupView() {
-        recordView.roundCorneredWith(backgroundColor: ColorName.redTorch.color)
-        recordCounterLabel.makeUp()
+        recordView.roundCorneredWith(backgroundColor: ColorName.errorColor.color)
+        recordCounterLabel.makeUp(and: .defaultTextColor)
     }
 
     /// Sets up view model.
@@ -90,6 +90,6 @@ private extension FlightPlanPanelMediaCounterView {
             recordingStackView.isHidden = true
         }
 
-        recordCounterLabel.text = state.recordingTime?.formattedString
+        recordCounterLabel.text = state.recordingTime?.formattedHmsString
     }
 }

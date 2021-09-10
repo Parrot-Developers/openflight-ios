@@ -94,19 +94,22 @@ extension PairingCoordinator {
     /// Starts remote not recognized screen.
     func startControllerNotRecognizedInfo() {
         let viewController = PairingRemoteNotRecognizedViewController.instantiate(coordinator: self)
-        self.push(viewController)
+        viewController.modalPresentationStyle = .overFullScreen
+        presentPopup(viewController)
     }
 
     /// Starts how to find wifi password screen.
     func startControllerWhereIsWifi() {
         let viewController = PairingWhereIsWifiViewController.instantiate(coordinator: self)
-        self.push(viewController)
+        viewController.modalPresentationStyle = .overFullScreen
+        presentPopup(viewController)
     }
 
     /// Starts drone not detected info screen.
     func startControllerDroneNotDetected() {
         let viewController = PairingDroneNotDetectedViewController.instantiate(coordinator: self)
-        self.push(viewController)
+        viewController.modalPresentationStyle = .overFullScreen
+        presentPopup(viewController)
     }
 
     /// Starts connection drone detail with the selected drone from the list.

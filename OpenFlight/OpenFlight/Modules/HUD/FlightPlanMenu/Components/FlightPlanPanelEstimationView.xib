@@ -4,13 +4,17 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-Regular.ttf">
+            <string>Rajdhani-Regular</string>
+        </array>
+    </customFonts>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="FlightPlanPanelEstimationView" customModule="OpenFlight" customModuleProvider="target">
             <connections>
-                <outlet property="batteryImage" destination="E5U-Kw-WZH" id="sCj-aq-qNQ"/>
-                <outlet property="batteryLabel" destination="8wl-Vm-Rkl" id="QH9-nT-Ps2"/>
                 <outlet property="mediaImage" destination="4Ib-l4-FDT" id="m2g-Ym-AeD"/>
                 <outlet property="mediaLabel" destination="WG1-fp-P3i" id="gly-Kh-9lU"/>
                 <outlet property="timeImage" destination="0d3-82-zL4" id="MoK-ms-QaD"/>
@@ -22,57 +26,42 @@
             <rect key="frame" x="0.0" y="0.0" width="300" height="16"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <stackView opaque="NO" contentMode="scaleToFill" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="hdy-NE-9kn">
+                <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="hdy-NE-9kn">
                     <rect key="frame" x="0.0" y="0.0" width="300" height="16"/>
                     <subviews>
-                        <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="gSc-h3-MIL">
-                            <rect key="frame" x="0.0" y="0.0" width="60.5" height="16"/>
+                        <stackView opaque="NO" contentMode="scaleToFill" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="gSc-h3-MIL">
+                            <rect key="frame" x="0.0" y="0.0" width="144" height="16"/>
                             <subviews>
                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icFlightPlanTime" translatesAutoresizingMaskIntoConstraints="NO" id="0d3-82-zL4">
                                     <rect key="frame" x="0.0" y="0.0" width="16" height="16"/>
+                                    <color key="tintColor" name="default_text_color"/>
                                     <constraints>
                                         <constraint firstAttribute="width" secondItem="0d3-82-zL4" secondAttribute="height" multiplier="1:1" id="yKe-be-nsX"/>
                                     </constraints>
                                 </imageView>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="(0:00)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LWo-KI-pe2">
-                                    <rect key="frame" x="20" y="0.0" width="40.5" height="16"/>
-                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                    <nil key="textColor"/>
-                                    <nil key="highlightedColor"/>
-                                </label>
-                            </subviews>
-                        </stackView>
-                        <stackView opaque="NO" contentMode="scaleToFill" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="D9u-tg-df0">
-                            <rect key="frame" x="72.5" y="0.0" width="45.5" height="16"/>
-                            <subviews>
-                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBattery" translatesAutoresizingMaskIntoConstraints="NO" id="E5U-Kw-WZH">
-                                    <rect key="frame" x="0.0" y="0.0" width="16" height="16"/>
-                                    <constraints>
-                                        <constraint firstAttribute="width" secondItem="E5U-Kw-WZH" secondAttribute="height" multiplier="1:1" id="kri-qw-Iyd"/>
-                                    </constraints>
-                                </imageView>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="- %" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8wl-Vm-Rkl">
-                                    <rect key="frame" x="22" y="0.0" width="23.5" height="16"/>
-                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                    <nil key="textColor"/>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="(0:00)" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="7" translatesAutoresizingMaskIntoConstraints="NO" id="LWo-KI-pe2">
+                                    <rect key="frame" x="22" y="0.0" width="122" height="16"/>
+                                    <color key="tintColor" name="default_icon_color"/>
+                                    <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
+                                    <color key="textColor" name="default_text_color"/>
                                     <nil key="highlightedColor"/>
                                 </label>
                             </subviews>
                         </stackView>
                         <stackView opaque="NO" contentMode="scaleToFill" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="Zws-WU-HsD">
-                            <rect key="frame" x="130" y="0.0" width="170" height="16"/>
+                            <rect key="frame" x="156" y="0.0" width="144" height="16"/>
                             <subviews>
-                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icPhotoMini" translatesAutoresizingMaskIntoConstraints="NO" id="4Ib-l4-FDT">
+                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="distance" translatesAutoresizingMaskIntoConstraints="NO" id="4Ib-l4-FDT">
                                     <rect key="frame" x="0.0" y="0.0" width="16" height="16"/>
-                                    <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="tintColor" name="default_text_color"/>
                                     <constraints>
                                         <constraint firstAttribute="width" secondItem="4Ib-l4-FDT" secondAttribute="height" multiplier="1:1" id="Qx0-iV-yzL"/>
                                     </constraints>
                                 </imageView>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="-" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WG1-fp-P3i">
-                                    <rect key="frame" x="22" y="0.0" width="148" height="16"/>
-                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                    <nil key="textColor"/>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="-" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="7" translatesAutoresizingMaskIntoConstraints="NO" id="WG1-fp-P3i">
+                                    <rect key="frame" x="22" y="0.0" width="122" height="16"/>
+                                    <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
+                                    <color key="textColor" name="default_text_color"/>
                                     <nil key="highlightedColor"/>
                                 </label>
                             </subviews>
@@ -96,8 +85,13 @@
         </view>
     </objects>
     <resources>
-        <image name="icBattery" width="7" height="14"/>
+        <image name="distance" width="14" height="15"/>
         <image name="icFlightPlanTime" width="18" height="18"/>
-        <image name="icPhotoMini" width="11" height="9"/>
+        <namedColor name="default_icon_color">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

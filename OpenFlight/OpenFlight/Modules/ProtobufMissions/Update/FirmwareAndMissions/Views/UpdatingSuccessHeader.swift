@@ -44,7 +44,7 @@ private extension UpdatingState {
     var titleColor: UIColor {
         switch self {
         case .error, .success:
-            return  ColorName.white.color
+            return  ColorName.defaultTextColor.color
         case .waiting:
             return ColorName.clear.color
         }

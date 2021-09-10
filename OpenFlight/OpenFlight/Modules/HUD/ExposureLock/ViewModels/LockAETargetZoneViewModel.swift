@@ -54,18 +54,33 @@ final class LockAETargetZoneViewModel {
     var tapEventsIgnored: Bool {
         return exposureLockService.stateValue == .unavailable
             || exposureLockService.stateValue.locking
+            || manualMode
     }
 
     // MARK: - Private Properties
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
+    /// Camera exposure service.
+    private unowned var exposureService: ExposureService
     /// Camera exposure lock service.
     private unowned var exposureLockService: ExposureLockService
+    /// Whether exposure mode is manual.
+    private var manualMode = false
 
     /// Constructor.
     ///
     /// - Parameters:
+    ///   - exposureService: exposure service
     ///   - exposureLockService: exposure lock service
-    init(exposureLockService: ExposureLockService) {
+    init(exposureService: ExposureService, exposureLockService: ExposureLockService) {
+        self.exposureService = exposureService
         self.exposureLockService = exposureLockService
+
+        exposureService.modePublisher
+            .sink { [unowned self] mode in
+                manualMode = mode == .manual
+            }
+            .store(in: &cancellables)
     }
 
     /// Unlocks exposure.

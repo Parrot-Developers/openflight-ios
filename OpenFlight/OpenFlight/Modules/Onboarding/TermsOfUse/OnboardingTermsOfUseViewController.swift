@@ -133,17 +133,15 @@ private extension OnboardingTermsOfUseViewController {
     /// Initializes UI and wordings.
     func initUI() {
         updateAcceptButtonUI()
-        scrollDownLabel.makeUp(with: .regular, and: .greenSpring)
-        scrollDownLabel.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
+        scrollDownLabel.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                            radius: Style.smallCornerRadius)
         scrollDownLabel.layer.masksToBounds = true
-        termsTextView.makeUp()
         termsTextView.delegate = self
-        titleLabel.text = L10n.termsOfUseTitle
-        acceptButton.setTitle(L10n.termsOfUseAccept,
-                              for: .normal)
+        titleLabel.text = L10n.termsOfUseTitle.localizedUppercase
+        acceptButton.setTitle(L10n.termsOfUseAccept, for: .normal)
         scrollDownLabel.text = L10n.termsOfUseScroll
         scrollDownView.isHidden = true
+
         if let filePath = Bundle.main.url(forResource: termsOfUseFileName,
                                           withExtension: Constants.termsOfUseFileExtension) {
             do {
@@ -155,7 +153,7 @@ private extension OnboardingTermsOfUseViewController {
 
     /// Updates accept button when user finishes scrolling to bottom.
     func updateAcceptButtonUI() {
-        acceptButton.setTitleColor(canAcceptTermsOfUse ? ColorName.greenSpring.color : ColorName.white.color, for: .normal)
+        acceptButton.setTitleColor(canAcceptTermsOfUse ? ColorName.highlightColor.color : ColorName.defaultTextColor.color, for: .normal)
     }
 
     /// Redirects to localization screen.

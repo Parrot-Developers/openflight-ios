@@ -90,8 +90,8 @@ public extension BarItemSubMode {
 
 /// Protocol for components displaying a `BarItemMode`.
 protocol BarItemModeDisplayer {
-    /// Displayed `BarItemMode` key.
-    var modeKey: String? { get }
+    /// Identifier of displayed bar.
+    var barId: String? { get }
 }
 
 /// Protocol for items displayed inside a ruler bar.
@@ -145,10 +145,27 @@ protocol Deselectable: AnyObject {
 
 /// Base viewModel used for button views in bottom bar.
 class BarButtonViewModel<T: BottomBarState>: DroneWatcherViewModel<T>, Deselectable {
+    /// Bar identifier.
+    var barId: String
+
+    // MARK: - init
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///    - barId: bar identifier
+    init(barId: String) {
+        self.barId = barId
+    }
+
     // MARK: - Internal Funcs
     /// Toggles bar button selection state.
     func toggleSelectionState() {
         state.value.isSelected.set(!state.value.isSelected.value)
+    }
+
+    /// Selects bar button.
+    func select() {
+        state.value.isSelected.set(true)
     }
 
     /// Deselect bar button.
@@ -177,12 +194,5 @@ class AutomatableBarButtonViewModel<T: BottomBarState>: BarButtonViewModel<T>, C
     /// Returns a copy of the current viewModel.
     func copy() -> Self {
         fatalError("Must override...")
-    }
-}
-
-extension BarButtonViewModel where T: BarButtonState {
-    /// Helper for mode key.
-    var modeKey: String? {
-        return state.value.mode?.key
     }
 }

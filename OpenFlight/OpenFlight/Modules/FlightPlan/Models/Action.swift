@@ -48,7 +48,18 @@ enum ActionType: String, Codable {
 
 /// Class representing a FlightPlan action such as "start photo capture" or "stop video capture".
 
-public final class Action: Codable {
+public final class Action: Codable, Equatable {
+    public static func == (lhs: Action, rhs: Action) -> Bool {
+        return rhs.type == lhs.type
+            && rhs.angle == lhs.angle
+            && rhs.speed == lhs.speed
+            && rhs.delay == lhs.delay
+            && rhs.period == lhs.period
+            && rhs.nbOfPictures == lhs.nbOfPictures
+            && rhs.cameraId == lhs.cameraId
+            && rhs.fps == lhs.fps
+    }
+
     // MARK: - Public Properties
     var type: ActionType
     var angle: Double?

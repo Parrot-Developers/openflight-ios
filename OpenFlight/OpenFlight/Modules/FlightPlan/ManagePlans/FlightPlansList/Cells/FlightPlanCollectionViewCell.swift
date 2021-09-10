@@ -105,40 +105,30 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     /// Configure cell.
     ///
     /// - Parameters:
-    ///     - viewModel: flight plan view model
+    ///     - project: project model
     ///     - isSelected: Whether cell is selected.
     ///     - index: cell current index
-    func configureCell(viewModel: FlightPlanViewModel, isSelected: Bool, index: Int) {
+    func configureCell(project: ProjectModel, isSelected: Bool, index: Int) {
+        let lastFlightPlan = Services.hub.flightPlan.projectManager.lastFlightPlan(for: project)
         self.index = index
-        let viewModelState = viewModel.state.value
-        self.titleLabel.text = viewModelState.title ?? viewModelState.location?.coordinatesDescription
-        self.dateLabel.text = viewModelState.date?.shortWithTimeFormattedString
-        let defaultBackground = UIImage(asset: Asset.MyFlights.projectPlaceHolder)
+        titleLabel.text = project.title ?? lastFlightPlan?.dataSetting?.coordinate?.coordinatesDescription
+        dateLabel.text = project.lastUpdated.shortWithTimeFormattedString
 
-        if let thumbnail = viewModelState.thumbnail {
-            self.backgroundImageView.image = thumbnail
-        } else {
-            self.backgroundImageView.image = defaultBackground
-        }
+        backgroundImageView.image = lastFlightPlan?.thumbnail?.thumbnailImage ?? UIImage(asset: Asset.MyFlights.projectPlaceHolder)
 
-        if let type = viewModelState.type,
-           type.missionMode.key != FlightPlanMissionMode.standard.rawValue {
+        if project.type != FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType,
+           let flightStoreProvider = getFligthPlanType(with: lastFlightPlan?.type) {
             // Set image for custom Flight Plan types
-            typeImage.image = type.icon
+            typeImage.image = flightStoreProvider.icon
         } else {
             typeImage.image = nil
+            typeImage.isHidden = true
         }
 
-        viewModel.state.valueChanged = { [weak self] state in
-            if let thumbnail = state.thumbnail {
-                self?.backgroundImageView.image = thumbnail
-            } else {
-                self?.backgroundImageView.image = defaultBackground
-            }
-
-            self?.layoutSubviews()
-        }
-        viewModel.requestThumbnail(thumbnailSize: self.frame.size)
         selectedView.isHidden = !isSelected
+    }
+
+    private func getFligthPlanType(with type: String?) -> FlightPlanType? {
+        return Services.hub.flightPlan.typeStore.typeForKey(type)
     }
 }

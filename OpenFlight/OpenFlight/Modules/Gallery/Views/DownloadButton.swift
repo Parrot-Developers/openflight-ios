@@ -42,7 +42,7 @@ final class DownloadButton: UIButton {
     // MARK: - Internal Funcs
     /// Setup display.
     func setup() {
-        self.makeup(with: .regular)
+        self.makeup()
         self.applyCornerRadius(Style.mediumCornerRadius)
         self.backgroundColor = ColorName.highlightColor.color
         self.tintColor = .white

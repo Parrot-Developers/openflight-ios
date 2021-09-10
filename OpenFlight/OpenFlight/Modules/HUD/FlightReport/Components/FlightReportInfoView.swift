@@ -50,7 +50,7 @@ final class FlightReportInfoView: UIView, NibOwnerLoadable {
     }
     @IBOutlet private weak var valueLabel: UILabel! {
         didSet {
-            valueLabel.makeUp(with: .regular, and: .white50)
+            valueLabel.makeUp(and: .white50)
         }
     }
 

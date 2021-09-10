@@ -38,9 +38,6 @@ final class BottomBarLevelViewController: UIViewController {
     private var levelView: UIView?
     private var imagingSettingsBarViewController: ImagingSettingsBarViewController?
 
-    // MARK: - Internal Properties
-    weak var bottomBarDelegate: BottomBarViewControllerDelegate?
-
     // MARK: - Override Properties
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
@@ -49,7 +46,7 @@ final class BottomBarLevelViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.translatesAutoresizingMaskIntoConstraints = false
+        initUI()
     }
 }
 
@@ -77,7 +74,6 @@ extension BottomBarLevelViewController {
         removeImagingSettingsBar()
         let imagingSettingsBarVC = ImagingSettingsBarViewController.instantiate(delegate: delegate)
         imagingSettingsBarViewController = imagingSettingsBarVC
-        imagingSettingsBarViewController?.bottomBarDelegate = bottomBarDelegate
         self.add(imagingSettingsBarVC)
     }
 
@@ -100,5 +96,15 @@ extension BottomBarLevelViewController {
     func removeImagingSettingsBar() {
         imagingSettingsBarViewController?.remove()
         imagingSettingsBarViewController = nil
+    }
+}
+
+// MARK: - Private Funcs
+private extension BottomBarLevelViewController {
+    /// Initializes interfaces.
+    func initUI() {
+        self.view.translatesAutoresizingMaskIntoConstraints = false
+        // Sets up corners
+        self.view.customCornered(corners: [.allCorners], radius: Style.fitExtraLargeCornerRadius)
     }
 }

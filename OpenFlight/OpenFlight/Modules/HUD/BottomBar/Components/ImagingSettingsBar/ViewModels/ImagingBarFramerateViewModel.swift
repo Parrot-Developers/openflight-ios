@@ -37,6 +37,13 @@ final class ImagingBarFramerateViewModel: BarButtonViewModel<ImagingBarState> {
     private var cameraRef: Ref<MainCamera2>?
     /// List of available framerates.
     private let availableFramerates: [Camera2RecordingFramerate] = Camera2RecordingFramerate.availableFramerates
+
+    // MARK: - init
+    /// Constructor.
+    init() {
+        super.init(barId: "Framerate")
+    }
+
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         listenCamera(drone: drone)

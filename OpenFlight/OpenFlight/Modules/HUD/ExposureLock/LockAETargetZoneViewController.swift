@@ -39,14 +39,15 @@ final class LockAETargetZoneViewController: UIViewController {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let defaultTargetZoneWidth: CGFloat = 70
-        static let defaultTargetZoneHeight: CGFloat = 70
+        static let defaultTargetZoneWidth: CGFloat = 80
+        static let defaultTargetZoneHeight: CGFloat = 80
         static let fadeAnimationTimeInterval: TimeInterval = 0.15
+        static let tappedAnimationTimeInterval: TimeInterval = 0.5
         static let lockedAnimationTimeInterval: TimeInterval = 0.5
         static let lockingAnimationTimeInterval: TimeInterval = 0.5
         static let shortAnimationTimeInterval: TimeInterval = 0.1
         static let hideTargetZoneDelaySeconds: Int = 2
-        static let minimumLongTapDuration: TimeInterval = 0.2
+        static let minimumLongTapDuration: TimeInterval = 1.0
         static let targetZoneAlpha: CGFloat = 0.5
         static let lockingTargetZoneAlpha: CGFloat = 0.3
     }
@@ -60,16 +61,9 @@ final class LockAETargetZoneViewController: UIViewController {
                 touchAreaView.frame = frame
 
                 // Hide target zone when sreaming content changes.
-                // But do not hide it if this change results from bottom bar
-                // opening.
                 // TODO: find a way to resize and move correctly the target zone
                 // when the streaming content zone changes.
-                if hideTargetZoneOnContentZoneChange {
-                    hideTargetZone()
-                } else if streamingContentZone?.height != oldValue?.height {
-                    updateTargetZone(shortAnimation: true)
-                }
-                hideTargetZoneOnContentZoneChange = true
+                hideTargetZone()
             }
         }
     }
@@ -78,14 +72,17 @@ final class LockAETargetZoneViewController: UIViewController {
     private var hideTask = DispatchWorkItem {}
     /// Combine subscriptions.
     private var cancellables = Set<AnyCancellable>()
+    /// Long touch timeout.
+    private var longTouchTimeout: AnyCancellable?
     /// View model.
     /// TODO injection
     private var viewModel = LockAETargetZoneViewModel(
-        exposureLockService: Services.hub.exposureLockService)
-    /// Whether target zoneshould be hidden on next streaming content zone change.
-    var hideTargetZoneOnContentZoneChange = true
+        exposureService: Services.hub.drone.exposureService,
+        exposureLockService: Services.hub.drone.exposureLockService)
     /// Time at which touch down occured.
     var touchDownTime: Date?
+    /// Whether locking on region animation is ongoing.
+    var lockingAnimationOngoing = false
     /// Whether locked on region animation is ongoing.
     var lockedAnimationOngoing = false
 
@@ -115,12 +112,6 @@ final class LockAETargetZoneViewController: UIViewController {
     }
 
     // MARK: - Internal Funcs
-    /// Shows target zone if exposure is locked or locking.
-    func showTargetZone() {
-        hideTargetZoneOnContentZoneChange = false
-        updateTargetZone(shortAnimation: true)
-    }
-
     /// Hides target zone.
     func hideTargetZone() {
         hideTask.cancel()
@@ -165,10 +156,7 @@ private extension LockAETargetZoneViewController {
     }
 
     /// Updates target zone display.
-    ///
-    /// - Parameters:
-    ///    - shortAnimation: `true` to animate with short duration
-    func updateTargetZone(shortAnimation: Bool = false) {
+    func updateTargetZone() {
         switch viewModel.stateValue {
         case .unavailable,
              .unlocked,
@@ -179,21 +167,10 @@ private extension LockAETargetZoneViewController {
             showLockingTargetZone(centerX: centerX,
                                   centerY: centerY)
         case .lockOnRegion:
-            showLockedTargetZone(shortAnimation: shortAnimation)
+            if let lockRegion = viewModel.lockRegionValue {
+                showLockedTargetZone(lockRegion: lockRegion)
+            }
         }
-    }
-
-    /// Tells whether a touch event occured on the unlock icon.
-    ///
-    /// - Parameters:
-    ///    - recognizer: long press gesture recognizer
-    func hasTappedOnClose(_ recognizer: UILongPressGestureRecognizer) -> Bool {
-        let point = recognizer.location(in: lockAETargetZoneImageView)
-        let topLeftCorner = CGRect(x: 0.0,
-                                   y: 0.0,
-                                   width: lockAETargetZoneImageView.bounds.width / 2.0,
-                                   height: lockAETargetZoneImageView.bounds.height / 2.0)
-        return topLeftCorner.contains(point)
     }
 
     /// Handles touch events on touch area.
@@ -201,46 +178,64 @@ private extension LockAETargetZoneViewController {
     /// - Parameters:
     ///    - recognizer: long press gesture recognizer
     @objc func handleTap(_ recognizer: UILongPressGestureRecognizer) {
-        guard !viewModel.tapEventsIgnored else {
+        guard !viewModel.tapEventsIgnored,
+              !lockingAnimationOngoing,
+              !lockedAnimationOngoing else {
             return
         }
 
-        if recognizer.state == .began,
-           !lockAETargetZoneImageView.isHidden,
-           viewModel.stateValue == .lockOnRegion,
-           hasTappedOnClose(recognizer) {
-            // user tapped on unlock icon
-            viewModel.unlock()
-        } else if recognizer.state == .began,
-                  !lockedAnimationOngoing {
+        switch recognizer.state {
+        case .began:
             // on touch down, show target zone where user tapped
             touchDownTime = Date()
             let location = recognizer.location(in: view)
             showTappedZone(center: location)
-        } else if recognizer.state != .changed,
-                  let beganTime = touchDownTime {
-            // touch up occured before long touch delay,
-            // hide target zone
+            startLongTouchTimeout(center: location)
+        case .ended:
+            guard let beganTime = touchDownTime else { break }
+
             let now = Date()
             if now.timeIntervalSince(beganTime) < Constants.minimumLongTapDuration {
+                // touch up occured before long touch delay,
+                // hide target zone
                 hideTargetZone()
+                cancelLongTouchTimeout()
             }
             touchDownTime = nil
-        } else {
+        case .changed:
+            // do nothing
+            break
+        default:
+            hideTargetZone()
+            cancelLongTouchTimeout()
             touchDownTime = nil
         }
+    }
+
+    /// Starts long touch timeout.
+    ///
+    /// At timeout, view model is notified that user requests to lock exposure on a region.
+    ///
+    /// - Parameter center: location touched by the user
+    func startLongTouchTimeout(center: CGPoint) {
+        longTouchTimeout = Just(true)
+            .delay(for: .seconds(Constants.minimumLongTapDuration), scheduler: DispatchQueue.main)
+            .sink { [unowned self] _ in
+                lockOnRegion(center: center)
+            }
+    }
+
+    /// Cancels long touch timeout.
+    func cancelLongTouchTimeout() {
+        longTouchTimeout?.cancel()
+        longTouchTimeout = nil
     }
 
     /// Shows locked target zone, and hides it after a delay.
     ///
     /// - Parameters:
-    ///    - shortAnimation: `true` to animate with short duration
-    func showLockedTargetZone(shortAnimation: Bool = false) {
-        guard let lockRegion = viewModel.lockRegionValue,
-              viewModel.stateValue == .lockOnRegion else {
-            return
-        }
-
+    ///    - lockRegion: locked target region
+    func showLockedTargetZone(lockRegion: ExposureLockRegion) {
         let centerX = CGFloat(lockRegion.centerX) * touchAreaView.frame.width
         let centerY = CGFloat(lockRegion.centerY) * touchAreaView.frame.height
         let width = CGFloat(lockRegion.width) * touchAreaView.frame.width
@@ -249,19 +244,16 @@ private extension LockAETargetZoneViewController {
                            width: width,
                            height: height)
 
-        let animationDuration = shortAnimation ?
-            Constants.shortAnimationTimeInterval : Constants.lockedAnimationTimeInterval
         hideTask.cancel()
+        lockedAnimationOngoing = true
         lockAETargetZoneImageView.layer.removeAllAnimations()
-        lockAETargetZoneImageView.image = Asset.ExposureLock.aeTargetZoneWithClose.image
+        lockAETargetZoneImageView.image = Asset.ExposureLock.aeTargetZone.image
         lockAETargetZoneImageView.frame = frame.insetBy(dx: -frame.width / 4, dy: -frame.height / 4)
         lockAETargetZoneImageView.alpha = 1
         lockAETargetZoneImageView.isHidden = false
-        lockedAnimationOngoing = true
-        UIView.animate(withDuration: animationDuration,
+        UIView.animate(withDuration: Constants.lockedAnimationTimeInterval,
                        animations: {
                         self.lockAETargetZoneImageView.frame = frame
-                        self.lockAETargetZoneImageView.alpha = Constants.targetZoneAlpha
                        },
                        completion: { _ in
                         self.lockedAnimationOngoing = false
@@ -284,6 +276,7 @@ private extension LockAETargetZoneViewController {
                            height: height)
 
         hideTask.cancel()
+        lockingAnimationOngoing = true
         lockAETargetZoneImageView.layer.removeAllAnimations()
         lockAETargetZoneImageView.image = Asset.ExposureLock.aeTargetZone.image
         lockAETargetZoneImageView.frame = frame.insetBy(dx: -frame.width / 4, dy: -frame.height / 4)
@@ -291,10 +284,14 @@ private extension LockAETargetZoneViewController {
         lockAETargetZoneImageView.isHidden = false
         UIView.animate(withDuration: Constants.lockingAnimationTimeInterval,
                        delay: 0.0,
-                       options: [.repeat, .curveLinear]) {
-            self.lockAETargetZoneImageView.frame = frame.insetBy(dx: frame.width / 4, dy: -frame.height / 4)
-            self.lockAETargetZoneImageView.alpha = Constants.lockingTargetZoneAlpha
-        }
+                       options: [.repeat, .curveLinear],
+                       animations: {
+                        self.lockAETargetZoneImageView.frame = frame.insetBy(dx: frame.width / 4, dy: -frame.height / 4)
+                        self.lockAETargetZoneImageView.alpha = Constants.lockingTargetZoneAlpha
+                       },
+                       completion: { _ in
+                        self.lockingAnimationOngoing = false
+                       })
     }
 
     /// Shows tapped zone.
@@ -318,14 +315,11 @@ private extension LockAETargetZoneViewController {
         lockAETargetZoneImageView.frame = frame
         lockAETargetZoneImageView.alpha = 1
         lockAETargetZoneImageView.isHidden = false
-        UIView.animate(withDuration: Constants.minimumLongTapDuration, animations: {
+        UIView.animate(withDuration: Constants.tappedAnimationTimeInterval,
+                       delay: 0.0,
+                       options: [.repeat, .curveLinear, .autoreverse]) {
             self.lockAETargetZoneImageView.alpha = Constants.targetZoneAlpha
-        }, completion: { finished in
-            if finished {
-                // animation was not cancelled, meaning user did a long touch
-                self.lockOnRegion(center: center)
-            }
-        })
+        }
     }
 
     /// Animates hiding target zone with a delay.

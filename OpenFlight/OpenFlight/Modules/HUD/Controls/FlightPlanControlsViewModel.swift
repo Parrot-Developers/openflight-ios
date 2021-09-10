@@ -36,7 +36,7 @@ import Combine
 final class FlightPlanControlsState: ViewModelState, EquatableState, Copying {
     // MARK: - Internal Properties
     /// Current mission launcher mode.
-    fileprivate(set) var missionLauncherMode: MissionLauncherMode = .preset
+    fileprivate(set) var isMissionMenuDisplayed: Bool = false
     /// Current alert panel mode.
     fileprivate(set) var alertPanelMode: AlertPanelMode = .preset
     /// Boolean describing if Flight Plan mode is active.
@@ -49,7 +49,7 @@ final class FlightPlanControlsState: ViewModelState, EquatableState, Copying {
     /// Boolean describing if flight plan panel should be opened.
     var shouldDisplayFlightPlanPanel: Bool {
         return isFlightPlanPanelRequired
-            && missionLauncherMode == .closed
+            && !isMissionMenuDisplayed
             && alertPanelMode == .closed
             && !forceHidePanel
     }
@@ -60,17 +60,17 @@ final class FlightPlanControlsState: ViewModelState, EquatableState, Copying {
     /// Init.
     ///
     /// - Parameters:
-    ///    - missionLauncherMode: current mission launcher mode
+    ///    - isMissionMenuDisplayed: is mission menu displayed
     ///    - alertPanelMode: current alert panel mode
     ///    - isFlightPlanActive: whether flight plan is currently active
     ///    - forceHidePanel: whether panel should be force hidden
     ///    - isOverContextModalPresented: whether panel should be hidden if a modal is presented
-    init(missionLauncherMode: MissionLauncherMode,
+    init(isMissionMenuDisplayed: Bool,
          alertPanelMode: AlertPanelMode,
          isFlightPlanPanelRequired: Bool,
          forceHidePanel: Bool,
          isOverContextModalPresented: Bool) {
-        self.missionLauncherMode = missionLauncherMode
+        self.isMissionMenuDisplayed = isMissionMenuDisplayed
         self.alertPanelMode = alertPanelMode
         self.isFlightPlanPanelRequired = isFlightPlanPanelRequired
         self.forceHidePanel = forceHidePanel
@@ -79,7 +79,7 @@ final class FlightPlanControlsState: ViewModelState, EquatableState, Copying {
 
     // MARK: - Equatable
     func isEqual(to other: FlightPlanControlsState) -> Bool {
-        return self.missionLauncherMode == other.missionLauncherMode
+        return self.isMissionMenuDisplayed == other.isMissionMenuDisplayed
             && self.alertPanelMode == other.alertPanelMode
             && self.isFlightPlanPanelRequired == other.isFlightPlanPanelRequired
             && self.forceHidePanel == other.forceHidePanel
@@ -88,7 +88,7 @@ final class FlightPlanControlsState: ViewModelState, EquatableState, Copying {
 
     // MARK: - Copying
     func copy() -> FlightPlanControlsState {
-        return FlightPlanControlsState(missionLauncherMode: self.missionLauncherMode,
+        return FlightPlanControlsState(isMissionMenuDisplayed: self.isMissionMenuDisplayed,
                                        alertPanelMode: self.alertPanelMode,
                                        isFlightPlanPanelRequired: self.isFlightPlanPanelRequired,
                                        forceHidePanel: self.forceHidePanel,
@@ -102,7 +102,6 @@ final class FlightPlanControlsViewModel: BaseViewModel<FlightPlanControlsState> 
     // MARK: - Private Properties
     private var missionLauncherModeObserver: Any?
     private var alertPanelModeObserver: Any?
-    private var panelVisibilityObserver: Any?
     // TODO : wrong injection
     private unowned var currentMissionManager = Services.hub.currentMissionManager
     private var cancellables = Set<AnyCancellable>()
@@ -110,10 +109,10 @@ final class FlightPlanControlsViewModel: BaseViewModel<FlightPlanControlsState> 
     // MARK: - Init
     override init() {
         super.init()
-        listenMissionLauncherMode()
+        listenMissionMenuDisplayedChanges()
         listenAlertPanelMode()
         listenCurrentMission()
-        listenPanelVisibilityChanges()
+        listenModalPresentation()
     }
 
     // MARK: - Deinit
@@ -122,8 +121,6 @@ final class FlightPlanControlsViewModel: BaseViewModel<FlightPlanControlsState> 
         missionLauncherModeObserver = nil
         NotificationCenter.default.remove(observer: alertPanelModeObserver)
         alertPanelModeObserver = nil
-        NotificationCenter.default.remove(observer: panelVisibilityObserver)
-        panelVisibilityObserver = nil
     }
 
     // MARK: - Internal Funcs
@@ -140,19 +137,15 @@ final class FlightPlanControlsViewModel: BaseViewModel<FlightPlanControlsState> 
 
 // MARK: - Private Funcs
 private extension FlightPlanControlsViewModel {
-    /// Starts watcher for mission launcher open/close mode.
-    func listenMissionLauncherMode() {
-        missionLauncherModeObserver = NotificationCenter.default.addObserver(
-            forName: .missionLauncherModeDidChange,
-            object: nil,
-            queue: nil) { [weak self] notification in
-                guard let missionLauncherMode = notification.userInfo?[MissionLauncherMode.notificationKey] as? MissionLauncherMode else {
-                    return
-                }
+    /// Starts watcher for mission menu display changes.
+    func listenMissionMenuDisplayedChanges() {
+        Services.hub.ui.uiComponentsDisplayReporter.isMissionMenuDisplayedPublisher
+            .sink { [weak self] in
                 let copy = self?.state.value.copy()
-                copy?.missionLauncherMode = missionLauncherMode
+                copy?.isMissionMenuDisplayed = $0
                 self?.state.set(copy)
-        }
+            }
+            .store(in: &cancellables)
     }
 
     /// Starts watcher for alert panel open/close mode.
@@ -180,18 +173,14 @@ private extension FlightPlanControlsViewModel {
         .store(in: &cancellables)
     }
 
-    /// Starts watcher for flight plan panel visibility changes.
-    func listenPanelVisibilityChanges() {
-        panelVisibilityObserver = NotificationCenter.default.addObserver(
-            forName: .modalPresentDidChange,
-            object: nil,
-            queue: nil) { [weak self] notification in
-                guard let isModalPresented = notification.userInfo?[BottomBarViewControllerNotifications.notificationKey] as? Bool else {
-                    return
-                }
+    /// Listen to modal presentation
+    func listenModalPresentation() {
+        Services.hub.ui.uiComponentsDisplayReporter.isModalPresentedPublisher
+            .sink { [weak self] in
                 let copy = self?.state.value.copy()
-                copy?.isOverContextModalPresented = isModalPresented
+                copy?.isOverContextModalPresented = $0
                 self?.state.set(copy)
-        }
+            }
+            .store(in: &cancellables)
     }
 }

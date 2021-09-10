@@ -135,7 +135,7 @@ private extension SettingsContentViewController {
         self.reloadInputViews()
     }
 
-    /// Setup tableView.
+    /// Sets up table view.
     func setupTableView() {
         settingsTableView.register(cellType: SettingsNetworkNameCell.self)
         settingsTableView.register(cellType: SettingsChooseChannelCell.self)
@@ -257,7 +257,6 @@ private extension SettingsContentViewController {
 
 // MARK: - UITableView DataSource
 extension SettingsContentViewController: UITableViewDataSource {
-
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return cells.count
     }

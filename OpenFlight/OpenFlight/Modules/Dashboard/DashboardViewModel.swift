@@ -37,14 +37,13 @@ final class DashboardViewModel {
     var dataSource = DashboardDataSource()
     var appLogo: UIImage = Asset.Logo.icLogoParrotApp.image
 
-    var myFlightsViewModel: MyFlightsViewModel!
     var galleryMediaViewModel: GalleryMediaViewModel!
     var dashboardMyAccountViewModel: DashboardMyAccountViewModel!
     var remoteInfosViewModel: RemoteInfosViewModel!
     var droneInfosViewModel: DroneInfosViewModel!
     var userDeviceViewModel: UserDeviceViewModel!
 
-    private unowned var services: ServiceHub
+    private let service: VariableAssetsService
 
     enum ViewState {
         case initialize
@@ -55,17 +54,13 @@ final class DashboardViewModel {
     /// Init.
     ///
     /// - Parameters:
-    ///     - services: the service hub
-    init(services: ServiceHub) {
-        self.services = services
+    ///     - service: the variable assets service.
+    init(service: VariableAssetsService) {
+        self.service = service
     }
 
     func initViewModels() {
-        self.appLogo = services.ui.variableAssetsService.appLogo
-        self.myFlightsViewModel = MyFlightsViewModel()
-        myFlightsViewModel.state.valueChanged = { [weak self] _ in
-            self?.viewState = .reloadData
-        }
+        self.appLogo = service.appLogo
 
         self.galleryMediaViewModel = OpenFlight.GalleryMediaViewModel(onMediaStateUpdate: { [weak self] _ in
             self?.viewState = .reloadData

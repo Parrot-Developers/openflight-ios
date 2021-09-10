@@ -63,6 +63,7 @@ private extension DroneCalibrationAxeTickBoxView {
     /// Basic init.
     func commonInitDroneCalibrationAxeTickBoxView() {
         self.loadNibContent()
+        self.customCornered(corners: [.allCorners], radius: Style.largeCornerRadius)
     }
 
     /// Update the UI for a specific view model.
@@ -72,5 +73,7 @@ private extension DroneCalibrationAxeTickBoxView {
     func fill(with viewModel: DroneCalibrationAxeTickboxModel) {
         self.tickBoxImage.image = viewModel.tickBoxImage
         self.axeLabel.text = viewModel.axeLabel
+        self.axeLabel.textColor = viewModel.labelColor
+        self.backgroundColor = viewModel.backgroundColor
     }
 }

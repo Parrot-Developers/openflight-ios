@@ -28,65 +28,67 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Combine
 import GroundSdk
-import SwiftyUserDefaults
-
-/// State for `ImagingBarAutoModeViewModel`.
-final class ImagingBarAutoModeState: ViewModelState, EquatableState, Copying {
-    // MARK: - Private Properties
-    /// Boolean describing auto mode state.
-    fileprivate(set) var isActive = false
-    /// Image for current state.
-    var image: UIImage {
-        return isActive
-            ? Asset.BottomBar.Icons.iconManualAutoAuto.image
-            : Asset.BottomBar.Icons.iconManualAutoManual.image
-    }
-    var imageTintColor: UIColor {
-        return isActive
-            ? .white
-            : ColorName.defaultTextColor.color
-    }
-
-    // MARK: - Init
-    required init() { }
-
-    init(isActive: Bool) {
-        self.isActive = isActive
-    }
-
-    // MARK: - Internal Funcs
-    func isEqual(to other: ImagingBarAutoModeState) -> Bool {
-        return self.isActive == other.isActive
-    }
-
-    // MARK: - Copying
-    func copy() -> ImagingBarAutoModeState {
-        return ImagingBarAutoModeState(isActive: self.isActive)
-    }
-}
 
 /// View model for imaging bar auto mode setting. In this mode exposure settings
 /// and white balance settings are all monitored automatically.
+final class ImagingBarAutoModeViewModel {
 
-final class ImagingBarAutoModeViewModel: DroneWatcherViewModel<ImagingBarAutoModeState> {
-    // MARK: - Private Properties
-    private var cameraRef: Ref<MainCamera2>?
+    // MARK: - Published Properties
 
-    // MARK: - Init
-    override init() {
-        super.init()
+    /// Whether ISO and shutter speed are both in automatic mode.
+    @Published fileprivate(set) var autoExposure = false
+    /// Whether auto/manual exposure button is enabled.
+    @Published fileprivate(set) var autoExposureButtonEnabled = false
+
+    /// Image for current state.
+    var image: AnyPublisher<UIImage, Never> {
+        $autoExposure
+            .map { autoExposure in
+                return autoExposure
+                    ? Asset.BottomBar.Icons.iconManualAutoAuto.image
+                    : Asset.BottomBar.Icons.iconManualAutoManual.image
+            }
+            .eraseToAnyPublisher()
     }
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        listenCamera(drone: drone)
+    // MARK: - Private Properties
+    private var cameraRef: Ref<MainCamera2>?
+    private var currentDrone = Services.hub.currentDroneHolder
+    /// Whether HDR is turned on.
+    @Published private var isHdrOn = false
+    /// Camera exposure lock service.
+    private unowned var exposureLockService: ExposureLockService
+    /// Combine subscriptions.
+    private var cancellables = Set<AnyCancellable>()
+
+    // MARK: - Init
+    /// Constructor.
+    ///
+    /// - Parameter exposureLockService: camera exposure lock service
+    init(exposureLockService: ExposureLockService) {
+        self.exposureLockService = exposureLockService
+        currentDrone.dronePublisher
+            .sink { [unowned self] drone in
+                listenCamera(drone: drone)
+            }
+            .store(in: &cancellables)
+
+        exposureLockService.statePublisher
+            .combineLatest($isHdrOn)
+            .sink { [unowned self] exposureLockState, hdrOn in
+                autoExposureButtonEnabled = !exposureLockState.locked
+                    && !exposureLockState.locking
+                    && !hdrOn
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Internal Funcs
     /// Toggle auto mode.
     func toggleAutoMode() {
-        if let camera = drone?.currentCamera,
+        if let camera = currentDrone.drone.currentCamera,
            let exposureMode = camera.config[Camera2Params.exposureMode]?.value {
             let editor = camera.currentEditor
             editor[Camera2Params.exposureMode]?.value = exposureMode.automaticIsoAndShutterSpeed ?
@@ -108,9 +110,8 @@ private extension ImagingBarAutoModeViewModel {
                 return
             }
 
-            let copy = state.value.copy()
-            copy.isActive = exposureMode.value.automaticIsoAndShutterSpeed
-            state.set(copy)
+            autoExposure = exposureMode.value.automaticIsoAndShutterSpeed
+            isHdrOn = camera.isHdrOn
         }
     }
 }

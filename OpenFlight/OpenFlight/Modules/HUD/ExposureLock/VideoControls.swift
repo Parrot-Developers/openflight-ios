@@ -39,16 +39,6 @@ final class VideoControls: NSObject {
     weak var lockAETargetZoneViewController: LockAETargetZoneViewController?
 
     // MARK: - Internal Funcs
-    /// Shows Lock AE target zone.
-    func showAETargetZone() {
-        lockAETargetZoneViewController?.showTargetZone()
-    }
-
-    /// Hides Lock AE target zone.
-    func hideAETargetZone() {
-        lockAETargetZoneViewController?.hideTargetZone()
-    }
-
     /// Enables or disables exposure lock touch events support and target display.
     ///
     /// - Parameter enabled: `true` to enable exposure lock target

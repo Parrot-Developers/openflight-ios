@@ -31,6 +31,7 @@
 import UIKit
 
 // MARK: - Internal Structs
+
 /// FlightPlan mission provider struct.
 public struct FlightPlanMission: MissionProvider {
     // MARK: - Public Properties
@@ -45,6 +46,23 @@ public struct FlightPlanMission: MissionProvider {
                        defaultMode: FlightPlanMissionMode.standard.missionMode)
     }
     public var signature: ProtobufMissionSignature = DefaultMissionSignature()
+}
+
+public class FlightPlanActivationModel: MissionActivationModel {
+    public func startMission() {
+        guard let projectType = FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType else { return }
+        let projectManager = Services.hub.flightPlan.projectManager
+        projectManager.setLastOpenedProjectAsCurrent(type: projectType)
+        guard let project = projectManager.currentProject,
+              let flightPlan = projectManager.lastFlightPlan(for: project) else { return }
+        Services.hub.flightPlan.stateMachine.open(flightPlan: flightPlan)
+    }
+
+    public func stopMissionIfNeeded() {
+        Services.hub.flightPlan.stateMachine.reset()
+        Services.hub.flightPlan.projectManager.clearCurrentProject()
+        Services.hub.flightPlan.edition.resetFlightPlan()
+    }
 }
 
 // MARK: - Internal Enums
@@ -66,10 +84,12 @@ enum FlightPlanMissionMode: String, CaseIterable {
                                                    isTrackingMode: false)
         return MissionMode(configurator: configurator,
                            flightPlanProvider: self.flightPlanProvider,
+                           missionActivationModel: FlightPlanActivationModel(),
                            bottomBarLeftStack: {
                             self.bottomBarViews
                            },
-                           bottomBarRightStack: [])
+                           bottomBarRightStack: [],
+                           stateMachine: Services.hub.flightPlan.stateMachine)
     }
 
     var icon: UIImage {

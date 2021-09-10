@@ -37,6 +37,7 @@ public enum UnitType {
     case degree
     case degreePerSecond
     case percent
+    case centimeterPerpixel
     case none
 
     // MARK: - helpers
@@ -52,6 +53,8 @@ public enum UnitType {
             return L10n.unitDegreePerSecond
         case .percent:
             return L10n.unitPercentIos
+        case .centimeterPerpixel:
+            return L10n.unitCentimeterPerPixel
         case .none:
             return ""
         }
@@ -75,6 +78,26 @@ public enum UnitType {
             return String(format: "%.0f", value) + " \(self.unit)"
         default:
             return String(format: "%.1f", value) + " \(self.unit)"
+        }
+    }
+    /// Convert a float value with 2 decimal to string regarding type.
+    ///
+    /// - Parameters:
+    ///     - value: value to use
+    func value2f(withFloat value: Float) -> String {
+        guard !value.isNaN
+        else {
+            return "0.0 \(self.unit)"
+        }
+        switch self {
+        case .distance:
+            return UnitHelper.stringDistanceWithFloat(ceilf(value))
+        case .speed:
+            return UnitHelper.stringSpeedWithFloat2f(value)
+        case .degree, .degreePerSecond, .percent:
+            return String(format: "%.2f", value) + " \(self.unit)"
+        default:
+            return String(format: "%.2f", value) + " \(self.unit)"
         }
     }
 }

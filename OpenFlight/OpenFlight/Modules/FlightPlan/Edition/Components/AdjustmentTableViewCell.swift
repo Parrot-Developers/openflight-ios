@@ -91,7 +91,7 @@ private extension AdjustmentTableViewCell {
 private extension AdjustmentTableViewCell {
     /// Inits the view.
     func initView() {
-        titleLabel.makeUp()
+        titleLabel.makeUp(and: .defaultTextColor)
         valueLabel.makeUp(and: ColorName.greenSpring)
         minusButton.roundCorneredWith(backgroundColor: ColorName.white20.color)
         plusButton.roundCorneredWith(backgroundColor: ColorName.white20.color)

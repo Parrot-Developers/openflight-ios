@@ -95,9 +95,11 @@ class ZoomServiceImpl {
     private var currentZoomSubject = CurrentValueSubject<Double, Never>(1)
     private var maxLosslessZoomSubject = CurrentValueSubject<Double, Never>(3.0)
     private var maxLossyZoomSubject = CurrentValueSubject<Double, Never>(1.4)
+    private var maxZoomSubject = CurrentValueSubject<Double, Never>(1.4)
     private var isZoomAvailableSubject = CurrentValueSubject<Bool, Never>(false)
     private var lossyZoomAllowedSubject = CurrentValueSubject<Bool, Never>(false)
     private var overzoomingEventSubject = PassthroughSubject<Bool, Never>()
+    private var overzoomingSubject = CurrentValueSubject<Bool, Never>(false)
 
     private var flightPlanLocksZoom = CurrentValueSubject<Bool, Never>(false)
 
@@ -117,11 +119,18 @@ class ZoomServiceImpl {
             listenCamera(drone: $0)
         }
         .store(in: &cancellables)
+
+        lossyZoomAllowedPublisher.combineLatest(maxLosslessZoomPublisher, maxLossyZoomPublisher)
+            .sink { [unowned self] (lossyAllowed, maxLossless, maxLossy) in
+                maxZoomSubject.value = lossyAllowed ? maxLossy : maxLossless
+            }
+            .store(in: &cancellables)
+
         activeFlightPlanWatcher.hasActiveFlightPlanWithTimeOrGpsLapsePublisher
+            .removeDuplicates()
             .sink { [unowned self] _ in
                 setAvailability()
-                guard let zoom = cameraRef?.value?.zoom else { return }
-                checkMaxZoom(zoom)
+                checkMaxZoom()
             }
             .store(in: &cancellables)
     }
@@ -158,11 +167,15 @@ private extension ZoomServiceImpl {
 
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
+        // reset zoom component reference on drone change
+        zoomRef = nil
+
         cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
             guard let camera = camera else {
                 setAvailability()
                 return
             }
+
             lossyZoomAllowedSubject.value = camera.config[Camera2Params.zoomVelocityControlQualityMode]?.value.isLossyAllowed == true
             listenZoom(camera: camera)
         }
@@ -173,6 +186,9 @@ private extension ZoomServiceImpl {
     /// - Parameters:
     ///    - camera: the camera
     func listenZoom(camera: Camera2) {
+        // do not register zoom observer if not needed
+        guard zoomRef?.value == nil else { return }
+
         zoomRef = camera.getComponent(Camera2Components.zoom) { [unowned self] zoom in
             setAvailability()
             guard let zoom = zoom else {
@@ -181,20 +197,17 @@ private extension ZoomServiceImpl {
             maxLosslessZoomSubject.value = zoom.maxLossLessLevel
             maxLossyZoomSubject.value = zoom.maxLevel
             currentZoomSubject.value = zoom.level
-            checkMaxZoom(zoom)
+            checkMaxZoom()
         }
     }
 
-    /// Checks if zoom max is reached
-    func checkMaxZoom(_ zoom: Camera2Zoom) {
-        let maxZoomLevel = lossyZoomAllowedSubject.value ? maxLossyZoomSubject.value : maxLosslessZoomSubject.value
-        let roundedMax = maxZoomLevel.rounded(toPlaces: Constants.roundPrecision)
+    /// Checks if zoom max is reached.
+    func checkMaxZoom() {
+        let roundedMax = maxZoomSubject.value.rounded(toPlaces: Constants.roundPrecision)
         let roundedCurrent = currentZoomSubject.value.rounded(toPlaces: Constants.roundPrecision)
-        if roundedCurrent >= roundedMax {
-            overzoomingEventSubject.send(true)
-        }
+        overzoomingSubject.value = roundedCurrent >= roundedMax
         if roundedCurrent > roundedMax {
-            zoom.control(mode: .level, target: maxZoomLevel)
+            zoomRef?.value?.control(mode: .level, target: maxZoomSubject.value)
         }
     }
 }
@@ -203,13 +216,7 @@ extension ZoomServiceImpl: ZoomService {
 
     var currentZoomPublisher: AnyPublisher<Double, Never> { currentZoomSubject.eraseToAnyPublisher() }
 
-    var maxZoomPublisher: AnyPublisher<Double, Never> {
-        lossyZoomAllowedPublisher.combineLatest(maxLosslessZoomPublisher, maxLossyZoomPublisher)
-            .map { (lossyAllowed, maxLossless, maxLossy) in
-                lossyAllowed ? maxLossy : maxLossless
-            }
-            .eraseToAnyPublisher()
-    }
+    var maxZoomPublisher: AnyPublisher<Double, Never> { maxZoomSubject.eraseToAnyPublisher() }
 
     var maxLosslessZoomPublisher: AnyPublisher<Double, Never> { maxLosslessZoomSubject.eraseToAnyPublisher() }
 
@@ -219,7 +226,14 @@ extension ZoomServiceImpl: ZoomService {
 
     var lossyZoomAllowedPublisher: AnyPublisher<Bool, Never> { lossyZoomAllowedSubject.eraseToAnyPublisher() }
 
-    var overzoomingEventPublisher: AnyPublisher<Bool, Never> { overzoomingEventSubject.eraseToAnyPublisher() }
+    var overzoomingEventPublisher: AnyPublisher<Bool, Never> {
+        overzoomingSubject.removeDuplicates()
+            .filter { $0 }
+            .merge(with: overzoomingEventSubject)
+            // do not trigger overzooming event when zoom is unavailable
+            .filter { [unowned self] _ in isZoomAvailableSubject.value }
+            .eraseToAnyPublisher()
+    }
 
     func startZoomIn() {
         setZoomVelocity(Constants.defaultZoomInVelocity)
@@ -239,7 +253,7 @@ extension ZoomServiceImpl: ZoomService {
 
     func resetZoom() {
         guard let zoom: Camera2Zoom = zoomRef?.value else { return }
-        zoom.control(mode: .level, target: Constants.defaultZoomLevel)
+        zoom.resetLevel()
     }
 
     func setQualityMode(_ mode: Camera2ZoomVelocityControlQualityMode) {
@@ -252,7 +266,7 @@ extension ZoomServiceImpl: ZoomService {
 
     func setZoomVelocity(_ velocity: Double) {
         guard let zoom: Camera2Zoom = zoomRef?.value else { return }
-        let max = lossyZoomAllowedSubject.value ? maxLossyZoomSubject.value : maxLosslessZoomSubject.value
+        let max = maxZoomSubject.value
         let roundedMax = max.rounded(toPlaces: Constants.roundPrecision)
         let roundedMin = minZoom.rounded(toPlaces: Constants.roundPrecision)
         let roundedCurrent = currentZoomSubject.value.rounded(toPlaces: Constants.roundPrecision)

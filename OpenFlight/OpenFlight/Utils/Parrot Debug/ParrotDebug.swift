@@ -47,7 +47,6 @@ public extension ParrotDebug {
         if !Defaults.hasKey(\.activatedLog) {
             // Use the default configuration.
             #if DEBUG
-            GroundSdkConfig.sharedInstance.enableUsbDebug = true
             startLog()
             #else
             if Bundle.main.isInHouseBuild {

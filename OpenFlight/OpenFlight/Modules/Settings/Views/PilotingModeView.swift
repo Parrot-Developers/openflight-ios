@@ -42,7 +42,7 @@ final class PilotingModeView: UIView, NibOwnerLoadable {
     }
     @IBOutlet private weak var pilotingStyleLabel: UILabel! {
         didSet {
-            pilotingStyleLabel.makeUp(with: .tiny, and: .white)
+            pilotingStyleLabel.makeUp(with: .tiny)
             pilotingStyleLabel.text = L10n.settingsControlsPilotingStyle.uppercased()
         }
     }
@@ -162,7 +162,7 @@ private extension PilotingModeView {
     ///     - button: Button to apply style
     func applyDisableStyle(_ button: UIButton) {
         button.backgroundColor = ColorName.black80.color
-        button.makeup(with: .regular, color: .white50, and: .normal)
+        button.makeup(color: .white50)
     }
 
     /// Apply enable style to button.
@@ -171,6 +171,6 @@ private extension PilotingModeView {
     ///     - button: Button to apply style
     func applyEnableStyle(_ button: UIButton) {
         button.backgroundColor = .white
-        button.makeup(with: .regular, color: .black, and: .normal)
+        button.makeup(color: .black)
     }
 }

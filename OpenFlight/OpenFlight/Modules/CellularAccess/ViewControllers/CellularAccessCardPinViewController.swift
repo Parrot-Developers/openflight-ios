@@ -96,7 +96,7 @@ final class CellularAccessCardPinViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {

@@ -32,16 +32,6 @@ import UIKit
 import Combine
 
 // MARK: - Protocols
-/// Protocol used to show and hide mission laucher.
-protocol BottomBarViewControllerDelegate: AnyObject {
-
-    /// Show target zone for lock AE.
-    func showAETargetZone()
-
-    /// Hide target zone for lock AE.
-    func hideAETargetZone()
-}
-
 /// Protocol used to deselect view models.
 protocol DeselectAllViewModelsDelegate: AnyObject {
     /// Deselect all view models except view model from given class type.
@@ -75,9 +65,10 @@ public enum ImagingStackElement {
 final class BottomBarViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var bottomBarView: UIView!
-    @IBOutlet private weak var leftStackView: UIStackView!
-    @IBOutlet private weak var rightStackView: UIStackView!
+    @IBOutlet private weak var behaviorStackView: UIStackView!
+    @IBOutlet private weak var subBehaviorStackView: UIStackView!
     @IBOutlet private weak var missionLauncherButton: MissionLauncherButton!
+    @IBOutlet private weak var rightStackView: UIStackView!
     @IBOutlet private weak var cameraWidgetView: CameraWidgetView!
     @IBOutlet private weak var cameraModeView: BarButtonView! {
         didSet {
@@ -92,7 +83,6 @@ final class BottomBarViewController: UIViewController {
 
     // MARK: - Internal Properties
     weak var delegate: BottomBarContainerDelegate?
-    weak var bottomBarDelegate: BottomBarViewControllerDelegate?
     weak var coordinator: HUDCoordinator? {
         didSet {
             guard let coordinator = coordinator else { return }
@@ -110,13 +100,13 @@ final class BottomBarViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
     // TODO: wrong injection
     private let missionLauncherButtonModel = MissionLauncherButtonModel(currentMissionManager: Services.hub.currentMissionManager)
-    private let cameraWidgetViewModel = CameraWidgetViewModel()
+    private let cameraWidgetViewModel = CameraWidgetViewModel(exposureLockService: Services.hub.drone.exposureLockService)
     private let cameraCaptureModeViewModel = CameraCaptureModeViewModel()
     private let cameraShutterButtonViewModel = CameraShutterButtonViewModel()
     private let bottomBarViewModel = BottomBarViewModel()
-    private let returnHomeViewModel = HUDLandingViewModel()
+    private let landingStates = HUDLandingViewModel()
+    private let settingRth = SettingsRthViewModel()
     private var deselectableViewModels = [Deselectable]()
-
     // MARK: - Private Enums
     private enum Constants {
         static let defaultAnimationDuration: TimeInterval = 0.35
@@ -248,7 +238,7 @@ private extension BottomBarViewController {
     /// - Parameters:
     ///     - missionMode: update the UI for this mission mode.
     func updateView(for missionMode: MissionMode?) {
-        self.loadLeftStack(for: missionMode)
+        self.behaviorStackView(for: missionMode)
         self.loadRightStack(for: missionMode?.bottomBarRightStack)
     }
 
@@ -256,27 +246,30 @@ private extension BottomBarViewController {
     ///
     /// - Parameters:
     ///     - missionMode: updates the UI for this mission mode.
-    func loadLeftStack(for missionMode: MissionMode?) {
+    func behaviorStackView(for missionMode: MissionMode?) {
         // Remove all views in left stackView.
-        self.leftStackView.safelyRemoveArrangedSubviews()
+        self.behaviorStackView.safelyRemoveArrangedSubviews()
+        self.subBehaviorStackView.safelyRemoveArrangedSubviews()
 
-        // Check if drone is returning to home.
-        let isReturningToHome = returnHomeViewModel.state.value.isReturnHomeActive == true
+        let isReturningToHome = landingStates.state.value.isReturnHomeActive == true
+
         if isReturningToHome {
             let view = ReturnHomeBottomBarView()
             view.addBlurEffect()
-            self.leftStackView.addArrangedSubview(view)
+            self.subBehaviorStackView.addArrangedSubview(view)
         }
 
         // Add views for a specific mission.
         var views: [UIView] = missionMode?.bottomBarLeftStack?() ?? []
+
         // If RTH is enabled, add only mandatory views.
         if isReturningToHome {
             views = views.filter({ $0 is MandatoryBottomBarView })
+            // get the view for return home
             if !views.isEmpty {
                 let separator = SeparatorView(size: Style.bottomBarSeparatorWidth,
                                               backColor: .clear)
-                self.leftStackView.addArrangedSubview(separator)
+                self.subBehaviorStackView.addArrangedSubview(separator)
             }
         }
         addMissionViews(views)
@@ -295,12 +288,17 @@ private extension BottomBarViewController {
                 self.deselectableViewModels.append(barButtonView.viewModel)
             }
 
-            // Add the view in the left stackView.
-            self.leftStackView.addArrangedSubview(view)
+            if view is BehaviourModeView {
+                self.behaviorStackView.addArrangedSubview(view)
+            }
+            if !(view is SeparatorView) && !(view is BehaviourModeView) {
+                 self.subBehaviorStackView.addArrangedSubview(view)
+            }
         }
 
         // Prevents the BehaviourModeView to be hidden when the drone is connecting in some case.
-        self.leftStackView.layoutIfNeeded()
+        self.behaviorStackView.layoutIfNeeded()
+        self.subBehaviorStackView.layoutIfNeeded()
     }
 
     /// Displays views in right stackview.
@@ -344,7 +342,7 @@ private extension BottomBarViewController {
         cameraShutterButtonViewModel.state.valueChanged = { [weak self] state in
             self?.cameraShutterButton.model = state
         }
-        returnHomeViewModel.state.valueChanged = { [weak self] _ in
+        landingStates.state.valueChanged = { [weak self] _ in
             self?.updateView(for: self?.bottomBarViewModel.state.value.missionMode)
         }
     }

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -23,33 +24,36 @@
             <rect key="frame" x="0.0" y="0.0" width="387" height="111"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icCheckboxEmpty" translatesAutoresizingMaskIntoConstraints="NO" id="fwx-Fw-Ydb">
-                    <rect key="frame" x="10" y="49.5" width="32" height="12"/>
+                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icUnchecked" translatesAutoresizingMaskIntoConstraints="NO" id="fwx-Fw-Ydb">
+                    <rect key="frame" x="10" y="49.5" width="14" height="12"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="12" id="wYw-hL-zGd"/>
                     </constraints>
                 </imageView>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="-" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nj8-TR-nQ6">
-                    <rect key="frame" x="50" y="48.5" width="337" height="14"/>
-                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="14"/>
-                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <rect key="frame" x="32" y="48" width="347" height="15"/>
+                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                    <color key="textColor" name="default_text_color"/>
                     <nil key="highlightedColor"/>
                 </label>
             </subviews>
+            <viewLayoutGuide key="safeArea" id="J3a-lL-a8Q"/>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
                 <constraint firstItem="fwx-Fw-Ydb" firstAttribute="leading" secondItem="J3a-lL-a8Q" secondAttribute="leading" constant="10" id="2it-pz-ws8"/>
                 <constraint firstItem="nj8-TR-nQ6" firstAttribute="centerY" secondItem="OqG-Ts-mke" secondAttribute="centerY" id="VhN-pu-Ajy"/>
                 <constraint firstItem="nj8-TR-nQ6" firstAttribute="leading" secondItem="fwx-Fw-Ydb" secondAttribute="trailing" constant="8" id="c8e-2j-OXW"/>
                 <constraint firstItem="fwx-Fw-Ydb" firstAttribute="centerY" secondItem="OqG-Ts-mke" secondAttribute="centerY" id="fiO-TU-73b"/>
-                <constraint firstItem="J3a-lL-a8Q" firstAttribute="trailing" secondItem="nj8-TR-nQ6" secondAttribute="trailing" id="zNz-hc-5ev"/>
+                <constraint firstItem="J3a-lL-a8Q" firstAttribute="trailing" secondItem="nj8-TR-nQ6" secondAttribute="trailing" constant="8" id="zNz-hc-5ev"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <viewLayoutGuide key="safeArea" id="J3a-lL-a8Q"/>
             <point key="canvasLocation" x="40.5" y="-224.5"/>
         </view>
     </objects>
     <resources>
-        <image name="icCheckboxEmpty" width="16" height="16"/>
+        <image name="icUnchecked" width="14" height="14"/>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="collection view cell content view" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="DashboardPhotogrammetryDebugCell" id="cGb-jw-cof" userLabel="DashboardPhotogrammetryDebugCell" customClass="DashboardPhotogrammetryDebugCell" customModule="OpenFlight">
+            <rect key="frame" x="0.0" y="0.0" width="214" height="39"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="IKa-IR-Lbl">
+                <rect key="frame" x="0.0" y="0.0" width="214" height="39"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LPS-Ds-30z">
+                        <rect key="frame" x="16" y="8" width="182" height="23"/>
+                        <state key="normal" title="Show PGY Debug">
+                            <color key="titleColor" name="emerald"/>
+                        </state>
+                        <connections>
+                            <action selector="action:" destination="cGb-jw-cof" eventType="touchUpInside" id="KGU-59-lfk"/>
+                        </connections>
+                    </button>
+                </subviews>
+                <color key="backgroundColor" name="suva_grey"/>
+                <constraints>
+                    <constraint firstAttribute="bottomMargin" secondItem="LPS-Ds-30z" secondAttribute="bottom" id="1uL-Ax-bIe"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="LPS-Ds-30z" secondAttribute="trailing" id="cPj-P7-yIF"/>
+                    <constraint firstItem="LPS-Ds-30z" firstAttribute="leading" secondItem="IKa-IR-Lbl" secondAttribute="leadingMargin" id="s9L-S8-iUR"/>
+                    <constraint firstItem="LPS-Ds-30z" firstAttribute="top" secondItem="IKa-IR-Lbl" secondAttribute="topMargin" id="spj-GT-9P6"/>
+                </constraints>
+                <userDefinedRuntimeAttributes>
+                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                        <integer key="value" value="9"/>
+                    </userDefinedRuntimeAttribute>
+                </userDefinedRuntimeAttributes>
+            </collectionViewCellContentView>
+            <size key="customSize" width="214" height="39"/>
+            <connections>
+                <outlet property="button" destination="LPS-Ds-30z" id="k6h-C5-wdU"/>
+            </connections>
+            <point key="canvasLocation" x="124.8" y="49.025487256371818"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <namedColor name="emerald">
+            <color red="0.25490196078431371" green="0.81176470588235294" blue="0.50980392156862742" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="suva_grey">
+            <color red="0.54117647058823526" green="0.54117647058823526" blue="0.54117647058823526" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

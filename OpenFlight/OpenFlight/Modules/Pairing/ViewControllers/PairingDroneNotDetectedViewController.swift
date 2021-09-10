@@ -1,5 +1,5 @@
 //
-//  Copyright (C) 2020 Parrot Drones SAS.
+//  Copyright (C) 2021 Parrot Drones SAS.
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,24 +33,25 @@ import UIKit
 /// View Controller used when user do not find a drone with his remote.
 final class PairingDroneNotDetectedViewController: UIViewController {
     // MARK: - Outlets
+    @IBOutlet private weak var panelView: UIView! {
+        didSet {
+            panelView.customCornered(corners: [.topLeft, .topRight],
+                                     radius: Style.largeCornerRadius,
+                                     backgroundColor: .white,
+                                     borderColor: .clear)
+        }
+    }
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var pairingDescriptionLabel: UILabel!
     @IBOutlet private weak var pairingEnterWifiLabel: UILabel!
-    @IBOutlet private weak var enterWifiButton: UIButton!
 
     // MARK: - Internal Properties
     weak var coordinator: PairingCoordinator?
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let borderWidth: CGFloat = 1.0
-    }
 
     // MARK: - Setup
     static func instantiate(coordinator: Coordinator) -> PairingDroneNotDetectedViewController {
         let viewController = StoryboardScene.PairingDroneNotDetected.initialScene.instantiate()
         viewController.coordinator = coordinator as? PairingCoordinator
-
         return viewController
     }
 
@@ -63,8 +64,13 @@ final class PairingDroneNotDetectedViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
         LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingHowToConnectDroneTurnOn, logType: .screen)
+
+        UIView.animate(withDuration: Style.shortAnimationDuration,
+                       delay: Style.shortAnimationDuration,
+                       animations: {
+                        self.view.backgroundColor = ColorName.nightRider.color
+                       })
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -72,7 +78,7 @@ final class PairingDroneNotDetectedViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -82,12 +88,13 @@ final class PairingDroneNotDetectedViewController: UIViewController {
 
 // MARK: - Actions
 private extension PairingDroneNotDetectedViewController {
-    @IBAction func backButtonTouchedUpInside(_ sender: Any) {
-        coordinator?.back()
+    @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
+        coordinator?.dismiss()
     }
 
-    @IBAction func enterWifiButtonTouchedUpInside(_ sender: Any) {
-        coordinator?.startRemoteConnectDrone()
+    /// Background button touched.
+    @IBAction func backgroundButtonTouchedUpInside(_ sender: Any) {
+        coordinator?.dismiss()
     }
 }
 
@@ -98,15 +105,5 @@ private extension PairingDroneNotDetectedViewController {
         titleLabel.text = L10n.pairingConnectAutomaticalyDroneWifi
         pairingDescriptionLabel.text = L10n.pairingPairAutomaticallyWithUsb
         pairingEnterWifiLabel.text = L10n.pairingPairManuallyWithPassword
-
-        enterWifiButton.setTitleColor(UIColor(named: .white), for: .normal)
-        // Set the radius and the border for the button.
-        enterWifiButton.cornerRadiusedWith(backgroundColor: UIColor.clear,
-                                           borderColor: UIColor(named: .white),
-                                           radius: Style.largeCornerRadius,
-                                           borderWidth: Constants.borderWidth)
-
-        enterWifiButton.titleLabel?.textAlignment = .center
-        enterWifiButton.setTitle(L10n.pairingEnterWifiPassword, for: .normal)
     }
 }

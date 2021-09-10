@@ -1,38 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="o1r-mH-fD4">
-    <device id="retina6_1" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="o1r-mH-fD4">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-Medium.ttf">
+            <string>Rajdhani-Medium</string>
+        </array>
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
     <scenes>
         <!--Drone Details Cellular View Controller-->
         <scene sceneID="Gc9-sv-pDg">
             <objects>
                 <viewController storyboardIdentifier="DroneDetailsCellularViewController" id="o1r-mH-fD4" customClass="DroneDetailsCellularViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="yZR-Eg-1vf">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="etX-44-0LI">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                                 <connections>
                                     <action selector="backgroundViewTouchedUpInside:" destination="o1r-mH-fD4" eventType="touchUpInside" id="REd-gB-Z64"/>
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6OY-Ux-Wsz">
-                                <rect key="frame" x="12" y="200" width="390" height="696"/>
+                                <rect key="frame" x="37" y="120" width="822" height="294"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kCJ-4c-DRI">
-                                        <rect key="frame" x="0.0" y="0.0" width="390" height="65"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="822" height="65"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yLK-lK-oof">
                                                 <rect key="frame" x="0.0" y="0.0" width="65" height="65"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="65" id="ctt-7K-Q0w"/>
                                                 </constraints>
+                                                <color key="tintColor" name="default_text_color"/>
                                                 <inset key="imageEdgeInsets" minX="25" minY="25" maxX="25" maxY="25"/>
                                                 <state key="normal" image="icClose"/>
                                                 <connections>
@@ -40,9 +50,9 @@
                                                 </connections>
                                             </button>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3Eb-zX-hYC">
-                                                <rect key="frame" x="174.5" y="22.5" width="41.5" height="20.5"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                <nil key="textColor"/>
+                                                <rect key="frame" x="390" y="23" width="42" height="19"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                         </subviews>
@@ -57,99 +67,125 @@
                                         </constraints>
                                     </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="HYO-wt-4bB">
-                                        <rect key="frame" x="8" y="77" width="374" height="365"/>
+                                        <rect key="frame" x="36" y="65" width="750" height="151"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="m7F-0k-Ptv">
-                                                <rect key="frame" x="0.0" y="0.0" width="374" height="161.5"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="371" height="151"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="18" translatesAutoresizingMaskIntoConstraints="NO" id="Lvv-xK-Blf">
-                                                        <rect key="frame" x="0.0" y="0.0" width="374" height="97.5"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="371" height="87"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="748" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="hdv-9t-igl">
-                                                                <rect key="frame" x="0.0" y="0.0" width="374" height="20.5"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                <nil key="textColor"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="371" height="17"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="17"/>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="749" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="OPK-SE-cfb">
-                                                                <rect key="frame" x="0.0" y="38.5" width="374" height="20.5"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                <nil key="textColor"/>
+                                                                <rect key="frame" x="0.0" y="35" width="371" height="17"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="17"/>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="hGl-1v-2Q4">
-                                                                <rect key="frame" x="0.0" y="77" width="374" height="20.5"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                <nil key="textColor"/>
+                                                                <rect key="frame" x="0.0" y="70" width="371" height="17"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="17"/>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                         </subviews>
                                                         <variation key="heightClass=compact-widthClass=compact" spacing="12"/>
                                                     </stackView>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="j5E-ne-gtS">
-                                                        <rect key="frame" x="0.0" y="121.5" width="374" height="40"/>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="tZX-Sy-hS0">
+                                                        <rect key="frame" x="0.0" y="111" width="371" height="40"/>
                                                         <subviews>
+                                                            <view contentMode="scaleToFill" horizontalHuggingPriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="Uho-Rd-T9f">
+                                                                <rect key="frame" x="0.0" y="0.0" width="85.5" height="40"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            </view>
                                                             <button opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="dKR-si-0ii">
-                                                                <rect key="frame" x="112" y="0.0" width="150" height="40"/>
+                                                                <rect key="frame" x="95.5" y="0.0" width="85" height="40"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="40" id="YbP-1y-R5f"/>
-                                                                    <constraint firstAttribute="width" constant="150" id="eBC-Ew-SvJ"/>
                                                                 </constraints>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                                 <inset key="titleEdgeInsets" minX="4" minY="4" maxX="4" maxY="4"/>
+                                                                <state key="normal" title="Turn off">
+                                                                    <color key="titleColor" name="default_text_color"/>
+                                                                </state>
                                                                 <connections>
                                                                     <action selector="actionButtonTouchedUpInside:" destination="o1r-mH-fD4" eventType="touchUpInside" id="KmU-I6-716"/>
                                                                 </connections>
                                                             </button>
+                                                            <button opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="j6e-TA-8oA">
+                                                                <rect key="frame" x="190.5" y="0.0" width="85.5" height="40"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="40" id="kWB-xJ-ldZ"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                                <inset key="titleEdgeInsets" minX="4" minY="4" maxX="4" maxY="4"/>
+                                                                <state key="normal" title="Show debug">
+                                                                    <color key="titleColor" name="default_text_color"/>
+                                                                </state>
+                                                                <connections>
+                                                                    <action selector="showDebugButtonTouchedUpInside:" destination="o1r-mH-fD4" eventType="touchUpInside" id="IUz-0U-uRx"/>
+                                                                </connections>
+                                                            </button>
+                                                            <view contentMode="scaleToFill" horizontalHuggingPriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="XTY-hY-3yz">
+                                                                <rect key="frame" x="286" y="0.0" width="85" height="40"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            </view>
                                                         </subviews>
-                                                        <constraints>
-                                                            <constraint firstAttribute="bottom" secondItem="dKR-si-0ii" secondAttribute="bottom" id="Hxp-yA-gpr"/>
-                                                            <constraint firstItem="dKR-si-0ii" firstAttribute="top" secondItem="j5E-ne-gtS" secondAttribute="top" id="JZR-Q1-6om"/>
-                                                            <constraint firstItem="dKR-si-0ii" firstAttribute="centerX" secondItem="j5E-ne-gtS" secondAttribute="centerX" id="bXK-Gz-2jf"/>
-                                                        </constraints>
-                                                    </view>
+                                                    </stackView>
                                                 </subviews>
                                             </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="kvG-rg-Kbk">
-                                                <rect key="frame" x="0.0" y="203.5" width="374" height="161.5"/>
+                                                <rect key="frame" x="379" y="0.0" width="371" height="151"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="zTT-Ek-q1j">
-                                                        <rect key="frame" x="0.0" y="0.0" width="374" height="97.5"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="371" height="87"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="749" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="8dM-It-big">
-                                                                <rect key="frame" x="0.0" y="0.0" width="374" height="20.5"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                <nil key="textColor"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="371" height="17"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="17"/>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="749" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="BSP-8m-8bM">
-                                                                <rect key="frame" x="0.0" y="38.5" width="374" height="20.5"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                <nil key="textColor"/>
+                                                                <rect key="frame" x="0.0" y="35" width="371" height="17"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="17"/>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="p0I-ON-JEs">
-                                                                <rect key="frame" x="0.0" y="77" width="374" height="20.5"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                <nil key="textColor"/>
+                                                                <rect key="frame" x="0.0" y="70" width="371" height="17"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="17"/>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                         </subviews>
                                                     </stackView>
                                                     <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="GyP-tG-6Zi">
-                                                        <rect key="frame" x="0.0" y="109.5" width="374" height="0.0"/>
+                                                        <rect key="frame" x="0.0" y="99" width="371" height="0.0"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="11"/>
-                                                        <nil key="textColor"/>
+                                                        <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="86A-pu-0gw">
-                                                        <rect key="frame" x="0.0" y="121.5" width="374" height="40"/>
+                                                        <rect key="frame" x="0.0" y="111" width="371" height="40"/>
                                                         <subviews>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="vUX-V0-0XH">
-                                                                <rect key="frame" x="112" y="0.0" width="150" height="40"/>
+                                                                <rect key="frame" x="110.5" y="0.0" width="150" height="40"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" constant="150" id="Qk1-zZ-OTJ"/>
                                                                     <constraint firstAttribute="height" constant="40" id="SeA-xa-oT1"/>
                                                                 </constraints>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                                <state key="normal" title="Reinitialize connections">
+                                                                    <color key="titleColor" name="default_text_color"/>
+                                                                </state>
                                                                 <connections>
                                                                     <action selector="reinitializeButtonTouchedUpInside:" destination="o1r-mH-fD4" eventType="touchUpInside" id="5wh-nx-Uxg"/>
                                                                 </connections>
@@ -168,7 +204,7 @@
                                         <variation key="heightClass=regular-widthClass=compact" axis="vertical" spacing="42"/>
                                     </stackView>
                                 </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstItem="kCJ-4c-DRI" firstAttribute="leading" secondItem="6OY-Ux-Wsz" secondAttribute="leading" id="61N-IR-cWA"/>
                                     <constraint firstItem="HYO-wt-4bB" firstAttribute="leading" secondItem="6OY-Ux-Wsz" secondAttribute="leading" constant="36" id="89f-P5-Iu0">
@@ -214,6 +250,7 @@
                         <outlet property="forgotErrorLabel" destination="GyP-tG-6Zi" id="fd8-Io-qdc"/>
                         <outlet property="mainView" destination="6OY-Ux-Wsz" id="paH-Km-p9y"/>
                         <outlet property="reinitializeButton" destination="vUX-V0-0XH" id="vuP-6o-3fk"/>
+                        <outlet property="showDebugButton" destination="j6e-TA-8oA" id="wjN-JU-sIj"/>
                         <outlet property="titleLabel" destination="3Eb-zX-hYC" id="5Nc-jQ-bcd"/>
                         <outlet property="usersCountDescriptionLabel" destination="p0I-ON-JEs" id="whc-pE-Lz4"/>
                         <outlet property="usersCountLabel" destination="BSP-8m-8bM" id="xtk-T7-XPj"/>
@@ -225,6 +262,9 @@
         </scene>
     </scenes>
     <resources>
-        <image name="icClose" width="24" height="24"/>
+        <image name="icClose" width="17" height="17"/>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

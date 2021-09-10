@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Flight details ViewController.
 
@@ -58,7 +59,8 @@ final class FlightDetailsViewController: UIViewController, FileShare {
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
-    private var viewModel: FlightDataViewModel?
+    private var cancellables = Set<AnyCancellable>()
+    private var viewModel: FlightDetailsViewModel!
     private var mapController: UIViewController?
 
     // MARK: - Internal Properties
@@ -75,7 +77,7 @@ final class FlightDetailsViewController: UIViewController, FileShare {
     /// - Parameters:
     ///    - coordinator: a coordinator
     ///    - data: flight datas
-    static func instantiate(coordinator: Coordinator, viewModel: FlightDataViewModel) -> FlightDetailsViewController {
+    static func instantiate(coordinator: Coordinator, viewModel: FlightDetailsViewModel) -> FlightDetailsViewController {
         let viewController = StoryboardScene.FlightsViewController.flightDetailsViewController.instantiate()
         viewController.coordinator = coordinator
         viewController.viewModel = viewModel
@@ -95,26 +97,17 @@ final class FlightDetailsViewController: UIViewController, FileShare {
 
         initView()
 
-        // Load all data used to display flight details.
-        viewModel?.loadGutmaContent()
-
         loadExecutedPlans()
 
         updateContainers()
 
-        viewModel?.state.valueChanged = { [weak self] state in
-            self?.updateContent(state)
-        }
-        self.updateContent(viewModel?.state.value)
-
         updateMapDisplay()
-        viewModel?.requestPlacemark()
 
         let gesture = UITapGestureRecognizer(target: self, action: #selector(editTitle))
         nameLabel.addGestureRecognizer(gesture)
         nameLabel.isUserInteractionEnabled = true
         nameTextfield.delegate = self
-
+        bindViewModel()
         // Manage keyboard appearance.
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(keyboardWillShow(sender:)),
@@ -138,7 +131,7 @@ final class FlightDetailsViewController: UIViewController, FileShare {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     /// Update display when orientation changed.
@@ -167,8 +160,8 @@ private extension FlightDetailsViewController {
 
     /// Export button touched.
     @IBAction func shareFlightTouchedUpInside(_ sender: Any) {
-        shareFile(data: self.viewModel?.gutma?.asData(),
-                  name: self.viewModel?.state.value.flightLocationDescription,
+        shareFile(data: viewModel.shareFileData,
+                  name: viewModel.shareFileName,
                   fileExtension: GutmaConstants.extensionName)
     }
 
@@ -199,18 +192,19 @@ private extension FlightDetailsViewController {
                                      radius: Style.largeCornerRadius)
     }
 
-    /// Update content regarding FlightDatasState.
-    ///
-    /// - Parameters:
-    ///    - state: flight data state
-    func updateContent(_ state: FlightDataState? = nil) {
-        nameLabel.text = state?.flightLocationDescription
+    /// Update content regarding view model.
+    func bindViewModel() {
+        viewModel.$name
+            .sink { [unowned self] in
+                nameLabel.text = $0
+            }
+            .store(in: &cancellables)
         nameTextfield.text = nameLabel.text
-        locationLabel.text = state?.formattedPosition
-        dateLabel.text = state?.formattedDate
-        durationLabel.text = state?.formattedDuration
-        batteryLabel.text = state?.batteryConsumption
-        distanceLabel.text = state?.formattedDistance
+        locationLabel.text = viewModel.flight.coordinateDescription
+        dateLabel.text = viewModel.flight.formattedDate
+        durationLabel.text = viewModel.flight.formattedDuration
+        batteryLabel.text = viewModel.flight.batteryConsumptionPercents
+        distanceLabel.text = viewModel.flight.formattedDistance
 
         // TODO: replace this with actual diagnostics from gutma.
         //        diagnosticsStackView.safelyRemoveArrangedSubviews()
@@ -234,28 +228,21 @@ private extension FlightDetailsViewController {
 
     /// Loads executed plans (if exists).
     func loadExecutedPlans() {
-        guard let relatedFlightPlan = self.viewModel?.relatedFlightPlan,
-              !relatedFlightPlan.isEmpty else {
+        // TODO loadExecutedPlans
+        let flightPlanCells = viewModel.flightPlanCells
+        guard !flightPlanCells.isEmpty else {
             executionView.isHidden = true
             return
         }
 
-        executionCountLabel.text = "\(relatedFlightPlan.count)"
-        relatedFlightPlan.forEach { (flightPlan) in
-            let fpExecutions = flightPlan.executions
-            guard let title = flightPlan.state.value.title,
-                  let flightId = self.viewModel?.gutma?.flightId,
-                  let fpExecution = fpExecutions.filter({ $0.flightId == flightId }).first else {
-                return
-            }
-
+        executionCountLabel.text  = "\(flightPlanCells.count)"
+        flightPlanCells.forEach { (flightPlanCell) in
             let cell = ExecutionTableViewCell.loadFromNib()
-            let icon = flightPlan.state.value.type?.missionMode.icon
-            cell.setup(name: title,
-                       icon: icon,
-                       fpExecution: fpExecution)
+            cell.setup(name: flightPlanCell.flightPlan.customTitle,
+                       icon: flightPlanCell.icon,
+                       flightPlan: flightPlanCell.flightPlan)
             cell.selectionHandler = { [weak self] in
-                 (self?.coordinator as? DashboardCoordinator)?.startFlightPlanDashboard(viewModel: flightPlan)
+                (self?.coordinator as? DashboardCoordinator)?.startFlightPlanDashboard(flightPlan: flightPlanCell.flightPlan)
             }
             // A stackView is used here instead of a tableview to ease integration in global scrollview.
             // Moreover the number of view won't be numerous here.
@@ -305,8 +292,9 @@ private extension FlightDetailsViewController {
 
     /// Updates the current map display with current flight.
     func updateMapDisplay() {
-        if let mapViewController = mapController as? MapViewController {
-            mapViewController.displayFlightCourse(viewModel: self.viewModel)
+        if let mapViewController = mapController as? MapViewController,
+           let gutma = viewModel.gutma {
+            mapViewController.displayFlightCourse(gutma: gutma)
         }
     }
 }
@@ -315,8 +303,9 @@ private extension FlightDetailsViewController {
 extension FlightDetailsViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        if let newTitle = textField.text, !newTitle.isEmpty {
-            viewModel?.updateTitle(newTitle)
+        if let newTitle = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !newTitle.isEmpty {
+            viewModel.set(name: newTitle)
         }
         nameLabel.isHidden.toggle()
         editButton.isHidden.toggle()

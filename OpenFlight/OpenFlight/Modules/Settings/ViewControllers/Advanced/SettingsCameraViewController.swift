@@ -40,7 +40,7 @@ final class SettingsCameraViewController: SettingsContentViewController {
 
         // Setup view model.
         // TODO wrong injection, viewModel should be prepared one level up (coordinator or upper VM)
-        viewModel = SettingsCameraViewModel(flightPlanCameraSettingsHandler: Services.hub.flightPlanCameraSettingsHandler)
+        viewModel = SettingsCameraViewModel(flightPlanCameraSettingsHandler: Services.hub.flightPlan.cameraSettingsHandler)
         viewModel?.state.valueChanged = { [weak self] state in
             self?.updateDataSource(state)
         }

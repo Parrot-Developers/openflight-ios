@@ -31,6 +31,17 @@
 import UIKit
 import Reusable
 
+public struct FlightPlanPanelProgressInfo {
+    public init(runState: FlightPlanRunningState, progress: Double) {
+        self.runState = runState
+        self.progress = progress
+    }
+
+    var runState: FlightPlanRunningState
+    var progress: Double
+
+}
+
 // MARK: Public Structs
 /// Model for Flight Plan panel progress view display.
 public struct FlightPlanPanelProgressModel {
@@ -49,8 +60,8 @@ public struct FlightPlanPanelProgressModel {
     ///    - progress: current progress
     ///    - hasError: whether there is an ongoing error (hides progress bar)
     public init(mainText: String = "-",
-                mainColor: UIColor = ColorName.greenSpring.color,
-                subColor: UIColor = ColorName.greenPea.color,
+                mainColor: UIColor = ColorName.highlightColor.color,
+                subColor: UIColor = ColorName.whiteAlbescent.color,
                 progress: Double = 0.0,
                 hasError: Bool = false) {
         self.mainText = mainText
@@ -64,41 +75,66 @@ public struct FlightPlanPanelProgressModel {
     ///
     /// - Parameters:
     ///    - state: Flight Plan's run state
-    init(withRunFlightPlanState state: RunFlightPlanState) {
-        let percentString: String = (state.progress * 100).asPercent(maximumFractionDigits: 0)
-        let distanceString: String = UnitHelper.stringDistanceWithDouble(state.distance,
+    init(runState: FlightPlanRunningState,
+         statMachine: FlightPlanStateMachineState,
+         progress: Double,
+         distance: Double) {
+        let percentString: String = (progress * 100).asPercent(maximumFractionDigits: 0)
+        let distanceString: String = UnitHelper.stringDistanceWithDouble(distance,
                                                                          spacing: false)
 
-        switch state.runState {
-        case .playing:
-            self.init(mainText: String(format: "%@・%@",
-                                       percentString,
-                                       distanceString),
-                      progress: state.progress)
-        case .paused:
-            self.init(mainText: String(format: "%@・%@",
-                                       percentString,
-                                       distanceString),
-                      mainColor: ColorName.orangePeel.color,
-                      subColor: ColorName.orangePeel20.color,
-                      progress: state.progress)
-        case .stopped, .userStopped:
-            if state.isAvailable {
+        switch statMachine {
+        case .flying:
+            switch runState {
+            case let .playing(droneConnected, _, rth):
+                if rth {
+                    self.init(mainText: L10n.commonReturnHome,
+                              mainColor: ColorName.greySilver.color,
+                              subColor: ColorName.whiteAlbescent.color,
+                              progress: 1.0)
+                } else {
+                    self.init(mainText: String(format: "%@・%@",
+                                               percentString,
+                                               distanceString),
+                              mainColor: droneConnected ? ColorName.highlightColor.color : ColorName.defaultIconColor.color,
+                              subColor: ColorName.whiteAlbescent.color,
+                              progress: progress)
+                }
+            case .paused:
+                self.init(mainText: L10n.flightPlanAlertStoppedAt(String(format: "%@・%@",
+                                                                         percentString,
+                                                                         distanceString)),
+                          mainColor: ColorName.warningColor.color,
+                          subColor: ColorName.whiteAlbescent.color,
+                          progress: progress)
+            default:
+                self.init(mainText: "")
+            }
+        case .startedNotFlying:
+            self.init(mainText: L10n.flightPlanInfoUploading)
+        case .end:
+            self.init(mainText: "")
+        case let .resumable(_, startAvailability),
+             let .editable(_, startAvailability):
+            switch startAvailability {
+            case .available:
                 self.init(mainText: L10n.flightPlanInfoDroneReady)
-            } else {
-                if state.isConnected() {
-                    self.init(mainText: state.unavailabilityReasons.errorText ?? L10n.error,
+            case let .unavailable(reason):
+                switch reason {
+                case .droneDisconnected:
+                    self.init(mainText: L10n.commonDroneNotConnected,
                               mainColor: ColorName.redTorch.color,
                               hasError: true)
-                } else {
-                    self.init(mainText: L10n.commonDroneNotConnected,
-                              mainColor: ColorName.yellowSea.color,
+                case let .pilotingItfUnavailable(reasons):
+                    self.init(mainText: reasons.errorText ?? L10n.error,
+                              mainColor: ColorName.redTorch.color,
                               hasError: true)
                 }
-
+            case .alreadyRunning:
+                self.init(mainText: "")
             }
-        case .uploading:
-            self.init(mainText: L10n.flightPlanInfoUploading)
+        case .machineStarted, .initialized:
+            self.init(mainText: "")
         }
     }
 }
@@ -147,7 +183,7 @@ private extension FlightPlanPanelProgressView {
     /// Common init.
     func commonInitFlightPlanPanelProgressView() {
         self.loadNibContent()
-        topLeftLabel.makeUp(with: .regular)
+        topLeftLabel.makeUp()
     }
 
     /// Fills up the view with given model.

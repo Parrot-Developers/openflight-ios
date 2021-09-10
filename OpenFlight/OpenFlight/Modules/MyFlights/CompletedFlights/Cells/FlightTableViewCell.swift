@@ -30,6 +30,7 @@
 
 import UIKit
 import Reusable
+import Combine
 
 /// Flight TableViewCell.
 
@@ -53,58 +54,51 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
     @IBOutlet private weak var warningStackView: UIStackView!
     @IBOutlet private weak var warningLabel: UILabel!
 
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Internal Funcs
     /// Configure cell.
     ///
     /// - Parameters:
-    ///    - viewModel: Flight data view model
+    ///    - viewModel: Cell view model
     ///    - showDate: Show flight date
-    func configureCell(viewModel: FlightDataViewModel, showDate: Bool) {
-        initCell()
+    func configureCell(viewModel: FlightTableViewCellModel, showDate: Bool) {
+        cancellables = []
         // Setup date section display.
         dateView.isHidden = !(UIApplication.isLandscape || showDate)
         dateView.alpha = showDate ? 1.0 : 0.0
         dateStackView.axis =  UIApplication.isLandscape ? .horizontal : .vertical
         // Setup content.
         if showDate {
-            let date = viewModel.state.value.date
+            let date = viewModel.flight.startTime
             monthLabel.text = date?.month.capitalized
             yearLabel.text = date?.year
         }
-        dateLabel.text = viewModel.state.value.formattedDate
-        locationLabel.text = viewModel.state.value.flightLocationDescription
-        durationLabel.text = viewModel.state.value.longFormattedDuration
-        warningStackView.isHidden = !viewModel.state.value.hasIssues
-        if viewModel.state.value.hasIssues {
-            // TODO: read gutma and update label accordingly.
-            warningLabel.text = "Issue with this flight"
-        }
-
-        self.updateMapImage(state: viewModel.state.value)
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.updateMapImage(state: state)
-            self?.locationLabel.text = state.flightDescription
-            self?.durationLabel.text = state.longFormattedDuration
-        }
-        viewModel.requestThumbnail()
-        viewModel.requestPlacemark()
+        dateLabel.text = viewModel.flight.formattedDate
+        durationLabel.text = viewModel.flight.longFormattedDuration
+        // TODO manage issues
+        warningStackView.isHidden = true
+        photoLabel.text = viewModel.flight.photoCount == 0 ? Style.dash : viewModel.flight.photoCount.description
+        videoLabel.text = viewModel.flight.videoCount == 0 ? Style.dash : viewModel.flight.videoCount.description
+        viewModel.$name
+            .sink { [weak self] in
+                self?.locationLabel.text = $0
+            }
+            .store(in: &cancellables)
+        viewModel.$thumbnail
+            .sink { [weak self] in
+                self?.updateMapImage(viewModel: viewModel, thumbnail: $0)
+            }
+            .store(in: &cancellables)
     }
 }
 
 // MARK: - Private Funcs
 private extension FlightTableViewCell {
-    func initCell() {
-        photoLabel.text = Style.dash
-        videoLabel.text = Style.dash
-    }
 
-    /// Updates map image according to gps location validity.
-    ///
-    /// - Parameters:
-    ///     - state: Flight data state
-    func updateMapImage(state: FlightDataState) {
-        if state.isLocationValid,
-           let thumb = state.thumbnail {
+    func updateMapImage(viewModel: FlightTableViewCellModel, thumbnail: UIImage?) {
+        if viewModel.flight.isLocationValid,
+           let thumb = thumbnail {
             self.mapImage.image = thumb
         } else {
             self.mapImage.image = Asset.MyFlights.mapPlaceHolder.image

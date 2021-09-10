@@ -29,33 +29,70 @@
 //    SUCH DAMAGE.
 
 import KeychainAccess
+import Combine
+
+// MARK: - Private Enums
+/// Enum with some user informations keys for the keychain.
+enum UserInformationKey {
+    static let accountConnection = "AccountConnection"
+    static let token = "token"
+    static let apcId = "apcId"
+}
+
+public protocol UserInformation: AnyObject {
+
+    /// User information token
+    var token: String { get }
+
+    var tokenPublisher: AnyPublisher<String, Never> { get }
+
+    func set(token: String)
+
+    /// User information apcId
+    var apcId: String { get set }
+
+    /// User information keychain
+    var keychain: Keychain { get }
+
+    /// String value to use for `apcId`or `email`when there's no logged-in User
+    var anonymousString: String { get }
+}
 
 /// Class used to handle the storage of the user informations in the keychain.
-public class UserInformation {
+public class UserInformationImpl: UserInformation {
+
     // MARK: - Public Properties
-    /// Current keychain object.
-    public static var current: UserInformation = UserInformation()
 
-    /// User information keychain.
-    public let keychain = Keychain(service: UserInformationKey.accountConnection)
+    public var keychain: Keychain {
+        return Keychain(service: UserInformationKey.accountConnection)
+    }
 
-    /// User information token.
-    public var token: String {
+    public var token: String { keychain[UserInformationKey.token] ?? "" }
+
+    private let tokenSubject = CurrentValueSubject<String, Never>("")
+
+    public func set(token: String) {
+        self.tokenSubject.value = token
+        keychain[UserInformationKey.token] = token
+    }
+
+    public var tokenPublisher: AnyPublisher<String, Never> { tokenSubject.eraseToAnyPublisher() }
+
+    public var apcId: String {
         get {
-            return keychain[UserInformationKey.token] ?? ""
+            return keychain[UserInformationKey.apcId] ?? anonymousString
         }
         set {
-            keychain[UserInformationKey.token] = newValue
+            keychain[UserInformationKey.apcId] = newValue
         }
     }
 
-    // MARK: - Private Enums
-    /// Enum with some user informations keys for the keychain.
-    private enum UserInformationKey {
-        static let accountConnection = "AccountConnection"
-        static let token = "token"
+    public var anonymousString: String {
+        return "ANONYMOUS"
     }
 
     // MARK: - Init
-    public init() { }
+    public init() {
+        self.tokenSubject.value = token
+    }
 }

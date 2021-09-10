@@ -35,7 +35,7 @@ enum FlightViewModelConstants {
     static let coordinateSpan: CLLocationDegrees = 0.005
     static let lineWidth: CGFloat = 5.0
     static let thumbnailMarginRatio: Double = 0.2
-    static let thumbnailSize: CGSize = CGSize(width: 40.0, height: 40.0)
+    static let thumbnailSize: CGSize = CGSize(width: 180.0, height: 160.0)
 }
 
 /// Cloud status enum.

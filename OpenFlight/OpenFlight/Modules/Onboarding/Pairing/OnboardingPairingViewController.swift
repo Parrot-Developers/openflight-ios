@@ -93,13 +93,11 @@ private extension OnboardingPairingViewController {
     /// Initializes UI and wordings.
     func initUI() {
         droneImageView.image = Asset.Alertes.TakeOff.icDroneCalibrationNeeded.image
-        titleLabel.makeUp(with: .huge, and: .greenSpring)
         if let targetName = Bundle.main.infoDictionary?["CFBundleName"] as? String {
             titleLabel.text = L10n.configurationConfigureText(targetName)
         }
-        descriptionLabel.makeUp(with: .huge)
         descriptionLabel.text = L10n.configurationConfigureYourDrone
-        configureButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
+        configureButton.layer.cornerRadius = Style.largeCornerRadius
         configureButton.setTitle(L10n.configurationConfigureNow, for: .normal)
         laterButton.setTitle(L10n.commonLater, for: .normal)
     }

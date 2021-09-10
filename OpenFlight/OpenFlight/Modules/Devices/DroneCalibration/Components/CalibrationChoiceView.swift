@@ -78,6 +78,7 @@ private extension CalibrationChoiceView {
     func commonInit() {
         self.loadNibContent()
         self.applyCornerRadius(Style.largeCornerRadius)
+        self.addShadow(shadowColor: ColorName.whiteAlbescent.color)
     }
 
     /// Update the UI for a specific view model.

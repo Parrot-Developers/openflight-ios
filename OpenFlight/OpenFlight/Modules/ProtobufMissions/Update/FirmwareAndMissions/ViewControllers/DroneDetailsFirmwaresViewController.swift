@@ -36,7 +36,6 @@ final class DroneDetailsFirmwaresViewController: UIViewController {
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var contentView: UIView!
-    @IBOutlet private weak var contentSubview: UIView!
 
     // MARK: - Private Properties
     private weak var coordinator: ProtobufMissionUpdateCoordinator?
@@ -53,7 +52,6 @@ final class DroneDetailsFirmwaresViewController: UIViewController {
     static func instantiate(coordinator: ProtobufMissionUpdateCoordinator) -> DroneDetailsFirmwaresViewController {
         let viewController = StoryboardScene.DroneDetailsFirmwares.initialScene.instantiate()
         viewController.coordinator = coordinator
-
         return viewController
     }
 
@@ -73,15 +71,16 @@ final class DroneDetailsFirmwaresViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
         interactor.manuallyBrowse()
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        UIView.animate(withDuration: Style.mediumAnimationDuration) {
-            self.view.backgroundColor = ColorName.greyDark60.color
-        }
+        UIView.animate(withDuration: Style.shortAnimationDuration,
+                       delay: Style.shortAnimationDuration,
+                       animations: {
+                            self.view.backgroundColor = ColorName.nightRider80.color
+                       })
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -89,7 +88,7 @@ final class DroneDetailsFirmwaresViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 }
 
@@ -115,9 +114,8 @@ extension DroneDetailsFirmwaresViewController: UITableViewDataSource {
 
 // MARK: - UITableViewDelegate
 extension DroneDetailsFirmwaresViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView,
-                   heightForRowAt indexPath: IndexPath) -> CGFloat {
-            return Constants.tableViewHeight
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return Constants.tableViewHeight
     }
 }
 
@@ -128,7 +126,6 @@ extension DroneDetailsFirmwaresViewController: ProtobufMissionUpdateTableViewCel
     /// - Parameters:
     ///    - updateChoice: The current update choice
     func startUpdate(for updateChoice: FirmwareAndMissionUpdateChoice) {
-        // TODO: Displays intermediate screens about firmware infos before launching these screens.
         let currentRequirement = interactor.prepareUpdates(updateChoice: updateChoice)
         switch currentRequirement {
         case .readyForUpdate:
@@ -159,10 +156,7 @@ private extension DroneDetailsFirmwaresViewController {
     /// Inits the UI.
     func initUI() {
         titleLabel.text = L10n.firmwareMissionUpdateFirmwareVersionPlural
-        contentView.backgroundColor = ColorName.greyShark.color
-        contentSubview.backgroundColor = ColorName.greyShark.color
-        contentView.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
-                                       radius: Style.largeCornerRadius)
+        contentView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
     }
 
     /// Sets up the table view.
@@ -170,8 +164,7 @@ private extension DroneDetailsFirmwaresViewController {
         tableView.allowsSelection = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.makeUp(backgroundColor: ColorName.greyShark.color)
-        tableView.separatorColor = ColorName.white10.color
+        tableView.separatorColor = ColorName.defaultTextColor20.color
         tableView.register(cellType: ProtobufMissionUpdateTableViewCell.self)
         tableView.reloadData()
     }

@@ -60,32 +60,15 @@ struct CalibrationChoiceModel {
     ///    - backgroundColor: Calibration background color.
     init(image: UIImage,
          text: String,
-         textColor: UIColor = ColorName.white.color,
+         textColor: UIColor = ColorName.defaultTextColor.color,
          subText: String? = nil,
-         subTextColor: ColorName = .white50,
-         backgroundColor: ColorName = .white10) {
+         subTextColor: ColorName = .defaultTextColor,
+         backgroundColor: ColorName = .white) {
         self.image = image
         self.text = text
         self.textColor = textColor
         self.subText = subText
         self.subTextColor = subTextColor
         self.backgroundColor = backgroundColor
-    }
-
-    // MARK: - Internal Funcs
-    /// Updates model with given set of calibrations.
-    ///
-    /// - Parameters:
-    ///     - state: drone calibration state.
-    mutating func update(state: DroneCalibrationState) {
-        if state.frontStereoGimbalState == .needed {
-            subText = state.frontStereoGimbalState?.description ?? ""
-            subTextColor = .redTorch
-            backgroundColor = .redTorch25
-        } else {
-            subText = state.gimbalCalibrationDescription
-            subTextColor = state.gimbalCalibrationTextColor ?? .white50
-            backgroundColor = state.gimbalCalibrationBackgroundColor ?? .white50
-        }
     }
 }

@@ -29,7 +29,7 @@
 
 import Foundation
 
-public struct User: Equatable {
+public struct User {
 
     // MARK: - Properties
 
@@ -42,7 +42,7 @@ public struct User: Equatable {
         static let shareDataOptionDefault        = false
         static let tempApcUserDefault            = false
         static let langDefault                   = "en"
-        static let freemiumProjectCounterDefault = 0
+        static let freemiumProjectCounterDefault = 3
     }
 
     public var firstName: String?

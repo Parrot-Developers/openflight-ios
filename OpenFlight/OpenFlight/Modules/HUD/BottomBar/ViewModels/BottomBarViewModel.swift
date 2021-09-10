@@ -68,7 +68,6 @@ final class GlobalBottomBarState: ViewModelState, EquatableState, Copying {
 
 final class BottomBarViewModel: BaseViewModel<GlobalBottomBarState> {
     // MARK: - Private Properties
-    private var modalPresentationObserver: Any?
     private var cancellables = Set<AnyCancellable>()
     private unowned var currentMissionManager = Services.hub.currentMissionManager
 
@@ -79,29 +78,19 @@ final class BottomBarViewModel: BaseViewModel<GlobalBottomBarState> {
         observeModalPresentation()
         listenMissionMode()
     }
-
-    // MARK: - Deinit
-    deinit {
-        NotificationCenter.default.remove(observer: modalPresentationObserver)
-        modalPresentationObserver = nil
-    }
 }
 
 // MARK: - Private Funcs
 private extension BottomBarViewModel {
     /// Starts watcher for modal presentation.
     func observeModalPresentation() {
-        modalPresentationObserver = NotificationCenter.default.addObserver(
-            forName: .modalPresentDidChange,
-            object: nil,
-            queue: nil) { [weak self] notification in
-                guard let isModalPresented = notification.userInfo?[BottomBarViewControllerNotifications.notificationKey] as? Bool else {
-                    return
-                }
+        Services.hub.ui.uiComponentsDisplayReporter.isModalPresentedPublisher
+            .sink { [weak self] in
                 let copy = self?.state.value.copy()
-                copy?.shouldHide = isModalPresented
+                copy?.shouldHide = $0
                 self?.state.set(copy)
-        }
+            }
+            .store(in: &cancellables)
     }
 
     /// Listen for mission mode

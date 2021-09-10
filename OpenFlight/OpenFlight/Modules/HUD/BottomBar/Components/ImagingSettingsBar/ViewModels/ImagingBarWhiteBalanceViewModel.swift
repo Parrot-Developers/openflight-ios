@@ -36,15 +36,17 @@ final class ImagingBarWhiteBalanceViewModel: BarButtonViewModel<ImagingBarState>
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
 
-    // MARK: - Override Funcs
-    override init() {
-        super.init()
+    // MARK: - init
+    /// Constructor.
+    init() {
+        super.init(barId: "WhiteBalance")
 
         let copy = self.state.value.copy()
         copy.showUnsupportedModes = true
         self.state.set(copy)
     }
 
+    // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         listenCamera(drone: drone)
     }

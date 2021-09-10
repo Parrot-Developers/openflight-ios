@@ -37,6 +37,12 @@ final class ImagingBarVideoResolutionViewModel: BarButtonViewModel<ImagingBarSta
     /// List of available resolutions.
     private let availableResolutions: [Camera2RecordingResolution] = Camera2RecordingResolution.availableResolutions
 
+    // MARK: - init
+    /// Constructor.
+    init() {
+        super.init(barId: "VideoResolution")
+    }
+
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         listenCamera(drone: drone)

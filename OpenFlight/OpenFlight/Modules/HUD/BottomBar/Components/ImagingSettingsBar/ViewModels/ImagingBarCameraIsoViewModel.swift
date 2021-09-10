@@ -28,6 +28,7 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Combine
 import GroundSdk
 import SwiftyUserDefaults
 
@@ -38,8 +39,38 @@ final class ImagingBarCameraIsoViewModel: AutomatableBarButtonViewModel<Automata
     private var droneStateRef: Ref<DeviceState>?
     private var exposureValuesRef: Ref<Camera2ExposureIndicator>?
     private var cameraRef: Ref<MainCamera2>?
+    /// Whether HDR is turned on.
+    @Published private var isHdrOn = false
+    /// Camera exposure lock service.
+    private unowned var exposureLockService: ExposureLockService
+    /// Combine subscriptions.
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Override Funcs
+
+    /// Constructor.
+    ///
+    /// - Parameter exposureLockService: camera exposure lock service
+    init(exposureLockService: ExposureLockService) {
+        self.exposureLockService = exposureLockService
+        super.init(barId: "CameraIso")
+
+        exposureLockService.statePublisher
+            .combineLatest($isHdrOn)
+            .sink { [unowned self] exposureLockState, hdrOn in
+                let copy = state.value.copy()
+                copy.enabled = !exposureLockState.locked
+                    && !exposureLockState.locking
+                    && !hdrOn
+                state.set(copy)
+                if !copy.enabled {
+                    // autoclose if necessary
+                    state.value.isSelected.set(false)
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     override func listenDrone(drone: Drone) {
         if !drone.isConnected {
             let copy = self.state.value.copy()
@@ -86,7 +117,7 @@ final class ImagingBarCameraIsoViewModel: AutomatableBarButtonViewModel<Automata
     }
 
     override func copy() -> ImagingBarCameraIsoViewModel {
-        return ImagingBarCameraIsoViewModel()
+        return ImagingBarCameraIsoViewModel(exposureLockService: exposureLockService)
     }
 }
 
@@ -95,11 +126,9 @@ private extension ImagingBarCameraIsoViewModel {
     /// Starts watcher for drone state.
     func listenState(drone: Drone) {
         droneStateRef = drone.getState { [weak self] state in
-            guard let state = state, let copy = self?.state.value.copy() else {
+            guard let state = state else {
                 return
             }
-            copy.enabled = state.connectionState == .connected
-            self?.state.set(copy)
 
             if state.connectionState == .disconnected {
                 // Autoclose if needed.
@@ -127,19 +156,20 @@ private extension ImagingBarCameraIsoViewModel {
 
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
             guard let camera = camera,
                 let exposureMode = camera.config[Camera2Params.exposureMode],
-                let isoSensitivity = camera.config[Camera2Params.isoSensitivity],
-                let copy = self?.state.value.copy() else {
-                    return
+                let isoSensitivity = camera.config[Camera2Params.isoSensitivity] else {
+                return
             }
 
+            let copy = state.value.copy()
             copy.supportedModes = isoSensitivity.currentSupportedValues.sorted()
             copy.image = exposureMode.value == .manualShutterSpeed ? Asset.BottomBar.Icons.iconAuto.image : nil
             copy.isAutomatic = exposureMode.value.automaticIsoSensitivity
-            self?.state.set(copy)
-            self?.state.value.exposureSettingsMode.set(exposureMode.value)
+            state.set(copy)
+            state.value.exposureSettingsMode.set(exposureMode.value)
+            isHdrOn = camera.isHdrOn
         }
     }
 }

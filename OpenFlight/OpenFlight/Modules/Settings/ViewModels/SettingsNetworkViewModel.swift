@@ -140,7 +140,7 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
         entries.append(SettingEntry(setting: driModeModel(dri: dri),
                                     title: L10n.settingsConnectionBroadcastDri,
                                     subtitle: subtitle,
-                                    isEnabled: drone?.isConnected == true,
+                                    isEnabled: dri.mode != nil,
                                     showInfo: showDRIPage,
                                     infoText: L10n.settingsConnectionDriLearnMore,
                                     itemLogKey: LogEvent.LogKeyAdvancedSettings.driSetting))

@@ -30,23 +30,14 @@
 
 import UIKit
 
-// MARK: - Public Enums
-/// Stores different type of history table view.
-public enum HistoryTableType {
-    /// Table view is in a mini display mode.
-    case miniHistory
-    /// Table view is in a full display mode.
-    case fullHistory
-}
-
 // MARK: - Protocols
 protocol FlightPlanHistoryDelegate: AnyObject {
     /// Called when user taps the medias view in a selected cell.
     ///
     /// - Parameters:
-    ///     - fpExecution: the current flight plan execution
+    ///     - flightModel: the current flight plan model
     ///     - action: action to perform
-    func didTapOnMedia(fpExecution: FlightPlanExecution,
+    func didTapOnMedia(flightModel: FlightPlanModel,
                        action: HistoryMediasActionType?)
 }
 
@@ -64,20 +55,17 @@ final class FlightPlanHistoryViewController: UIViewController {
     var tableType: HistoryTableType = .fullHistory {
         didSet {
             fpExecutionsViews = FlightPlanHistorySyncManager.shared.syncProvider?.historySyncViews(type: tableType,
-                                                                                                   flightPlanViewModel: flightplan) ?? [:]
+                                                                                                   projectModel: project) ?? [:]
         }
     }
     /// Return current flight plan view model.
-    var flightplan: FlightPlanViewModel? {
-        didSet {
-            data = flightplan?.executions ?? []
-        }
-    }
+    var project: ProjectModel?
+
     /// List of history views for each flight plan execution.
     var fpExecutionsViews: [String: HistoryMediasView] = [:]
 
     // MARK: - Private Properties
-    private var data: [FlightPlanExecution] = []
+    var data: [FlightPlanModel] = []
 
     // MARK: - Private Enums
     private enum Constants {
@@ -96,7 +84,7 @@ final class FlightPlanHistoryViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -131,8 +119,8 @@ extension FlightPlanHistoryViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(for: indexPath,
                                                  cellType: FlightPlanHistoryTableViewCell.self)
-        cell.setup(fpExecution: data[indexPath.row],
-                   mediasView: fpExecutionsViews[data[indexPath.row].executionId],
+        cell.setup(flightModel: data[indexPath.row],
+                   mediasView: fpExecutionsViews[data[indexPath.row].uuid],
                    tableType: tableType)
         cell.delegate = self
 
@@ -156,15 +144,12 @@ extension FlightPlanHistoryViewController: UITableViewDataSource {
 
 // MARK: - FlightPlanHistoryCellDelegate
 extension FlightPlanHistoryViewController: FlightPlanHistoryCellDelegate {
-    func didTapOnResume(fpExecution: FlightPlanExecution) {
-        let canResume = flightplan?.resumeExecution(fpExecution) ?? false
-        if canResume {
-            coordinator?.dismiss()
-        }
+    func didTapOnResume(flightModel: FlightPlanModel) {
+        coordinator?.dismiss()
     }
 
-    func didTapOnMedia(fpExecution: FlightPlanExecution, action: HistoryMediasActionType?) {
-        delegate?.didTapOnMedia(fpExecution: fpExecution,
+    func didTapOnMedia(flightModel: FlightPlanModel, action: HistoryMediasActionType?) {
+        delegate?.didTapOnMedia(flightModel: flightModel,
                                 action: action)
     }
 }

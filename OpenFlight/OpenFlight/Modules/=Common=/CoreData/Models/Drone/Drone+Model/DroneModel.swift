@@ -33,21 +33,37 @@ public struct DroneModel: Equatable {
 
     // MARK: - Properties
 
+    public var apcId: String
     public var droneSerial: String
     public var droneCommonName: String?
     public var modelId: String?
     public var pairedFor4G: Bool
 
+    // MARK: - Synchro Properties
+
+    /// - Contains the Date of last synchro trying if is not succeeded
+    public var synchroDate: Date?
+
+    /// - Contains 0 if not yet synchronized, 1 if yes
+        /// statusCode if sync failed
+    public var synchroStatus: Int16?
+
     // MARK: - Public init
 
-    public init(droneSerial: String,
+    public init(apcId: String,
+                droneSerial: String,
                 droneCommonName: String?,
                 modelId: String?,
-                pairedFor4G: Bool) {
+                pairedFor4G: Bool,
+                synchroDate: Date? = nil,
+                synchroStatus: Int16? = 0) {
 
+        self.apcId = apcId
         self.droneSerial = droneSerial
         self.droneCommonName = droneCommonName
         self.modelId = modelId
         self.pairedFor4G = pairedFor4G
+        self.synchroDate = synchroDate
+        self.synchroStatus = synchroStatus
     }
 }

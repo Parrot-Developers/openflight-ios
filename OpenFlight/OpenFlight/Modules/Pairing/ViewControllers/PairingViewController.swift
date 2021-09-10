@@ -34,7 +34,6 @@ import UIKit
 final class PairingViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var collectionView: UICollectionView!
-    @IBOutlet private weak var remoteStateButton: UIButton!
     @IBOutlet private weak var titleLabel: UILabel!
 
     // MARK: - Private Properties
@@ -92,14 +91,7 @@ final class PairingViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
-    }
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-
-        updateControllerButtonView()
-        collectionView.reloadData()
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -113,15 +105,7 @@ private extension PairingViewController {
         // Hide each element when we dismiss the view controller.
         collectionView.isHidden = true
         titleLabel.isHidden = true
-        remoteStateButton.isHidden = true
         coordinator?.dismissPairing()
-    }
-
-    /// Called when user tap on No remote or remote button.
-    @IBAction func switchControllerTouchedUpInside(_ sender: Any) {
-        updateControllerButton()
-        viewModel.isDroneSwitchedOn = false
-        updateView()
     }
 }
 
@@ -133,39 +117,17 @@ private extension PairingViewController {
     ///     - state: connection state
     func updateView(_ state: DeviceConnectionState = DeviceConnectionState()) {
         let list = viewModel.pairingList
-        updateControllerButtonView()
 
         pairingList = list
         collectionView?.reloadData()
     }
 
-    /// Update the controller style.
-    func updateControllerButton() {
+    /// Toggles the controller style.
+    func toggleControllerStyle() {
         if viewModel.currentControllerStyle == Controller.remoteControl {
             viewModel.setControllerStyle(controllerStyle: Controller.userDevice)
         } else {
             viewModel.setControllerStyle(controllerStyle: Controller.remoteControl)
-        }
-    }
-
-    /// Update the controller style button according to orientation mode and controller style.
-    func updateControllerButtonView() {
-        // In landscape mode, we set a title according to controller style and we hide the icon.
-        if UIApplication.isLandscape {
-            if viewModel.currentControllerStyle == Controller.remoteControl {
-                remoteStateButton.setTitle(L10n.pairingWithoutController, for: .normal)
-            } else {
-                remoteStateButton.setTitle(L10n.pairingWithController, for: .normal)
-            }
-            remoteStateButton.setImage(nil, for: .normal)
-            // In portrait mode, we hide the title and set an icon instead.
-        } else {
-            if viewModel.currentControllerStyle == Controller.remoteControl {
-                remoteStateButton.setImage(Asset.Pairing.icPairingControllerMini.image, for: .normal)
-            } else {
-                remoteStateButton.setImage(Asset.Pairing.icPairingPhoneMini.image, for: .normal)
-            }
-            remoteStateButton.setTitle(nil, for: .normal)
         }
     }
 }
@@ -245,6 +207,12 @@ extension PairingViewController: PairingCellDelegate {
 
     func switchOnDroneDone() {
         viewModel.isDroneSwitchedOn = true
+        updateView()
+    }
+
+    func onClickAction() {
+        toggleControllerStyle()
+        viewModel.isDroneSwitchedOn = false
         updateView()
     }
 }

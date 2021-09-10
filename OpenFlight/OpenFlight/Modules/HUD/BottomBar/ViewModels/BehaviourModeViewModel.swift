@@ -93,8 +93,8 @@ final class BehaviourModeViewModel: BarButtonViewModel<BehaviourModeButtonState>
     private var behaviourModeObserver: DefaultsDisposable?
 
     // MARK: - Init
-    override init() {
-        super.init()
+    init() {
+        super.init(barId: "BehaviourMode")
 
         state.value.title = L10n.commonSpeed.uppercased()
         listenBehaviourModeDefault()

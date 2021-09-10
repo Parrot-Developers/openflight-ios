@@ -28,7 +28,7 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
+import Combine
 import GroundSdk
 import SwiftyUserDefaults
 
@@ -161,6 +161,8 @@ class CameraWidgetState: BarButtonState, EquatableState, Copying {
 /// View model to manage camera widget in HUD Bottom bar.
 final class CameraWidgetViewModel: BarButtonViewModel<CameraWidgetState> {
     // MARK: - Private Properties
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
     private var mainCameraRef: Ref<MainCamera2>?
     private var exposureValuesRef: Ref<Camera2ExposureIndicator>?
     private var lastExposureValue: Camera2ShutterSpeed? {
@@ -170,6 +172,35 @@ final class CameraWidgetViewModel: BarButtonViewModel<CameraWidgetState> {
         }
 
         return lastShutterSpeed
+    }
+
+    // MARK: - init
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///    - exposureLockService: camera exposure lock service
+    init(exposureLockService: ExposureLockService) {
+        super.init(barId: "CameraWidget")
+
+        // open imaging bar when user locked exposure on a region
+        exposureLockService.statePublisher
+            .removeDuplicates()
+            // do not open if exposure is already locked at connection,
+            // so wait until `lockingOnRegion` state is received
+            .drop(while: {
+                switch $0 {
+                case .lockingOnRegion:
+                    return false
+                default:
+                    return true
+                }
+            })
+            .filter { $0 == .lockOnRegion }
+            .sink { [unowned self] _ in
+                // open imaging bar
+                select()
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Override Funcs
@@ -211,7 +242,7 @@ private extension CameraWidgetViewModel {
         }
 
         let shutterSpeed = camera.getComponent(Camera2Components.exposureIndicator)?.shutterSpeed
-        guard let photoSignature = camera.config[Camera2Params.photoDigitalSignature]?.value else { return }
+        let photoSignature = camera.config[Camera2Params.photoDigitalSignature]?.value
 
         let newState = state.value.copy()
         switch cameraMode {

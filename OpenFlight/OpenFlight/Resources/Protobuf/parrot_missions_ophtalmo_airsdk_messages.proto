@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package parrot.missions.ophtalmo.airsdk.messages;
+
+import 'google/protobuf/empty.proto';
+import 'parrot/protobuf/extensions.proto';
+
+// for the application-side of the mission
+// (ie. "com" prefix + "drone" intermediate package)
+option java_package = "com.parrot.drone.missions.ophtalmo.airsdk";
+option java_outer_classname = "Ophtalmo";
+
+option (olympe_package) = "parrot.missions.ophtalmo";
+
+message Config {
+    // Altitude (above ground level) at which the calibration will be done.
+    // If 0 is given, the drone will use a default altitude (120m).
+    float altitude = 1;
+}
+
+// All the steps (in order) of the calibration process)
+enum CalibrationStep {
+    CALIBRATION_STEP_IDLE = 0;
+
+    CALIBRATION_STEP_TAKEOFF = 1;
+    CALIBRATION_STEP_TAKEOFF_DONE = 2;
+    CALIBRATION_STEP_ASCENDING = 3;
+    CALIBRATION_STEP_ASCENDING_DONE = 4;
+    CALIBRATION_STEP_TURNING = 5;
+    CALIBRATION_STEP_TURNING_DONE = 6;
+    CALIBRATION_STEP_DESCENDING = 7;
+    CALIBRATION_STEP_DESCENDING_DONE = 8;
+
+    // Not yet implemented
+    CALIBRATION_STEP_LANDING = 9;
+    CALIBRATION_STEP_LANDING_DONE = 10;
+};
+
+enum CalibrationStatus {
+    CALIBRATION_STATUS_IDLE = 0;
+    CALIBRATION_STATUS_IN_PROGRESS = 1;
+    CALIBRATION_STATUS_OK = 2;
+    CALIBRATION_STATUS_KO = 3;
+    CALIBRATION_STATUS_ABORTED = 4;
+};
+
+message State {
+    CalibrationStatus calibration_status = 1;
+    CalibrationStep calibration_step = 2;
+    uint32 completion_percent = 3;
+};
+
+// Union of all possible commands of this package.
+message Command {
+    oneof id {
+        // Start calibration (drone will automatically takeoff if needed).
+        Config start = 1;
+        // Abort calibration (drone will stop moving)
+        google.protobuf.Empty abort = 2;
+    }
+}
+
+// Union of all possible events of this package.
+message Event {
+    oneof id {
+        State state = 1;
+    }
+}

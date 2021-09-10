@@ -41,20 +41,10 @@ public protocol FlightPlanCameraSettingsHandler: AnyObject {
     var forbidCameraSettingsChange: Bool { get }
 }
 
-// Add Codable conformance to all types of interest
-extension Camera2Mode: Codable {}
-extension Camera2RecordingResolution: Codable {}
-extension Camera2RecordingFramerate: Codable {}
-extension Camera2WhiteBalanceMode: Codable {}
-extension Camera2EvCompensation: Codable {}
-extension Camera2PhotoResolution: Codable {}
-extension Camera2PhotoFileFormat: Codable {}
-extension Camera2PhotoFormat: Codable {}
-extension Camera2DigitalSignature: Codable {}
-
 /// Camera settings that should be saved during flight plan override then restored
 private struct CameraSettings: Codable {
     let cameraMode: Camera2Mode?
+    let photoMode: Camera2PhotoMode?
     let resolution: Camera2RecordingResolution
     let framerate: Camera2RecordingFramerate
     let whiteBalance: Camera2WhiteBalanceMode
@@ -63,6 +53,8 @@ private struct CameraSettings: Codable {
     let photoFileFormat: Camera2PhotoFileFormat
     let photoFormat: Camera2PhotoFormat
     let photoSignature: Camera2DigitalSignature?
+    let timelapseInterval: Double?
+    let gpslapseInterval: Double?
 }
 
 // MARK: ULogTag
@@ -84,7 +76,9 @@ class FlightPlanCameraSettingsHandlerImpl {
         case unknown
         // No activating or active flight plan
         case noActiveFlightPlan
-        // Activating or active flight plan
+        // Activating flight plan
+        case activatingFlightPlan
+        // Active flight plan
         case activeFlightPlan
     }
 
@@ -102,6 +96,9 @@ class FlightPlanCameraSettingsHandlerImpl {
     /// State
     private var state: State = .unknown
 
+    /// Project manager
+    private let projectManager: ProjectManager
+
     /// UserDefaults storage for camera settings during flight plan
     private var storedSettings: CameraSettings? {
         get {
@@ -117,21 +114,27 @@ class FlightPlanCameraSettingsHandlerImpl {
     /// - Parameters:
     ///   - activeFlightPlanWatcher: the active flight plan watcher
     ///   - currentDroneHolder: the current drone holder
-    init(activeFlightPlanWatcher: ActiveFlightPlanExecutionWatcher, currentDroneHolder: CurrentDroneHolder) {
+    ///   - projectManager: the project manager
+    init(activeFlightPlanWatcher: ActiveFlightPlanExecutionWatcher,
+         currentDroneHolder: CurrentDroneHolder,
+         projectManager: ProjectManager) {
         droneHolder = currentDroneHolder
-        activeFlightPlanWatcher.activeFlightPlanAndRecoveryIdPublisher
-            .combineLatest(activeFlightPlanWatcher.activatingFlightPlan)
-            .sink { [unowned self] (activeFlightPlanCouple, activatingFlightPlan) in
-            if let flightPlan = activatingFlightPlan {
-                // Switch to active flight plan and save user settings
-                // and send the FP camera settings when the FP is activating
-                handleActiveFlightPlan(flightPlan.plan)
-            } else if activeFlightPlanCouple == nil {
-                // Restore user settings when there's no activating or active flight plan
-                handleNoActiveFlightPlan()
+        self.projectManager = projectManager
+        activeFlightPlanWatcher.activeFlightPlanPublisher
+            .combineLatest(activeFlightPlanWatcher.activatingFlightPlanPublisher)
+            .sink { [unowned self] (activeFlightPlan, activatingFlightPlan) in
+                if let flightPlan = activatingFlightPlan {
+                    // Save user settings
+                    // and send the FP camera settings when the FP is activating
+                    handleActivatingFlightPlan(flightPlan)
+                } else if let activeFlightPlan = activeFlightPlan {
+                    handleActiveFlightPlan(activeFlightPlan)
+                } else {
+                    // Restore user settings when there's no activating or active flight plan
+                    handleNoActiveFlightPlan()
+                }
             }
-        }
-        .store(in: &cancellables)
+            .store(in: &cancellables)
     }
 }
 
@@ -144,25 +147,53 @@ private extension FlightPlanCameraSettingsHandlerImpl {
             state = .noActiveFlightPlan
         case .noActiveFlightPlan:
             return
-        case .activeFlightPlan:
+        case .activatingFlightPlan, .activeFlightPlan:
+            resetMediaMetadata()
             // We previously had an active flight plan, let's restore the potentially saved settings
             restoreSavedCameraSettings()
             state = .noActiveFlightPlan
         }
     }
 
-    /// Manage when there's an active flight plan
-    func handleActiveFlightPlan(_ flightPlan: FlightPlanObject) {
+    /// Manage when there's an activating flight plan
+    func handleActivatingFlightPlan(_ flightPlan: FlightPlanModel) {
         switch state {
         case .unknown:
-            state = .activeFlightPlan
-        case .activeFlightPlan:
+            state = .activatingFlightPlan
+        case .activatingFlightPlan, .activeFlightPlan:
             return
         case .noActiveFlightPlan:
             saveCameraSettings()
-            setFlightPlanCameraSettingsToDrone(flightPlan)
-            state = .activeFlightPlan
+            if let dataSetting = flightPlan.dataSetting {
+                setFlightPlanCameraSettingsToDrone(dataSetting)
+            }
+            setMediaMetadata(flightPlan)
+            state = .activatingFlightPlan
         }
+    }
+
+    func handleActiveFlightPlan(_ flightPlan: FlightPlanModel) {
+        // Currently nothing to be done 
+        state = .activeFlightPlan
+    }
+
+    func setMediaMetadata(_ flightPlan: FlightPlanModel) {
+        guard let mediaMetadata = droneHolder.drone.getPeripheral(Peripherals.mainCamera2)?.mediaMetadata else {
+            ULog.w(.tag, "setMediaMetadata: Unable to get mediaMetadata")
+            return
+        }
+        // Sets the custom Id and the custom title of the drone media metadata for the flight plan execution.
+        // To get media title + index that belong to the flight plan execution.
+        var executions = 0
+        if let project = projectManager.project(for: flightPlan) {
+            executions = projectManager.executedFlightPlans(for: project).count
+        }
+        mediaMetadata.customId = flightPlan.uuid
+        mediaMetadata.customTitle = "\(flightPlan.customTitle)" + " (\(executions))"
+    }
+
+    func resetMediaMetadata() {
+        droneHolder.drone.getPeripheral(Peripherals.mainCamera2)?.resetCustomMediaMetadata()
     }
 
     /// Save the current camera settings
@@ -176,10 +207,12 @@ private extension FlightPlanCameraSettingsHandlerImpl {
               let photoFormat = config[Camera2Params.photoFormat]?.value,
               let photoFileFormat = config[Camera2Params.photoFileFormat]?.value else { return }
         let cameraMode = config[Camera2Params.mode]?.value
-        // Photo signature may be overriden by the drone during the FP even if we don't explicitely change
-        // it because of compatibility checks on other settings (typically timelapse)
+        let photoMode = config[Camera2Params.photoMode]?.value
         let photoSignature = config[Camera2Params.photoDigitalSignature]?.value
+        let timelapseInterval = config[Camera2Params.photoTimelapseInterval]?.value
+        let gpslapseInterval = config[Camera2Params.photoGpslapseInterval]?.value
         let settings = CameraSettings(cameraMode: cameraMode,
+                                      photoMode: photoMode,
                                       resolution: resolution,
                                       framerate: framerate,
                                       whiteBalance: whiteBalance,
@@ -187,36 +220,67 @@ private extension FlightPlanCameraSettingsHandlerImpl {
                                       photoResolution: photoResolution,
                                       photoFileFormat: photoFileFormat,
                                       photoFormat: photoFormat,
-                                      photoSignature: photoSignature)
+                                      photoSignature: photoSignature,
+                                      timelapseInterval: timelapseInterval,
+                                      gpslapseInterval: gpslapseInterval)
         ULog.i(.tag, "Saving settings \(settings)")
         storedSettings = settings
     }
 
     /// Send flight plan's camera settings to drone
     /// - Parameter flightPlan: the flight plan
-    func setFlightPlanCameraSettingsToDrone(_ flightPlan: FlightPlanObject) {
-        let resolution: Camera2RecordingResolution = flightPlan.resolution
-        let framerate: Camera2RecordingFramerate = flightPlan.framerate
-        let whiteBalance: Camera2WhiteBalanceMode = flightPlan.whiteBalanceMode
-        let exposure: Camera2EvCompensation = flightPlan.exposure
-        let photoResolution: Camera2PhotoResolution = flightPlan.photoResolution
+    func setFlightPlanCameraSettingsToDrone(_ flightPlanData: FlightPlanDataSetting) {
+        // camera mode and photo mode, deduced from capture mode
+        var cameraMode: Camera2Mode
+        var photoMode: Camera2PhotoMode?
+        switch flightPlanData.captureModeEnum {
+        case .video:
+            cameraMode = .recording
+        case .timeLapse:
+            cameraMode = .photo
+            photoMode = .timeLapse
+        case .gpsLapse:
+            cameraMode = .photo
+            photoMode = .gpsLapse
+        }
 
-        let settings = CameraSettings(cameraMode: nil,
-                                      resolution: resolution,
-                                      framerate: framerate,
-                                      whiteBalance: whiteBalance,
-                                      exposure: exposure,
-                                      photoResolution: photoResolution,
+        // timelapse value in seconds
+        let timelapseInterval = flightPlanData.timeLapseCycle.map { Double($0) / 1000 }
+
+        // gpslapse value in meters
+        let gpslapseInterval = flightPlanData.gpsLapseDistance.map { Double($0) }
+
+        // get current signature configuration
+        var photoSignature = droneHolder.drone.getPeripheral(Peripherals.mainCamera2)?
+            .config[Camera2Params.photoDigitalSignature]?.value
+
+        // disablePhotoSignature is coming from the libPigeon
+        // it decides whether the signature is technically possible or not
+        if flightPlanData.disablePhotoSignature {
+            photoSignature = Camera2DigitalSignature.none
+            ULog.i(.tag, "Photo signature disabled")
+        }
+
+        let settings = CameraSettings(cameraMode: cameraMode,
+                                      photoMode: photoMode,
+                                      resolution: flightPlanData.resolution,
+                                      framerate: flightPlanData.framerate,
+                                      whiteBalance: flightPlanData.whiteBalanceMode,
+                                      exposure: flightPlanData.exposure,
+                                      photoResolution: flightPlanData.photoResolution,
                                       photoFileFormat: Constants.defaultPhotoFileFormat,
                                       photoFormat: Constants.defaultPhotoFormat,
-                                      photoSignature: nil)
+                                      photoSignature: photoSignature,
+                                      timelapseInterval: timelapseInterval,
+                                      gpslapseInterval: gpslapseInterval)
+        ULog.i(.tag, "Sending settings \(settings)")
         setCameraSettings(settings)
     }
 
     /// Restore saved camera settings after flight plan execution
     func restoreSavedCameraSettings() {
         guard let settings = storedSettings else { return }
-        ULog.i(.tag, "Restauring settings \(settings)")
+        ULog.i(.tag, "Restoring settings \(settings)")
         setCameraSettings(settings)
         storedSettings = nil
     }
@@ -227,19 +291,23 @@ private extension FlightPlanCameraSettingsHandlerImpl {
         guard let camera = droneHolder.drone.getPeripheral(Peripherals.mainCamera2) else { return }
         // Edit camera configuration from scratch.
         let editor = camera.config.edit(fromScratch: true)
-        editor[Camera2Params.videoRecordingFramerate]?.value = settings.framerate
-        editor[Camera2Params.videoRecordingResolution]?.value = settings.resolution
-        editor[Camera2Params.whiteBalanceMode]?.value = settings.whiteBalance
-        editor[Camera2Params.exposureCompensation]?.value = settings.exposure
-        editor[Camera2Params.photoResolution]?.value = settings.photoResolution
-        editor[Camera2Params.photoFormat]?.value = settings.photoFormat
-        editor[Camera2Params.photoFileFormat]?.value = settings.photoFileFormat
-        // Set optional params only if needed.
-        if let mode = settings.cameraMode { editor[Camera2Params.mode]?.value = mode }
-        if let signature = settings.photoSignature { editor[Camera2Params.photoDigitalSignature]?.value = signature }
+        editor.applyValueNotForced(Camera2Params.mode, settings.cameraMode)
+        editor.applyValueNotForced(Camera2Params.photoMode, settings.photoMode)
+        editor.applyValueNotForced(Camera2Params.videoRecordingFramerate, settings.framerate)
+        editor.applyValueNotForced(Camera2Params.videoRecordingResolution, settings.resolution)
+        editor.applyValueNotForced(Camera2Params.whiteBalanceMode, settings.whiteBalance)
+        editor.applyValueNotForced(Camera2Params.exposureCompensation, settings.exposure)
+        editor.applyValueNotForced(Camera2Params.photoResolution, settings.photoResolution)
+        editor.applyValueNotForced(Camera2Params.photoFormat, settings.photoFormat)
+        editor.applyValueNotForced(Camera2Params.photoFileFormat, settings.photoFileFormat)
+        editor.applyValueNotForced(Camera2Params.photoTimelapseInterval, settings.timelapseInterval)
+        editor.applyValueNotForced(Camera2Params.photoGpslapseInterval, settings.gpslapseInterval)
+        // last parameter applied is photo signature, in order to set signature mode only if
+        // compatible with previously applied parameters
+        editor.applyValueNotForced(Camera2Params.photoDigitalSignature, settings.photoSignature)
         // Apply camera configuration.
         // Empty configuration fields will be filled with current configuration values when available.
-        editor.saveSettings(currentConfig: camera.config)
+        editor.saveSettings(currentConfig: camera.config, saveParams: false)
     }
 }
 

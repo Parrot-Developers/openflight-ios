@@ -30,6 +30,7 @@
 
 import UIKit
 import Reusable
+import Combine
 
 /// My flights cell for dashboard collection view.
 final class DashboardMyFlightsCell: UICollectionViewCell, NibReusable {
@@ -44,6 +45,10 @@ final class DashboardMyFlightsCell: UICollectionViewCell, NibReusable {
     @IBOutlet private weak var lastFlightTimeTitleLabel: UILabel!
     @IBOutlet private weak var lastFlightTimeLabel: UILabel!
     @IBOutlet private weak var numberOfFlightLabel: UILabel!
+
+    // MARK: - Private vars
+
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -68,20 +73,28 @@ final class DashboardMyFlightsCell: UICollectionViewCell, NibReusable {
     /// Sets up flight view for information display.
     ///
     /// - Parameters:
-    ///     - state: Base model state protocol used to get all necessary date about flights.
-    func setup(state: ViewModelState) {
-        let myFlightState = state as? MyFlightsState
-
+    ///     - viewModel: cell's view model
+    func setup(viewModel: DashboardMyFlightsCellModel) {
+        cancellables = []
         titleLabel.text = L10n.dashboardMyFlightsTitle.uppercased()
         totalDistanceTitleLabel.text = L10n.dashboardMyFlightsTotalDistance.uppercased()
-        totalDistanceLabel.text = myFlightState?.totalFlightsDistance ?? Constants.defaultDistance
+
         totalTimeTitleLabel.text = L10n.dashboardMyFlightsTotalTime.uppercased()
-        totalTimeLabel.text = myFlightState?.totalFlightsDuration ?? Constants.defaultTime
         lastFlightDistanceTitleLabel.text = L10n.dashboardMyFlightsSubtitle.uppercased()
-        lastFlightDistanceLabel.text = myFlightState?.distance ?? Constants.defaultDistance
         lastFlightTimeTitleLabel.text = L10n.dashboardMyFlightsLastFlightTime.uppercased()
-        lastFlightTimeLabel.text = myFlightState?.duration ?? Constants.defaultTime
-        numberOfFlightLabel.text = String(myFlightState?.numberOfFlights ?? 0)
+        viewModel.lastFlight
+            .sink { [weak self] in
+                self?.lastFlightDistanceLabel.text = $0?.formattedDistance ?? Constants.defaultDistance
+                self?.lastFlightTimeLabel.text = $0?.formattedDuration ?? Constants.defaultTime
+            }
+            .store(in: &cancellables)
+        viewModel.summary
+            .sink { [weak self] in
+                self?.totalDistanceLabel.text = $0.totalFlightsDistance
+                self?.totalTimeLabel.text = $0.totalFlightsDuration
+                self?.numberOfFlightLabel.text = String($0.numberOfFlights)
+            }
+            .store(in: &cancellables)
     }
 }
 

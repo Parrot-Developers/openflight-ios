@@ -34,7 +34,7 @@ public extension Decodable {
         do {
             let decoder = JSONDecoder()
 
-            /// Date formatter
+            // Date formatter
             decoder.dateDecodingStrategy = .formatted(DateFormatter.apiDateFormatter)
 
             let object = try decoder.decode(self, from: data)

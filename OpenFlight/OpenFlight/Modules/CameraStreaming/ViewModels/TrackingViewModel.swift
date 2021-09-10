@@ -232,7 +232,6 @@ private extension TrackingViewModel {
     /// Clear every variables of the view model.
     func stopImageProcessing() {
         onboardTracker?.removeAllTargets()
-        onboardTracker?.stopTrackingEngine()
         removeAllReferences()
     }
 
@@ -242,6 +241,7 @@ private extension TrackingViewModel {
         cameraLiveRef = nil
         sink = nil
         onboardTrackerRef = nil
+        onboardTracker?.stopTrackingEngine()
         onboardTracker = nil
         gimbalRef = nil
     }

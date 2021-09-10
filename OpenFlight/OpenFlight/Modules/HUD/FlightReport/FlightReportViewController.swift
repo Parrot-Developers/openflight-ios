@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Displays a flight report inside HUD.
 final class FlightReportViewController: UIViewController {
@@ -117,7 +118,8 @@ final class FlightReportViewController: UIViewController {
     @IBOutlet private weak var scrollViewBottomConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
-    private var flightViewModel: FlightDataViewModel?
+    private var viewModel: FlightDetailsViewModel!
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Deinit
     deinit {
@@ -128,10 +130,10 @@ final class FlightReportViewController: UIViewController {
     /// Instantiates FlightReport ViewController.
     ///
     /// - Parameters:
-    ///     - flightState: flight state
-    static func instantiate(flightState: FlightDataState) -> FlightReportViewController {
+    ///     - viewModel: view model
+    static func instantiate(viewModel: FlightDetailsViewModel) -> FlightReportViewController {
         let viewController = StoryboardScene.FlightReport.flightReportViewController.instantiate()
-        viewController.flightViewModel = FlightDataViewModel(state: flightState)
+        viewController.viewModel = viewModel
         return viewController
     }
 
@@ -147,7 +149,6 @@ final class FlightReportViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-
         // TODO: remove this and replace with real values
         storageSpaceCircleView.setProgress(0.25)
     }
@@ -228,16 +229,17 @@ private extension FlightReportViewController {
 
     /// Sets up flight view model for information display.
     func setupFlightViewModel() {
-        flightViewModel?.loadGutmaContent()
-        flightViewModel?.state.valueChanged = { [weak self] state in
-            self?.flightTimeInfoView.model?.value = state.formattedDuration
-            self?.totalDistanceInfoView.model?.value = state.formattedDistance
-            self?.batteryUsedInfoView.model?.value = state.batteryConsumption
-            self?.dateLabel.text = state.formattedDate
-            self?.locationLabel.text = state.formattedPosition
-            self?.flightNameLabel.text = state.flightLocationDescription
-            self?.flightNameTextfield.text = state.flightLocationDescription
-        }
+        flightTimeInfoView.model?.value = viewModel.flight.formattedDuration
+        totalDistanceInfoView.model?.value = viewModel.flight.formattedDistance
+        batteryUsedInfoView.model?.value = viewModel.flight.batteryConsumptionPercents
+        dateLabel.text = viewModel.flight.formattedDate
+        locationLabel.text = viewModel.flight.formattedPosition
+        viewModel.$name
+            .sink { [unowned self] in
+                flightNameLabel.text = $0
+                flightNameTextfield.text = $0
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -246,7 +248,7 @@ extension FlightReportViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         if let newTitle = textField.text, !newTitle.isEmpty {
-            flightViewModel?.updateTitle(newTitle)
+            viewModel.set(name: newTitle)
         }
         flightNameLabelStackView.isHidden.toggle()
         flightNameTextfield.isHidden.toggle()

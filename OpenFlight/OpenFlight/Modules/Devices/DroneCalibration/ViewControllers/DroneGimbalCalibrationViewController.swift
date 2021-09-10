@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// View Controller used to display the drone gimbal calibration.
 final class DroneGimbalCalibrationViewController: UIViewController {
@@ -42,23 +43,23 @@ final class DroneGimbalCalibrationViewController: UIViewController {
 
     // MARK: - Private Properties
     private weak var coordinator: DroneGimbalCalibrationCoordinator?
-    private var viewModel = DroneCalibrationViewModel()
+    private var viewModel: DroneCalibrationViewModel!
+    private var cancellables = Set<AnyCancellable>()
     private var isLoading: Bool = false
 
     // MARK: - Setup
-    static func instantiate(coordinator: DroneGimbalCalibrationCoordinator) -> DroneGimbalCalibrationViewController {
+    static func instantiate(coordinator: DroneGimbalCalibrationCoordinator, viewModel: DroneCalibrationViewModel ) -> DroneGimbalCalibrationViewController {
         let viewController = StoryboardScene.DroneCalibration.droneGimbalCalibrationViewController.instantiate()
         viewController.coordinator = coordinator
-
+        viewController.viewModel = viewModel
         return viewController
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        self.initUI()
-        self.setupViewModels()
+        initUI()
+        bindViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -70,8 +71,7 @@ final class DroneGimbalCalibrationViewController: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-
-        self.viewModel.cancelFrontStereoGimbalCalibration()
+        self.cancelCalibrations()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -79,7 +79,7 @@ final class DroneGimbalCalibrationViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -91,30 +91,35 @@ final class DroneGimbalCalibrationViewController: UIViewController {
 private extension DroneGimbalCalibrationViewController {
     @IBAction func backButtonTouchedUpInside(_ sender: Any) {
         dismissView()
-        self.viewModel.cancelGimbalCalibration()
-        self.viewModel.cancelFrontStereoGimbalCalibration()
+        self.cancelCalibrations()
     }
 
     @IBAction func backgroundButtonTouchedUpInside(_ sender: Any) {
         dismissView()
-        self.viewModel.cancelGimbalCalibration()
-        self.viewModel.cancelFrontStereoGimbalCalibration()
+        self.cancelCalibrations()
     }
 
     @IBAction func startButtonTouchedUpInside(_ sender: Any) {
-        self.descriptionLabel.text = L10n.gimbalCalibrationMainCamMessage
+        self.descriptionLabel.makeUp(with: .large, and: .highlightColor)
+        self.descriptionLabel.text = L10n.gimbalCalibration8kCameraMessage
         self.gimbalImageView.image = Asset.Drone.icGimbalCamera.image
         self.synchronisationImageView.isHidden = isLoading
         self.synchronisationImageView.startRotate()
+        self.startButton.customCornered(corners: [.allCorners],
+                                        radius: Style.largeCornerRadius,
+                                        backgroundColor: ColorName.white.color,
+                                        borderColor: ColorName.defaultTextColor.color,
+                                        borderWidth: Style.smallBorderWidth)
         self.startButton.isEnabled = isLoading
-        if viewModel.state.value.isCalibrationRequested {
-            self.viewModel.startGimbalCalibration()
+
+        if viewModel.isCalibrationRequested {
+            viewModel.startGimbalCalibration()
         } else {
             dismissView()
         }
 
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyDroneDetailsCalibrationButton.gimbalCalibrationStart,
-                             newValue: self.viewModel.state.value.gimbalCalibrationDescription,
+                             newValue: viewModel.gimbalCalibrationDescription,
                              logType: .button)
     }
 }
@@ -129,63 +134,85 @@ private extension DroneGimbalCalibrationViewController {
 
     /// Initializes all the UI for the view controller.
     func initUI() {
-        self.gimbalImageView.image = Asset.Drone.icGimbal.image
-        self.titleLabel.text = L10n.gimbalCalibrationTitle
-        self.mainView.applyCornerRadius(Style.largeCornerRadius,
-                                        maskedCorners: [.layerMinXMinYCorner,
-                                                        .layerMaxXMinYCorner])
-        self.descriptionLabel.textColor = ColorName.yellowSea.color
-        self.descriptionLabel.text = L10n.gimbalCalibrationDescription
-        self.startButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color, radius: Style.largeCornerRadius)
-        self.startButton.setTitleColor(ColorName.white.color, for: .normal)
-        self.startButton.setTitle(L10n.commonStart, for: .normal)
-        self.startButton.setTitleColor(ColorName.white50.color, for: .disabled)
-        self.startButton.setTitle(L10n.gimbalCalibrationCalibrating, for: .disabled)
-        self.synchronisationImageView.isHidden = !isLoading
+        gimbalImageView.image = Asset.Drone.icGimbal.image
+        titleLabel.text = L10n.gimbalCalibrationTitle
+        mainView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
+        descriptionLabel.makeUp(with: .large, and: .warningColor)
+        descriptionLabel.text = L10n.gimbalCalibrationDescription
+        startButton.customCornered(corners: [.allCorners],
+                                        radius: Style.largeCornerRadius,
+                                        backgroundColor: ColorName.highlightColor.color,
+                                        borderColor: .clear,
+                                        borderWidth: Style.smallBorderWidth)
+        startButton.setTitleColor(ColorName.white.color, for: .normal)
+        startButton.setTitle(L10n.commonStart, for: .normal)
+        startButton.setTitleColor(ColorName.defaultTextColor.color, for: .disabled)
+        startButton.setTitle(L10n.gimbalCalibrationCalibrating, for: .disabled)
+        synchronisationImageView.isHidden = !isLoading
     }
 
-    /// Sets up view models associated with the view.
-    func setupViewModels() {
-        self.viewModel.gimbalCalibrationState.valueChanged = { [weak self] state in
-            switch state {
-            case .calibrated:
-                self?.viewModel.frontStereoGimbalCalibrationState.set(.calibrating)
-                self?.descriptionLabel.text = L10n.gimbalCalibrationSensorMessage
-                self?.gimbalImageView.image = Asset.Drone.icLoveCamera.image
-                self?.viewModel.startFrontStereoGimbalCalibration()
-                self?.viewModel.frontStereoGimbalCalibrationState.valueChanged = { [weak self] frontStereoState in
-                    switch frontStereoState {
-                    case .calibrated:
-                        self?.gimbalCalibrateSuccess()
-                    case .calibrating:
-                        break
-                    default:
-                        self?.gimbalCalibrateFail()
-                    }
+    func bindViewModel() {
+        viewModel.$gimbalCalibrationState
+            .removeDuplicates()
+            .sink { [unowned self] gimbalCalibrationState in
+                switch gimbalCalibrationState {
+                case.calibrated:
+                    descriptionLabel.makeUp(with: .large, and: .highlightColor)
+                    descriptionLabel.text = L10n.gimbalCalibrationLoveCameraMessage
+                    gimbalImageView.image = Asset.Drone.icLoveCamera.image
+                    viewModel.startFrontStereoGimbalCalibration()
+                    viewModel.updateFrontStereoGimbalCalibrationState(state: .calibrating)
+
+                default :
+                    gimbalCalibrateFail()
                 }
-            default :
-                self?.gimbalCalibrateFail()
             }
-        }
+            .store(in: &cancellables)
+
+        viewModel.$frontStereoGimbalCalibrationState
+            .sink { [unowned self] frontStereoGimbalCalibrationState in
+                switch frontStereoGimbalCalibrationState {
+                case.calibrating:
+                    return
+
+                case .calibrated:
+                    gimbalCalibrateSuccess()
+
+                default:
+                    gimbalCalibrateFail()
+                }
+            }
+            .store(in: &cancellables)
     }
 
     /// Update gimbal view  after calibration success.
     func gimbalCalibrateSuccess() {
-        self.synchronisationImageView.isHidden = !isLoading
-        self.startButton.isEnabled = !isLoading
-        self.startButton.setTitle(L10n.ok, for: .normal)
-        self.descriptionLabel.textColor = ColorName.greenSpring.color
-        self.descriptionLabel.text = L10n.gimbalCalibrationSucceed
-        self.startButton.setTitleColor(ColorName.greenSpring.color, for: .normal)
+        gimbalImageView.image = Asset.Common.Checks.icFillChecked.image
+        synchronisationImageView.isHidden = !isLoading
+        descriptionLabel.makeUp(with: .huge, and: .highlightColor)
+        descriptionLabel.text = L10n.gimbalCalibrationSucceed
+        startButton.isEnabled = !isLoading
+        startButton.setTitle(L10n.ok, for: .normal)
+        startButton.customCornered(corners: [.allCorners],
+                                        radius: Style.largeCornerRadius,
+                                        backgroundColor: ColorName.highlightColor.color,
+                                        borderColor: .clear,
+                                        borderWidth: Style.smallBorderWidth)
+        startButton.setTitleColor(ColorName.white.color, for: .normal)
     }
 
     /// Update gimbal view  after calibration failure.
     func gimbalCalibrateFail() {
-        self.synchronisationImageView.isHidden = !isLoading
-        self.startButton.isEnabled = !isLoading
-        self.startButton.setTitle(L10n.droneCalibrationRedo, for: .normal)
-        self.descriptionLabel.textColor = ColorName.redTorch.color
-        self.startButton.setTitleColor(ColorName.white.color, for: .normal)
-        self.descriptionLabel.text = L10n.gimbalCalibrationFailed
+        synchronisationImageView.isHidden = !isLoading
+        startButton.isEnabled = !isLoading
+        startButton.setTitle(L10n.droneCalibrationRedo, for: .normal)
+        startButton.setTitleColor(ColorName.white.color, for: .normal)
+        descriptionLabel.makeUp(with: .large, and: .errorColor)
+        descriptionLabel.text = L10n.gimbalCalibrationFailed
+    }
+
+    func cancelCalibrations() {
+        viewModel.cancelGimbalCalibration()
+        viewModel.cancelFrontStereoGimbalCalibration()
     }
 }

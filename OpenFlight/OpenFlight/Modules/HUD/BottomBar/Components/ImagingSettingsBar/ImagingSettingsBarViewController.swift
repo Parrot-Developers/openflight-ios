@@ -59,24 +59,28 @@ final class ImagingSettingsBarViewController: UIViewController {
 
     // MARK: - Internal Properties
     fileprivate(set) var isAutoExposureLocked: Bool = false
-    weak var bottomBarDelegate: BottomBarViewControllerDelegate?
 
     // MARK: - Private Properties
     private weak var delegate: BottomBarContainerDelegate?
-    private var autoModeViewModel = ImagingBarAutoModeViewModel()
     private var cameraModeViewModel = CameraModeViewModel()
-    private var shutterSpeedItemViewModel = ImagingBarShutterSpeedViewModel()
-    private var cameraIsoItemViewModel = ImagingBarCameraIsoViewModel()
+    // TODO injection
+    private var autoModeViewModel = ImagingBarAutoModeViewModel(
+        exposureLockService: Services.hub.drone.exposureLockService)
+    private var shutterSpeedItemViewModel = ImagingBarShutterSpeedViewModel(
+        exposureLockService: Services.hub.drone.exposureLockService)
+    private var cameraIsoItemViewModel = ImagingBarCameraIsoViewModel(
+        exposureLockService: Services.hub.drone.exposureLockService)
+    private var evCompensationItemViewModel = ImagingBarEvCompensationViewModel(
+        exposureLockService: Services.hub.drone.exposureLockService)
+    private var exposureLockViewModel = ExposureLockViewModel(
+        exposureService: Services.hub.drone.exposureService,
+        exposureLockService: Services.hub.drone.exposureLockService)
     private var whiteBalanceItemViewModel = ImagingBarWhiteBalanceViewModel()
-    private var evCompensationItemViewModel = ImagingBarEvCompensationViewModel()
     private var dynamicRangeBarViewModel = DynamicRangeBarViewModel()
     private var photoFormatItemViewModel = ImagingBarPhotoFormatViewModel()
     private var photoResolutionItemViewModel = ImagingBarPhotoResolutionViewModel()
     private var videoResolutionItemViewModel = ImagingBarVideoResolutionViewModel()
     private var framerateItemViewModel = ImagingBarFramerateViewModel()
-    private var imagingSettingsBarViewModel = ImagingSettingsBarViewModel()
-    // TODO injection
-    private var exposureLockViewModel = ExposureLockViewModel(exposureLockService: Services.hub.exposureLockService)
     private var deselectableViewModels = [Deselectable]()
     /// Combine subscriptions.
     private var cancellables = Set<AnyCancellable>()
@@ -118,14 +122,14 @@ final class ImagingSettingsBarViewController: UIViewController {
 private extension ImagingSettingsBarViewController {
     @IBAction func autoExposurePadklockTouchedUpInside(_ sender: Any) {
         isAutoExposureLocked = !isAutoExposureLocked
-        updateLockAEButtonUI(isLocked: isAutoExposureLocked)
+        updateLockAEButton(isLocked: isAutoExposureLocked)
         exposureLockViewModel.toggleExposureLock()
     }
 
     @IBAction func autoModeButtonTouchedUpInside(_ sender: Any) {
         autoModeViewModel.toggleAutoMode()
         logEvent(with: LogEvent.LogKeyHUDBottomBarButton.shutterSpeedSetting.name,
-                 and: autoModeViewModel.state.value.isActive.logValue)
+                 and: autoModeViewModel.autoExposure.logValue)
     }
 
     @IBAction func shutterSpeedItemTouchedUpInside(_ sender: Any) {
@@ -189,20 +193,6 @@ private extension ImagingSettingsBarViewController {
         autoExposureStackView.customCornered(corners: [.allCorners], radius: Style.mediumCornerRadius)
         dynamicRangeItemStackView.customCornered(corners: [.allCorners], radius: Style.mediumCornerRadius)
         specificSettingsStackView.customCornered(corners: [.allCorners], radius: Style.mediumCornerRadius)
-
-        // Sets up the border of general setings
-        generalSettingsStackView.setBorder(borderColor: ColorName.yellowSea.color, borderWidth: Style.largeBorderWidth)
-
-        // Sets up item bar colors
-        shutterSpeedItemView.unselectedBackgroundColor = ColorName.yellowSea30.color
-        shutterSpeedItemView.selectedBackgroundColor = ColorName.yellowSea.color
-        shutterSpeedItemView.unselectedTextColor = ColorName.defaultTextColor.color
-        shutterSpeedItemView.selectedTextColor = ColorName.defaultTextColor.color
-
-        cameraIsoItemView.unselectedBackgroundColor = ColorName.yellowSea30.color
-        cameraIsoItemView.selectedBackgroundColor = ColorName.yellowSea.color
-        cameraIsoItemView.unselectedTextColor = ColorName.defaultTextColor.color
-        cameraIsoItemView.selectedTextColor = ColorName.defaultTextColor.color
     }
 
     /// Sets up all imaging bar view models.
@@ -244,19 +234,35 @@ private extension ImagingSettingsBarViewController {
         exposureLockViewModel.statePublisher
             .sink { [unowned self] state in
                 isAutoExposureLocked = state.locked
-                updatePadlockForExposureLock(exposureLockState: state)
+                updateLockAEButton(isLocked: state.locked || state.locking)
             }
             .store(in: &cancellables)
 
-        imagingSettingsBarViewModel.state.valueChanged = { [weak self] state in
-            self?.evCompensationItemView.isEnabled = state.isShutterAndISOManual == false
-            self?.evCompensationItemView.alphaWithEnabledState(state.isShutterAndISOManual == false)
-        }
+        exposureLockViewModel.exposureLockButtonEnabledPublisher
+            .sink { [unowned self] enabled in
+                updateLockAEButton(isEnabled: enabled)
+            }
+            .store(in: &cancellables)
 
-        autoModeViewModel.state.valueChanged = { [weak self] state in
-            self?.updateAutoMode(state: state)
-        }
-        updateAutoMode(state: autoModeViewModel.state.value)
+        autoModeViewModel.$autoExposure
+            .removeDuplicates()
+            .sink { [unowned self] autoExposure in
+                updateAutoMode(autoExposure: autoExposure)
+            }
+            .store(in: &cancellables)
+
+        autoModeViewModel.$autoExposureButtonEnabled
+            .sink { [unowned self] enabled in
+                autoModeButton.isEnabled = enabled
+                autoModeButton.alphaWithEnabledState(enabled)
+            }
+            .store(in: &cancellables)
+
+        autoModeViewModel.image
+            .sink { [unowned self] image in
+                autoModeImageView.image = image
+            }
+            .store(in: &cancellables)
     }
 
     /// Sets up a view model and its associated item view.
@@ -301,17 +307,37 @@ private extension ImagingSettingsBarViewController {
     }
 
     /// Update UI with given auto mode state.
-    func updateAutoMode(state: ImagingBarAutoModeState) {
-        if state.isActive {
+    func updateAutoMode(autoExposure: Bool) {
+        if autoExposure {
             // Close level two bars if needed.
             shutterSpeedItemViewModel.deselect()
             cameraIsoItemViewModel.deselect()
             whiteBalanceItemViewModel.deselect()
         }
-        evCompensationItemView.isEnabled = state.isActive
-        evCompensationItemView.alphaWithEnabledState(state.isActive)
-        autoModeImageView.image = state.image
-        autoModeButton.backgroundColor = ColorName.yellowSea.color
+
+        if autoExposure {
+            autoModeButton.backgroundColor = ColorName.yellowSea.color
+            shutterSpeedItemView.backgroundColor = ColorName.yellowSea.color
+            shutterSpeedItemView.unselectedBackgroundColor = ColorName.yellowSea30.color
+            shutterSpeedItemView.selectedBackgroundColor = ColorName.yellowSea.color
+            shutterSpeedItemView.selectedTextColor = ColorName.defaultTextColor.color
+            cameraIsoItemView.backgroundColor = ColorName.yellowSea.color
+            cameraIsoItemView.unselectedBackgroundColor = ColorName.yellowSea30.color
+            cameraIsoItemView.selectedBackgroundColor = ColorName.yellowSea.color
+            cameraIsoItemView.selectedTextColor = ColorName.defaultTextColor.color
+            generalSettingsStackView.setBorder(borderColor: ColorName.yellowSea.color, borderWidth: Style.largeBorderWidth)
+        } else {
+            autoModeButton.backgroundColor = ColorName.white90.color
+            shutterSpeedItemView.backgroundColor = ColorName.white90.color
+            shutterSpeedItemView.unselectedBackgroundColor = ColorName.white90.color
+            shutterSpeedItemView.selectedBackgroundColor = ColorName.highlightColor.color
+            shutterSpeedItemView.selectedTextColor = .white
+            cameraIsoItemView.backgroundColor = ColorName.white90.color
+            cameraIsoItemView.unselectedBackgroundColor = ColorName.white90.color
+            cameraIsoItemView.selectedBackgroundColor = ColorName.highlightColor.color
+            cameraIsoItemView.selectedTextColor = .white
+            generalSettingsStackView.setBorder(borderColor: ColorName.white90.color, borderWidth: Style.noBorderWidth)
+        }
     }
 
     /// Calls log event.
@@ -332,56 +358,19 @@ private extension ImagingSettingsBarViewController {
     ///
     /// - Parameters:
     ///    - isLocked: Boolean to precise the auto exposure button status
-    func updateLockAEButtonUI(isLocked: Bool) {
+    func updateLockAEButton(isLocked: Bool) {
         isAutoExposureLocked = isLocked
         autoExposureButton.backgroundColor = isLocked ? ColorName.yellowSea.color : ColorName.white90.color
         autoExposurePadlockImageView.image = isLocked ? Asset.BottomBar.Icons.lockAElocked.image : Asset.BottomBar.Icons.lockAEEnabled.image
         autoExposurePadlockImageView.tintColor = ColorName.defaultTextColor.color
     }
 
-    /// Updates lockAEButton visibility.
+    /// Updates lockAEButton availability.
     ///
     /// - Parameters:
     ///    - isEnabled: Boolean to precise if the lock button is enabled
-    func updateLockAEButtonVisibility(isEnabled: Bool) {
-        updateLockAEButtonUI(isLocked: isEnabled)
+    func updateLockAEButton(isEnabled: Bool) {
         autoExposureButton.isEnabled = isEnabled
-        autoExposureButton.alphaWithEnabledState(autoExposureButton.isEnabled)
         autoExposurePadlockImageView.alphaWithEnabledState(autoExposureButton.isEnabled)
-    }
-
-    /// Updates UI regading exposure lock state.
-    ///
-    /// - Parameters:
-    ///    - exposureLockState: current exposure lock state
-    func updatePadlockForExposureLock(exposureLockState: ExposureLockState) {
-        switch exposureLockState {
-        case .unavailable:
-            updateLockAEButtonVisibility(isEnabled: false)
-            updateAutoModeBarUI(isLocked: false)
-        case .unlocked:
-            updateLockAEButtonVisibility(isEnabled: true)
-            updateLockAEButtonUI(isLocked: false)
-            updateAutoModeBarUI(isLocked: false)
-        case .lockingOnCurrentValues,
-             .lockingOnRegion:
-            updateLockAEButtonVisibility(isEnabled: false)
-            updateLockAEButtonUI(isLocked: true)
-            updateAutoModeBarUI(isLocked: true)
-        case .lockedOnCurrentValues,
-             .lockOnRegion:
-            updateLockAEButtonVisibility(isEnabled: true)
-            updateLockAEButtonUI(isLocked: true)
-            updateAutoModeBarUI(isLocked: true)
-        }
-    }
-
-    /// Updates auto mode bar according to lockAEButton state.
-    ///
-    /// - Parameters:
-    ///    - isLocked: Boolean to precise the auto exposure button status
-    func updateAutoModeBarUI(isLocked: Bool) {
-        generalSettingsStackView.isUserInteractionEnabled = !isLocked
-        generalSettingsStackView.alphaWithEnabledState(generalSettingsStackView.isUserInteractionEnabled)
     }
 }

@@ -65,10 +65,12 @@ final class SettingsRthViewModel: DroneStateViewModel<DeviceConnectionState>, Se
 
     /// Resets Return Home settings to default.
     func resetSettings() {
-        drone?.getPilotingItf(PilotingItfs.returnHome)?.minAltitude?.value = RthPreset.defaultAltitude
-        drone?.getPilotingItf(PilotingItfs.returnHome)?.endingBehavior.behavior = RthPreset.defaultEndingBehavior
-        drone?.getPilotingItf(PilotingItfs.returnHome)?.endingHoveringAltitude?.value = RthPreset.defaultHoveringAltitude
-        drone?.getPilotingItf(PilotingItfs.returnHome)?.preferredTarget.target = RthPreset.rthType
+        guard let returnHome = returnHomePilotingRef?.value else { return }
+
+        returnHome.minAltitude?.value = RthPreset.defaultAltitude
+        returnHome.endingBehavior.behavior = RthPreset.defaultEndingBehavior
+        returnHome.endingHoveringAltitude?.value = RthPreset.defaultHoveringAltitude
+        returnHome.preferredTarget.target = RthPreset.rthType
     }
 }
 

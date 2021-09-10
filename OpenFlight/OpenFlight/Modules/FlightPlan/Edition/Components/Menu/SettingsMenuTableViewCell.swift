@@ -42,8 +42,8 @@ final class SettingsMenuTableViewCell: UITableViewCell, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        settingsKey.makeUp()
-        settingsValue.makeUp(and: .white50)
+        settingsKey.makeUp(and: .defaultTextColor)
+        settingsValue.makeUp(and: .defaultTextColor)
     }
 }
 
@@ -69,9 +69,9 @@ internal extension SettingsMenuTableViewCell {
         }
 
         if settingsValue.text == L10n.commonYes {
-            settingsValue.textColor = ColorName.greenSpring.color
+            settingsValue.textColor = ColorName.highlightColor.color
         } else {
-            settingsValue.textColor = ColorName.white50.color
+            settingsValue.textColor = ColorName.defaultTextColor.color
         }
         arrowImage.isHidden = !showArrow
     }

@@ -66,7 +66,7 @@ final class RemoteDetailsButtonsViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -115,6 +115,7 @@ private extension RemoteDetailsButtonsViewController {
 
     /// Inits the view model.
     func initViewModel() {
+
         viewModel.state.valueChanged = { [weak self] state in
             self?.updateView(state: state)
         }
@@ -147,6 +148,7 @@ private extension RemoteDetailsButtonsViewController {
     func updateSoftwareView(state: RemoteDetailsButtonsState) {
         softwareVersionButtonView.model = state.softwareModel
         softwareVersionButtonView.isEnabled = state.needUpdate
+            && (state.needDownload || state.remoteControlConnectionState?.isConnected() == true)
     }
 
     /// Updates calibration view.

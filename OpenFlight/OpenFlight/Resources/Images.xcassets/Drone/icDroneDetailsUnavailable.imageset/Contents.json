@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "illuDrone262.png",
+      "filename" : "icDroneDetailsUnavailable.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "illuDrone262@2x.png",
+      "filename" : "icDroneDetailsUnavailable@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "illuDrone262@3x.png",
+      "filename" : "icDroneDetailsUnavailable@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

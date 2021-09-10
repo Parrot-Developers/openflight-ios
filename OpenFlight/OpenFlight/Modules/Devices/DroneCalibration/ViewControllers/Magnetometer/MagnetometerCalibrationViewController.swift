@@ -40,13 +40,11 @@ final class MagnetometerCalibrationViewController: UIViewController {
     @IBOutlet private weak var droneCalibrationAxesView: DroneCalibrationAxesView!
     @IBOutlet private weak var instructionsView: DroneCalibrationInstructionsView!
     @IBOutlet private weak var droneCalibrationTitle: UILabel!
-    @IBOutlet private weak var cancelButton: UIButton!
     @IBOutlet private weak var backButton: UIButton!
 
     // MARK: - Private Properties
     private weak var coordinator: DroneCalibrationCoordinator?
     private var viewModel = MagnetometerCalibrationProcessViewModel()
-    private var isRequired: Bool = false
 
     // MARK: - Private Enums
     private enum Constants {
@@ -84,13 +82,10 @@ final class MagnetometerCalibrationViewController: UIViewController {
     /// Instantiate View controller.
     ///
     /// - Parameters:
-    ///     - isRequired: tell if the calibration is required
     ///     - coordinator: navigation coordinator
-    static func instantiate(isRequired: Bool = false, coordinator: DroneCalibrationCoordinator) -> MagnetometerCalibrationViewController {
+    static func instantiate(coordinator: DroneCalibrationCoordinator) -> MagnetometerCalibrationViewController {
         let viewController = StoryboardScene.DroneCalibration.magnetometerCalibrationViewController.instantiate()
         viewController.coordinator = coordinator
-        viewController.isRequired = isRequired
-
         return viewController
     }
 
@@ -119,7 +114,7 @@ final class MagnetometerCalibrationViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -131,11 +126,6 @@ final class MagnetometerCalibrationViewController: UIViewController {
 private extension MagnetometerCalibrationViewController {
     /// Function called when the back button is clicked.
     @IBAction func backButtonTouchedUpInside(_ sender: UIButton) {
-        self.closeCalibrationView()
-    }
-
-    /// Function called when the cancel button is clicked.
-    @IBAction func cancelButtonTouchedUpInside(_ sender: UIButton) {
         self.closeCalibrationView()
     }
 
@@ -162,18 +152,12 @@ private extension MagnetometerCalibrationViewController {
         self.droneCalibrationTitle.text = L10n.remoteCalibrationTitle
         instructionsView.viewModel = DroneCalibrationInstructionsModel(image: Asset.Drone.icDroneOpenYourDrone.image,
                                                                        firstLabel: L10n.droneMagnetometerCalibrationInstruction,
-                                                                       firstLabelColor: ColorName.white.color,
                                                                        secondLabel: L10n.droneMagnetometerCalibrationInstructionComplement,
                                                                        items: [])
-        calibrateButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
-        calibrateButton.setTitleColor(.black, for: .normal)
+        calibrateButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color, radius: Style.largeCornerRadius)
         calibrateButton.setTitle(L10n.commonStart, for: .normal)
-        okButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
-        okButton.setTitleColor(.black, for: .normal)
+        okButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color, radius: Style.largeCornerRadius)
         okButton.setTitle(L10n.ok, for: .normal)
-        cancelButton.setTitle(L10n.cancel, for: .normal)
-        cancelButton.isHidden = !isRequired
-        backButton.isHidden = isRequired
     }
 
     /// Start lottie animation from json files.
@@ -237,7 +221,6 @@ private extension MagnetometerCalibrationViewController {
     func displayYaw() {
         startAnimation(calibrationType: .yaw)
         instructionsView.viewModel.firstLabel = L10n.droneCalibrationYawInstruction
-        instructionsView.viewModel.firstLabelColor = UIColor.white
         instructionsView.viewModel.secondLabel = L10n.droneCalibrationInstructionComplement
         droneCalibrationAxesView.displayCurrentAxis(currentAxis: .yaw)
     }
@@ -262,7 +245,7 @@ private extension MagnetometerCalibrationViewController {
     func onFailure() {
         instructionsView.clearAnimation()
         instructionsView.viewModel.firstLabel = L10n.droneCalibrationFailed
-        instructionsView.viewModel.firstLabelColor = ColorName.redTorch.color
+        instructionsView.viewModel.firstLabelColor = ColorName.errorColor.color
         instructionsView.viewModel.firstLabelAlignment = .left
         instructionsView.viewModel.secondLabel = L10n.droneCalibrationFailureDescription
         instructionsView.viewModel.secondLabelAlignment = .left
@@ -284,7 +267,7 @@ private extension MagnetometerCalibrationViewController {
         instructionsView.viewModel.image = Asset.Drone.Calibration.Yaw.icAnafi2CalibrationYaw00.image
         instructionsView.viewModel.firstLabel = L10n.droneCalibrationReadyToFly
         instructionsView.viewModel.secondLabel = nil
-        instructionsView.viewModel.firstLabelColor = ColorName.greenSpring.color
+        instructionsView.viewModel.firstLabelColor = ColorName.highlightColor.color
         droneCalibrationAxesView.isHidden = true
         calibrateButton.isHidden = true
         okButton.isHidden = false

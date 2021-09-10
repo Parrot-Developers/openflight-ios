@@ -77,7 +77,7 @@ private extension GalleryPanoramaQualityChoiceView {
         self.icon.image = model.icon
         self.label.makeUp(with: .large, and: model.textColor)
         self.label.text = model.text
-        self.subLabel.makeUp(with: .regular, and: model.subTextColor)
+        self.subLabel.makeUp(and: model.subTextColor)
         self.subLabel.text = model.subText
     }
 }

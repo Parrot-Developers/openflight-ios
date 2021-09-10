@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="STK-g1-RoF">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="STK-g1-RoF">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -17,22 +17,26 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" indicatorStyle="white" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="59j-X3-gRO">
-                                <rect key="frame" x="0.0" y="0.0" width="601" height="330"/>
+                                <rect key="frame" x="0.5" y="0.0" width="600" height="330"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="600" id="juG-aA-c3X">
+                                        <variation key="heightClass=compact-widthClass=compact" constant="480"/>
+                                    </constraint>
+                                </constraints>
                                 <connections>
                                     <outlet property="dataSource" destination="STK-g1-RoF" id="CeF-Ax-9z9"/>
                                     <outlet property="delegate" destination="STK-g1-RoF" id="gtk-AZ-MHY"/>
                                 </connections>
                             </tableView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="zVw-ey-ncn"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="59j-X3-gRO" firstAttribute="bottom" secondItem="OJF-yB-P4t" secondAttribute="bottom" id="2TP-Em-CWo"/>
-                            <constraint firstItem="59j-X3-gRO" firstAttribute="trailing" secondItem="zVw-ey-ncn" secondAttribute="trailing" id="3i4-8u-ynm"/>
                             <constraint firstItem="59j-X3-gRO" firstAttribute="top" secondItem="zVw-ey-ncn" secondAttribute="top" id="78y-1T-i2V"/>
-                            <constraint firstItem="59j-X3-gRO" firstAttribute="leading" secondItem="zVw-ey-ncn" secondAttribute="leading" id="w2O-sb-Uo9"/>
+                            <constraint firstItem="59j-X3-gRO" firstAttribute="centerX" secondItem="zVw-ey-ncn" secondAttribute="centerX" id="Ulk-es-2ey"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="zVw-ey-ncn"/>
                     </view>
                     <size key="freeformSize" width="601" height="330"/>
                     <connections>

@@ -304,7 +304,7 @@ public final class UnitHelper: NSObject {
     /// - Parameters:
     ///    - distance: distance in current display unit (Double)
     /// - Returns: Double containing the converted value in meter
-    static func doubleToMeters(_ distance: Double) -> Double {
+    public static func doubleToMeters(_ distance: Double) -> Double {
         return isMetric ? distance: distance / Constants.meterToFeet
     }
 
@@ -357,6 +357,15 @@ public final class UnitHelper: NSObject {
     /// Converts a speed value from meter per second to current display unit and displays its unit.
     ///
     /// - Parameters:
+    ///    - speed: speed in meter per second (Float)
+    /// - Returns: a string containing the value and the unit, seperated by a whitespace
+    static func stringSpeedWithFloat2f(_ speed: Float) -> String {
+        return stringSpeedWithDouble2f(Double(speed))
+    }
+
+    /// Converts a speed value from meter per second to current display unit and displays its unit.
+    ///
+    /// - Parameters:
     ///    - speed: speed in meter per second (Double)
     ///    - spacing: boolean to add or remove spacing between value and unit
     /// - Returns: a string containing the value and the unit, seperated by a whitespace
@@ -369,6 +378,17 @@ public final class UnitHelper: NSObject {
         return String(format: spacing ? "%@ %@" : "%@%@",
                       formattedValue,
                       stringSpeedUnit())
+    }
+
+    /// Converts a speed value from meter per second to current display unit and displays its unit containing two decimal.
+    ///
+    /// - Parameters:
+    ///    - speed: speed in meter per second (Double)
+    ///    - spacing: boolean to add or remove spacing between value and unit
+    /// - Returns: a string containing the value and the unit, seperated by a whitespace
+    static func stringSpeedWithDouble2f(_ speed: Double, spacing: Bool = true) -> String {
+        let valueString = String(format: "%.2f", doubleSpeedWithDouble(speed))
+        return String(format: spacing ? "%@ %@": "%@%@", valueString, stringSpeedUnit())
     }
 
     /// Returns current common display unit for speed.

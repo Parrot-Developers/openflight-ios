@@ -111,8 +111,8 @@ private extension ImagingBarItemView {
         guard let model = model else {
             return
         }
-        self.isUserInteractionEnabled = model.enabled
-        self.alphaWithEnabledState(model.enabled)
+        isUserInteractionEnabled = model.enabled
+        alphaWithEnabledState(model.enabled)
         itemImageView.image = model.mode?.image ?? model.image
         itemImageView.isHidden = model.mode?.image == nil && model.image == nil
         // Special case for white balance.

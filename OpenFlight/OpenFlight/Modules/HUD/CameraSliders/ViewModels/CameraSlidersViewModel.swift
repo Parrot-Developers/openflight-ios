@@ -34,9 +34,11 @@ import GroundSdk
 
 /// View model for camera sliders view
 class CameraSlidersViewModel {
+
     // MARK: - Private properties
     private var zoomSliderTimer: Timer?
     private var gimbalSliderTimer: Timer?
+    private var showInfoTiltLabelTimer: Timer?
     private var cancellables = Set<AnyCancellable>()
     private var bottomBarModeObserver: Any?
     private var splitModeObserver: Any?
@@ -46,6 +48,10 @@ class CameraSlidersViewModel {
     @Published private var bottomBarOpened = false
 
     // MARK: - Internal properties
+
+    // Info tilt
+    @Published private(set) var showInfoTiltLabelFlag = false
+    private(set) var constraintInfoLabelUpdated = false
 
     // Joystick
     @Published private(set) var showJoysticksButton = false
@@ -60,7 +66,7 @@ class CameraSlidersViewModel {
         }
     }
     @Published private(set) var zoomButtonTitle = "N/A"
-    @Published private(set) var zoomButtonColor = UIColor.white
+    @Published private(set) var zoomButtonColor = ColorName.defaultIconColor.color
     var zoomButtonEnabled: AnyPublisher<Bool, Never> {
         zoomService.maxZoomPublisher
             .map { [unowned self] in $0 <= zoomService.minZoom }
@@ -144,7 +150,7 @@ private extension CameraSlidersViewModel {
             .combineLatest(zoomService.maxLosslessZoomPublisher)
             .sink { [unowned self] (currentZoom, maxLosslessZoom) in
                 zoomButtonTitle = String(format: "%.01f", currentZoom) + Style.multiplySign
-                zoomButtonColor = UIColor(named: currentZoom > maxLosslessZoom ? .orangePeel : .white)
+                zoomButtonColor = UIColor(named: currentZoom > maxLosslessZoom ? .orangePeel : ColorName.defaultIconColor)
             }
             .store(in: &cancellables)
     }
@@ -213,5 +219,25 @@ extension CameraSlidersViewModel {
         gimbalSliderTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: false, block: { [weak self] _ in
             self?.showGimbalTiltSlider = false
         })
+    }
+
+    func showInfoTiltLabel() {
+        // cancel `hideInfoTiltLabel` while tilt value is changing
+        showInfoTiltLabelTimer?.invalidate()
+        // show info label when the value from gimbal is changing
+        showInfoTiltLabelFlag = true
+        // active a timer to close the infoTiltLabel in 2 sec
+        showInfoTiltLabelTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) {[weak self] _ in
+            self?.showInfoTiltLabelFlag = false
+            self?.resetConstraintInfoTiltLabel()
+        }
+    }
+
+    func updateConstraintInfoTiltLabel() {
+        constraintInfoLabelUpdated = true
+    }
+
+    func resetConstraintInfoTiltLabel() {
+        constraintInfoLabelUpdated = false
     }
 }

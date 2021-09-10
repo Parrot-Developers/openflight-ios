@@ -5,7 +5,6 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -130,23 +129,24 @@
                                     <action selector="missionLauncherButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="fd0-Te-RTi"/>
                                 </connections>
                             </view>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="le1-h8-uYT">
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="le1-h8-uYT" userLabel="Behavior Stack View">
                                 <rect key="frame" x="60" y="0.0" width="0.0" height="50"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wyZ-Ut-DGd">
                                         <rect key="frame" x="0.0" y="0.0" width="0.0" height="50"/>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="width" id="cLZ-Pl-ygX"/>
                                         </constraints>
                                     </view>
                                 </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
-                            <stackView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="50" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="WqF-EQ-VbD">
-                                <rect key="frame" x="738" y="0.0" width="158" height="50"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="50" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="WqF-EQ-VbD" userLabel="Imagine Stack View">
+                                <rect key="frame" x="70" y="0.0" width="178" height="50"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="4uF-C9-wIe">
-                                        <rect key="frame" x="0.0" y="0.0" width="100" height="50"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="120" height="50"/>
                                         <subviews>
                                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="95K-3O-dec">
                                                 <rect key="frame" x="-40" y="0.0" width="40" height="50"/>
@@ -169,7 +169,7 @@
                                                 </connections>
                                             </button>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Whv-gc-ugc" customClass="BarButtonView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="60" height="50"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" relation="lessThanOrEqual" constant="100" id="vi7-4k-iTh"/>
@@ -179,7 +179,7 @@
                                                 </connections>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mlh-JI-FAA" customClass="CameraWidgetView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="50" y="0.0" width="50" height="50"/>
+                                                <rect key="frame" x="60" y="0.0" width="60" height="50"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" relation="lessThanOrEqual" constant="100" id="Svf-V9-DLS"/>
@@ -191,7 +191,7 @@
                                         </subviews>
                                     </stackView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qnh-0R-mgj">
-                                        <rect key="frame" x="100" y="0.0" width="58" height="50"/>
+                                        <rect key="frame" x="120" y="0.0" width="58" height="50"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Moq-UE-Mq3" customClass="CameraShutterButton" customModule="OpenFlight" customModuleProvider="target">
                                                 <rect key="frame" x="8" y="0.0" width="50" height="50"/>
@@ -213,48 +213,63 @@
                                         </constraints>
                                     </view>
                                 </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="GPb-Mg-O7g" userLabel="Sub Behavior Stack View">
+                                <rect key="frame" x="896" y="0.0" width="0.0" height="50"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vsn-hy-RTG">
+                                        <rect key="frame" x="0.0" y="0.0" width="0.0" height="50"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" id="Ooq-ym-WvC"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="i7z-D7-SMh"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="le1-h8-uYT" firstAttribute="top" secondItem="hkh-iB-fhd" secondAttribute="top" id="4yF-eV-dpd"/>
+                            <constraint firstItem="GPb-Mg-O7g" firstAttribute="top" secondItem="i7z-D7-SMh" secondAttribute="top" id="5Bp-n4-TgM"/>
                             <constraint firstItem="le1-h8-uYT" firstAttribute="leading" secondItem="3sY-Wu-zmw" secondAttribute="trailing" constant="10" id="5IT-9J-0cK"/>
                             <constraint firstItem="3sY-Wu-zmw" firstAttribute="top" secondItem="i7z-D7-SMh" secondAttribute="top" id="JvU-NV-9kr"/>
+                            <constraint firstItem="WqF-EQ-VbD" firstAttribute="leading" secondItem="le1-h8-uYT" secondAttribute="trailing" constant="10" id="NKa-ec-VQE"/>
                             <constraint firstItem="3sY-Wu-zmw" firstAttribute="leading" secondItem="hkh-iB-fhd" secondAttribute="leading" id="V1F-rk-on2"/>
+                            <constraint firstItem="i7z-D7-SMh" firstAttribute="bottom" secondItem="GPb-Mg-O7g" secondAttribute="bottom" id="ZOa-pt-XBJ"/>
                             <constraint firstItem="3sY-Wu-zmw" firstAttribute="width" secondItem="3sY-Wu-zmw" secondAttribute="height" multiplier="1:1" id="ZiD-ev-M4z"/>
                             <constraint firstItem="le1-h8-uYT" firstAttribute="bottom" secondItem="hkh-iB-fhd" secondAttribute="bottom" id="b9R-Dn-dsn"/>
-                            <constraint firstItem="WqF-EQ-VbD" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="le1-h8-uYT" secondAttribute="trailing" constant="4" id="dWh-Hs-I77"/>
+                            <constraint firstAttribute="trailing" secondItem="GPb-Mg-O7g" secondAttribute="trailing" id="dxm-M4-e1O"/>
                             <constraint firstItem="3sY-Wu-zmw" firstAttribute="bottom" secondItem="i7z-D7-SMh" secondAttribute="bottom" id="end-Td-Tt0"/>
                             <constraint firstItem="WqF-EQ-VbD" firstAttribute="bottom" secondItem="hkh-iB-fhd" secondAttribute="bottom" id="kN2-NL-moV"/>
-                            <constraint firstAttribute="trailing" secondItem="WqF-EQ-VbD" secondAttribute="trailing" id="kf5-zE-yla"/>
+                            <constraint firstItem="GPb-Mg-O7g" firstAttribute="leading" relation="lessThanOrEqual" secondItem="WqF-EQ-VbD" secondAttribute="trailing" constant="648" id="mMK-67-XMD"/>
                             <constraint firstItem="WqF-EQ-VbD" firstAttribute="top" secondItem="hkh-iB-fhd" secondAttribute="top" id="rgF-FV-dT1"/>
                         </constraints>
                     </view>
                     <size key="freeformSize" width="896" height="50"/>
                     <connections>
+                        <outlet property="behaviorStackView" destination="le1-h8-uYT" id="QgK-zJ-acW"/>
                         <outlet property="bottomBarView" destination="hkh-iB-fhd" id="7St-us-5W5"/>
                         <outlet property="cameraModeView" destination="Whv-gc-ugc" id="dxs-uQ-yay"/>
                         <outlet property="cameraShutterButton" destination="Moq-UE-Mq3" id="zz1-1V-N2U"/>
                         <outlet property="cameraWidgetView" destination="Mlh-JI-FAA" id="WJt-3V-M8D"/>
                         <outlet property="collapseButton" destination="95K-3O-dec" id="Bbt-Zw-Mbc"/>
                         <outlet property="expandButton" destination="ctZ-fO-zno" id="LCL-Cg-heZ"/>
-                        <outlet property="leftStackView" destination="le1-h8-uYT" id="QgK-zJ-acW"/>
                         <outlet property="missionLauncherButton" destination="3sY-Wu-zmw" id="KQY-O6-wGZ"/>
                         <outlet property="rightStackView" destination="4uF-C9-wIe" id="Y3S-7E-2AH"/>
                         <outlet property="shutterButtonView" destination="qnh-0R-mgj" id="ksa-NK-XU6"/>
+                        <outlet property="subBehaviorStackView" destination="GPb-Mg-O7g" id="W9n-f8-enZ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="BUM-j6-kqg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="828" y="97"/>
+            <point key="canvasLocation" x="827.67857142857144" y="95.652173913043484"/>
         </scene>
     </scenes>
     <resources>
         <image name="icCollapse" width="12" height="20"/>
         <image name="icExpand" width="12" height="20"/>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
     </resources>
 </document>

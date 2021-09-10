@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="FlightPlanPanelImageRateView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="imageLabel" destination="3MZ-OY-eMw" id="myn-Qa-NEd"/>
+                <outlet property="modeImageRate" destination="ibI-fF-agH" id="TN6-6Q-w8U"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconChevronMini" translatesAutoresizingMaskIntoConstraints="NO" id="kEO-Zt-PTe">
+                    <rect key="frame" x="398" y="44" width="8" height="818"/>
+                    <color key="tintColor" name="default_icon_color"/>
+                    <constraints>
+                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="4" id="llA-sp-SK8"/>
+                        <constraint firstAttribute="width" constant="8" id="y5F-ay-2h6"/>
+                    </constraints>
+                </imageView>
+                <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="oRJ-cm-3da">
+                    <rect key="frame" x="14" y="44" width="376" height="818"/>
+                    <subviews>
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ibI-fF-agH">
+                            <rect key="frame" x="0.0" y="0.0" width="20" height="818"/>
+                            <color key="tintColor" name="default_text_color"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="20" id="Yu6-Ry-u6g"/>
+                            </constraints>
+                        </imageView>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3MZ-OY-eMw">
+                            <rect key="frame" x="28" y="0.0" width="348" height="818"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <color key="textColor" name="default_text_color"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                </stackView>
+            </subviews>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="kEO-Zt-PTe" secondAttribute="bottom" id="3QK-cV-BV8"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="kEO-Zt-PTe" secondAttribute="trailing" constant="8" id="9Hg-Jj-dKp"/>
+                <constraint firstItem="kEO-Zt-PTe" firstAttribute="leading" secondItem="oRJ-cm-3da" secondAttribute="trailing" constant="8" id="VvF-AO-JnE"/>
+                <constraint firstItem="oRJ-cm-3da" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="14" id="ZMo-N9-0aw"/>
+                <constraint firstItem="kEO-Zt-PTe" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" id="bkv-gP-z2C"/>
+                <constraint firstItem="kEO-Zt-PTe" firstAttribute="leading" secondItem="oRJ-cm-3da" secondAttribute="trailing" constant="8" id="chc-dG-3lJ"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="oRJ-cm-3da" secondAttribute="bottom" id="dPP-mG-Q0V"/>
+                <constraint firstItem="oRJ-cm-3da" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" id="eBv-1e-OKj"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="283" y="-183"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="iconChevronMini" width="5" height="3"/>
+        <namedColor name="default_icon_color">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

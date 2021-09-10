@@ -70,9 +70,8 @@ final class RemoteShutdownAlertViewModel {
         $firstTimeButtonPressed
             .combineLatest($connectionState, $durationBeforeShutDown)
             .sink { [weak self] (firstTimeButtonPressed, connectionState, durationBeforeShutDown) in
-                self?.isShutdownButtonPressed = durationBeforeShutDown == 0.0
-                    && firstTimeButtonPressed == false
-                    && connectionState == .connected
+                let condition = durationBeforeShutDown == 0.0 && firstTimeButtonPressed == false
+                self?.isShutdownButtonPressed = condition && connectionState == .connected
             }
             .store(in: &cancellables)
     }

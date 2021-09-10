@@ -65,9 +65,6 @@ final class DroneCalibrationInstructionItemView: UIView, NibOwnerLoadable {
 private extension DroneCalibrationInstructionItemView {
     func commonInitDroneCalibrationInstructionItemView() {
         self.loadNibContent()
-
-        mainLabel.makeUp(with: .large)
-        bulletPointView.backgroundColor = ColorName.white.color
         bulletPointView.roundCornered()
     }
 }

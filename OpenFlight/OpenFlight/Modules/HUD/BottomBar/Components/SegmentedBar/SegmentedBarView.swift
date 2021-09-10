@@ -57,9 +57,7 @@ final class SegmentedBarView<T: BarButtonState>: UIView, NibOwnerLoadable, NibLo
         return UINib(nibName: "SegmentedBarView", bundle: Bundle.currentBundle(for: self))
     }
 
-    var modeKey: String? {
-        return viewModel?.state.value.mode?.key
-    }
+    var barId: String? { viewModel?.barId }
 
     weak var viewModel: BarButtonViewModel<T>? {
         didSet {

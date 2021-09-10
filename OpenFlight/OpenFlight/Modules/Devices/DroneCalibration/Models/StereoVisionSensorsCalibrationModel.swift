@@ -48,12 +48,12 @@ enum StereoVisionSensorsCalibrationState {
 
     /// Color for stereo vision sensors calibration subtext cell.
     var subtextColor: ColorName {
-        return self == .needed ? .redTorch : .white50
+        return self == .needed ? .white : .defaultTextColor
     }
 
     /// Background color for stereo vision sensors calibration cell.
     var backgroundColor: ColorName {
-        return self == .needed ? .redTorch25 : .white10
+        return self == .needed ? .errorColor : .white
     }
 
     /// Image for stereo vision sensors calibration.

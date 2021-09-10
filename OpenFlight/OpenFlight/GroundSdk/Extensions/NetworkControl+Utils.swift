@@ -75,8 +75,11 @@ extension CellularStrength: SignalStrength {
              .offline,
              .ko0On4:
             return .clear
-        case .ok1On4,
-             .ok2On4,
+
+        case .ok1On4:
+            return .disabledWarningColor
+
+        case .ok2On4,
              .ok3On4,
              .ok4On4:
             return .disabledHighlightColor
@@ -89,8 +92,11 @@ extension CellularStrength: SignalStrength {
              .offline,
              .ko0On4:
             return .clear
-        case .ok1On4,
-             .ok2On4,
+
+        case .ok1On4:
+            return .warningColor
+
+        case .ok2On4,
              .ok3On4,
              .ok4On4:
             return .highlightColor

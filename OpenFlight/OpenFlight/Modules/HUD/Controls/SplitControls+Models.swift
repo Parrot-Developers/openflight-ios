@@ -70,7 +70,7 @@ public protocol MapViewRestorer: AnyObject {
     /// - Parameters:
     ///     - map: map view controller
     ///     - parent: parent view controller
-    func addMap(_ map: UIViewController, parent: UIViewController)
+    func addMap(_ map: MapViewController, parent: UIViewController)
     /// Restores map view if needed.
     func restoreMapIfNeeded()
 }

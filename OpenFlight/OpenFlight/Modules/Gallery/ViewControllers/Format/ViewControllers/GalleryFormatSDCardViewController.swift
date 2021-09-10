@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 import GroundSdk
 
 /// View Controller used to format SD card.
@@ -54,6 +55,7 @@ final class GalleryFormatSDCardViewController: UIViewController {
     // MARK: - Private Properties
     private weak var coordinator: GalleryCoordinator?
     private var viewModel: GalleryFormatSDCardViewModel?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -81,6 +83,7 @@ final class GalleryFormatSDCardViewController: UIViewController {
 
         setupUI()
         setupChoicesModels()
+        bindViewModel()
         setupViewModel()
     }
 
@@ -133,6 +136,25 @@ private extension GalleryFormatSDCardViewController {
                                                  radius: Style.largeCornerRadius,
                                                  backgroundColor: .white,
                                                  borderColor: .clear)
+    }
+
+    /// Binds the views to the view model.
+    func bindViewModel() {
+        viewModel?.$isFlying
+            .sink { [unowned self] isFlying in
+                if isFlying {
+                    secondaryLabel.text = L10n.galleryMediaFormatSdCardLandDroneInstructions
+                    quickFormatChoiceView.isEnabled = false
+                    fullFormatChoiceView.isEnabled = false
+                    choicesStackView.alpha = 0.7
+                } else {
+                    secondaryLabel.text = L10n.galleryFormatDataErased
+                    quickFormatChoiceView.isEnabled = true
+                    fullFormatChoiceView.isEnabled = true
+                    choicesStackView.alpha = 1
+                }
+            }
+            .store(in: &cancellables)
     }
 
     /// Sets up models associated with the choices view.

@@ -45,6 +45,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     @IBOutlet private weak var customValidationView: UIView!
     @IBOutlet private weak var AELockContainerView: UIView!
     @IBOutlet private weak var indicatorContainerView: UIView!
+    @IBOutlet private weak var topStackView: UIStackView!
 
     // MARK: - Public Properties
     var customControls: CustomHUDControls?
@@ -56,14 +57,14 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Private Properties
     // TODO: wrong injection
     private unowned var currentMissionManager = Services.hub.currentMissionManager
+    private unowned var topBarService = Services.hub.ui.hudTopBarService
+
     private var cancellables = Set<AnyCancellable>()
     private var defaultMapViewController: MapViewController?
-    private let flightPlanPanelCoordinator = FlightPlanPanelCoordinator()
+    private let flightPlanPanelCoordinator = FlightPlanPanelCoordinator(services: Services.hub)
 
     /// View models.
     private let joysticksViewModel = JoysticksViewModel()
-    private let flightReportViewModel = FlightReportViewModel()
-    private let criticalAlertViewModel = HUDCriticalAlertViewModel()
     private let remoteShutdownAlertViewModel = RemoteShutdownAlertViewModel()
     private lazy var helloWorldViewModel: HelloWorldMissionViewModel? = {
         // Prevent from useless helloWorld init if mission is not loaded.
@@ -102,17 +103,19 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     public override func viewDidLoad() {
         super.viewDidLoad()
 
+        listenWillEnterForeground()
         setupFlightPlanPanel()
         splitControls.start()
         customControls = CustomHUDControlsProvider.shared.customControls
         customControls?.validationView = customValidationView
         customControls?.start()
-        videoControls.hideAETargetZone()
         setupAlertPanel()
-        coordinator?.hudCriticalAlertDelegate = self
 
         listenMissionMode()
+        listenTopBarChanges()
         listenRemoteShutdownAlert()
+        listenPairingAvailabilityViewModel()
+        listenPairingProcessViewModel()
 
         // Handle rotation when coming from Onboarding.
         let value = UIInterfaceOrientation.landscapeRight.rawValue
@@ -123,7 +126,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         super.viewDidAppear(animated)
 
         splitControls.setupSplitIfNeeded()
-        splitControls.updateSecondaryViewContent()
+        splitControls.displayMapOr3DasChild()
         // Show flight plan panel if needed.
         if currentMissionManager.mode.isFlightPlanPanelRequired {
             flightPlanControls.viewModel.forceHidePanel(false)
@@ -168,7 +171,6 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
             splitControls.delegate = indicatorViewController
             indicatorViewController.indicatorViewControllerNavigation = self
         } else if let bottomBarContainerVC = segue.destination as? BottomBarContainerViewController {
-            bottomBarContainerVC.bottomBarDelegate = self
             bottomBarContainerVC.coordinator = coordinator
         } else if let missionLauncherVC = segue.destination as? MissionProviderSelectorViewController {
             // TODO: wrong injection. Also... SEGUES
@@ -190,10 +192,24 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     public override var prefersStatusBarHidden: Bool {
         return true
     }
+
+    /// Shows the drone cellular process if its available.
+    func showCellularPairingIfNeeded() {
+        if cellularPairingAvailabilityViewModel.canShowModal {
+            coordinator?.displayCellularPairingAvailable()
+        }
+    }
 }
 
 // MARK: - Private Funcs
 private extension HUDViewController {
+
+    func listenWillEnterForeground() {
+        guard let splitControls = splitControls else { return }
+        NotificationCenter.default.addObserver(splitControls,
+                                               selector: #selector(splitControls.updateConstraintForForeground),
+                                               name: UIApplication.willEnterForegroundNotification, object: nil)
+    }
 
     /// Listen for mission mode
     func listenMissionMode() {
@@ -203,6 +219,14 @@ private extension HUDViewController {
             videoControls.enableAeTarget(enabled: !$0.isTrackingMode)
         }
         .store(in: &cancellables)
+    }
+
+    func listenTopBarChanges() {
+        topBarService.showTopBarPublisher
+            .sink { [unowned self] in
+                topStackView.isHidden = !$0
+            }
+            .store(in: &cancellables)
     }
 
     /// Listens if modal popup can be shown
@@ -217,9 +241,62 @@ private extension HUDViewController {
             .store(in: &cancellables)
     }
 
+    /// Updates cellular process.
+    func listenPairingProcessViewModel() {
+        cellularPairingProcessViewModel.$isPinCodeRequested
+            .removeDuplicates()
+            .combineLatest(cellularPairingProcessViewModel.$pairingStep,
+                           cellularPairingProcessViewModel.$pairingError,
+                           cellularPairingAvailabilityViewModel.$canShowModal)
+            .sink { [unowned self] (pinCodeRequested, pairingProcessStep, pairingProcessError, canShowModal) in
+                if pinCodeRequested {
+                    coordinator?.displayCellularPinCode()
+                } else if pairingProcessStep == .pairingProcessSuccess {
+                    DispatchQueue.main.async {
+                        coordinator?.displayPairingSuccess()
+                    }
+                    return
+                } else if canShowModal {
+                    guard pairingProcessStep == .pairingProcessSuccess else {
+                        switch pairingProcessError {
+                        case .connectionUnreachable,
+                             .unableToConnect,
+                             .unauthorizedUser,
+                             .serverError:
+                            DispatchQueue.main.async { [weak self] in
+                                self?.showPairingAlert(error: pairingProcessError)
+                            }
+                        default:
+                            return
+                        }
+
+                        return
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    func listenPairingAvailabilityViewModel() {
+        cellularPairingAvailabilityViewModel.$canShowModal
+            .sink { [unowned self] canShowModal in
+                if coordinator?.canShowCellularPairing() == false { return }
+
+                if canShowModal {
+                showCellularPairingIfNeeded()
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     /// Sets up right panel for flight plans.
     func setupFlightPlanPanel() {
-        let flightPlanPanelVC = FlightPlanPanelViewController.instantiate(coordinator: flightPlanPanelCoordinator)
+        let viewModel = FlightPlanPanelViewModel(projectManager: Services.hub.flightPlan.projectManager,
+                                                 runStateProgress: Services.hub.flightPlan.run,
+                                                 currentMissionManager: Services.hub.currentMissionManager,
+                                                 coordinator: flightPlanPanelCoordinator)
+
+        let flightPlanPanelVC = FlightPlanPanelViewController.instantiate(flightPlanPanelViewModel: viewModel)
         flightPlanPanelCoordinator.start(flightPlanPanelVC: flightPlanPanelVC,
                                          splitControls: splitControls,
                                          flightPlanControls: flightPlanControls)
@@ -271,20 +348,8 @@ private extension HUDViewController {
         joysticksView.isHidden = state?.shouldHideJoysticks == true
     }
 
-    /// Changes critical alert modal visibility regarding view model state.
-    ///
-    /// - Parameters:
-    ///     - state: The alert state
-    func updateCriticalAlertVisibility(with state: HUDCriticalAlertState?) {
-        guard state?.canShowAlert == true else { return }
-
-        coordinator?.displayCriticalAlert(alert: state?.currentAlert)
-    }
-
     /// Shows remote alert shutdown process.
     func showRemoteShutdownAlert() {
-//        guard remoteShutdownAlertViewModel.canShowModal else { return }
-
         coordinator?.displayRemoteAlertShutdown()
     }
 
@@ -293,29 +358,14 @@ private extension HUDViewController {
         helloWorldViewModel?.state.valueChanged = { [weak self] state in
             self?.showHelloWorldIfNeeded(state: state)
         }
-        flightReportViewModel.state.valueChanged = { [weak self] state in
-            if let flightState = state.displayFlightReport {
-                self?.coordinator?.displayFlightReport(flightState: flightState)
-                self?.flightReportViewModel.resetFlightReport()
-            }
-        }
         joysticksViewModel.state.valueChanged = { [weak self] state in
             self?.updateJoysticksVisibility(with: state)
-        }
-        criticalAlertViewModel.state.valueChanged = { [weak self] state in
-            self?.updateCriticalAlertVisibility(with: state)
         }
         landingViewModel.state.valueChanged = { [weak self] state in
             self?.updateLandingView(with: state)
         }
-        cellularPairingAvailabilityViewModel.state.valueChanged = { [weak self] _ in
-            self?.showCellularPairingIfNeeded()
-        }
         cellularIndicatorViewModel.state.valueChanged = { [weak self] state in
             self?.updateCellularIndicatorView(with: state)
-        }
-        cellularPairingProcessViewModel.state.valueChanged = { [weak self] _ in
-            self?.updateCellularProcess()
         }
         updateLandingView(with: landingViewModel.state.value)
 
@@ -323,28 +373,17 @@ private extension HUDViewController {
             showHelloWorldIfNeeded(state: state)
         }
 
-        if let flightState = flightReportViewModel.state.value.displayFlightReport {
-            coordinator?.displayFlightReport(flightState: flightState)
-        }
-
         updateJoysticksVisibility(with: joysticksViewModel.state.value)
-        updateCriticalAlertVisibility(with: criticalAlertViewModel.state.value)
-        showCellularPairingIfNeeded()
         updateCellularIndicatorView(with: cellularIndicatorViewModel.state.value)
-        updateCellularProcess()
         cellularPairingAvailabilityViewModel.updateAvailabilityState()
     }
 
     /// Removes each view model value changed.
     func removeViewModelObservers() {
         joysticksViewModel.state.valueChanged = nil
-        flightReportViewModel.state.valueChanged = nil
-        criticalAlertViewModel.state.valueChanged = nil
         helloWorldViewModel?.state.valueChanged = nil
         landingViewModel.state.valueChanged = nil
-        cellularPairingAvailabilityViewModel.state.valueChanged = nil
         cellularIndicatorViewModel.state.valueChanged = nil
-        cellularPairingProcessViewModel.state.valueChanged = nil
     }
 
     /// Removes container views.
@@ -357,14 +396,6 @@ private extension HUDViewController {
         if isTaskPending(key: Constants.cellularIndicatorTaskKey) {
             cancelDelayedTask(key: Constants.cellularIndicatorTaskKey)
         }
-    }
-}
-
-// MARK: - HUDCoordinatorCriticalAlertDelegate
-extension HUDViewController: HUDCoordinatorCriticalAlertDelegate {
-    func onCriticalAlertDismissed() {
-        criticalAlertViewModel.dimissCurrentAlert()
-        self.showCellularPairingIfNeeded()
     }
 }
 
@@ -495,32 +526,6 @@ private extension HUDViewController {
 
 // MARK: - Cellular Pairing Process
 private extension HUDViewController {
-    /// Updates cellular process.
-    func updateCellularProcess() {
-        let state = cellularPairingProcessViewModel.state.value
-
-        if cellularPairingProcessViewModel.isPinCodeRequested {
-            coordinator?.displayCellularPinCode()
-        } else if cellularPairingAvailabilityViewModel.state.value.canShowModal {
-            guard state.pairingProcessStep == .pairingProcessSuccess else {
-                switch state.pairingProcessError {
-                case .connectionUnreachable,
-                     .unableToConnect,
-                     .unauthorizedUser,
-                     .serverError:
-                    DispatchQueue.main.async { [weak self] in
-                        self?.showPairingAlert(error: state.pairingProcessError)
-                    }
-                default:
-                    break
-                }
-
-                return
-            }
-
-            coordinator?.displayPairingSuccess()
-        }
-    }
 
     /// Shows an alert when pairing process fails.
     ///
@@ -542,13 +547,6 @@ private extension HUDViewController {
                                                     cancelAction: cancelAction,
                                                     validateAction: validateAction)
         self.present(alert, animated: true)
-    }
-
-    /// Shows the drone cellular process if its available.
-    func showCellularPairingIfNeeded() {
-        guard cellularPairingAvailabilityViewModel.state.value.canShowModal else { return }
-
-        coordinator?.displayCellularPairingAvailable()
     }
 }
 

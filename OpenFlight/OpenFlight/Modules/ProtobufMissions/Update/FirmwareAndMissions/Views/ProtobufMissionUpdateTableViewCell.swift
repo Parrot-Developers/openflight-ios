@@ -52,7 +52,6 @@ final class ProtobufMissionUpdateTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-        contentView.backgroundColor = ColorName.greyShark.color
     }
 
     // MARK: - Public Funcs

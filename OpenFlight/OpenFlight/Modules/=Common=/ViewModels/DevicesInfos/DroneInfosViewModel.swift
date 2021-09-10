@@ -45,10 +45,10 @@ final class DroneInfosViewModel {
     @Published private(set) var gpsStrength: GpsStrength = .none
     /// Drone's GPS satellite count.
     @Published private(set) var satelliteCount: Int?
-    /// Drone's model.
-    @Published private(set) var droneModel: String = Style.dash
     /// Drone's name.
     @Published private(set) var droneName: String = Style.dash
+    /// Drone's model.
+    @Published private(set) var droneModelName: String?
     /// Drone's gimbal status.
     @Published private(set) var gimbalStatus: CalibratableGimbalState?
     /// Drone's front stereo gimbal status.
@@ -71,6 +71,7 @@ final class DroneInfosViewModel {
     private var cancellables = Set<AnyCancellable>()
     private var batteryInfoRef: Ref<BatteryInfo>?
     private var gpsRef: Ref<Gps>?
+    private var modelRef: Ref<String>?
     private var nameRef: Ref<String>?
     private var connectionStateRef: Ref<DeviceState>?
     private var gimbalRef: Ref<Gimbal>?
@@ -105,6 +106,7 @@ final class DroneInfosViewModel {
         Services.hub.currentDroneHolder.dronePublisher
             .sink { [unowned self] drone in
                 listenBatteryInfo(drone: drone)
+                listenModel(drone: drone)
                 listenName(drone: drone)
                 listenGimbalAndFrontStereo(drone: drone)
                 listenMagnetometer(drone: drone)
@@ -164,6 +166,13 @@ private extension DroneInfosViewModel {
         nameRef = drone.getName(observer: { [weak self] name in
             self?.droneName = name ?? Style.dash
         })
+    }
+
+    /// Starts observing changes for the drone's model and updates the drone model name published property.
+    ///
+    /// - Parameter drone: the current drone
+    func listenModel(drone: Drone) {
+        self.droneModelName = drone.model.publicName
     }
 
     /// Updates gimbal and front stereo calibration state.

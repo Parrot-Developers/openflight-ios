@@ -34,21 +34,20 @@ import UIKit
 
 // MARK: - UILabel
 public extension UILabel {
-    /// Makingup label using style and color.
+    /// Making up label using style and color.
     ///
     /// - Parameters:
     ///     - style: font style
     ///     - color: color of the text
     final func makeUp(with style: ParrotFontStyle = .regular, and color: ColorName = .white) {
-        self.font = UIFont.font(with: style)
-        self.textColor = color.color
+        font = UIFont.font(with: style)
+        textColor = color.color
     }
 }
 
 // MARK: - UIButton
 public extension UIButton {
-    // TODO: For each use, remove default parameters if needed.
-    /// Makingup UIButton using style and color.
+    /// Making up UIButton using style and color.
     ///
     /// - Parameters:
     ///     - style: font style
@@ -57,8 +56,8 @@ public extension UIButton {
     final func makeup(with style: ParrotFontStyle = .regular,
                       color: ColorName = .white,
                       and state: UIControl.State = UIControl.State.normal) {
-        self.titleLabel?.font = UIFont.font(with: style)
-        self.setTitleColor(color.color, for: state)
+        titleLabel?.font = UIFont.font(with: style)
+        setTitleColor(color.color, for: state)
     }
 }
 
@@ -75,24 +74,20 @@ public extension UISegmentedControl {
                             selectedBackgroundColor: ColorName = ColorName.highlightColor,
                             normalFontColor: ColorName = ColorName.defaultTextColor,
                             selectedFontColor: ColorName = ColorName.white) {
-        self.setBackgroundImage(normalBackgroundColor.color.withAlphaComponent(0.8).asImage(), for: [.normal, .disabled], barMetrics: .default)
-        self.setBackgroundImage(normalBackgroundColor.color.asImage(), for: .normal, barMetrics: .default)
-        self.setBackgroundImage(selectedBackgroundColor.color.withAlphaComponent(0.8).asImage(), for: [.selected, .disabled], barMetrics: .default)
-        self.setBackgroundImage(selectedBackgroundColor.color.asImage(), for: .selected, barMetrics: .default)
+        setBackgroundImage(normalBackgroundColor.color.withAlphaComponent(0.8).asImage(), for: [.normal, .disabled], barMetrics: .default)
+        setBackgroundImage(normalBackgroundColor.color.asImage(), for: .normal, barMetrics: .default)
+        setBackgroundImage(selectedBackgroundColor.color.withAlphaComponent(0.8).asImage(), for: [.selected, .disabled], barMetrics: .default)
+        setBackgroundImage(selectedBackgroundColor.color.asImage(), for: .selected, barMetrics: .default)
 
-        self.backgroundColor = .clear
-        self.selectedSegmentTintColor = .clear
+        backgroundColor = .clear
+        selectedSegmentTintColor = .clear
 
-        self.setDividerImage(UIImage(),
-                             forLeftSegmentState: .normal,
-                             rightSegmentState: .normal,
-                             barMetrics: .default)
-        self.makeup(with: ParrotFontStyle.regular,
-                    color: normalFontColor,
-                    and: .normal)
-        self.makeup(with: ParrotFontStyle.regular,
-                    color: selectedFontColor,
-                    and: .selected)
+        setDividerImage(UIImage(),
+                        forLeftSegmentState: .normal,
+                        rightSegmentState: .normal,
+                        barMetrics: .default)
+        makeup(color: normalFontColor)
+        makeup(color: selectedFontColor, and: .selected)
     }
 
     /// Makingup UISegmentedControl using style and color.
@@ -104,8 +99,8 @@ public extension UISegmentedControl {
     final func makeup(with style: ParrotFontStyle = ParrotFontStyle.regular,
                       color: ColorName = .white,
                       and state: UIControl.State = UIControl.State.normal) {
-        self.setTitleTextAttributes([.font: style.font,
-                                     .foregroundColor: color.color], for: state)
+        setTitleTextAttributes([.font: style.font,
+                                .foregroundColor: color.color], for: state)
     }
 }
 
@@ -135,7 +130,9 @@ public extension UIView {
     ///     - style: blur effect
     ///     - firstCorner: first corner to round
     ///     - secondCorner: second corner to round
-    final func addBlurEffectWithTwoCorners(with style: UIBlurEffect.Style = .dark, firstCorner: CACornerMask, secondCorner: CACornerMask) {
+    final func addBlurEffectWithTwoCorners(with style: UIBlurEffect.Style = .dark,
+                                           firstCorner: CACornerMask,
+                                           secondCorner: CACornerMask) {
         // Remove old visual effect views first.
         removeBlurEffect()
         let blurEffect = UIBlurEffect(style: style)
@@ -169,10 +166,10 @@ public extension UITextField {
     func makeUp(style: ParrotFontStyle = .regular,
                 textColor: ColorName = .white,
                 bgColor: ColorName = .black60) {
-        self.backgroundColor = bgColor.color
-        self.font = style.font
+        backgroundColor = bgColor.color
+        font = style.font
         self.textColor = textColor.color
-        self.layer.borderColor = bgColor.color.cgColor
+        layer.borderColor = bgColor.color.cgColor
     }
 }
 
@@ -188,8 +185,8 @@ public extension UITableView {
         if let backgroundColor = backgroundColor {
             self.backgroundColor = backgroundColor
         }
-        self.tableFooterView = UIView() // Prevents form extra separators
+        tableFooterView = UIView() // Prevents form extra separators
         self.showsVerticalScrollIndicator = showsVerticalScrollIndicator
-        self.separatorInset = UIEdgeInsets.zero
+        separatorInset = UIEdgeInsets.zero
     }
 }

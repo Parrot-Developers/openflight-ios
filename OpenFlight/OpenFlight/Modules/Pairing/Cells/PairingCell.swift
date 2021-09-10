@@ -47,6 +47,8 @@ protocol PairingCellDelegate: AnyObject {
     func whereIsWifiPassword()
     /// Called when user switched on the drone when there is no remote connected.
     func switchOnDroneDone()
+    /// Called when user clicked on the action button.
+    func onClickAction()
 }
 
 /// Pairing Cell used in the pairing collection view.
@@ -64,12 +66,16 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
     @IBOutlet private weak var cellView: UIView!
     @IBOutlet private weak var bgView: UIView!
     // Loading view.
-    @IBOutlet private weak var loadingImageview: UIImageView!
+    @IBOutlet private weak var loadingView: UIView!
+    @IBOutlet private weak var loadingImageView: UIImageView!
+    // Action view.
+    @IBOutlet private weak var actionView: UIView!
+    @IBOutlet private weak var actionButton: UIButton!
     // Error view.
     @IBOutlet private weak var errorView: UIView!
     @IBOutlet private weak var errorButton: UIButton!
     // Check icon.
-    @IBOutlet private weak var checkImageView: UIImageView!
+    @IBOutlet private weak var checkView: UIView!
 
     // MARK: - Internal Properties
     weak var navDelegate: PairingCellDelegate?
@@ -77,7 +83,6 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
 
     // MARK: - Private Enums
     private enum Constants {
-        static let borderWidth: CGFloat = 1.0
         static let remoteNotRecognizedDelay: Double = 10.0
         static let remoteNotRecognizedTaskKey: String = "remoteNotRecognized"
         static let droneWaitingDelay: Double = 2.0
@@ -94,9 +99,10 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
 
     override func prepareForReuse() {
         // Clear animations and views.
-        updateDescriptionLabel(isHidden: true, title: nil)
+        updateDescriptionLabel(title: nil)
         updateErrorButton(isHidden: true, title: nil)
-        checkImageView.isHidden = true
+        checkView.isHidden = true
+        indexLabel.isHidden = false
         // Cancel each delayed task.
         cancelDelayedTask(key: Constants.remoteNotRecognizedTaskKey)
         cancelDelayedTask(key: Constants.droneWaitingTaskKey)
@@ -106,9 +112,9 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
     override func willMove(toWindow newWindow: UIWindow?) {
         // Restart animation when we come back to the view.
         if newWindow != nil,
-            loadingImageview.isHidden == false,
+            loadingView.isHidden == false,
             self.window == nil {
-            loadingImageview.startRotate()
+            loadingImageView.startRotate()
         }
     }
 
@@ -119,19 +125,21 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
     ///    - entry: Model which is provided by the controller
     ///    - indexPath: index of the cell
     func setup(_ entry: PairingModel, _ indexPath: IndexPath) {
-        // Clear animations and views.
-        updateDescriptionLabel(isHidden: true, title: nil)
-        updateErrorButton(isHidden: true, title: nil)
-        loadingImageview.stopRotate()
-        loadingImageview.isHidden = true
-        checkImageView.isHidden = true
         let taskIsDoing = entry.pairingState == .doing
         let taskIsDone = entry.pairingState == .done
+
+        // Clear animations and views.
+        updateDescriptionLabel(title: entry.title)
+        updateErrorButton(isHidden: true, title: nil)
+        updateActionButton(title: entry.actionTitle)
+        loadingImageView.stopRotate()
+        loadingView.isHidden = true
+        checkView.isHidden = !taskIsDone
+        indexLabel.isHidden = taskIsDone
 
         // Setup all cells according to a specified Model.
         // It can be a remote, a drone, a fly or a wifi pairing cell.
         if let entry = entry as? RemotePairingModel {
-            updateDescriptionLabel(isHidden: !(taskIsDoing), title: entry.title)
             if taskIsDoing {
                 removeUserInteraction()
                 errorButton.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(remoteNotRecognized)))
@@ -145,9 +153,8 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
                 removeUserInteraction()
                 // Show an indication if the drone is not connected after 2s.
                 setupDelayedTask({
-                    self.updateDescriptionLabel(isHidden: !(taskIsDoing), title: entry.title)
-                    self.loadingImageview.isHidden = !(taskIsDoing)
-                    self.loadingImageview.startRotate()},
+                    self.loadingView.isHidden = !(taskIsDoing)
+                    self.loadingImageView.startRotate()},
                                  delay: Constants.droneWaitingDelay,
                                  key: Constants.droneWaitingTaskKey)
 
@@ -160,7 +167,6 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
             }
         } else if let entry = entry as? WifiPairingModel {
             // Show wifi button view.
-            updateDescriptionLabel(isHidden: !taskIsDoing, title: entry.title)
             updateErrorButton(isHidden: !taskIsDoing, title: entry.errorMessage)
             if taskIsDoing {
                 removeUserInteraction()
@@ -168,11 +174,12 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
             }
         } else if let entry = entry as? DroneWithoutRemotePairingModel {
             removeUserInteraction()
-            updateDescriptionLabel(isHidden: !taskIsDoing, title: entry.title)
-            updateErrorButton(isHidden: !taskIsDoing, title: entry.errorMessage)
-            if taskIsDone {
-                checkImageView.isHidden = false
-            }
+            updateErrorButton(isHidden: !taskIsDoing, title: entry.errorMessage, titleColor: entry.errorTextColor)
+            // Set the radius and the border for error and wifi settings buttons.
+            errorButton.cornerRadiusedWith(backgroundColor: entry.errorBackgroundColor,
+                                           borderColor: entry.errorBorderColor,
+                                           radius: Style.largeCornerRadius,
+                                           borderWidth: Style.mediumBorderWidth)
             if taskIsDoing {
                 removeUserInteraction()
                 errorButton.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.switchOnDroneDone)))
@@ -185,8 +192,12 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
             }
         }
         updateIndexView(indexPath, entry.pairingState)
-        bgView.backgroundColor = entry.backgroundColor
+        bgView.cornerRadiusedWith(backgroundColor: entry.backgroundColor,
+                                  borderColor: entry.borderColor,
+                                  radius: Style.largeCornerRadius,
+                                  borderWidth: Style.largeBorderWidth)
         modelImageView.image = entry.image
+        modelImageView.tintColor = entry.imageTintColor
     }
 }
 
@@ -194,13 +205,13 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
 private extension PairingCell {
     /// Init view of the cell.
     func initView() {
-        errorButton.setTitleColor(UIColor(named: .white), for: .normal)
-        // Set the radius and the border for error and wifi settings buttons.
-        errorButton.cornerRadiusedWith(backgroundColor: UIColor.clear,
-                                       borderColor: UIColor(named: .white),
-                                       radius: Style.largeCornerRadius,
-                                       borderWidth: Constants.borderWidth)
-        errorButton.titleLabel?.textAlignment = .center
+        errorButton.setTitleColor(UIColor(named: .defaultTextColor), for: .normal)
+        checkView.roundCornered()
+        // Set the radius and color of action button.
+        actionButton.cornerRadiusedWith(backgroundColor: UIColor(named: .whiteAlbescent),
+                                        borderColor: .clear,
+                                        radius: Style.largeCornerRadius,
+                                        borderWidth: Style.noBorderWidth)
     }
 
     /// Update the index and the view.
@@ -210,24 +221,32 @@ private extension PairingCell {
     ///    - state: state of the current cell
     func updateIndexView(_ indexPath: IndexPath, _ state: PairingState) {
         indexLabel.text = "\(indexPath.row + 1)"
-        let bgColor: UIColor = state == PairingState.doing ? UIColor.white : UIColor.clear
-        let textColor: UIColor = state == PairingState.doing ? UIColor.black : UIColor.white
+        let bgColor: UIColor = state == PairingState.todo ? .clear : ColorName.highlightColor.color
+        let borderColor: UIColor = state == PairingState.todo ? ColorName.defaultTextColor.color : .clear
+        let textColor: UIColor = state == PairingState.todo ? ColorName.defaultTextColor.color : Color.white
         indexLabel.textColor = textColor
         indexLabel.clipsToBounds = true
         indexLabel.cornerRadiusedWith(backgroundColor: bgColor,
-                                      borderColor: UIColor.white,
+                                      borderColor: borderColor,
                                       radius: indexLabel.frame.width / 2,
-                                      borderWidth: Constants.borderWidth)
+                                      borderWidth: Style.mediumBorderWidth)
     }
 
     /// Update the label which describe the state for each pairing step.
     ///
     /// - Parameters:
-    ///    - isHidden: specify if we need to hide the current view
     ///    - title: title for the label
-    func updateDescriptionLabel(isHidden: Bool, title: String?) {
-        stateDescriptionView.isHidden = isHidden
+    func updateDescriptionLabel(title: String?) {
         stateDescriptionLabel.text = title
+    }
+
+    /// Update the action button which gives info to user.
+    ///
+    /// - Parameters:
+    ///    - title: title for the label. If title is nil, the button will be hidden.
+    func updateActionButton(title: String?) {
+        actionView.isHidden = title == nil
+        actionButton.setTitle(title, for: .normal)
     }
 
     /// Update the error button which gives info to user.
@@ -235,9 +254,16 @@ private extension PairingCell {
     /// - Parameters:
     ///    - isHidden: specify if we need to hide the current view
     ///    - title: title for the button
-    func updateErrorButton(isHidden: Bool, title: String?) {
-        errorView.isHidden = isHidden
+    func updateErrorButton(isHidden: Bool, title: String?, titleColor: UIColor = ColorName.defaultTextColor.color) {
+        errorButton.isHidden = isHidden
         errorButton.setTitle(title, for: .normal)
+        errorButton.setTitleColor(titleColor, for: .normal)
+
+        // Set the radius and the border for error button.
+        errorButton.cornerRadiusedWith(backgroundColor: .clear,
+                                       borderColor: UIColor(named: .defaultTextColor),
+                                       radius: Style.largeCornerRadius,
+                                       borderWidth: Style.mediumBorderWidth)
     }
 
     /// Remove all user interaction on error button.
@@ -253,6 +279,10 @@ private extension PairingCell {
 private extension PairingCell {
     @IBAction func wifiButtonTouchedUpInside(_ sender: Any) {
         navDelegate?.startWifiSettings()
+    }
+
+    @IBAction func actionButtonTouchedUpInside(_ sender: Any) {
+        navDelegate?.onClickAction()
     }
 
     @objc func dismissPairingView(tap: UITapGestureRecognizer) {

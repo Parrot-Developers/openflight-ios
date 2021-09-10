@@ -33,6 +33,13 @@ import GroundSdk
 /// View model for imaging settings bar photo format item.
 
 final class ImagingBarPhotoFormatViewModel: BarButtonViewModel<ImagingBarState> {
+
+    // MARK: - init
+    /// Constructor.
+    init() {
+        super.init(barId: "PhotoFormat")
+    }
+
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
 

@@ -30,6 +30,7 @@
 
 import UIKit
 import Reusable
+import Combine
 
 // MARK: - Protocols
 public protocol EditionSettingsDelegate: EditionSettingsCellModelDelegate {
@@ -47,42 +48,29 @@ public protocol EditionSettingsDelegate: EditionSettingsCellModelDelegate {
 
     /// User tapped undo button.
     func didTapOnUndo()
+
+    /// User can undo changes
+    func canUndo() -> Bool
 }
 
 /// Manages Flight Plan edition settings.
 final class EditionSettingsViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var tableView: UITableView!
-    @IBOutlet private weak var closeButton: UIButton!
     @IBOutlet private weak var deleteButton: UIButton!
-    @IBOutlet private weak var undoButton: UIButton!
-    @IBOutlet private weak var tableViewTopConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var tableViewTrailingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var undoButton: UIButton! {
+        didSet {
+            undoButton.cornerRadiusedWith(backgroundColor: ColorName.white.color,
+                                          radius: Style.largeCornerRadius)
+            undoButton.makeup(color: .defaultTextColor)
+            undoButton.setTitle(L10n.commonUndo, for: .normal)
+        }
+    }
 
     // MARK: - Internal Properties
     weak var delegate: EditionSettingsDelegate?
-    /// Provider used to get the settings of the flight plan provider.
-    var settingsProvider: FlightPlanSettingsProvider?
-    /// The current flight plan which contains the settings.
-    var savedFlightPlan: SavedFlightPlan? {
-        didSet {
-            guard let strongFlightPlan = savedFlightPlan else { return }
-
-            self.fpSettings = settingsProvider?.settings(for: strongFlightPlan)
-        }
-    }
-
-    // MARK: - Private Properties
-    private var fpSettings: [FlightPlanSetting]?
-    private var settingsCategoryFilter: FlightPlanSettingCategory?
-    private var dataSource: [FlightPlanSetting] {
-        let settings = self.fpSettings ?? self.settingsProvider?.settings ?? []
-        if let filter = settingsCategoryFilter {
-            return settings.filter({ $0.category == filter })
-        } else {
-            return settings
-        }
-    }
+    var viewModel: EditionSettingsViewModel!
+    private var cancellables = [AnyCancellable]()
     private var trailingMargin: CGFloat {
         if UIApplication.shared.statusBarOrientation == .landscapeLeft {
             return UIApplication.shared.keyWindow?.safeAreaInsets.right ?? 0.0
@@ -105,9 +93,13 @@ final class EditionSettingsViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         initView()
-        setupOrientationObserver()
+        bindViewModel()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        tableView.reloadData()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -121,71 +113,13 @@ final class EditionSettingsViewController: UIViewController {
     override var prefersStatusBarHidden: Bool {
         return true
     }
-
-    // MARK: - Internal Funcs
-    /// Update collection view data.
-    ///
-    /// - Parameters:
-    ///     - settingsProvider: current settings provider
-    ///     - savedFlightPlan: current flight plan
-    ///     - selectedGraphic: selected graphic
-    func updateDataSource(with settingsProvider: FlightPlanSettingsProvider?,
-                          savedFlightPlan: SavedFlightPlan?,
-                          selectedGraphic: EditableAGSGraphic?) {
-        self.settingsProvider = settingsProvider
-        self.savedFlightPlan = savedFlightPlan
-        // Delete button is hidden if selected graphic can't be deleted or if no graphic is selected.
-        self.deleteButton.isHidden = selectedGraphic?.deletable != true
-
-        switch settingsProvider {
-        case is WayPointSettingsProvider,
-             is PoiPointSettingsProvider,
-             is WayPointSegmentSettingsProvider:
-            self.fpSettings = settingsProvider?.settings
-        case nil:
-            self.fpSettings = []
-        default:
-            break
-        }
-
-        self.refreshContent(categoryFilter: settingsCategoryFilter)
-    }
-
-    /// Updates the top constraint of the tableview.
-    ///
-    /// - Parameters:
-    ///     - value: contraint value
-    func updateTopTableViewConstraint(_ value: CGFloat) {
-        self.tableViewTopConstraint.constant = value
-    }
-
-    /// Refreshes view data.
-    ///
-    /// - Parameters:
-    ///     - categoryFilter: allows to filter setting category
-    func refreshContent(categoryFilter: FlightPlanSettingCategory?) {
-        undoButton.isHidden = categoryFilter == .common || categoryFilter == .image
-
-        self.settingsCategoryFilter = categoryFilter
-        self.tableView.reloadData()
-        updateUndoButton()
-    }
-
-    /// Refreshes view data.
-    func refreshContent() {
-        refreshContent(categoryFilter: self.settingsCategoryFilter)
-    }
 }
 
 // MARK: - Actions
 private extension EditionSettingsViewController {
     @IBAction func undoButtonTouchedUpInside(_ sender: Any) {
         delegate?.didTapOnUndo()
-        refreshContent(categoryFilter: settingsCategoryFilter)
-    }
-
-    @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
-        delegate?.didTapCloseButton()
+        self.viewModel.refreshContent()
     }
 
     @IBAction func deleteButtonTouchedUpInside(_ sender: Any) {
@@ -197,40 +131,45 @@ private extension EditionSettingsViewController {
 private extension EditionSettingsViewController {
     /// Inits the view.
     func initView() {
+        tableView.insetsContentViewsToSafeArea = false // Safe area is handled in this VC, not in content
         tableView.register(cellType: AdjustmentTableViewCell.self)
         tableView.register(cellType: SettingValuesChoiceTableViewCell.self)
         tableView.register(cellType: CenteredRulerTableViewCell.self)
         tableView.register(cellType: FlightPlanSettingTitleCell.self)
+        tableView.register(cellType: FlightPlanSettingInfoCell.self)
         tableView.makeUp(backgroundColor: .clear)
 
-        deleteButton.cornerRadiusedWith(backgroundColor: ColorName.redTorch50.color,
+        deleteButton.cornerRadiusedWith(backgroundColor: ColorName.errorColor.color,
                                         radius: Style.mediumCornerRadius)
-        deleteButton.makeup(with: .regular,
-                            color: .white,
-                            and: .normal)
+        deleteButton.makeup()
         deleteButton.setTitle(L10n.commonDelete, for: .normal)
+        deleteButton.isHidden = true
 
-        undoButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
+        undoButton.cornerRadiusedWith(backgroundColor: ColorName.white.color,
                                       radius: Style.largeCornerRadius)
+    }
+
+    func bindViewModel() {
+        viewModel.$viewState
+            .compactMap({ $0 })
+            .sink { [unowned self] state in
+                switch state {
+                case let .updateUndo(categoryFilter):
+                    self.undoButton.isHidden = categoryFilter == .common || categoryFilter == .image
+                    self.updateUndoButton()
+                case let .selectedGraphic(selectedGraphic):
+                    self.deleteButton.isHidden = selectedGraphic?.deletable != true
+                case .reload:
+                    self.tableView.reloadData()
+                }
+            }
+            .store(in: &cancellables)
     }
 
     /// Updates undo button.
     func updateUndoButton() {
-        undoButton.isEnabled = FlightPlanManager.shared.canUndo()
+        undoButton.isEnabled = delegate.map({ $0.canUndo() }) ?? false
         undoButton.alphaWithEnabledState(undoButton.isEnabled)
-    }
-
-    /// Sets up observer for orientation change.
-    func setupOrientationObserver() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateSafeAreaConstraints),
-                                               name: UIDevice.orientationDidChangeNotification,
-                                               object: nil)
-    }
-
-    /// Updates safe area constraints.
-    @objc func updateSafeAreaConstraints() {
-        tableViewTrailingConstraint.constant = trailingMargin
     }
 }
 
@@ -245,7 +184,7 @@ extension EditionSettingsViewController: UITableViewDataSource {
         case .header:
             return 1
         case .settings:
-            return dataSource.count
+            return viewModel.dataSource.count
         default:
             return 0
         }
@@ -269,7 +208,8 @@ extension EditionSettingsViewController: UITableViewDataSource {
     private func cellForHeaderSection(indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(for: indexPath) as FlightPlanSettingTitleCell
         let title: String
-        switch settingsProvider {
+        let isImageHidden: Bool = false
+        switch viewModel.settingsProvider {
         case is WayPointSettingsProvider:
             title = L10n.commonWaypoint
         case is PoiPointSettingsProvider:
@@ -278,10 +218,10 @@ extension EditionSettingsViewController: UITableViewDataSource {
              nil:
             title = L10n.flightPlanSegmentSettingsTitle
         default:
-            title = settingsCategoryFilter?.title ?? L10n.flightPlanSettingsTitle
+            title = viewModel.settingsCategoryFilter?.title ?? L10n.flightPlanSettingsTitle
         }
-        cell.fill(with: title)
-
+        cell.fill(with: title, and: isImageHidden)
+        cell.delegate = self
         return cell
     }
 
@@ -292,11 +232,16 @@ extension EditionSettingsViewController: UITableViewDataSource {
     /// - Returns: cell to display
     private func cellForSettingsSection(indexPath: IndexPath) -> UITableViewCell {
         var cell: UITableViewCell & EditionSettingsCellModel
-        let setting: FlightPlanSettingType? = self.dataSource[indexPath.row]
+        let setting: FlightPlanSettingType? = viewModel.dataSource[indexPath.row]
 
         switch setting?.type {
         case .adjustement:
-            cell = tableView.dequeueReusableCell(for: indexPath) as AdjustmentTableViewCell
+            switch setting?.unit {
+            case .centimeterPerpixel:
+                cell = tableView.dequeueReusableCell(for: indexPath) as FlightPlanSettingInfoCell
+            default:
+                cell = tableView.dequeueReusableCell(for: indexPath) as AdjustmentTableViewCell
+            }
         case .centeredRuler:
             cell = tableView.dequeueReusableCell(for: indexPath) as CenteredRulerTableViewCell
         case .choice:
@@ -323,5 +268,11 @@ extension EditionSettingsViewController: EditionSettingsCellModelDelegate {
 
     func updateChoiceSetting(for key: String?, value: Bool) {
         delegate?.updateChoiceSetting(for: key, value: value)
+    }
+}
+
+extension EditionSettingsViewController: FlightPlanSettingTitleDelegate {
+    func dismiss() {
+        delegate?.didTapCloseButton()
     }
 }

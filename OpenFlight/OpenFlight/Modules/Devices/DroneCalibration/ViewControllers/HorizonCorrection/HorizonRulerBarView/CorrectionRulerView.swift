@@ -103,7 +103,7 @@ public final class CorrectionRulerView: UIView, NibOwnerLoadable {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let gradientBorderColor: CGColor = UIColor.clear.cgColor
+        static let gradientBorderColor: CGColor = ColorName.white50.color.cgColor
         static let gradientCentralColor: CGColor = ColorName.white.color.cgColor
         static let gradientStartingPoint: CGPoint = CGPoint(x: 0.0, y: 0.5)
         static let gradientEndPoint: CGPoint = CGPoint(x: 1.0, y: 0.5)
@@ -161,17 +161,16 @@ private extension CorrectionRulerView {
         collectionView.register(cellType: CorrectionViewCell.self)
         collectionView.dataSource = self
         collectionView.delegate = self
-        if !orientation.isHorizontal {
-            addBlurEffect()
-        } else {
+        if orientation.isHorizontal {
             let layout = UICollectionViewFlowLayout()
             layout.scrollDirection = .horizontal
             collectionView.collectionViewLayout = layout
         }
         titleLabel.isHidden = orientation.isHorizontal
-        titleLabel.makeUp()
         horizontalSelectionView.isHidden = !orientation.isHorizontal
         verticalSelectionView.isHidden = orientation.isHorizontal
+        collectionContainerView.addBlurEffect(with: .light)
+        customCornered(corners: [.allCorners], radius: Style.largeCornerRadius)
     }
 
     /// Adds gradient layer over collection.

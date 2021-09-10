@@ -32,6 +32,7 @@
 /// Model for `FrontStereoGimbalCalibrationState`.
 enum FrontStereoGimbalCalibrationState {
     case calibrated
+    case recommended
     case needed
     case calibrating
     case error
@@ -41,6 +42,8 @@ enum FrontStereoGimbalCalibrationState {
         switch self {
         case .calibrated:
             return ""
+        case .recommended:
+            return L10n.commonRecommended
         case .needed,
              .error,
              .calibrating:

@@ -29,18 +29,23 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Manages HUD's flight plan right panel.
 final class FlightPlanPanelViewController: UIViewController {
     // MARK: - Outlets
+
+    @IBOutlet private weak var imageMenuView: UIView!
     @IBOutlet private weak var projectView: UIView!
     @IBOutlet private weak var projectNameLabel: UILabel!
-    @IBOutlet private weak var projectButton: UIButton! {
+    @IBOutlet private weak var projectButton: UIButton!
+    @IBOutlet private weak var folderButton: UIButton! {
         didSet {
-            projectButton.makeup()
+            folderButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
         }
     }
-    @IBOutlet private weak var folderButton: UIButton!
+
+    @IBOutlet private weak var pauseButton: UIButton!
     @IBOutlet private weak var historyButton: UIButton!
     @IBOutlet private weak var playButton: UIButton!
     @IBOutlet private weak var arrowView: SimpleArrowView! {
@@ -48,11 +53,12 @@ final class FlightPlanPanelViewController: UIViewController {
             arrowView.orientation = .bottom
         }
     }
+
+    @IBOutlet private var emptyViews: [UIView]?
+    @IBOutlet private weak var replayButton: UIButton!
     @IBOutlet private weak var stopButton: UIButton!
     @IBOutlet private weak var editButton: UIButton!
     @IBOutlet private weak var buttonsStackView: UIStackView!
-    @IBOutlet private weak var estimationsView: FlightPlanPanelEstimationView!
-    @IBOutlet private weak var estimationsStackView: UIStackView!
     @IBOutlet private weak var noFlightPlanLabel: UILabel!
     @IBOutlet private weak var cameraStreamingContainerView: UIView!
     @IBOutlet private weak var progressViewContainer: UIView!
@@ -60,7 +66,6 @@ final class FlightPlanPanelViewController: UIViewController {
     @IBOutlet private weak var bottomStackViewSuperviewTrailingConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
-    weak var coordinator: FlightPlanPanelCoordinator?
 
     /// Expose this label to customize it in extensions.
     var infoLabel: UILabel {
@@ -71,12 +76,17 @@ final class FlightPlanPanelViewController: UIViewController {
         return editButton
     }
     var flightPlanPanelProgressView: FlightPlanPanelProgressView?
+    var flightPlanPanelImageRateView: FlightPlanPanelImageRateView?
     var flightPlanPanelStatusView: UIView?
 
     // MARK: - Private Properties
-    private let flightPlanPanelViewModel = FlightPlanPanelViewModel()
+    private var flightPlanPanelViewModel: FlightPlanPanelViewModel!
     private weak var cameraStreamingViewController: HUDCameraStreamingViewController?
     private var flightPlanPanelCoordinator: FlightPlanPanelCoordinator?
+    private var cancellables = [AnyCancellable]()
+    private var cancellableUpdating = [AnyCancellable]()
+    private var cancellableProgressView: AnyCancellable?
+    private var cancellableImageRateView: AnyCancellable?
 
     // MARK: - Private Enums
     private enum Constants {
@@ -84,32 +94,45 @@ final class FlightPlanPanelViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: FlightPlanPanelCoordinator) -> FlightPlanPanelViewController {
+    static func instantiate(flightPlanPanelViewModel: FlightPlanPanelViewModel) -> FlightPlanPanelViewController {
         let flightPlanPanelVC = StoryboardScene.FlightPlanPanel.initialScene.instantiate()
-        flightPlanPanelVC.flightPlanPanelCoordinator = coordinator
-
+        flightPlanPanelVC.flightPlanPanelViewModel = flightPlanPanelViewModel
         return flightPlanPanelVC
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         initView()
-        initProgressView()
-
-        updateEstimations()
-        updateView(state: flightPlanPanelViewModel.state.value)
+        bindViewModel()
         setupOrientationObserver()
-
         panelDidHide()
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        initProgressView()
+        initImageRateView()
+        cancellableProgressView = flightPlanPanelViewModel.$progressModel
+            .compactMap({ $0 })
+            .sink(receiveValue: { [unowned self] model in
+                self.flightPlanPanelProgressView?.model = model
+            })
 
-        // Estimations may change regarding measurement system.
-        updateEstimations(state: flightPlanPanelViewModel.state.value)
+        cancellableImageRateView = flightPlanPanelViewModel.$imageRate
+            .sink(receiveValue: { [unowned self] imageProvider in
+                self.flightPlanPanelImageRateView?.setup(
+                    provider: .init(dataSettings: imageProvider?.dataSettings),
+                    settings: imageProvider?.settings ?? [])
+            })
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        cancellableProgressView = nil
+        flightPlanPanelProgressView?.removeFromSuperview()
+        cancellableImageRateView = nil
+        flightPlanPanelImageRateView?.removeFromSuperview()
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -144,31 +167,34 @@ extension FlightPlanPanelViewController {
     /// Panel did show.
     func panelDidShow() {
         self.view.isHidden = false
-        flightPlanPanelViewModel.state.valueChanged = { [weak self] state in
-            self?.updateView(state: state)
-        }
-        updateView(state: flightPlanPanelViewModel.state.value)
     }
 
     /// Panel did hide.
     func panelDidHide() {
-        flightPlanPanelViewModel.state.valueChanged = nil
         self.view.isHidden = true
     }
+
 }
 
 // MARK: - Actions
 private extension FlightPlanPanelViewController {
+
+    @IBAction func replayButtonTouchUpInside(_ sender: Any) {
+        flightPlanPanelViewModel.replayFlightPlan()
+    }
+
+    @IBAction func pauseButtonTouchedUpInside(_ sender: Any) {
+        flightPlanPanelViewModel.pauseFlightPlan()
+    }
+
     /// History button touched up inside.
     @IBAction func historyTouchUpInside(_ sender: Any) {
-        if let flightPlanViewModel = FlightPlanManager.shared.currentFlightPlanViewModel {
-            coordinator?.startFlightPlanHistory(flightPlanViewModel: flightPlanViewModel)
-        }
+        flightPlanPanelViewModel.historyTouchUpInside()
     }
 
     /// Project button touched up inside.
     @IBAction func projectTouchUpInside(_ sender: Any) {
-        coordinator?.startManagePlans()
+        flightPlanPanelViewModel.projectTouchUpInside()
     }
 
     /// Play button touched up inside.
@@ -177,7 +203,7 @@ private extension FlightPlanPanelViewController {
                              newValue: nil,
                              logType: .button)
         disableControlsForDelay()
-        flightPlanPanelViewModel.startFlightPlan()
+        flightPlanPanelViewModel.playButtonTouchedUpInside()
     }
 
     /// Edit button touched up inside.
@@ -185,27 +211,7 @@ private extension FlightPlanPanelViewController {
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.edit.name,
                              newValue: nil,
                              logType: .button)
-
-        // Creates a new flight plan if there is no loaded flight plan.
-        if flightPlanPanelViewModel.state.value.isFlightPlanLoaded == false,
-           let flightPlanProvider = flightPlanPanelViewModel.state.value.missionMode.flightPlanProvider {
-            guard flightPlanProvider.flightPlanCoordinator != nil else {
-                FlightPlanManager.shared.new(flightPlanProvider: flightPlanProvider)
-                coordinator?.startFlightPlanEdition(shouldCenter: true)
-                return
-            }
-
-            coordinator?.startNewFlightPlan(flightPlanProvider: flightPlanProvider, creationCompletion: { [weak self] flightPlanCreated in
-                DispatchQueue.main.async { [weak self] in
-                    guard flightPlanCreated else { return }
-
-                    FlightPlanManager.shared.new(flightPlanProvider: flightPlanProvider)
-                    self?.coordinator?.startFlightPlanEdition()
-                }
-            })
-        } else {
-            coordinator?.startFlightPlanEdition()
-        }
+        flightPlanPanelViewModel.editButtonTouchedUpInside()
     }
 
     /// Stop button touched up inside.
@@ -222,18 +228,25 @@ private extension FlightPlanPanelViewController {
 private extension FlightPlanPanelViewController {
     /// Inits view.
     func initView() {
-        projectNameLabel.makeUp(with: .tiny, and: .white)
+        pauseButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
         projectNameLabel.text = L10n.flightPlanMenuProject.uppercased()
-        folderButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color, radius: Style.largeCornerRadius)
-        historyButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color, radius: Style.largeCornerRadius)
+        folderButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
+        historyButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
         playButton.makeup()
+        playButton.setImage(Asset.Common.Icons.play.image, for: .normal)
         playButton.setTitleColor(ColorName.white.color, for: .normal)
         playButton.setTitleColor(ColorName.white30.color, for: .disabled)
-        stopButton.cornerRadiusedWith(backgroundColor: ColorName.redTorch.color, radius: Style.largeCornerRadius)
+        playButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color, radius: Style.largeCornerRadius)
+        stopButton.cornerRadiusedWith(backgroundColor: ColorName.errorColor.color, radius: Style.largeCornerRadius)
         stopButton.setImage(Asset.Common.Icons.stop.image, for: .normal)
-        editButton.cornerRadiusedWith(backgroundColor: ColorName.white20.color, radius: Style.largeCornerRadius)
-        editButton.tintColor = ColorName.white.color
-        editButton.makeup(with: .large, color: .greenSpring)
+        editButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
+        editButton.tintColor = ColorName.defaultTextColor.color
+        editButton.makeup(with: .large, color: .defaultTextColor)
+        replayButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
+        replayButton.tintColor = ColorName.defaultTextColor.color
+        replayButton.makeup(with: .large, color: .defaultTextColor)
+        infoLabel.makeUp(with: .large, and: .defaultTextColor)
+        imageMenuView.backgroundColor = ColorName.white.color
     }
 
     /// Inits progress view.
@@ -243,118 +256,28 @@ private extension FlightPlanPanelViewController {
         self.flightPlanPanelProgressView = progressView
     }
 
-    /// Updates estimations.
-    ///
-    /// - Parameters:
-    ///     - state: Flight Plan Panel State
-    func updateEstimations(state: FlightPlanPanelState? = nil) {
-        estimationsStackView.isHidden = state?.isFlightPlanLoaded != true
-        estimationsView.updateEstimations(model: state?.flightPlanEstimations)
+    /// Inits progress view.
+    func initImageRateView() {
+        let imageRateView = FlightPlanPanelImageRateView(frame: imageMenuView.frame)
+        imageMenuView.addWithConstraints(subview: imageRateView)
+        self.flightPlanPanelImageRateView = imageRateView
     }
 
-    /// Updates extra views.
-    ///
-    /// - Parameters:
-    ///     - state: flight plan panel state
-    ///     - isActive: tells if flight plan is active
-    func updateExtraViews(state: FlightPlanPanelState? = nil,
-                          isActive: Bool) {
-        var extraViews: [UIView] = []
-        if isActive {
-            let counterView = FlightPlanPanelMediaCounterView()
-            extraViews.append(counterView)
-        }
+    private func updateButtons(_ information: FlightPlanPanelViewModel.ButtonsInformation) {
 
-        if let statusView = state?.missionMode.missionStatusView {
-            extraViews.append(statusView)
-        }
+        self.playButton.isEnabled = information.areEnabled
+        self.stopButton.isEnabled = information.areEnabled
+        self.pauseButton.isEnabled = information.areEnabled
 
-        flightPlanPanelProgressView?.setExtraViews(extraViews)
-    }
-
-    /// Updates the view with current state.
-    ///
-    /// - Parameters:
-    ///    - state: current flight plan panel state
-    func updateView(state: FlightPlanPanelState) {
-        let isAvailableToRun = state.runFlightPlanState?.isAvailable ?? false
-        let runState = state.runFlightPlanState?.runState ?? .stopped
-        let isActive = runState.isActive
-        playButton.isHidden = !state.isFlightPlanLoaded
-        playButton.isEnabled = isAvailableToRun && state.hasWayPoints
-        playButton.setTitle(state.runFlightPlanState?.formattedDuration, for: .normal)
-        actionButton.isHidden = isActive
-        stopButton.isHidden = !isActive
-        stopButton.isEnabled = state.isConnected()
-        flightPlanPanelProgressView?.isHidden = !state.isFlightPlanLoaded
-        if isActive {
-            buttonsStackView.distribution = .fill
-            switch runState {
-            case .playing:
-                playButton.setImage(Asset.Common.Icons.pause.image, for: .normal)
-                playButton.cornerRadiusedWith(backgroundColor: .clear,
-                    borderColor: state.isConnected() ? ColorName.white.color : ColorName.white30.color,
-                    radius: Style.largeCornerRadius,
-                    borderWidth: Style.mediumBorderWidth)
-
-            case .paused,
-                 .uploading:
-                setupDefaultPlayButtonStyle(hasNoBlockingIssue: state.runFlightPlanState?.unavailabilityReasons.hasNoBlockingIssue)
-            default:
-                break
-            }
-        } else {
-            buttonsStackView.distribution = .fillEqually
-            setupDefaultPlayButtonStyle(hasNoBlockingIssue: state.runFlightPlanState?.unavailabilityReasons.hasNoBlockingIssue)
-            editButton.setTitle(state.isFlightPlanLoaded ? "" : L10n.flightPlanNewFlightPlan,
-                                for: .normal)
-            editButton.setImage(state.isFlightPlanLoaded ? Asset.Common.Icons.iconEdit.image : nil,
-                                for: .normal)
-            editButton.setTitleColor(state.isFlightPlanLoaded ? ColorName.white.color : ColorName.greenSpring.color,
-                                     for: .normal)
-            editButton.backgroundColor = state.isFlightPlanLoaded ? ColorName.white20.color : ColorName.greenSpring20.color
-        }
-
-        updateEstimations(state: state)
-        noFlightPlanLabel.isHidden = state.isFlightPlanLoaded
-        projectView.isHidden = !state.isFlightPlanLoaded
-
-        infoLabel.text = L10n.flightPlanCreateFirst
-        infoLabel.makeUp(with: .large, and: .white50)
-
-        if let runFlightPlanState = state.runFlightPlanState {
-            flightPlanPanelProgressView?.model = FlightPlanPanelProgressModel(withRunFlightPlanState: runFlightPlanState)
-        }
-
-        if let viewModel = FlightPlanManager.shared.currentFlightPlanViewModel {
-            historyButton.isHidden = isActive
-            historyButton.isEnabled = !viewModel.executions.isEmpty
-            projectButton.setTitle(viewModel.state.value.title,
-                                   for: .normal)
-        } else {
-            historyButton.isHidden = true
-        }
-
-        if let flightPlanExecutionEndingState = state.runFlightPlanState?.flightPlanExecutionEndingState,
-           case .ended(let executionId) = flightPlanExecutionEndingState,
-           let flightPlanProvider = flightPlanPanelViewModel.state.value.missionMode.flightPlanProvider {
-            flightPlanPanelCoordinator?.startExecutionSummary(executionId: executionId, flightPlanProvider: flightPlanProvider)
-        }
-
-        updateExtraViews(state: state,
-                         isActive: isActive)
-    }
-
-    /// Sets up default play button style.
-    func setupDefaultPlayButtonStyle(hasNoBlockingIssue: Bool?) {
-        playButton.setImage(Asset.Common.Icons.play.image, for: .normal)
-
-        if hasNoBlockingIssue == nil || hasNoBlockingIssue == true {
-            playButton.cornerRadiusedWith(backgroundColor: ColorName.greenSpring20.color,
+        switch information.startButtonState {
+        case .canPlay:
+            playButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                           radius: Style.largeCornerRadius)
-        } else {
-            playButton.cornerRadiusedWith(backgroundColor: ColorName.redTorch25.color,
+        case .paused:
+            playButton.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color,
                                           radius: Style.largeCornerRadius)
+        case .blockingIssue:
+            playButton.backgroundColor = ColorName.errorColor.color
         }
     }
 
@@ -390,5 +313,129 @@ private extension FlightPlanPanelViewController {
         default:
             break
         }
+    }
+
+    func bindViewModel() {
+        flightPlanPanelViewModel.$titleProject
+            .sink(receiveValue: { [unowned self] title in
+                self.projectButton.setTitle(title, for: .normal)
+            })
+            .store(in: &cancellables)
+
+        flightPlanPanelViewModel.$viewState
+            .sink { [unowned self] viewState in
+                hiddeAllButtons()
+                switch viewState {
+                case .creation:
+                    displayCreationState()
+
+                case let .edition(hasHistory):
+                    displayEditionState(hasHistory)
+
+                case let .playing(duration):
+                    displayPlayingState(duration: duration)
+
+                case let .resumable(hasHistory):
+                    displayResumableState(hasHistory: hasHistory)
+
+                case .paused:
+                    displayPausedState()
+
+                case .rth:
+                    displayRTHState()
+                }
+            }
+            .store(in: &cancellables)
+
+        flightPlanPanelViewModel.$buttonsState
+            .sink { [unowned self] in updateButtons($0) }
+            .store(in: &cancellables)
+
+        flightPlanPanelViewModel.$extraViews
+            .sink { [unowned self] in flightPlanPanelProgressView?.setExtraViews($0) }
+            .store(in: &cancellables)
+
+        flightPlanPanelViewModel.$createFirstTitle
+            .sink { [unowned self] in
+                self.infoLabel.text = $0 ?? ""
+            }
+            .store(in: &cancellables)
+        flightPlanPanelViewModel.$newButtonTitle
+            .sink { [unowned self] in
+                self.editButton.setTitle($0 ?? "", for: .normal)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func hiddeAllButtons() {
+        self.pauseButton.isHidden = true
+        self.playButton.isHidden = true
+        self.stopButton.isHidden = true
+        self.actionButton.isHidden = true
+        self.flightPlanPanelProgressView?.isHidden = true
+        self.editButton.isHidden = true
+        self.projectView.isHidden = true
+        self.noFlightPlanLabel.isHidden = true
+        self.historyButton.isHidden = true
+        self.stopButton.isHidden = true
+        self.actionButton.isHidden = true
+        self.replayButton.isHidden = true
+        self.emptyViews?.forEach({ $0.isHidden = true })
+    }
+
+    private func displayCreationState() {
+        self.editButton.setTitle(flightPlanPanelViewModel.newButtonTitle ?? "", for: .normal)
+        self.editButton.setImage(nil, for: .normal)
+        self.editButton.setTitleColor(ColorName.white.color, for: .normal)
+        self.editButton.backgroundColor = ColorName.highlightColor.color
+        self.editButton.isHidden = false
+        self.noFlightPlanLabel.isHidden = false
+    }
+
+    private func displayEditionState(_ hasHistory: Bool) {
+        self.playButton.isHidden = false
+        self.flightPlanPanelProgressView?.isHidden = false
+        self.editButton.setTitle("", for: .normal)
+        self.editButton.setImage(Asset.Common.Icons.iconEdit.image, for: .normal)
+        self.editButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
+        self.editButton.setTitleColor(ColorName.white.color, for: .normal)
+        self.projectView.isHidden = false
+        self.actionButton.isHidden = false
+        self.buttonsStackView.distribution = .fillEqually
+        self.historyButton.isHidden = !hasHistory
+    }
+
+    private func displayPlayingState(duration: TimeInterval) {
+        self.pauseButton.isHidden = false
+        self.flightPlanPanelProgressView?.isHidden = false
+        self.projectView.isHidden = false
+        self.stopButton.isHidden = false
+        self.pauseButton.setTitle(duration.formattedHmsString, for: .normal)
+        self.buttonsStackView.distribution = .fillProportionally
+    }
+
+    private func displayPausedState() {
+        self.playButton.isHidden = false
+        self.stopButton.isHidden = false
+        self.flightPlanPanelProgressView?.isHidden = false
+        self.projectView.isHidden = false
+        self.buttonsStackView.distribution = .fillEqually
+    }
+
+    private func displayResumableState(hasHistory: Bool) {
+        self.playButton.isHidden = false
+        self.replayButton.isHidden = false
+        self.flightPlanPanelProgressView?.isHidden = false
+        self.projectView.isHidden = false
+        self.buttonsStackView.distribution = hasHistory ? .fillEqually : .fillProportionally
+        self.historyButton.isHidden = !hasHistory
+    }
+
+    private func displayRTHState() {
+        self.stopButton.isHidden = false
+        self.flightPlanPanelProgressView?.isHidden = false
+        self.projectView.isHidden = false
+        self.emptyViews?.forEach({ $0.isHidden = false })
+        self.buttonsStackView.distribution = .fillProportionally
     }
 }

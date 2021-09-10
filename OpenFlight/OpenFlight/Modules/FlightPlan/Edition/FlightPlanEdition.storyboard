@@ -4,6 +4,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -96,104 +97,60 @@
                     <view key="view" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Uol-bj-mg6">
                         <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
                         <subviews>
-                            <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Hyb-ae-qAw">
-                                <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
-                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="JdB-7u-Gzj">
-                                    <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                </view>
-                                <blurEffect style="dark"/>
-                            </visualEffectView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="E4L-K4-ZSC">
-                                <rect key="frame" x="0.0" y="0.0" width="245" height="334"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="separatorColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
+                                <color key="separatorColor" name="disabled_text_color"/>
                                 <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 <connections>
                                     <outlet property="dataSource" destination="l6C-73-gMO" id="6PQ-B2-c7z"/>
                                 </connections>
                             </tableView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="V7B-cJ-LQm">
-                                <rect key="frame" x="0.0" y="334" width="245" height="80"/>
-                                <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Bg7-4v-ZpB">
-                                        <rect key="frame" x="24.666666666666671" y="8" width="196" height="50"/>
-                                        <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rIt-5N-twX">
-                                                <rect key="frame" x="0.0" y="0.0" width="88" height="50"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                                <state key="normal" title="Undo"/>
-                                                <connections>
-                                                    <action selector="undoButtonTouchedUpInside:" destination="l6C-73-gMO" eventType="touchUpInside" id="X0M-0H-XMr"/>
-                                                </connections>
-                                            </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fYp-zW-LmG">
-                                                <rect key="frame" x="107.66666666666669" y="0.0" width="88.333333333333314" height="50"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="50" id="TvR-eB-Dw6"/>
-                                                </constraints>
-                                                <state key="normal" title="Delete"/>
-                                                <connections>
-                                                    <action selector="deleteButtonTouchedUpInside:" destination="l6C-73-gMO" eventType="touchUpInside" id="G8e-Rm-P3C"/>
-                                                </connections>
-                                            </button>
-                                        </subviews>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstAttribute="trailing" secondItem="fYp-zW-LmG" secondAttribute="trailing" id="FL8-2K-ph9"/>
-                                            <constraint firstItem="rIt-5N-twX" firstAttribute="leading" secondItem="Bg7-4v-ZpB" secondAttribute="leading" id="OUl-ow-joR"/>
-                                            <constraint firstAttribute="bottom" secondItem="fYp-zW-LmG" secondAttribute="bottom" id="YVn-dg-dxn"/>
-                                            <constraint firstItem="rIt-5N-twX" firstAttribute="top" secondItem="Bg7-4v-ZpB" secondAttribute="top" id="Zda-1H-igZ"/>
-                                            <constraint firstAttribute="bottom" secondItem="rIt-5N-twX" secondAttribute="bottom" id="Zsp-z9-dI6"/>
-                                            <constraint firstItem="fYp-zW-LmG" firstAttribute="top" secondItem="Bg7-4v-ZpB" secondAttribute="top" id="h1E-3a-Ntk"/>
-                                            <constraint firstItem="fYp-zW-LmG" firstAttribute="width" secondItem="rIt-5N-twX" secondAttribute="width" id="xbm-ge-3B8"/>
-                                            <constraint firstItem="rIt-5N-twX" firstAttribute="width" secondItem="Bg7-4v-ZpB" secondAttribute="width" multiplier="0.45" id="znF-mz-R4b"/>
-                                        </constraints>
-                                    </view>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fYp-zW-LmG">
+                                <rect key="frame" x="128.66666666666666" y="349" width="98.333333333333343" height="50"/>
+                                <color key="backgroundColor" name="highlight_color"/>
                                 <constraints>
-                                    <constraint firstItem="Bg7-4v-ZpB" firstAttribute="centerX" secondItem="V7B-cJ-LQm" secondAttribute="centerX" id="HpX-5t-Dzg"/>
-                                    <constraint firstItem="Bg7-4v-ZpB" firstAttribute="top" secondItem="V7B-cJ-LQm" secondAttribute="top" constant="8" id="fBx-Il-VSx"/>
-                                    <constraint firstAttribute="height" constant="80" id="lY7-E2-A2K"/>
-                                    <constraint firstItem="Bg7-4v-ZpB" firstAttribute="width" secondItem="V7B-cJ-LQm" secondAttribute="width" multiplier="0.8" id="mT2-HH-zgy"/>
+                                    <constraint firstAttribute="height" constant="50" id="TvR-eB-Dw6"/>
                                 </constraints>
-                            </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4pP-P7-8sJ">
-                                <rect key="frame" x="0.0" y="0.0" width="36" height="46"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="36" id="i3Z-vd-DsY"/>
-                                    <constraint firstAttribute="height" constant="46" id="tGR-ES-LnO"/>
-                                </constraints>
-                                <state key="normal" image="ic_back"/>
+                                <state key="normal" title="Delete">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
                                 <connections>
-                                    <action selector="closeButtonTouchedUpInside:" destination="l6C-73-gMO" eventType="touchUpInside" id="35a-wn-WqN"/>
+                                    <action selector="deleteButtonTouchedUpInside:" destination="l6C-73-gMO" eventType="touchUpInside" id="G8e-Rm-P3C"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rIt-5N-twX">
+                                <rect key="frame" x="18.000000000000007" y="349" width="98.666666666666686" height="50"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="ame-Us-pAs"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <state key="normal" title="Undo">
+                                    <color key="titleColor" name="default_text_color"/>
+                                </state>
+                                <connections>
+                                    <action selector="undoButtonTouchedUpInside:" destination="l6C-73-gMO" eventType="touchUpInside" id="X0M-0H-XMr"/>
                                 </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="IIN-DW-uT1"/>
+                        <color key="backgroundColor" name="default_bgcolor"/>
                         <constraints>
-                            <constraint firstItem="Hyb-ae-qAw" firstAttribute="top" secondItem="Uol-bj-mg6" secondAttribute="top" id="84L-7p-J6W"/>
-                            <constraint firstItem="Hyb-ae-qAw" firstAttribute="bottom" secondItem="Uol-bj-mg6" secondAttribute="bottom" id="EJv-nY-vp0"/>
-                            <constraint firstItem="Hyb-ae-qAw" firstAttribute="leading" secondItem="Uol-bj-mg6" secondAttribute="leading" id="ImM-em-mAt"/>
-                            <constraint firstItem="4pP-P7-8sJ" firstAttribute="top" secondItem="E4L-K4-ZSC" secondAttribute="top" id="MJO-YW-AEv"/>
-                            <constraint firstAttribute="bottom" secondItem="V7B-cJ-LQm" secondAttribute="bottom" id="X4D-TP-5w1"/>
-                            <constraint firstItem="V7B-cJ-LQm" firstAttribute="top" secondItem="E4L-K4-ZSC" secondAttribute="bottom" id="cLj-pE-CSU"/>
-                            <constraint firstAttribute="trailing" secondItem="Hyb-ae-qAw" secondAttribute="trailing" id="iu2-dW-4mN"/>
-                            <constraint firstItem="V7B-cJ-LQm" firstAttribute="leading" secondItem="Uol-bj-mg6" secondAttribute="leading" id="kpc-5e-u4r"/>
-                            <constraint firstItem="E4L-K4-ZSC" firstAttribute="top" secondItem="Uol-bj-mg6" secondAttribute="top" id="m6R-Yd-7Gg"/>
+                            <constraint firstItem="E4L-K4-ZSC" firstAttribute="top" secondItem="IIN-DW-uT1" secondAttribute="top" id="2Tn-1c-EcJ"/>
+                            <constraint firstAttribute="bottom" secondItem="fYp-zW-LmG" secondAttribute="bottom" constant="15" id="4ly-ib-t4t"/>
+                            <constraint firstAttribute="trailing" secondItem="fYp-zW-LmG" secondAttribute="trailing" constant="18" id="GEv-XX-p5k"/>
+                            <constraint firstAttribute="bottom" secondItem="rIt-5N-twX" secondAttribute="bottom" constant="15" id="HDq-P0-HIm"/>
+                            <constraint firstItem="rIt-5N-twX" firstAttribute="leading" secondItem="Uol-bj-mg6" secondAttribute="leading" constant="18" id="Ngh-bE-lyb"/>
+                            <constraint firstAttribute="bottom" secondItem="E4L-K4-ZSC" secondAttribute="bottom" id="gMa-4P-cZh"/>
+                            <constraint firstItem="rIt-5N-twX" firstAttribute="width" secondItem="fYp-zW-LmG" secondAttribute="width" id="kBy-LS-9ef"/>
                             <constraint firstItem="E4L-K4-ZSC" firstAttribute="leading" secondItem="Uol-bj-mg6" secondAttribute="leading" id="nrN-k4-Cob"/>
-                            <constraint firstItem="V7B-cJ-LQm" firstAttribute="trailing" secondItem="Uol-bj-mg6" secondAttribute="trailing" id="q5a-2Q-5w1"/>
-                            <constraint firstItem="4pP-P7-8sJ" firstAttribute="leading" secondItem="Uol-bj-mg6" secondAttribute="leading" id="wNP-bU-JIK"/>
+                            <constraint firstItem="fYp-zW-LmG" firstAttribute="leading" secondItem="rIt-5N-twX" secondAttribute="trailing" constant="12" id="vDL-42-8Yd"/>
                             <constraint firstAttribute="trailing" secondItem="E4L-K4-ZSC" secondAttribute="trailing" id="xOE-Um-Gfu"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="closeButton" destination="4pP-P7-8sJ" id="GkN-dr-i9g"/>
                         <outlet property="deleteButton" destination="fYp-zW-LmG" id="ee8-Ku-PW2"/>
                         <outlet property="tableView" destination="E4L-K4-ZSC" id="pAH-Ep-C0u"/>
-                        <outlet property="tableViewTopConstraint" destination="m6R-Yd-7Gg" id="DB8-90-N1j"/>
-                        <outlet property="tableViewTrailingConstraint" destination="q5a-2Q-5w1" id="n7Q-s9-oE2"/>
                         <outlet property="undoButton" destination="rIt-5N-twX" id="Ufa-cH-sa5"/>
                     </connections>
                 </viewController>
@@ -209,99 +166,80 @@
                         <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qi4-b7-oKR">
-                                <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
-                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="DkT-Ql-mnc">
-                                    <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <color key="backgroundColor" white="0.0" alpha="0.60038527399999997" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                </view>
-                                <blurEffect style="dark"/>
-                            </visualEffectView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="4Iv-7z-qCO">
-                                <rect key="frame" x="0.0" y="0.0" width="245" height="334"/>
+                                <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                <color key="separatorColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="separatorColor" name="disabled_text_color"/>
                                 <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                             </tableView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NGd-La-tzN">
-                                <rect key="frame" x="0.0" y="334" width="245" height="80"/>
-                                <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="laJ-vq-eaZ">
-                                        <rect key="frame" x="24.666666666666671" y="8" width="196" height="50"/>
-                                        <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3jS-g9-JKC">
-                                                <rect key="frame" x="0.0" y="0.0" width="88" height="50"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                                <state key="normal" title="Undo"/>
-                                                <connections>
-                                                    <action selector="undoTouchUpInside:" destination="yCT-Lz-HV2" eventType="touchUpInside" id="z5B-Br-pFR"/>
-                                                </connections>
-                                            </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="d3L-Xg-59f">
-                                                <rect key="frame" x="107.66666666666669" y="0.0" width="88.333333333333314" height="50"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="50" id="dSh-k6-Gbs"/>
-                                                </constraints>
-                                                <state key="normal" title="Done"/>
-                                                <connections>
-                                                    <action selector="doneTouchUpInside:" destination="yCT-Lz-HV2" eventType="touchUpInside" id="MAA-Gw-9O7"/>
-                                                </connections>
-                                            </button>
-                                        </subviews>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstItem="d3L-Xg-59f" firstAttribute="top" secondItem="laJ-vq-eaZ" secondAttribute="top" id="PGp-kG-oCo"/>
-                                            <constraint firstAttribute="trailing" secondItem="d3L-Xg-59f" secondAttribute="trailing" id="SgK-vT-3aO"/>
-                                            <constraint firstAttribute="bottom" secondItem="3jS-g9-JKC" secondAttribute="bottom" id="VRL-mT-4XX"/>
-                                            <constraint firstItem="3jS-g9-JKC" firstAttribute="width" secondItem="laJ-vq-eaZ" secondAttribute="width" multiplier="0.45" id="XCm-vh-6gc"/>
-                                            <constraint firstAttribute="bottom" secondItem="d3L-Xg-59f" secondAttribute="bottom" id="Zbr-zg-o2x"/>
-                                            <constraint firstItem="3jS-g9-JKC" firstAttribute="top" secondItem="laJ-vq-eaZ" secondAttribute="top" id="dae-DB-0IO"/>
-                                            <constraint firstItem="3jS-g9-JKC" firstAttribute="leading" secondItem="laJ-vq-eaZ" secondAttribute="leading" id="mJQ-DI-hjf"/>
-                                            <constraint firstItem="d3L-Xg-59f" firstAttribute="width" secondItem="3jS-g9-JKC" secondAttribute="width" id="yTo-LQ-yZH"/>
-                                        </constraints>
-                                    </view>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="d3L-Xg-59f">
+                                <rect key="frame" x="128.66666666666666" y="349" width="98.333333333333343" height="50"/>
+                                <color key="backgroundColor" name="highlight_color"/>
                                 <constraints>
-                                    <constraint firstItem="laJ-vq-eaZ" firstAttribute="centerX" secondItem="NGd-La-tzN" secondAttribute="centerX" id="3q4-Kz-rn6"/>
-                                    <constraint firstItem="laJ-vq-eaZ" firstAttribute="width" secondItem="NGd-La-tzN" secondAttribute="width" multiplier="0.8" id="5Fg-uJ-zCi"/>
-                                    <constraint firstAttribute="height" constant="80" id="CR8-jb-wAJ"/>
-                                    <constraint firstItem="laJ-vq-eaZ" firstAttribute="top" secondItem="NGd-La-tzN" secondAttribute="top" constant="8" id="QLw-PI-1RJ"/>
+                                    <constraint firstAttribute="height" constant="50" id="dSh-k6-Gbs"/>
                                 </constraints>
-                            </view>
+                                <state key="normal" title="Done">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="doneTouchUpInside:" destination="yCT-Lz-HV2" eventType="touchUpInside" id="MAA-Gw-9O7"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3jS-g9-JKC">
+                                <rect key="frame" x="18.000000000000007" y="349" width="98.666666666666686" height="50"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="fjD-ao-zXt"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <state key="normal" title="Undo">
+                                    <color key="titleColor" name="default_text_color"/>
+                                </state>
+                                <connections>
+                                    <action selector="undoTouchUpInside:" destination="yCT-Lz-HV2" eventType="touchUpInside" id="z5B-Br-pFR"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="4mp-qB-f3N"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="backgroundColor" name="default_bgcolor"/>
                         <constraints>
-                            <constraint firstItem="qi4-b7-oKR" firstAttribute="top" secondItem="hBf-WP-h25" secondAttribute="top" id="0EV-O8-RZ6"/>
-                            <constraint firstItem="NGd-La-tzN" firstAttribute="leading" secondItem="hBf-WP-h25" secondAttribute="leading" id="37o-7g-OOr"/>
-                            <constraint firstAttribute="bottom" secondItem="qi4-b7-oKR" secondAttribute="bottom" id="DV3-TD-GIh"/>
-                            <constraint firstItem="NGd-La-tzN" firstAttribute="trailing" secondItem="4Iv-7z-qCO" secondAttribute="trailing" id="ESN-o0-hzZ"/>
+                            <constraint firstAttribute="bottom" secondItem="d3L-Xg-59f" secondAttribute="bottom" constant="15" id="5Kk-oG-F8G"/>
+                            <constraint firstAttribute="bottom" secondItem="4Iv-7z-qCO" secondAttribute="bottom" id="6NM-rM-r5a"/>
+                            <constraint firstItem="d3L-Xg-59f" firstAttribute="leading" secondItem="3jS-g9-JKC" secondAttribute="trailing" constant="12" id="AmS-eL-wU9"/>
                             <constraint firstItem="4Iv-7z-qCO" firstAttribute="leading" secondItem="hBf-WP-h25" secondAttribute="leading" id="JWX-2d-fGe"/>
-                            <constraint firstAttribute="bottom" secondItem="NGd-La-tzN" secondAttribute="bottom" id="dzw-vo-MfZ"/>
-                            <constraint firstItem="qi4-b7-oKR" firstAttribute="leading" secondItem="hBf-WP-h25" secondAttribute="leading" id="fYi-g6-yX8"/>
-                            <constraint firstItem="4Iv-7z-qCO" firstAttribute="top" secondItem="hBf-WP-h25" secondAttribute="top" id="nvL-sE-UVW"/>
-                            <constraint firstItem="qi4-b7-oKR" firstAttribute="trailing" secondItem="hBf-WP-h25" secondAttribute="trailing" id="tVu-sX-Dhg"/>
-                            <constraint firstItem="NGd-La-tzN" firstAttribute="top" secondItem="4Iv-7z-qCO" secondAttribute="bottom" id="z00-0N-52y"/>
+                            <constraint firstAttribute="trailing" secondItem="d3L-Xg-59f" secondAttribute="trailing" constant="18" id="Ntt-fZ-UrQ"/>
+                            <constraint firstItem="3jS-g9-JKC" firstAttribute="leading" secondItem="hBf-WP-h25" secondAttribute="leading" constant="18" id="SvV-iF-c8k"/>
+                            <constraint firstItem="4Iv-7z-qCO" firstAttribute="top" secondItem="4mp-qB-f3N" secondAttribute="top" id="UPe-0p-4oy"/>
+                            <constraint firstAttribute="bottom" secondItem="3jS-g9-JKC" secondAttribute="bottom" constant="15" id="dvN-KA-KIS"/>
+                            <constraint firstItem="d3L-Xg-59f" firstAttribute="width" secondItem="3jS-g9-JKC" secondAttribute="width" id="xqc-6k-30V"/>
                             <constraint firstAttribute="trailing" secondItem="4Iv-7z-qCO" secondAttribute="trailing" id="zsU-DF-dav"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="doneButton" destination="d3L-Xg-59f" id="zpI-x7-z5c"/>
                         <outlet property="tableView" destination="4Iv-7z-qCO" id="x8c-uH-Kcg"/>
-                        <outlet property="tableViewTopConstraint" destination="nvL-sE-UVW" id="87v-o3-cUS"/>
                         <outlet property="tableViewTrailingConstraint" destination="zsU-DF-dav" id="fhK-YI-tAj"/>
                         <outlet property="undoButton" destination="3jS-g9-JKC" id="kLU-aL-pvI"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Kue-WK-BLy" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-80.022321428571431" y="215.94202898550725"/>
+            <point key="canvasLocation" x="-74" y="987"/>
         </scene>
     </scenes>
     <resources>
-        <image name="ic_back" width="21" height="21"/>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="disabled_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="highlight_color">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

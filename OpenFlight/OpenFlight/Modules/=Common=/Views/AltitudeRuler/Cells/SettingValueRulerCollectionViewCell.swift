@@ -92,5 +92,6 @@ final class SettingValueRulerCollectionViewCell: UICollectionViewCell, NibReusab
     func setupDisplay(textColor: UIColor, backgroundColor: UIColor) {
         bgView.backgroundColor = backgroundColor
         valueLabel.textColor = textColor
+        image.tintColor = textColor
     }
 }

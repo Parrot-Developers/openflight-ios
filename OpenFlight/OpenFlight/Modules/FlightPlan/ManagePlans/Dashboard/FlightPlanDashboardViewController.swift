@@ -48,7 +48,7 @@ final class FlightPlanDashboardViewController: UIViewController, FileShare {
 
     // MARK: - Private Properties
     private var mapController: MapViewController?
-    private var flightPlan: FlightPlanViewModel?
+    private var projectModel: ProjectModel?
     private weak var coordinator: Coordinator?
 
     // MARK: - Internal Properties
@@ -59,13 +59,13 @@ final class FlightPlanDashboardViewController: UIViewController, FileShare {
     ///
     /// - Parameters:
     ///     - coordinator: Coordinator
-    ///     - viewModel: Flight Plan view model
+    ///     - projectModel: Flight Plan project model
     /// - Returns: FlightPlanDashboardViewController instance
     static func instantiate(coordinator: Coordinator,
-                            viewModel: FlightPlanViewModel) -> FlightPlanDashboardViewController {
+                            projectModel: ProjectModel) -> FlightPlanDashboardViewController {
         let viewController = StoryboardScene.FlightPlanDashboardViewController.initialScene.instantiate()
         viewController.coordinator = coordinator
-        viewController.flightPlan = viewModel
+        viewController.projectModel = projectModel
 
         return viewController
     }
@@ -80,7 +80,7 @@ final class FlightPlanDashboardViewController: UIViewController, FileShare {
         super.viewDidLoad()
 
         initView()
-        flightplanTitle.text = flightPlan?.state.value.title ?? ""
+        flightplanTitle.text = projectModel?.title ?? ""
         updateContainers()
         initMap()
     }
@@ -96,7 +96,12 @@ final class FlightPlanDashboardViewController: UIViewController, FileShare {
         super.prepare(for: segue, sender: sender)
 
         if let historyViewController = segue.destination as? FlightPlanHistoryViewController {
-            historyViewController.flightplan = flightPlan
+            historyViewController.project = projectModel
+            if let project = projectModel {
+                historyViewController.data = Services.hub.flightPlan.projectManager.executedFlightPlans(for: project)
+            } else {
+                historyViewController.data = []
+            }
             historyViewController.tableType = .miniHistory
         }
     }
@@ -106,7 +111,7 @@ final class FlightPlanDashboardViewController: UIViewController, FileShare {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     /// Update display when orientation changed.
@@ -124,7 +129,7 @@ final class FlightPlanDashboardViewController: UIViewController, FileShare {
 // MARK: - Actions
 private extension FlightPlanDashboardViewController {
     @IBAction func openFlighPlanButtonTouchUpInside(_ sender: Any) {
-        (coordinator as? DashboardCoordinator)?.showFlightPlan(viewModel: flightPlan)
+//        (coordinator as? DashboardCoordinator)?.showFlightPlan(projectModel: projectModel)
     }
 
     @IBAction func closeButtonTouchUpInside() {
@@ -132,9 +137,11 @@ private extension FlightPlanDashboardViewController {
     }
 
     @IBAction func shareButtonTouchUpInside(_ sender: Any) {
-        shareFile(data: flightPlan?.flightPlan?.asData,
-                  name: flightPlan?.state.value.title,
-                  fileExtension: FlightPlanConstants.jsonExtension)
+        guard let project = projectModel else { return }
+        let data = Services.hub.flightPlan.projectManager.lastFlightPlan(for: project)?.dataSetting?.asData
+        shareFile(data: data,
+                  name: projectModel?.title,
+                  fileExtension: "json")
     }
 }
 
@@ -151,7 +158,7 @@ private extension FlightPlanDashboardViewController {
         self.view.layoutIfNeeded()
         controller.didMove(toParent: self)
         // Clean potential previous FP.
-        controller.flightPlanViewModel = nil
+        controller.flightPlan = nil
         mapController = controller
     }
 
@@ -163,10 +170,13 @@ private extension FlightPlanDashboardViewController {
         flightPlanSubtitle.text = L10n.commonFlightPlan
         openButton.applyCornerRadius(Style.largeCornerRadius)
         openButton.backgroundColor = ColorName.white12.color
-        openButton.makeup(with: .large, color: ColorName.white)
+        openButton.makeup(with: .large)
         openButton.setTitle(L10n.flightPlanOpenLabel, for: .normal)
-
-        if let duration = flightPlan?.estimations.formattedDuration {
+        var lastFlightPlan: FlightPlanModel?
+        if let project = projectModel {
+            lastFlightPlan = Services.hub.flightPlan.projectManager.lastFlightPlan(for: project)
+        }
+        if let duration = lastFlightPlan?.dataSetting?.estimations.formattedDuration {
             durationTitleLabel.text = duration
         } else {
             durationTitleLabel.text = Style.dash
@@ -187,12 +197,12 @@ private extension FlightPlanDashboardViewController {
 
     /// Displays FlightPlan on the map.
     func displayFlightPlan() {
-        if let flightPlan = flightPlan,
-           let type = flightPlan.state.value.type {
+        if let projectModel = projectModel,
+           let flightplan = Services.hub.flightPlan.projectManager.lastFlightPlan(for: projectModel) {
             // 1) Set Flight Plan mission mode.
-            mapController?.currentMissionProviderState?.mode = type.missionMode
+            mapController?.currentMissionProviderState?.mode = Services.hub.flightPlan.typeStore.typeForKey(flightplan.type)?.missionMode
             // 2) Display Flight Plan.
-            mapController?.displayFlightPlan(flightPlan, shouldReloadCamera: true)
+            mapController?.displayFlightPlan(flightplan, shouldReloadCamera: true)
             mapController?.sceneView.isUserInteractionEnabled = false
         }
     }

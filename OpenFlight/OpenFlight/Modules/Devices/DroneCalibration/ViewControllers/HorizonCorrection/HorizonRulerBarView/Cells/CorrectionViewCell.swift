@@ -35,11 +35,7 @@ import Reusable
 
 final class CorrectionViewCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
-    @IBOutlet private weak var valueLabel: UILabel! {
-        didSet {
-            valueLabel.makeUp()
-        }
-    }
+    @IBOutlet private weak var valueLabel: UILabel!
 
     // MARK: - Internal Properties
     /// Value to display.

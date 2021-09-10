@@ -28,15 +28,51 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Combine
 import GroundSdk
 
 /// View model for imaging settings bar ev compensation item.
-
 final class ImagingBarEvCompensationViewModel: BarButtonViewModel<ImagingBarState> {
     // MARK: - Private Properties
+
+    /// Available EV compensation values count.
+    @Published private var availableValuesCount = 0
+    /// Whether exposure mode is full manual.
+    @Published private var exposureModeManual = false
+    /// Camera peripheral reference.
     private var cameraRef: Ref<MainCamera2>?
+    /// Camera exposure lock service.
+    private unowned var exposureLockService: ExposureLockService
+    /// Combine subscriptions.
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Override Funcs
+
+    /// Constructor.
+    ///
+    /// - Parameter exposureLockService: camera exposure lock service
+    init(exposureLockService: ExposureLockService) {
+        self.exposureLockService = exposureLockService
+        super.init(barId: "EvCompensation")
+
+        // compute EV compensation setting availability
+        exposureLockService.statePublisher
+            .combineLatest($exposureModeManual, $availableValuesCount)
+            .sink { [unowned self] exposureLockState, exposureModeManual, availableValuesCount in
+                let copy = state.value.copy()
+                copy.enabled = !exposureLockState.locked
+                    && !exposureLockState.locking
+                    && !exposureModeManual
+                    && availableValuesCount > 1
+                state.set(copy)
+                if !copy.enabled {
+                    // autoclose if necessary
+                    state.value.isSelected.set(false)
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     override func listenDrone(drone: Drone) {
         listenCamera(drone: drone)
     }
@@ -58,18 +94,19 @@ final class ImagingBarEvCompensationViewModel: BarButtonViewModel<ImagingBarStat
 private extension ImagingBarEvCompensationViewModel {
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
             guard let camera = camera,
                 let exposureCompensation = camera.config[Camera2Params.exposureCompensation],
-                let copy = self?.state.value.copy()
-                else {
-                    return
+                let exposureMode = camera.config[Camera2Params.exposureMode] else {
+                return
             }
 
+            let copy = state.value.copy()
             copy.mode = exposureCompensation.value
             copy.supportedModes = exposureCompensation.currentSupportedValues.sorted()
-            copy.enabled = !exposureCompensation.currentSupportedValues.isEmpty
-            self?.state.set(copy)
+            state.set(copy)
+            availableValuesCount = exposureCompensation.currentSupportedValues.count
+            exposureModeManual = exposureMode.value == .manual
         }
     }
 }

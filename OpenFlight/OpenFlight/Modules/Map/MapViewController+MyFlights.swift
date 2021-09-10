@@ -42,22 +42,18 @@ internal extension MapViewController {
     }
 
     // MARK: - Internal Funcs
-    /// Displays a line for current flight course and moves the map towards its location.
+    /// Displays a line for flight course and moves the map towards its location.
     ///
     /// - Parameters:
-    ///    - viewModel: view model for the flight
-    func displayFlightCourse(viewModel: FlightDataViewModel?) {
+    ///    - gutma: the gutma
+    func displayFlightCourse(gutma: Gutma) {
         removeGraphicOverlay(forKey: Constants.overlayKey)
 
         let customOverlay = AGSGraphicsOverlay()
         customOverlay.sceneProperties?.surfacePlacement = .drapedFlat
         addGraphicOverlay(customOverlay, forKey: Constants.overlayKey, at: 0)
-
-        guard let flightPoints = viewModel?.gutma?.points,
-            let firstPoint = flightPoints.first
-            else {
-                return
-        }
+        let flightPoints = gutma.points
+        guard let firstPoint = flightPoints.first else { return }
         let polyline = AGSPolyline(points: flightPoints)
         let polylineSymbol = AGSSimpleLineSymbol(style: .solid, color: Constants.lineColor, width: Constants.lineWidth)
         let polylineGraphic = AGSGraphic(geometry: polyline, symbol: polylineSymbol, attributes: nil)

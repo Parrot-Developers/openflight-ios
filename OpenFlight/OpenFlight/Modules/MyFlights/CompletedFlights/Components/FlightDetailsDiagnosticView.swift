@@ -99,7 +99,7 @@ private extension FlightDetailsDiagnosticView {
                                 radius: Style.mediumCornerRadius)
         mainLabel.makeUp()
         subLabel.makeUp(and: .white50)
-        supportButton.makeup(with: .regular, color: .white)
+        supportButton.makeup()
         supportButton.cornerRadiusedWith(backgroundColor: UIColor.clear,
                                          borderColor: ColorName.white.color,
                                          radius: Style.largeCornerRadius,

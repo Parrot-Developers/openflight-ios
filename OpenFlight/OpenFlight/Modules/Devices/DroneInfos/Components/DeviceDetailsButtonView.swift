@@ -38,9 +38,9 @@ struct DeviceDetailsButtonModel {
     var title: String?
     var subImage: UIImage?
     var subtitle: String?
-    var complementarySubtitle: String?
     var backgroundColor: ColorName?
     var mainImageTintColor: ColorName?
+    var subimageTintColor: ColorName?
     var titleColor: ColorName?
     var subtitleColor: ColorName?
 
@@ -52,29 +52,30 @@ struct DeviceDetailsButtonModel {
     ///    - title: button's title
     ///    - subImage: button's subtitle image
     ///    - subtitle: button's subtitle
-    ///    - complementarySubtitle: button's subtitle complementary text
     ///    - backgroundColor: button's background color
+    ///    - mainImageTintColor: button's main image tint color
+    ///    - titleColor: title's text color
     ///    - subtitleColor: subtitle's text color
+    ///    - subimageTintColor: button's subtitle image tint color
     init(mainImage: UIImage?,
          title: String?,
          subImage: UIImage? = nil,
          subtitle: String? = Style.dash,
-         complementarySubtitle: String? = nil,
          backgroundColor: ColorName = .white,
          mainImageTintColor: ColorName = .defaultTextColor,
          titleColor: ColorName = .defaultTextColor,
          subtitleColor: ColorName = .defaultTextColor80,
-         subImageTintColor: ColorName = .highlightColor
+         subimageTintColor: ColorName = .highlightColor
     ) {
         self.mainImage = mainImage
         self.title = title
         self.subImage = subImage
         self.subtitle = subtitle
-        self.complementarySubtitle = complementarySubtitle
         self.backgroundColor = backgroundColor
         self.mainImageTintColor = mainImageTintColor
         self.titleColor = titleColor
         self.subtitleColor = subtitleColor
+        self.subimageTintColor = subimageTintColor
     }
 }
 
@@ -85,7 +86,6 @@ final class DeviceDetailsButtonView: HighlightableUIControl, NibOwnerLoadable {
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var subImageView: UIImageView!
     @IBOutlet private weak var subtitleLabel: UILabel!
-    @IBOutlet private weak var complementarySubtitleLabel: UILabel!
     @IBOutlet private weak var subStackView: UIStackView!
 
     // MARK: - Internal Properties
@@ -123,8 +123,8 @@ private extension DeviceDetailsButtonView {
         mainImageView.tintColor = model?.mainImageTintColor?.color
         titleLabel.text = model?.title
         subImageView.image = model?.subImage
+        subImageView.tintColor = model?.subimageTintColor?.color
         subtitleLabel.text = model?.subtitle
-        complementarySubtitleLabel.text = model?.complementarySubtitle
         subStackView.isHidden = model?.subtitle == nil
         subImageView.isHidden = model?.subImage == nil
         titleLabel.textColor = model?.titleColor?.color

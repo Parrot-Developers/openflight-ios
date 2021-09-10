@@ -62,11 +62,14 @@ enum WifiStrength: Int {
 extension WifiStrength: SignalStrength {
     var backgroundColor: ColorName {
         switch self {
-        case .ok1On4,
-             .ok2On4,
+        case .ok1On4:
+            return .disabledWarningColor
+
+        case .ok2On4,
              .ok3On4,
              .ok4On4:
             return .disabledHighlightColor
+
         default:
             return .clear
         }
@@ -74,8 +77,11 @@ extension WifiStrength: SignalStrength {
 
     var borderColor: ColorName {
         switch self {
-        case .ok1On4,
-             .ok2On4,
+
+        case .ok1On4:
+            return .warningColor
+
+        case .ok2On4,
              .ok3On4,
              .ok4On4:
             return .highlightColor

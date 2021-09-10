@@ -50,8 +50,6 @@ public extension Notification.Name {
     static let splitModeDidChange = NSNotification.Name("splitModeDidChange")
     static let bottomBarModeDidChange = NSNotification.Name("bottomBarModeDidChange")
     static let alertPanelModeDidChange = NSNotification.Name("alertPanelModeDidChange")
-    static let missionLauncherModeDidChange = NSNotification.Name("missionLauncherModeDidChange")
-    static let modalPresentDidChange = NSNotification.Name("modalPresentDidChange")
     static let handDetectedAlertModalPresentDidChange = NSNotification.Name("handDetectedAlertModalPresentDidChange")
     static let takeOffRequestedDidChange = NSNotification.Name("takeOffRequestedDidChange")
     static let requestCellularPairingProcess = NSNotification.Name("requestCellularPairingProcess")

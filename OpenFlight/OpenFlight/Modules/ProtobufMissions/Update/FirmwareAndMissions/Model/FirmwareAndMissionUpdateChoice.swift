@@ -145,27 +145,23 @@ extension FirmwareAndMissionUpdateChoice {
     var titleColor: UIColor {
         switch self {
         case .firmwareAndProtobufMissions:
-            return ColorName.white50.color
-        case .firmware:
-            return ColorName.white.color
-        case .protobufMission:
-            return ColorName.white.color
-        case .upToDateProtobufMission:
-            return ColorName.white.color
+            return ColorName.defaultTextColor80.color
+        case .firmware,
+             .protobufMission,
+             .upToDateProtobufMission:
+            return ColorName.defaultTextColor.color
         }
     }
 
     /// Button border color.
     var buttonBorderColor: UIColor {
         switch self {
-        case .firmwareAndProtobufMissions:
+        case .upToDateProtobufMission,
+             .firmwareAndProtobufMissions:
             return .clear
-        case .firmware:
-            return ColorName.white.color
-        case .protobufMission:
-            return ColorName.white.color
-        case .upToDateProtobufMission:
-            return .clear
+        case .firmware,
+             .protobufMission:
+            return ColorName.defaultTextColor.color
         }
     }
 
@@ -173,11 +169,10 @@ extension FirmwareAndMissionUpdateChoice {
     var buttonTintColor: UIColor {
         switch self {
         case .firmwareAndProtobufMissions:
-            return ColorName.greenSpring.color
-        case .firmware:
             return ColorName.white.color
-        case .protobufMission:
-            return ColorName.white.color
+        case .firmware,
+             .protobufMission:
+            return ColorName.defaultTextColor.color
         case .upToDateProtobufMission:
             return .clear
         }
@@ -187,11 +182,10 @@ extension FirmwareAndMissionUpdateChoice {
     var buttonBackgroundColor: UIColor {
         switch self {
         case .firmwareAndProtobufMissions:
-            return ColorName.greenPea50.color
-        case .firmware:
-            return ColorName.greyShark.color
-        case .protobufMission:
-            return ColorName.greyShark.color
+            return ColorName.highlightColor.color
+        case .firmware,
+             .protobufMission:
+            return ColorName.clear.color
         case .upToDateProtobufMission:
             return .clear
         }

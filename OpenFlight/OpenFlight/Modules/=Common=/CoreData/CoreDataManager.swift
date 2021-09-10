@@ -29,17 +29,117 @@
 
 import UIKit
 import CoreData
+import Combine
+import GroundSdk
 
-/// CoreData Helper.
-public class CoreDataManager {
+protocol CoreDataService {
+
+    /// Migrate anonymous data to current logged user
+    /// - Parameters:
+    ///     - entityName: Name of the entity contains the data to migrate
+    ///     - completion: Empty block indicates when the process is finished
+    func migrateAnonymousDataToLoggedUser(for entityName: String,
+                                          _ completion: @escaping () -> Void)
+
+    /// Migrate logged user data to Anonymous
+    /// - Parameters:
+    ///     - entityName: Name of the entity contains the data to migrate
+    ///     - completion: Empty block indicates when the process is finished
+    func migrateLoggedToAnonymous(for entityName: String,
+                                  _ completion: @escaping () -> Void)
+}
+
+/// CoreData Service
+public class CoreDataServiceIml: CoreDataService {
     // MARK: - Public Properties
-    public static var shared = CoreDataManager()
     /// Returns current Managed Object Context.
     public var currentContext: NSManagedObjectContext?
+    /// User information service
+    public var userInformation: UserInformation
+    /// Returns array of `ProjectModel` subject
+    public var projects = CurrentValueSubject<[ProjectModel], Never>([])
 
     // MARK: - Public Funcs
-    public func setup(with persistentContainer: PersistentContainer) {
+    public init(with persistentContainer: NSPersistentContainer, userInformation: UserInformation) {
+        self.userInformation = userInformation
         currentContext = persistentContainer.viewContext
         currentContext?.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(managedObjectContextDidChange),
+                                               name: NSNotification.Name.NSManagedObjectContextObjectsDidChange,
+                                               object: currentContext)
+    }
+}
+
+extension CoreDataServiceIml {
+
+    internal func migrateAnonymousDataToLoggedUser(for entityName: String,
+                                                   _ completion: @escaping () -> Void) {
+        guard let managedContext = currentContext else {
+            completion()
+            return
+        }
+        guard userInformation.apcId != userInformation.anonymousString else {
+            ULog.e(.dataModelTag, "User must be logged in")
+            completion()
+            return
+        }
+
+        let entity = NSEntityDescription.entity(forEntityName: entityName, in: managedContext)
+        let request = NSFetchRequest<NSFetchRequestResult>()
+        request.entity = entity
+        let predicate = NSPredicate(format: "%K == %@", "apcId", userInformation.anonymousString)
+        request.predicate = predicate
+
+        do {
+            if let fetchResults = try managedContext.fetch(request) as? [NSManagedObject] {
+                if !fetchResults.isEmpty {
+                    fetchResults.forEach { managedObject in
+                        managedObject.setValue(userInformation.apcId, forKey: "apcId")
+                    }
+                    try managedContext.save()
+                } else {
+                    ULog.i(.dataModelTag, "No ANONYMOUS data found in: \(entityName)")
+                }
+            }
+            completion()
+
+        } catch let error as NSError {
+            ULog.e(.dataModelTag, "Migrate ANONYMOUS \(entityName) data to current logged User failed with error: \(error.userInfo)")
+            completion()
+        }
+    }
+
+    internal func migrateLoggedToAnonymous(for entityName: String,
+                                           _ completion: @escaping () -> Void) {
+        guard let managedContext = currentContext else {
+            completion()
+            return
+        }
+        let apcId = userInformation.apcId
+        let entity = NSEntityDescription.entity(forEntityName: entityName, in: managedContext)
+        let request = NSFetchRequest<NSFetchRequestResult>()
+        request.entity = entity
+        let predicate = NSPredicate(format: "%K == %@", "apcId", apcId)
+        request.predicate = predicate
+
+        do {
+            if let fetchResults = try managedContext.fetch(request) as? [NSManagedObject] {
+                if !fetchResults.isEmpty {
+                    fetchResults.forEach { managedObject in
+                        managedObject.setValue(userInformation.anonymousString, forKey: "apcId")
+                    }
+                    try managedContext.save()
+                } else {
+                    ULog.i(.dataModelTag, "No data found in: \(entityName) for user apcId: \(apcId)")
+                }
+            }
+            completion()
+
+        } catch let error as NSError {
+            ULog.e(.dataModelTag, "Migrate Data of user apcId \(apcId) for object: \(entityName) to current ANONYMOUS user failed with error \(error.userInfo)")
+            completion()
+        }
     }
 }

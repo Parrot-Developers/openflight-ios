@@ -90,9 +90,8 @@ enum CurrentUpdatingStep: Equatable {
             self = .failed(L10n.firmwareMissionUpdateOperationCancel)
         case .uploading:
             self = forReboot ? .waiting : .loading
-        case .processing:
-            self = forReboot ? .waiting : .loading
-        case .waitingForReboot:
+        case .processing,
+             .waitingForReboot:
             self = forReboot ? .loading : .succeeded
         case .failed:
             self = .failed(L10n.firmwareMissionUpdateOperationFailedUnknownReason)
@@ -129,9 +128,9 @@ extension CurrentUpdatingStep {
         case .failed,
              .loading,
              .succeeded:
-            return ColorName.white.color
+            return ColorName.defaultTextColor.color
         case .waiting:
-            return ColorName.white50.color
+            return ColorName.defaultTextColor80.color
         }
     }
 
@@ -143,9 +142,22 @@ extension CurrentUpdatingStep {
         case .waiting:
             return nil
         case .succeeded:
-            return Asset.Common.Icons.icValid.image
+            return Asset.Common.Checks.icChecked.image
         case .failed:
             return Asset.Remote.icErrorUpdate.image
+        }
+    }
+
+    /// The `ProtobufMissionUpdatingView` tint color.
+    var imageTintColor: UIColor? {
+        switch self {
+        case .succeeded,
+             .loading:
+            return ColorName.highlightColor.color
+        case .waiting:
+            return nil
+        case .failed:
+            return ColorName.errorColor.color
         }
     }
 }

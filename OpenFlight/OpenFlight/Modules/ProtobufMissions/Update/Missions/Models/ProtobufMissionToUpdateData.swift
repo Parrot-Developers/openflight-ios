@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import Foundation
+import GroundSdk
 
 // MARK: - Internal Structs
 /// A struct to represent a protobuf mission to update.
@@ -79,8 +80,18 @@ struct ProtobufMissionToUpdateData: Equatable, Decodable {
     /// - Parameters:
     ///   - mission: a mission
     func isSameAndGreaterVersion(of mission: ProtobufMissionBasicInformation) -> Bool {
-        return missionUID == mission.missionUID
-            && missionVersion > mission.missionVersion
+        // verify mission ids match
+        if missionUID != mission.missionUID {
+            return false
+        } else if let version = FirmwareVersion.parse(versionStr: missionVersion),
+                  let otherVersion = FirmwareVersion.parse(versionStr: mission.missionVersion) {
+            // missions versions are formated in 'firmware version format',
+            // compare versions using GroundSdk helpers
+            return version > otherVersion
+        } else {
+            // fallback, should not happen
+            return missionVersion > mission.missionVersion
+        }
     }
 }
 

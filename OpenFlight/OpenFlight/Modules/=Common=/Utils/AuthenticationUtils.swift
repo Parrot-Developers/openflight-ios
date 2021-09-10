@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import Foundation
+import GroundSdk
 
 // MARK: - AuthenticationUtils
 /// Utilities to manage authentication methods.
@@ -61,5 +62,18 @@ public final class AuthenticationUtils {
         strToHash += "\(apcKey)"
         let token = strToHash.data(using: .utf8)?.md5 ?? ""
         return "ts=\(time)&token=\(token)"
+    }
+}
+
+public extension URLSessionConfiguration {
+
+    /// Add User agent
+    func addUserAgentHeader() {
+        // user agent
+        let userAgent = "\(AppInfoCore.appBundle)/\(AppInfoCore.appVersion) " +
+            "(\(UIDevice.current.systemName); \(UIDevice.identifier); \(UIDevice.current.systemVersion)) " +
+        "\(AppInfoCore.sdkBundle)/\(AppInfoCore.sdkVersion)"
+        let additionalHeaders: [AnyHashable: Any] = ["User-Agent": userAgent]
+        httpAdditionalHeaders = httpAdditionalHeaders?.merging(additionalHeaders) { (current, _) in current }
     }
 }

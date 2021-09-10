@@ -91,6 +91,14 @@ public protocol MissionButtonState: BottomBarState {
 // MARK: Flight Plan Provider
 /// FlightPlanProvider protocol, dedicated to provide Flight Plan specific content.
 public protocol FlightPlanProvider {
+    /// Project type
+    var projectType: String { get }
+    /// Project title.
+    var projectTitle: String { get }
+    /// New button title.
+    var newButtonTitle: String { get }
+    /// Create first title.
+    var createFirstTitle: String { get }
     /// Flight Plan type.
     var typeKey: String { get }
     /// Predicate to filter stored Flight Plan, if needed.
@@ -108,14 +116,18 @@ public protocol FlightPlanProvider {
     ///     - execution: Flight plan execution
     ///     - coordinator: Flight Plan Panel Coordinator
     /// - Returns: View controller
-    func executionSummaryVC(execution: FlightPlanExecution, coordinator: FlightPlanPanelCoordinator) -> UIViewController?
+    func executionSummaryVC(flightPlan: FlightPlanModel, coordinator: FlightPlanPanelCoordinator) -> UIViewController?
 
     /// Returns graphic items to diplay a Flight Plan.
     ///
     /// - Parameters:
-    ///     - flightPlanObject: Flight Plan Object
+    ///     - flightPlan: Flight Plan Object
     /// - Returns: Flight Plan Graphic array
-    func graphicsWithFlightPlan(_ flightPlanObject: FlightPlanObject) -> [FlightPlanGraphic]
+    func graphicsWithFlightPlan(_ flightPlan: FlightPlanModel) -> [FlightPlanGraphic]
+
+    /// Check if this provider manages a given flight plan type
+    /// - Parameter type: the flight plan type
+    func hasFlightPlanType(_ type: String) -> Bool
 }
 
 /// Provides Flight Plan types.
@@ -163,7 +175,7 @@ public protocol FlightPlanSettingsProvider {
     /// - Parameters:
     ///     - flightPlan: The flight plan which we want the settings from
     /// - Returns: The settings of the flight plan
-    func settings(for flightPlan: SavedFlightPlan) -> [FlightPlanSetting]
+    func settings(for flightPlan: FlightPlanModel) -> [FlightPlanSetting]
 
     /// Returns the settings for a specific type of flight plan.
     ///
@@ -257,6 +269,9 @@ extension FlightPlanSettingType {
                               Double(value) * step,
                               unit.unit)
             }
+        case .fixed:
+            guard let value = currentValue else { return nil }
+            return "\(value)" + unit.unit
         }
     }
 
@@ -393,7 +408,7 @@ public struct MissionModeConfigurator {
     /// Returns if FlightPlan panel is requiered for this mode.
     var isFlightPlanPanelRequired: Bool
     /// Returns the RTH title to show.
-    var rthTypeTitle: String
+    var rthTitle: (ReturnHomeTarget?) -> String
     /// Returns if this mode is a Tracking one.
     var isTrackingMode: Bool
 
@@ -405,7 +420,7 @@ public struct MissionModeConfigurator {
                 preferredSplitMode: SplitScreenMode,
                 isMapRequired: Bool,
                 isFlightPlanPanelRequired: Bool,
-                rthTypeTitle: String? = nil,
+                rthTitle: ((ReturnHomeTarget?) -> String)? = nil,
                 isTrackingMode: Bool) {
         self.key = key
         self.name = name
@@ -414,7 +429,16 @@ public struct MissionModeConfigurator {
         self.preferredSplitMode = preferredSplitMode
         self.isMapRequired = isMapRequired
         self.isFlightPlanPanelRequired = isFlightPlanPanelRequired
-        self.rthTypeTitle = rthTypeTitle ?? L10n.alertReturnHomeTitle
+        self.rthTitle = rthTitle ?? { target in
+            switch target {
+            case .controllerPosition:
+                return L10n.alertReturnPilotTitle
+            case .takeOffPosition:
+                return L10n.alertReturnHomeTitle
+            default:
+                return L10n.alertReturnHomeTitle
+            }
+        }
         self.isTrackingMode = isTrackingMode
     }
 }
@@ -439,14 +463,16 @@ public struct MissionMode: Equatable {
     public var flightPlanProvider: FlightPlanProvider? // TODO: make it smarter by directly handling current mission mode
     /// Returns a model for mission activation.
     public var missionActivationModel: MissionActivationModel
-    /// Provides Return to Home type title.
-    var rthTypeTitle: String
+    /// Provides Return to Home Target type title.
+    var rthTitle: (ReturnHomeTarget?) -> String
     /// Returns true if this mode is a tracking one.
     var isTrackingMode: Bool
     /// Returns an array of elements to display in the right stack of the bottom bar.
     var bottomBarRightStack: [ImagingStackElement]
     /// Provides a mission status view.
     var missionStatusView: UIView?
+    /// State machine
+    var stateMachine: FlightPlanStateMachine?
 
     // MARK: Completion handler properties
     /// Using completion handler properties to create variable only when they are called and not when instantiating the struct.
@@ -465,7 +491,8 @@ public struct MissionMode: Equatable {
                 entryCoordinatorProvider: (() -> Coordinator)? = nil,
                 bottomBarLeftStack: (() -> [UIView])?,
                 bottomBarRightStack: [ImagingStackElement],
-                missionStatusView: UIView? = nil) {
+                missionStatusView: UIView? = nil,
+                stateMachine: FlightPlanStateMachine? = nil) {
         self.key = configurator.key
         self.name = configurator.name
         self.icon = configurator.icon
@@ -473,7 +500,7 @@ public struct MissionMode: Equatable {
         self.preferredSplitMode = configurator.preferredSplitMode
         self.isMapRequired = configurator.isMapRequired
         self.isFlightPlanPanelRequired = configurator.isFlightPlanPanelRequired
-        self.rthTypeTitle = configurator.rthTypeTitle
+        self.rthTitle = configurator.rthTitle
         self.isTrackingMode = configurator.isTrackingMode
         self.flightPlanProvider = flightPlanProvider
         self.missionActivationModel = missionActivationModel
@@ -482,6 +509,7 @@ public struct MissionMode: Equatable {
         self.bottomBarLeftStack = bottomBarLeftStack
         self.bottomBarRightStack = bottomBarRightStack
         self.missionStatusView = missionStatusView
+        self.stateMachine = stateMachine
     }
 
     // MARK: - Equatable Implementation
@@ -497,6 +525,7 @@ public enum FlightPlanSettingCellType {
     case choice
     case adjustement
     case centeredRuler
+    case fixed
 }
 
 /// Flight plan settings categories.

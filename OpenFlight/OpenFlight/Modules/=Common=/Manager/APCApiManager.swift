@@ -59,12 +59,12 @@ private extension APCApiManager {
 extension APCApiManager {
     /// Returns a custom URLSession to communicate with APC API.
     func authSession() -> URLSession {
-        let token = UserInformation.current.token
+        let token = Services.hub.userInformation.token
         let config = URLSessionConfiguration.default
         config.httpAdditionalHeaders = [RequestHeaderFields.authorization: AuthenticationUtils.bearer(token: token),
                                         RequestHeaderFields.contentType: RequestHeaderFields.appJson,
                                         RequestHeaderFields.xApiKey: ServicesConstants.academySecretKey]
-
+        config.addUserAgentHeader()
         return URLSession(configuration: config)
     }
 
@@ -79,7 +79,7 @@ extension APCApiManager {
         guard let url = buildAuthenticationUrl(with: EndPoints.createTemporaryAccount) else {
             completion(false,
                        nil,
-                       AcademyApiManager.AcademyApiManagerError.badURL)
+                       AcademyApiServiceImpl.AcademyApiManagerError.badURL)
             return
         }
 
@@ -97,7 +97,7 @@ extension APCApiManager {
             guard let resultData = data else {
                 completion(false,
                            nil,
-                           AcademyApiManager.AcademyApiManagerError.noData)
+                           AcademyApiServiceImpl.AcademyApiManagerError.noData)
                 return
             }
 
@@ -105,7 +105,7 @@ extension APCApiManager {
                                                       from: resultData) else {
                 completion(false,
                            nil,
-                           AcademyApiManager.AcademyApiManagerError.badData)
+                           AcademyApiServiceImpl.AcademyApiManagerError.badData)
                 return
             }
 
@@ -149,7 +149,7 @@ private extension APCApiManager {
         let config = URLSessionConfiguration.default
         config.httpAdditionalHeaders = [RequestHeaderFields.authorization: AuthenticationUtils.bearer(token: ""),
                                         RequestHeaderFields.callerId: ServicesConstants.xCallerId]
-
+        config.addUserAgentHeader()
         return URLSession(configuration: config)
     }
 

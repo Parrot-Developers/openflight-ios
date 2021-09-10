@@ -50,5 +50,8 @@
     <color name="yellow_sea">#ffdc02</color>
     <color name="yellow_sea_30">#ffdc024d</color>
     <color name="gold">#f8d000</color>
+    <color name="night_rider">#2f2f2f</color>
     <color name="night_rider_80">#2f2f2fcc</color>
+    <color name="default_icon_color">#27201C</color>
+    <color name="grey_light_return">#DFD8C7</color>
 </resources>

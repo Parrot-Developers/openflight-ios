@@ -235,7 +235,9 @@ private extension LocationsTrackerImpl {
     func listenUserHeading(groundSdk: GroundSdk) {
         userHeadingRef = groundSdk.getFacility(Facilities.userHeading) { [unowned self] userHeading in
             guard let heading = userHeading?.heading?.magneticHeading else { return }
-            rawUserDeviceHeadingSubject.value = heading
+            if remoteControlCompassRef == nil {
+                rawUserDeviceHeadingSubject.value = heading
+            }
         }
     }
 
@@ -262,7 +264,7 @@ private extension LocationsTrackerImpl {
     func listenCompass(remoteControl: RemoteControl) {
         remoteControlCompassRef = remoteControl.getInstrument(Instruments.compass) { [unowned self] compass in
             guard let remoteControlHeading = compass?.heading else { return }
-            remoteControlHeadingSubject.value = remoteControlHeading
+            rawUserDeviceHeadingSubject.value = remoteControlHeading > 180 ? remoteControlHeading - 360 : remoteControlHeading
         }
     }
 }
@@ -287,13 +289,14 @@ extension LocationsTrackerImpl: LocationsTracker {
     var userLocationPublisher: AnyPublisher<OrientedLocation, Never> {
         userLocationSubject.combineLatest(userDeviceHeadingPublisher)
             .map {
+                let heading = self.remoteControlCompassRef == nil ? $0.1 : self.rawUserDeviceHeadingSubject.value
                 if let location = $0.0 {
                     return OrientedLocation(coordinates: Location3D(coordinate: location.coordinate,
                                                                     altitude: location.altitude),
-                                            heading: $0.1)
+                                            heading: heading)
                 }
                 return OrientedLocation(coordinates: nil,
-                                        heading: $0.1)
+                                        heading: heading)
             }
             .eraseToAnyPublisher()
     }

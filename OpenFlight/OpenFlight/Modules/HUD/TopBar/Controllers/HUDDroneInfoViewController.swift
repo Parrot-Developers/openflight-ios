@@ -106,7 +106,6 @@ private extension HUDDroneInfoViewController {
 
         // Binding wifi strength
         droneInfosViewModel.$wifiStrength
-            .removeDuplicates()
             .sink { [unowned self] wifiStrength in
                 configureWifiView(wifiStrength: wifiStrength ?? .offline)
             }
@@ -121,7 +120,6 @@ private extension HUDDroneInfoViewController {
 
         // Binding cellular strength
         droneInfosViewModel.$cellularStrength
-            .removeDuplicates()
             .sink { [unowned self] cellularStrength in
                 configureCellularView(cellularStrength: cellularStrength)
             }

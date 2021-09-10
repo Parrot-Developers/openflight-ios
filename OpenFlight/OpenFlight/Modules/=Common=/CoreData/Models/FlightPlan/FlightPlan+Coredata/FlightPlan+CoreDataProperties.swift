@@ -38,7 +38,9 @@ extension FlightPlan {
 
     // MARK: Properties
 
+    @NSManaged public var apcId: String!
     @NSManaged public var uuid: String!
+    @NSManaged public var type: String!
     @NSManaged public var customTitle: String!
     @NSManaged public var thumbnailUuid: String?
     @NSManaged public var projectUuid: String!
@@ -47,14 +49,14 @@ extension FlightPlan {
     @NSManaged public var dataString: String?
     @NSManaged public var pgyProjectId: Int64
     @NSManaged public var mediaCustomId: String?
-    @NSManaged public var state: String?
+    @NSManaged public var state: String!
     @NSManaged public var lastMissionItemExecuted: Int64
-    @NSManaged public var recoveryId: String?
     @NSManaged public var mediaCount: Int16
     @NSManaged public var uploadedMediaCount: Int16
     @NSManaged public var lastUpdate: Date!
     @NSManaged public var synchroStatus: Int16
     @NSManaged public var fileSynchroStatus: Int16
+    @NSManaged public var fileSynchroDate: Date?
     @NSManaged public var synchroDate: Date?
     @NSManaged public var parrotCloudId: Int64
     @NSManaged public var parrotCloudUploadUrl: String?
@@ -92,34 +94,35 @@ extension FlightPlan {
 // MARK: - Utils
 extension FlightPlan {
 
-    /// Return FlightPlanModell from FlightPlan type of NSManagedObject
-    func model() -> FlightPlanModell {
-        return FlightPlanModell(uuid: uuid,
+    /// Return FlightPlanModel from FlightPlan type of NSManagedObject
+    func model() -> FlightPlanModel {
+        return FlightPlanModel(apcId: apcId,
+                                type: type,
+                                uuid: uuid,
+                                version: version,
                                 customTitle: customTitle,
                                 thumbnailUuid: thumbnailUuid,
                                 projectUuid: projectUuid,
                                 dataStringType: dataStringType,
-                                version: version,
                                 dataString: dataString,
                                 pgyProjectId: pgyProjectId,
                                 mediaCustomId: mediaCustomId,
-                                state: state,
+                                state: FlightPlanModel.FlightPlanState(rawString: state) ?? .editable,
                                 lastMissionItemExecuted: lastMissionItemExecuted,
-                                recoveryId: recoveryId,
                                 mediaCount: mediaCount,
                                 uploadedMediaCount: uploadedMediaCount,
                                 lastUpdate: lastUpdate,
                                 synchroStatus: synchroStatus,
                                 fileSynchroStatus: fileSynchroStatus,
+                                fileSynchroDate: fileSynchroDate,
                                 synchroDate: synchroDate,
                                 parrotCloudId: parrotCloudId,
                                 parrotCloudUploadUrl: parrotCloudUploadUrl,
                                 parrotCloudToBeDeleted: parrotCloudToBeDeleted,
                                 cloudLastUpdate: cloudLastUpdate,
                                 uploadAttemptCount: uploadAttemptCount,
-                                lastUploadAttempt:  lastUploadAttempt,
+                                lastUploadAttempt: lastUploadAttempt,
                                 thumbnail: thumbnail?.model(),
-                                flightPlanFlights: flightPlanFlights?.toArray().map({$0.model()}))
-
+                                flightPlanFlights: flightPlanFlights?.toArray().map({ $0.model() }))
     }
 }

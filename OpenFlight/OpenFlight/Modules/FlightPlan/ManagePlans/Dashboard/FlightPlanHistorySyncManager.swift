@@ -57,8 +57,8 @@ public protocol HistorySyncProvider {
     ///
     /// - Parameters:
     ///     - type: current history type
-    ///     - flightPlanViewModel: current flight plan view model
-    func historySyncViews(type: HistoryTableType, flightPlanViewModel: FlightPlanViewModel?) -> [String: HistoryMediasView]
+    ///     - projectModel: current project model
+    func historySyncViews(type: HistoryTableType, projectModel: ProjectModel?) -> [String: HistoryMediasView]
 }
 
 // MARK: - FlightPlanHistorySyncManager

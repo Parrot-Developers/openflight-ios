@@ -181,7 +181,7 @@ public extension UIView {
     /// - Parameters:
     ///    - isEnabled: boolean describing enabled state
     func alphaWithEnabledState(_ isEnabled: Bool) {
-        self.alpha = isEnabled ? 1.0 : 0.3
+        self.alpha = isEnabled ? 1.0 : 0.55
     }
 
     /// Hides/shows the view using alpha and removes user interaction.

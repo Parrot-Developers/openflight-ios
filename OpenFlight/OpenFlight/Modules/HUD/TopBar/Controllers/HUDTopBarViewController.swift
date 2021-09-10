@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 // MARK: - Protocols
 protocol HUDTopBarViewControllerNavigation: AnyObject {
@@ -66,10 +67,16 @@ final class HUDTopBarViewController: UIViewController {
     // MARK: - Internal Properties
     weak var navigationDelegate: HUDTopBarViewControllerNavigation?
     var context: HUDTopBarContext = .standard
+    private var cancellables = Set<AnyCancellable>()
+
+    private var hideRadarView = false
 
     // MARK: - Private Properties
     private let radarViewModel = HUDRadarViewModel()
-    private let topBarViewModel = TopBarViewModel()
+    private let topBarViewModel = TopBarViewModel(service: Services.hub.ui.hudTopBarService,
+                                                  uiComponentsDisplay: Services.hub.ui.uiComponentsDisplayReporter,
+                                                  connectedDroneHolder: Services.hub.connectedDroneHolder,
+                                                  connectedRemoteControlHolder: Services.hub.connectedRemoteControlHolder)
 
     // MARK: - Private Enums
     private enum Constants {
@@ -87,17 +94,29 @@ final class HUDTopBarViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        topBarViewModel.state.valueChanged = { [weak self] state in
-            UIView.animate(withDuration: Constants.defaultAnimationDuration) {
-                self?.topBarView.alphaHidden(state.shouldHide)
+        topBarViewModel.showTopBarPublisher
+            .sink { [weak self] show in
+                UIView.animate(withDuration: Constants.defaultAnimationDuration) {
+                    self?.topBarView.alphaHidden(!show)
+                }
             }
-            self?.updateRadarViewVisibility()
-            self?.updateDroneActionViewVisibility()
-            self?.updateTelemetryVisibility()
-        }
-        updateRadarViewVisibility()
-        updateDroneActionViewVisibility()
-        updateTelemetryVisibility()
+            .store(in: &cancellables)
+        topBarViewModel.shouldHideRadarPublisher
+            .sink { [weak self] in
+                self?.hideRadarView = $0
+                self?.updateRadarViewVisibility()
+            }
+            .store(in: &cancellables)
+        topBarViewModel.shouldHideDroneActionPublisher
+            .sink { [weak self] in
+                self?.droneActionView.isHidden = $0
+            }
+            .store(in: &cancellables)
+        topBarViewModel.shouldHideTelemetryPublisher
+            .sink { [weak self] in
+                self?.telemetryBarViewController.isHidden = $0
+            }
+            .store(in: &cancellables)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -164,22 +183,11 @@ private extension HUDTopBarViewController {
             }
             // Set initial state.
             radarView.state = radarViewModel.state.value
-            radarView.isHidden = topBarViewModel.state.value.shouldHideRadar == true
+            radarView.isHidden = hideRadarView
         } else {
             radarViewModel.state.valueChanged = nil
             radarView.isHidden = true
         }
-    }
-
-    /// Update Drone action buttons visibility.
-    func updateDroneActionViewVisibility() {
-        let state = topBarViewModel.state.value
-        droneActionView.isHidden = state.shouldHideDroneAction == true
-    }
-
-    /// Update telemetry bar visibility.
-    func updateTelemetryVisibility() {
-        telemetryBarViewController.isHidden = topBarViewModel.state.value.shouldHideTelemetry == true
     }
 }
 

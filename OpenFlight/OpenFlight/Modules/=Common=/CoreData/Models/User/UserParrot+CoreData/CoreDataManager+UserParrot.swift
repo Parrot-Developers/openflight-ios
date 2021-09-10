@@ -32,7 +32,7 @@ import GroundSdk
 import CoreData
 
 public protocol UserRepository: AnyObject {
-    /// Persist or update current logged User into CoreData
+    /// Persist or update User into CoreData
     /// - Parameters
     ///    - user to persist
     func persist(_ user: User)
@@ -40,14 +40,17 @@ public protocol UserRepository: AnyObject {
     /// Load current logged User from CoreData
     /// return User
     func loadCurrentUser() -> User?
+
+    /// Load Anonymous User from CoreData
+    /// return User
+    func loadAnonymousUser() -> User?
+
+    /// Set new Token for AnonymousUser
+    func updateTokenForAnonymousUser(_ token: String)
 }
 
-extension CoreDataManager: UserRepository {
+extension CoreDataServiceIml: UserRepository {
 
-    /// Persists User.
-    ///
-    /// - Parameters:
-    ///     - user: the current logged User
     public func persist(_ user: User) {
         // Prepare content to save.
         guard let managedContext = currentContext else { return }
@@ -63,7 +66,7 @@ extension CoreDataManager: UserRepository {
         let userParrot: NSManagedObject?
 
         // Check object if exists.
-        if let object = self.loadUser() {
+        if let object = self.loadUser("email", user.email) {
             // Use persisted object.
             userParrot = object
         } else {
@@ -88,7 +91,7 @@ extension CoreDataManager: UserRepository {
         userParrotObject.shareDataOption = user.shareDataOption
         userParrotObject.freemiumProjectCounter = user.freemiumProjectCounter
 
-        managedContext.performAndWait {
+        managedContext.perform {
             do {
                 try managedContext.save()
             } catch let error {
@@ -97,23 +100,54 @@ extension CoreDataManager: UserRepository {
         }
     }
 
-    /// Load current persisted User from CoreData.
-    ///
-    /// - Return :
-    ///    - User if exist into CoreData
     public func loadCurrentUser() -> User? {
-        return self.loadUser()?.model()
+        return self.loadUser( "apcId", userInformation.apcId)?.model()
+    }
+
+    public func loadAnonymousUser() -> User? {
+        var anonymousUser = self.loadUser("email", userInformation.anonymousString)?.model()
+
+        // Create an Anonymous user if doesn't exist yet
+        if anonymousUser == nil {
+            let anonymousString = userInformation.anonymousString
+            anonymousUser = User(firstName: nil,
+                                 lastName: nil,
+                                 birthday: nil,
+                                 lang: nil,
+                                 email: anonymousString,
+                                 apcId: anonymousString,
+                                 apcToken: nil,
+                                 tmpApcUser: true,
+                                 userInfoChanged: nil,
+                                 syncWithCloud: true,
+                                 agreementChanged: nil,
+                                 newsletterOption: nil,
+                                 shareDataOption: nil,
+                                 freemiumProjectCounter: nil)
+
+            if let anonymousUser = anonymousUser {
+                persist(anonymousUser)
+            }
+        }
+        return anonymousUser
+    }
+
+    public func updateTokenForAnonymousUser(_ token: String) {
+        guard var anonymousUser = loadAnonymousUser() else { return }
+        anonymousUser.apcToken = token
+        persist(anonymousUser)
     }
 }
 
 // MARK: - Utils
-private extension CoreDataManager {
+private extension CoreDataServiceIml {
 
-    private func loadUser() -> UserParrot? {
+    private func loadUser(_ key: String, _ value: String) -> UserParrot? {
         guard let managedContext = currentContext else { return nil }
 
         let fetchRequest: NSFetchRequest<UserParrot> = UserParrot.fetchRequest()
-
+        let predicate = NSPredicate(format: "%K == %@", key, value)
+        fetchRequest.predicate = predicate
         do {
             return try (managedContext.fetch(fetchRequest)).first
         } catch let error {

@@ -45,6 +45,9 @@ public struct ColorName {
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#f0eee4"></span>
   /// Alpha: 100% <br/> (0xf0eee4ff)
   public static let defaultBgcolor = ColorName(rgbaValue: 0xf0eee4ff)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#27201c"></span>
+  /// Alpha: 100% <br/> (0x27201cff)
+  public static let defaultIconColor = ColorName(rgbaValue: 0x27201cff)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#3b302a"></span>
   /// Alpha: 100% <br/> (0x3b302aff)
   public static let defaultTextColor = ColorName(rgbaValue: 0x3b302aff)
@@ -99,6 +102,9 @@ public struct ColorName {
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#48494b"></span>
   /// Alpha: 60% <br/> (0x48494b99)
   public static let greyDark60 = ColorName(rgbaValue: 0x48494b99)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#dfd8c7"></span>
+  /// Alpha: 100% <br/> (0xdfd8c7ff)
+  public static let greyLightReturn = ColorName(rgbaValue: 0xdfd8c7ff)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#1a1c1e"></span>
   /// Alpha: 100% <br/> (0x1a1c1eff)
   public static let greyShark = ColorName(rgbaValue: 0x1a1c1eff)
@@ -108,6 +114,9 @@ public struct ColorName {
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#34c175"></span>
   /// Alpha: 100% <br/> (0x34c175ff)
   public static let highlightColor = ColorName(rgbaValue: 0x34c175ff)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#2f2f2f"></span>
+  /// Alpha: 100% <br/> (0x2f2f2fff)
+  public static let nightRider = ColorName(rgbaValue: 0x2f2f2fff)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#2f2f2f"></span>
   /// Alpha: 80% <br/> (0x2f2f2fcc)
   public static let nightRider80 = ColorName(rgbaValue: 0x2f2f2fcc)

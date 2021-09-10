@@ -150,9 +150,7 @@ private extension SettingsCellularDataCell {
                                                 subtitle: settingCellularAccessEntry.subtitle,
                                                 subtitleColor: settingCellularAccessEntry.subtitleColor,
                                                 atIndexPath: IndexPath(item: 0, section: 0),
-                                                shouldShowBackground: false,
-                                                leadingConstraint: 0.0,
-                                                trailingConstraint: 0.0)
+                                                shouldShowBackground: false)
             cellularAccessSegment.delegate = self
         }
     }
@@ -167,9 +165,7 @@ private extension SettingsCellularDataCell {
                                                        subtitle: settingConnectionNetworkModeEntry.subtitle,
                                                        subtitleColor: settingConnectionNetworkModeEntry.subtitleColor,
                                                        atIndexPath: IndexPath(item: 1, section: 0),
-                                                       shouldShowBackground: false,
-                                                       leadingConstraint: 0.0,
-                                                       trailingConstraint: 0.0)
+                                                       shouldShowBackground: false)
             connectionNetworkModeSegment.delegate = self
         }
     }

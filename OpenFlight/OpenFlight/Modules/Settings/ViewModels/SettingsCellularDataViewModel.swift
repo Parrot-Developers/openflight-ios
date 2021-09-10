@@ -90,16 +90,19 @@ final class SettingsCellularDataState: DeviceConnectionState {
     ///
     /// - Parameters:
     ///     - connectionState: drone connection state
+    ///     - cellularAvailability: tells if cellular data are enabled
     ///     - selectionMode: tells if the network selection is auto or manual
     ///     - isSelectionUpdating: tells if the network selection is updating
     ///     - isSimCardInserted: tells if the sim card status is inserted
     init(connectionState: DeviceState.ConnectionState,
+         cellularAvailability: SettingsCellularAvailability,
          selectionMode: SettingsCellularSelection,
          isSelectionUpdating: Bool,
          isSimCardInserted: Bool,
          isCellularActivated: Bool) {
         super.init(connectionState: connectionState)
 
+        self.cellularAvailability = cellularAvailability
         self.selectionMode = selectionMode
         self.isSelectionUpdating = isSelectionUpdating
         self.isSimCardInserted = isSimCardInserted
@@ -110,18 +113,20 @@ final class SettingsCellularDataState: DeviceConnectionState {
     override func isEqual(to other: DeviceConnectionState) -> Bool {
         guard let other = other as? SettingsCellularDataState else { return false }
 
-        return selectionMode == other.selectionMode
+        return cellularAvailability == other.cellularAvailability
+            && selectionMode == other.selectionMode
             && isSelectionUpdating == other.isSelectionUpdating
             && isSimCardInserted == other.isSimCardInserted
             && isCellularActivated == other.isCellularActivated
     }
 
     override func copy() -> SettingsCellularDataState {
-        return SettingsCellularDataState(connectionState: self.connectionState,
-                                         selectionMode: self.selectionMode,
-                                         isSelectionUpdating: self.isSelectionUpdating,
-                                         isSimCardInserted: self.isSimCardInserted,
-                                         isCellularActivated: self.isCellularActivated)
+        return SettingsCellularDataState(connectionState: connectionState,
+                                         cellularAvailability: cellularAvailability,
+                                         selectionMode: selectionMode,
+                                         isSelectionUpdating: isSelectionUpdating,
+                                         isSimCardInserted: isSimCardInserted,
+                                         isCellularActivated: isCellularActivated)
     }
 }
 

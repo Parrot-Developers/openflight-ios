@@ -38,9 +38,12 @@ extension Thumbnail {
 
     // MARK: Properties
 
+    @NSManaged public var apcId: String!
     @NSManaged public var uuid: String!
     @NSManaged public var thumbnailData: Data?
+    @NSManaged public var lastUpdate: Date?
     @NSManaged public var parrotCloudId: Int64
+    @NSManaged public var fileSynchroDate: Date?
     @NSManaged public var synchroStatus: Int16
     @NSManaged public var synchroDate: Date?
     @NSManaged public var fileSynchroStatus: Int16
@@ -51,6 +54,7 @@ extension Thumbnail {
 
     @NSManaged public var ofUserParrot: UserParrot?
     @NSManaged public var ofFlightPlan: FlightPlan?
+    @NSManaged public var ofFlight: Flight?
 }
 
 // MARK: - Utils
@@ -64,13 +68,17 @@ extension Thumbnail {
         if let thumbnailData = thumbnailData {
             thumbnailImage = UIImage(data: thumbnailData)
         }
-        return ThumbnailModel(uuid: uuid,
+        return ThumbnailModel(apcId: apcId,
+                              uuid: uuid,
                               thumbnailImage: thumbnailImage,
+                              lastUpdate: lastUpdate,
                               synchroStatus: synchroStatus,
                               fileSynchroStatus: fileSynchroStatus,
+                              fileSynchroDate: fileSynchroDate,
                               cloudLastUpdate: cloudLastUpdate,
                               synchroDate: synchroDate,
                               parrotCloudId: parrotCloudId,
-                              parrotCloudToBeDeleted: parrotCloudToBeDeleted)
+                              parrotCloudToBeDeleted: parrotCloudToBeDeleted,
+                              flightUuid: ofFlight?.uuid)
     }
 }

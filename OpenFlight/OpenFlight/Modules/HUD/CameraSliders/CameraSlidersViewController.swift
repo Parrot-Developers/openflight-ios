@@ -40,16 +40,16 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
     @IBOutlet private weak var zoomButton: UIButton!
     @IBOutlet private weak var zoomSliderView: ZoomSliderView!
     @IBOutlet private weak var overzoomLabel: UILabel!
-    @IBOutlet private weak var maxTiltLabel: UILabel!
     @IBOutlet private weak var joysticksButton: UIButton!
+    @IBOutlet private weak var infoTiltLabel: PaddingLabel!
 
     @IBOutlet private var overzoomLabelOpenConstraints: [NSLayoutConstraint]!
     @IBOutlet private var overzoomLabelClosedConstraints: [NSLayoutConstraint]!
-    @IBOutlet private var maxTiltLabelClosedConstraints: [NSLayoutConstraint]!
-    @IBOutlet private weak var maxTiltLabelOpenLeadingConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var maxTiltLabelOpenPositiveVerticalConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var maxTiltLabelOpenNegativeVerticalConstraint: NSLayoutConstraint!
-
+    @IBOutlet weak var maxTiltSliderLabelUpConstraint: NSLayoutConstraint!
+    @IBOutlet weak var maxTiltSliderLabelDownConstraint: NSLayoutConstraint!
+    @IBOutlet weak var maxTiltSliderLabel: UILabel!
+    @IBOutlet private weak var maxTiltRemoteLabel: UILabel!
+    @IBOutlet weak var leadingInfoTiltLabelConstraint: NSLayoutConstraint!
     // MARK: - Internal Properties
     var delayedTaskComponents = DelayedTaskComponents()
     var viewModel: CameraSlidersViewModel!
@@ -58,13 +58,9 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
 
-    private func currentMaxTiltVerticalConstraint(positive: Bool) -> NSLayoutConstraint {
-        positive ? maxTiltLabelOpenPositiveVerticalConstraint : maxTiltLabelOpenNegativeVerticalConstraint
-    }
-
     // MARK: - Private Enums
     private enum Constants {
-        static let zoomDisabledTitleColor = UIColor.white.withAlphaComponent(0.3)
+        static let zoomDisabledTitleColor = UIColor.black.withAlphaComponent(0.3)
         static let hideInfoLabelTaskKey: String = "hideInfoLabel"
         static let hideTiltMaxLabelTaskKey: String = "hideTiltMaxLabel"
         static let maxReachedNotificationDuration: TimeInterval = 1.0
@@ -93,6 +89,7 @@ private extension CameraSlidersViewController {
     /// Called when user taps the tilt button.
     @IBAction func tiltButtonTouchedUpInside(_ sender: Any) {
         viewModel.tiltButtonTapped()
+        leadingInfoTiltLabelConstraint.isActive = false
     }
 
     /// Called when user touch jogs button.
@@ -106,14 +103,27 @@ private extension CameraSlidersViewController {
     /// Sets up basic UI elements of the view.
     func setupView() {
         self.view.translatesAutoresizingMaskIntoConstraints = false
+        // titleButton
         tiltButton.roundCornered()
+        // zoomButton
         zoomButton.roundCornered()
-        joysticksButton.roundCornered()
         zoomButton.setTitleColor(Constants.zoomDisabledTitleColor, for: .disabled)
+        // joysticksButton
+        joysticksButton.roundCornered()
+        joysticksButton.tintColor = ColorName.defaultIconColor.color
+        // overzoomLabel
         overzoomLabel.applyCornerRadius(Style.largeCornerRadius)
-        maxTiltLabel.applyCornerRadius(Style.largeCornerRadius)
         overzoomLabel.text = L10n.zoomMaxReached
-        maxTiltLabel.text = L10n.tiltMaxReached
+        // maxTiltRemoteLabel
+        maxTiltRemoteLabel.applyCornerRadius(Style.largeCornerRadius)
+        maxTiltRemoteLabel.text = L10n.tiltMaxReached
+        maxTiltSliderLabel.applyCornerRadius(Style.largeCornerRadius)
+        maxTiltSliderLabel.text = L10n.tiltMaxReached
+        // infoTiltLabel
+        infoTiltLabel.applyCornerRadius(Style.largeCornerRadius)
+        infoTiltLabel.text = ""
+        infoTiltLabel.textColor = ColorName.defaultIconColor.color
+        infoTiltLabel.backgroundColor = ColorName.white90.color
     }
 
     /// Sets up view models associated with the view.
@@ -174,8 +184,27 @@ private extension CameraSlidersViewController {
         viewModel.gimbalTiltButtonEnabled
             .sink { [unowned self] in tiltButton.isEnabled = $0 }
             .store(in: &cancellables)
+        // Value
         viewModel.gimbalTiltValue
-            .sink { [unowned self] in tiltButton.value = $0 }
+            .removeDuplicates()
+            .dropFirst(1)
+            .sink { [unowned self] in
+                tiltButton.value = $0
+                infoTiltLabel.text = "\(Int($0))°"
+                viewModel.showInfoTiltLabel()
+            }
+            .store(in: &cancellables)
+        // Label tilt
+        viewModel.$showInfoTiltLabelFlag
+            .removeDuplicates()
+            .dropFirst(2)
+            .sink { [unowned self] in
+                if $0 {
+                    showInfoTiltLabel()
+                } else {
+                    hideInfoTiltLabel()
+                }
+            }
             .store(in: &cancellables)
         viewModel.gimbalTiltButtonHidden
             .sink { [unowned self] in tiltButton.isHidden = $0 }
@@ -193,10 +222,14 @@ private extension CameraSlidersViewController {
             .store(in: &cancellables)
         // Over / under tilt
         viewModel.overtiltEvent
-            .sink { [unowned self] _ in showMaxTiltLabel(positive: true) }
+            .sink { [unowned self] _ in
+                displayMaxTiltLabel(forOverTilt: true)
+            }
             .store(in: &cancellables)
         viewModel.undertiltEvent
-            .sink { [unowned self] _ in showMaxTiltLabel(positive: false) }
+            .sink { [unowned self] _ in
+                displayMaxTiltLabel(forOverTilt: false)
+            }
             .store(in: &cancellables)
     }
 
@@ -211,24 +244,6 @@ private extension CameraSlidersViewController {
     /// Hides the overzoom information label.
     func hideOverzoomLabel() {
         overzoomLabel.isHidden = true
-    }
-
-    /// Show max tilt label
-    func showMaxTiltLabel(positive: Bool) {
-        if !tiltSliderView.isHidden {
-            maxTiltLabelOpenNegativeVerticalConstraint.isActive = false
-            maxTiltLabelOpenPositiveVerticalConstraint.isActive = false
-            currentMaxTiltVerticalConstraint(positive: positive).isActive = true
-        }
-        setupDelayedTask(hideMaxTiltLabel,
-                         delay: Constants.maxReachedNotificationDuration,
-                         key: Constants.hideTiltMaxLabelTaskKey)
-        maxTiltLabel.isHidden = false
-    }
-
-    /// Hides the max tilt information label.
-    func hideMaxTiltLabel() {
-        maxTiltLabel.isHidden = true
     }
 
     /// Animates the opening or closing of a slider.
@@ -260,20 +275,13 @@ private extension CameraSlidersViewController {
 
     /// Shows the tilt slider view.
     func showTiltSliderView() {
-        animate(viewToShow: tiltSliderContainerView,
-                viewToHide: zoomButton,
-                constraintsToRemove: maxTiltLabelClosedConstraints,
-                constraintsToActivate: [maxTiltLabelOpenLeadingConstraint, maxTiltLabelOpenPositiveVerticalConstraint])
+        animate(viewToShow: tiltSliderContainerView, viewToHide: zoomButton)
     }
 
     /// Hides the tilt slider view.
     func hideTiltSliderView() {
-        animate(viewToShow: zoomButton,
-                viewToHide: tiltSliderContainerView,
-                constraintsToRemove: [maxTiltLabelOpenLeadingConstraint,
-                                      maxTiltLabelOpenPositiveVerticalConstraint,
-                                      maxTiltLabelOpenNegativeVerticalConstraint],
-                constraintsToActivate: maxTiltLabelClosedConstraints)
+        animate(viewToShow: zoomButton, viewToHide: tiltSliderContainerView)
+        leadingInfoTiltLabelConstraint.isActive = true
     }
 
     /// Shows the zoom slider view.
@@ -290,5 +298,76 @@ private extension CameraSlidersViewController {
                 viewToHide: zoomSliderView,
                 constraintsToRemove: overzoomLabelOpenConstraints,
                 constraintsToActivate: overzoomLabelClosedConstraints)
+    }
+
+    // MARK: - Max tilt label.
+    /// Displays the "Max tilt" label depending on whether the slider is on the screen.
+    func displayMaxTiltLabel(forOverTilt value: Bool) {
+        if tiltSliderContainerView.isHidden {
+            showMaxTiltRemoteLabel()
+        } else {
+            // Displays the max tilt label of the slider
+            showMaxTitlSliderLabel(positionUp: value)
+        }
+        fadeOutAnimateMaxTitlSliderLabel()
+        fadeOutAnimateMaxTiltRemoteLabel()
+    }
+
+    // MARK: - Max tilt for slider.
+
+    /// Operates the constraints to display the max tilt label.
+    func showMaxTitlSliderLabel(positionUp: Bool) {
+        showMaxTiltSliderLabel()
+        if positionUp {
+            // displays the label in the upward position
+            maxTiltSliderLabelUpConstraint.isActive = true
+            maxTiltSliderLabelDownConstraint.isActive = false
+        } else {
+            // displays the label in a downward position
+            maxTiltSliderLabelUpConstraint.isActive = false
+            maxTiltSliderLabelDownConstraint.isActive = true
+        }
+    }
+
+    /// Shows the max tilt information label for the slider.
+    func showMaxTiltSliderLabel() {
+        maxTiltSliderLabel.isHidden = false
+    }
+
+    /// hides the max tilt information label for the slider.
+    func hideMaxTiltSliderLabel() {
+        maxTiltSliderLabel.isHidden = true
+    }
+
+    /// Fade in animation to hide the label for the slider.
+    func fadeOutAnimateMaxTitlSliderLabel() {
+        setupDelayedTask(hideMaxTiltSliderLabel, delay: Constants.maxReachedNotificationDuration)
+    }
+
+    // MARK: - Max tilt for remote.
+
+    /// Shows the max tilt information label for the cursor when the remote control is used.
+    func showMaxTiltRemoteLabel() {
+        maxTiltRemoteLabel.isHidden = false
+    }
+
+    /// Hides the max tilt information label for the cursor for the remote control.
+    func hideMaxTiltRemoteLabel() {
+        maxTiltRemoteLabel.isHidden = true
+    }
+
+    /// Fade in animation to hide the label for the remote control.
+    func fadeOutAnimateMaxTiltRemoteLabel() {
+        setupDelayedTask(hideMaxTiltRemoteLabel,
+                         delay: Constants.maxReachedNotificationDuration,
+                         key: Constants.hideTiltMaxLabelTaskKey)
+    }
+
+    // MARK: - InfoTiltLabel
+    func  showInfoTiltLabel() {
+        infoTiltLabel.isHidden = false
+    }
+    func hideInfoTiltLabel() {
+        infoTiltLabel.isHidden = true
     }
 }

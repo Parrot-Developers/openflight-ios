@@ -191,6 +191,10 @@ public extension Coordinator {
         self.navigationController?.pushViewController(viewController, animated: animated)
     }
 
+    func presentPopup(_ viewController: UIViewController, animated: Bool = true) {
+        self.navigationController?.visibleViewController?.present(viewController, animated: animated, completion: nil)
+    }
+
     func presentCoordinatorWithAnimation(childCoordinator: Coordinator, animationDirection: CATransitionSubtype) {
         childCoordinator.parentCoordinator = self
         childCoordinator.start()

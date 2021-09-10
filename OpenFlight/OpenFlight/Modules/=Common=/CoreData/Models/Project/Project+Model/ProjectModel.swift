@@ -39,32 +39,32 @@ public struct ProjectModel {
 
     // MARK: - Synchro Properties
 
-    /// - lastUpdated: local modification date
+    /// - To identify data user
+    public var apcId: String
+
+    /// - Local modification date
     public var lastUpdated: Date
 
-    /// - cloudLastUpdate: remote modification date
+    /// - Remote modification date
     public var cloudLastUpdate: Date?
 
-    /// - parrotCloudId: Id of project on server: Set only if synchronized
+    /// - Id of project on server: Set only if synchronized
     public var parrotCloudId: Int64
 
-    /// - parrotCloudToBeDeleted: True if a Delete Request was triguerred without success
-    public var parrotCloudToBeDeleted: Bool?
+    /// - True if a Delete Request was triguerred without success
+    public var parrotCloudToBeDeleted: Bool
 
-    /// - synchroDate: contains the Date of last synchro trying if is not succeeded
+    /// - Contains the Date of last synchro trying if is not succeeded
     public var synchroDate: Date?
 
-    /// - synchroStatus: Contains 0 if not yet synchronized, 1 if yes
+    /// - Contains 0 if not yet synchronized, 1 if yes
         /// statusCode if sync failed
     public var synchroStatus: Int16?
 
-    // MARK: - Relashionship
-
-    public var flightPlanModels: [FlightPlanModell]?
-
     // MARK: - Public init
 
-    public init(uuid: String,
+    public init(apcId: String,
+                uuid: String,
                 title: String?,
                 type: String,
                 lastUpdated: Date,
@@ -72,9 +72,9 @@ public struct ProjectModel {
                 cloudLastUpdate: Date? = nil,
                 parrotCloudToBeDeleted: Bool = false,
                 synchroDate: Date? = nil,
-                synchroStatus: Int16? = 0,
-                flightPlanModels: [FlightPlanModell]?) {
+                synchroStatus: Int16? = 0) {
 
+        self.apcId = apcId
         self.uuid = uuid
         self.title = title
         self.type = type
@@ -84,6 +84,5 @@ public struct ProjectModel {
         self.parrotCloudToBeDeleted = parrotCloudToBeDeleted
         self.synchroDate = synchroDate
         self.synchroStatus = synchroStatus
-        self.flightPlanModels = flightPlanModels
     }
 }

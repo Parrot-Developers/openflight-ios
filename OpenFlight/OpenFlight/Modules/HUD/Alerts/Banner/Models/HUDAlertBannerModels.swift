@@ -44,7 +44,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     case noGpsTooDark
     case noGpsTooHigh
     case noGps
-    case headingLockedKo
+    case headingLockedKoPerturbationMagnetic
+    case headingLockedKoEarthMagnetic
     case noGpsLapse
     case tooMuchWind
     case strongImuVibration
@@ -59,6 +60,7 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     case obstacleAvoidanceSensorsFailure
     case obstacleAvoidanceSensorsNotCalibrated
     case obstacleAvoidanceDeteriorated
+    case obstacleAvoidanceStrongWind
     case cameraError
 
     public var level: HUDAlertLevel {
@@ -81,7 +83,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
              .noGpsTooHigh,
              .noGps,
              .noGpsLapse,
-             .headingLockedKo:
+             .headingLockedKoPerturbationMagnetic,
+             .headingLockedKoEarthMagnetic:
             return .conditions
         case .tooMuchWind:
             return .conditionsWind
@@ -99,6 +102,7 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
         case .obstacleAvoidanceTooDark,
              .obstacleAvoidanceSensorsFailure,
              .obstacleAvoidanceSensorsNotCalibrated,
+             .obstacleAvoidanceStrongWind,
              .obstacleAvoidanceDeteriorated:
             return .obstacleAvoidance
         case .cameraError:
@@ -131,8 +135,10 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return L10n.alertNoGpsTooHigh
         case .noGps:
             return L10n.alertNoGps
-        case .headingLockedKo:
-            return L10n.alertHeadingLockKo
+        case .headingLockedKoPerturbationMagnetic:
+            return L10n.alertHeadingLockKoPerturbationMagnetic
+        case .headingLockedKoEarthMagnetic:
+            return L10n.alertHeadingLockKoEarthMagnetic
         case .noGpsLapse:
             return L10n.alertNoGpsGpslapse
         case .tooMuchWind:
@@ -142,9 +148,9 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
         case .internalMemoryFull:
             return L10n.alertInternalMemoryFull
         case .sdError:
-            return L10n.alertSdErrorSwitchingInternal
+            return L10n.alertSdError
         case .sdFull:
-            return L10n.alertSdFullSwitchingInternal
+            return L10n.alertSdFull
         case .sdTooSlow:
             return L10n.alertSdcardTooSlow
         case .geofenceAltitudeAndDistance,
@@ -159,6 +165,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return L10n.alertNoAvoidanceSensorsNotCalibrated
         case .obstacleAvoidanceDeteriorated:
             return L10n.alertAvoidanceDeteriorated
+        case .obstacleAvoidanceStrongWind:
+            return L10n.alertDeterioratedAvoidanceStrongWinds
         case .cameraError:
             return L10n.alertCameraError
         }
@@ -177,7 +185,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
              .veryLowBatteryLanding,
              .veryLowBattery:
             return Asset.Common.Icons.icWarningWhite.image
-        case .tooMuchWind:
+        case .tooMuchWind,
+             .obstacleAvoidanceStrongWind:
             return Asset.Common.Icons.icWind.image
         case .internalMemoryFull:
             return Asset.Common.Icons.icSdSmall.image

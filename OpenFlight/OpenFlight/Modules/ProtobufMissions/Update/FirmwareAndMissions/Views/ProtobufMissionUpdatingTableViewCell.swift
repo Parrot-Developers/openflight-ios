@@ -41,8 +41,6 @@ final class ProtobufMissionUpdatingTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-
-        initUI()
     }
 
     // MARK: - Public Funcs
@@ -57,12 +55,6 @@ final class ProtobufMissionUpdatingTableViewCell: UITableViewCell, NibReusable {
 
 // MARK: - Private Funcs
 private extension ProtobufMissionUpdatingTableViewCell {
-    /// Inits the UI.
-    func initUI() {
-        errorMessageLabel.textColor = ColorName.redTorch.color
-        contentView.backgroundColor = ColorName.greyShark.color
-        updatingView.backgroundColor = ColorName.greyShark.color
-    }
 
     /// Updates the error message label.
     ///

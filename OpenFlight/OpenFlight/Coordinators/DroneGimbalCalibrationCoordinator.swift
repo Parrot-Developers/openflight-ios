@@ -37,7 +37,8 @@ public final class DroneGimbalCalibrationCoordinator: Coordinator {
 
     // MARK: - Public Funcs
     public func start() {
-        let viewController = DroneGimbalCalibrationViewController.instantiate(coordinator: self)
+        let viewModel = DroneCalibrationViewModel()
+        let viewController = DroneGimbalCalibrationViewController.instantiate(coordinator: self, viewModel: viewModel)
         self.navigationController = NavigationController(rootViewController: viewController)
         self.navigationController?.isNavigationBarHidden = true
     }

@@ -93,9 +93,7 @@ private extension SettingsEndHoveringCell {
                                         showInfo: settingSegmentedEntry.showInfo,
                                         atIndexPath: IndexPath(),
                                         isSubmode: settingSegmentedEntry.isSubMode,
-                                        shouldShowBackground: false,
-                                        leadingConstraint: 0.0,
-                                        trailingConstraint: 0.0)
+                                        shouldShowBackground: false)
         }
     }
 
@@ -104,8 +102,7 @@ private extension SettingsEndHoveringCell {
         let settingSliderEntry = viewModel.endHoveringAltitudeEntry
         sliderCell.configureCell(settingEntry: settingSliderEntry,
                                  atIndexPath: IndexPath(),
-                                 shouldShowBackground: false,
-                                 sideConstraint: 0.0)
+                                 shouldShowBackground: false)
     }
 }
 

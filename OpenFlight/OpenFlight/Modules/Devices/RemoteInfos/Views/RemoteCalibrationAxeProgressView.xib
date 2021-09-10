@@ -32,7 +32,7 @@
                             <rect key="frame" x="0.0" y="0.0" width="359" height="52.5"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UcL-X2-gEp">
-                                    <rect key="frame" x="163" y="19" width="33.5" height="15"/>
+                                    <rect key="frame" x="161" y="17.5" width="37" height="17.5"/>
                                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                     <color key="textColor" name="default_text_color"/>
                                     <nil key="highlightedColor"/>
@@ -78,11 +78,11 @@
         </view>
     </objects>
     <resources>
-        <namedColor name="highlight_color">
-            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-        </namedColor>
         <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="highlight_color">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="white_albescent">
             <color red="0.87450980392156863" green="0.84705882352941175" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

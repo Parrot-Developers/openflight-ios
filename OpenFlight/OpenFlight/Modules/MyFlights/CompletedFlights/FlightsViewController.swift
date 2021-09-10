@@ -30,6 +30,7 @@
 
 import UIKit
 import CoreData
+import Combine
 
 /// Flight list ViewController.
 
@@ -41,14 +42,14 @@ final class FlightsViewController: UIViewController {
     @IBOutlet private weak var emptyLabelStack: UIStackView!
 
     // MARK: - Private Properties
-    private weak var coordinator: DashboardCoordinator?
-    private var flightItems: [FlightDataViewModel] = []
+    private var cancellables = Set<AnyCancellable>()
+    private var viewModel: FlightsViewModel!
+    private var flightItems: [FlightModel] = []
 
     // MARK: - Setup
-    static func instantiate(coordinator: DashboardCoordinator?) -> FlightsViewController {
+    static func instantiate(viewModel: FlightsViewModel) -> FlightsViewController {
         let viewController = StoryboardScene.FlightsViewController.initialScene.instantiate()
-        viewController.coordinator = coordinator
-
+        viewController.viewModel = viewModel
         return viewController
     }
 
@@ -64,13 +65,13 @@ final class FlightsViewController: UIViewController {
         tableView.register(cellType: FlightTableViewCell.self)
         emptyFlightsTitleLabel.text = L10n.dashboardMyFlightsEmptyListTitle
         emptyFlightsDecriptionLabel.text = L10n.dashboardMyFlightsEmptyListDesc
-        loadAllFlights()
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-
-        self.tableView.reloadData()
+        viewModel.flights
+            .sink { [unowned self] in
+                flightItems = $0
+                emptyLabelStack.isHidden = !flightItems.isEmpty
+                tableView.reloadData()
+            }
+            .store(in: &cancellables)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -78,7 +79,7 @@ final class FlightsViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     /// Update display when orientation changed.
@@ -97,20 +98,6 @@ final class FlightsViewController: UIViewController {
     override var prefersStatusBarHidden: Bool {
         return true
     }
-
-    // MARK: - Public Funcs
-    /// Load all flights saved in local database.
-    public func loadAllFlights() {
-        CoreDataManager.shared.loadAllFlightDataState(completion: { [weak self] flights in
-            guard let strongSelf = self else { return }
-
-            strongSelf.flightItems = flights.map({ state -> FlightDataViewModel in
-                return FlightDataViewModel(state: state)
-            })
-            strongSelf.emptyLabelStack.isHidden = !strongSelf.flightItems.isEmpty
-            strongSelf.tableView.reloadData()
-        })
-    }
 }
 
 // MARK: - UITableView DataSource
@@ -124,11 +111,12 @@ extension FlightsViewController: UITableViewDataSource {
         var showDate: Bool = true
         let item = flightItems[indexPath.row]
         if indexPath.row > 0,
-            let startDate = item.state.value.date,
-            let previousItemDate = flightItems[indexPath.row - 1].state.value.date {
+            let startDate = item.startTime,
+            let previousItemDate = flightItems[indexPath.row - 1].startTime {
             showDate = !previousItemDate.isInSameMonth(date: startDate)
         }
-        cell.configureCell(viewModel: flightItems[indexPath.row], showDate: showDate)
+        let cellViewModel = viewModel.cellViewModel(flight: flightItems[indexPath.row])
+        cell.configureCell(viewModel: cellViewModel, showDate: showDate)
         cell.layoutIfNeeded()
         return cell
     }
@@ -137,7 +125,7 @@ extension FlightsViewController: UITableViewDataSource {
 // MARK: - UITableView Delegate
 extension FlightsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        coordinator?.startFlightDetails(viewModel: flightItems[indexPath.row])
+        viewModel.didTapOn(flight: flightItems[indexPath.row])
     }
 
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -146,9 +134,8 @@ extension FlightsViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let item = flightItems.remove(at: indexPath.row)
-            item.removeFlight()
-            tableView.reloadData()
+            let flight = flightItems.remove(at: indexPath.row)
+            viewModel.delete(flight: flight)
         }
     }
 }

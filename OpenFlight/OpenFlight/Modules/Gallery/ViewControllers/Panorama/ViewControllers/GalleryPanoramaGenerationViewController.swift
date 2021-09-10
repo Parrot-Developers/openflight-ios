@@ -206,6 +206,8 @@ private extension GalleryPanoramaGenerationViewController {
                     if status == .success {
                         self?.updateSteps(status)
                         self?.coordinator?.dismissPanoramaGenerationScreen()
+                    } else if status == .failed {
+                        self?.coordinator?.dismissPanoramaGenerationScreen()
                     }
                 }
             }

@@ -77,8 +77,7 @@ private extension DashboardMyAccountViewController {
     func initUI() {
         self.connectedAccountsLabel.makeUp(with: .small,
                                            and: .white50)
-        self.addMyAccountLabel.makeUp(with: .regular,
-                                      and: .white50)
+        self.addMyAccountLabel.makeUp(and: .white50)
         self.connectedAccountsLabel.text = L10n.dashboardConnectedAccounts.uppercased()
         self.addMyAccountLabel.text = Style.plusSign + L10n.dashboardAddMyAccount
         self.addMyAccountView.cornerRadiusedWith(backgroundColor: .clear,

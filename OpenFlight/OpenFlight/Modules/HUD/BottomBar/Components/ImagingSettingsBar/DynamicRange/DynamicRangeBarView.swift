@@ -43,13 +43,11 @@ final class DynamicRangeBarView: UIView, NibOwnerLoadable, BarItemModeDisplayer 
             addSegmentedBar()
         }
     }
-    var modeKey: String? {
-        return self.viewModel?.state.value.mode?.key
-    }
+
+    var barId: String? { viewModel?.barId }
 
     // MARK: - Private Properties
-    private var segmentedBarView: SegmentedBarView<DynamicRangeBarState>?
-    private var secondaryViewModel: DynamicRangeBarViewModel?
+    private var segmentedBarView: SegmentedBarView<ImagingBarState>?
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
@@ -73,7 +71,7 @@ private extension DynamicRangeBarView {
     /// Adds segmented bar to view.
     func addSegmentedBar() {
         removeSegmentedBar()
-        let segmentedBarView = SegmentedBarView<DynamicRangeBarState>()
+        let segmentedBarView = SegmentedBarView<ImagingBarState>()
         segmentedBarView.viewModel = viewModel
         segmentedViewContainer.addWithConstraints(subview: segmentedBarView)
         self.segmentedBarView = segmentedBarView

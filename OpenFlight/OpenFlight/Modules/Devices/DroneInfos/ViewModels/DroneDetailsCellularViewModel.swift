@@ -49,20 +49,38 @@ final class DroneDetailsCellularViewModel {
     @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
 
     // MARK: - Private Properties
-    private var cellularRef: Ref<Cellular>?
-    private var networkControlRef: Ref<NetworkControl>?
     private var connectionStateRef: Ref<DeviceState>?
-    private var academyApiManager: AcademyApiManager = AcademyApiManager()
+    private var academyApiService: AcademyApiService
     private var cancellables = Set<AnyCancellable>()
-    private var currentDrone = Services.hub.currentDroneHolder
+    private var currentDrone: CurrentDroneHolder
+    private var pairingService: CellularPairingService
 
     init() {
-        Services.hub.currentDroneHolder.dronePublisher
+        self.academyApiService = Services.hub.academyApiService
+        self.currentDrone = Services.hub.currentDroneHolder
+        self.pairingService = Services.hub.drone.cellularPairingService
+
+        currentDrone.dronePublisher
             .sink { [unowned self] drone in
-                listenCellular(drone)
-                listenNetworkControl(drone)
                 listenConnectionState(drone: drone)
-                updateCellularState(drone: drone)
+            }
+            .store(in: &cancellables)
+
+        pairingService.operatorNamePublisher
+            .sink { [unowned self] operatorName in
+                self.operatorName = operatorName
+            }
+            .store(in: &cancellables)
+
+        pairingService.cellularStatusPublisher
+            .sink { [unowned self] cellularStatus in
+                self.cellularStatus = cellularStatus
+            }
+            .store(in: &cancellables)
+
+        pairingService.unpairStatePublisher
+            .sink { [unowned self] unpairState in
+                self.unpairState = unpairState
             }
             .store(in: &cancellables)
     }
@@ -84,53 +102,13 @@ extension DroneDetailsCellularViewModel {
         return shouldDisplay
     }
 
-    /// Unpairs the current drone.
-    func forgetDrone() {
-        let reachability = try? Reachability()
-        guard reachability?.isConnected == true else {
-            self.updateResetStatus(with: .noInternet(context: .details))
-            return
-        }
-
-        // Get the list of paired drone.
-        academyApiManager.performPairedDroneListRequest { pairedDroneList in
-            let uid = self.currentDrone.drone.uid
-
-            // Academy calls are asynchronous update should be done on main thread
-            DispatchQueue.main.async {
-                guard pairedDroneList != nil,
-                      pairedDroneList?.isEmpty == false
-                else {
-                    self.updateResetStatus(with: .forgetError(context: .details))
-                    return
-                }
-            }
-
-            pairedDroneList?
-                .compactMap { $0.serial == uid ? $0.commonName : nil }
-                .forEach { commonName in
-                    // Unpair the drone.
-                    self.academyApiManager.unpairDrone(commonName: commonName) { _, error in
-                        // Academy calls are asynchronous update should be done on main thread
-                        DispatchQueue.main.async {
-                            guard error == nil else {
-                                self.updateResetStatus(with: .forgetError(context: .details))
-                                return
-                            }
-
-                            self.updateResetStatus(with: .done)
-                            self.removeFromPairedList(with: uid)
-                            self.resetPairingDroneListIfNeeded()
-                            self.updateCellularStatus(with: .userNotPaired)
-                        }
-                    }
-                }
-        }
+    func unpairAllUsers() {
+        pairingService.startUnpairProcessRequest()
     }
 
     /// Updates number of paired users.
     func updatesPairedUsersCount() {
-        academyApiManager.performPairedDroneListRequest { pairedDroneList in
+        academyApiService.performPairedDroneListRequest { pairedDroneList in
             let uid = self.currentDrone.drone.uid
             guard pairedDroneList != nil,
                   pairedDroneList?.isEmpty == false,
@@ -140,7 +118,7 @@ extension DroneDetailsCellularViewModel {
                 return
             }
 
-            self.academyApiManager.pairedUsersCounts(commonName: commonName) { number, error in
+            self.academyApiService.pairedUsersCount(commonName: commonName) { number, error in
                 DispatchQueue.main.async {
                     self.updateConnectedUser(usersCount: error == nil ? number : 0)
                 }
@@ -151,19 +129,6 @@ extension DroneDetailsCellularViewModel {
 
 // MARK: - Private Funcs
 private extension DroneDetailsCellularViewModel {
-    /// Starts watcher for drone cellular access state.
-    func listenCellular(_ drone: Drone) {
-        cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] _ in
-            self?.updateCellularState(drone: drone)
-        }
-    }
-
-    /// Starts watcher for drone network control.
-    func listenNetworkControl(_ drone: Drone) {
-        networkControlRef = drone.getPeripheral(Peripherals.networkControl) { [weak self] _ in
-            self?.updateCellularState(drone: drone)
-        }
-    }
 
     /// Starts watcher for drone's connection state.
     ///
@@ -172,58 +137,6 @@ private extension DroneDetailsCellularViewModel {
         connectionStateRef = drone.getState { [weak self] state in
             self?.connectionState = state?.connectionState ?? .disconnected
         }
-    }
-
-    /// Updates cellular state.
-    func updateCellularState(drone: Drone) {
-        var status: DetailsCellularStatus = .noState
-
-        guard let cellular = drone.getPeripheral(Peripherals.cellular),
-              drone.isConnected == true else {
-            updateCellularStatus(with: status)
-            return
-        }
-
-        // Update the current cellular state.
-        let networkControl = drone.getPeripheral(Peripherals.networkControl)
-        let cellularLink = networkControl?.links.first(where: { $0.type == .cellular })
-        let isDronePaired: Bool = drone.isAlreadyPaired == true
-
-        if cellularLink?.status == .running,
-           isDronePaired {
-            status = .cellularConnected
-        } else if cellular.mode.value == .nodata {
-            status = .noData
-        } else if cellular.simStatus == .absent {
-            status = .simNotDetected
-        } else if cellular.simStatus == .unknown {
-            status = .simNotRecognized
-        } else if cellular.simStatus == .locked {
-            if cellular.pinRemainingTries == 0 {
-                status = .simBlocked
-            } else {
-                status = .simLocked
-            }
-        } else if !isDronePaired {
-            status = .userNotPaired
-        } else if cellularLink?.status == .error || cellularLink?.error != nil {
-            status = .connectionFailed
-        } else if cellular.modemStatus != .online {
-            status = .modemStatusOff
-        } else if cellular.registrationStatus == .notRegistered {
-            status = .notRegistered
-        } else if cellular.networkStatus == .error {
-            status = .networkStatusError
-        } else if cellular.networkStatus == .denied {
-            status = .networkStatusDenied
-        } else if cellular.isAvailable {
-            status = .cellularConnecting
-        } else {
-            status = .noState
-        }
-
-        updateCellularStatus(with: status)
-        updateOperatorName(operatorName: cellular.operator)
     }
 
     /// Updates drones paired list by removing element after unpairing process.
@@ -267,21 +180,5 @@ private extension DroneDetailsCellularViewModel {
     ///     - usersCount: number of paired users
     func updateConnectedUser(usersCount: Int?) {
         self.usersCount = usersCount ?? 0
-    }
-
-    /// Updates cellular status.
-    ///
-    /// - Parameters:
-    ///     - cellularStatus: 4G status to update
-    func updateCellularStatus(with cellularStatus: DetailsCellularStatus) {
-        self.cellularStatus = cellularStatus
-    }
-
-    /// Updates the reset status.
-    ///
-    /// - Parameters:
-    ///     - unpairState: current drone unpair state
-    func updateResetStatus(with unpairState: UnpairDroneState) {
-        self.unpairState = unpairState
     }
 }

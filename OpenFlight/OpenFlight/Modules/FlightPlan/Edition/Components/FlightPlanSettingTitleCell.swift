@@ -31,16 +31,23 @@
 import UIKit
 import Reusable
 
+protocol FlightPlanSettingTitleDelegate: AnyObject {
+    func dismiss()
+}
+
 /// Displays Flight Plan Settings panel title.
 final class FlightPlanSettingTitleCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet weak var backButton: UIButton!
+
+    // MARK: - Proreties
+    weak var delegate: FlightPlanSettingTitleDelegate?
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-
-        titleLabel.makeUp(with: .large)
+        titleLabel.makeUp(with: .large, and: .defaultTextColor)
     }
 
     // MARK: - Internal Funcs
@@ -48,7 +55,12 @@ final class FlightPlanSettingTitleCell: UITableViewCell, NibReusable {
     ///
     /// - Parameters:
     ///     - title: cell's title
-    func fill(with title: String) {
+    func fill(with title: String, and isImageHidden: Bool = true) {
         titleLabel.text = title
+        backButton.isHidden = isImageHidden
+    }
+
+    @IBAction func backButtonTouchedUpInside(_ sender: Any) {
+        delegate?.dismiss()
     }
 }

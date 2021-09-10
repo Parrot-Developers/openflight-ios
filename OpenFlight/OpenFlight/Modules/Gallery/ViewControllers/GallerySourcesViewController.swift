@@ -141,7 +141,7 @@ final class GallerySourcesViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
+        return .landscape
     }
 
     /// Update display when orientation changed.

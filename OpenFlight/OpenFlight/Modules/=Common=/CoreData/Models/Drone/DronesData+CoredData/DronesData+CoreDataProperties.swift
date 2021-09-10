@@ -38,10 +38,13 @@ extension DronesData {
 
     // MARK: - Properties
 
+    @NSManaged public var apcId: String!
     @NSManaged public var droneCommonName: String?
     @NSManaged public var droneSerial: String!
     @NSManaged public var modelId: String?
     @NSManaged public var pairedFor4G: Bool
+    @NSManaged public var synchroDate: Date?
+    @NSManaged public var synchroStatus: Int16
 
     // MARK: - Relationship
 
@@ -54,9 +57,12 @@ extension DronesData {
 
     /// Return DroneModel from DronesData type of NSManagedObject
     func model() -> DroneModel {
-        return DroneModel(droneSerial: droneSerial,
+        return DroneModel(apcId: apcId,
+                          droneSerial: droneSerial,
                           droneCommonName: droneCommonName,
                           modelId: modelId,
-                          pairedFor4G: pairedFor4G)
+                          pairedFor4G: pairedFor4G,
+                          synchroDate: synchroDate,
+                          synchroStatus: synchroStatus)
     }
 }

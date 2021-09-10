@@ -39,14 +39,29 @@ final class ExposureLockViewModel {
         exposureLockService.statePublisher
     }
 
+    /// Exposure lock button enabled publisher.
+    var exposureLockButtonEnabledPublisher: AnyPublisher<Bool, Never> {
+        exposureLockService.statePublisher
+            .combineLatest(exposureService.modePublisher)
+            .map { (state, mode) in
+                state.locked || (state == .unlocked && mode != .manual)
+            }
+            .eraseToAnyPublisher()
+    }
+
     // MARK: - Private Properties
+    /// Camera exposure service.
+    private unowned var exposureService: ExposureService
     /// Camera exposure lock service.
     private unowned var exposureLockService: ExposureLockService
 
     /// Constructor.
     ///
-    /// - Parameter exposureLockService: exposure lock service
-    init(exposureLockService: ExposureLockService) {
+    /// - Parameters:
+    ///   - exposureService: camera exposure service
+    ///   - exposureLockService: camera exposure lock service
+    init(exposureService: ExposureService, exposureLockService: ExposureLockService) {
+        self.exposureService = exposureService
         self.exposureLockService = exposureLockService
     }
 

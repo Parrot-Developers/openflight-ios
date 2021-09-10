@@ -40,20 +40,20 @@ private extension ULogTag {
 /// Output of `ObstacleAvoidanceMonitor`: exposes which OA mode is applied and the reason why
 public enum AppliedObstacleAvoidanceMode: Equatable {
     /// A flight plan is active, the OA mode is applied accordingly to its OA setting
-    case flightPlan(mode: ObstacleAvoidanceMode, recoveryId: String)
+    case flightPlan(mode: ObstacleAvoidanceMode, uuid: String)
     /// There's no active flight plan, the OA mode is applied accordingly to the latest user defined preference
     case userDefined(mode: ObstacleAvoidanceMode)
     /// A flight plan is active, but the user overrode its OA setting explicitely. The applied mode is the user's preferred one
-    case userOverrideFlightPlan(userMode: ObstacleAvoidanceMode, recoveryId: String, flightPlanMode: ObstacleAvoidanceMode)
+    case userOverrideFlightPlan(userMode: ObstacleAvoidanceMode, uuid: String, flightPlanMode: ObstacleAvoidanceMode)
 
     /// Direct access to the applied model
     var mode: ObstacleAvoidanceMode {
         switch self {
-        case .flightPlan(mode: let mode, recoveryId: _):
+        case .flightPlan(mode: let mode, uuid: _):
             return mode
         case .userDefined(mode: let mode):
             return mode
-        case .userOverrideFlightPlan(userMode: let userMode, recoveryId: _, flightPlanMode: _):
+        case .userOverrideFlightPlan(userMode: let userMode, uuid: _, flightPlanMode: _):
             return userMode
         }
     }
@@ -79,7 +79,7 @@ private extension DefaultsKeys {
     /// Storage key for user preferred OA mode
     var preferredObstacleAvoidanceMode: DefaultsKey<String?> { .init("key_preferredObstacleAvoidanceMode") }
     /// Storage to remember the last flight plan's id for which the user overrode the OA mode
-    var lastFlighPlantWithObstacleAvoidanceOverride: DefaultsKey<String?> { .init("key_lastFlighPlantWithObstacleAvoidanceOverrideRecoveryId") }
+    var lastFlighPlantWithObstacleAvoidanceOverride: DefaultsKey<String?> { .init("key_lastFlighPlantWithObstacleAvoidanceOverrideuuid") }
 }
 
 /// Implementation of `ObstacleAvoidanceMonitor`
@@ -109,8 +109,8 @@ public class ObstacleAvoidanceMonitorImpl {
             Defaults.preferredObstacleAvoidanceMode = newValue.rawValue
         }
     }
-    /// Last flight plan recovery id for which the user explicitely overrode the obstacle avoidance mode
-    private var lastFlightPlanOverridenRecoveryId: String? {
+    /// Last flight plan uuid for which the user explicitely overrode the obstacle avoidance mode
+    private var lastFlightPlanOverridenUuid: String? {
         get {
             return Defaults[\.lastFlighPlantWithObstacleAvoidanceOverride]
         }
@@ -161,7 +161,7 @@ private extension ObstacleAvoidanceMonitorImpl {
 
     /// Listen for active flight plan
     func listenActiveFlightPlan() {
-        activeFlightPlanWatcher.activeFlightPlanAndRecoveryIdPublisher.sink { [unowned self] _ in
+        activeFlightPlanWatcher.activeFlightPlanPublisher.sink { [unowned self] _ in
             applyRelevantMode()
         }
         .store(in: &cancellables)
@@ -183,15 +183,16 @@ private extension ObstacleAvoidanceMonitorImpl {
     /// Core algorithm to expose what case we're in
     /// - Returns: an enum representing the case and carrying the OA mode to apply
     func selectModeToApply() -> AppliedObstacleAvoidanceMode {
-        if let (flightPlan, recoveryId) = activeFlightPlanWatcher.activeFlightPlanAndRecoveryId {
+        if let flightPlan = activeFlightPlanWatcher.activeFlightPlan {
+            let uuid = flightPlan.uuid
             // We have a flight plan, by default its OA setting should override the user's one
-            let flightPlanMode = toMode(flightPlan.obstacleAvoidanceActivated)
-            if lastFlightPlanOverridenRecoveryId == recoveryId {
+            let flightPlanMode = toMode(flightPlan.dataSetting?.obstacleAvoidanceActivated)
+            if lastFlightPlanOverridenUuid == uuid {
                 // The user has already overriden the flight plan's OA setting, let's apply user's mode
-                return .userOverrideFlightPlan(userMode: userPreferredMode, recoveryId: recoveryId, flightPlanMode: flightPlanMode)
+                return .userOverrideFlightPlan(userMode: userPreferredMode, uuid: uuid, flightPlanMode: flightPlanMode)
             } else {
                 // There was no user override for this flight plan, let's apply the flight plan OA setting
-                return .flightPlan(mode: flightPlanMode, recoveryId: recoveryId)
+                return .flightPlan(mode: flightPlanMode, uuid: uuid)
             }
         } else {
             // No active flight plan, apply user's mode
@@ -221,8 +222,8 @@ extension ObstacleAvoidanceMonitorImpl: ObstacleAvoidanceMonitor {
         // Store the value
         userPreferredMode = mode
         // It there's an executing flight plan, remember we are overriding its OA mode
-        if let recoveryId = activeFlightPlanWatcher.activeFlightPlanAndRecoveryId?.1 {
-            lastFlightPlanOverridenRecoveryId = recoveryId
+        if let flightPlan = activeFlightPlanWatcher.activeFlightPlan {
+            lastFlightPlanOverridenUuid = flightPlan.uuid
         }
         // Apply
         applyRelevantMode()

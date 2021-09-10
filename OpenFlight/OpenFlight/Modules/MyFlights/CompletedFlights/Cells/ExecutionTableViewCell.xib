@@ -34,22 +34,22 @@
                         <rect key="frame" x="46" y="8" width="246" height="44"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nRv-Lr-ca2">
-                                <rect key="frame" x="0.0" y="0.0" width="37" height="24.5"/>
+                                <rect key="frame" x="0.0" y="0.0" width="33.5" height="27"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                 <color key="textColor" name="default_text_color"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="oXu-3r-iI7">
-                                <rect key="frame" x="0.0" y="28.5" width="72" height="15.5"/>
+                                <rect key="frame" x="0.0" y="31" width="66" height="13"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="F2x-9p-Ym8">
-                                        <rect key="frame" x="0.0" y="0.0" width="32" height="15.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="29" height="13"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yfr-QS-UTl">
-                                        <rect key="frame" x="40" y="0.0" width="32" height="15.5"/>
+                                        <rect key="frame" x="37" y="0.0" width="29" height="13"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>

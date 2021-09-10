@@ -74,20 +74,17 @@ extension AssetUtils {
     ///
     /// - Parameters:
     ///     - url: media Url
-    ///     - compression: image compression. Default: no compression
     ///     - completion: completion block
-    func loadImage(withURL url: URL, compression: CGFloat = 1.0, completion: @escaping (_ url: URL, _ image: UIImage?) -> Void) {
+    func loadImage(withURL url: URL, completion: @escaping (_ image: UIImage?) -> Void) {
         var resultImage: UIImage?
         DispatchQueue.global(qos: .background).async {
             if FileManager.default.fileExists(atPath: url.path) {
-                if let data = try? Data(contentsOf: url),
-                    let rawImage = UIImage(data: data) {
-                    let compressedData = rawImage.jpegData(compressionQuality: compression) ?? Data()
-                    resultImage = UIImage(data: compressedData)
+                if let data = try? Data(contentsOf: url) {
+                    resultImage = UIImage(data: data)
                 }
             }
             DispatchQueue.main.async {
-                completion(url, resultImage)
+                completion(resultImage)
             }
         }
     }
@@ -97,7 +94,7 @@ extension AssetUtils {
     /// - Parameters:
     ///     - url: media Url
     ///     - completion: completion block
-    func loadRawImage(withURL url: URL, completion: @escaping (_ url: URL, _ image: UIImage?) -> Void) {
+    func loadRawImage(withURL url: URL, completion: @escaping (_ image: UIImage?) -> Void) {
         var resultImage: UIImage?
         DispatchQueue.global(qos: .background).async {
             if FileManager.default.fileExists(atPath: url.path),
@@ -105,7 +102,7 @@ extension AssetUtils {
                 resultImage = UIImage(ciImage: outputImage)
             }
             DispatchQueue.main.async {
-                completion(url, resultImage)
+                completion(resultImage)
             }
         }
     }

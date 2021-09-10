@@ -103,16 +103,24 @@ extension ControlsSettingsMode: Equatable {
         }
     }
 
-    var joystickImage: UIImage {
+    func getJoystickImage(isRegularSizeClass: Bool = false) -> UIImage {
         switch self {
         case .mode1:
-            return Asset.Settings.Controls.controlMode1.image
+            return isRegularSizeClass
+                ? Asset.Settings.Controls.iPadControlMode1.image
+                : Asset.Settings.Controls.iphoneControlMode1.image
         case .mode2:
-            return Asset.Settings.Controls.controlMode2.image
+            return isRegularSizeClass
+                ? Asset.Settings.Controls.iPadControlMode2.image
+                : Asset.Settings.Controls.iphoneControlMode2.image
         case .mode3:
-            return Asset.Settings.Controls.controlMode3.image
+            return isRegularSizeClass
+                ? Asset.Settings.Controls.iPadControlMode3.image
+                : Asset.Settings.Controls.iphoneControlMode3.image
         case .mode4:
-            return Asset.Settings.Controls.controlMode4.image
+            return isRegularSizeClass
+                ? Asset.Settings.Controls.iPadControlMode4.image
+                : Asset.Settings.Controls.iphoneControlMode4.image
         }
     }
 
@@ -260,6 +268,7 @@ enum PilotingStyle: String, SettingMode, BarItemMode {
                 PilotingStyle.arcade]
     }
 
+    // TODO simplify this to remove arcade mode.
     var title: String {
         switch self {
         case .classical:

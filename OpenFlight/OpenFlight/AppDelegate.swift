@@ -32,11 +32,16 @@ import GroundSdk
 import SwiftyUserDefaults
 import CoreData
 
+public extension ULogTag {
+    static let appDelegate = ULogTag(name: "AppDelegate")
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - Public Properties
     var window: UIWindow?
-    lazy var persistentContainer: PersistentContainer = {
+
+    lazy var persistentContainer: NSPersistentContainer = {
         let container = PersistentContainer(name: "Model")
         container.loadPersistentStores { _, error in
             if let error = error {
@@ -47,24 +52,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }()
 
     // MARK: - Private Properties
-    /// Create a first groundSdk intance when Application delegate is created
-    private let groundSdk: GroundSdk = {
-        return AppDelegateSetup.sdkSetup()
-    }()
     /// Main coordinator of the application.
     private var appCoordinator: AppCoordinator!
     /// Service hub.
     private var services: ServiceHub!
-    /// Gutma log manager ref.
-    private var gutmaLogManager: Ref<GutmaLogManager>?
     /// Inits Grab view model.
     private var grabberViewModel: RemoteControlGrabberViewModel!
 
     // MARK: - Public Funcs
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // Setup GroundSdk
+        AppDelegateSetup.sdkSetup()
         // Create instance of services
-        Services.createInstance(variableAssetsService: VariableAssetsServiceImpl())
-        let services: ServiceHub = Services.hub
+        let services = Services.createInstance(variableAssetsService: VariableAssetsServiceImpl(),
+                                               persistentContainer: persistentContainer)
         self.services = services
 
         /// Sets up grabber view model
@@ -85,22 +86,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window?.rootViewController = self.appCoordinator.navigationController
         self.window?.makeKeyAndVisible()
 
-        // App setup.
-        gutmaLogManager = AppDelegateSetup.appSetup(application: application,
-                                                    persistentContainer: persistentContainer,
-                                                    groundSdk: groundSdk,
-                                                    dataManager: CoreDataManager.shared)
+        // Keep screen on while app is running (Enable).
+        application.isIdleTimerDisabled = true
+
+        // Enable device battery monitoring.
+        UIDevice.current.isBatteryMonitoringEnabled = true
 
         return true
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
         grabberViewModel.ungrabAll()
-        self.persistentContainer.saveContext()
+        do {
+            try persistentContainer.viewContext.save()
+        } catch let error as NSError {
+            ULog.e(.appDelegate, "Error: \(error), \(error.userInfo)")
+        }
     }
 
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        return UIInterfaceOrientationMask.all
+        return UIInterfaceOrientationMask.landscape
     }
 }
 
@@ -130,11 +135,10 @@ extension AppDelegate: ProtobufMissionsSetupProtocol {
 
 public class AppDelegateSetup {
     /// Setup GroundSDK.
-    public static func sdkSetup() -> GroundSdk {
+    public static func sdkSetup() {
         // Set optional config BEFORE starting GroundSdk
         #if DEBUG
         setenv("ULOG_LEVEL", "D", 1)
-        GroundSdkConfig.sharedInstance.enableUsbDebug = true
         #else
         if Bundle.main.isInHouseBuild {
             setenv("ULOG_LEVEL", "D", 1)
@@ -148,42 +152,7 @@ public class AppDelegateSetup {
         if Defaults.debugC == true {
             GroundSdkConfig.sharedInstance.autoSelectWifiCountry = false
         }
-        return GroundSdk()
+        _ = GroundSdk()
     }
 
-    /// Setup AppDelegate.
-    ///
-    /// - Parameters:
-    ///     - application: UIApplication
-    ///     - persistentContainer: PersistentContainer
-    ///     - groundSdk: GroundSdk
-    ///     - dataManager: CoreDataManager
-    /// - Returns: GutmaLogManager reference
-    public static func appSetup(application: UIApplication,
-                                persistentContainer: PersistentContainer,
-                                groundSdk: GroundSdk,
-                                dataManager: CoreDataManager) -> Ref<GutmaLogManager>? {
-        // Keep screen on while app is running (Enable).
-        application.isIdleTimerDisabled = true
-
-        // Enable device battery monitoring.
-        UIDevice.current.isBatteryMonitoringEnabled = true
-
-        // Start Core Data manager.
-        CoreDataManager.shared.setup(with: persistentContainer)
-
-        // Start listening gutmaLogManager and return its reference.
-        return groundSdk.getFacility(Facilities.gutmaLogManager) { gutmaLogManager in
-            guard let files = gutmaLogManager?.files,
-                  !files.isEmpty else {
-                return
-            }
-
-            dataManager.updateLocalFlights(newFiles: Array(files))
-            gutmaLogManager?.files.forEach { urlFile in
-                // Remove sdk's gutmas.
-                _ = gutmaLogManager?.delete(file: urlFile)
-            }
-        }
-    }
 }

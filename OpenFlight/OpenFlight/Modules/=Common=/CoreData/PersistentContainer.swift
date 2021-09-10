@@ -30,20 +30,8 @@
 import CoreData
 import GroundSdk
 
-/// Custom persistent container.
+/// Custom persistent container, so that other packages can load the OpenFlight's persistent store.
 
 public class PersistentContainer: NSPersistentContainer {
-    /// Save context.
-    ///
-    /// - Parameters:
-    ///     - backgroundContext: custom context if needed
-    public func saveContext(backgroundContext: NSManagedObjectContext? = nil) {
-        let context = backgroundContext ?? viewContext
-        guard context.hasChanges else { return }
-        do {
-            try context.save()
-        } catch let error as NSError {
-            ULog.e(.dataModelTag, "Error: \(error), \(error.userInfo)")
-        }
-    }
+
 }

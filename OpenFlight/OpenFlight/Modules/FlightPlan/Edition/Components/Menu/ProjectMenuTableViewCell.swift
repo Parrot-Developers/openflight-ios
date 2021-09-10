@@ -41,10 +41,10 @@ final class ProjectMenuTableViewCell: UITableViewCell, NibReusable {
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-        projectLabel.makeUp(with: .tiny, and: .white)
+        projectLabel.makeUp(with: .tiny, and: .defaultTextColor)
         projectLabel.text = L10n.flightPlanMenuProject.uppercased()
-        folderImageView.cornerRadiusedWith(backgroundColor: ColorName.white20.color, radius: Style.largeCornerRadius)
-        projectName.makeUp(with: .regular, and: .white)
+        folderImageView.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
+        projectName.makeUp(and: .defaultTextColor)
     }
 }
 

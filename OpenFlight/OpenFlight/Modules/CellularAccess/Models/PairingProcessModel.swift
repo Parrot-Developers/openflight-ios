@@ -30,7 +30,7 @@
 
 // MARK: - Internal Enums
 /// Describes each cellular pairing process step.
-enum PairingProcessStep {
+public enum PairingProcessStep {
     case notStarted
     case processing
     case challengeRequestSuccess
@@ -40,7 +40,7 @@ enum PairingProcessStep {
 }
 
 /// Describes each cellular pairing error.
-enum PairingProcessError {
+public enum PairingProcessError {
     case noError
     case connectionUnreachable
     case unableToConnect

@@ -30,18 +30,24 @@
 import Foundation
 import CoreData
 import GroundSdk
+import Combine
 
 public protocol ProjectRepository: AnyObject {
+
+    /// Publisher notifys updated projects
+    var projectsPublisher: AnyPublisher<[ProjectModel], Never> { get }
 
     /// Persist or update Project into CoreData
     /// - Parameters:
     ///    - project: ProjectModel to persist
-    func persist(_ project: ProjectModel)
+    ///    - byUserUpdate: Bool to indicate in case of modifications, if those are made by User or by synchro process.
+    func persist(_ project: ProjectModel, _ byUserUpdate: Bool)
 
     /// Persist or update ProjectsList into CoreData
     /// - Parameters:
     ///    - projectsList: ProjectsModelsList to persist
-    func persist(_ projectsList: [ProjectModel])
+    ///    - byUserUpdate: Bool to indicate in case of modifications, if those are made by User or by synchro process.
+    func persist(_ projectsList: [ProjectModel], _ byUserUpdate: Bool)
 
     /// Load Project from CoreData by UUID
     /// - Parameters:
@@ -50,7 +56,24 @@ public protocol ProjectRepository: AnyObject {
     /// - return:  ProjectModel object
     func loadProject(_ projectUuid: String?) -> ProjectModel?
 
-    /// Load all Projects from CoreData
+    /// Load Projects flagged tobeDeleted from CoreData
+    /// - return:  Projects list
+    func loadProjectsToRemove() -> [ProjectModel]
+
+    /// Load Project from CoreData by parrotCloudId
+    /// - Parameters:
+    ///     - parrotCloudId: int64 value of parrotCloudId
+    ///
+    /// - return:  ProjectModel object
+    func loadProject(_ parrotCloudId: Int64?) -> ProjectModel?
+
+    /// Executed projects
+    ///
+    /// - Returns: projects containing at least one already executed flight plan,
+    /// ordered by last execution date desc
+    func executedProjects() -> [ProjectModel]
+
+    /// Load all Projects from CoreData of current user
     /// - return : Array of ProjectModel
     func loadAllProjects() -> [ProjectModel]
 
@@ -59,17 +82,44 @@ public protocol ProjectRepository: AnyObject {
     ///     - projectUuid: projectUuid to remove
     ///
     func removeProject(_ projectUuid: String?)
+
+    /// Fetch flight plans of a project, ordered from newest to oldest
+    /// - Parameter project: the project
+    func flightPlans(of project: ProjectModel) -> [FlightPlanModel]
+
+    /// Fetch executed flight plans of a project, ordered from newest to oldest
+    /// - Parameter project: the project
+    func executedFlightPlan(of project: ProjectModel) -> [FlightPlanModel]
+
+    /// Migrate projects made by Anonymous user to current logged user
+    /// - Parameter completion: empty block indicates when process is finished
+    func migrateProjectsToLoggedUser(_ completion: @escaping () -> Void)
+
+    /// Migrate projects made by a Logged user to ANONYMOUS user
+    /// - Parameter completion: empty block indicates when process is finished
+    func migrateProjectsToAnonymous(_ completion: @escaping () -> Void)
 }
 
-public protocol ProjectSynchronizable {
-    /// Load ProjectsList to synchronize with Academy from CoreData
-    /// - return : Array of ProjectModel not synchronized
-    func loadProjectsListToSync() -> [ProjectModel]
-}
+extension CoreDataServiceIml: ProjectRepository {
 
-extension CoreDataManager: ProjectRepository {
+    public func flightPlans(of project: ProjectModel) -> [FlightPlanModel] {
+        self.project("uuid", project.uuid)
+            .first?
+            .flightPlans?
+            .compactMap { $0.model() }
+            .sorted(by: { $0.lastUpdate > $1.lastUpdate }) ?? []
+    }
 
-    public func persist(_ project: ProjectModel) {
+    public func executedFlightPlan(of project: ProjectModel) -> [FlightPlanModel] {
+        flightPlans(of: project)
+            .filter({ $0.lastMissionItemExecuted > 0 })
+    }
+
+    public var projectsPublisher: AnyPublisher<[ProjectModel], Never> {
+        return projects.eraseToAnyPublisher()
+    }
+
+    public func persist(_ project: ProjectModel, _ byUserUpdate: Bool = true) {
         // Prepare content to save.
         guard let managedContext = currentContext else { return }
 
@@ -77,7 +127,7 @@ extension CoreDataManager: ProjectRepository {
         let projectObject: NSManagedObject?
 
         // Check object if exists.
-        if let object = self.project(project.uuid) {
+        if let object = self.project("uuid", project.uuid).first {
             // Use persisted object.
             projectObject = object
         } else {
@@ -91,165 +141,163 @@ extension CoreDataManager: ProjectRepository {
 
         guard let projectObj = projectObject as? Project else { return }
 
+        // To ensure synchronisation
+        // reset `synchroStatus´ when the modifications made by User
+        projectObj.synchroStatus = (((byUserUpdate) ? 0 : project.synchroStatus) ?? 0)
+        projectObj.apcId = project.apcId
         projectObj.uuid = project.uuid
         projectObj.title = project.title
         projectObj.type = project.type
         projectObj.lastUpdated = project.lastUpdated
         projectObj.cloudLastUpdate = project.cloudLastUpdate
         projectObj.parrotCloudId = project.parrotCloudId
-        projectObj.parrotCloudToBeDeleted = project.parrotCloudToBeDeleted ?? false
+        projectObj.parrotCloudToBeDeleted = project.parrotCloudToBeDeleted
         projectObj.synchroDate = project.synchroDate
-        projectObj.synchroStatus = project.synchroStatus ?? 0
-
-        /// Sets FlightPlans related to the current Project if they exist
-        if let flightPlanModels = project.flightPlanModels {
-            for flightPlanModel in flightPlanModels {
-                let flightPlan = FlightPlan(context: managedContext)
-                flightPlan.parrotCloudId = flightPlanModel.parrotCloudId
-                flightPlan.parrotCloudToBeDeleted = flightPlanModel.parrotCloudToBeDeleted ?? false
-                flightPlan.parrotCloudUploadUrl = flightPlanModel.parrotCloudUploadUrl
-                flightPlan.projectUuid = flightPlanModel.projectUuid
-                flightPlan.synchroDate = flightPlanModel.synchroDate
-                flightPlan.synchroStatus = flightPlanModel.synchroStatus ?? 0
-                flightPlan.dataStringType = flightPlanModel.dataStringType
-                flightPlan.uuid = flightPlanModel.uuid
-                flightPlan.version = flightPlanModel.version
-                flightPlan.customTitle = flightPlanModel.customTitle
-                flightPlan.thumbnailUuid = flightPlanModel.thumbnailUuid
-                flightPlan.dataString = flightPlanModel.dataString
-                flightPlan.pgyProjectId = flightPlanModel.pgyProjectId
-                flightPlan.mediaCustomId = flightPlanModel.mediaCustomId
-                flightPlan.state = flightPlanModel.state
-                flightPlan.lastMissionItemExecuted = flightPlanModel.lastMissionItemExecuted
-                flightPlan.recoveryId = flightPlanModel.recoveryId
-                flightPlan.mediaCount = flightPlanModel.mediaCount
-                flightPlan.uploadedMediaCount = flightPlanModel.uploadedMediaCount
-                flightPlan.lastUpdate = flightPlanModel.lastUpdate
-
-                /// Sets thumbnail related to the current FlightPlan if it exists
-                if let thumbnailModel = flightPlanModel.thumbnail {
-                    let thumbnail = Thumbnail(context: managedContext)
-                    thumbnail.uuid = thumbnailModel.uuid
-                    thumbnail.thumbnailData = thumbnailModel.thumbnailImageData
-                    thumbnail.synchroStatus = thumbnailModel.synchroStatus ?? 0
-                    thumbnail.synchroDate = thumbnailModel.synchroDate
-                    thumbnail.parrotCloudId = thumbnailModel.parrotCloudId
-                    thumbnail.parrotCloudToBeDeleted = thumbnailModel.parrotCloudToBeDeleted ?? false
-
-                    flightPlan.thumbnail = thumbnail
-                }
-
-                /// append the current FlightPlan to FlightPlans Set
-                projectObj.addToFlightPlan(flightPlan)
+        managedContext.perform {
+            do {
+                try managedContext.save()
+            } catch let error {
+                ULog.e(.dataModelTag, "Error during persist Project with UUID \(project.uuid) into Coredata: \(error.localizedDescription)")
             }
-        }
-
-        do {
-            try managedContext.save()
-        } catch let error {
-            ULog.e(.dataModelTag, "Error during persist Project into Coredata: \(error.localizedDescription)")
         }
     }
 
-    public func persist(_ projectsList: [ProjectModel]) {
+    public func persist(_ projectsList: [ProjectModel], _ byUserUpdate: Bool = true) {
         for project in projectsList {
-            self.persist(project)
+            self.persist(project, byUserUpdate)
         }
     }
 
     public func loadAllProjects() -> [ProjectModel] {
-        guard let managedContext = currentContext else {
-            return []
-        }
+        // Return projects of current User
+        return self.project("apcId", userInformation.apcId).sorted { $0.lastUpdated > $1.lastUpdated }.compactMap({$0.model()})
+    }
 
-        let fetchRequest: NSFetchRequest<Project> = Project.fetchRequest()
-        var projects = [ProjectModel]()
-
-        do {
-             projects = try managedContext.fetch(fetchRequest).compactMap({$0.model()})
-        } catch let error {
-            ULog.e(.dataModelTag, "Error fetching Projects from Coredata: \(error.localizedDescription)")
-            return []
-        }
-
-        /// Load FlightPlan related to each project if is not auto loaded by relationship
-        projects.indices.forEach {
-            if projects[$0].flightPlanModels == nil {
-                projects[$0].flightPlanModels = self.loadFlightPlans("projectUuid", projects[$0].uuid)
+    public func executedProjects() -> [ProjectModel] {
+        self.project("apcId", Services.hub.userInformation.apcId)
+            .filter { $0.flightPlans?.contains(where: { $0.lastMissionItemExecuted > 0 }) ?? false }
+            .sorted { project1, project2 in
+                let date1 = project1.flightPlans?
+                    .compactMap { $0.flightPlanFlights?.compactMap { $0.ofFlight?.startTime }.max() }
+                    .max()
+                let date2 = project2.flightPlans?
+                    .compactMap { $0.flightPlanFlights?.compactMap { $0.ofFlight?.startTime }.max() }
+                    .max()
+                guard let date1 = date1 else { return false }
+                guard let date2 = date2 else { return true }
+                return date1 > date2
             }
-        }
-
-        return projects
+            .map { $0.model() }
     }
 
     public func loadProject(_ projectUuid: String?) -> ProjectModel? {
-        return self.project(projectUuid)?.model()
+        return self.project("uuid", projectUuid).first?.model()
+    }
+
+    public func loadProjectsToRemove() -> [ProjectModel] {
+        return self.loadAllProjects().filter({ $0.parrotCloudToBeDeleted })
+    }
+
+    public func loadProject(_ parrotCloudId: Int64?) -> ProjectModel? {
+        guard let parrotCloudId = parrotCloudId else {
+            return nil
+        }
+        return self.project("parrotCloudId", "\(parrotCloudId)").first?.model()
     }
 
     public func removeProject(_ projectUuid: String?) {
         guard let managedContext = currentContext,
               let projectUuid = projectUuid,
-              let project = self.project(projectUuid) else {
+              let project = self.project("uuid", projectUuid).first else {
             return
+        }
+
+        // Remove related FlightPlans and thumbnails if they are not deleted automatically through relationship
+        if let relatedFlightPlans = project.flightPlans,
+           !relatedFlightPlans.isEmpty {
+            relatedFlightPlans.indices.forEach {
+                self.removeThumbnail(relatedFlightPlans[$0].thumbnailUuid ?? "")
+                relatedFlightPlans[$0].thumbnail = nil
+                relatedFlightPlans[$0].thumbnailUuid = nil
+                self.removeFlightPlan(relatedFlightPlans[$0].uuid)
+            }
+            project.flightPlans = nil
         }
 
         managedContext.delete(project)
 
-        do {
-            try managedContext.save()
-        } catch let error {
-            ULog.e(.dataModelTag, "Error removing Project with UUID : \(projectUuid) from CoreData : \(error.localizedDescription)")
+        managedContext.perform {
+            do {
+                try managedContext.save()
+            } catch let error {
+                ULog.e(.dataModelTag, "Error removing Project with UUID : \(projectUuid) from CoreData : \(error.localizedDescription)")
+            }
         }
     }
-}
 
-extension CoreDataManager: ProjectSynchronizable {
+    /// Listen CoreData's FlightPlanModel add and remove to refresh view.
+    @objc func managedObjectContextDidChange(notification: NSNotification) {
+        guard let userInfo = notification.userInfo else { return }
 
-    public func loadProjectsListToSync() -> [ProjectModel] {
-        guard let managedContext = currentContext else {
-            return []
+        // Check inserts.
+        if let inserts = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject>,
+           inserts.contains(where: { $0 is Project }) {
+            self.projects.send(self.loadAllProjects())
+        } else if let updates = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject>,
+            updates.contains(where: { $0 is Project }) {
+            self.projects.send(self.loadAllProjects())
+        }// Check deletes.
+        else if let deletes = userInfo[NSDeletedObjectsKey] as? Set<NSManagedObject>,
+            deletes.contains(where: { $0 is Project }) {
+            self.projects.send(self.loadAllProjects())
         }
+    }
 
+    public func migrateProjectsToLoggedUser(_ completion: @escaping () -> Void) {
         let fetchRequest: NSFetchRequest<Project> = Project.fetchRequest()
-        let predicate = NSPredicate(format: "synchroStatus == %@", NSNumber(value: false))
-        fetchRequest.predicate = predicate
+        guard let entityName = fetchRequest.entityName else {
+            return
+        }
+        migrateAnonymousDataToLoggedUser(for: entityName) {
+            completion()
+        }
+    }
 
-        do {
-            return try managedContext.fetch(fetchRequest).compactMap({$0.model()})
-        } catch let error {
-            ULog.e(.dataModelTag, "Error fetching Projects from Coredata: \(error.localizedDescription)")
-            return []
+    public func migrateProjectsToAnonymous(_ completion: @escaping () -> Void) {
+        let fetchRequest: NSFetchRequest<Project> = Project.fetchRequest()
+        guard let entityName = fetchRequest.entityName else {
+            return
+        }
+        migrateLoggedToAnonymous(for: entityName) {
+            completion()
         }
     }
 }
 
 // MARK: - Utils
-private extension CoreDataManager {
+extension CoreDataServiceIml {
 
-    func project(_ projectUuid: String?) -> Project? {
+    func project(_ key: String?, _ value: String?) -> [Project] {
         guard let managedContext = currentContext,
-              let projectUuid = projectUuid else {
-            return nil
+              let key = key,
+              let value = value else {
+            return []
         }
 
-        /// Fetch Project by UUID
+        /// Fetch Projects by Key Value
         let fetchRequest: NSFetchRequest<Project> = Project.fetchRequest()
-        let predicate = NSPredicate(format: "uuid == %@", projectUuid)
+        let predicate = NSPredicate(format: "%K == %@", key, value)
         fetchRequest.predicate = predicate
 
-        var project: Project?
+        var projects = [Project]()
 
         do {
-            project = try (managedContext.fetch(fetchRequest)).first
+            projects = try (managedContext.fetch(fetchRequest))
         } catch let error {
-            ULog.e(.dataModelTag, "No Project found with UUID : \(projectUuid) in CoreData : \(error.localizedDescription)")
-            return nil
+            ULog.e(.dataModelTag, "No Project found with \(key): \(value) in CoreData : \(error.localizedDescription)")
+            return []
         }
 
-        /// Load it's FlightPlans if are not auto loaded by relationship
-        if project?.flightPlan == nil {
-            project?.flightPlan = Set(self.flightPlan(["projectUuid": projectUuid]).map { $0 })
-        }
-        return project
+        return projects
     }
 }
