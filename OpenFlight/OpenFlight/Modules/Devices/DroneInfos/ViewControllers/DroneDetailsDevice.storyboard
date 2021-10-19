@@ -46,7 +46,7 @@
                                         </constraints>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="25" translatesAutoresizingMaskIntoConstraints="NO" id="aW3-Ed-Aa0">
-                                        <rect key="frame" x="92" y="309.66666666666669" width="230" height="243.00000000000006"/>
+                                        <rect key="frame" x="92" y="297" width="230" height="268"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NX0-MD-fc1" customClass="DroneComponentsStatusView" customModule="OpenFlight" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="0.0" width="230" height="230"/>
@@ -58,7 +58,7 @@
                                                 </constraints>
                                             </view>
                                             <stackView opaque="NO" contentMode="center" distribution="equalSpacing" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="9i8-0I-caz">
-                                                <rect key="frame" x="16.666666666666671" y="229.99999999999994" width="197" height="13"/>
+                                                <rect key="frame" x="16.666666666666671" y="255" width="197" height="13"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="9pS-TM-vjw">
                                                         <rect key="frame" x="0.0" y="0.0" width="89" height="13"/>
@@ -109,7 +109,6 @@
                                                 </subviews>
                                             </stackView>
                                         </subviews>
-                                        <variation key="heightClass=regular-widthClass=compact"/>
                                     </stackView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZJi-as-DcU">
                                         <rect key="frame" x="117" y="817" width="180" height="1"/>

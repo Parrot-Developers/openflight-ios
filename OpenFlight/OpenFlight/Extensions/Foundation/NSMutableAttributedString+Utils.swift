@@ -55,12 +55,30 @@ extension NSMutableAttributedString {
         append(NSAttributedString(string: String(format: "%.1lf", space),
                                   attributes: [
                                     NSAttributedString.Key.font: ParrotFontStyle.regular.font,
-                                    NSAttributedString.Key.foregroundColor: ColorName.blackPearl.color
+                                    NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor.color
         ]))
         append(NSAttributedString(string: String(format: " %@", L10n.galleryMemoryFree.uppercased()),
                                   attributes: [
                                     NSAttributedString.Key.font: ParrotFontStyle.tiny.font,
-                                    NSAttributedString.Key.foregroundColor: ColorName.blackPearl.color
+                                    NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor.color
+        ]))
+    }
+
+    /// Convenience init: creates an attributed string for given memory usage.
+    ///
+    /// - Parameters:
+    ///    - usage: memoryUsage
+    convenience init(withMemoryUsage usage: UInt64) {
+        self.init()
+        append(NSAttributedString(string: String(format: "%.d", usage),
+                                  attributes: [
+                                    NSAttributedString.Key.font: ParrotFontStyle.regular.font,
+                                    NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor.color
+        ]))
+        append(NSAttributedString(string: String(format: " %@", L10n.galleryMemoryFreeCompact.uppercased()),
+                                  attributes: [
+                                    NSAttributedString.Key.font: ParrotFontStyle.tiny.font,
+                                    NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor.color
         ]))
     }
 

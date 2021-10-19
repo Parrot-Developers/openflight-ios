@@ -49,7 +49,7 @@ public protocol UserRepository: AnyObject {
     func updateTokenForAnonymousUser(_ token: String)
 }
 
-extension CoreDataServiceIml: UserRepository {
+extension CoreDataServiceImpl: UserRepository {
 
     public func persist(_ user: User) {
         // Prepare content to save.
@@ -140,7 +140,7 @@ extension CoreDataServiceIml: UserRepository {
 }
 
 // MARK: - Utils
-private extension CoreDataServiceIml {
+private extension CoreDataServiceImpl {
 
     private func loadUser(_ key: String, _ value: String) -> UserParrot? {
         guard let managedContext = currentContext else { return nil }

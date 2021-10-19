@@ -29,8 +29,7 @@
 
 import ArcGIS
 
-/// Utility extension for `AGSMultipart`
-
+/// Utility extension for `AGSGeometry`.
 extension AGSGeometry {
     /// Makes envelope from multipart geometry with margins.
     ///
@@ -43,15 +42,14 @@ extension AGSGeometry {
                                                               lengthUnit: .meters(),
                                                               curveType: .geodesic)
         // Prevent from short flights display issue.
-        guard geodeticLength > ArcGISStyle.minimumFlightLineLength
-            else {
-                // Provide minimum envolope size to prevent from display issue.
-                return AGSEnvelope(center: extent.center,
-                                   width: ArcGISStyle.defaultEnvelopWidth,
-                                   height: ArcGISStyle.defaultEnvelopWidth)
+        guard geodeticLength > ArcGISStyle.minimumFlightLineLength else {
+            // Provide minimum envolope size to prevent from display issue.
+            return AGSEnvelope(center: extent.center,
+                               width: ArcGISStyle.defaultEnvelopWidth,
+                               height: ArcGISStyle.defaultEnvelopWidth)
         }
         let envelopeBuilder = AGSEnvelopeBuilder(spatialReference: .wgs84())
-        envelopeBuilder.union(with: self.extent)
+        envelopeBuilder.union(with: extent)
         envelopeBuilder.expand(byFactor: marginFactor)
 
         return envelopeBuilder.extent

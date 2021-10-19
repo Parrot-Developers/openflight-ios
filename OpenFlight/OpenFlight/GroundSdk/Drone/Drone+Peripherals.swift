@@ -34,6 +34,6 @@ public extension Drone {
     // MARK: - Internal Properties
     /// Provides current camera.
     var currentCamera: Camera2? {
-        return self.getPeripheral(Peripherals.mainCamera2)
+        return getPeripheral(Peripherals.mainCamera2)
     }
 }

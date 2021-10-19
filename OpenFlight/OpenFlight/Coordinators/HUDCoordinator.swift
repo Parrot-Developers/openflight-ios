@@ -38,14 +38,16 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
     public var parentCoordinator: Coordinator?
     public var showMissionLauncherPublisher: AnyPublisher<Bool, Never> { showMissionsLauncherSubject.eraseToAnyPublisher() }
     public var isMissionLauncherShown: Bool { showMissionsLauncherSubject.value }
+    public var canShowCellularPairingViews: Bool { criticalAlertViewModel.state.value.alertStack.isEmpty }
 
     // MARK: - Internal Properties
     private let criticalAlertViewModel = HUDCriticalAlertViewModel()
 
     // MARK: - Private Properties
     public private(set) unowned var services: ServiceHub
-    private weak var viewController: HUDViewController?
+    private weak var viewController: HUDViewController!
     private var cameraSlidersCoordinator: CameraSlidersCoordinator?
+    private var rightPanelCoordinator: Coordinator?
     private var cancellables = Set<AnyCancellable>()
     private var showMissionsLauncherSubject = CurrentValueSubject<Bool, Never>(false)
 
@@ -58,7 +60,14 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
     open func start() {
         let viewController = HUDViewController.instantiate(coordinator: self)
         self.viewController = viewController
+        viewController.loadViewIfNeeded()
         self.navigationController?.viewControllers = [viewController]
+        services.currentMissionManager.modePublisher
+            .sink { [unowned self] in
+                cleanRightPanel()
+                insertRightPanelIfNeeded(mode: $0)
+            }
+            .store(in: &cancellables)
         services.flight.gutmaWatcher.flightEnded
             .sink { [unowned self] in
                 displayFlightReport(flight: $0)
@@ -76,7 +85,7 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
     ///     - state: The alert state
     func updateCriticalAlertVisibility(with state: HUDCriticalAlertState?) {
         guard state?.canShowAlert == true else {
-            self.viewController?.showCellularPairingIfNeeded()
+            viewController?.showCellularPinCodeIfNeeded()
             return
         }
 
@@ -85,6 +94,32 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
 
     open func canShowCellularPairing() -> Bool {
         return criticalAlertViewModel.state.value.alertStack.isEmpty
+    }
+
+    func cleanRightPanel() {
+        guard let rightPanelCoordinator = rightPanelCoordinator,
+              let previousContentNavigationController = rightPanelCoordinator.navigationController else { return }
+        previousContentNavigationController.willMove(toParent: nil)
+        previousContentNavigationController.view.removeFromSuperview()
+        previousContentNavigationController.removeFromParent()
+        self.rightPanelCoordinator = nil
+    }
+
+    func insertRightPanelIfNeeded(mode: MissionMode) {
+        let rightPanelContainerControls: RightPanelContainerControls = viewController.rightPanelContainerControls
+        let splitControls: SplitControls = viewController.splitControls
+        guard mode.isRightPanelRequired,
+              let coordinator = mode.hudRightPanelContentProvider(services, splitControls, rightPanelContainerControls),
+              let parentViewController = viewController,
+              let childNavigationController = coordinator.navigationController else { return }
+        self.rightPanelCoordinator = coordinator
+        coordinator.parentCoordinator = self
+
+        childNavigationController.view.frame = rightPanelContainerControls.rightPanelContainerView.bounds
+
+        parentViewController.addChild(childNavigationController)
+        rightPanelContainerControls.rightPanelContainerView.addSubview(childNavigationController.view)
+        childNavigationController.didMove(toParent: parentViewController)
     }
 
     open func displayAuthentification() {
@@ -99,6 +134,13 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
     open func startDashboard() {
         let dashboardCoordinator = DashboardCoordinator(services: services)
         self.presentCoordinatorWithAnimation(childCoordinator: dashboardCoordinator, animationDirection: .fromLeft)
+    }
+
+    open func startFlightExecutionDetails(_ execution: FlightPlanModel) {
+        let dashboardCoordinator = DashboardCoordinator(services: services)
+        self.presentCoordinatorWithAnimation(childCoordinator: dashboardCoordinator, animationDirection: .fromLeft) {
+            dashboardCoordinator.startFlightExecutionDetails(execution)
+        }
     }
 }
 
@@ -132,7 +174,7 @@ extension HUDCoordinator {
 
     /// Starts drone infos coordinator.
     func startDroneInfos() {
-        let droneCoordinator = DroneCoordinator()
+        let droneCoordinator = DroneCoordinator(services: services)
         droneCoordinator.parentCoordinator = self
         droneCoordinator.start()
         self.present(childCoordinator: droneCoordinator)
@@ -148,16 +190,10 @@ extension HUDCoordinator {
 
     /// Starts drone calibration.
     func startDroneCalibration() {
-        let droneCoordinator = DroneCalibrationCoordinator()
+        let droneCoordinator = DroneCalibrationCoordinator(services: services)
         droneCoordinator.parentCoordinator = self
         droneCoordinator.startWithMagnetometerCalibration()
         self.present(childCoordinator: droneCoordinator)
-    }
-
-    /// Displays cellular pairing available screen.
-    func displayCellularPairingAvailable() {
-        dismiss()
-        presentModal(viewController: CellularConfigurationViewController.instantiate(coordinator: self))
     }
 
     /// Displays remote shutdown alert screen.
@@ -203,24 +239,6 @@ extension HUDCoordinator {
         presentModal(viewController: CellularAccessCardPinViewController.instantiate(coordinator: self))
     }
 
-    /// Dismisses the cellular configuration screen.
-    func dismissConfigurationScreen() {
-        dismiss {
-            if Defaults.isUserConnected {
-                NotificationCenter.default.post(name: .requestCellularPairingProcess,
-                                                object: nil,
-                                                userInfo: nil)
-            } else {
-                self.displayAuthentification()
-            }
-        }
-    }
-
-    /// Displays successful 4G pairing modal.
-    func displayPairingSuccess() {
-        presentModal(viewController: CellularPairingSuccessViewController.instantiate(coordinator: self))
-    }
-
     func showMissionLauncher() {
         viewController?.missionControls.showMissionLauncher()
         showMissionsLauncherSubject.value = true
@@ -236,8 +254,8 @@ extension HUDCoordinator {
 extension HUDCoordinator: HUDCriticalAlertDelegate {
     func dismissAlert() {
         dismiss()
-        criticalAlertViewModel.dimissCurrentAlert()
-        viewController?.showCellularPairingIfNeeded()
+        criticalAlertViewModel.onAlertDismissed()
+        viewController?.showCellularPinCodeIfNeeded()
     }
 
     func performAlertAction(alert: HUDCriticalAlertType?) {
@@ -245,14 +263,14 @@ extension HUDCoordinator: HUDCriticalAlertDelegate {
         case .droneAndRemoteUpdateRequired,
              .droneUpdateRequired:
             dismiss()
+            criticalAlertViewModel.onAlertDismissed()
             startDroneInfos()
         case .droneCalibrationRequired:
             dismiss()
+            criticalAlertViewModel.onAlertDismissed()
             startDroneCalibration()
-        case .tooMuchAngle:
-            dismissAlert()
         default:
-            dismiss()
+            dismissAlert()
         }
     }
 }

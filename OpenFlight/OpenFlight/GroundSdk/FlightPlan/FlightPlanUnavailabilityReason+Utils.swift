@@ -52,14 +52,9 @@ extension FlightPlanUnavailabilityReason {
 
 /// Utility extension for set of `FlightPlanUnavailabilityReason`.
 extension Set where Element == FlightPlanUnavailabilityReason {
-    /// Returns true if the set is empty or if it only contains non-blocking issue `.missingFlightPlanFile`.
-    var hasNoBlockingIssue: Bool {
-        return !self.contains(where: { $0 != .missingFlightPlanFile })
-    }
-
     /// Returns text to display for the highest priority unavailability reason.
     var errorText: String? {
         // TODO: wait specs to see if Comparable should be implemented to handle priority.
-        return self.sorted(by: { $0.rawValue < $1.rawValue }).first?.errorText
+        return sorted(by: { $0.rawValue < $1.rawValue }).first?.errorText
     }
 }

@@ -36,14 +36,6 @@ public protocol FlightPlanEditionViewControllerDelegate: AnyObject {
     /// - Parameters:
     ///    - shouldCenter: should center position on map
     func startFlightPlanEdition(shouldCenter: Bool)
-
-    /// Starts a new flight plan.
-    ///
-    /// - Parameters:
-    ///    - flightPlanProvider: flight plan provider
-    ///    - creationCompletion: call back that returns if a flight plan have been created
-    func startNewFlightPlan(flightPlanProvider: FlightPlanProvider,
-                            creationCompletion: @escaping (_ createNewFp: Bool) -> Void)
 }
 
 /// Protocol for `ManagePlansViewController` navigation.
@@ -60,8 +52,7 @@ public protocol FlightPlanManagerCoordinator: AnyObject {
 }
 
 /// Coordinator for flight plan planel.
-public final class FlightPlanPanelCoordinator: Coordinator,
-                                               FlightPlanEditionViewControllerDelegate {
+public final class FlightPlanPanelCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
@@ -71,7 +62,7 @@ public final class FlightPlanPanelCoordinator: Coordinator,
     private let services: ServiceHub
     private let topBarHiderIdentifier = "FlightPlanPanelCoordinator"
     private var splitControls: SplitControls?
-    private var flightPlanControls: FlightPlanControls?
+    private var rightPanelContainerControls: RightPanelContainerControls?
     private var managePlansViewModel: ManagePlansViewModel?
 
     // MARK: - Public Funcs
@@ -79,38 +70,30 @@ public final class FlightPlanPanelCoordinator: Coordinator,
         assert(false) // Forbidden start
     }
 
-    init(services: ServiceHub) {
+    public init(services: ServiceHub) {
         self.services = services
     }
 
     /// Starts the coordinator with the flight plan panel view controller.
     ///
     /// - Parameters:
-    ///     - flightPlanPanelVC: flight plan panel view controller
     ///     - splitControls: split controls
-    ///     - flightPlanControls: flight plan controls
-    func start(flightPlanPanelVC: FlightPlanPanelViewController,
-               splitControls: SplitControls,
-               flightPlanControls: FlightPlanControls) {
+    ///     - rightPanelContainerControls: flight plan controls
+    public func start(splitControls: SplitControls,
+                      rightPanelContainerControls: RightPanelContainerControls) {
+
+        // FlightPlanPanel : ViewModel
+        let viewModel = FlightPlanPanelViewModel(projectManager: services.flightPlan.projectManager,
+                                                 runStateProgress: services.flightPlan.run,
+                                                 currentMissionManager: services.currentMissionManager,
+                                                 coordinator: self, splitControls: splitControls)
+        // FlightPlanPanel : ViewController + viewModel
+        let flightPlanPanelVC = FlightPlanPanelViewController.instantiate(flightPlanPanelViewModel: viewModel)
+
         self.splitControls = splitControls
-        self.flightPlanControls = flightPlanControls
+        self.rightPanelContainerControls = rightPanelContainerControls
         self.navigationController = NavigationController(rootViewController: flightPlanPanelVC)
         self.navigationController?.isNavigationBarHidden = true
-    }
-
-    /// Displays the execution summary screen if there is one in the Flight Plan Provider.
-    ///
-    /// - Parameters:
-    ///     - executionId: id of flight plan execution
-    ///     - flightPlanProvider: Flight Plan Provider
-    public func startExecutionSummary(executionId: String, flightPlanProvider: FlightPlanProvider) {
-        guard let flightPlan = Services.hub.repos.flightPlan.loadFlightPlan("recoveryId", executionId),
-              let executionSummaryVC = flightPlanProvider.executionSummaryVC(flightPlan: flightPlan, coordinator: self),
-              navigationController?.viewControllers.count == 1 else {
-            return
-        }
-
-        push(executionSummaryVC, animated: true)
     }
 }
 
@@ -122,7 +105,8 @@ public extension FlightPlanPanelCoordinator {
         if shouldCenter {
             mapViewController.centerMapOnDroneOrUser()
         }
-        flightPlanControls?.viewModel.forceHidePanel(true)
+        rightPanelContainerControls?.viewModel.forceHidePanel(true)
+
         self.startFlightPlanEdition(mapViewController: mapViewController,
                                     mapViewRestorer: splitControls)
     }
@@ -131,19 +115,6 @@ public extension FlightPlanPanelCoordinator {
         guard let splitControls = splitControls,
             let mapViewController = splitControls.mapViewController else { return }
         mapViewController.centerMapOnDroneOrUser()
-    }
-
-    func startNewFlightPlan(flightPlanProvider: FlightPlanProvider,
-                            creationCompletion: @escaping (_ createNewFp: Bool) -> Void) {
-        guard let flightPlanCoordinator = flightPlanProvider.flightPlanCoordinator else { return }
-
-        // center map on user
-        if let splitControls = splitControls, let mapViewController = splitControls.mapViewController {
-            mapViewController.centerMapOnDroneOrUser()
-        }
-        flightPlanCoordinator.parentCoordinator = self
-        flightPlanCoordinator.startNewFlightPlan(flightPlanProvider: flightPlanProvider, creationCompletion: creationCompletion)
-        self.present(childCoordinator: flightPlanCoordinator, overFullScreen: true)
     }
 
     func back(animated: Bool = true) {
@@ -166,7 +137,8 @@ extension FlightPlanPanelCoordinator: FlightPlanManagerCoordinator {
         )
 
         let flightPlanListviewModel = FlightPlansListViewModel(manager: Services.hub.flightPlan.projectManager,
-                                                               flightPlanTypeStore: Services.hub.flightPlan.typeStore)
+                                                               flightPlanTypeStore: Services.hub.flightPlan.typeStore,
+                                                               cloudSynchroWatcher: Services.hub.cloudSynchroWatcher)
         viewModel.setupFlightPlanListviewModel(viewModel: flightPlanListviewModel)
 
         let viewController = ManagePlansViewController.instantiate(viewModel: viewModel)
@@ -299,10 +271,11 @@ extension FlightPlanPanelCoordinator: ExecutionsListDelegate {
         services.flightPlan.projectManager.loadEverythingAndOpen(flightPlan: flightPlan)
     }
 
-    public func startFlightDetails(flightPlan: FlightPlanModel) {
-        // TODO replace with flight details
+    public func startFlightExecutionDetails(_ flightPlan: FlightPlanModel) {
         back()
-        services.flightPlan.projectManager.loadEverythingAndOpen(flightPlan: flightPlan)
+        if let hudCoordinator = parentCoordinator as? HUDCoordinator {
+            hudCoordinator.startFlightExecutionDetails(flightPlan)
+        }
     }
 
     public func handleHistoryCellAction(with: FlightPlanModel, actionType: HistoryMediasActionType?) {

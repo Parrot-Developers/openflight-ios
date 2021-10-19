@@ -50,6 +50,7 @@ final class BehaviourModeButtonState: BarButtonState, EquatableState, Copying {
     var subtitle: String?
     var enabled: Bool = true
     var unavailableReason: [String: String] = [:]
+    var maxItems: Int?
 
     // MARK: - Init
     required init() { }

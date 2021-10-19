@@ -69,7 +69,7 @@ public protocol FlightPlanRunManager {
     func setup(flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand])
 
     /// Try to catch up on already running flight plan
-    func catchUp(lastMissionItemExecuted: Int)
+    func catchUp(lastMissionItemExecuted: Int, duration: TimeInterval)
 
     /// Forgets any previously loaded Flight Plan and stops updating itself
     func reset()
@@ -118,7 +118,7 @@ public enum FlightPlanRunningState: CustomStringConvertible {
             return nil
         case .idle(flightPlan: let flightPlan, _):
             return flightPlan
-        case .activationError(_):
+        case .activationError:
             return nil
         case .playing(_, flightPlan: let flightPlan, _):
             return flightPlan
@@ -266,7 +266,11 @@ private extension FlightPlanRunManagerImpl {
                         break
                     case .playing:
                         // Idle but not user initiated, means the flight plan stopped on its own
-                        handleFlightEnds(flightPlan: flightPlan) // State is updated here
+                        if pilotingItf.isPaused {
+                            updateState(.paused(flightPlan: flightPlan, startAvailability: startAvailability))
+                        } else {
+                            handleFlightEnds(flightPlan: flightPlan) // State is updated here
+                        }
                     case .paused:
                         // Pause did succeed
                         updateState(.paused(flightPlan: flightPlan, startAvailability: startAvailability))
@@ -288,9 +292,12 @@ private extension FlightPlanRunManagerImpl {
                         break
                     case .playing:
                         playDidStart(flightPlan: flightPlan) // State is updated here
-                    case .paused, .stopped:
+                    case .paused:
                         // We want to deactivate the itf, let's try again
                         _ = pilotingItf.deactivate()
+                    case .stopped:
+                        // We want to stop the itf, let's try again
+                        _ = pilotingItf.stop()
                     }
                 case .playing:
                     // Consistent with the current state = nothing changed
@@ -354,15 +361,12 @@ private extension FlightPlanRunManagerImpl {
     }
 
     func handleFlightEnds(flightPlan: FlightPlanModel) {
-        var completed = false
         var flightPlan = flightPlan
         if let latestItemExecuted = latestItemExecuted {
-            if latestItemExecuted >= lastMavlinkCommandIndex {
-                completed = true
-            }
             flightPlan = flightPlanManager.update(flightPlan: flightPlan, lastMissionItemExecuted: latestItemExecuted)
             self.flightPlan = flightPlan
         }
+        let completed = flightPlan.hasReachedLastWayPoint
         activeFlightPlanWatcher.flightPlanDidStop(flightPlan)
         updateState(.ended(completed: completed, flightPlan: flightPlan))
     }
@@ -393,11 +397,11 @@ private extension FlightPlanRunManagerImpl {
 
     /// Updates Flight Plan's completion progress.
     func updateProgress() {
-        guard let currentLocation = currentDroneHolder.drone.getInstrument(Instruments.gps)?.lastKnownLocation,
-              let lastPassedWayPointIndex = lastPassedWayPointIndex,
+        guard let lastPassedWayPointIndex = lastPassedWayPointIndex,
               let dataSetting = flightPlan?.dataSetting else { return }
 
-        let newProgress = dataSetting.completionProgress(with: currentLocation.agsPoint,
+        let currentLocation = currentDroneHolder.drone.getInstrument(Instruments.gps)?.lastKnownLocation
+        let newProgress = dataSetting.completionProgress(with: currentLocation?.agsPoint,
                                                          lastWayPointIndex: lastPassedWayPointIndex).rounded(toPlaces: Constants.progressRoundPrecision)
 
         progressSubject.value = newProgress
@@ -500,10 +504,11 @@ extension FlightPlanRunManagerImpl: FlightPlanRunManager {
                                missionItem: latestItemExecuted ?? 0)
     }
 
-    public func catchUp(lastMissionItemExecuted: Int) {
+    public func catchUp(lastMissionItemExecuted: Int, duration: TimeInterval) {
         guard let flightPlan = flightPlan else { return }
         wantedState = .playing
-        self.latestItemExecuted = lastMissionItemExecuted
+        latestItemExecuted = lastMissionItemExecuted
+        durationSubject.value = duration
         startRunningTimer()
         playDidStart(flightPlan: flightPlan)
     }
@@ -527,7 +532,7 @@ extension FlightPlanRunManagerImpl: FlightPlanRunManager {
         stopRunningTimer()
         guard let flightPlan = flightPlan else { return }
         wantedState = .none
-        _ = getPilotingItf()?.deactivate()
+        _ = getPilotingItf()?.stop()
         handleFlightEnds(flightPlan: flightPlan)
     }
 

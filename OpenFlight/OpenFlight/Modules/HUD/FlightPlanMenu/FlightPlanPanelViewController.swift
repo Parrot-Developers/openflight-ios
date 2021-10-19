@@ -61,6 +61,7 @@ final class FlightPlanPanelViewController: UIViewController {
     @IBOutlet private weak var buttonsStackView: UIStackView!
     @IBOutlet private weak var noFlightPlanLabel: UILabel!
     @IBOutlet private weak var cameraStreamingContainerView: UIView!
+    @IBOutlet private weak var gestureView: UIView!
     @IBOutlet private weak var progressViewContainer: UIView!
     @IBOutlet private weak var bottomStackViewSafeAreaTrailingConstraint: NSLayoutConstraint!
     @IBOutlet private weak var bottomStackViewSuperviewTrailingConstraint: NSLayoutConstraint!
@@ -77,20 +78,39 @@ final class FlightPlanPanelViewController: UIViewController {
     }
     var flightPlanPanelProgressView: FlightPlanPanelProgressView?
     var flightPlanPanelImageRateView: FlightPlanPanelImageRateView?
-    var flightPlanPanelStatusView: UIView?
 
     // MARK: - Private Properties
     private var flightPlanPanelViewModel: FlightPlanPanelViewModel!
     private weak var cameraStreamingViewController: HUDCameraStreamingViewController?
-    private var flightPlanPanelCoordinator: FlightPlanPanelCoordinator?
+    private weak var mapViewController: MapViewController?
+
+    private weak var flightPlanPanelCoordinator: FlightPlanPanelCoordinator?
     private var cancellables = [AnyCancellable]()
-    private var cancellableUpdating = [AnyCancellable]()
-    private var cancellableProgressView: AnyCancellable?
     private var cancellableImageRateView: AnyCancellable?
+
+    private var containerStatus: ContainerStatus = .streaming
 
     // MARK: - Private Enums
     private enum Constants {
         static let disableControlsDuration: TimeInterval = 0.75
+        static let buttonsPadding: CGFloat = 10.0
+        static let buttonDisabledAlpha: CGFloat = 0.6
+        static let buttonEnabledAlpha: CGFloat = 1
+    }
+
+    private enum ContainerStatus: Int, CustomStringConvertible {
+        /// Container is showing the map
+        case map
+        /// Container is showing the streaming
+        case streaming
+
+        /// Debug description.
+        public var description: String {
+            switch self {
+            case .map:          return "map"
+            case .streaming:    return "streaming"
+            }
+        }
     }
 
     // MARK: - Setup
@@ -104,39 +124,55 @@ final class FlightPlanPanelViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         initView()
+        initProgressView()
         bindViewModel()
         setupOrientationObserver()
-        panelDidHide()
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+        gestureView.addGestureRecognizer(tap)
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        initProgressView()
+        containerStatus = .streaming
         initImageRateView()
-        cancellableProgressView = flightPlanPanelViewModel.$progressModel
-            .compactMap({ $0 })
-            .sink(receiveValue: { [unowned self] model in
-                self.flightPlanPanelProgressView?.model = model
-            })
-
         cancellableImageRateView = flightPlanPanelViewModel.$imageRate
             .sink(receiveValue: { [unowned self] imageProvider in
                 self.flightPlanPanelImageRateView?.setup(
                     provider: .init(dataSettings: imageProvider?.dataSettings),
                     settings: imageProvider?.settings ?? [])
             })
+        startStream()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        panelDidShow()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        cancellableProgressView = nil
-        flightPlanPanelProgressView?.removeFromSuperview()
+        panelDidHide()
         cancellableImageRateView = nil
         flightPlanPanelImageRateView?.removeFromSuperview()
     }
 
     override var prefersStatusBarHidden: Bool {
         return true
+    }
+
+    @objc func handleTap(_ sender: UITapGestureRecognizer? = nil) {
+        switch containerStatus {
+        case .map:
+            startStream()
+            hideMiniMap()
+            containerStatus = .streaming
+            flightPlanPanelViewModel.showMap()
+        case .streaming:
+            stopStream()
+            showMiniMap()
+            containerStatus = .map
+            flightPlanPanelViewModel.showStream()
+        }
     }
 
     // MARK: - Deinit
@@ -149,19 +185,22 @@ final class FlightPlanPanelViewController: UIViewController {
 extension FlightPlanPanelViewController {
     /// Starts streaming component.
     func startStream() {
+        guard cameraStreamingViewController == nil else { return }
         let cameraStreamingVC = HUDCameraStreamingViewController.instantiate()
-        self.addChild(cameraStreamingVC)
+        addChild(cameraStreamingVC)
+
         cameraStreamingContainerView.addWithConstraints(subview: cameraStreamingVC.view)
         cameraStreamingVC.mode = .preview
         cameraStreamingVC.didMove(toParent: self)
-        self.cameraStreamingViewController = cameraStreamingVC
+        cameraStreamingViewController = cameraStreamingVC
+        cameraStreamingContainerView.isExclusiveTouch = true
     }
 
     /// Stops streaming component.
     func stopStream() {
-        self.cameraStreamingContainerView.subviews.first?.removeFromSuperview()
-        self.cameraStreamingViewController?.removeFromParent()
-        self.cameraStreamingViewController = nil
+        cameraStreamingContainerView.subviews.first?.removeFromSuperview()
+        cameraStreamingViewController?.removeFromParent()
+        cameraStreamingViewController = nil
     }
 
     /// Panel did show.
@@ -172,8 +211,31 @@ extension FlightPlanPanelViewController {
     /// Panel did hide.
     func panelDidHide() {
         self.view.isHidden = true
+        flightPlanPanelViewModel.showMap()
+        if containerStatus != .streaming {
+            hideMiniMap()
+            startStream()
+            containerStatus = .streaming
+        }
     }
 
+    /// Show the map in container
+    func showMiniMap() {
+        let mapViewControllerVC = MapViewController.instantiate()
+        self.addChild(mapViewControllerVC)
+        cameraStreamingContainerView.addWithConstraints(subview: mapViewControllerVC.view)
+        mapViewControllerVC.didMove(toParent: self)
+        mapViewController = mapViewControllerVC
+        mapViewController?.clearGraphics()
+        cameraStreamingContainerView.isUserInteractionEnabled = false
+    }
+
+    /// Hide the map in container.
+    func hideMiniMap() {
+        cameraStreamingContainerView.subviews.first?.removeFromSuperview()
+        mapViewController?.removeFromParent()
+        mapViewController = nil
+    }
 }
 
 // MARK: - Actions
@@ -208,6 +270,8 @@ private extension FlightPlanPanelViewController {
 
     /// Edit button touched up inside.
     @IBAction func editButtonTouchedUpInside(_ sender: Any) {
+        containerStatus = .streaming
+        flightPlanPanelViewModel.showMap()
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.edit.name,
                              newValue: nil,
                              logType: .button)
@@ -226,9 +290,13 @@ private extension FlightPlanPanelViewController {
 
 // MARK: - Private Funcs
 private extension FlightPlanPanelViewController {
+
     /// Inits view.
     func initView() {
         pauseButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
+        pauseButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: Constants.buttonsPadding, bottom: 0, right: -Constants.buttonsPadding)
+        pauseButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: Constants.buttonsPadding)
+        pauseButton.setImage(Asset.Common.Icons.pause.image, for: .normal)
         projectNameLabel.text = L10n.flightPlanMenuProject.uppercased()
         folderButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
         historyButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
@@ -242,6 +310,7 @@ private extension FlightPlanPanelViewController {
         editButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
         editButton.tintColor = ColorName.defaultTextColor.color
         editButton.makeup(with: .large, color: .defaultTextColor)
+        editButton.contentMode = .center
         replayButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
         replayButton.tintColor = ColorName.defaultTextColor.color
         replayButton.makeup(with: .large, color: .defaultTextColor)
@@ -253,21 +322,21 @@ private extension FlightPlanPanelViewController {
     func initProgressView() {
         let progressView = FlightPlanPanelProgressView(frame: progressViewContainer.frame)
         progressViewContainer.addWithConstraints(subview: progressView)
-        self.flightPlanPanelProgressView = progressView
+        flightPlanPanelProgressView = progressView
     }
 
     /// Inits progress view.
     func initImageRateView() {
         let imageRateView = FlightPlanPanelImageRateView(frame: imageMenuView.frame)
         imageMenuView.addWithConstraints(subview: imageRateView)
-        self.flightPlanPanelImageRateView = imageRateView
+        flightPlanPanelImageRateView = imageRateView
     }
 
     private func updateButtons(_ information: FlightPlanPanelViewModel.ButtonsInformation) {
 
-        self.playButton.isEnabled = information.areEnabled
-        self.stopButton.isEnabled = information.areEnabled
-        self.pauseButton.isEnabled = information.areEnabled
+        playButton.isEnabled = information.areEnabled
+        stopButton.isEnabled = information.areEnabled
+        pauseButton.isEnabled = information.areEnabled
 
         switch information.startButtonState {
         case .canPlay:
@@ -354,7 +423,12 @@ private extension FlightPlanPanelViewController {
         flightPlanPanelViewModel.$extraViews
             .sink { [unowned self] in flightPlanPanelProgressView?.setExtraViews($0) }
             .store(in: &cancellables)
-
+        flightPlanPanelViewModel.$progressModel
+            .compactMap({ $0 })
+            .sink(receiveValue: { [unowned self] model in
+                self.flightPlanPanelProgressView?.model = model
+            })
+            .store(in: &cancellables)
         flightPlanPanelViewModel.$createFirstTitle
             .sink { [unowned self] in
                 self.infoLabel.text = $0 ?? ""
@@ -368,74 +442,79 @@ private extension FlightPlanPanelViewController {
     }
 
     private func hiddeAllButtons() {
-        self.pauseButton.isHidden = true
-        self.playButton.isHidden = true
-        self.stopButton.isHidden = true
-        self.actionButton.isHidden = true
-        self.flightPlanPanelProgressView?.isHidden = true
-        self.editButton.isHidden = true
-        self.projectView.isHidden = true
-        self.noFlightPlanLabel.isHidden = true
-        self.historyButton.isHidden = true
-        self.stopButton.isHidden = true
-        self.actionButton.isHidden = true
-        self.replayButton.isHidden = true
-        self.emptyViews?.forEach({ $0.isHidden = true })
+        pauseButton.isHidden = true
+        playButton.isHidden = true
+        stopButton.isHidden = true
+        actionButton.isHidden = true
+        flightPlanPanelProgressView?.isHidden = true
+        editButton.isHidden = true
+        projectView.isHidden = true
+        noFlightPlanLabel.isHidden = true
+        historyButton.isHidden = true
+        stopButton.isHidden = true
+        actionButton.isHidden = true
+        replayButton.isHidden = true
+        emptyViews?.forEach({ $0.isHidden = true })
     }
 
     private func displayCreationState() {
-        self.editButton.setTitle(flightPlanPanelViewModel.newButtonTitle ?? "", for: .normal)
-        self.editButton.setImage(nil, for: .normal)
-        self.editButton.setTitleColor(ColorName.white.color, for: .normal)
-        self.editButton.backgroundColor = ColorName.highlightColor.color
-        self.editButton.isHidden = false
-        self.noFlightPlanLabel.isHidden = false
+        editButton.setTitle(flightPlanPanelViewModel.newButtonTitle ?? "", for: .normal)
+        editButton.setImage(nil, for: .normal)
+        editButton.setTitleColor(ColorName.white.color, for: .normal)
+        editButton.backgroundColor = ColorName.highlightColor.color
+        editButton.isHidden = false
+        noFlightPlanLabel.isHidden = false
     }
 
     private func displayEditionState(_ hasHistory: Bool) {
-        self.playButton.isHidden = false
-        self.flightPlanPanelProgressView?.isHidden = false
-        self.editButton.setTitle("", for: .normal)
-        self.editButton.setImage(Asset.Common.Icons.iconEdit.image, for: .normal)
-        self.editButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
-        self.editButton.setTitleColor(ColorName.white.color, for: .normal)
-        self.projectView.isHidden = false
-        self.actionButton.isHidden = false
-        self.buttonsStackView.distribution = .fillEqually
-        self.historyButton.isHidden = !hasHistory
+        playButton.isHidden = false
+        flightPlanPanelProgressView?.isHidden = false
+        editButton.setTitle("", for: .normal)
+        editButton.setImage(Asset.Common.Icons.iconEdit.image, for: .normal)
+        editButton.contentMode = .center
+        editButton.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
+        editButton.setTitleColor(ColorName.white.color, for: .normal)
+        projectView.isHidden = false
+        actionButton.isHidden = false
+        buttonsStackView.distribution = .fillEqually
+        historyButton.isHidden = false
+        historyButton.isEnabled = hasHistory
+        historyButton.alpha = hasHistory ? Constants.buttonEnabledAlpha : Constants.buttonDisabledAlpha
     }
 
     private func displayPlayingState(duration: TimeInterval) {
-        self.pauseButton.isHidden = false
-        self.flightPlanPanelProgressView?.isHidden = false
-        self.projectView.isHidden = false
-        self.stopButton.isHidden = false
-        self.pauseButton.setTitle(duration.formattedHmsString, for: .normal)
-        self.buttonsStackView.distribution = .fillProportionally
+        pauseButton.isHidden = false
+        flightPlanPanelProgressView?.isHidden = false
+        projectView.isHidden = false
+        stopButton.isHidden = false
+        pauseButton.setTitle(duration.formattedHmsString, for: .normal)
+        buttonsStackView.distribution = .fillProportionally
     }
 
     private func displayPausedState() {
-        self.playButton.isHidden = false
-        self.stopButton.isHidden = false
-        self.flightPlanPanelProgressView?.isHidden = false
-        self.projectView.isHidden = false
-        self.buttonsStackView.distribution = .fillEqually
+        playButton.isHidden = false
+        stopButton.isHidden = false
+        flightPlanPanelProgressView?.isHidden = false
+        projectView.isHidden = false
+        buttonsStackView.distribution = .fillEqually
     }
 
     private func displayResumableState(hasHistory: Bool) {
-        self.playButton.isHidden = false
-        self.replayButton.isHidden = false
-        self.flightPlanPanelProgressView?.isHidden = false
-        self.projectView.isHidden = false
-        self.buttonsStackView.distribution = hasHistory ? .fillEqually : .fillProportionally
-        self.historyButton.isHidden = !hasHistory
+        playButton.isHidden = false
+        replayButton.isHidden = false
+        flightPlanPanelProgressView?.isHidden = false
+        projectView.isHidden = false
+        buttonsStackView.distribution = hasHistory ? .fillEqually : .fillProportionally
+        historyButton.isHidden = false
+        historyButton.isEnabled = hasHistory
+        historyButton.alpha = hasHistory ? Constants.buttonEnabledAlpha : Constants.buttonDisabledAlpha
     }
 
     private func displayRTHState() {
-        self.stopButton.isHidden = false
-        self.flightPlanPanelProgressView?.isHidden = false
-        self.projectView.isHidden = false
-        self.emptyViews?.forEach({ $0.isHidden = false })
-        self.buttonsStackView.distribution = .fillProportionally
+        stopButton.isHidden = false
+        flightPlanPanelProgressView?.isHidden = false
+        projectView.isHidden = false
+        emptyViews?.forEach({ $0.isHidden = false })
+        buttonsStackView.distribution = .fillProportionally
     }
 }

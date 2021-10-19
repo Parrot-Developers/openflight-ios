@@ -39,8 +39,8 @@ public final class FirmwareAndMissionsInteractor {
     // MARK: - Private Properties
     /// All missions on files.
     private let allMissionsOnFiles = ProtobufMissionsToUploadFinder.allProtobufMissionsOnFiles()
-    /// The `ProtobufMissionsUpdateViewController` data source.
-    private var firmwareAndMissionsDataSource = ProtobufMissionsUpdateDataSource()
+    /// The `DroneFirmwaresViewController` data source.
+    private var firmwareAndMissionsDataSource = DroneFirmwaresDataSource()
     /// The `FirmwareAndMissionToUpdateModel` used in multiple views in the application.
     private var firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel = .notInitialized
     /// The `FirmwareUpdateInfoViewModel` that this interactor listens to in order to build its data.
@@ -193,7 +193,7 @@ private extension FirmwareAndMissionsInteractor {
         // Case 1: Failure to build a FirmwareToUpdateData.
         guard let firmwareToUpdateData = firmwareUpdateInfoViewModel.firmwareToUpdateData() else {
             firmwareAndMissionToUpdateModel = .notInitialized
-            firmwareAndMissionsDataSource = ProtobufMissionsUpdateDataSource()
+            firmwareAndMissionsDataSource = DroneFirmwaresDataSource()
             listeners.forEach { (listener) in
                 listener.firmwareAndMissionsCallback(firmwareAndMissionsDataSource,
                                                      firmwareAndMissionToUpdateModel)
@@ -203,7 +203,7 @@ private extension FirmwareAndMissionsInteractor {
         }
 
         // Case 2: a FirmwareToUpdateData exists.
-        firmwareAndMissionsDataSource = ProtobufMissionsUpdateDataSource(
+        firmwareAndMissionsDataSource = DroneFirmwaresDataSource(
             firmwareToUpdateData: firmwareToUpdateData,
             allMissionsOnDrone: protobufMissionUpdateState.allMissionsOnDrone,
             allMissionsOnFile: allMissionsOnFiles,

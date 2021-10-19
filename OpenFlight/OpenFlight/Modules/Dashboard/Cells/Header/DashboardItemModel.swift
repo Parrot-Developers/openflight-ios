@@ -32,26 +32,4 @@
 enum DashboardItemCellType {
     case logo
     case header
-
-    /// Defines the model for each case with a specified provider.
-    var model: DashboardHeaderModel? {
-        switch self {
-        case .logo:
-            return DashboardHeaderModel(type: .logo)
-        case .header:
-            return DashboardHeaderModel(type: .header)
-        }
-    }
-
-    /// List header items which required the model.
-    static var headerItems: [DashboardItemCellType] {
-
-        return [.logo, .header]
-    }
-}
-
-// MARK: - Internal Structs
-/// Sruct which defines the header model.
-struct DashboardHeaderModel {
-    var type: DashboardItemCellType?
 }

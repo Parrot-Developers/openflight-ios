@@ -41,7 +41,10 @@ public extension UITextView {
         do {
             let options: [NSAttributedString.DocumentReadingOptionKey: Any] = [.documentType: NSAttributedString.DocumentType.html,
                                                                                .characterEncoding: String.Encoding.utf8.rawValue]
-            let attrStr = try NSAttributedString(data: textData, options: options, documentAttributes: nil)
+            let attrStr = try NSMutableAttributedString(data: textData, options: options, documentAttributes: nil)
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.alignment = .justified
+            attrStr.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(location: 0, length: attrStr.length))
             self.attributedText = attrStr
         } catch {}
     }

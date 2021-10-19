@@ -35,24 +35,24 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     // MARK: - Public Properties
     /// Returns true if a graphic is currently selected inside Flight Plan.
     var hasSelection: Bool {
-        return self.flightPlanGraphics.contains(where: { $0.isSelected })
+        return flightPlanGraphics.contains(where: { $0.isSelected })
     }
 
     /// Returns a graphic is currently selected inside Flight Plan.
     var currentSelection: FlightPlanGraphic? {
-        return self.flightPlanGraphics.first(where: { $0.isSelected })
+        return flightPlanGraphics.first(where: { $0.isSelected })
     }
 
     /// Returns index of selected waypoint.
     var selectedWayPointIndex: Int? {
-        let selection = self.wayPoints.first(where: { $0.isSelected })
+        let selection = wayPoints.first(where: { $0.isSelected })
 
         return selection?.wayPointIndex
     }
 
     /// Returns all Flight Plan's waypoint arrows.
     var wayPointArrows: [FlightPlanWayPointArrowGraphic] {
-        return self.graphics.compactMap { $0 as? FlightPlanWayPointArrowGraphic }
+        return graphics.compactMap { $0 as? FlightPlanWayPointArrowGraphic }
     }
 
     /// Last manually selected graphic.
@@ -69,27 +69,27 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     // MARK: - Private Properties
     /// Returns all Flight Plan's graphics.
     private var flightPlanGraphics: [FlightPlanGraphic] {
-        return self.graphics.compactMap { $0 as? FlightPlanGraphic }
+        return graphics.compactMap { $0 as? FlightPlanGraphic }
     }
     /// Returns all Flight Plan's waypoint to point of interest graphics.
     private var wayPointToPoiLines: [FlightPlanWayPointToPoiLineGraphic] {
-        return self.graphics.compactMap { $0 as? FlightPlanWayPointToPoiLineGraphic }
+        return graphics.compactMap { $0 as? FlightPlanWayPointToPoiLineGraphic }
     }
     /// Returns all Flight Plan's waypoint line graphics.
     private var wayPointLines: [FlightPlanWayPointLineGraphic] {
-        return self.graphics.compactMap { $0 as? FlightPlanWayPointLineGraphic }
+        return graphics.compactMap { $0 as? FlightPlanWayPointLineGraphic }
     }
     /// Returns all Flight Plan's waypoint graphics.
     private var wayPoints: [FlightPlanWayPointGraphic] {
-        return self.graphics.compactMap { $0 as? FlightPlanWayPointGraphic }
+        return graphics.compactMap { $0 as? FlightPlanWayPointGraphic }
     }
     /// Returns all Flight Plan's point of interest graphics.
     private var poiPoints: [FlightPlanPoiPointGraphic] {
-        return self.graphics.compactMap { $0 as? FlightPlanPoiPointGraphic }
+        return graphics.compactMap { $0 as? FlightPlanPoiPointGraphic }
     }
     /// Returns current insert waypoint graphic, if any (when line is selected).
     private var currentInsertWayPointGraphic: FlightPlanInsertWayPointGraphic? {
-        return self.graphics.compactMap { $0 as? FlightPlanInsertWayPointGraphic }.first
+        return graphics.compactMap { $0 as? FlightPlanInsertWayPointGraphic }.first
     }
     /// Drone location graphic.
     private var droneGraphic: AGSGraphic?
@@ -118,8 +118,8 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     override func deselectAllGraphics() {
         super.deselectAllGraphics()
 
-        let poiLines = self.graphics.compactMap { $0 as? FlightPlanWayPointToPoiLineGraphic }
-        self.graphics.removeObjects(in: poiLines)
+        let poiLines = graphics.compactMap { $0 as? FlightPlanWayPointToPoiLineGraphic }
+        graphics.removeObjects(in: poiLines)
     }
 }
 
@@ -163,16 +163,6 @@ extension FlightPlanGraphicsOverlay {
     /// - Returns: point of interest line, if it exists
     func poiLineForWayPoint(at index: Int) -> FlightPlanWayPointToPoiLineGraphic? {
         return wayPointToPoiLines
-            .first(where: { $0.wayPointIndex == index })
-    }
-
-    /// Returns arrow for waypoint at given index.
-    ///
-    /// - Parameters:
-    ///    - index; waypoint's index
-    /// - Returns: arrow graphic, if it exists
-    func arrowForWayPoint(at index: Int) -> FlightPlanWayPointArrowGraphic? {
-        return wayPointArrows
             .first(where: { $0.wayPointIndex == index })
     }
 
@@ -226,7 +216,7 @@ extension FlightPlanGraphicsOverlay {
 
     /// Removes all the lines between waypoints and points of interest.
     func removeAllLinesToPoi() {
-        self.graphics.removeObjects(in: wayPointToPoiLines)
+        graphics.removeObjects(in: wayPointToPoiLines)
     }
 
     // MARK: Location Updates
@@ -420,7 +410,7 @@ extension FlightPlanGraphicsOverlay {
                                                       originIndex: index)
 
         // Increment indexes on existing graphics.
-        self.flightPlanGraphics
+        flightPlanGraphics
             .compactMap { $0 as? WayPointRelatedGraphic }
             .filter { $0.wayPointIndex ?? Constants.noIndex >= index }
             .forEach { $0.incrementWayPointIndex() }
@@ -432,13 +422,13 @@ extension FlightPlanGraphicsOverlay {
         nextArrow?.refreshOrientation()
 
         // Remove existing line.
-        self.graphics.remove(line)
+        graphics.remove(line)
 
         // Add new graphics.
-        self.graphics.add(wayPointGraphic)
-        self.graphics.add(arrowGraphic)
-        self.graphics.add(lineBefore)
-        self.graphics.add(lineAfter)
+        graphics.add(wayPointGraphic)
+        graphics.add(arrowGraphic)
+        graphics.add(lineBefore)
+        graphics.add(lineAfter)
 
         sortGraphics()
 
@@ -462,21 +452,21 @@ extension FlightPlanGraphicsOverlay {
             let newGraphic = FlightPlanWayPointLineGraphic(origin: startPoint,
                                                            destination: endPoint,
                                                            originIndex: index-1)
-            self.graphics.add(newGraphic)
+            graphics.add(newGraphic)
         }
         // Remove graphics.
-        self.graphics.remove(wayPoint)
+        graphics.remove(wayPoint)
         if let lineBefore = lineBefore {
-            self.graphics.remove(lineBefore)
+            graphics.remove(lineBefore)
         }
         if let lineAfter = lineAfter {
-            self.graphics.remove(lineAfter)
+            graphics.remove(lineAfter)
         }
         if let poiLine = poiLineForWayPoint(at: index) {
-            self.graphics.remove(poiLine)
+            graphics.remove(poiLine)
         }
         if let arrow = wayPointArrows.first(where: { $0.wayPointIndex == index }) {
-            self.graphics.remove(arrow)
+            graphics.remove(arrow)
         }
         // Decrement subsequent waypoints, waypoint lines
         // and waypoint to point of interest lines indexes.
@@ -502,7 +492,7 @@ extension FlightPlanGraphicsOverlay {
         guard let poiPoint = poiPoints.first(where: { $0.poiIndex == index }) else { return }
 
         // Remove graphic.
-        self.graphics.remove(poiPoint)
+        graphics.remove(poiPoint)
         // Update related waypoints.
         wayPoints
             .filter { $0.poiIndex == index }
@@ -549,11 +539,11 @@ extension FlightPlanGraphicsOverlay {
     func graphicForIndex(_ index: Int, type: FlightPlanGraphicItemType) -> FlightPlanGraphic? {
         switch type {
         case .wayPoint:
-            return self.wayPoints.first(where: { $0.wayPointIndex == index })
+            return wayPoints.first(where: { $0.wayPointIndex == index })
         case .poi:
-            return self.poiPoints.first(where: { $0.poiIndex == index })
+            return poiPoints.first(where: { $0.poiIndex == index })
         case .lineWayPoint:
-            return self.wayPointLines.first(where: { $0.wayPointIndex == index })
+            return wayPointLines.first(where: { $0.wayPointIndex == index })
         case .insertWayPoint,
              .waypointArrow,
              .lineWayPointToPoi,
@@ -631,7 +621,7 @@ private extension FlightPlanGraphicsOverlay {
         // Add line.
         if let line = FlightPlanWayPointToPoiLineGraphic(wayPointGraphic: wayPointGraphic,
                                                          poiPointGraphic: poiPointGraphic) {
-            self.graphics.add(line)
+            graphics.add(line)
         }
     }
 
@@ -648,7 +638,7 @@ private extension FlightPlanGraphicsOverlay {
 
         // Remove line.
         if let line = wayPointToPoiLines.first(where: { $0.wayPointIndex == wayPointGraphic.wayPointIndex }) {
-            self.graphics.remove(line)
+            graphics.remove(line)
         }
 
         // Update arrow.
@@ -692,7 +682,7 @@ private extension FlightPlanGraphicsOverlay {
                     return FlightPlanWayPointToPoiLineGraphic(wayPointGraphic: wayPointGraphic,
                                                               poiPointGraphic: poiPointGraphic)
                 }
-            self.graphics.addObjects(from: poiLines)
+            graphics.addObjects(from: poiLines)
         } else {
             // Removes waypoint to point of interest lines.
             self.removeAllLinesToPoi()
@@ -714,11 +704,11 @@ private extension FlightPlanGraphicsOverlay {
             let addGraphic = FlightPlanInsertWayPointGraphic(middlePoint,
                                                              index: originIndex + 1)
 
-            self.graphics.add(addGraphic)
+            graphics.add(addGraphic)
         } else {
-            guard let graphic = self.currentInsertWayPointGraphic else { return }
+            guard let graphic = currentInsertWayPointGraphic else { return }
 
-            self.graphics.remove(graphic)
+            graphics.remove(graphic)
         }
 
         // Update waypoint arrows selection if they are not related to points of interest.

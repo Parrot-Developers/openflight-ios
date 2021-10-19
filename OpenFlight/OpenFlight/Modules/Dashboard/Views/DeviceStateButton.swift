@@ -55,7 +55,7 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
             case .updateAvailable:
                 return ColorName.warningColor.color
             case .calibrationRequired:
-                return ColorName.redTorch.color
+                return ColorName.errorColor.color
             case .calibrationNeeded:
                 return ColorName.orangePeel.color
             case .disconnected:
@@ -65,12 +65,23 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
             }
         }
 
+        fileprivate var leftImageTintColor: Color {
+            switch self {
+            case .updateAvailable,
+                 .calibrationRequired,
+                 .calibrationNeeded:
+                return .white
+            default:
+                return ColorName.defaultTextColor.color
+            }
+        }
+
         fileprivate var textColor: Color {
             return self == .disconnected ? ColorName.disabledTextColor.color : ColorName.white.color
         }
 
-        fileprivate var leftImageVisible: Bool {
-            return self == .updateAvailable
+        fileprivate var leftImage: UIImage? {
+            return self == .updateAvailable ? Asset.Drone.iconDownload.image : nil
         }
     }
 
@@ -104,8 +115,10 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
     func update(with status: Status, title: String) {
         stateLabel.text = title.localizedLowercase
         stateLabel.textColor = status.textColor
-        updateImageView.isHidden = !status.leftImageVisible
+        updateImageView.image = status.leftImage
+        updateImageView.tintColor = status.leftImageTintColor
+        updateImageView.isHidden = status.leftImage == nil
         backgroundColor = status.backgroundColor
-        isUserInteractionEnabled = status.leftImageVisible
+        isUserInteractionEnabled = status.leftImage != nil
     }
 }

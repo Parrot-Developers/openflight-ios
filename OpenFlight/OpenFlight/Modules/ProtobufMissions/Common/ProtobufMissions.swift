@@ -57,10 +57,10 @@ public struct DefaultMissionSignature: ProtobufMissionSignature {
     public init() {}
 
     /// The mission name.
-    public var name: String = ""
+    public let name: String = ""
 
     /// The mission UID.
-    public var missionUID: String = "default"
+    public let missionUID: String = "default"
 
     /// The mission service unique id command.
     public var serviceUidCommand: UInt = 0
@@ -71,16 +71,24 @@ public struct DefaultMissionSignature: ProtobufMissionSignature {
 
 /// Default protobuf mission activation model.
 public struct DefaultMissionActivationModel: MissionActivationModel {
+    private var protobufMissionsManager: ProtobufMissionsManager {
+        Services.hub.drone.protobufMissionsManager
+    }
+
+    private var protobufMissionListener: ProtobufMissionsListener {
+        Services.hub.drone.protobufMissionsListener
+    }
+
     public init () { }
 
     /// Activates the mission.
     public func startMission() {
-        ProtobufMissionsManager.shared.activate(mission: OFMissionSignatures.defaultMission)
+        protobufMissionsManager.activate(mission: OFMissionSignatures.defaultMission)
     }
 
     /// Deactivates the mission.
     public func stopMissionIfNeeded() {
-        ProtobufMissionsManager.shared.deactivate(mission: OFMissionSignatures.defaultMission)
+        protobufMissionsManager.deactivate(mission: OFMissionSignatures.defaultMission)
     }
 }
 
@@ -91,10 +99,10 @@ public struct OphtalmoMissionSignature: ProtobufMissionSignature {
     fileprivate init() {}
 
     /// The mission name.
-    public var name: String = "Ophtalmo" // TODO: add resource
+    public let name: String = "Ophtalmo" // TODO: add resource
 
     /// The mission UID.
-    public var missionUID: String = "com.parrot.missions.ophtalmo"
+    public let missionUID: String = "com.parrot.missions.ophtalmo"
 
     /// The mission service unique id command.
     public var serviceUidCommand: UInt {
@@ -113,10 +121,10 @@ public struct HelloWorldMissionSignature: ProtobufMissionSignature {
     public init() {}
 
     /// The mission name.
-    public var name: String = L10n.missionHello
+    public let name: String = L10n.missionHello
 
     /// The mission UID.
-    public var missionUID: String = "com.parrot.missions.samples.hello"
+    public let missionUID: String = "com.parrot.missions.samples.hello"
 
     /// The mission service unique id command.
     public var serviceUidCommand: UInt {

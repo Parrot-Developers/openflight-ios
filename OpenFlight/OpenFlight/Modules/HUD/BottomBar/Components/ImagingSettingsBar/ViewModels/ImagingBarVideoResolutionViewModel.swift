@@ -36,10 +36,13 @@ final class ImagingBarVideoResolutionViewModel: BarButtonViewModel<ImagingBarSta
     private var cameraRef: Ref<MainCamera2>?
     /// List of available resolutions.
     private let availableResolutions: [Camera2RecordingResolution] = Camera2RecordingResolution.availableResolutions
+    /// Current mission manager.
+    private unowned let currentMissionManager: CurrentMissionManager
 
     // MARK: - init
     /// Constructor.
-    init() {
+    init(currentMissionManager: CurrentMissionManager) {
+        self.currentMissionManager = currentMissionManager
         super.init(barId: "VideoResolution")
     }
 
@@ -55,9 +58,23 @@ final class ImagingBarVideoResolutionViewModel: BarButtonViewModel<ImagingBarSta
                 return
         }
 
-        let currentEditor = camera.currentEditor
-        currentEditor[Camera2Params.videoRecordingResolution]?.value = resolution
-        currentEditor.saveSettings(currentConfig: camera.config)
+        let editor = camera.config.edit(fromScratch: true)
+        editor[Camera2Params.videoRecordingResolution]?.value = resolution
+
+        // apply restrictions to framerate for current mission, if necessary
+        if let restrictions = currentMissionManager.mode.cameraRestrictions,
+           let framerate = camera.config[Camera2Params.videoRecordingFramerate]?.value,
+           let supportedFrameratesInMission = restrictions.supportedFrameratesByResolution?[resolution],
+           !supportedFrameratesInMission.contains(framerate) {
+            let currentSupportedValues = editor[Camera2Params.videoRecordingFramerate]?.currentSupportedValues
+                .intersection(supportedFrameratesInMission)
+            let highestFramerate = Camera2RecordingFramerate.sortedCases.reversed()
+                .filter { currentSupportedValues?.contains($0) == true }
+                .first
+            editor[Camera2Params.videoRecordingFramerate]?.value = highestFramerate
+        }
+
+        editor.saveSettings(currentConfig: camera.config)
     }
 }
 

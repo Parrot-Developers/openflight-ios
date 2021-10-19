@@ -183,6 +183,12 @@ extension FlightPlanDataSetting {
             + poisMarkersGraphics
     }
 
+    /// Returns an array with all flight plan's lines and waypoints.
+    var linesAndWaypointsGraphics: [FlightPlanGraphic] {
+        return allLinesGraphics
+            + waypointsMarkersGraphics
+    }
+
     /// Returns a simple `AGSPolyline` with all points.
     var polyline: AGSPolyline {
         return AGSPolyline(points: wayPoints.compactMap { return $0.agsPoint }
@@ -289,12 +295,17 @@ extension FlightPlanDataSetting {
     ///    - currentLocation: location from which progress should be calculated
     ///    - lastWayPointIndex: index of the last passed waypoint
     /// - Returns: global Flight Plan progress, from 0.0 to 1.0.
-    func completionProgress(with currentLocation: AGSPoint, lastWayPointIndex: Int) -> Double {
+    func completionProgress(with currentLocation: AGSPoint?, lastWayPointIndex: Int) -> Double {
         guard !wayPoints.isEmpty,
               (0...wayPoints.count-1).contains(lastWayPointIndex) else { return 0.0 }
 
         // Percentage of completion of the current segment being traveled
-        let currentSegmentProgress = self.wayPoints[lastWayPointIndex].navigateToNextProgress(with: currentLocation)
+        var currentSegmentProgress: Double
+        if let currentLocation = currentLocation {
+            currentSegmentProgress = self.wayPoints[lastWayPointIndex].navigateToNextProgress(with: currentLocation)
+        } else {
+            currentSegmentProgress = 0
+        }
 
         // Percentage of completion up to the last validated waypoint
         let progressAtWayPoint = self.segmentWeights

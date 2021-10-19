@@ -35,11 +35,6 @@ public final class GalleryCoordinator: Coordinator {
     public var childCoordinators = [Coordinator]()
     public var parentCoordinator: Coordinator?
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let numberOfBacksFromPanoramaToMedia: Int = 3
-    }
-
     // MARK: - Public Funcs
     public func start() {
         let viewController = GalleryViewController.instantiate(coordinator: self)
@@ -103,33 +98,9 @@ extension GalleryCoordinator {
         }
     }
 
-    /// Show panorama choice type screen.
-    ///
-    /// - Parameters:
-    ///     - viewModel: Gallery view model
-    ///     - index: Media index in the gallery media array
-    func showPanoramaChoiceTypeScreen(viewModel: GalleryMediaViewModel, index: Int) {
-        let viewController = GalleryPanoramaChoiceTypeViewController.instantiate(coordinator: self,
-                                                                                 viewModel: viewModel,
-                                                                                 index: index)
-        push(viewController)
-    }
-
     /// Dismiss panorama generation screen.
     func dismissPanoramaGenerationScreen() {
-        backToRoot()
-    }
-
-    /// Show panorama quality choice screen.
-    ///
-    /// - Parameters:
-    ///     - viewModel: Gallery panorama view model
-    ///     - index: Media index in the gallery media array
-    func showPanoramaQualityChoiceScreen(viewModel: GalleryPanoramaViewModel, index: Int) {
-        let viewController = GalleryPanoramaQualityViewController.instantiate(coordinator: self,
-                                                                              viewModel: viewModel,
-                                                                              index: index)
-        push(viewController)
+        navigationController?.dismiss(animated: true)
     }
 
     /// Show gallery screen.
@@ -150,28 +121,15 @@ extension GalleryCoordinator {
         push(viewController)
     }
 
-    /// Show panorama download screen.
-    ///
-    /// - Parameters:
-    ///     - viewModel: Gallery view model
-    ///     - index: Media index in the gallery media array
-    func showPanoramaDownloadScreen(viewModel: GalleryPanoramaViewModel, index: Int) {
-        let viewController = GalleryPanoramaDownloadViewController.instantiate(coordinator: self,
-                                                                               viewModel: viewModel,
-                                                                               index: index)
-        push(viewController)
-    }
-
     /// Show panorama generation screen.
     ///
     /// - Parameters:
     ///     - viewModel: Gallery view model
     ///     - index: Media index in the gallery media array
     func showPanoramaGenerationScreen(viewModel: GalleryPanoramaViewModel, index: Int) {
-        let viewController = GalleryPanoramaGenerationViewController.instantiate(coordinator: self,
-                                                                                 viewModel: viewModel,
+        let viewController = GalleryPanoramaGenerationViewController.instantiate(viewModel: viewModel,
                                                                                  index: index)
-        push(viewController)
+        presentModal(viewController: viewController)
     }
 
     /// Dismiss panorama visualisation screen.

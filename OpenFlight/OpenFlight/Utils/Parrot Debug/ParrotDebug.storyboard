@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1UJ-SD-ecA">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1UJ-SD-ecA">
     <device id="retina5_9" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -73,7 +74,7 @@
                                                 <color key="tintColor" red="0.28536473159999998" green="1" blue="0.24004633680000001" alpha="1" colorSpace="calibratedRGB"/>
                                                 <prototypes>
                                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="FileCell" id="Ksm-JP-BRV" customClass="ParrotLogFileCell" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="28" width="270.33333333333331" height="43.666667938232422"/>
+                                                        <rect key="frame" x="0.0" y="24.333333969116211" width="270.33333333333331" height="43.666667938232422"/>
                                                         <autoresizingMask key="autoresizingMask"/>
                                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Ksm-JP-BRV" id="rDw-aq-kzy">
                                                             <rect key="frame" x="0.0" y="0.0" width="270.33333333333331" height="43.666667938232422"/>
@@ -101,7 +102,7 @@
                                                 </prototypes>
                                             </tableView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalCentering" alignment="center" spacing="32" translatesAutoresizingMaskIntoConstraints="NO" id="PWK-JL-I2n">
-                                                <rect key="frame" x="270.33333333333326" y="22.666666666666686" width="405.66666666666674" height="226"/>
+                                                <rect key="frame" x="270.33333333333326" y="0.0" width="405.66666666666674" height="271"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="hCt-zJ-CKN">
                                                         <rect key="frame" x="55" y="0.0" width="296" height="34"/>
@@ -133,16 +134,16 @@
                                                         </subviews>
                                                     </stackView>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="f3T-eY-kRn">
-                                                        <rect key="frame" x="132.66666666666669" y="65.999999999999986" width="140.33333333333331" height="31"/>
+                                                        <rect key="frame" x="132.66666666666669" y="66" width="140.33333333333331" height="26"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Active Log" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mrz-ox-D1m">
-                                                                <rect key="frame" x="0.0" y="0.0" width="71.333333333333329" height="31"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="71.333333333333329" height="26"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eBS-hZ-5JW">
-                                                                <rect key="frame" x="91.333333333333371" y="0.0" width="51" height="31"/>
+                                                                <rect key="frame" x="91.333333333333371" y="0.0" width="51" height="26"/>
                                                                 <connections>
                                                                     <action selector="switchLogOnOff:" destination="1UJ-SD-ecA" eventType="valueChanged" id="Lct-f1-bKp"/>
                                                                 </connections>
@@ -150,7 +151,7 @@
                                                         </subviews>
                                                     </stackView>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GPA-T6-ekH">
-                                                        <rect key="frame" x="127" y="131" width="152" height="30"/>
+                                                        <rect key="frame" x="127" y="124" width="152" height="30"/>
                                                         <state key="normal" title="Enable Stream Record">
                                                             <color key="titleColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="calibratedRGB"/>
                                                         </state>
@@ -161,17 +162,29 @@
                                                             <action selector="enableStreamRecord:" destination="1UJ-SD-ecA" eventType="touchUpInside" id="Pis-Jv-3lW"/>
                                                         </connections>
                                                     </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="047-To-Apc" userLabel="videofull">
+                                                        <rect key="frame" x="143" y="186" width="120" height="30"/>
+                                                        <state key="normal" title="Video Full Screen">
+                                                            <color key="titleColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="calibratedRGB"/>
+                                                        </state>
+                                                        <state key="disabled">
+                                                            <color key="titleColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
+                                                        <connections>
+                                                            <segue destination="1w5-Qk-Zho" kind="show" id="SeJ-dT-aiM"/>
+                                                        </connections>
+                                                    </button>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Fa4-n9-dh6">
-                                                        <rect key="frame" x="112" y="195" width="182" height="31"/>
+                                                        <rect key="frame" x="112" y="248" width="182" height="23"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Record disparity" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DB7-Rg-anL">
-                                                                <rect key="frame" x="0.0" y="0.0" width="113" height="31"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="113" height="23"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rQe-Ru-bKM">
-                                                                <rect key="frame" x="133.00000000000006" y="0.0" width="51" height="31"/>
+                                                                <rect key="frame" x="133.00000000000006" y="0.0" width="51" height="23"/>
                                                                 <connections>
                                                                     <action selector="recordDisparityTouchedUpInside:" destination="1UJ-SD-ecA" eventType="valueChanged" id="JpD-dF-duK"/>
                                                                 </connections>
@@ -268,12 +281,56 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="b22-Aw-FRZ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-734" y="910"/>
+            <point key="canvasLocation" x="-955" y="1324"/>
+        </scene>
+        <!--Parrot Debug StreamVC-->
+        <scene sceneID="HAW-iP-svY">
+            <objects>
+                <viewController id="1w5-Qk-Zho" customClass="ParrotDebugStreamVC" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="3bk-NR-OzL">
+                        <rect key="frame" x="0.0" y="0.0" width="812" height="375"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9t1-Gs-4kY" customClass="GSStreamView">
+                                <rect key="frame" x="0.0" y="0.0" width="812" height="375"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <gestureRecognizers/>
+                                <connections>
+                                    <outletCollection property="gestureRecognizers" destination="Ycl-qV-UMg" appends="YES" id="RZx-aN-T4U"/>
+                                </connections>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="a7P-lX-cDR"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <gestureRecognizers/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="9t1-Gs-4kY" secondAttribute="trailing" id="9ML-KU-k93"/>
+                            <constraint firstAttribute="bottom" secondItem="9t1-Gs-4kY" secondAttribute="bottom" id="JHr-Fk-eBw"/>
+                            <constraint firstItem="9t1-Gs-4kY" firstAttribute="top" secondItem="3bk-NR-OzL" secondAttribute="top" id="Vze-W9-3KD"/>
+                            <constraint firstItem="9t1-Gs-4kY" firstAttribute="leading" secondItem="3bk-NR-OzL" secondAttribute="leading" id="s9m-gH-Srg"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="btR-cx-U7A"/>
+                    <connections>
+                        <outlet property="streamView" destination="9t1-Gs-4kY" id="7Vh-CV-6i3"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="sH9-ZC-mRz" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <tapGestureRecognizer id="Ycl-qV-UMg">
+                    <connections>
+                        <action selector="tapAction:" destination="1w5-Qk-Zho" id="F3J-yP-9C0"/>
+                    </connections>
+                </tapGestureRecognizer>
+            </objects>
+            <point key="canvasLocation" x="150" y="1370"/>
         </scene>
     </scenes>
     <resources>
         <systemColor name="lightTextColor">
             <color white="1" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="viewFlipsideBackgroundColor">
             <color red="0.1215686274509804" green="0.12941176470588239" blue="0.14117647058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

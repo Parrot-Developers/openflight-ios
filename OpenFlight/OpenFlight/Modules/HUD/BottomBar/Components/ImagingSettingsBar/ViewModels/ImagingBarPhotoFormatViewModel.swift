@@ -28,20 +28,35 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Combine
 import GroundSdk
+import SwiftyUserDefaults
 
 /// View model for imaging settings bar photo format item.
-
 final class ImagingBarPhotoFormatViewModel: BarButtonViewModel<ImagingBarState> {
 
-    // MARK: - init
-    /// Constructor.
-    init() {
-        super.init(barId: "PhotoFormat")
-    }
-
     // MARK: - Private Properties
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
+    /// Reference to camera peripheral.
     private var cameraRef: Ref<MainCamera2>?
+    /// Panorama service.
+    private unowned var panoramaService: PanoramaService
+
+    // MARK: - Init
+    /// Constructor.
+    ///
+    /// - Parameter panoramaService: panorama mode service
+    init(panoramaService: PanoramaService) {
+        self.panoramaService = panoramaService
+        super.init(barId: "PhotoFormat")
+
+        panoramaService.panoramaModeActivePublisher
+            .sink { [unowned self] _ in
+                updateState(camera: cameraRef?.value)
+            }
+            .store(in: &cancellables)
+    }
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
@@ -65,14 +80,41 @@ final class ImagingBarPhotoFormatViewModel: BarButtonViewModel<ImagingBarState> 
 // MARK: - Private Funcs
 private extension ImagingBarPhotoFormatViewModel {
     /// Starts watcher for camera.
+    ///
+    /// - Parameters:
+    ///    - drone: drone to monitor
     func listenCamera(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
-            guard let strongSelf = self else { return }
-
-            let copy = strongSelf.state.value.copy()
-            copy.mode = camera?.photoFormatMode
-            copy.supportedModes = camera?.photoFormatModeSupportedValues
-            self?.state.set(copy)
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
+            updateState(camera: camera)
         }
+    }
+
+    /// Updates imaging settings bar state.
+    ///
+    /// - Parameters:
+    ///    - camera: camera peripheral, `nil` if unavailable
+    func updateState(camera: Camera2?) {
+        guard let camera = camera,
+              let cameraMode = CameraUtils.computeCameraMode(camera: camera) else {
+                  return
+              }
+
+        let photoFormats: [PhotoFormatMode]?
+        var unavailableReason = [String: String]()
+        if cameraMode == .panorama {
+            photoFormats = [.rectilinearJpeg]
+            unavailableReason[PhotoFormatMode.fullFrameDngJpeg.key] = L10n.cameraSettingUnavailable(cameraMode.title)
+            unavailableReason[PhotoFormatMode.fullFrameJpeg.key] = L10n.cameraSettingUnavailable(cameraMode.title)
+            unavailableReason[PhotoFormatMode.rectilinearDngJpeg.key] = L10n.cameraSettingUnavailable(cameraMode.title)
+        } else {
+            photoFormats = camera.photoFormatModeSupportedValues
+        }
+
+        let copy = state.value.copy()
+        copy.mode = camera.photoFormatMode
+        copy.supportedModes = photoFormats
+        copy.unavailableReason = unavailableReason
+        copy.showUnsupportedModes = true
+        state.set(copy)
     }
 }

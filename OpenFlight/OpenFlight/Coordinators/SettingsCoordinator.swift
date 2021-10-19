@@ -46,7 +46,11 @@ public final class SettingsCoordinator: Coordinator {
 
     /// Dismisses settings.
     func dismissSettings() {
-        self.dismissCoordinatorWithAnimation(animationDirection: .fromLeft)
+        if parentCoordinator is DashboardCoordinator {
+            dismiss()
+        } else {
+            dismissCoordinatorWithAnimation(animationDirection: .fromLeft)
+        }
     }
 
     /// Starts banked turn setting info.
@@ -66,8 +70,12 @@ public final class SettingsCoordinator: Coordinator {
     /// - Parameters:
     ///     - viewModel: Settings network viewModel
     func startSettingDronePasswordEdition(viewModel: SettingsNetworkViewModel?) {
-        let viewController = SettingsPasswordEditionViewController.instantiate(coordinator: self, viewModel: viewModel)
-        self.push(viewController)
+        let viewModel = SettingsNetworkViewModel()
+        let viewController = SettingsPasswordEditionViewController.instantiate(
+            coordinator: self,
+            viewModel: viewModel,
+            orientation: .all)
+        presentModal(viewController: viewController)
     }
 
     /// Starts DRI info screen.

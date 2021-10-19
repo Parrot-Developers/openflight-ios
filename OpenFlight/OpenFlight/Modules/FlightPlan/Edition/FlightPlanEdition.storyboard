@@ -19,63 +19,43 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="s4V-9s-YqO">
-                                <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                                <rect key="frame" x="0.0" y="0.0" width="627.33333333333337" height="414"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KEM-xN-ig1">
-                                <rect key="frame" x="651" y="0.0" width="245" height="414"/>
+                                <rect key="frame" x="627.33333333333337" y="0.0" width="268.66666666666663" height="414"/>
                                 <connections>
-                                    <segue destination="yCT-Lz-HV2" kind="embed" id="RMP-Xb-5YE"/>
+                                    <segue destination="A1j-mV-Fhs" kind="embed" identifier="FlightPlanEditionMenuViewController" id="Jm7-8t-WkS"/>
                                 </connections>
                             </containerView>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FH3-v6-uKZ">
-                                <rect key="frame" x="896" y="0.0" width="245" height="414"/>
+                                <rect key="frame" x="895.99999999999989" y="0.0" width="268.66666666666663" height="414"/>
                                 <connections>
-                                    <segue destination="l6C-73-gMO" kind="embed" id="vP1-Kb-HPh"/>
+                                    <segue destination="EEK-vU-gc6" kind="embed" identifier="EditionSettingsViewController" id="e7u-aP-In5"/>
                                 </connections>
                             </containerView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="acS-7F-LRr">
-                                <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
-                                <subviews>
-                                    <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ui6-Wf-a9Q">
-                                        <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" priority="999" constant="50" id="reD-2S-p5L"/>
-                                        </constraints>
-                                        <connections>
-                                            <segue destination="yQw-Qi-ZiA" kind="embed" id="aHB-uR-CoT"/>
-                                        </connections>
-                                    </containerView>
-                                </subviews>
-                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="TPp-vL-hbn"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="acS-7F-LRr" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="10L-CI-tam"/>
                             <constraint firstItem="s4V-9s-YqO" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="1zE-ec-LHo"/>
                             <constraint firstAttribute="trailing" secondItem="KEM-xN-ig1" secondAttribute="trailing" id="2my-Kj-k8l"/>
                             <constraint firstItem="FH3-v6-uKZ" firstAttribute="width" secondItem="KEM-xN-ig1" secondAttribute="width" id="5FE-09-qpr"/>
                             <constraint firstAttribute="bottom" secondItem="FH3-v6-uKZ" secondAttribute="bottom" id="6er-4G-4jH"/>
-                            <constraint firstAttribute="trailing" secondItem="acS-7F-LRr" secondAttribute="trailing" id="K70-AL-nD8"/>
-                            <constraint firstAttribute="trailing" secondItem="s4V-9s-YqO" secondAttribute="trailing" id="K9n-kd-wef"/>
                             <constraint firstAttribute="bottom" secondItem="s4V-9s-YqO" secondAttribute="bottom" id="OvJ-su-rIu"/>
                             <constraint firstItem="FH3-v6-uKZ" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="XII-Fn-dfC"/>
-                            <constraint firstItem="KEM-xN-ig1" firstAttribute="width" secondItem="Wf3-fd-o0X" secondAttribute="width" multiplier="0.273438" id="fUG-yh-kof"/>
+                            <constraint firstItem="KEM-xN-ig1" firstAttribute="width" secondItem="Wf3-fd-o0X" secondAttribute="width" multiplier="0.3" id="fUG-yh-kof"/>
+                            <constraint firstItem="KEM-xN-ig1" firstAttribute="leading" secondItem="s4V-9s-YqO" secondAttribute="trailing" id="fqI-Sb-XuU"/>
                             <constraint firstAttribute="bottom" secondItem="KEM-xN-ig1" secondAttribute="bottom" id="kWG-d5-WdO"/>
                             <constraint firstAttribute="trailing" secondItem="FH3-v6-uKZ" secondAttribute="leading" id="ltQ-LF-XDJ"/>
                             <constraint firstItem="KEM-xN-ig1" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="mMp-Z3-btr"/>
                             <constraint firstItem="s4V-9s-YqO" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="oTN-op-Bbg"/>
-                            <constraint firstItem="acS-7F-LRr" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="sDw-GH-boP"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="editionSettingsContainer" destination="FH3-v6-uKZ" id="eEi-xc-0GK"/>
                         <outlet property="mapContainer" destination="s4V-9s-YqO" id="w32-bb-mnB"/>
                         <outlet property="settingsLeadConstraint" destination="ltQ-LF-XDJ" id="C4V-xH-bhz"/>
-                        <outlet property="topBarContainer" destination="Ui6-Wf-a9Q" id="KKr-1z-6e2"/>
-                        <outlet property="topBarContainterHeightConstraint" destination="reD-2S-p5L" id="vz4-qf-XNZ"/>
-                        <outletCollection property="allIntefaceViews" destination="Ui6-Wf-a9Q" collectionClass="NSMutableArray" id="HGr-57-Yzm"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -148,6 +128,7 @@
                             <constraint firstAttribute="trailing" secondItem="E4L-K4-ZSC" secondAttribute="trailing" id="xOE-Um-Gfu"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="Ztf-Fn-bqf"/>
                     <connections>
                         <outlet property="deleteButton" destination="fYp-zW-LmG" id="ee8-Ku-PW2"/>
                         <outlet property="tableView" destination="E4L-K4-ZSC" id="pAH-Ep-C0u"/>
@@ -156,7 +137,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="CDX-XM-mk3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-266" y="988"/>
+            <point key="canvasLocation" x="-270" y="2123"/>
         </scene>
         <!--Flight Plan Edition Menu View Controller-->
         <scene sceneID="ZFk-aq-1zJ">
@@ -215,6 +196,7 @@
                             <constraint firstAttribute="trailing" secondItem="4Iv-7z-qCO" secondAttribute="trailing" id="zsU-DF-dav"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="CIS-nL-1xZ"/>
                     <connections>
                         <outlet property="doneButton" destination="d3L-Xg-59f" id="zpI-x7-z5c"/>
                         <outlet property="tableView" destination="4Iv-7z-qCO" id="x8c-uH-Kcg"/>
@@ -224,7 +206,94 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Kue-WK-BLy" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-74" y="987"/>
+            <point key="canvasLocation" x="-73" y="2123"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="J7I-6F-XBv">
+            <objects>
+                <navigationController navigationBarHidden="YES" id="A1j-mV-Fhs" customClass="NavigationController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <size key="freeformSize" width="245" height="414"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="rKe-Ig-OeB">
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="barTintColor" name="white_90"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="yCT-Lz-HV2" kind="relationship" relationship="rootViewController" id="Jc5-9r-ojc"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="efe-22-aNH" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-72" y="988"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="j29-gy-s5h">
+            <objects>
+                <navigationController navigationBarHidden="YES" id="EEK-vU-gc6" customClass="NavigationController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <size key="freeformSize" width="245" height="414"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="3Ct-Wv-G11">
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="barTintColor" name="white_90"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="l6C-73-gMO" kind="relationship" relationship="rootViewController" id="eIl-sg-ANo"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="X96-wc-a9X" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-259" y="1000"/>
+        </scene>
+        <!--building height-->
+        <scene sceneID="F4D-fq-isU">
+            <objects>
+                <viewController storyboardIdentifier="BuildingHeightMenuViewController" title="building height" id="wvn-9Y-Veo" customClass="BuildingHeightMenuViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="qUW-L9-Y66">
+                        <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="90" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="Q11-9Q-fqE">
+                                <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <color key="separatorColor" name="disabled_text_color"/>
+                                <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                <sections/>
+                            </tableView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6WF-6A-4rz">
+                                <rect key="frame" x="19" y="341" width="207" height="50"/>
+                                <color key="backgroundColor" name="warning_color"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="RO6-tK-7QZ"/>
+                                </constraints>
+                                <state key="normal" title="Define">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="doneTouchUpInside:" destination="wvn-9Y-Veo" eventType="touchUpInside" id="fzS-aw-59C"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="8TK-jo-JaU"/>
+                        <color key="backgroundColor" name="default_bgcolor"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="Q11-9Q-fqE" secondAttribute="bottom" id="0oa-1t-cE0"/>
+                            <constraint firstAttribute="bottom" secondItem="6WF-6A-4rz" secondAttribute="bottom" constant="23" id="2Nq-4P-GuI"/>
+                            <constraint firstItem="8TK-jo-JaU" firstAttribute="trailing" secondItem="6WF-6A-4rz" secondAttribute="trailing" constant="19" id="iDx-0a-NnJ"/>
+                            <constraint firstItem="Q11-9Q-fqE" firstAttribute="leading" secondItem="qUW-L9-Y66" secondAttribute="leading" id="kGU-oX-hjo"/>
+                            <constraint firstItem="Q11-9Q-fqE" firstAttribute="top" secondItem="8TK-jo-JaU" secondAttribute="top" id="mnC-0b-9Za"/>
+                            <constraint firstAttribute="trailing" secondItem="Q11-9Q-fqE" secondAttribute="trailing" id="trO-v8-kFa"/>
+                            <constraint firstItem="6WF-6A-4rz" firstAttribute="leading" secondItem="qUW-L9-Y66" secondAttribute="leading" constant="19" id="v2l-1t-6s7"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="L5K-cA-KuS"/>
+                    <size key="freeformSize" width="245" height="414"/>
+                    <connections>
+                        <outlet property="doneButton" destination="6WF-6A-4rz" id="CM1-LX-Lbv"/>
+                        <outlet property="tableView" destination="Q11-9Q-fqE" id="JMQ-6U-l7I"/>
+                        <outlet property="tableViewTrailingConstraint" destination="trO-v8-kFa" id="6Ik-6b-6ek"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="fFk-Gz-xB7" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="119" y="2122"/>
         </scene>
     </scenes>
     <resources>
@@ -239,6 +308,12 @@
         </namedColor>
         <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
+        <namedColor name="warning_color">
+            <color red="1" green="0.44705882352941179" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="white_90">
+            <color red="1" green="1" blue="1" alpha="0.89999997615814209" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

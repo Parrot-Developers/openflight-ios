@@ -29,11 +29,10 @@
 
 import ArcGIS
 
-/// Utility extension for `isValidLocation`.
-
+/// Utility extension for `hasValidLocation`.
 extension AGSCamera {
     /// Returns true if camera location is different from 0,0.
     var hasValidLocation: Bool {
-        return (self.location.x == 0.0 && self.location.y == 0.0) == false
+        return !(location.x == 0.0 && location.y == 0.0)
     }
 }

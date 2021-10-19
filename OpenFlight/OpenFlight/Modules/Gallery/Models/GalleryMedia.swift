@@ -79,18 +79,19 @@ enum GalleryMediaDownloadState: CaseIterable {
         }
     }
 
-    /// Returns GalleryMediaDownloadState as MediaTaskStatus.
-    var asMediaTaskStatus: MediaTaskStatus {
+    var isDownloadActionInfoShown: Bool {
         switch self {
-        case .downloading:
-            return MediaTaskStatus.running
-        case .toDownload:
-            return MediaTaskStatus.complete
+        case .toDownload,
+             .downloading,
+             .error:
+            return true
         case .downloaded:
-            return MediaTaskStatus.fileDownloaded
-        case .error:
-            return MediaTaskStatus.error
+            return false
         }
+    }
+
+    var isShareActionInfoShown: Bool {
+        !isDownloadActionInfoShown
     }
 }
 
@@ -131,6 +132,31 @@ struct GalleryMedia: Equatable {
         return mediaItems.reduce([]) { $0 + $1.resources }
     }
 
+    /// Returns the media resource for a reduced resource index (from `mediaResources` array).
+    ///
+    /// - Parameters:
+    ///    - reducedResourceIndex: Index of the resource to get in `mediaResources` array.
+    ///
+    /// - Returns: The media resource at index `reducedResourceIndex` in `mediaResources` if found, nil otherwise.
+    func mediaResource(for reducedResourceIndex: Int) -> MediaItem.Resource? {
+        guard let mediaResources = mediaResources,
+              reducedResourceIndex < mediaResources.count  else { return nil }
+
+        return mediaResources[reducedResourceIndex]
+    }
+
+    /// Returns the media item for a reduced resource index (from `mediaResources` array).
+    ///
+    /// - Parameters:
+    ///    - reducedResourceIndex: Index of the resource to get in `mediaResources` array.
+    ///
+    /// - Returns: The media item from `mediaItems` array containing the desired resource if found, nil otherwise.
+    func mediaItem(for reducedResourceIndex: Int) -> MediaItem? {
+        guard let mediaResource = mediaResource(for: reducedResourceIndex) else { return nil }
+
+        return mediaItems?.first(where: { $0.resources.map({ $0.uid }).contains(mediaResource.uid) })
+    }
+
     // MARK: - Equatable Protocol
     static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.uid == rhs.uid
@@ -142,18 +168,37 @@ struct GalleryMedia: Equatable {
             && lhs.urls == rhs.urls
     }
 
-    // MARK: - Internal Funcs
-    /// Determines if the panorama is already generated or not.
-    ///
-    /// - Parameters:
-    ///     - type: Panorama media type for 360 panorama.
-    /// - Returns: a boolean to know if panorama has already been generated for current media.
-    func isPanoramaAlreadyGenerated(type: PanoramaMediaType?) -> Bool {
-        guard let urls = self.urls,
-              let panoramaType = self.type.toPanoramaType else {
+    /// Whether an immersive panorama can be shown for the media.
+    var canShowImmersivePanorama: Bool {
+        guard let panoramaType = type.toPanoramaType,
+              panoramaType == .sphere else {
+            // Not a sphere panorama media type.
             return false
         }
 
+        guard let urls = urls else { return false }
         return urls.contains(where: { $0.lastPathComponent.contains(panoramaType.rawValue) })
+    }
+
+    /// Whether a panorama can be generated for the media.
+    /// `false` if not a panorama media type or if panorama has already been generated, `true` else.
+    var canGeneratePanorama: Bool {
+        guard let panoramaType = type.toPanoramaType else {
+            // Not a panorama media type.
+            return false
+        }
+
+        guard let urls = urls else { return false }
+        return !urls.contains(where: { $0.lastPathComponent.contains(panoramaType.rawValue) })
+    }
+
+    var displayTitle: String? {
+        let customTitle = mainMediaItem?.customTitle?
+            .replacingOccurrences(of: "(", with: "")
+            .replacingOccurrences(of: ")", with: "")
+
+        return customTitle?.isEmpty ?? true
+            ? date.formattedString(dateStyle: .long, timeStyle: .short)
+            : customTitle
     }
 }

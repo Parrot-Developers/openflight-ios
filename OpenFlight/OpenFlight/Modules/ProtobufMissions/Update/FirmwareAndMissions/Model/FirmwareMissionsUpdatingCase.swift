@@ -35,8 +35,8 @@ import Reusable
 /// All cases for a `ProtobufMissionUpdatingTableViewCell` configuration.
 enum FirmwareMissionsUpdatingCase: Equatable {
     case mission(CurrentUpdatingStep, ProtobufMissionToUpdateData)
-    case downloadingFirmware(CurrentUpdatingStep)
-    case updatingFirmware(CurrentUpdatingStep)
+    case downloadingFirmware(CurrentUpdatingStep, FirmwareToUpdateData)
+    case updatingFirmware(CurrentUpdatingStep, FirmwareToUpdateData)
     case reboot(CurrentUpdatingStep)
 
     // MARK: - Equatable
@@ -47,11 +47,11 @@ enum FirmwareMissionsUpdatingCase: Equatable {
               let .mission(rhsUpdatingStep, rhsMissionToUpdate)):
             return lhsUpdatingStep == rhsUpdatingStep
                 && lhsMissionToUpdate == rhsMissionToUpdate
-        case (let .downloadingFirmware(lhsUpdatingStep),
-              let .downloadingFirmware(rhsUpdatingStep)):
+        case (let .downloadingFirmware(lhsUpdatingStep, _),
+              let .downloadingFirmware(rhsUpdatingStep, _)):
             return lhsUpdatingStep == rhsUpdatingStep
-        case (let .updatingFirmware(lhsUpdatingStep),
-              let .updatingFirmware(rhsUpdatingStep)):
+        case (let .updatingFirmware(lhsUpdatingStep, _),
+              let .updatingFirmware(rhsUpdatingStep, _)):
             return lhsUpdatingStep == rhsUpdatingStep
         case (let .reboot(lhsUpdatingStep), let .reboot(rhsUpdatingStep)):
             return lhsUpdatingStep == rhsUpdatingStep
@@ -67,11 +67,11 @@ extension FirmwareMissionsUpdatingCase {
     var missionUpdatingLabelText: String {
         switch self {
         case let .mission(_, mission):
-            return L10n.firmwareMissionUpdateUpdatingMission(mission.missionName)
-        case .downloadingFirmware:
-            return L10n.firmwareMissionUpdateDownloadingFirmware
-        case .updatingFirmware:
-            return L10n.firmwareMissionUpdateSendingToDrone
+            return L10n.firmwareMissionUpdateUpdatingMission(mission.missionNameAndVersion)
+        case let .downloadingFirmware(_, firmware):
+            return L10n.firmwareMissionUpdateDownloadingFirmware(firmware.firmwareIdealVersion)
+        case let .updatingFirmware(_, firmware):
+            return L10n.firmwareMissionUpdateSendingToDrone(firmware.firmwareIdealVersion)
         case .reboot:
             return L10n.firmwareMissionUpdateRebootAndUpdate
         }

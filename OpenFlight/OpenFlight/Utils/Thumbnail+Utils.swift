@@ -31,14 +31,15 @@
 import AVFoundation
 import GroundSdk
 import UIKit
+import MapKit
 
 /// Utilities to handle image thumbnails.
-
 final class ThumbnailUtils {
     // MARK: - Constants
     private enum Constants {
         static let thumbnailWidth: CGFloat = 300
         static let timeTolerance: Double = 1.0
+        static let coordinateSpan: CLLocationDegrees = 0.03
     }
 
     // MARK: - Public Properties
@@ -65,6 +66,32 @@ final class ThumbnailUtils {
             loadThumbnailFromCache(resourceURL: resourceURL, completion: completion)
         } else if FileManager.default.fileExists(atPath: resourceURL.path) {
             generateThumbnail(resourceURL: resourceURL, isVideo: isVideo, completion: completion)
+        }
+    }
+
+    /// Generates the map thumbnail.
+    ///
+    /// - Parameters:
+    ///    - location: the center location of the thumbnail
+    ///    - thumbnailSize: the size of the thumbnail
+    ///    - completion: completion block
+    static func generateMapThumbnail(location: CLLocation,
+                                     thumbnailSize: CGSize? = nil,
+                                     completion: @escaping (UIImage?) -> Void) {
+        let center = location.coordinate
+        let mapSnapshotterOptions = MKMapSnapshotter.Options()
+        let region = MKCoordinateRegion(center: center,
+                                        span: MKCoordinateSpan(latitudeDelta: Constants.coordinateSpan,
+                                                               longitudeDelta: Constants.coordinateSpan))
+        mapSnapshotterOptions.region = region
+        mapSnapshotterOptions.mapType = .satellite
+        mapSnapshotterOptions.size = thumbnailSize ?? CGSize(width: Constants.thumbnailWidth,
+                                                             height: Constants.thumbnailWidth)
+        let snapShotter = MKMapSnapshotter(options: mapSnapshotterOptions)
+        DispatchQueue.global(qos: .background).async {
+            snapShotter.start { (snapshot: MKMapSnapshotter.Snapshot?, _) in
+                completion(snapshot?.image)
+            }
         }
     }
 }

@@ -111,8 +111,8 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
 
         zIndex = Int(wayPoint.altitude)
         self.wayPoint = wayPoint
-        self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index
-        self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = wayPoint.poiIndex
+        attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index
+        attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = wayPoint.poiIndex
 
         refreshText(altitude: wayPoint.formattedAltitude)
         applyRotation()
@@ -139,7 +139,7 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
                    symbol: symbol,
                    attributes: nil)
 
-        self.attributes[AGSConstants.wayPointAttributeKey] = true
+        attributes[AGSConstants.wayPointAttributeKey] = true
         refreshText(altitude: location.formattedAltitude)
         self.symbol = getSymbol()
     }
@@ -169,12 +169,12 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
             : Constants.defaultColor
         refreshText(altitude: wayPoint?.formattedAltitude ?? "")
         applyRotation()
-        self.symbol = getSymbol()
+        symbol = getSymbol()
     }
 
     override func updateAltitude(_ altitude: Double) {
         let changeAltitude = (wayPoint?.altitude ?? 0.0) != altitude
-        self.geometry = mapPoint?.withAltitude(altitude)
+        geometry = mapPoint?.withAltitude(altitude)
         wayPoint?.altitude = altitude
 
         if changeAltitude {
@@ -190,7 +190,7 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     /// - Parameters:
     ///     - altitude: altitude to display
     private func refreshText(altitude: String) {
-        let altitudeImage = FlightPlanPointGraphic.imageWith(name: wayPoint?.formattedAltitude,
+        let altitudeImage = FlightPlanPointGraphic.imageWith(name: altitude,
                             textColor: isSelected ? Constants.mainTextSelectedColor : Constants.mainTextColor,
                             fontSize: Constants.fontSizeMainLabel,
                             size: CGSize(width: Constants.largeCircleSize, height: Constants.largeCircleSize))
@@ -220,9 +220,9 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     ///
     /// - Parameters:
     ///     - heading: camera heading
-    func update(heading: Double) {
-        if self.heading != Int(heading) {
-            self.heading = Int(heading)
+    func update(heading newHeading: Double) {
+        if heading != Int(newHeading) {
+            heading = Int(newHeading)
             applyRotation()
             symbol = getSymbol()
         }
@@ -243,15 +243,15 @@ public extension FlightPlanWayPointGraphic {
     /// - Parameters:
     ///    - point: new point to apply
     func update(with point: AGSPoint) {
-        self.geometry = point
+        geometry = point
     }
 
     func decrementWayPointIndex() {
         guard let index = wayPointIndex, index > 0 else { return }
-        self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index - 1
+        attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index - 1
         refreshIndex(index: String(index - 1 + Constants.displayedIndexOffset))
         applyRotation()
-        self.symbol = getSymbol()
+        symbol = getSymbol()
     }
 
     func incrementWayPointIndex() {

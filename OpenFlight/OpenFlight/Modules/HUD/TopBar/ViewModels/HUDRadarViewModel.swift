@@ -112,7 +112,6 @@ final class HUDRadarViewModel: DevicesStateViewModel<HUDRadarState> {
     private var droneCompassRef: Ref<Compass>?
     private var droneGpsRef: Ref<Gps>?
     private var remoteControlCompassRef: Ref<Compass>?
-    private var remoteStateRef: Ref<DeviceState>?
     private lazy var motionManager = CMMotionManager()
     private var orientationRight: Bool {
         return UIApplication.shared.statusBarOrientation == .landscapeRight

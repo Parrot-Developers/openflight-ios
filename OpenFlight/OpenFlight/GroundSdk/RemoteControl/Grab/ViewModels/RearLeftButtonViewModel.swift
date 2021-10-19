@@ -32,9 +32,16 @@ import GroundSdk
 
 /// Handles Remote Control rear left button grab logic.
 final class RearLeftButtonViewModel: DroneStateViewModel<DeviceConnectionState> {
-    // MARK: - Private Enums
-    private enum Constants {
-        static let defaultZoom: Double = 1.0
+
+    /// Service for zoom control.
+    private unowned var zoomService: ZoomService
+
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///   - zoomService: zoom service
+    init(zoomService: ZoomService) {
+        self.zoomService = zoomService
     }
 }
 
@@ -45,7 +52,7 @@ extension RearLeftButtonViewModel {
         guard state == .pressed else { return }
 
         resetTilt()
-        resetZoom()
+        zoomService.resetZoom()
     }
 }
 
@@ -56,13 +63,5 @@ private extension RearLeftButtonViewModel {
         guard let gimbal = drone?.getPeripheral(Peripherals.gimbal) else { return }
 
         gimbal.resetAttitude()
-    }
-
-    /// Resets zoom level.
-    func resetZoom() {
-        guard let zoom = drone?.currentCamera?.zoom else { return }
-
-        zoom.control(mode: .level,
-                     target: Constants.defaultZoom)
     }
 }

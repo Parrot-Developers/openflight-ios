@@ -128,7 +128,7 @@ private extension RemoteDetailsInformationsViewController {
 
         serialNumberView.model = DeviceInformationsModel(title: L10n.remoteDetailsSerialNumber,
                                                          description: state.serialNumber)
-        firmwareVersionView.model = DeviceInformationsModel(title: L10n.deviceDetailsFirmwareVersion,
+        firmwareVersionView.model = DeviceInformationsModel(title: L10n.remoteDetailsFirmwareVersion,
                                                             description: state.firmwareVersion)
         hardwareVersionView.model = DeviceInformationsModel(title: L10n.droneDetailsHardwareVersion,
                                                             description: state.hardwareVersion)

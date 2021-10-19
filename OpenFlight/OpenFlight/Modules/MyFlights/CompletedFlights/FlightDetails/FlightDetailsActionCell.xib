@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="FlightDetailsActionCell" rowHeight="64" id="SV2-SV-Wuf" customClass="FlightDetailsActionCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="180" height="64"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="SV2-SV-Wuf" id="aMZ-qX-WQt">
+                <rect key="frame" x="0.0" y="0.0" width="180" height="64"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nh0-XJ-zBG">
+                        <rect key="frame" x="20" y="7" width="140" height="50"/>
+                        <color key="backgroundColor" name="white_albescent"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="50" id="upg-Uu-Gcb"/>
+                        </constraints>
+                        <state key="normal" title="Button">
+                            <color key="titleColor" name="default_text_color"/>
+                        </state>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                <integer key="value" value="9"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                        <connections>
+                            <action selector="action" destination="SV2-SV-Wuf" eventType="touchUpInside" id="0Nu-GN-aE4"/>
+                        </connections>
+                    </button>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <constraints>
+                    <constraint firstAttribute="bottom" secondItem="Nh0-XJ-zBG" secondAttribute="bottom" constant="7" id="1dX-u1-BQ3"/>
+                    <constraint firstAttribute="trailing" secondItem="Nh0-XJ-zBG" secondAttribute="trailing" constant="20" id="30J-dW-gj0"/>
+                    <constraint firstItem="Nh0-XJ-zBG" firstAttribute="leading" secondItem="aMZ-qX-WQt" secondAttribute="leading" constant="20" id="8bz-AO-2CM"/>
+                    <constraint firstItem="Nh0-XJ-zBG" firstAttribute="top" secondItem="aMZ-qX-WQt" secondAttribute="top" constant="7" id="XuP-lK-9XX"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="button" destination="Nh0-XJ-zBG" id="ETi-Ah-TFS"/>
+            </connections>
+            <point key="canvasLocation" x="-156.52173913043478" y="-8.3705357142857135"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="white_albescent">
+            <color red="0.87450980392156863" green="0.84705882352941175" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

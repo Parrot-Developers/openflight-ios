@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// Utility extension for auto landing.
-
 extension Drone {
     // MARK: - Internal Properties
     /// Returns current auto landing alerts.
@@ -46,33 +45,21 @@ extension Drone {
         let tooHotAlarm = alarms.getAlarm(kind: .batteryTooHot)
         let tooColdAlarm = alarms.getAlarm(kind: .batteryTooCold)
         let autoLandingAlarm = alarms.getAlarm(kind: .automaticLandingBatteryIssue)
-        let powerAlarm = alarms.getAlarm(kind: .power)
-        if autoLandingAlarm.level == .critical
-            && !isStateLanded {
-            alerts.append(HUDBannerCriticalAlertType.forceLandingFlyAway)
-        }
         if flyingIndicators.state == .emergencyLanding
             && (tooHotAlarm.level == .critical
                 || tooColdAlarm.level == .critical) {
             alerts.append(HUDBannerCriticalAlertType.forceLandingTemperature)
         }
-        if flyingIndicators.state != .landed
-            && autoLandingAlarm.level == .critical {
+        // Display forceLanding banner only when landing.
+        if flyingIndicators.state != .landed,
+           autoLandingAlarm.level == .critical,
+           alarms.automaticLandingDelay == 0 {
             alerts.append(HUDBannerCriticalAlertType.forceLandingLowBattery)
         }
-        if autoLandingAlarm.level == .warning
-            && flyingIndicators.state == .flying
-            && (returnHome.homeReachability == .notReachable
-                || returnHome.homeReachability == .unknown) {
-            // TODO: handle delay before auto land
-            alerts.append(HUDBannerCriticalAlertType.veryLowBatteryLanding)
-        }
-        if flyingIndicators.state == .flying
-            && flyingIndicators.flyingState != .landing
-            && !isReturningHome
-            && (powerAlarm.level == .critical
-                || returnHome.homeReachability == .critical) {
-            alerts.append(HUDBannerCriticalAlertType.veryLowBattery)
+        if flyingIndicators.state == .flying,
+           returnHome.homeReachability == .notReachable,
+           returnHome.state == .idle {
+            alerts.append(HUDBannerCriticalAlertType.wontReachHome)
         }
         return alerts
     }

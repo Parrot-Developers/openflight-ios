@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
-    <device id="ipad10_5" orientation="portrait" layout="fullscreen" appearance="light"/>
+    <device id="retina3_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
@@ -15,36 +15,36 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="SettingsControlModeCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsControlModeCell" rowHeight="445" id="uxn-Ir-Blo" customClass="SettingsControlModeCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="1101" height="445"/>
+        <tableViewCell opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="SettingsControlModeCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsControlModeCell" rowHeight="397" id="uxn-Ir-Blo" customClass="SettingsControlModeCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="890" height="397"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="uxn-Ir-Blo" id="tM8-E8-7Dj">
-                <rect key="frame" x="0.0" y="0.0" width="1101" height="445"/>
+                <rect key="frame" x="0.0" y="0.0" width="890" height="397"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <stackView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="593" placeholderIntrinsicHeight="283.5" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="dsh-CT-H4c">
-                        <rect key="frame" x="-18.5" y="0.0" width="1138" height="333"/>
+                        <rect key="frame" x="-24.5" y="0.0" width="939" height="285"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Q06-gY-bjp">
-                                <rect key="frame" x="0.0" y="0.0" width="1138" height="333"/>
+                                <rect key="frame" x="0.0" y="0.0" width="939" height="285"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="bottom" translatesAutoresizingMaskIntoConstraints="NO" id="WSB-Kl-k8Z">
-                                        <rect key="frame" x="0.0" y="66.5" width="327" height="200"/>
+                                        <rect key="frame" x="0.0" y="77.5" width="327" height="130"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Joc-k3-NvW">
-                                                <rect key="frame" x="293.5" y="0.0" width="33.5" height="66.5"/>
+                                                <rect key="frame" x="293.5" y="0.0" width="33.5" height="43.5"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Inx-YW-vLp">
-                                                <rect key="frame" x="293.5" y="66.5" width="33.5" height="67"/>
+                                                <rect key="frame" x="293.5" y="43.5" width="33.5" height="43"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UmV-fl-duJ">
-                                                <rect key="frame" x="293.5" y="133.5" width="33.5" height="66.5"/>
+                                                <rect key="frame" x="293.5" y="86.5" width="33.5" height="43.5"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
@@ -66,7 +66,7 @@
                                         </variation>
                                     </stackView>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRemoteIllu" translatesAutoresizingMaskIntoConstraints="NO" id="44H-Yx-yZG">
-                                        <rect key="frame" x="335" y="60" width="468" height="213"/>
+                                        <rect key="frame" x="335" y="36" width="269" height="213"/>
                                         <constraints>
                                             <constraint firstAttribute="width" priority="999" constant="269" id="9b2-AZ-wJV"/>
                                             <constraint firstAttribute="width" constant="468" id="FXx-4c-0Qy"/>
@@ -83,19 +83,17 @@
                                         </variation>
                                     </imageView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="UVm-CD-Gf4">
-                                        <rect key="frame" x="811" y="66.5" width="327" height="200"/>
+                                        <rect key="frame" x="612" y="77.5" width="327" height="130"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2GG-sM-bB7">
-                                                <rect key="frame" x="0.0" y="0.0" width="220" height="66.5"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="180" height="43.5"/>
                                                 <subviews>
                                                     <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="jGL-ed-od2">
-                                                        <rect key="frame" x="0.0" y="13.5" width="236" height="41"/>
+                                                        <rect key="frame" x="0.0" y="4" width="180" height="36"/>
                                                         <color key="backgroundColor" name="white_albescent"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" priority="999" constant="180" id="96e-Qh-EGO"/>
-                                                            <constraint firstAttribute="height" priority="999" constant="35" id="FHs-Qa-wtN"/>
-                                                            <constraint firstAttribute="width" constant="236" id="b9U-Do-W7W"/>
-                                                            <constraint firstAttribute="height" constant="40" id="y0u-gM-1fy"/>
+                                                            <constraint firstAttribute="height" constant="35" id="FHs-Qa-wtN"/>
+                                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="40" id="Zoq-Sz-GD1"/>
                                                         </constraints>
                                                         <segments>
                                                             <segment title="First"/>
@@ -104,14 +102,13 @@
                                                         <color key="selectedSegmentTintColor" name="highlight_color"/>
                                                         <variation key="default">
                                                             <mask key="constraints">
-                                                                <exclude reference="b9U-Do-W7W"/>
-                                                                <exclude reference="y0u-gM-1fy"/>
+                                                                <exclude reference="Zoq-Sz-GD1"/>
                                                             </mask>
                                                         </variation>
                                                         <variation key="heightClass=regular-widthClass=regular">
                                                             <mask key="constraints">
-                                                                <include reference="b9U-Do-W7W"/>
-                                                                <include reference="y0u-gM-1fy"/>
+                                                                <exclude reference="FHs-Qa-wtN"/>
+                                                                <include reference="Zoq-Sz-GD1"/>
                                                             </mask>
                                                         </variation>
                                                         <connections>
@@ -121,18 +118,32 @@
                                                 </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
+                                                    <constraint firstAttribute="trailing" secondItem="jGL-ed-od2" secondAttribute="trailing" id="6pA-T7-f0n"/>
                                                     <constraint firstItem="jGL-ed-od2" firstAttribute="centerY" secondItem="2GG-sM-bB7" secondAttribute="centerY" id="F5h-fp-aCr"/>
+                                                    <constraint firstAttribute="width" constant="180" id="M6t-e5-xRA"/>
                                                     <constraint firstItem="jGL-ed-od2" firstAttribute="leading" secondItem="2GG-sM-bB7" secondAttribute="leading" id="c8R-RY-D9P"/>
+                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="236" id="ztG-A8-c3e"/>
                                                 </constraints>
+                                                <variation key="default">
+                                                    <mask key="constraints">
+                                                        <exclude reference="ztG-A8-c3e"/>
+                                                    </mask>
+                                                </variation>
+                                                <variation key="heightClass=regular-widthClass=regular">
+                                                    <mask key="constraints">
+                                                        <exclude reference="M6t-e5-xRA"/>
+                                                        <include reference="ztG-A8-c3e"/>
+                                                    </mask>
+                                                </variation>
                                             </view>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yvm-aP-gQL">
-                                                <rect key="frame" x="0.0" y="66.5" width="33.5" height="67"/>
+                                                <rect key="frame" x="0.0" y="43.5" width="33.5" height="43"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="smh-ig-qo4">
-                                                <rect key="frame" x="0.0" y="133.5" width="33.5" height="66.5"/>
+                                                <rect key="frame" x="0.0" y="86.5" width="33.5" height="43.5"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
@@ -159,25 +170,25 @@
                                 </constraints>
                             </stackView>
                             <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="4sI-Fb-IQi">
-                                <rect key="frame" x="0.0" y="333" width="1138" height="200"/>
+                                <rect key="frame" x="0.0" y="285" width="939" height="0.0"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="bottom" translatesAutoresizingMaskIntoConstraints="NO" id="fHz-pF-dOg">
-                                        <rect key="frame" x="0.0" y="0.0" width="327" height="200"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="327" height="0.0"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oUW-dV-Pdk">
-                                                <rect key="frame" x="293.5" y="0.0" width="33.5" height="66.5"/>
+                                                <rect key="frame" x="293.5" y="0.0" width="33.5" height="0.0"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="frG-Pa-vHr">
-                                                <rect key="frame" x="293.5" y="66.5" width="33.5" height="67"/>
+                                                <rect key="frame" x="293.5" y="0.0" width="33.5" height="0.0"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jWs-pA-QBy">
-                                                <rect key="frame" x="293.5" y="133.5" width="33.5" height="66.5"/>
+                                                <rect key="frame" x="293.5" y="0.0" width="33.5" height="0.0"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
@@ -199,7 +210,7 @@
                                         </variation>
                                     </stackView>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iphoneControlMode1" translatesAutoresizingMaskIntoConstraints="NO" id="H4e-d0-9uC">
-                                        <rect key="frame" x="335" y="16" width="468" height="168"/>
+                                        <rect key="frame" x="335" y="0.0" width="269" height="0.0"/>
                                         <constraints>
                                             <constraint firstAttribute="width" priority="999" constant="269" id="2Gc-Fi-A7B"/>
                                             <constraint firstAttribute="width" constant="468" id="Tws-Bz-mc4"/>
@@ -216,13 +227,13 @@
                                         </variation>
                                     </imageView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="bdL-cQ-WbF">
-                                        <rect key="frame" x="811" y="25" width="327" height="150"/>
+                                        <rect key="frame" x="612" y="0.0" width="327" height="0.0"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8Ep-wf-T6r">
-                                                <rect key="frame" x="0.0" y="0.0" width="327" height="150"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="327" height="0.0"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MSj-KB-ebO">
-                                                        <rect key="frame" x="0.0" y="135" width="327" height="15"/>
+                                                        <rect key="frame" x="0.0" y="-15" width="327" height="15"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                         <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
@@ -263,7 +274,7 @@
                         </subviews>
                     </stackView>
                     <stackView opaque="NO" contentMode="scaleToFill" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="yGH-rD-3sm" userLabel="Joystick mode Stack View">
-                        <rect key="frame" x="235.5" y="363" width="630" height="52"/>
+                        <rect key="frame" x="130" y="315" width="630" height="52"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="e01-bG-aA8">
                                 <rect key="frame" x="0.0" y="0.0" width="500" height="52"/>
@@ -378,7 +389,7 @@
                 <outlet property="virtualJogsView" destination="4sI-Fb-IQi" id="U5o-2j-t4w"/>
                 <outlet property="zoomExpoSegmentedControl" destination="jGL-ed-od2" id="7o8-sW-C1x"/>
             </connections>
-            <point key="canvasLocation" x="-100.625" y="2.8125"/>
+            <point key="canvasLocation" x="-108.75" y="-10.3125"/>
         </tableViewCell>
     </objects>
     <resources>

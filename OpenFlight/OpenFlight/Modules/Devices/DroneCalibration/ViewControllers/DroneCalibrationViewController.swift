@@ -161,13 +161,13 @@ private extension DroneCalibrationViewController {
     /// Sets up view models associated with the view.
     func setupViewModels() {
         gimbalCalibrationChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icGimbal.image,
-                                                                       text: L10n.droneGimbalTitle)
+                                                                       title: L10n.droneGimbalTitle)
         correctHorizonChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icCorrectHorizon.image,
-                                                                    text: L10n.droneHorizonCalibration)
+                                                                    title: L10n.droneHorizonCalibration)
         magnetometerChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icDroneDetailsAvailable.image,
-                                                                  text: L10n.droneMagnetometerTitle)
+                                                                  title: L10n.droneMagnetometerTitle)
         obstacleDetectionChoiceView.viewModel = CalibrationChoiceModel(image: Asset.Drone.icCalibrateStereoVision.image,
-                                                                       text: L10n.droneObstacleDetectionTitle)
+                                                                       title: L10n.droneObstacleDetectionTitle)
     }
 
     /// Binds the view model to the view
@@ -210,12 +210,12 @@ private extension DroneCalibrationViewController {
                            viewModel.$gimbalCalibrationDescription)
             .sink { [unowned self]  (gimbalState, calibrationState, calibrationDescription) in
                 if gimbalState == .needed {
-                    gimbalCalibrationChoiceView.viewModel?.subText = calibrationState?.description ?? ""
-                    gimbalCalibrationChoiceView.viewModel?.textColor = ColorName.white.color
-                    gimbalCalibrationChoiceView.viewModel?.subTextColor = .white
+                    gimbalCalibrationChoiceView.viewModel?.subtitle = calibrationState?.description ?? ""
+                    gimbalCalibrationChoiceView.viewModel?.titleColor = ColorName.white.color
+                    gimbalCalibrationChoiceView.viewModel?.subtitleColor = .white
                     gimbalCalibrationChoiceView.viewModel?.backgroundColor = .errorColor
                 } else {
-                    gimbalCalibrationChoiceView.viewModel?.subText = calibrationDescription
+                    gimbalCalibrationChoiceView.viewModel?.subtitle = calibrationDescription
                 }
             }
             .store(in: &cancellables)
@@ -229,13 +229,13 @@ private extension DroneCalibrationViewController {
             }
             .store(in: &cancellables)
 
-        viewModel.$gimbalCalibrationTextColor
+        viewModel.$gimbalCalibrationTitleColor
             .combineLatest(viewModel.$frontStereoGimbalState)
             .sink { [unowned self] (textColor, gimbalState) in
                 if gimbalState != .needed {
                     let color = textColor ?? Constants.defaultTextColor
-                    gimbalCalibrationChoiceView.viewModel?.textColor = color.color
-                    gimbalCalibrationChoiceView.viewModel?.subTextColor = color
+                    gimbalCalibrationChoiceView.viewModel?.titleColor = color.color
+                    gimbalCalibrationChoiceView.viewModel?.subtitleColor = color
                 }
             }
             .store(in: &cancellables)
@@ -246,9 +246,9 @@ private extension DroneCalibrationViewController {
         viewModel.$magnetometerState
             .sink { [unowned self] magnetometerState in
                 let textColor = magnetometerState?.subtextColor ?? Constants.defaultTextColor
-                magnetometerChoiceView.viewModel?.subText = magnetometerState?.description
-                magnetometerChoiceView.viewModel?.textColor = textColor.color
-                magnetometerChoiceView.viewModel?.subTextColor = textColor
+                magnetometerChoiceView.viewModel?.subtitle = magnetometerState?.description
+                magnetometerChoiceView.viewModel?.titleColor = textColor.color
+                magnetometerChoiceView.viewModel?.subtitleColor = textColor
                 magnetometerChoiceView.viewModel?.backgroundColor = magnetometerState?.backgroundColor ?? Constants.defaultBackgroundColor
             }
             .store(in: &cancellables)
@@ -259,9 +259,9 @@ private extension DroneCalibrationViewController {
         viewModel.$stereoVisionSensorsState
             .sink { [unowned self] stereoVisionSensorsState in
                 let textColor = stereoVisionSensorsState?.subtextColor ?? Constants.defaultTextColor
-                obstacleDetectionChoiceView.viewModel?.subText = stereoVisionSensorsState?.description
-                obstacleDetectionChoiceView.viewModel?.textColor = textColor.color
-                obstacleDetectionChoiceView.viewModel?.subTextColor = textColor
+                obstacleDetectionChoiceView.viewModel?.subtitle = stereoVisionSensorsState?.description
+                obstacleDetectionChoiceView.viewModel?.titleColor = textColor.color
+                obstacleDetectionChoiceView.viewModel?.subtitleColor = textColor
                 obstacleDetectionChoiceView.viewModel?.backgroundColor = stereoVisionSensorsState?.backgroundColor ?? Constants.defaultBackgroundColor
             }
             .store(in: &cancellables)

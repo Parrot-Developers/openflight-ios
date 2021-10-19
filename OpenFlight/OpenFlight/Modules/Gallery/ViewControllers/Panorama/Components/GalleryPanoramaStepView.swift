@@ -37,7 +37,8 @@ final class GalleryPanoramaStepView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var backgroundView: UIView!
     @IBOutlet private weak var imageView: UIImageView!
-    @IBOutlet private weak var label: UILabel!
+    @IBOutlet private weak var descLabel: UILabel!
+    @IBOutlet private weak var errorLabel: UILabel!
 
     // MARK: - Internal Properties
     var model: GalleryPanoramaStepModel? {
@@ -72,8 +73,18 @@ private extension GalleryPanoramaStepView {
     ///    - model: model for the view.
     func update(with model: GalleryPanoramaStepModel?) {
         guard let model = model else { return }
-        self.imageView.image = model.image
-        self.label.makeUp(with: .big, and: model.textColor)
-        self.label.text = model.text
+
+        imageView.image = model.stateIcon
+        descLabel.text = model.step.descModel.text
+        errorLabel.text = model.step.descModel.errorText
+
+        imageView.tintColor = model.status.iconColor.color
+        descLabel.makeUp(with: .big, and: model.status.textColor)
+        errorLabel.makeUp(with: .large, and: ColorName.errorColor)
+        errorLabel.isHiddenInStackView = model.status != .failure
+        // Update alpha in addition to isHidden in order to get cleaner appearance animation.
+        errorLabel.alphaHidden(model.status != .failure)
+
+        alpha = model.status != .inactive ? 1 : 0.3
     }
 }

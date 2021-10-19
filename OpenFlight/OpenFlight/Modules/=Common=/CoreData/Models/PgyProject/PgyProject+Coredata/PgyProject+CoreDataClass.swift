@@ -30,7 +30,7 @@
 import Foundation
 import CoreData
 
-@objc(PgyProjects)
+@objc(PgyProject)
 public class PgyProject: NSManagedObject {
 
 }

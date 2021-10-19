@@ -30,7 +30,6 @@
 import GroundSdk
 
 /// Instrument utility extension for Drone.
-
 public extension Drone {
     // MARK: - Internal Properties
     /// Returns true if drone has flying state at call time.
@@ -52,11 +51,6 @@ public extension Drone {
     /// Returns true if drone is landing at call time.
     var isLanding: Bool {
         return getInstrument(Instruments.flyingIndicators)?.flyingState == .landing
-    }
-
-    /// Returns true if drone is landed or landing at call time.
-    var isLandedOrLanding: Bool {
-        return isLanding || isStateLanded
     }
 
     /// Returns true if drone is taking off at call time.

@@ -185,6 +185,10 @@ extension DetailsCellularStatus {
         return self == .simLocked || self == .userNotPaired || self == .noData
     }
 
+    var shouldShowPinAction: Bool {
+        return self == .simLocked
+    }
+    
     /// Returns action button title.
     var actionButtonTitle: String {
         switch self {

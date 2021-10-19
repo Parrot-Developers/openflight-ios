@@ -35,6 +35,7 @@ final class DroneCalibrationInstructionsView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var imageViewHeightConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var imageViewHeightConstraintWRHR: NSLayoutConstraint!
     @IBOutlet private weak var firstLabel: UILabel!
     @IBOutlet private weak var secondLabel: UILabel!
     @IBOutlet private weak var itemsStackView: UIStackView!
@@ -70,6 +71,7 @@ private extension DroneCalibrationInstructionsView {
     func fill(with viewModel: DroneCalibrationInstructionsModel) {
         imageView.image = viewModel.image
         imageViewHeightConstraint.priority = (viewModel.image == nil) ? UILayoutPriority(rawValue: 500) : UILayoutPriority(rawValue: 1000)
+        imageViewHeightConstraintWRHR.priority = (viewModel.image == nil) ? UILayoutPriority(rawValue: 500) : UILayoutPriority(rawValue: 1000)
         firstLabel.text = viewModel.firstLabel
         firstLabel.textColor = viewModel.firstLabelColor
         firstLabel.textAlignment = viewModel.firstLabelAlignment

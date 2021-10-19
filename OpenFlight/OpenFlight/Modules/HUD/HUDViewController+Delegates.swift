@@ -56,7 +56,8 @@ extension HUDViewController: HUDTopBarViewControllerNavigation {
 
 // MARK: - HUDCameraStreamingViewControllerDelegate
 extension HUDViewController: HUDCameraStreamingViewControllerDelegate {
-    func didUpdate(contentZone: CGRect?) {
+
+    public func didUpdate(contentZone: CGRect?) {
         // Sets up current content zone wherever it is needed.
         splitControls.setupRatio(withContentZone: contentZone)
         videoControls.lockAETargetZoneViewController?.streamingContentZone = contentZone

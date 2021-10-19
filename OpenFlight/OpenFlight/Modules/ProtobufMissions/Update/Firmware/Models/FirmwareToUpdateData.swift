@@ -51,7 +51,6 @@ struct FirmwareToUpdateData {
     let firmwareVersion: String
     let firmwareIdealVersion: String
     let allOperationsNeeded: [FirwmwareToUpdateOperation]
-    let firmwareNameAndVersion: String
 
     // MARK: - Private Properties
     fileprivate let droneWasConnected: Bool
@@ -65,7 +64,6 @@ struct FirmwareToUpdateData {
         self.firmwareVersion = firmwareVersion
         self.firmwareIdealVersion = firmwareIdealVersion
         self.droneWasConnected = droneIsConnected
-        self.firmwareNameAndVersion = firmwareName + " " + firmwareIdealVersion
 
         if firmwareUpdateNeeded && firmwareNeedToBeDownloaded {
             self.firmwareToUpdateStatus = .downloadAndUpdateNeeded

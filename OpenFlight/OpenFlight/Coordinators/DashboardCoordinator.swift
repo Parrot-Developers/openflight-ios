@@ -46,7 +46,10 @@ open class DashboardCoordinator: Coordinator {
 
     // MARK: - Public Funcs
     public func start() {
-        let dashboardViewModel = DashboardViewModel(service: services.ui.variableAssetsService)
+        let dashboardViewModel = DashboardViewModel(service: services.ui.variableAssetsService,
+                                                    projectManager: services.flightPlan.projectManager,
+                                                    cloudSynchroWatcher: services.cloudSynchroWatcher,
+                                                    projectManagerUiProvider: services.ui.projectManagerUiProvider)
         let viewController = DashboardViewController.instantiate(coordinator: self, viewModel: dashboardViewModel)
         // Prevents not fullscreen presentation style since iOS 13.
         viewController.modalPresentationStyle = .fullScreen
@@ -58,6 +61,7 @@ open class DashboardCoordinator: Coordinator {
     open func startPhotogrammetryDebug() {
 
     }
+
 }
 
 // MARK: - Dashboard Navigation
@@ -72,7 +76,7 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
 
     /// Starts Drone infos.
     func startDroneInfos() {
-        let droneCoordinator = DroneCoordinator()
+        let droneCoordinator = DroneCoordinator(services: services)
         droneCoordinator.parentCoordinator = self
         droneCoordinator.start()
         self.present(childCoordinator: droneCoordinator)
@@ -93,7 +97,7 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
     func startUpdate(model: DeviceUpdateModel) {
         switch model {
         case .drone:
-            let updateCoordinator = ProtobufMissionUpdateCoordinator()
+            let updateCoordinator = DroneFirmwaresCoordinator()
             updateCoordinator.parentCoordinator = self
             updateCoordinator.start()
             self.present(childCoordinator: updateCoordinator, overFullScreen: true)
@@ -111,6 +115,14 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
         self.present(childCoordinator: galleryCoordinator)
     }
 
+    /// Starts settings
+    func startSettings() {
+        let settingsCoordinator = SettingsCoordinator()
+        settingsCoordinator.parentCoordinator = self
+        settingsCoordinator.start()
+        self.present(childCoordinator: settingsCoordinator)
+    }
+
     /// Starts my flights.
     ///
     /// - Parameters:
@@ -120,20 +132,76 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
         self.push(viewController)
     }
 
+    /// Starts project manager.
+    func startProjectManager() {
+        let viewModel = ProjectManagerViewModel(coordinator: self,
+                                                manager: services.flightPlan.projectManager,
+                                                cloudSynchroWatcher: services.cloudSynchroWatcher,
+                                                projectManagerUiProvider: services.ui.projectManagerUiProvider)
+
+        let viewController = ProjectManagerViewController.instantiate(coordinator: self,
+                                                                      viewModel: viewModel)
+        push(viewController)
+    }
+
     /// Starts flights details.
-    func startFlightDetailsExecution(execution: FlightPlanModel) {
-//        let viewController = ExecutionSummaryViewController.instantiate(coordinator: self, viewModel: nil, execution: execution)
-//        self.push(viewController)
+    public func startFlightExecutionDetails(_ execution: FlightPlanModel) {
+        let viewModel = FlightDetailsViewController.ViewModel
+            .execution(FlightPlanExecutionViewModel(
+                        flightPlan: execution,
+                        flightRepository: services.repos.flight,
+                        coordinator: self,
+                        flightPlanExecutionDetailsSettingsProvider: Services.hub.ui.flightPlanExecutionDetailsSettingsProvider,
+                        flightPlanUiStateProvider: services.ui.flightPlanUiStateProvider))
+        let viewController = FlightDetailsViewController.instantiate(viewModel: viewModel)
+        self.push(viewController)
     }
 
     /// Starts flights details.
     func startFlightDetails(flight: FlightModel) {
         let viewModel = FlightDetailsViewModel(service: services.flight.service,
                                                flight: flight,
-                                               flightPlanTypeStore: services.flightPlan.typeStore)
-        let viewController = FlightDetailsViewController.instantiate(coordinator: self, viewModel: viewModel)
+                                               flightPlanTypeStore: services.flightPlan.typeStore,
+                                               coordinator: self)
+        let viewController = FlightDetailsViewController.instantiate(viewModel: .details(viewModel))
         self.push(viewController)
     }
+
+    /// Show delete flight confirmation popup.
+    ///
+    /// - Parameters:
+    ///     - didTapDelete: completion block called when user tap on delete button.
+    func showDeleteFlightPopupConfirmation(didTapDelete: @escaping () -> Void) {
+         let deleteAction = AlertAction(title: L10n.commonDelete,
+                                        style: .destructive,
+                                        actionHandler: { didTapDelete() })
+         let cancelAction = AlertAction(title: L10n.cancel,
+                                        style: .cancel,
+                                        actionHandler: {})
+         let alert = AlertViewController.instantiate(title: L10n.alertDeleteFlightLogTitle,
+                                                     message: L10n.alertDeleteFlightLogMessage,
+                                                     cancelAction: cancelAction,
+                                                     validateAction: deleteAction)
+         presentModal(viewController: alert)
+     }
+
+    /// Show delete project confirmation popup.
+    ///
+    /// - Parameters:
+    ///     - didTapDelete: completion block called when user tap on delete button.
+    func showDeleteProjectPopupConfirmation(didTapDelete: @escaping () -> Void) {
+         let deleteAction = AlertAction(title: L10n.commonDelete,
+                                        style: .destructive,
+                                        actionHandler: { didTapDelete() })
+         let cancelAction = AlertAction(title: L10n.cancel,
+                                        style: .cancel,
+                                        actionHandler: {})
+         let alert = AlertViewController.instantiate(title: L10n.alertDeleteProjectTitle,
+                                                     message: L10n.alertDeleteProjectMessage,
+                                                     cancelAction: cancelAction,
+                                                     validateAction: deleteAction)
+         presentModal(viewController: alert)
+     }
 
     /// Displays my acount screen.
     func startMyAccount() {
@@ -177,31 +245,18 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
         currentAccount.startMyFlightsAccountView()
         self.present(childCoordinator: loginCoordinator)
     }
+}
 
-    /// Starts Flight Plan Dashboard.
+extension DashboardCoordinator {
+
+    /// Opens a Project/Flight Plan vue.
     ///
     /// - Parameters:
-    /// TODO Used when new screen developped
-    ///     - projectModel: flightPlan project
-//    func startFlightPlanDashboard(projectModel: ProjectModel) {
-//        let viewController = FlightPlanDashboardViewController.instantiate(coordinator: self,
-//                                                                           projectModel: projectModel)
-//        self.presentModal(viewController: viewController)
-//    }
-
-    ///     - viewModel: flightPlan view model
-    func startFlightPlanDashboard(projectModel: ProjectModel) {
-        let viewController = ExecutionsListViewController.instantiate(
-            delegate: self,
-            flightPlanHandler: Services.hub.flightPlan.manager,
-            projectModel: projectModel,
-            tableType: .fullHistory)
-        self.push(viewController)
-    }
-
-    func startFlightPlanDashboard(flightPlan: FlightPlanModel) {
-        guard let project = services.flightPlan.projectManager.project(for: flightPlan) else { return }
-        startFlightPlanDashboard(projectModel: project)
+    ///     - project: a flightPlan project
+    func open(project: ProjectModel) {
+        dismissDashboard {
+            self.services.flightPlan.projectManager.loadEverythingAndOpen(project: project)
+        }
     }
 }
 
@@ -218,10 +273,6 @@ extension DashboardCoordinator: ExecutionsListDelegate {
 
     public func backDisplay() {
         self.back()
-    }
-
-    public func startFlightDetails(flightPlan: FlightPlanModel) {
-//        startFlightDetails(viewModel: T##FlightDataViewModel)
     }
 
     public func handleHistoryCellAction(with: FlightPlanModel, actionType: HistoryMediasActionType?) {

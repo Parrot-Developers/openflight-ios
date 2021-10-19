@@ -40,7 +40,7 @@ extension Drone {
     // MARK: - Internal Properties
     /// Returns true if drone is currently being updated.
     var isUpdating: Bool {
-        return self.getPeripheral(Peripherals.updater)?.currentUpdate != nil
+        return getPeripheral(Peripherals.updater)?.currentUpdate != nil
     }
 }
 
@@ -53,7 +53,7 @@ extension Drone.Model {
         case .anafi2:
             return "Anafi Ai"
         default:
-            return self.description.capitalized
+            return description.capitalized
         }
     }
 }

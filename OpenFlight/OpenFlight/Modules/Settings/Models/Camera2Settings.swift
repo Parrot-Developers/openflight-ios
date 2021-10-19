@@ -198,7 +198,6 @@ extension Camera2AudioRecordingMode: SettingMode {
     }
 
     static var allValues: [SettingMode] {
-        // TODO: add missing audio recording mode later.
         return [Camera2AudioRecordingMode.mute,
                 Camera2AudioRecordingMode.drone]
     }
@@ -251,10 +250,6 @@ extension Camera2DynamicRange: SettingMode {
         default:
             return ""
         }
-    }
-
-    var usedKey: String {
-        return description
     }
 
     static var usedValues: [SettingMode] {

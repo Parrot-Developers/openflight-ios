@@ -47,11 +47,11 @@ protocol HUDCriticalAlertDelegate: AnyObject {
 final class HUDCriticalAlertViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var panelView: UIView!
-    @IBOutlet private weak var alertTopView: UIView!
+    @IBOutlet private weak var topView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var topImageView: UIImageView!
     @IBOutlet private weak var mainImageView: UIImageView!
-    @IBOutlet private weak var buttonsView: UIView!
+    @IBOutlet private weak var buttonsStackView: UIView!
     @IBOutlet private weak var cancelButton: UIButton!
     @IBOutlet private weak var actionButton: UIButton!
     @IBOutlet private weak var descriptionLabel: UILabel!
@@ -125,8 +125,8 @@ private extension HUDCriticalAlertViewController {
     /// Inits panel view.
     func initView() {
         panelView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
-        alertTopView.cornerRadiusedWith(backgroundColor: .white, radius: Style.mediumCornerRadius)
-        alertTopView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
+        topView.cornerRadiusedWith(backgroundColor: .white, radius: Style.mediumCornerRadius)
+        topView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
         cancelButton.setTitle(L10n.cancel, for: .normal)
         actionButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                         radius: Style.largeCornerRadius)
@@ -143,7 +143,7 @@ private extension HUDCriticalAlertViewController {
         topImageView.image = alertModel.topIcon
         topImageView.tintColor = alertModel.topIconTintColor?.color
         topImageView.isHidden = alertModel.topIcon == nil
-        alertTopView.backgroundColor = alertModel.topBackgroundColor?.color
+        topView.backgroundColor = alertModel.topBackgroundColor?.color
         titleLabel.textColor = alertModel.topTitleColor?.color
         mainImageView.image = alertModel.mainImage
         descriptionLabel.text = alertModel.mainDescription

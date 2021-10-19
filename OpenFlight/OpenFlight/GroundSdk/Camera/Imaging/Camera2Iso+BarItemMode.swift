@@ -115,7 +115,7 @@ extension Camera2Iso: BarItemMode, RulerDisplayable, Sortable {
     }
 
     public static var allValues: [BarItemMode] {
-        return self.allCases.sorted()
+        return allCases.sorted()
     }
 
     public var subModes: [BarItemSubMode]? {

@@ -75,20 +75,14 @@ private extension DashboardMyAccountViewController {
 private extension DashboardMyAccountViewController {
     /// Initializes UI and wordings.
     func initUI() {
-        self.connectedAccountsLabel.makeUp(with: .small,
-                                           and: .white50)
-        self.addMyAccountLabel.makeUp(and: .white50)
-        self.connectedAccountsLabel.text = L10n.dashboardConnectedAccounts.uppercased()
-        self.addMyAccountLabel.text = Style.plusSign + L10n.dashboardAddMyAccount
-        self.addMyAccountView.cornerRadiusedWith(backgroundColor: .clear,
-                                                 borderColor: ColorName.white10.color,
-                                                 radius: Style.largeCornerRadius,
-                                                 borderWidth: Style.mediumBorderWidth)
-        self.firstView.cornerRadiusedWith(backgroundColor: ColorName.white80.color,
-                                          radius: Style.largeCornerRadius)
-        self.secondView.cornerRadiusedWith(backgroundColor: ColorName.white80.color,
-                                          radius: Style.largeCornerRadius)
-        self.thirdView.cornerRadiusedWith(backgroundColor: ColorName.white80.color,
-                                          radius: Style.largeCornerRadius)
+        connectedAccountsLabel.text = L10n.dashboardConnectedAccounts.uppercased()
+        addMyAccountLabel.text = Style.plusSign + L10n.dashboardAddMyAccount
+        addMyAccountView.cornerRadiusedWith(backgroundColor: .clear,
+                                            borderColor: ColorName.defaultTextColor.color,
+                                            radius: Style.largeCornerRadius,
+                                            borderWidth: Style.mediumBorderWidth)
+        firstView.layer.cornerRadius = Style.largeCornerRadius
+        secondView.layer.cornerRadius = Style.largeCornerRadius
+        thirdView.layer.cornerRadius = Style.largeCornerRadius
     }
 }

@@ -99,6 +99,13 @@ extension GalleryInternalMediaViewModel {
             // Enable streaming regarding status regarding status.
             strongSelf.drone?.getPeripheral(Peripherals.streamServer)?.enabled = !isRunning
 
+            guard mediaDownloader.status != .complete else {
+                // All files have been downloaded but mediadDownloader.totalProgress has not exactly reached 1.0 yet.
+                // => Need to send .success completion and exit.
+                completion(nil, true)
+                return
+            }
+
             if mediaDownloader.status == .fileDownloaded {
                 guard let fileUrl = mediaDownloader.fileUrl,
                       let currentMedia = mediaDownloader.currentMedia else {
@@ -107,11 +114,12 @@ extension GalleryInternalMediaViewModel {
                 }
 
                 let signatureFileUrl = mediaDownloader.signatureUrl
+                let isProgressComplete = mediaDownloader.totalProgress >= 1.0
                 self?.saveMedia(fileUrl: fileUrl,
                                 signatureFileUrl: signatureFileUrl,
                                 media: currentMedia,
                                 completion: { _ in
-                                    completion(fileUrl, mediaDownloader.totalProgress == 1.0)
+                                    completion(fileUrl, isProgressComplete)
                                 })
             } else if mediaDownloader.status == .error {
                 completion(nil, false)

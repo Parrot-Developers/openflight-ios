@@ -33,7 +33,7 @@ import CoreData
 
 // MARK: - Protocol
 public protocol ExecutionsListDelegate: AnyObject {
-    func startFlightDetails(flightPlan: FlightPlanModel)
+    func startFlightExecutionDetails(_ flightPlan: FlightPlanModel)
     func handleHistoryCellAction(with: FlightPlanModel, actionType: HistoryMediasActionType?)
     func backDisplay()
     func open(flightPlan: FlightPlanModel)
@@ -65,10 +65,7 @@ final class ExecutionsListViewController: UIViewController {
 
     private enum Constant {
         static let height: CGFloat = 80
-        static let heightMini: CGFloat = 80
         static let estimationHeight: CGFloat = 200.0
-        static let headerHeight: CGFloat = 35.0
-        static let headerHeightMini: CGFloat = 0
     }
 
     // MARK: - Private Properties
@@ -103,7 +100,8 @@ final class ExecutionsListViewController: UIViewController {
         tableView.delegate = self
         tableView.estimatedRowHeight = Constant.estimationHeight
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.register(cellType: ExecutionsTableViewCell.self)
+        tableView.register(cellType: FlightPlanExecutionCell.self)
+        tableView.register(cellType: FlightPlanListExecutionHeaderCell.self)
         emptyFlightsTitleLabel.text = L10n.dashboardMyFlightsEmptyListTitle
         emptyFlightsDecriptionLabel.text = L10n.dashboardMyFlightsEmptyListDesc
         view.backgroundColor = ColorName.white.color
@@ -157,7 +155,7 @@ final class ExecutionsListViewController: UIViewController {
     public func loadAllFlights(tableType: HistoryTableType) {
         flightItems = Services.hub.flightPlan.projectManager.executedFlightPlans(for: projectModel)
         emptyLabelStack.isHidden = !flightItems.isEmpty
-        titleLabel.text = projectModel.title
+        titleLabel.text = L10n.flightPlanHistory
         fpExecutionsViews = FlightPlanHistorySyncManager.shared.syncProvider?.historySyncViews(
             type: tableType,
             projectModel: projectModel) ?? [:]
@@ -172,28 +170,21 @@ final class ExecutionsListViewController: UIViewController {
 // MARK: - UITableView DataSource
 extension ExecutionsListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return flightItems.count
+        // header + executions
+        return 1 + flightItems.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(for: indexPath) as ExecutionsTableViewCell
-
-        var showDate: Bool = true
-        let item = flightItems[indexPath.row]
-        if indexPath.row > 0 {
-            let startDate = item.dataSetting?.estimations.duration
-            let previousItemDate = flightItems[indexPath.row - 1].lastUpdate
-            showDate = !previousItemDate.isInSameMonth(date: Date(timeIntervalSinceNow: startDate ?? 0))
+        if indexPath.row == 0 {
+            let header: FlightPlanListExecutionHeaderCell = tableView.dequeueReusableCell(for: indexPath)
+            header.fill(exeuctions: flightItems.count)
+            return header
+        } else {
+            let cell = tableView.dequeueReusableCell(for: indexPath) as FlightPlanExecutionCell
+            let execution = flightItems[indexPath.row - 1]
+            cell.fill(execution: execution)
+            return cell
         }
-
-        let mediaView = fpExecutionsViews[item.uuid]
-        cell.configureCell(flightPlan: item,
-                           mediasView: mediaView,
-                           tableType: tableType,
-                           showDate: showDate)
-        cell.layoutIfNeeded()
-        cell.delegate = self
-        return cell
     }
 }
 
@@ -201,16 +192,17 @@ extension ExecutionsListViewController: UITableViewDataSource {
 extension ExecutionsListViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        delegate?.startFlightDetails(flightPlan: flightItems[indexPath.row])
+        delegate?.startFlightExecutionDetails(flightItems[indexPath.row - 1])
     }
 
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        guard indexPath.row != 0 else { return false } // Prevent "Header" deletion
         return true
     }
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let item = flightItems.remove(at: indexPath.row)
+            let item = flightItems.remove(at: indexPath.row - 1)
             [item].forEach { flightPlan in
                 flightPlanHandler.delete(flightPlan: flightPlan)
             }
@@ -219,27 +211,7 @@ extension ExecutionsListViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return tableType == .fullHistory ? Constant.height : Constant.heightMini
-    }
-
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard tableType == .fullHistory else { return nil }
-        let headerTitle = UILabel()
-        headerTitle.text = L10n.flightPlanExecutionPlural(self.flightItems.count)
-        headerTitle.makeUp(and: ColorName.greyDark)
-        let headerView = UIView()
-        headerTitle.translatesAutoresizingMaskIntoConstraints = false
-        headerView.addSubview(headerTitle)
-        NSLayoutConstraint.activate([
-            headerTitle.centerYAnchor.constraint(equalTo: headerView.centerYAnchor),
-            headerTitle.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 60),
-            headerTitle.widthAnchor.constraint(equalToConstant: 150)
-        ])
-        return headerView
-    }
-
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return tableType == .fullHistory ? Constant.headerHeight : Constant.headerHeightMini
+        return tableType == .fullHistory ? Constant.height : UITableView.automaticDimension
     }
 }
 

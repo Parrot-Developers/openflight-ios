@@ -30,7 +30,6 @@
 import GroundSdk
 
 /// Utility extension for `RemoteControl`.
-
 extension RemoteControl {
     // MARK: - Internal Properties
     /// Returns true if given remote control is currently connected.
@@ -40,7 +39,7 @@ extension RemoteControl {
 
     /// Returns model public name.
     var publicName: String {
-        switch self.model {
+        switch model {
         case .skyCtrl3:
             return "Parrot Skycontroller 3"
         case .skyCtrl4:

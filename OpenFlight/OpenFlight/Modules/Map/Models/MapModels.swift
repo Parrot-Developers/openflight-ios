@@ -33,12 +33,13 @@ import CoreLocation
 
 // MARK: - Public Enums
 /// Mode for `MapViewController`
-public enum MapMode {
-    case standard
+public enum MapMode: Equatable {
+    case standard(force2D: Bool)
     case droneDetails
     case myFlights
     case flightPlan
     case flightPlanEdition
+    case mapOnly
 
     /// Color for map selected items.
     var selectionColor: UIColor {
@@ -48,7 +49,7 @@ public enum MapMode {
     /// Returns true if mode is used for HUD.
     var isHudMode: Bool {
         switch self {
-        case .droneDetails, .myFlights:
+        case .droneDetails, .myFlights, .mapOnly:
             return false
         default:
             return true
@@ -59,8 +60,7 @@ public enum MapMode {
 extension MapMode {
     var isAllowingPitch: Bool {
         switch self {
-        case .myFlights,
-             .flightPlanEdition:
+        case .flightPlanEdition:
             return false
         default:
             return true

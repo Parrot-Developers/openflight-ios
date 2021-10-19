@@ -31,7 +31,6 @@
 import ArcGIS
 
 /// Utility extension for `AGSSceneView`.
-
 extension AGSSceneView {
     /// Returns graphic overlay associated with given key.
     /// ⚠️ Only returns first matching overlay, use unique keys.
@@ -40,7 +39,7 @@ extension AGSSceneView {
     ///    - key: an overlay key
     /// - Returns: matching overlay if it exists, nil otherwise
     func graphicOverlay(forKey key: String) -> AGSGraphicsOverlay? {
-        return self.graphicsOverlays
+        return graphicsOverlays
             .compactMap { $0 as? AGSGraphicsOverlay}
             .first(where: { $0.overlayID == key })
     }

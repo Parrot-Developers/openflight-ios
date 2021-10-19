@@ -33,7 +33,7 @@ import Combine
 import GroundSdk
 
 /// Gimbal tilt service
-protocol GimbalTiltService: AnyObject {
+public protocol GimbalTiltService: AnyObject {
 
     /// Tilt availability publisher
     var tiltIsAvailablePublisher: AnyPublisher<Bool, Never> { get }

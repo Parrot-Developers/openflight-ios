@@ -30,7 +30,6 @@
 import Foundation
 
 /// Defines ArcGIS constants.
-
 public enum ArcGISStyle {
     /// Defines envelop margin, as dimension factor.
     static let envelopMarginFactor: Double = 1.2
@@ -41,7 +40,6 @@ public enum ArcGISStyle {
 }
 
 /// Define AGS key constants.
-
 public enum AGSConstants {
     public static let wayPointAttributeKey: String = "agsConstantWayPoint"
     public static let poiPointAttributeKey: String = "agsConstantPoiPoint"

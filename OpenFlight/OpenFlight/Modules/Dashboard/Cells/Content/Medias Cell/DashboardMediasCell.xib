@@ -5,7 +5,6 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -25,18 +24,18 @@
                     <view alpha="0.80000000000000004" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ar1-xq-ueA" userLabel="Content View">
                         <rect key="frame" x="0.0" y="0.0" width="227" height="159"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="gGd-vS-s1V">
-                                <rect key="frame" x="9" y="0.0" width="209" height="159"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalCentering" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="gGd-vS-s1V">
+                                <rect key="frame" x="0.0" y="10" width="227" height="139"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vkI-nA-JET">
-                                        <rect key="frame" x="15" y="0.0" width="179" height="53"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="ms4-Oi-VSf">
+                                        <rect key="frame" x="101" y="0.0" width="25" height="13.666666666666666"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icCardMini" translatesAutoresizingMaskIntoConstraints="NO" id="OZs-V5-SEP">
-                                                <rect key="frame" x="73" y="19.666666666666668" width="11" height="13.666666666666668"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="11" height="13.666666666666666"/>
                                                 <color key="tintColor" name="highlight_color"/>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gY5-ON-63G">
-                                                <rect key="frame" x="86" y="19" width="7.3333333333333286" height="15.333333333333336"/>
+                                                <rect key="frame" x="18" y="0.0" width="7" height="13.666666666666666"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                 <color key="textColor" name="default_text_color"/>
@@ -46,16 +45,9 @@
                                                 </variation>
                                             </label>
                                         </subviews>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                        <constraints>
-                                            <constraint firstItem="OZs-V5-SEP" firstAttribute="centerY" secondItem="vkI-nA-JET" secondAttribute="centerY" id="9g2-5s-UMr"/>
-                                            <constraint firstItem="gY5-ON-63G" firstAttribute="centerX" secondItem="vkI-nA-JET" secondAttribute="centerX" id="IkB-uM-wTf"/>
-                                            <constraint firstItem="gY5-ON-63G" firstAttribute="leading" secondItem="OZs-V5-SEP" secondAttribute="trailing" constant="2" id="MfB-sY-npf"/>
-                                            <constraint firstItem="gY5-ON-63G" firstAttribute="centerY" secondItem="vkI-nA-JET" secondAttribute="centerY" id="q9c-fK-Zp1"/>
-                                        </constraints>
-                                    </view>
-                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="aSE-R2-nNZ">
-                                        <rect key="frame" x="0.0" y="53" width="209" height="53"/>
+                                    </stackView>
+                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="227" placeholderIntrinsicHeight="53" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="aSE-R2-nNZ">
+                                        <rect key="frame" x="0.0" y="29.333333333333336" width="227" height="79.666666666666657"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="J43-qU-jRU">
                                             <size key="itemSize" width="128" height="128"/>
@@ -68,61 +60,12 @@
                                             <outlet property="delegate" destination="gTV-IL-0wX" id="jej-Pk-MVL"/>
                                         </connections>
                                     </collectionView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" alignment="center" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="IFM-Xd-660" userLabel="photo video stack view">
-                                        <rect key="frame" x="0.0" y="106" width="209" height="53"/>
-                                        <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DNf-Jy-ufk">
-                                                <rect key="frame" x="0.0" y="1.6666666666666714" width="98.666666666666671" height="50"/>
-                                                <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icPhotoMini" translatesAutoresizingMaskIntoConstraints="NO" id="Xpf-XI-o8a">
-                                                        <rect key="frame" x="78.333333333333329" y="20.333333333333329" width="11" height="9"/>
-                                                        <color key="tintColor" name="default_text_color"/>
-                                                    </imageView>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LiM-FY-Gae">
-                                                        <rect key="frame" x="91.333333333333329" y="17.333333333333329" width="7.3333333333333286" height="15.333333333333336"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="default_text_color"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
-                                                        </variation>
-                                                    </label>
-                                                </subviews>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstItem="Xpf-XI-o8a" firstAttribute="centerY" secondItem="DNf-Jy-ufk" secondAttribute="centerY" id="76N-1e-gcd"/>
-                                                    <constraint firstItem="LiM-FY-Gae" firstAttribute="leading" secondItem="Xpf-XI-o8a" secondAttribute="trailing" constant="2" id="GRq-ms-yOs"/>
-                                                    <constraint firstItem="LiM-FY-Gae" firstAttribute="centerY" secondItem="DNf-Jy-ufk" secondAttribute="centerY" id="XXN-94-YkF"/>
-                                                    <constraint firstAttribute="trailing" secondItem="LiM-FY-Gae" secondAttribute="trailing" id="cSP-Di-41E"/>
-                                                </constraints>
-                                            </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4n4-Fi-DdN">
-                                                <rect key="frame" x="110.66666666666669" y="1.6666666666666714" width="98.333333333333314" height="50"/>
-                                                <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icVideoMini" translatesAutoresizingMaskIntoConstraints="NO" id="uwU-pX-5Bs">
-                                                        <rect key="frame" x="0.0" y="17.333333333333329" width="15" height="15"/>
-                                                        <color key="tintColor" name="default_text_color"/>
-                                                    </imageView>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oul-2r-qpQ">
-                                                        <rect key="frame" x="16.999999999999986" y="17.333333333333329" width="7.3333333333333321" height="15.333333333333336"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="default_text_color"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
-                                                        </variation>
-                                                    </label>
-                                                </subviews>
-                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                                <constraints>
-                                                    <constraint firstItem="oul-2r-qpQ" firstAttribute="centerY" secondItem="4n4-Fi-DdN" secondAttribute="centerY" id="Dmh-0c-Yq7"/>
-                                                    <constraint firstItem="uwU-pX-5Bs" firstAttribute="leading" secondItem="4n4-Fi-DdN" secondAttribute="leading" id="adQ-9A-uRf"/>
-                                                    <constraint firstItem="oul-2r-qpQ" firstAttribute="leading" secondItem="uwU-pX-5Bs" secondAttribute="trailing" constant="2" id="hGU-fV-7aW"/>
-                                                    <constraint firstItem="uwU-pX-5Bs" firstAttribute="centerY" secondItem="4n4-Fi-DdN" secondAttribute="centerY" id="tOX-rW-PAg"/>
-                                                </constraints>
-                                            </view>
-                                        </subviews>
-                                    </stackView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5am-kC-i4p">
+                                        <rect key="frame" x="97" y="124" width="33.333333333333343" height="15"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                        <color key="textColor" name="default_text_color"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="aSE-R2-nNZ" firstAttribute="width" secondItem="gGd-vS-s1V" secondAttribute="width" id="uND-Ky-6C1"/>
@@ -131,10 +74,11 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="gGd-vS-s1V" secondAttribute="trailing" constant="9" id="8a0-A9-HeR"/>
-                            <constraint firstAttribute="bottom" secondItem="gGd-vS-s1V" secondAttribute="bottom" id="Bnx-aL-OYr"/>
-                            <constraint firstItem="gGd-vS-s1V" firstAttribute="leading" secondItem="ar1-xq-ueA" secondAttribute="leading" constant="9" id="C0s-gS-lez"/>
-                            <constraint firstItem="gGd-vS-s1V" firstAttribute="top" secondItem="ar1-xq-ueA" secondAttribute="top" id="cGu-7e-SPt"/>
+                            <constraint firstItem="aSE-R2-nNZ" firstAttribute="height" secondItem="ar1-xq-ueA" secondAttribute="height" multiplier="0.5" id="4pG-lw-q1t"/>
+                            <constraint firstAttribute="bottom" secondItem="gGd-vS-s1V" secondAttribute="bottom" constant="10" id="PFa-FJ-2n7"/>
+                            <constraint firstAttribute="trailing" secondItem="gGd-vS-s1V" secondAttribute="trailing" id="T5y-hM-ybt"/>
+                            <constraint firstItem="gGd-vS-s1V" firstAttribute="top" secondItem="ar1-xq-ueA" secondAttribute="top" constant="10" id="alD-cs-dW9"/>
+                            <constraint firstItem="gGd-vS-s1V" firstAttribute="leading" secondItem="ar1-xq-ueA" secondAttribute="leading" id="brd-kn-UtK"/>
                         </constraints>
                         <userDefinedRuntimeAttributes>
                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -142,37 +86,46 @@
                             </userDefinedRuntimeAttribute>
                         </userDefinedRuntimeAttributes>
                     </view>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGalleryEmpty" translatesAutoresizingMaskIntoConstraints="NO" id="SMc-mY-4wo">
+                        <rect key="frame" x="93.666666666666671" y="51.666666666666671" width="39.666666666666671" height="39.666666666666671"/>
+                        <color key="tintColor" name="default_icon_color"/>
+                        <constraints>
+                            <constraint firstAttribute="width" secondItem="SMc-mY-4wo" secondAttribute="height" multiplier="1:1" id="2He-Ao-Y53"/>
+                        </constraints>
+                    </imageView>
                 </subviews>
             </view>
             <constraints>
                 <constraint firstAttribute="bottom" secondItem="ar1-xq-ueA" secondAttribute="bottom" id="MeB-tE-vaG"/>
                 <constraint firstItem="ar1-xq-ueA" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="Q1X-yw-LqD"/>
+                <constraint firstItem="SMc-mY-4wo" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" multiplier="0.9" id="S7f-X5-sES"/>
                 <constraint firstAttribute="trailing" secondItem="ar1-xq-ueA" secondAttribute="trailing" id="T1d-Ms-tfn"/>
+                <constraint firstItem="SMc-mY-4wo" firstAttribute="height" secondItem="aSE-R2-nNZ" secondAttribute="height" multiplier="0.5" id="hNh-31-Sol"/>
                 <constraint firstItem="ar1-xq-ueA" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="jna-Da-9g7"/>
+                <constraint firstItem="SMc-mY-4wo" firstAttribute="centerX" secondItem="gTV-IL-0wX" secondAttribute="centerX" id="lL1-aQ-Snr"/>
             </constraints>
             <size key="customSize" width="227" height="159"/>
             <connections>
                 <outlet property="collectionView" destination="aSE-R2-nNZ" id="Je3-ZI-a4p"/>
+                <outlet property="emptyImageView" destination="SMc-mY-4wo" id="tXh-0G-JRD"/>
                 <outlet property="freeStorageLabel" destination="gY5-ON-63G" id="BqD-Wu-Fpn"/>
-                <outlet property="remainingPhotosLabel" destination="LiM-FY-Gae" id="ebs-k9-jfO"/>
-                <outlet property="remainingVideosLabel" destination="oul-2r-qpQ" id="YTS-cy-h7Z"/>
                 <outlet property="storageIcon" destination="OZs-V5-SEP" id="FA3-fE-Ah4"/>
+                <outlet property="titleLabel" destination="5am-kC-i4p" id="Ssv-a6-dG9"/>
             </connections>
             <point key="canvasLocation" x="164.49275362318841" y="156.11413043478262"/>
         </collectionViewCell>
     </objects>
     <resources>
         <image name="icCardMini" width="11" height="13.666666984558105"/>
-        <image name="icPhotoMini" width="11" height="9"/>
-        <image name="icVideoMini" width="15" height="15"/>
+        <image name="icGalleryEmpty" width="43" height="32"/>
+        <namedColor name="default_icon_color">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
     </resources>
 </document>

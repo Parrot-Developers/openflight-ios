@@ -57,11 +57,6 @@ final class GalleryFormatSDCardViewController: UIViewController {
     private var viewModel: GalleryFormatSDCardViewModel?
     private var cancellables = Set<AnyCancellable>()
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let toastDuration: Double = 3.0
-    }
-
     // MARK: - Setup
     /// Instantiate view controller.
     ///

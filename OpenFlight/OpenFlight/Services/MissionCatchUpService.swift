@@ -43,64 +43,72 @@ public class MissionCatchUpServiceImpl {
     private let projectService: ProjectManager
     private let missionsStore: MissionsStore
     private let currentMissionManager: CurrentMissionManager
+    private let mavlinkGenerator: MavlinkGenerator
 
     init(connectedDroneHolder: ConnectedDroneHolder,
          flightPlanManager: FlightPlanManager,
          projectService: ProjectManager,
          missionsStore: MissionsStore,
-         currentMissionManager: CurrentMissionManager) {
+         currentMissionManager: CurrentMissionManager,
+         mavlinkGenerator: MavlinkGenerator) {
         self.flightPlanManager = flightPlanManager
         self.projectService = projectService
         self.missionsStore = missionsStore
         self.currentMissionManager = currentMissionManager
+        self.mavlinkGenerator = mavlinkGenerator
         connectedDroneHolder.dronePublisher.sink { [unowned self] in
-            if let pilotingItf = $0?.getPilotingItf(PilotingItfs.flightPlan),
-               let recoveryInfo = pilotingItf.recoveryInfo,
-               let flightPlan = flightPlanManager.flightPlan(uuid: recoveryInfo.customId),
-               let project = projectService.project(for: flightPlan) {
-                switch flightPlan.state {
-                case .editable, .flying, .stopped:
-                    // Onlys these states are valid
-                    break
-                case .completed, .uploading, .processing, .processed, .unknown:
-                    return
-                }
-                if pilotingItf.state == .active {
-                    // As the recoveryInfo contains information about the last started FP,
-                    // if the itf is active its recoveryInfo points to the active FP
-                    catchUpRunningFlightPlan(project: project, flightPlan: flightPlan, lastItem: recoveryInfo.latestMissionItemExecuted)
-                } else {
-                    // Just persist the progress
-                    _ = flightPlanManager.update(flightPlan: flightPlan, lastMissionItemExecuted: recoveryInfo.latestMissionItemExecuted)
-                    // TODO if completed change the state
-                }
-                pilotingItf.clearRecoveryInfo()
-            }
+            checkFlightPlan(drone: $0)
         }
         .store(in: &cancellables)
     }
 
-    private func catchUpRunningFlightPlan(project: ProjectModel, flightPlan: FlightPlanModel, lastItem: Int) {
-        // Get mission matching flightPlan
-        var missionProvider: MissionProvider?
-        var missionMode: MissionMode?
-        for provider in missionsStore.allMissions {
-            for mode in provider.mission.modes {
-                if mode.flightPlanProvider?.hasFlightPlanType(flightPlan.type) ?? false {
-                    missionProvider = provider
-                    missionMode = mode
-                }
+    private func checkFlightPlan(drone: Drone?) {
+        if let pilotingItf = drone?.getPilotingItf(PilotingItfs.flightPlan),
+           let recoveryInfo = pilotingItf.recoveryInfo,
+           let flightPlan = flightPlanManager.flightPlan(uuid: recoveryInfo.customId),
+           let project = projectService.project(for: flightPlan) {
+            switch flightPlan.state {
+            case .editable, .flying, .stopped:
+                // Onlys these states are valid
+                break
+            case .completed, .uploading, .processing, .processed, .unknown:
+                return
             }
+            if pilotingItf.state == .active {
+                // As the recoveryInfo contains information about the last started FP,
+                // if the itf is active its recoveryInfo points to the active FP
+                catchUpRunningFlightPlan(project: project,
+                                         flightPlan: flightPlan,
+                                         lastItem: recoveryInfo.latestMissionItemExecuted,
+                                         runningTime: recoveryInfo.runningTime)
+            } else {
+                updatePassedFlightPlan(flightPlan, lastItem: recoveryInfo.latestMissionItemExecuted)
+            }
+            pilotingItf.clearRecoveryInfo()
         }
-        guard let mProvider = missionProvider, let mMode = missionMode else { return }
-        currentMissionManager.set(provider: mProvider)
-        currentMissionManager.set(mode: mMode)
+    }
+
+    private func updatePassedFlightPlan(_ flightPlan: FlightPlanModel, lastItem: Int) {
+        let flightPlan = flightPlanManager.update(flightPlan: flightPlan, lastMissionItemExecuted: lastItem)
+        if flightPlan.state == .flying,
+           let missionMode = missionsStore.missionFor(flightPlan: flightPlan)?.mission,
+           flightPlan.hasReachedLastWayPoint {
+            missionMode.stateMachine?.handleFinishedOfflineFlightPlan(flightPlan: flightPlan)
+        }
+    }
+
+    private func catchUpRunningFlightPlan(project: ProjectModel, flightPlan: FlightPlanModel, lastItem: Int, runningTime: TimeInterval) {
+        guard let (provider, mode) = missionsStore.missionFor(flightPlan: flightPlan) else { return }
+        currentMissionManager.set(provider: provider)
+        currentMissionManager.set(mode: mode)
         projectService.setCurrent(project)
-        mMode.stateMachine?.catchUp(flightPlan: flightPlan, lastMissionItemExecuted: lastItem)
+        mode.stateMachine?.catchUp(flightPlan: flightPlan,
+                                    lastMissionItemExecuted: lastItem,
+                                    runningTime: runningTime)
     }
 
 }
 
 extension MissionCatchUpServiceImpl: MissionCatchUpService {
-    
+
 }

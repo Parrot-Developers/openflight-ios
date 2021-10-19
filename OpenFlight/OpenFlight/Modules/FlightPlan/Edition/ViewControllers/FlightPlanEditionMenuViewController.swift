@@ -51,6 +51,7 @@ public protocol FlightPlanEditionMenuDelegate: AnyObject {
 
 /// Flight plan's edition menu.
 final class FlightPlanEditionMenuViewController: UIViewController {
+    weak var coordinator: Coordinator?
     // MARK: - IBOutlets
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var doneButton: UIButton! {
@@ -58,7 +59,7 @@ final class FlightPlanEditionMenuViewController: UIViewController {
             doneButton.makeup(with: .large)
             doneButton.backgroundColor = ColorName.highlightColor.color
             doneButton.applyCornerRadius(Style.largeCornerRadius)
-            doneButton.setTitle(L10n.commonDone, for: .normal)
+            doneButton.setTitle(L10n.ok, for: .normal)
         }
     }
     @IBOutlet private weak var undoButton: UIButton! {
@@ -160,6 +161,7 @@ final class FlightPlanEditionMenuViewController: UIViewController {
         static let headerHeight: CGFloat = 44
         static let footerHeight: CGFloat = 1.0
         static let footerEstimationHeight: CGFloat = 44.0
+        static let contentInsetTop: CGFloat = -30
     }
 
     // MARK: - Override Funcs
@@ -234,6 +236,7 @@ private extension FlightPlanEditionMenuViewController {
         tableView.estimatedRowHeight = Constants.cellheight
         tableView.rowHeight = UITableView.automaticDimension
         tableView.makeUp(backgroundColor: .clear)
+        tableView.contentInset.top = Constants.contentInsetTop
     }
 
     /// Sets up observer for orientation change.
@@ -306,6 +309,7 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension FlightPlanEditionMenuViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+
         let type = dataSource[indexPath.section]
         switch type {
         case .settings(let category):
@@ -334,10 +338,9 @@ extension FlightPlanEditionMenuViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         let type = dataSource[section]
         switch type {
-        case .mode:
+        case .mode,
+             .project:
             return CGFloat.leastNormalMagnitude
-        case .project:
-            return 0
         default:
             return Constants.headerHeight
         }

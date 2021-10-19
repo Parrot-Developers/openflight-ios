@@ -40,7 +40,6 @@ public extension MapViewController {
     // MARK: - Private Enums
     private enum Constants {
         static let overlayKey: String = "flightPlanOverlayKey"
-        static let cameraPitchThreshold: Double = 15.0
         static let flightPlanEnvelopeMarginFactor: Double = 1.4
         static let sceneViewIdentifyTolerance: Double = 0.0
         static let sceneViewIdentifyMaxResults: Int = 5
@@ -56,14 +55,12 @@ public extension MapViewController {
     ///     - state: Mission Mode State
     func setupFlightPlanListener(for state: MissionProviderState) {
         flightEditionService = Services.hub.flightPlan.edition
-        if state.mode?.isFlightPlanPanelRequired ?? false {
+        if state.mode?.flightPlanProvider != nil {
             // Reset registration.
             editionCancellable = flightEditionService?.currentFlightPlanPublisher
                 .sink(receiveValue: { [weak self] flightplan in
                     self?.flightPlan = flightplan
                 })
-
-            self.setMapMode(.flightPlan)
         } else {
             // Remove potential old Flight Plan first.
             flightEditionService?.resetFlightPlan()
@@ -77,25 +74,30 @@ public extension MapViewController {
     /// - Parameters:
     ///    - flightPlan: flight plan model
     ///    - shouldReloadCamera: whether scene's camera should be reloaded
-    ///    - animated: whether camera reload should be animated
-    func displayFlightPlan(_ flightPlan: FlightPlanModel?,
-                           shouldReloadCamera: Bool = false,
-                           animated: Bool = false) {
+    func displayFlightPlan(_ flightPlan: FlightPlanModel,
+                           shouldReloadCamera: Bool = false) {
         // Remove old Flight Plan graphic overlay.
-        self.removeFlightPlanGraphicOverlay()
+        removeFlightPlanGraphicOverlay()
 
-        guard let plan = flightPlan
-            else { return }
+        // Get flight plan provider.
+        let provider: FlightPlanProvider?
+        if let mission = currentMissionProviderState?.mode {
+            provider = mission.flightPlanProvider
+        } else if let mission = Services.hub.missionsStore.missionFor(flightPlan: flightPlan)?.mission {
+            provider = mission.flightPlanProvider
+        } else {
+            return
+        }
+
         // Create new overlays.
-        let provider = currentMissionProviderState?.mode?.flightPlanProvider
-        let graphics = provider?.graphicsWithFlightPlan(plan) ?? []
+        let graphics = provider?.graphicsWithFlightPlan(flightPlan, mapMode: currentMapMode) ?? []
         let newOverlay = FlightPlanGraphicsOverlay(graphics: graphics)
         // Add overlays to scene.
         addGraphicOverlay(newOverlay, forKey: Constants.overlayKey, at: 0)
         // Update type of map to get altitude.
         updateElevationVisibility()
         if shouldReloadCamera {
-            reloadCamera(flightPlan: plan, animated: animated)
+            reloadCamera(flightPlan: flightPlan)
         }
 
         if let graphics = flightPlanOverlay?.graphics {
@@ -105,7 +107,7 @@ public extension MapViewController {
         }
     }
 
-    func reloadCamera(flightPlan: FlightPlanModel, animated: Bool) {
+    func reloadCamera(flightPlan: FlightPlanModel) {
         guard let dataSetting = flightPlan.dataSetting
             else { return }
         let bufferedExtent = dataSetting.polyline
@@ -126,7 +128,7 @@ public extension MapViewController {
                 // Move view point of scene.
                 let newViewPoint = AGSViewpoint(targetExtent: bufferedExtent)
                 // Update graphics for current camera.
-                self?.updateViewPoint(newViewPoint, animated: animated)
+                self?.updateViewPoint(newViewPoint, animated: false)
                 self?.updateElevationVisibility()
                 self?.flightPlanOverlay?.update(heading: self?.flightPlanOverlay?.cameraHeading ?? 0)
                 // insert user and drone locations graphics to flight plan overlay
@@ -135,7 +137,7 @@ public extension MapViewController {
             })
         } else {
             // Update graphics for current camera.
-            updateViewPoint(viewPoint, animated: animated)
+            updateViewPoint(viewPoint, animated: false)
             updateElevationVisibility()
             flightPlanOverlay?.update(heading: flightPlanOverlay?.cameraHeading ?? 0)
             // insert user and drone locations graphics to flight plan overlay
@@ -234,6 +236,20 @@ public extension MapViewController {
 // MARK: - Map Gestures
 extension MapViewController {
 
+    func identify(screenPoint: CGPoint, _ completion: @escaping (AGSIdentifyGraphicsOverlayResult?) -> Void) {
+        guard let overlay = flightPlanOverlay else {
+            completion(nil)
+            return
+        }
+        sceneView?.identify(overlay,
+                            screenPoint: screenPoint,
+                            tolerance: Constants.sceneViewIdentifyTolerance,
+                            returnPopupsOnly: false,
+                            maximumResults: Constants.sceneViewIdentifyMaxResults) { result in
+            completion(result)
+        }
+    }
+
     /// Handles tap action in Flight Plan edition mode.
     ///
     /// - Parameters:
@@ -241,14 +257,8 @@ extension MapViewController {
     ///    - screenPoint: the screen point where the tap occured
     ///    - mapPoint: the corresponding map location
     func flightPlanHandleTap(_ geoView: AGSGeoView, didTapAtScreenPoint screenPoint: CGPoint, mapPoint: AGSPoint) {
-        guard let overlay = flightPlanOverlay else {
-            return
-        }
-        sceneView?.identify(overlay,
-                            screenPoint: screenPoint,
-                            tolerance: Constants.sceneViewIdentifyTolerance,
-                            returnPopupsOnly: false,
-                            maximumResults: Constants.sceneViewIdentifyMaxResults) { [weak self] result in
+        identify(screenPoint: screenPoint) { [weak self] result in
+            guard let result = result else { return }
             // Select the graphic tap by user and store it.
             if let selection = result.selectedFlightPlanObject {
                 self?.flightPlanOverlay?.lastManuallySelectedGraphic = selection
@@ -275,16 +285,11 @@ extension MapViewController {
     func flightPlanHandleLongPress(_ geoView: AGSGeoView,
                                    didLongPressAtScreenPoint screenPoint: CGPoint,
                                    mapPoint: AGSPoint) {
-        guard let overlay = flightPlanOverlay else {
-            return
-        }
-        sceneView?.identify(overlay,
-                            screenPoint: screenPoint,
-                            tolerance: Constants.sceneViewIdentifyTolerance,
-                            returnPopupsOnly: false) { [weak self] result in
-                                if result.selectedFlightPlanObject == nil {
-                                    self?.addPoiPoint(atLocation: mapPoint)
-                                }
+        identify(screenPoint: screenPoint) { [weak self] result in
+            guard let result = result else { return }
+            if result.selectedFlightPlanObject == nil {
+                self?.addPoiPoint(atLocation: mapPoint)
+            }
         }
     }
 
@@ -303,11 +308,8 @@ extension MapViewController {
             completion(false)
             return
         }
-        sceneView?.identify(overlay,
-                            screenPoint: screenPoint,
-                            tolerance: Constants.sceneViewIdentifyTolerance,
-                            returnPopupsOnly: false,
-                            maximumResults: Constants.sceneViewIdentifyMaxResults) { result in
+        identify(screenPoint: screenPoint) { result in
+            guard let result = result else { completion(false); return }
             guard let selection = result.selectedFlightPlanObject as? FlightPlanPointGraphic,
                   selection.itemType.draggable,
                   result.error == nil else {
@@ -487,7 +489,7 @@ private extension MapViewController {
     }
 }
 
-// MARK: - FlightPlanEditionViewControllerDelegate
+// MARK: - EditionSettingsDelegate
 extension MapViewController: EditionSettingsDelegate {
     public func updateMode(tag: Int) {
         self.updateFlightPlanType(tag: tag)

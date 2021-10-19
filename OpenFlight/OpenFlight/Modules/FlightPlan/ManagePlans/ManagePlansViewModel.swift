@@ -177,7 +177,7 @@ class ManagePlansViewModel {
             }
             .store(in: &cancellables)
 
-        self.stateMachine.state
+        self.stateMachine.statePublisher
             .sink(receiveValue: { [unowned self] state in
                 switch state {
                 case let .flying(flightPlan):
@@ -218,9 +218,13 @@ extension ManagePlansViewModel: ManagePlansViewModelInput {
         guard let project = selectedProject.value,
               let flightPlan = manager.lastFlightPlan(for: project) else { return }
         if project.uuid != idFlyingProject {
-            manager.loadEverythingAndOpen(flightPlan: flightPlan)
+            openFlightPlan(flightPlan)
         }
         delegate?.endManagePlans(editionPreference: .stop, shouldCenter: flightPlan.isEmpty)
+    }
+
+    func openFlightPlan(_ flightPlan: FlightPlanModel) {
+        manager.loadEverythingAndOpen(flightPlan: flightPlan)
     }
 
     func closeManagePlans() {
@@ -284,11 +288,15 @@ extension ManagePlansViewModel: ManagePlansViewModelInput {
 
 // MARK: - FlightPlansListViewControllerDelegate
 extension ManagePlansViewModel: FlightPlansListViewModelDelegate {
+    func didSelect(execution: FlightPlanModel) {
+        openFlightPlan(execution)
+    }
+
     func didSelect(project: ProjectModel) {
         selectedProject.value = project
     }
 
-    func didDoubleTapOn(project: ProjectModel) {
+    func didDoubleTap(on project: ProjectModel) {
         openSelectedFlightPlan()
     }
 }

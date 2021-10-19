@@ -76,9 +76,11 @@ final class HelloWorldMissionState: ViewModelState, Copying, EquatableState {
 /// The view model that handles Hello World protobuf mission.
 final class HelloWorldMissionViewModel: BaseViewModel<HelloWorldMissionState> {
     // MARK: - Private Properties
-    private var protobufManager = ProtobufMissionsManager.shared
+    private var protobufManager = Services.hub.drone.protobufMissionsManager
+    private var protobufListener = Services.hub.drone.protobufMissionsListener
     private var listener: ProtobufMissionListener?
     private var helloWorldMissionSignature = HelloWorldMissionSignature()
+    private var messageUidGenerator = ProtobufMissionMessageToSend.UidGenerator(0)
 
     // MARK: - Init
     override init() {
@@ -89,7 +91,7 @@ final class HelloWorldMissionViewModel: BaseViewModel<HelloWorldMissionState> {
 
     // MARK: - Deinit
     deinit {
-        protobufManager.unregister(listener)
+        protobufListener.unregister(listener)
     }
 
     // MARK: - Internal Functions
@@ -111,9 +113,10 @@ final class HelloWorldMissionViewModel: BaseViewModel<HelloWorldMissionState> {
         guard let payload = try? helloCommand.serializedData() else { return }
 
         let helloWorldMessage = ProtobufMissionMessageToSend(mission: helloWorldMissionSignature,
-                                                             payload: payload)
+                                                             payload: payload,
+                                                             messageUidGenerator: &messageUidGenerator)
         update(protobufMessageReceivedCount: 0)
-        protobufManager.send(message: helloWorldMessage)
+        protobufManager.sendMessage(message: helloWorldMessage)
     }
 
     /// Returns a potential message to display.
@@ -158,7 +161,7 @@ extension HelloWorldMissionViewModel: MissionActivationModel {
 private extension HelloWorldMissionViewModel {
     /// Listen to the Hello World mission.
     func listenMission() {
-        listener = protobufManager.register(
+        listener = protobufListener.register(
             for: helloWorldMissionSignature,
             missionCallback: { [weak self] (state, message, _) in
                 self?.update(missionState: state)

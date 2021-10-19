@@ -79,13 +79,28 @@ private extension TelemetryItemView {
     /// - Parameters:
     ///    - viewModel: model representing the contents
     func fill(with model: TelemetryItemModel?) {
-        let valueFont: UIFont = ParrotFontStyle.regular.font
-        let unitFont: UIFont = ParrotFontStyle.tiny.font
 
-        let attributedString = NSMutableAttributedString(string: model?.label ?? Style.dash)
-        attributedString.valueUnitFormatted(valueFont: valueFont, unitFont: unitFont)
-        itemLabel.attributedText = attributedString
-        itemImageView.image = model?.image
-        alertBackgroundView.backgroundColor = model?.backgroundColor
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            let valueFont: UIFont = ParrotFontStyle.huge.font
+            let unitFont: UIFont = ParrotFontStyle.big.font
+
+            let attributedString = NSMutableAttributedString(string: model?.label ?? Style.dash)
+            attributedString.valueUnitFormatted(valueFont: valueFont, unitFont: unitFont)
+            itemLabel.attributedText = attributedString
+            itemImageView.image = model?.image
+            itemImageView.contentMode = .scaleAspectFit
+
+            alertBackgroundView.backgroundColor = model?.backgroundColor
+        } else {
+            let valueFont: UIFont = ParrotFontStyle.regular.font
+            let unitFont: UIFont = ParrotFontStyle.tiny.font
+
+            let attributedString = NSMutableAttributedString(string: model?.label ?? Style.dash)
+            attributedString.valueUnitFormatted(valueFont: valueFont, unitFont: unitFont)
+            itemLabel.attributedText = attributedString
+            itemImageView.image = model?.image
+            itemImageView.contentMode = .center
+            alertBackgroundView.backgroundColor = model?.backgroundColor
+        }
     }
 }

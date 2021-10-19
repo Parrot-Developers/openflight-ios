@@ -129,7 +129,7 @@ private extension DroneDetailsInformationsViewController {
                                                             description: state.serialNumber)
         hardwareVersionContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsHardwareVersion,
                                                                      description: state.hardwareVersion)
-        firmwareVersionContainerView.model = DeviceInformationsModel(title: L10n.deviceDetailsFirmwareVersion,
+        firmwareVersionContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsFirmwareCharles,
                                                                      description: state.firmwareVersion)
         imeiContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsImei,
                                                           description: state.imei)

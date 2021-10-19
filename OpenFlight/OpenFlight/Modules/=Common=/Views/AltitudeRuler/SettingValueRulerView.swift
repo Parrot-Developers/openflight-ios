@@ -61,27 +61,18 @@ public enum RulerOrientation {
 public enum RulerDisplayType {
     case number
     case string
+    case warningNumber
 
     public static var defaultValue: RulerDisplayType {
         return .number
     }
 
     var bgColor: UIColor {
-        switch self {
-        case .number:
-            return ColorName.clear.color
-        case .string:
-            return ColorName.whiteAlbescent.color
-        }
+        return ColorName.clear.color
     }
 
     var selectedBgColor: UIColor {
-        switch self {
-        case .number:
-            return ColorName.clear.color
-        case .string:
-            return ColorName.highlightColor.color
-        }
+        return ColorName.clear.color
     }
 
     var textColor: UIColor {
@@ -90,7 +81,7 @@ public enum RulerDisplayType {
 
     var selectedTextColor: UIColor {
         switch self {
-        case .number:
+        case .number, .warningNumber:
             return ColorName.white.color
         case .string:
             return ColorName.white.color
@@ -98,11 +89,15 @@ public enum RulerDisplayType {
     }
 
     var shouldDisplaySelector: Bool {
+        return true
+    }
+
+    var selectorBackgroundColor: UIColor {
         switch self {
-        case .number:
-            return true
-        case .string:
-            return false
+        case .number, .string:
+            return ColorName.highlightColor.color
+        case .warningNumber:
+            return ColorName.warningColor.color
         }
     }
 }
@@ -156,7 +151,8 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
     @IBOutlet private weak var collectionView: UICollectionView!
     @IBOutlet private weak var collectionContainerView: UIView!
     @IBOutlet private weak var verticalSelectionView: UIView!
-    @IBOutlet private weak var horizontalSelectionView: UIView!
+    @IBOutlet private(set) weak var horizontalSelectionView: UIView!
+    @IBOutlet private weak var gradientBackground: UIView!
 
     // MARK: - Public Properties
     public var model: SettingValueRulerModel = SettingValueRulerModel() {
@@ -168,6 +164,8 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
                                             : .centeredVertically,
                                         animated: true)
             titleLabel.text = model.title
+            horizontalSelectionView.backgroundColor = model.displayType.selectorBackgroundColor
+            verticalSelectionView.backgroundColor = model.displayType.selectorBackgroundColor
             if model.displayType.shouldDisplaySelector == false {
                 horizontalSelectionView.isHidden = true
                 verticalSelectionView.isHidden = true
@@ -371,10 +369,6 @@ extension SettingValueRulerView: UICollectionViewDelegateFlowLayout {
     public func collectionView(_ collectionView: UICollectionView,
                                layout collectionViewLayout: UICollectionViewLayout,
                                sizeForItemAt indexPath: IndexPath) -> CGSize {
-        if model.displayType == .string {
-            return Constants.largeCellSize
-        } else {
-            return Constants.cellSize
-        }
+        return Constants.cellSize
     }
 }

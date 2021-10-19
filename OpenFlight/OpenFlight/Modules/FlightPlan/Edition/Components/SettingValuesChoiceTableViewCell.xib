@@ -11,42 +11,41 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingValuesChoiceTableViewCell" rowHeight="69" id="KGk-i7-Jjw" customClass="SettingValuesChoiceTableViewCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="398" height="80"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingValuesChoiceTableViewCell" rowHeight="128" id="KGk-i7-Jjw" customClass="SettingValuesChoiceTableViewCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="398" height="139"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" translatesAutoresizingMaskIntoConstraints="NO" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="398" height="80"/>
+                <rect key="frame" x="0.0" y="0.0" width="398" height="139"/>
                 <subviews>
-                    <stackView opaque="NO" contentMode="center" axis="vertical" distribution="fillProportionally" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="gDc-HY-cLJ">
-                        <rect key="frame" x="10" y="10" width="378" height="60"/>
+                    <stackView opaque="NO" contentMode="center" axis="vertical" distribution="fillProportionally" alignment="center" spacing="13" translatesAutoresizingMaskIntoConstraints="NO" id="gDc-HY-cLJ">
+                        <rect key="frame" x="4" y="10" width="390" height="119"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="250" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="QEA-XM-Hd7">
-                                <rect key="frame" x="168.5" y="0.0" width="41.5" height="16.5"/>
+                                <rect key="frame" x="174.5" y="0.0" width="41.5" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" name="default_text_color"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="zli-GB-lKU">
-                                <rect key="frame" x="144" y="20.5" width="90" height="39.5"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="zli-GB-lKU">
+                                <rect key="frame" x="10" y="33.5" width="370" height="85.5"/>
+                                <color key="backgroundColor" name="setting_group"/>
                                 <color key="tintColor" name="default_text_color"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="90" id="VCr-xa-Edw"/>
-                                </constraints>
                             </stackView>
                         </subviews>
                         <constraints>
-                            <constraint firstAttribute="height" constant="60" id="HfX-xY-9sK"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="zli-GB-lKU" secondAttribute="trailing" id="Af7-T3-vnv"/>
+                            <constraint firstItem="zli-GB-lKU" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="gDc-HY-cLJ" secondAttribute="leading" id="nl5-SV-KXZ"/>
                         </constraints>
                     </stackView>
                     <view hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xcU-gV-K1P">
-                        <rect key="frame" x="0.0" y="0.0" width="398" height="80"/>
+                        <rect key="frame" x="0.0" y="0.0" width="398" height="139"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </view>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="gDc-HY-cLJ" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="10" id="2Tn-j8-Ojh"/>
-                    <constraint firstAttribute="trailing" secondItem="gDc-HY-cLJ" secondAttribute="trailing" constant="10" id="5Cd-Of-h5d"/>
+                    <constraint firstItem="gDc-HY-cLJ" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="4" id="2Tn-j8-Ojh"/>
+                    <constraint firstAttribute="trailing" secondItem="gDc-HY-cLJ" secondAttribute="trailing" constant="4" id="5Cd-Of-h5d"/>
                     <constraint firstAttribute="bottom" secondItem="xcU-gV-K1P" secondAttribute="bottom" id="8Fs-lx-119"/>
                     <constraint firstItem="xcU-gV-K1P" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="9EO-Ub-mZu"/>
                     <constraint firstAttribute="bottom" secondItem="gDc-HY-cLJ" secondAttribute="bottom" constant="10" id="Hvl-TC-gbK"/>
@@ -68,12 +67,15 @@
                 <outlet property="settingValuesStackView" destination="zli-GB-lKU" id="8fG-Km-gyl"/>
                 <outlet property="titleLabel" destination="QEA-XM-Hd7" id="SUR-2h-n88"/>
             </connections>
-            <point key="canvasLocation" x="-112" y="141.67916041979012"/>
+            <point key="canvasLocation" x="-112" y="167.76611694152925"/>
         </tableViewCell>
     </objects>
     <resources>
         <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="setting_group">
+            <color red="0.87450980392156863" green="0.84705882352941175" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

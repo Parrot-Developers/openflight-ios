@@ -34,7 +34,7 @@ import Combine
 
 /// Class that manages ths split screen between streaming and secondary HUD view.
 
-final class SplitControls: NSObject, DelayedTaskProvider {
+public class SplitControls: NSObject, DelayedTaskProvider {
 
     // MARK: - Outlets
     @IBOutlet private weak var view: UIView!
@@ -126,7 +126,7 @@ final class SplitControls: NSObject, DelayedTaskProvider {
     // MARK: - Internal Properties
 
     weak var cameraStreamingViewController: HUDCameraStreamingViewController?
-    weak var mapViewController: MapViewController?
+    var mapViewController: MapViewController?
     weak var mapOr3DParent: UIViewController?
     var delayedTaskComponents = DelayedTaskComponents()
     weak var delegate: SplitControlsDelegate?
@@ -214,6 +214,8 @@ final class SplitControls: NSObject, DelayedTaskProvider {
     private var longPressGestureRecognizer: UILongPressGestureRecognizer!
     private var cancellables = Set<AnyCancellable>()
     private let viewModel = SplitControlsViewModel()
+    public var forceStream: Bool = false
+
     // TODO: Wrong injection
     private unowned var currentMissionManager = Services.hub.currentMissionManager
     private var currentStreamRatio: CGFloat?
@@ -254,7 +256,7 @@ final class SplitControls: NSObject, DelayedTaskProvider {
         return self.view.frame.height * ratio / 2.0
     }
     private var occupancyViewController: OccupancyViewController?
-    private var stereoVisionBlendedViewController: StereoVisionBlendedViewController?
+    private var streamViewController: HUDCameraStreamingViewController?
     private var isMapRequired: Bool { Services.hub.currentMissionManager.mode.isMapRequired }
 
     // MARK: - Internal Funcs
@@ -278,7 +280,7 @@ final class SplitControls: NSObject, DelayedTaskProvider {
             .store(in: &cancellables)
         currentMissionManager.modePublisher.sink { [unowned self] in
             setSplitMode($0.preferredSplitMode)
-            updateStreamState(enabled: !$0.isFlightPlanPanelRequired)
+            updateStreamState(enabled: !$0.isRightPanelRequired)
         }
         .store(in: &cancellables)
     }
@@ -337,16 +339,6 @@ final class SplitControls: NSObject, DelayedTaskProvider {
             break
         }
         displayMapOr3DasChild()
-    }
-
-    /// Switch to full streaming mode if needed.
-    func collapseSecondaryViewIfNeeded() {
-        switch viewModel.mode {
-        case .splited:
-            setupStreamingFullscreen()
-        default:
-            break
-        }
     }
 
     /// Sets up a new ratio for the stream. Should be called when
@@ -857,12 +849,13 @@ private extension SplitControls {
 // MARK: - MapViewRestorer
 
 extension SplitControls: MapViewRestorer {
-    func addMap(_ map: MapViewController, parent: UIViewController) {
+    public func addMap(_ map: MapViewController, parent: UIViewController) {
 
         // Prevent from double calls.
         guard parent != mapOr3DParent || map != mapViewController else {
                 return
         }
+        forceStream = false
         // remove if needed
         mapViewController?.remove()
         mapViewController?.unplug()
@@ -876,7 +869,7 @@ extension SplitControls: MapViewRestorer {
     }
 
     /// Update the right pannel with Map or 3D View
-    func displayMapOr3DasChild() {
+    open func displayMapOr3DasChild() {
         guard mapViewController != nil, let parent = mapOr3DParent else {
             return
         }
@@ -884,7 +877,14 @@ extension SplitControls: MapViewRestorer {
         switch SecondaryScreenType.current {
         case .map,
              .threeDimensions where isMapRequired:
-            vcToDisplay = mapViewController
+            if forceStream {
+                if streamViewController == nil {
+                    streamViewController = HUDCameraStreamingViewController.instantiate()
+                }
+                vcToDisplay = streamViewController
+            } else {
+                vcToDisplay = mapViewController
+            }
 
         case .threeDimensions:
             if occupancyViewController == nil {
@@ -899,10 +899,14 @@ extension SplitControls: MapViewRestorer {
         } else {
             // remove the previous
             mapViewController?.remove()
+            streamViewController?.remove()
             occupancyViewController?.remove()
             // we do not keep the occupancyViewController if it is not necessary
             if vcToDisplay != occupancyViewController {
                 occupancyViewController = nil
+            }
+            if vcToDisplay != streamViewController {
+                streamViewController = nil
             }
             // add the vcToDisplay as child
             if let vcToDisplay = vcToDisplay {
@@ -913,10 +917,11 @@ extension SplitControls: MapViewRestorer {
         }
     }
 
-    func restoreMapIfNeeded() {
+    public func restoreMapIfNeeded() {
         guard isSecondaryContainerEmpty, let mapView = mapViewController?.view else {
                 return
         }
+        forceStream = false
         secondaryContainerView.addWithConstraints(subview: mapView)
     }
 }

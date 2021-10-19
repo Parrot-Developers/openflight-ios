@@ -36,70 +36,82 @@ import GroundSdk
 /// Quick settings will reuse as much a possible setting content and its children logic.
 final class SettingsQuickViewController: UIViewController, StoryboardBased {
     // MARK: - Outlets
-    @IBOutlet private weak var collection: UICollectionView!
+    @IBOutlet private weak var collectionView: UICollectionView!
 
     // MARK: - Private Properties
-    private weak var coordinator: Coordinator?
     // TODO wrong injection, viewModel should be prepared one level up (coordinator or upper VM)
     private let viewModel = QuickSettingsViewModel(obstacleAvoidanceMonitor: Services.hub.obstacleAvoidanceMonitor)
     private var settings: [SettingEntry] = [] {
         didSet {
-            collection?.reloadData()
-            self.collection.isUserInteractionEnabled = true
+            collectionView?.reloadData()
+            self.collectionView.isUserInteractionEnabled = true
         }
     }
-    /// Some settings may not be available regarding drone state.
     private var filteredSettings: [SettingEntry] {
         return settings.filter({ $0.setting != nil })
     }
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let cellSize: CGSize = CGSize(width: 110, height: 110)
-        static let defaultCellMargin: CGFloat = 10.0
-        static let cellSpacing: CGFloat = 10.0
-        static let sideMargin: CGFloat = 16.0
-    }
+    private var valueInterSpaceItem: CGFloat = 20
+    private var valueInterLineRowItem: CGFloat = 20
+    private var valueMaxItemsPerRow: CGFloat = 3
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        setupCollection()
-
         // watch current drone.
         viewModel.state.valueChanged = { [weak self] _ in
             self?.updateCells()
         }
-
         updateCells()
+        setupCollectionViewLayout()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        setupCollectionViewLayout()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        setupCollectionViewLayout()
+    }
+
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        collectionView.collectionViewLayout.invalidateLayout()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
-}
 
-// MARK: - Private Funcs
-private extension SettingsQuickViewController {
-    /// setup collection.
-    func setupCollection() {
-        if let flowLayout = collection.collectionViewLayout as? UICollectionViewFlowLayout {
-            flowLayout.itemSize = Constants.cellSize
-            flowLayout.estimatedItemSize = CGSize.zero // use fixed size
-            flowLayout.scrollDirection = .vertical
-            flowLayout.sectionInset.right = Constants.sideMargin
-            flowLayout.sectionInset.left = Constants.sideMargin
-            let insetsTopBottom = (view.bounds.height - (collection.bounds.height))
-                / 2.0
-            flowLayout.sectionInset.top = insetsTopBottom
-            flowLayout.sectionInset.bottom = insetsTopBottom
-            flowLayout.minimumLineSpacing = Constants.cellSpacing
-        }
-        collection.register(cellType: SettingsQuickCollectionViewCell.self)
+    private func setupCollectionViewLayout() {
+        guard let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout else { return }
+
+        layout.estimatedItemSize = CGSize.zero
+        let maxItemPerRow: CGFloat = valueMaxItemsPerRow
+        // collection.width divide by 3 items means 2 inter space in the row.
+        let maxItemForInterLine = maxItemPerRow > 1 ? maxItemPerRow - 1 : 1
+
+        // get width of item for one row.
+        let itemSizeCustom = (collectionView.frame.size.width / maxItemPerRow )
+        let spaceInterItemCustom: CGFloat = (valueInterSpaceItem / maxItemPerRow) * (maxItemForInterLine)
+        let spaceInterLineCustom: CGFloat = valueInterLineRowItem
+
+        // Alignment
+        let deltaHeight = collectionView.frame.height - (itemSizeCustom * (CGFloat(filteredSettings.count) / valueMaxItemsPerRow))
+        // try to center some elements vertically, otherwise it is set to 0 or you can set a constant value.
+        layout.sectionInset.top = deltaHeight / 2 < 0 ? 0 : deltaHeight / 2
+        layout.scrollDirection = .vertical
+        layout.minimumInteritemSpacing = spaceInterItemCustom
+        layout.minimumLineSpacing = spaceInterLineCustom
+
+        layout.itemSize = CGSize(width: itemSizeCustom - spaceInterItemCustom, height: itemSizeCustom - spaceInterItemCustom)
+
+        collectionView.register(cellType: SettingsQuickCollectionViewCell.self)
     }
 
-    func updateCells() {
+    private func updateCells() {
         settings = viewModel.settingEntries
     }
 }
@@ -114,9 +126,7 @@ extension SettingsQuickViewController: UICollectionViewDataSource {
         let cell: SettingsQuickCollectionViewCell = collectionView.dequeueReusableCell(for: indexPath)
 
         let settingEntry = filteredSettings[indexPath.row]
-        cell.configureCell(settingEntry: settingEntry,
-                           atIndexPath: indexPath,
-                           delegate: self)
+        cell.configureCell(settingEntry: settingEntry, atIndexPath: indexPath, delegate: self)
         cell.backgroundColor = settingEntry.bgColor
 
         return cell
@@ -125,15 +135,11 @@ extension SettingsQuickViewController: UICollectionViewDataSource {
 
 // MARK: - Settings quick collection view cell delegate
 extension SettingsQuickViewController: SettingsQuickCollectionViewCellDelegate {
-    func settingsQuickCellWillSwipe() {
-        self.collection.isUserInteractionEnabled = false
-    }
-
-    func settingsQuickCelldidSwipe(_ direction: UISwipeGestureRecognizer.Direction, at indexPath: IndexPath) {
+    func settingsQuickCelldidTap(indexPath: IndexPath) {
         let settingEntry = filteredSettings[indexPath.row]
+
         if let model = settingEntry.segmentModel {
-            let index = (direction == .left) ? model.nextIndex : model.previousIndex
-            viewModel.saveSettingsEntry(settingEntry, at: index)
+            viewModel.saveSettingsEntry(settingEntry, at: model.nextIndex)
         }
     }
 }

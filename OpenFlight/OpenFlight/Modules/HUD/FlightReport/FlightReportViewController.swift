@@ -35,91 +35,36 @@ import Combine
 final class FlightReportViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var backgroundView: UIView!
-    @IBOutlet private weak var mainView: UIView! {
-        didSet {
-            mainView.addBlurEffect(cornerRadius: Style.mediumCornerRadius)
-        }
-    }
-    @IBOutlet private weak var titleLabel: UILabel! {
-        didSet {
-            titleLabel.makeUp(with: .huge)
-            titleLabel.text = L10n.flightReportTitle
-        }
-    }
-    // MARK: Flight Name
-    @IBOutlet private weak var flightNameTitleLabel: UILabel! {
-        didSet {
-            flightNameTitleLabel.makeUp()
-            flightNameTitleLabel.text = L10n.flightInfoName
-        }
-    }
-    @IBOutlet private weak var flightNameContainerView: UIView! {
-        didSet {
-            flightNameContainerView.applyCornerRadius()
-        }
-    }
-    @IBOutlet private weak var flightNameLabel: UILabel! {
-        didSet {
-            flightNameLabel.makeUp(with: .large )
-        }
-    }
+    @IBOutlet private weak var mainView: UIView!
+    @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet private weak var flightNameTitleLabel: UILabel!
+    @IBOutlet private weak var flightNameContainerView: UIView!
+    @IBOutlet private weak var flightNameLabel: UILabel!
     @IBOutlet private weak var flightNameLabelStackView: UIStackView!
-    @IBOutlet private weak var flightNameTextfield: UITextField! {
-        didSet {
-            flightNameTextfield.makeUp(style: .large)
-            flightNameTextfield.tintColor = .white
-            flightNameTextfield.backgroundColor = .clear
-            flightNameTextfield.isHidden = true
-        }
-    }
+    @IBOutlet private weak var flightNameTextfield: UITextField!
     // MARK: Flight Infos
-    @IBOutlet private weak var dateLabel: UILabel! {
-        didSet {
-            dateLabel.makeUp(with: .large, and: .white50)
-        }
-    }
-    @IBOutlet private weak var locationLabel: UILabel! {
-        didSet {
-            locationLabel.makeUp(with: .large, and: .white50)
-        }
-    }
+    @IBOutlet private weak var dateLabel: UILabel!
+    @IBOutlet private weak var locationLabel: UILabel!
     @IBOutlet private weak var flightTimeInfoView: FlightReportInfoView!
     @IBOutlet private weak var totalDistanceInfoView: FlightReportInfoView!
     @IBOutlet private weak var batteryUsedInfoView: FlightReportInfoView!
+    @IBOutlet private weak var nbPhotosInfoView: FlightReportInfoView!
+    @IBOutlet private weak var nbVideosInfoView: FlightReportInfoView!
+    @IBOutlet private weak var memoryUsedInfoView: FlightReportInfoView!
+
     // MARK: Flight Diagnostics
-    @IBOutlet private weak var diagnosticLabel: UILabel! {
-        didSet {
-            diagnosticLabel.makeUp(with: .large, and: .greenSpring)
-            diagnosticLabel.text = L10n.diagnosticsFlightReportEverythingOk
-        }
-    }
-    @IBOutlet private weak var storageSpaceCircleView: CircleProgressView! {
-        didSet {
-            storageSpaceCircleView.strokeColor = ColorName.greenSpring.color
-        }
-    }
-    @IBOutlet private weak var storageSpaceValueLabel: UILabel! {
-        didSet {
-            storageSpaceValueLabel.makeUp(with: .large)
-        }
-    }
-    @IBOutlet private weak var storageSpaceUnitLabel: UILabel! {
-        didSet {
-            storageSpaceUnitLabel.makeUp(and: .white50)
-        }
-    }
+    @IBOutlet private weak var diagnosticContainerView: UIView!
+    @IBOutlet private weak var diagnosticLabel: UILabel!
+    @IBOutlet private weak var storageSpaceValueLabel: UILabel!
     @IBOutlet private weak var batteryLevelImageView: UIImageView!
-    @IBOutlet private weak var batteryLevelLabel: UILabel! {
-        didSet {
-            batteryLevelLabel.makeUp(with: .large)
-        }
-    }
+    @IBOutlet private weak var batteryLevelLabel: UILabel!
     // MARK: Constraints
     @IBOutlet private weak var scrollViewBottomConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
     private var viewModel: FlightDetailsViewModel!
     private var cancellables = Set<AnyCancellable>()
+    private let droneInfosViewModel = DroneInfosViewModel()
 
     // MARK: - Deinit
     deinit {
@@ -141,16 +86,11 @@ final class FlightReportViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        setupView()
         addTapGestures()
         setupKeyboardNotificationObservers()
         setupFlightInfoModels()
         setupFlightViewModel()
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        // TODO: remove this and replace with real values
-        storageSpaceCircleView.setProgress(0.25)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -191,6 +131,17 @@ private extension FlightReportViewController {
 
 // MARK: - Private Funcs
 private extension FlightReportViewController {
+    /// Sets up view
+    func setupView() {
+        mainView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
+        flightNameContainerView.layer.cornerRadius = Style.largeCornerRadius
+        titleLabel.text = L10n.flightReportTitle
+        flightNameTitleLabel.text = L10n.flightInfoName
+        flightNameTextfield.isHidden = true
+        diagnosticContainerView.layer.cornerRadius = Style.largeCornerRadius
+        diagnosticLabel.text = L10n.diagnosticsFlightReportEverythingOk
+    }
+
     /// Adds tap gestures to the views.
     func addTapGestures() {
         let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissFlightReport))
@@ -225,6 +176,15 @@ private extension FlightReportViewController {
         batteryUsedInfoView.model = FlightReportInfoModel(image: Asset.Common.Icons.icBattery.image,
                                                           title: L10n.flightInfoBatteryUsed.uppercased(),
                                                           value: Style.dash)
+        nbPhotosInfoView.model = FlightReportInfoModel(image: Asset.Dashboard.icPhotoMini.image,
+                                                       title: L10n.flightInfoPhotos.uppercased(),
+                                                       value: Style.dash)
+        nbVideosInfoView.model = FlightReportInfoModel(image: Asset.Dashboard.icVideoMini.image,
+                                                       title: L10n.flightInfoVideos.uppercased(),
+                                                       value: Style.dash)
+        memoryUsedInfoView.model = FlightReportInfoModel(image: nil,
+                                                         title: L10n.flightInfoMemoryUsed.uppercased(),
+                                                         value: Style.dash)
     }
 
     /// Sets up flight view model for information display.
@@ -232,12 +192,33 @@ private extension FlightReportViewController {
         flightTimeInfoView.model?.value = viewModel.flight.formattedDuration
         totalDistanceInfoView.model?.value = viewModel.flight.formattedDistance
         batteryUsedInfoView.model?.value = viewModel.flight.batteryConsumptionPercents
+        nbPhotosInfoView.model?.value = viewModel.flight.formattedPhotoCount
+        nbVideosInfoView.model?.value = viewModel.flight.formattedVideoCount
         dateLabel.text = viewModel.flight.formattedDate
         locationLabel.text = viewModel.flight.formattedPosition
         viewModel.$name
             .sink { [unowned self] in
                 flightNameLabel.text = $0
                 flightNameTextfield.text = $0
+            }
+            .store(in: &cancellables)
+        viewModel.$sdcardAvailableSpace
+            .sink { [unowned self] availableSpace in
+                storageSpaceValueLabel.text = availableSpace
+            }
+            .store(in: &cancellables)
+        viewModel.$memoryUsed
+            .sink { [unowned self] memoryUsed in
+                memoryUsedInfoView.model?.value = memoryUsed
+            }
+            .store(in: &cancellables)
+        droneInfosViewModel.$batteryLevel
+            .sink { [unowned self] batteryLevel in
+                if let batteryValue = batteryLevel.currentValue {
+                    batteryLevelLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryValue)
+                } else {
+                    batteryLevelLabel.text = Style.dash
+                }
             }
             .store(in: &cancellables)
     }

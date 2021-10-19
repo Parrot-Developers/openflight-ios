@@ -58,28 +58,64 @@
                                                 </constraints>
                                             </imageView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="ilh-jZ-KzQ">
-                                                <rect key="frame" x="89.666666666666686" y="167.66666666666663" width="51" height="30"/>
+                                                <rect key="frame" x="47.333333333333314" y="167.66666666666663" width="135.66666666666666" height="30"/>
                                                 <subviews>
-                                                    <stackView opaque="NO" contentMode="center" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="ypY-Qu-BHy">
-                                                        <rect key="frame" x="0.0" y="0.0" width="51" height="30"/>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="Wah-3w-ODt">
+                                                        <rect key="frame" x="0.0" y="0.0" width="135.66666666666666" height="30"/>
                                                         <subviews>
-                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBattery" translatesAutoresizingMaskIntoConstraints="NO" id="FRO-eG-xMa">
-                                                                <rect key="frame" x="0.0" y="8" width="9" height="14"/>
-                                                                <color key="tintColor" name="default_text_color"/>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9Ch-kg-4Xg">
+                                                                <rect key="frame" x="0.0" y="8" width="13.666666666666666" height="14"/>
+                                                                <subviews>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGpsNone" translatesAutoresizingMaskIntoConstraints="NO" id="Fip-Dl-Hpv">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="15.666666666666666" height="12"/>
+                                                                        <color key="tintColor" name="default_text_color"/>
+                                                                    </imageView>
+                                                                </subviews>
+                                                                <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="2" right="-2"/>
+                                                            </stackView>
+                                                            <stackView opaque="NO" contentMode="center" alignment="center" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="ypY-Qu-BHy">
+                                                                <rect key="frame" x="29.666666666666686" y="0.0" width="45" height="30"/>
+                                                                <subviews>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryUserDeviceNone" translatesAutoresizingMaskIntoConstraints="NO" id="FRO-eG-xMa">
+                                                                        <rect key="frame" x="0.0" y="9.6666666666666856" width="15" height="11"/>
+                                                                        <color key="tintColor" name="default_text_color"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="width" constant="15" id="uiB-Kr-JfZ"/>
+                                                                        </constraints>
+                                                                    </imageView>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fas-08-hIX">
+                                                                        <rect key="frame" x="16" y="8.6666666666666856" width="29" height="13"/>
+                                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                        <color key="textColor" name="default_text_color"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
                                                                 <constraints>
-                                                                    <constraint firstAttribute="width" constant="9" id="uiB-Kr-JfZ"/>
+                                                                    <constraint firstAttribute="height" constant="30" id="noK-wU-LJM"/>
                                                                 </constraints>
-                                                            </imageView>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fas-08-hIX">
-                                                                <rect key="frame" x="14" y="6.3333333333333712" width="37" height="17.666666666666668"/>
-                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                                <color key="textColor" name="default_text_color"/>
-                                                                <nil key="highlightedColor"/>
-                                                            </label>
+                                                            </stackView>
+                                                            <stackView opaque="NO" contentMode="center" alignment="center" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="3Ge-i6-sd5">
+                                                                <rect key="frame" x="90.666666666666686" y="0.0" width="45" height="30"/>
+                                                                <subviews>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryRemoteNone" translatesAutoresizingMaskIntoConstraints="NO" id="ISI-TF-Ab8">
+                                                                        <rect key="frame" x="0.0" y="9" width="15" height="12"/>
+                                                                        <color key="tintColor" name="suva_grey"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="width" constant="15" id="rFB-LG-q3U"/>
+                                                                        </constraints>
+                                                                    </imageView>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sWC-zG-klp">
+                                                                        <rect key="frame" x="16" y="8.6666666666666856" width="29" height="13"/>
+                                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                        <color key="textColor" name="default_text_color"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="30" id="RJt-N9-CDr"/>
+                                                                </constraints>
+                                                            </stackView>
                                                         </subviews>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="30" id="noK-wU-LJM"/>
-                                                        </constraints>
                                                     </stackView>
                                                 </subviews>
                                             </stackView>
@@ -105,8 +141,11 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="batteryImageView" destination="FRO-eG-xMa" id="WUy-81-2AX"/>
-                        <outlet property="batteryValueLabel" destination="fas-08-hIX" id="vo7-52-jrI"/>
+                        <outlet property="batteryDeviceImageView" destination="FRO-eG-xMa" id="5pb-Uh-OtT"/>
+                        <outlet property="batteryDeviceValueLabel" destination="fas-08-hIX" id="KBq-v8-mii"/>
+                        <outlet property="batteryImageView" destination="ISI-TF-Ab8" id="xQN-Ym-vCR"/>
+                        <outlet property="batteryValueLabel" destination="sWC-zG-klp" id="dBm-Fi-6Ys"/>
+                        <outlet property="iconGpsImageView" destination="Fip-Dl-Hpv" id="Nu1-fI-beQ"/>
                         <outlet property="modelLabel" destination="UgA-7t-Zde" id="aPN-FD-ExM"/>
                         <outlet property="nameLabel" destination="bFL-1n-7vG" id="ZE1-1g-hlH"/>
                         <outlet property="remoteImageView" destination="Qq0-ZS-5a9" id="3g2-vg-bKi"/>
@@ -118,10 +157,15 @@
         </scene>
     </scenes>
     <resources>
-        <image name="icBattery" width="7" height="14"/>
-        <image name="icRemoteBigDisconnected" width="200" height="140"/>
+        <image name="icBatteryRemoteNone" width="12" height="12"/>
+        <image name="icBatteryUserDeviceNone" width="6" height="11"/>
+        <image name="icGpsNone" width="15.666666984558105" height="12"/>
+        <image name="icRemoteBigDisconnected" width="230" height="160"/>
         <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="suva_grey">
+            <color red="0.54117647058823526" green="0.54117647058823526" blue="0.54117647058823526" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

@@ -30,6 +30,7 @@
 
 import UIKit
 
+// TODO: Should be useless after TFF7-283 validation
 /// Confirms the success of the cellular configuration login.
 final class CellularPairingSuccessViewController: UIViewController {
     // MARK: - Outlets

@@ -34,6 +34,7 @@ import GroundSdk
 extension ULogTag {
     /// Mission update tag.
     static let missionUpdateTag = ULogTag(name: "mission-update")
+    static let remoteUpdateTag = ULogTag(name: "remote-update")
     static let dataModelTag = ULogTag(name: "data-model")
     static let academyApiTag = ULogTag(name: "academy-api")
 

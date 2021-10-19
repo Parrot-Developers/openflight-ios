@@ -182,26 +182,9 @@ final class BehavioursViewModel: DroneWatcherViewModel<DeviceConnectionState>, S
 
 // MARK: - Private Funcs
 private extension BehavioursViewModel {
-    /// Show horizontal info.
-    func showHorizontalInfo() {
-        self.infoHandler?(InclinedRoll.self)
-    }
-
     /// Show banked turn info.
     func showBankedTurnInfo() {
         self.infoHandler?(BankedTurn.self)
-    }
-
-    /// Inclined roll model.
-    func inclinedRollModel() -> DroneSettingModel? {
-        return DroneSettingModel(allValues: InclinedRoll.allValues,
-                                 supportedValues: InclinedRoll.allValues,
-                                 currentValue: InclinedRoll.value(from: gimbal?.stabilizationSettings[.roll]),
-                                 isUpdating: false) { [weak self] mode in
-            guard let inclinedRoll = mode as? InclinedRoll else { return }
-
-            self?.gimbal?.stabilizationSettings[.roll]?.value = inclinedRoll.boolValue
-        }
     }
 
     /// Banked turn model.

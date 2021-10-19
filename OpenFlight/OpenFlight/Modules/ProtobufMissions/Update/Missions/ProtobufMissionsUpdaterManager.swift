@@ -145,13 +145,6 @@ extension ProtobufMissionsUpdaterManager {
     func manuallyBrowse() {
         protobufMissionsUpdaterWrapper.manuallyBrowse()
     }
-
-    /// Returns a formatted string to represent the names and versions of the missions
-    ///
-    /// - Returns: The formatted string
-    func missionsNamesAndVersion() -> String {
-        return missionsToUpdateList.missionsNamesAndVersion()
-    }
 }
 
 /// Utils for listener management.

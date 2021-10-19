@@ -32,7 +32,6 @@ import GroundSdk
 
 // MARK: - Internal Enums
 /// Enum used to display camera bracketing sub-modes in bottom bar.
-
 enum BracketingMode: Int, BarItemSubMode {
     case three = 3
     case five = 5
@@ -73,7 +72,7 @@ enum BracketingMode: Int, BarItemSubMode {
     }
 
     var shutterText: String? {
-        return String(self.rawValue)
+        return String(rawValue)
     }
 
     var logKey: String {

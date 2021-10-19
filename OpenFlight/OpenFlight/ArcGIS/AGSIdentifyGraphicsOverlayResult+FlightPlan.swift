@@ -32,12 +32,11 @@ import ArcGIS
 
 /// Extension for `AGSIdentifyGraphicsOverlayResult` usage with Flight Plan.
 
-extension AGSIdentifyGraphicsOverlayResult {
+public extension AGSIdentifyGraphicsOverlayResult {
     /// Returns selected object if it exists, nil otherwise.
     /// Items are selected with a specific priority order (defined in `FlightPlanGraphicItemType`).
     var selectedFlightPlanObject: FlightPlanGraphic? {
-        return self.graphics
-            .compactMap { $0 as? FlightPlanGraphic }
+        graphics.compactMap { $0 as? FlightPlanGraphic }
             .sorted()
             .first
     }
@@ -46,6 +45,13 @@ extension AGSIdentifyGraphicsOverlayResult {
     var selectedWayPoint: FlightPlanWayPointGraphic? {
         return self.graphics
             .compactMap { $0 as? FlightPlanWayPointGraphic }
+            .first
+    }
+
+    /// Returns selected poi, if any
+    var selectedPoiPoint: FlightPlanPoiPointGraphic? {
+        return self.graphics
+            .compactMap { $0 as? FlightPlanPoiPointGraphic }
             .first
     }
 }

@@ -72,11 +72,11 @@
                                             </constraint>
                                         </constraints>
                                     </imageView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" alignment="center" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="0GU-XM-u1r">
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="0GU-XM-u1r">
                                         <rect key="frame" x="0.0" y="114" width="144" height="26"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fhz-yt-jKF">
-                                                <rect key="frame" x="72" y="0.0" width="0.0" height="0.0"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="144" height="0.0"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
@@ -84,21 +84,30 @@
                                                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="18"/>
                                                 </variation>
                                             </label>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="c6T-Se-u3F" customClass="DeviceStateButton" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="57" y="7" width="30" height="19"/>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kPA-3I-eB5">
+                                                <rect key="frame" x="0.0" y="7" width="144" height="19"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="c6T-Se-u3F" customClass="DeviceStateButton" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="57" y="0.0" width="30" height="19"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                        <inset key="titleEdgeInsets" minX="6" minY="2" maxX="6" maxY="2"/>
+                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                        </variation>
+                                                        <connections>
+                                                            <action selector="stateDeviceTouchedUpInside:" destination="gTV-IL-0wX" eventType="touchUpInside" id="fTQ-8j-g6I"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="19" id="86e-X9-NaH"/>
+                                                    <constraint firstAttribute="height" constant="19" id="2OW-Ku-Mag"/>
+                                                    <constraint firstItem="c6T-Se-u3F" firstAttribute="top" secondItem="kPA-3I-eB5" secondAttribute="top" id="b2u-kT-zX7"/>
+                                                    <constraint firstItem="c6T-Se-u3F" firstAttribute="centerX" secondItem="kPA-3I-eB5" secondAttribute="centerX" id="bRd-ze-NTp"/>
+                                                    <constraint firstAttribute="bottom" secondItem="c6T-Se-u3F" secondAttribute="bottom" id="nHC-WJ-J5t"/>
                                                 </constraints>
-                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                <inset key="titleEdgeInsets" minX="6" minY="2" maxX="6" maxY="2"/>
-                                                <variation key="heightClass=regular-widthClass=regular">
-                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
-                                                </variation>
-                                                <connections>
-                                                    <action selector="stateDeviceTouchedUpInside:" destination="gTV-IL-0wX" eventType="touchUpInside" id="fTQ-8j-g6I"/>
-                                                </connections>
-                                            </button>
+                                            </view>
                                         </subviews>
                                     </stackView>
                                 </subviews>

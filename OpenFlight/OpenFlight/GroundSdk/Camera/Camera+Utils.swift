@@ -34,9 +34,9 @@ import GroundSdk
 public extension Camera2 {
     /// Returns true if a gpslapse is currently in progress.
     var isGpsLapseStarted: Bool {
-        if let photoState = self.photoCapture?.state,
+        if let photoState = photoCapture?.state,
            photoState.isStarted,
-           self.config[Camera2Params.photoMode]?.value == .gpsLapse {
+           config[Camera2Params.photoMode]?.value == .gpsLapse {
             return true
         } else {
             return false
@@ -45,29 +45,29 @@ public extension Camera2 {
 
     // Returns the current camera configuration for edition.
     var currentEditor: Camera2Editor {
-        return self.config.edit(fromScratch: false)
+        return config.edit(fromScratch: false)
     }
 
     /// Returns `TimeLapseMode` depending on drone current timelapse capture interval value.
     var timeLapseMode: TimeLapseMode? {
-        guard let timelapseCaptureInterval = self.config[Camera2Params.photoTimelapseInterval]?.value else { return nil }
+        guard let timelapseCaptureInterval = config[Camera2Params.photoTimelapseInterval]?.value else { return nil }
         return TimeLapseMode(interval: timelapseCaptureInterval)
     }
 
     /// Returns `GpsLapseMode` depending on drone current GPS Lapse capture interval value.
     var gpsLapseMode: GpsLapseMode? {
-        guard let gpslapseCaptureInterval = self.config[Camera2Params.photoGpslapseInterval]?.value else { return nil }
+        guard let gpslapseCaptureInterval = config[Camera2Params.photoGpslapseInterval]?.value else { return nil }
         return GpsLapseMode(rawValue: Int(gpslapseCaptureInterval))
     }
 
     /// Returns true if Hdr is activated.
     var isHdrOn: Bool {
-        guard let currentMode = self.mode else { return false }
+        guard let currentMode = mode else { return false }
         switch currentMode {
         case .photo:
-            return self.config[Camera2Params.photoDynamicRange]?.value.isHdr == true
+            return config[Camera2Params.photoDynamicRange]?.value.isHdr == true
         case .recording:
-            return self.config[Camera2Params.videoRecordingDynamicRange]?.value.isHdr == true
+            return config[Camera2Params.videoRecordingDynamicRange]?.value.isHdr == true
         }
     }
 

@@ -34,7 +34,7 @@ import GroundSdk
 extension Camera2DynamicRange: BarItemMode, Sortable {
     // MARK: - BarItemMode
     public var title: String {
-        self.rawValue
+        rawValue
     }
 
     public var image: UIImage? {
@@ -46,7 +46,7 @@ extension Camera2DynamicRange: BarItemMode, Sortable {
     }
 
     public static var allValues: [BarItemMode] {
-        return self.allCases.sorted()
+        return allCases.sorted()
     }
 
     public var subModes: [BarItemSubMode]? {

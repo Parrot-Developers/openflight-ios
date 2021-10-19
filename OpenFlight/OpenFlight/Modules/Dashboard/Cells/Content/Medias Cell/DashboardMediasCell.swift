@@ -36,8 +36,8 @@ final class DashboardMediasCell: UICollectionViewCell, NibReusable {
     @IBOutlet private weak var storageIcon: UIImageView!
     @IBOutlet private weak var freeStorageLabel: UILabel!
     @IBOutlet private weak var collectionView: UICollectionView!
-    @IBOutlet private weak var remainingPhotosLabel: UILabel!
-    @IBOutlet private weak var remainingVideosLabel: UILabel!
+    @IBOutlet private weak var emptyImageView: UIImageView!
+    @IBOutlet private weak var titleLabel: UILabel!
 
     // MARK: - Private Properties
     private enum Constants {
@@ -77,9 +77,9 @@ extension DashboardMediasCell: UICollectionViewDataSource {
         guard let viewModel = viewModel else { return 0 }
 
         let numberOfMedias = viewModel.numberOfMedias
-        numberOfMedias == 0 ? self.collectionView.setEmptyPlaceholder() : self.collectionView.restore()
+        emptyImageView.isHidden = numberOfMedias != 0
 
-        return min(Constants.maximumNumberOfItems, viewModel.numberOfMedias)
+        return min(Constants.maximumNumberOfItems, numberOfMedias)
     }
 }
 
@@ -121,9 +121,8 @@ private extension DashboardMediasCell {
     func updateView() {
         guard let viewModel = viewModel else { return }
 
-        storageIcon.image = viewModel.sourceType?.image
+        storageIcon.image = viewModel.sourceType?.image?.withTintColor(ColorName.highlightColor.color)
         freeStorageLabel.attributedText = NSMutableAttributedString(withAvailableSpace: viewModel.getAvailableSpace())
-        remainingPhotosLabel.text = String(format: "%d", viewModel.numberOfImages)
-        remainingVideosLabel.text = String(format: "%d", viewModel.numberOfVideos)
+        titleLabel.text = L10n.dashboardMediasTitle
     }
 }

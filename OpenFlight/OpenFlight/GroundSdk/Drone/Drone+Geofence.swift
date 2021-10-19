@@ -36,7 +36,6 @@ private enum Constants {
 }
 
 /// Utility extension for Drone's geofence-related functions.
-
 extension Drone {
     // MARK: - Internal Properties
     /// Returns true if drone current altitude is closer

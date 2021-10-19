@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// Utility extension for `CopterMotors`.
-
 extension CopterMotors {
     /// Returns current alerts for motors.
     var currentErrors: [HUDAlertType] {

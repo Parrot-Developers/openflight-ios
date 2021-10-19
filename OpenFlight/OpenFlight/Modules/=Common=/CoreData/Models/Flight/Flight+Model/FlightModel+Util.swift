@@ -16,11 +16,20 @@ public extension FlightModel {
     var formattedDate: String? {
         startTime?.formattedString(dateStyle: .full, timeStyle: .medium)
     }
+    var mediumFormattedDate: String? {
+        startTime?.formattedString(dateStyle: .medium, timeStyle: .medium)
+    }
+    var shortFormattedDate: String? {
+        startTime?.formattedString(dateStyle: .medium, timeStyle: .short)
+    }
     var formattedDuration: String {
         duration.formattedHmsString ?? Style.dash
     }
     var longFormattedDuration: String {
         duration.longFormattedString
+    }
+    var shortFormattedDuration: String {
+        duration.formattedString
     }
     var coordinateDescription: String {
         location.coordinate.coordinatesDescription
@@ -41,5 +50,13 @@ public extension FlightModel {
         }
 
         return location.coordinate.coordinatesDescription
+    }
+
+    var formattedPhotoCount: String {
+        return photoCount > 0 ? "\(photoCount)" : Style.dash
+    }
+
+    var formattedVideoCount: String {
+        return videoCount > 0 ? "\(videoCount)" : Style.dash
     }
 }

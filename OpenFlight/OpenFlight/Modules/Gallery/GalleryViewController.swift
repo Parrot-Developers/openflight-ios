@@ -30,6 +30,51 @@
 
 import UIKit
 
+// MARK: - Segmented Control
+private enum GallerySourceSegment: Int, CaseIterable {
+    case drone
+    case device
+
+    func toGallerySourceType(isSdCardActive: Bool) -> GallerySourceType {
+        switch self {
+        case .drone: return isSdCardActive ? .droneSdCard : .droneInternal
+        case .device: return .mobileDevice
+        }
+    }
+}
+
+private extension GallerySourceSegment {
+    static var defaultPanel: GallerySourceSegment {
+        return .drone
+    }
+
+    static func type(at index: Int) -> GallerySourceSegment {
+        guard index >= 0,
+              index < GallerySourceSegment.allCases.count else {
+            return GallerySourceSegment.defaultPanel
+        }
+        return GallerySourceSegment.allCases[index]
+    }
+
+    static func index(for panel: GallerySourceSegment) -> Int {
+        switch panel {
+        case .drone:
+            return 0
+        case .device:
+            return 1
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .drone:
+            return L10n.gallerySourceDroneMemory
+        case .device:
+            return L10n.gallerySourceLocalMemory
+        }
+    }
+}
+
 // MARK: - Protocols
 /// Delegate that notify state change in the main view model.
 protocol GalleryViewDelegate: AnyObject {
@@ -55,26 +100,26 @@ protocol GalleryViewDelegate: AnyObject {
 /// Gallery home.
 final class GalleryViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var bgLeftView: UIView!
+    // Top Bar
+    @IBOutlet private weak var navigationBar: UIView!
+    @IBOutlet private weak var segmentedControl: UISegmentedControl!
     @IBOutlet private weak var closeButton: UIButton!
-    @IBOutlet private weak var titleLabel: UILabel! {
-        didSet {
-            titleLabel.text = L10n.galleryTitle
-        }
-    }
+
+    // Media Panel
     @IBOutlet private weak var filterContainer: UIView!
     @IBOutlet private weak var filtersContainerHeightConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var formatButton: UIButton!
-    @IBOutlet private weak var selectButton: UIButton!
-    @IBOutlet private weak var mediasInfosLabel: UILabel! {
-        didSet {
-            mediasInfosLabel.text = L10n.galleryNoMedia
-        }
-    }
-    @IBOutlet private weak var leftSourcesContainer: UIView!
+    @IBOutlet private weak var mediasInfosLabel: UILabel!
+    @IBOutlet private weak var mediaSourceContainer: UIView!
+    @IBOutlet private weak var mediaSourceHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var mediasContainer: UIView!
-    @IBOutlet private weak var bottomSourcesContainer: UIView!
-    @IBOutlet private weak var bottomContainerHeightConstraint: NSLayoutConstraint!
+
+    // Side Panel
+    @IBOutlet private weak var selectionCountLabel: UILabel!
+    @IBOutlet private weak var mainActionButton: ActionButton!
+    @IBOutlet private weak var deleteButton: ActionButton!
+    @IBOutlet private weak var selectAllButton: ActionButton!
+    @IBOutlet private weak var formatSDButton: ActionButton!
+    @IBOutlet private weak var selectButton: ActionButton!
 
     // MARK: - Private Properties
     private var filtersViewController: GalleryFiltersViewController?
@@ -82,6 +127,33 @@ final class GalleryViewController: UIViewController {
     private var sourceViewController: GallerySourcesViewController?
     private weak var coordinator: GalleryCoordinator?
     private var viewModel: GalleryMediaViewModel?
+    private var selectedMediasCount = 0
+
+    // Convenience Computed Properties
+    private var selectedSourceSegment: GallerySourceSegment {
+        GallerySourceSegment.type(at: segmentedControl?.selectedSegmentIndex ?? 0)
+    }
+    private var selectedSource: GallerySourceType {
+        selectedSourceSegment.toGallerySourceType(isSdCardActive: isSdCardActive)
+    }
+    private var isDeviceSourceSelected: Bool {
+        viewModel?.sourceType == .mobileDevice
+    }
+    private var isSdCardActive: Bool {
+        viewModel?.isSdCardActive ?? false
+    }
+    private var filteredMediasCount: Int {
+        viewModel?.state.value.mediasByDate
+            .map { $0.medias }
+            .flatMap { $0 }
+            .count ?? 0
+    }
+    private var galleryHasMedia: Bool {
+        filteredMediasCount != 0
+    }
+    private var areAllMediaSelected: Bool {
+        selectedMediasCount == filteredMediasCount
+    }
 
     // MARK: - Private Enums
     private enum Constants {
@@ -101,11 +173,9 @@ final class GalleryViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        setupNavigationBar()
+        setupUI()
+        setupSegmentedControl()
         setupViewModel()
-        setupFormatButton()
-        updateSelectButtonAndMediasInfoLabel()
-        setupBottomContainerHeightConstraint()
 
         if let coordinator = coordinator, let viewModel = viewModel {
             let filtersViewController = GalleryFiltersViewController.instantiate(coordinator: coordinator, viewModel: viewModel)
@@ -120,19 +190,19 @@ final class GalleryViewController: UIViewController {
 
             let sourceViewController = GallerySourcesViewController.instantiate(coordinator: coordinator, viewModel: viewModel)
             self.sourceViewController = sourceViewController
-            sourceViewController.delegate = self
-            self.sourceViewController = sourceViewController
         }
 
         updateContainers()
+
+        // Set gallery content to selectedSource.
+        mediaSourceHeightConstraint.constant = GallerySourcesViewController.Constants.cellHeight
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        viewModel?.refreshMedias()
-        self.updateContainers()
-        updateSelectButtonAndMediasInfoLabel()
+        viewModel?.refreshMedias(source: selectedSource)
+        updateContainers()
         LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.gallery,
                              logType: .screen)
     }
@@ -150,7 +220,6 @@ final class GalleryViewController: UIViewController {
         super.traitCollectionDidChange(previousTraitCollection)
 
         updateContainers()
-        updateSelectButtonAndMediasInfoLabel()
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -165,37 +234,181 @@ private extension GalleryViewController {
         self.coordinator?.dismissGallery()
     }
 
-    /// Format button clicked.
-    @IBAction func formatButtonTouchedUpInside(_ sender: AnyObject) {
+    @IBAction func mainActionButtonTouchedUpInside(_ sender: Any) {
+        // Trigger share or download depending on available service.
+        isDeviceSourceSelected
+            ? mediaViewController?.mustShareSelection()
+            : mediaViewController?.mustDownloadSelection()
+    }
+
+    @IBAction func deleteButtonTouchedUpInside(_ sender: Any) {
+        mediaViewController?.mustDeleteSelection()
+    }
+
+    @IBAction func formatSDButtonTouchedUpInside(_ sender: Any) {
         guard let viewModel = viewModel else { return }
 
         self.coordinator?.showFormatSDCardScreen(viewModel: viewModel)
     }
 
-    /// Select button clicked.
-    @IBAction func selectButtonTouchedUpInside(_ sender: AnyObject) {
+    @IBAction func selectAllButtonTouchedUpInside(_ sender: Any) {
+        areAllMediaSelected
+            ? mediaViewController?.mustDeselectAll()
+            : mediaViewController?.mustSelectAll()
+    }
+
+    @IBAction func selectButtonTouchedUpInside(_ sender: Any) {
         viewModel?.selectionModeEnabled.toggle()
-        updateSelectButtonAndMediasInfoLabel()
+        updateSelectButtonsState()
+        updateFormatSDButtonState()
         mediaViewController?.multipleSelectionDidChange(enabled: viewModel?.selectionModeEnabled ?? false)
+    }
+
+    @IBAction func sourceDidChange(_ sender: Any) {
+        mediaViewController?.sourceDidChange(source: selectedSource)
+        updateSelectionMode(with: false) // Force selection mode reset.
+        updateFormatSDButtonState()
     }
 }
 
 // MARK: - Private Funcs
 private extension GalleryViewController {
+    /// Sets up UI components
+    func setupUI() {
+        navigationBar.addLightShadow()
+        mediasInfosLabel.text = L10n.galleryNoMedia
+        selectionCountLabel.makeUp(with: .regular, and: .disabledTextColor)
+
+        setupPanelButtons()
+    }
+
+    /// Sets up top segmented control for gallery source selection.
+    func setupSegmentedControl() {
+        segmentedControl.removeAllSegments()
+        for source in GallerySourceSegment.allCases {
+            segmentedControl.insertSegment(withTitle: source.title,
+                                           at: segmentedControl.numberOfSegments,
+                                           animated: false)
+        }
+        segmentedControl.customMakeup()
+    }
+
+    /// Sets up side panel action buttons: download/share, delete, format SD, select.
+    func setupPanelButtons() {
+        deleteButton.model = ActionButtonModel(title: L10n.commonDelete, style: .destructive)
+        formatSDButton.model = ActionButtonModel(title: L10n.galleryFormat, style: .secondary)
+        mainActionButton.animateIsEnabled(false)
+        deleteButton.animateIsEnabled(false)
+
+        updateStates()
+    }
+
+    /// Updates UI according to current state (selection, source, content…).
+    func updateStates() {
+        updateSelectButtonsState()
+        updateActionButtonsState()
+        updateFormatSDButtonState()
+        updateMediaInfosLabelState()
+        updateSegmentedControlState()
+    }
+
+    /// Updates select button state according to current selection mode.
+    func updateSelectButtonsState() {
+        let isSelectionModeEnabled = viewModel?.selectionModeEnabled ?? false
+        let title = isSelectionModeEnabled
+            ? L10n.cancel
+            : L10n.commonSelect
+        let style: ActionButtonStyle = isSelectionModeEnabled
+            ? .secondary
+            : .primary
+        selectButton.model = ActionButtonModel(title: title, style: style)
+
+        selectAllButton.animateIsHiddenInStackView(!isSelectionModeEnabled)
+        selectButton.animateIsEnabled(galleryHasMedia)
+
+        // Need to show selection count if `isSelectionModeEnabled`, source storage info else.
+        selectionCountLabel.animateIsHidden(!isSelectionModeEnabled)
+        mediaSourceContainer.animateIsHidden(isSelectionModeEnabled)
+    }
+
+    /// Updates mediaInfos label (empty gallery) according to content.
+    func updateMediaInfosLabelState() {
+        mediasInfosLabel.animateIsHidden(galleryHasMedia)
+    }
+
+    /// Updates side panel action buttons according to current state (source and selection).
+    func updateActionButtonsState() {
+        let mainActionTitle = isDeviceSourceSelected
+            ? L10n.commonShare
+            : L10n.commonDownload
+        let mainActionStyle: ActionButtonStyle = isDeviceSourceSelected
+            ? .primary
+            : .validate
+        mainActionButton.model = ActionButtonModel(title: mainActionTitle, style: mainActionStyle)
+
+        let allButtonTitle = areAllMediaSelected
+            ? L10n.commonDeselectAll
+            : L10n.commonSelectAll
+        selectAllButton.model = ActionButtonModel(title: allButtonTitle, style: .primary)
+    }
+
+    /// Updates selection count label with current selected medias count and size (if available).
+    func updateSelectionCountLabel(selectionCount: Int, size: UInt64) {
+        if isDeviceSourceSelected {
+            selectionCountLabel.text = String(format: "%d %@",
+                                              selectionCount,
+                                              L10n.galleryMediaSelected.lowercased())
+        } else {
+            selectionCountLabel.text = String(format: "%d %@ (%@)",
+                                              selectionCount,
+                                              L10n.galleryMediaSelected.lowercased(),
+                                              StorageUtils.sizeForFile(size: size))
+        }
+
+        mainActionButton.animateIsEnabled(selectionCount != 0)
+        deleteButton.animateIsEnabled(selectionCount != 0)
+    }
+
+    /// Updates source selection according to VM changes.
+    func updateSegmentedControlState() {
+        guard let viewModel = viewModel else { return }
+
+        segmentedControl.selectedSegmentIndex = GallerySourceSegment.index(for: viewModel.sourceType == .mobileDevice ? .device : .drone)
+    }
+
+    /// Updates selection mode.
+    ///
+    /// - Parameters:
+    ///    - isEnabled: Forces selection mode to true/false if not nil.
+    func updateSelectionMode(with isEnabled: Bool? = nil) {
+        if let isEnabled = isEnabled {
+            // Force selection enabling/disabling.
+            viewModel?.selectionModeEnabled = isEnabled
+        } else {
+            viewModel?.selectionModeEnabled.toggle()
+        }
+
+        updateSelectButtonsState()
+        updateFormatSDButtonState()
+        mediaViewController?.multipleSelectionDidChange(enabled: viewModel?.selectionModeEnabled ?? false)
+    }
+
+    /// Updates format SD button state depending on feature availability.
+    func updateFormatSDButtonState() {
+        let isHidden = !(viewModel?.shouldDisplayFormatOptions ?? false)
+            || viewModel?.selectionModeEnabled ?? false
+
+        formatSDButton.animateIsHiddenInStackView(isHidden)
+
+        guard !isHidden else { return }
+
+        let isEnabled = viewModel?.sdCardViewModel?.state.value.canFormat ?? false
+        formatSDButton.animateIsEnabled(isEnabled)
+    }
+
     /// Update containers display.
     func updateContainers() {
-        bgLeftView.isHidden = !UIApplication.isLandscape
-        bottomSourcesContainer.isHidden = UIApplication.isLandscape
-
-        closeButton.isHidden = !UIApplication.isLandscape
-        selectButton.isHidden = !UIApplication.isLandscape
-        titleLabel.isHidden = !UIApplication.isLandscape
-        // Make the navigation bar visible in portrait mode.
-        self.navigationController?.setNavigationBarHidden(UIApplication.isLandscape, animated: false)
-
-        let container: UIView = UIApplication.isLandscape ? leftSourcesContainer : bottomSourcesContainer
-        addSourcesView(to: container)
-
+        addSourcesView(to: mediaSourceContainer)
         sourceViewController?.reloadContent()
     }
 
@@ -235,93 +448,13 @@ private extension GalleryViewController {
         controller.didMove(toParent: self)
     }
 
-    /// Update view for the navigation bar.
-    func setupNavigationBar() {
-        self.title = titleLabel.text
-
-        // Navigation bar display.
-        self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
-        self.navigationController?.navigationBar.shadowImage = UIImage()
-        self.navigationController?.navigationBar.isTranslucent = false
-        self.navigationController?.navigationBar.tintColor = ColorName.defaultTextColor.color
-        self.navigationController?.navigationBar.barTintColor = .white
-        self.navigationController?.navigationBar.titleTextAttributes = [
-            NSAttributedString.Key.font: ParrotFontStyle.huge.font,
-            NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor.color
-        ]
-
-        // Add left button to come back to the HUD.
-        let backButton = UIButton(frame: CGRect(origin: CGPoint(),
-                                                size: Constants.closeButtonSize))
-        backButton.setImage(Asset.Common.Icons.icBack.image, for: .normal)
-        backButton.addTarget(self,
-                             action: #selector(closeButtonTouchedUpInside),
-                             for: .touchUpInside)
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: backButton)
-
-        // Add right button to select medias.
-        let selectBarButton = UIBarButtonItem(title: L10n.commonSelect,
-                                              style: .done,
-                                              target: self,
-                                              action: #selector(selectButtonTouchedUpInside))
-        selectBarButton.setTitleTextAttributes([
-            NSAttributedString.Key.font: ParrotFontStyle.large.font,
-            NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor.color
-        ], for: .normal)
-        selectBarButton.setTitleTextAttributes([
-            NSAttributedString.Key.font: ParrotFontStyle.large.font,
-            NSAttributedString.Key.foregroundColor: ColorName.disabledTextColor.color
-        ], for: .disabled)
-        self.navigationItem.rightBarButtonItem = selectBarButton
-
-        self.removeBackButtonText()
-    }
-
     /// Sets up view model.
     func setupViewModel() {
         viewModel = GalleryMediaViewModel(onMediaStateUpdate: { [weak self] state in
+            self?.updateStates()
             self?.filtersViewController?.stateDidChange(state: state)
             self?.mediaViewController?.stateDidChange(state: state)
-            self?.updateSelectButtonAndMediasInfoLabel()
         })
-    }
-
-    /// Sets up format button.
-    func setupFormatButton() {
-        guard let viewModel = viewModel else { return }
-
-        self.formatButton.isHidden = !viewModel.shouldDisplayFormatOptions
-        self.formatButton.setTitle(L10n.galleryFormatSdCard, for: .normal)
-    }
-
-    /// Updates select button and medias infos label.
-    func updateSelectButtonAndMediasInfoLabel() {
-        let numberOfMedias: Int = viewModel?.numberOfMedias ?? 0
-        var buttonText = L10n.commonSelect
-
-        if let selectionModeEnabled = viewModel?.selectionModeEnabled {
-            buttonText = selectionModeEnabled ? L10n.cancel : L10n.commonSelect
-        }
-
-        self.navigationItem.rightBarButtonItem?.title = buttonText
-        self.selectButton.setTitle(buttonText, for: .normal)
-
-        let titleColor: UIColor = numberOfMedias != 0
-            ? ColorName.defaultTextColor.color
-            : ColorName.disabledTextColor.color
-        mediasInfosLabel.isHidden = numberOfMedias != 0
-        selectButton.isEnabled = numberOfMedias != 0
-        selectButton.setTitleColor(titleColor, for: .normal)
-        self.navigationItem.rightBarButtonItem?.isEnabled = numberOfMedias != 0
-    }
-
-    /// Sets up bottom container height constraint.
-    func setupBottomContainerHeightConstraint() {
-        if !UIApplication.isLandscape {
-            bottomContainerHeightConstraint.constant += UIApplication.shared.keyWindow?.safeAreaInsets.bottom ?? 0.0
-        } else {
-            bottomContainerHeightConstraint.constant += UIApplication.shared.keyWindow?.safeAreaInsets.left ?? 0.0
-        }
     }
 }
 
@@ -342,22 +475,19 @@ extension GalleryViewController: ContainterSizeDelegate {
 extension GalleryViewController: GalleryMediaViewDelegate {
     func multipleSelectionActionTriggered() {
         viewModel?.selectionModeEnabled = false
-        updateSelectButtonAndMediasInfoLabel()
+        updateStates()
         mediaViewController?.multipleSelectionDidChange(enabled: viewModel?.selectionModeEnabled ?? false)
     }
 
     func multipleSelectionEnabled() {
         viewModel?.selectionModeEnabled = true
-        updateSelectButtonAndMediasInfoLabel()
+        updateStates()
         mediaViewController?.multipleSelectionDidChange(enabled: viewModel?.selectionModeEnabled ?? false)
     }
-}
 
-// MARK: - GallerySourcesView Delegate
-extension GalleryViewController: GallerySourcesViewDelegate {
-    func sourceDidChange(source: GallerySourceType) {
-        mediaViewController?.sourceDidChange(source: source)
-        setupFormatButton()
-        updateSelectButtonAndMediasInfoLabel()
+    func didUpdateMediaSelection(count: Int, size: UInt64) {
+        selectedMediasCount = count
+        updateSelectionCountLabel(selectionCount: count, size: size)
+        updateActionButtonsState()
     }
 }

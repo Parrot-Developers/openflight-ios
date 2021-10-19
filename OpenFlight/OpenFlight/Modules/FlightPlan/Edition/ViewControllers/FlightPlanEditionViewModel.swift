@@ -116,7 +116,7 @@ public protocol MapViewEditionControllerDelegate: AnyObject {
     func endEdition()
 
     /// Restor map on the original container when finish updating.
-    func restoreMapToOrigianlContainer()
+    func restoreMapToOriginalContainer()
 
     /// Last manually selected graphic object.
     func lastManuallySelectedGraphic()
@@ -450,7 +450,7 @@ extension FlightPlanEditionViewModel {
 
         edition?.resetThumbnail { [weak self] _ in
             // Restore map back to its original container, then dismiss.
-            self?.mapDelegate?.restoreMapToOrigianlContainer()
+            self?.mapDelegate?.restoreMapToOriginalContainer()
         }
 
         mapDelegate?.endEdition()

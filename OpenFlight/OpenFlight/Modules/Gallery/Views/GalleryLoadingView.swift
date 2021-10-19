@@ -42,6 +42,8 @@ protocol GalleryLoadingViewDelegate: AnyObject {
 /// Gallery loading view.
 
 final class GalleryLoadingView: UIView, NibOwnerLoadable {
+    var hasYOffsetAppearanceAnimation: Bool = true
+
     // MARK: - Outlets
     @IBOutlet private weak var progressView: UIProgressView!
     @IBOutlet private weak var stopButton: UIButton!
@@ -49,11 +51,6 @@ final class GalleryLoadingView: UIView, NibOwnerLoadable {
 
     // MARK: - Internal Properties
     weak var delegate: GalleryLoadingViewDelegate?
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let loadingViewTextOffset = 1
-    }
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
@@ -70,7 +67,7 @@ final class GalleryLoadingView: UIView, NibOwnerLoadable {
 // MARK: - Actions
 private extension GalleryLoadingView {
     @IBAction func stopButtonDidTouchUpInside(_ sender: Any) {
-        self.isHidden = true
+        show(false)
         progressView.setProgress(0.0, animated: false)
         delegate?.shouldStopProgress()
     }
@@ -87,12 +84,12 @@ internal extension GalleryLoadingView {
         guard status == .running,
             progress > 0.0
             else {
-                self.isHidden = true
+                show(false)
                 progressView.setProgress(0.0, animated: false)
                 return
         }
         progressView.setProgress(progress, animated: true)
-        self.isHidden = false
+        show(true)
     }
 }
 
@@ -100,10 +97,19 @@ internal extension GalleryLoadingView {
 private extension GalleryLoadingView {
     func commonInitGalleryLoadingView() {
         self.loadNibContent()
-        self.isHidden = true
+        show(false, animate: false)
         progressView.setProgress(0.0, animated: false)
         progressView.progressTintColor = ColorName.disabledHighlightColor.color
         progressView.trackTintColor = .clear
         infoLabel.text = L10n.commonDownloading
+    }
+
+    func show(_ show: Bool, animate: Bool = true) {
+        guard hasYOffsetAppearanceAnimation else {
+            isHidden = !show
+            return
+        }
+
+        showFromEdge(.bottom, show: show)
     }
 }

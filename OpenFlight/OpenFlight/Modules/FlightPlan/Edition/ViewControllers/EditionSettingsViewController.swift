@@ -55,6 +55,7 @@ public protocol EditionSettingsDelegate: EditionSettingsCellModelDelegate {
 
 /// Manages Flight Plan edition settings.
 final class EditionSettingsViewController: UIViewController {
+    weak var coordinator: Coordinator?
     // MARK: - Outlets
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var deleteButton: UIButton!
@@ -81,8 +82,12 @@ final class EditionSettingsViewController: UIViewController {
 
     // MARK: - Private Enums
     private enum SectionsType: Int, CaseIterable {
-        case header
         case settings
+    }
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let tableViewHeaderHeight: CGFloat = 42
     }
 
     // MARK: - Deinit
@@ -95,6 +100,11 @@ final class EditionSettingsViewController: UIViewController {
         super.viewDidLoad()
         initView()
         bindViewModel()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(true, animated: animated)
+        super.viewWillAppear(animated)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -135,8 +145,9 @@ private extension EditionSettingsViewController {
         tableView.register(cellType: AdjustmentTableViewCell.self)
         tableView.register(cellType: SettingValuesChoiceTableViewCell.self)
         tableView.register(cellType: CenteredRulerTableViewCell.self)
-        tableView.register(cellType: FlightPlanSettingTitleCell.self)
         tableView.register(cellType: FlightPlanSettingInfoCell.self)
+        tableView.register(headerFooterViewType: FlightPlanSettingTitleCell.self)
+        tableView.delegate = self
         tableView.makeUp(backgroundColor: .clear)
 
         deleteButton.cornerRadiusedWith(backgroundColor: ColorName.errorColor.color,
@@ -180,57 +191,10 @@ extension EditionSettingsViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch SectionsType(rawValue: section) {
-        case .header:
-            return 1
-        case .settings:
-            return viewModel.dataSource.count
-        default:
-            return 0
-        }
+        return viewModel.dataSource.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch SectionsType(rawValue: indexPath.section) {
-        case .header:
-            return cellForHeaderSection(indexPath: indexPath)
-        default:
-            return cellForSettingsSection(indexPath: indexPath)
-        }
-    }
-
-    /// Returns cell for header section.
-    /// Setting(s) title is defined here.
-    ///
-    /// - Parameters:
-    ///    - indexPath: the index path
-    /// - Returns: cell to display
-    private func cellForHeaderSection(indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(for: indexPath) as FlightPlanSettingTitleCell
-        let title: String
-        let isImageHidden: Bool = false
-        switch viewModel.settingsProvider {
-        case is WayPointSettingsProvider:
-            title = L10n.commonWaypoint
-        case is PoiPointSettingsProvider:
-            title = L10n.commonPoi
-        case is WayPointSegmentSettingsProvider,
-             nil:
-            title = L10n.flightPlanSegmentSettingsTitle
-        default:
-            title = viewModel.settingsCategoryFilter?.title ?? L10n.flightPlanSettingsTitle
-        }
-        cell.fill(with: title, and: isImageHidden)
-        cell.delegate = self
-        return cell
-    }
-
-    /// Returns cell for settings section. Displays a setting.
-    ///
-    /// - Parameters:
-    ///    - indexPath: the index path
-    /// - Returns: cell to display
-    private func cellForSettingsSection(indexPath: IndexPath) -> UITableViewCell {
         var cell: UITableViewCell & EditionSettingsCellModel
         let setting: FlightPlanSettingType? = viewModel.dataSource[indexPath.row]
 
@@ -254,8 +218,37 @@ extension EditionSettingsViewController: UITableViewDataSource {
         cell.fill(with: setting)
         cell.disableCell(setting?.isDisabled == true)
         cell.delegate = self
-
         return cell
+    }
+}
+
+// MARK: - UITableViewDelegate
+extension EditionSettingsViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let identifier = FlightPlanSettingTitleCell.reuseIdentifier
+        guard let cell = self.tableView.dequeueReusableHeaderFooterView(withIdentifier: identifier) as? FlightPlanSettingTitleCell
+        else { return nil }
+
+        let title: String
+        let isImageHidden: Bool = false
+        switch viewModel.settingsProvider {
+        case is WayPointSettingsProvider:
+            title = L10n.commonWaypoint
+        case is PoiPointSettingsProvider:
+            title = L10n.commonPoi
+        case is WayPointSegmentSettingsProvider,
+             nil:
+            title = L10n.flightPlanSegmentSettingsTitle
+        default:
+            title = viewModel.settingsCategoryFilter?.title ?? L10n.flightPlanSettingsTitle
+        }
+        cell.fill(with: title, and: isImageHidden)
+        cell.delegate = self
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return Constants.tableViewHeaderHeight
     }
 }
 

@@ -84,7 +84,7 @@ final class MyFlightsViewController: UIViewController {
 
     // MARK: - Private Properties
     private var flightsViewController: FlightsViewController?
-    private var flightPlanViewController: FlightPlansListViewController?
+    private var flightPlanViewController: FlightPlanDashboardListViewController?
     private var numberOfFlights: Int = 0
     private weak var coordinator: DashboardCoordinator?
     private var selectedPanel: MyFlightsPanelType {
@@ -156,7 +156,7 @@ private extension MyFlightsViewController {
 private extension MyFlightsViewController {
     /// Instantiate basic UI.
     func initUI() {
-        topBar.addShadow(shadowColor: ColorName.defaultTextColor.color)
+        topBar.addLightShadow()
         setupSegmentedControl()
         reloadContainerView()
         setupAccountView()
@@ -222,14 +222,15 @@ private extension MyFlightsViewController {
             }
             insertContainerView(controller: controller)
         case .plans:
-            var controller: FlightPlansListViewController
+            var controller: FlightPlanDashboardListViewController
             if let flightPlanViewController = self.flightPlanViewController {
                 controller = flightPlanViewController
             } else {
                 // Initial case
-                let newViewController = StoryboardScene.FlightPlansList.flightPlansListViewController.instantiate()
+                let newViewController = StoryboardScene.FlightPlansDashboardList.flightPlansListViewController.instantiate()
                 newViewController.setupViewModel(with: FlightPlansListViewModel(manager: Services.hub.flightPlan.projectManager,
-                                                                                flightPlanTypeStore: Services.hub.flightPlan.typeStore),
+                                                                                flightPlanTypeStore: Services.hub.flightPlan.typeStore,
+                                                                                cloudSynchroWatcher: Services.hub.cloudSynchroWatcher),
                                                  delegate: self)
                 self.flightPlanViewController = newViewController
                 controller = newViewController
@@ -249,9 +250,14 @@ extension MyFlightsViewController: MyFlightsAccountViewDelegate {
 
 // MARK: - FlightPlansListViewControllerDelegate
 extension MyFlightsViewController: FlightPlansListViewModelDelegate {
-    func didSelect(project: ProjectModel) {
-        coordinator?.startFlightPlanDashboard(projectModel: project)
+    func didSelect(execution: FlightPlanModel) {
+        coordinator?.startFlightExecutionDetails(execution)
     }
 
-    func didDoubleTapOn(project: ProjectModel) { }
+    func didSelect(project: ProjectModel) {
+    }
+
+    func didDoubleTap(on project: ProjectModel) {
+        coordinator?.open(project: project)
+    }
 }

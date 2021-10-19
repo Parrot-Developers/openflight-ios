@@ -53,7 +53,7 @@ public protocol DroneDataRepository: AnyObject {
 
 }
 
-extension CoreDataServiceIml: DroneDataRepository {
+extension CoreDataServiceImpl: DroneDataRepository {
     public func persist(_ drone: DroneModel) {
         // Prepare content to save.
         guard let managedContext = currentContext else { return }
@@ -140,7 +140,7 @@ extension CoreDataServiceIml: DroneDataRepository {
 }
 
 // MARK: - Utils
-private extension CoreDataServiceIml {
+private extension CoreDataServiceImpl {
     func loadDronesData(_ key: String?, _ value: String?) -> DronesData? {
         guard let managedContext = currentContext,
               let key = key,

@@ -35,7 +35,6 @@ import GroundSdk
 final class ProtobufMissionsUpdatingViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var subtitleLabel: UILabel!
     @IBOutlet private weak var progressView: FirmwareAndMissionProgressView!
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var cancelButton: UIButton!
@@ -43,7 +42,7 @@ final class ProtobufMissionsUpdatingViewController: UIViewController {
     @IBOutlet private weak var continueView: UpdatingDoneFooter!
 
     // MARK: - Private Properties
-    private weak var coordinator: ProtobufMissionUpdateCoordinator?
+    private weak var coordinator: DroneFirmwaresCoordinator?
     private var dataSource = ProtobufMissionsUpdatingDataSource(manualRebootState: .waiting)
     private var manualRebootStarted: Bool = false
     private var processIsFinished: Bool = false
@@ -61,7 +60,7 @@ final class ProtobufMissionsUpdatingViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: ProtobufMissionUpdateCoordinator) -> ProtobufMissionsUpdatingViewController {
+    static func instantiate(coordinator: DroneFirmwaresCoordinator) -> ProtobufMissionsUpdatingViewController {
         let viewController = StoryboardScene.ProtobufMissionsUpdating.initialScene.instantiate()
         viewController.coordinator = coordinator
 
@@ -288,16 +287,8 @@ private extension ProtobufMissionsUpdatingViewController {
 private extension ProtobufMissionsUpdatingViewController {
     /// Inits the UI.
     func initUI() {
-        titleLabel.text = L10n.firmwareMissionUpdateFirmwareUpdate
-        subtitleLabel.textColor = ColorName.white50.color
-        subtitleLabel.text = dataSource.subtitle
-        view.backgroundColor = ColorName.greyShark.color
+        titleLabel.text = L10n.firmwareMissionUpdateDroneUpdate
         cancelButton.setTitle(L10n.cancel, for: .normal)
-        cancelButton.makeup(with: .large)
-        cancelButton.cornerRadiusedWith(backgroundColor: ColorName.greyShark.color,
-                                        borderColor: .clear,
-                                        radius: 0.0,
-                                        borderWidth: Style.noBorderWidth)
         setupTableView()
         resetUI()
     }
@@ -345,7 +336,6 @@ private extension ProtobufMissionsUpdatingViewController {
         tableView.allowsSelection = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.makeUp(backgroundColor: ColorName.greyShark.color)
         tableView.tableHeaderView = UIView()
         tableView.separatorColor = .clear
         tableView.register(cellType: ProtobufMissionUpdatingTableViewCell.self)

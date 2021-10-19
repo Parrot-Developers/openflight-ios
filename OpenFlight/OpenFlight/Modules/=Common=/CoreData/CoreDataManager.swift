@@ -32,39 +32,56 @@ import CoreData
 import Combine
 import GroundSdk
 
-protocol CoreDataService {
+public protocol CoreDataService: AnyObject {
 
-    /// Migrate anonymous data to current logged user
-    /// - Parameters:
-    ///     - entityName: Name of the entity contains the data to migrate
-    ///     - completion: Empty block indicates when the process is finished
-    func migrateAnonymousDataToLoggedUser(for entityName: String,
-                                          _ completion: @escaping () -> Void)
+    /// Publisher notifys new object to remove from Server and Coredata
+    var objectToRemovePublisher: AnyPublisher<Any, Never> { get }
 
-    /// Migrate logged user data to Anonymous
+    /// Publisher notifys new object to upload to Server
+    var objectToUploadPublisher: AnyPublisher<Any, Never> { get }
+
+    /// Batch delete all stored data entities in CoreData
+    /// to use only when switch between users accounts
     /// - Parameters:
-    ///     - entityName: Name of the entity contains the data to migrate
-    ///     - completion: Empty block indicates when the process is finished
-    func migrateLoggedToAnonymous(for entityName: String,
-                                  _ completion: @escaping () -> Void)
+    ///     - removeUserEntity: Boolean to indicate if should keep the User entity with data or not
+    func batchDeleteData(_ removeUserEntity: Bool)
 }
 
 /// CoreData Service
-public class CoreDataServiceIml: CoreDataService {
+public class CoreDataServiceImpl: CoreDataService {
+
     // MARK: - Public Properties
     /// Returns current Managed Object Context.
     public var currentContext: NSManagedObjectContext?
+    /// Returns current PersistentContainer.
+    private let persistentContainer: NSPersistentContainer
     /// User information service
     public var userInformation: UserInformation
     /// Returns array of `ProjectModel` subject
     public var projects = CurrentValueSubject<[ProjectModel], Never>([])
 
+    /// Contains a given object to remove from Server and Coredata
+    var objectToRemove = PassthroughSubject<Any, Never>()
+
+    /// Publisher notifies new object to remove from Server and Coredata
+    public var objectToRemovePublisher: AnyPublisher<Any, Never> {
+        objectToRemove.eraseToAnyPublisher()
+    }
+
+    /// Contains a given object to upload to Server
+    var objectToUpload = PassthroughSubject<Any, Never>()
+
+    /// Publisher notifies new object to upload to Server
+    public var objectToUploadPublisher: AnyPublisher<Any, Never> {
+        objectToUpload.eraseToAnyPublisher()
+    }
+
     // MARK: - Public Funcs
     public init(with persistentContainer: NSPersistentContainer, userInformation: UserInformation) {
         self.userInformation = userInformation
+        self.persistentContainer = persistentContainer
         currentContext = persistentContainer.viewContext
         currentContext?.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(managedObjectContextDidChange),
                                                name: NSNotification.Name.NSManagedObjectContextObjectsDidChange,
@@ -72,8 +89,40 @@ public class CoreDataServiceIml: CoreDataService {
     }
 }
 
-extension CoreDataServiceIml {
+extension CoreDataServiceImpl {
 
+    public func batchDeleteData(_ removeUserEntity: Bool) {
+        guard let managedContext = currentContext else {
+            return
+        }
+
+        var entityNames = persistentContainer.managedObjectModel.entities.compactMap({ $0.name })
+
+        if !removeUserEntity,
+           let indexOfUserEntity = entityNames.firstIndex(of: UserParrot.userParrotEntityName) {
+            entityNames.remove(at: indexOfUserEntity)
+        }
+
+        entityNames.forEach { entityName in
+            let deleteFetch = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: deleteFetch)
+
+            do {
+                try managedContext.execute(deleteRequest)
+                try managedContext.save()
+            } catch {
+                ULog.e(.dataModelTag, "An error is occured when batch delete entity in CoreData")
+            }
+        }
+    }
+}
+
+extension CoreDataServiceImpl {
+
+    /// Migrate anonymous data to current logged user
+    /// - Parameters:
+    ///     - entityName: Name of the entity contains the data to migrate
+    ///     - completion: Empty block indicates when the process is finished
     internal func migrateAnonymousDataToLoggedUser(for entityName: String,
                                                    _ completion: @escaping () -> Void) {
         guard let managedContext = currentContext else {
@@ -111,6 +160,10 @@ extension CoreDataServiceIml {
         }
     }
 
+    /// Migrate logged user data to Anonymous
+    /// - Parameters:
+    ///     - entityName: Name of the entity contains the data to migrate
+    ///     - completion: Empty block indicates when the process is finished
     internal func migrateLoggedToAnonymous(for entityName: String,
                                            _ completion: @escaping () -> Void) {
         guard let managedContext = currentContext else {

@@ -35,6 +35,7 @@ import UIKit
 /// Actual settings are embeded in a containerView and can be switched regarding panel and/or section.
 final class SettingsViewController: UIViewController {
     // MARK: - Outlets
+    @IBOutlet private weak var leftPanelContainerView: UIView!
     @IBOutlet private weak var sectionsTableView: UITableView! {
         didSet {
             sectionsTableView.backgroundColor = .white
@@ -48,7 +49,7 @@ final class SettingsViewController: UIViewController {
     }
     @IBOutlet private weak var topBar: UIView! {
         didSet {
-            topBar.addShadow(shadowColor: ColorName.whiteAlbescent.color)
+            topBar.addLightShadow()
         }
     }
 
@@ -232,7 +233,7 @@ private extension SettingsViewController {
 // MARK: - UITableViewDataSource
 extension SettingsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        self.sectionsTableView.isHidden = sections.count <= 1
+        leftPanelContainerView.isHidden = sections.count <= 1
         return sections.count
     }
 

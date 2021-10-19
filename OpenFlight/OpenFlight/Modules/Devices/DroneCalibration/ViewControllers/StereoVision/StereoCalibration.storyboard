@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina5_9" orientation="landscape" appearance="dark"/>
+    <device id="retina6_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
+        <array key="Rajdhani-Bold.ttf">
+            <string>Rajdhani-Bold</string>
+        </array>
         <array key="Rajdhani-Regular.ttf">
             <string>Rajdhani-Regular</string>
         </array>
@@ -23,85 +25,107 @@
             <objects>
                 <viewController storyboardIdentifier="StereoCalibrationViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Y6W-OH-hqX" userLabel="Stereo Calibration View Controller" customClass="StereoCalibrationViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
-                        <rect key="frame" x="0.0" y="0.0" width="812" height="375"/>
+                        <rect key="frame" x="0.0" y="0.0" width="844" height="390"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Lqj-PN-oeC" userLabel="Streaming Container View">
-                                <rect key="frame" x="0.0" y="0.0" width="500" height="375"/>
+                                <rect key="frame" x="0.0" y="0.0" width="622.66666666666663" height="390"/>
                                 <connections>
                                     <segue destination="UlH-ly-QFt" kind="embed" id="WCD-pa-dna"/>
                                 </connections>
                             </containerView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SJl-QT-BfC" userLabel="Right panel View">
-                                <rect key="frame" x="500" y="0.0" width="312" height="375"/>
+                                <rect key="frame" x="590.66666666666663" y="0.0" width="253.33333333333337" height="390"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="pTt-br-Wfo">
-                                        <rect key="frame" x="15" y="5" width="282" height="350"/>
+                                        <rect key="frame" x="8" y="5" width="237.33333333333334" height="365"/>
                                         <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Obstacle Avoidance Calibration" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r91-sn-ByV">
+                                                <rect key="frame" x="0.0" y="0.0" width="237.33333333333334" height="35"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="35" id="QiW-WQ-MBi"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="16"/>
+                                                <color key="textColor" name="default_text_color"/>
+                                                <color key="highlightedColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <variation key="heightClass=regular-widthClass=regular">
+                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="24"/>
+                                                </variation>
+                                            </label>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="ebM-dE-BPa">
-                                                <rect key="frame" x="0.0" y="0.0" width="282" height="290"/>
+                                                <rect key="frame" x="0.0" y="55" width="237.33333333333334" height="150"/>
                                                 <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Obstacle Avoidance Calibration" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r91-sn-ByV">
-                                                        <rect key="frame" x="0.0" y="0.0" width="282" height="96.666666666666671"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="18"/>
-                                                        <color key="textColor" name="default_text_color"/>
-                                                        <color key="highlightedColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="24"/>
-                                                        </variation>
-                                                    </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To calibrate the obstacle avoidance sensors, the drone will take off and reach an altitude of 120 m." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zzJ-3K-o6a">
-                                                        <rect key="frame" x="0.0" y="96.666666666666657" width="282" height="96.666666666666657"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="16"/>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="The drone will take off and fly upward." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zzJ-3K-o6a">
+                                                        <rect key="frame" x="0.0" y="0.0" width="237.33333333333334" height="75"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="15"/>
                                                         <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
                                                         <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="23"/>
+                                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="22"/>
                                                         </variation>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Please make sure you are in an open area before starting the calibration." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yBM-PS-OCb">
-                                                        <rect key="frame" x="0.0" y="193.33333333333334" width="282" height="96.666666666666657"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="16"/>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Please make sure you are in an open area before starting." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yBM-PS-OCb">
+                                                        <rect key="frame" x="0.0" y="75" width="237.33333333333334" height="75"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="15"/>
                                                         <color key="textColor" name="warning_color"/>
                                                         <nil key="highlightedColor"/>
                                                         <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="23"/>
+                                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="22"/>
                                                         </variation>
                                                     </label>
                                                 </subviews>
                                             </stackView>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lVj-OJ-0Z8" userLabel="Start Button">
-                                                <rect key="frame" x="0.0" y="310" width="282" height="40"/>
-                                                <color key="backgroundColor" name="warning_color"/>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="gzZ-iM-dSL">
+                                                <rect key="frame" x="0.0" y="225" width="237.33333333333334" height="60"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="40" id="SVJ-pf-x6U">
-                                                        <variation key="heightClass=regular-widthClass=regular" constant="60"/>
+                                                    <constraint firstAttribute="height" constant="60" id="LzC-cL-Y84">
+                                                        <variation key="heightClass=regular-widthClass=regular" constant="80"/>
                                                     </constraint>
                                                 </constraints>
-                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                <state key="normal" title="Start calibration">
-                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
+                                                <state key="normal">
+                                                    <color key="titleColor" name="default_text_color"/>
                                                 </state>
                                                 <variation key="heightClass=regular-widthClass=regular">
-                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="18"/>
+                                                    <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="18"/>
                                                 </variation>
                                                 <connections>
-                                                    <action selector="startCalibration:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="Q9p-x0-Gbg"/>
+                                                    <action selector="startQuickCalibration:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="Nsb-Hk-2Jv"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="lVj-OJ-0Z8" userLabel="Start Button">
+                                                <rect key="frame" x="0.0" y="305" width="237.33333333333334" height="60"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="60" id="SVJ-pf-x6U">
+                                                        <variation key="heightClass=regular-widthClass=regular" constant="80"/>
+                                                    </constraint>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
+                                                <state key="normal">
+                                                    <color key="titleColor" name="default_text_color"/>
+                                                </state>
+                                                <variation key="heightClass=regular-widthClass=regular">
+                                                    <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="18"/>
+                                                </variation>
+                                                <connections>
+                                                    <action selector="startOptimalCalibration:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="Q9p-x0-Gbg"/>
                                                 </connections>
                                             </button>
                                         </subviews>
                                     </stackView>
                                 </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" name="default_bgcolor"/>
                                 <constraints>
-                                    <constraint firstItem="pTt-br-Wfo" firstAttribute="leading" secondItem="SJl-QT-BfC" secondAttribute="leading" constant="15" id="49b-Xb-sJ2"/>
-                                    <constraint firstAttribute="trailing" secondItem="pTt-br-Wfo" secondAttribute="trailing" constant="15" id="FWw-fj-5j3"/>
+                                    <constraint firstItem="pTt-br-Wfo" firstAttribute="leading" secondItem="SJl-QT-BfC" secondAttribute="leading" constant="8" id="49b-Xb-sJ2"/>
+                                    <constraint firstAttribute="trailing" secondItem="pTt-br-Wfo" secondAttribute="trailing" constant="8" id="FWw-fj-5j3"/>
                                     <constraint firstAttribute="bottom" secondItem="pTt-br-Wfo" secondAttribute="bottom" constant="20" id="HcP-yh-uqu"/>
                                     <constraint firstItem="pTt-br-Wfo" firstAttribute="top" secondItem="SJl-QT-BfC" secondAttribute="top" constant="5" id="U51-Wk-Scy"/>
                                 </constraints>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lqM-Vg-B3y">
-                                <rect key="frame" x="10" y="0.0" width="485" height="44"/>
+                                <rect key="frame" x="10" y="0.0" width="575.66666666666663" height="44"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="P1f-Mf-HOy" userLabel="Back Button">
                                         <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
@@ -115,7 +139,7 @@
                                         </connections>
                                     </button>
                                     <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Tyg-Yq-KSi">
-                                        <rect key="frame" x="44" y="0.0" width="441" height="44"/>
+                                        <rect key="frame" x="44" y="0.0" width="531.66666666666663" height="44"/>
                                         <connections>
                                             <segue destination="RT8-wi-a8g" kind="embed" id="jZD-lG-0rD"/>
                                         </connections>
@@ -127,41 +151,29 @@
                                     </constraint>
                                 </constraints>
                             </stackView>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Altitude" borderStyle="roundedRect" textAlignment="center" clearsOnBeginEditing="YES" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="WK5-xJ-db8">
-                                <rect key="frame" x="59" y="314" width="100" height="40"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="9s9-jK-50Q"/>
-                                    <constraint firstAttribute="width" constant="100" id="uml-Im-tg7"/>
-                                </constraints>
-                                <color key="textColor" name="default_text_color"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textField>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="lqM-Vg-B3y" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" constant="10" id="3cc-i5-5ug"/>
                             <constraint firstItem="Lqj-PN-oeC" firstAttribute="bottom" secondItem="5EZ-qb-Rvc" secondAttribute="bottom" id="7oO-wg-zy1"/>
-                            <constraint firstItem="WK5-xJ-db8" firstAttribute="bottom" secondItem="vDu-zF-Fre" secondAttribute="bottom" id="98R-Kk-rEU"/>
                             <constraint firstItem="SJl-QT-BfC" firstAttribute="leading" secondItem="lqM-Vg-B3y" secondAttribute="trailing" constant="5" id="ACp-a6-yNg"/>
+                            <constraint firstItem="SJl-QT-BfC" firstAttribute="width" secondItem="5EZ-qb-Rvc" secondAttribute="width" multiplier="0.3" id="JEt-Qk-Gzs"/>
                             <constraint firstItem="Lqj-PN-oeC" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" id="JtC-uf-dok"/>
-                            <constraint firstItem="SJl-QT-BfC" firstAttribute="leading" secondItem="Lqj-PN-oeC" secondAttribute="trailing" id="M36-YV-M8Y"/>
+                            <constraint firstItem="SJl-QT-BfC" firstAttribute="leading" secondItem="Lqj-PN-oeC" secondAttribute="trailing" priority="750" id="M36-YV-M8Y"/>
                             <constraint firstItem="Lqj-PN-oeC" firstAttribute="top" secondItem="5EZ-qb-Rvc" secondAttribute="top" id="MGl-ME-2MR"/>
-                            <constraint firstItem="WK5-xJ-db8" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="15" id="WXQ-5f-52o"/>
                             <constraint firstItem="SJl-QT-BfC" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" id="oxP-04-Hsh"/>
                             <constraint firstItem="lqM-Vg-B3y" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" id="puZ-ue-s2W"/>
                             <constraint firstAttribute="trailing" secondItem="SJl-QT-BfC" secondAttribute="trailing" id="pyd-ns-h8s"/>
                             <constraint firstAttribute="bottom" secondItem="SJl-QT-BfC" secondAttribute="bottom" id="tuJ-u3-VX2"/>
-                            <constraint firstItem="Lqj-PN-oeC" firstAttribute="width" secondItem="5EZ-qb-Rvc" secondAttribute="width" multiplier="500:812" id="yf6-yZ-bT1"/>
+                            <constraint firstItem="Lqj-PN-oeC" firstAttribute="width" secondItem="5EZ-qb-Rvc" secondAttribute="width" multiplier="500:812" constant="103" id="yf6-yZ-bT1"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="altitudeTextField" destination="WK5-xJ-db8" id="dB8-vv-DPd"/>
                         <outlet property="messageLabel" destination="zzJ-3K-o6a" id="DNY-nC-GqC"/>
+                        <outlet property="optimalCalibrationButton" destination="lVj-OJ-0Z8" id="nbM-ue-SaB"/>
+                        <outlet property="quickCalibrationButton" destination="gzZ-iM-dSL" id="MXw-E5-jOb"/>
                         <outlet property="rightPanelView" destination="SJl-QT-BfC" id="6nq-dL-2kg"/>
-                        <outlet property="startCalibrationButton" destination="lVj-OJ-0Z8" id="nbM-ue-SaB"/>
                         <outlet property="titleLabel" destination="r91-sn-ByV" id="4qw-U8-l1Z"/>
                         <outlet property="warningLabel" destination="yBM-PS-OCb" id="KgR-iu-YY5"/>
                         <outlet property="welcomeStackView" destination="pTt-br-Wfo" id="a1C-u9-Bs5"/>
@@ -582,15 +594,15 @@
         <image name="icPhoneBattery" width="20" height="16"/>
         <image name="icSettings" width="42" height="42"/>
         <image name="icWifi" width="17.333333969116211" height="13"/>
-        <image name="ic_back" width="21" height="21"/>
+        <image name="ic_back" width="21" height="28.333333969116211"/>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="warning_color">
             <color red="1" green="0.44705882352941179" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
     </resources>
 </document>

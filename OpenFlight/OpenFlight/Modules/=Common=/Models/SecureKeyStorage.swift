@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import KeychainAccess
+import Combine
 
 /// Handles the storage of the user informations in the keychain.
 public class SecureKeyStorage {
@@ -39,6 +40,10 @@ public class SecureKeyStorage {
     /// Secure storage keychain.
     public let keychain = Keychain(service: Constants.secureKeyStorage)
 
+    private let temporaryTokenSubject = CurrentValueSubject<String, Never>("")
+
+    public var temporaryTokenPublisher: AnyPublisher<String, Never> { temporaryTokenSubject.eraseToAnyPublisher() }
+
     /// Secure storage temporary token.
     public var temporaryToken: String {
         get {
@@ -46,6 +51,7 @@ public class SecureKeyStorage {
         }
         set {
             keychain[Constants.temporaryToken] = newValue
+            temporaryTokenSubject.value = newValue
         }
     }
 
@@ -64,5 +70,7 @@ public class SecureKeyStorage {
     }
 
     // MARK: - Init
-    public init() { }
+    public init() {
+        temporaryTokenSubject.value = temporaryToken
+    }
 }

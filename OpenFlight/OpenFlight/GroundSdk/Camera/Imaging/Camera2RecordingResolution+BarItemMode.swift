@@ -56,7 +56,7 @@ extension Camera2RecordingResolution: BarItemMode, Sortable {
     }
 
     public static var allValues: [BarItemMode] {
-        return self.allCases.sorted()
+        return allCases.sorted()
     }
 
     public var subModes: [BarItemSubMode]? {

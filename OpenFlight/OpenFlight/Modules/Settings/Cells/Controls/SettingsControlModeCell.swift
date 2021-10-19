@@ -187,14 +187,6 @@ private extension SettingsControlModeCell {
         viewModel?.updateRemoteMapping(withMode: currentMode)
     }
 
-    /// Apply cornered style on a button.
-    ///
-    /// - Parameters:
-    ///     - button: button to apply style on
-    func applyCorneredStyle(_ button: UIButton) {
-        button.roundCorneredWith(backgroundColor: .clear, borderColor: ColorName.white.color, borderWidth: 0.5)
-    }
-
     /// Apply color on a button and a label.
     ///
     /// - Parameters:

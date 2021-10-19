@@ -72,8 +72,8 @@ public class UserInformationImpl: UserInformation {
     private let tokenSubject = CurrentValueSubject<String, Never>("")
 
     public func set(token: String) {
-        self.tokenSubject.value = token
         keychain[UserInformationKey.token] = token
+        self.tokenSubject.value = token
     }
 
     public var tokenPublisher: AnyPublisher<String, Never> { tokenSubject.eraseToAnyPublisher() }

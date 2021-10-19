@@ -91,7 +91,7 @@ private extension CameraUtils {
         case .gpsLapse:
             return .gpslapse
         case .single:
-            return Defaults.isPanoramaModeActivated ? .panorama : .photo
+            return Services.hub.panoramaService.panoramaModeActiveValue ? .panorama : .photo
         case .bracketing:
             return .bracketing
         case .burst:

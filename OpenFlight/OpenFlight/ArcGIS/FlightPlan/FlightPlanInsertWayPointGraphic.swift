@@ -40,14 +40,18 @@ final class FlightPlanInsertWayPointGraphic: FlightPlanPointGraphic {
     // MARK: - Internal Properties
     /// Returns index for waypoint that might get created from this.
     var targetIndex: Int? {
-        return self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] as? Int
+        return attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] as? Int
     }
 
     // MARK: - Private Enums
     private enum Constants {
-        static let circleSize: CGFloat = 22.0
-        static let outlineWidth: CGFloat = 2.0
-        static let crossSize: CGFloat = 14.0
+        static let outlineSize: CGFloat = 14.0
+        static let fillSize: CGFloat = 12.0
+        static let crossSize: CGFloat = 9.0
+        static let circleSizeTouchArea: CGFloat = 35.0
+        static let mainColor: UIColor = ColorName.greenSpring.color
+        static let fillColor: UIColor = ColorName.white.color
+        static let touchAreaColor: UIColor = .clear
     }
 
     // MARK: - Init
@@ -58,21 +62,29 @@ final class FlightPlanInsertWayPointGraphic: FlightPlanPointGraphic {
     ///    - index: index of the waypoint that might get created
     init(_ mapPoint: AGSPoint,
          index: Int) {
-        let circle = AGSSimpleMarkerSymbol(style: .circle,
-                                           color: ColorName.greenPea.color,
-                                           size: Constants.circleSize)
-        circle.outline = AGSSimpleLineSymbol(style: .solid,
-                                             color: ColorName.greenSpring.color,
-                                             width: Constants.outlineWidth)
-        let cross = AGSSimpleMarkerSymbol(style: .cross,
-                                          color: ColorName.white.color,
-                                          size: Constants.crossSize)
-        let symbol = AGSCompositeSymbol(symbols: [circle, cross])
 
+        // Symbol used to make touch area bigger, invisible.
+        let circleTouchArea = AGSSimpleMarkerSymbol(style: .circle,
+                                                    color: Constants.touchAreaColor,
+                                                    size: Constants.circleSizeTouchArea)
+
+        let outlineSymbol = AGSSimpleMarkerSymbol(style: .circle,
+                                                  color: Constants.mainColor,
+                                                  size: Constants.outlineSize)
+        let fillSymbol = AGSSimpleMarkerSymbol(style: .circle,
+                                               color: Constants.fillColor,
+                                               size: Constants.fillSize)
+        let crossSymbol = AGSSimpleMarkerSymbol(style: .cross,
+                                                color: Constants.mainColor,
+                                                size: Constants.crossSize)
+        let compositeSymbol = AGSCompositeSymbol(symbols: [circleTouchArea,
+                                                           outlineSymbol,
+                                                           fillSymbol,
+                                                           crossSymbol])
         super.init(geometry: mapPoint,
-                   symbol: symbol,
+                   symbol: compositeSymbol,
                    attributes: nil)
 
-        self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index
+        attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index
     }
 }

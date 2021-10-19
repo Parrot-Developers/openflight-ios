@@ -47,7 +47,9 @@ class CameraWidgetState: BarButtonState, EquatableState, Copying {
     /// String representing camera exposure compensation.
     var labelExposureCompensation: String
     /// Color representing camera exposure compensation.
-    var exposureColor: Color
+    var exposureTextColor: Color
+    /// Background color representing camera exposure compensation.
+    var exposureBackgroundColor: Color
     /// Boolean to determine if camera is in photo mode or recording mode.
     var isPhotoMode: Bool
     /// Boolean to indicate if photo signature is activated.
@@ -63,16 +65,18 @@ class CameraWidgetState: BarButtonState, EquatableState, Copying {
     var subtitle: String?
     var enabled: Bool = true
     var unavailableReason: [String: String] = [:]
+    var maxItems: Int?
 
     // MARK: - Init
     required init() {
         isSelected = Observable(false)
-        self.labelCameraSpecificProperty1 = Style.dash
-        self.labelShutterSpeed = Style.dash
-        self.labelExposureCompensation = Style.dash
-        self.exposureColor = ColorName.white50.color
-        self.isPhotoMode = false
-        self.isPhotoSignatureEnabled = true
+        labelCameraSpecificProperty1 = Style.dash
+        labelShutterSpeed = Style.dash
+        labelExposureCompensation = Style.dash
+        exposureTextColor = ColorName.defaultTextColor80.color
+        exposureBackgroundColor = .clear
+        isPhotoMode = false
+        isPhotoSignatureEnabled = true
     }
 
     /// Init.
@@ -82,7 +86,8 @@ class CameraWidgetState: BarButtonState, EquatableState, Copying {
     ///    - labelCameraSpecificProperty2: string representing camera fps in recording mode
     ///    - labelShutterSpeed: string representing camera shutter speed
     ///    - labelExposureCompensation: string representing camera exposure compensation
-    ///    - exposureColor: color representing camera exposure compensation
+    ///    - exposureTextColor: color representing camera exposure compensation
+    ///    - exposureBackgroundColor: background color representing camera exposure compensation
     ///    - isPhotoMode: boolean to determine if camera is in photo mode or recording mode
     ///    - isPhotoSignatureEnabled: boolean to indicate if photo signature is activated
     ///    - isSelected: observable for bottom bar item selection
@@ -90,7 +95,8 @@ class CameraWidgetState: BarButtonState, EquatableState, Copying {
          labelCameraSpecificProperty2: String? = nil,
          labelShutterSpeed: String,
          labelExposureCompensation: String,
-         exposureColor: Color,
+         exposureTextColor: Color,
+         exposureBackgroundColor: Color,
          isPhotoMode: Bool,
          isPhotoSignatureEnabled: Bool,
          isSelected: Observable<Bool>) {
@@ -98,7 +104,8 @@ class CameraWidgetState: BarButtonState, EquatableState, Copying {
         self.labelCameraSpecificProperty2 = labelCameraSpecificProperty2
         self.labelShutterSpeed = labelShutterSpeed
         self.labelExposureCompensation = labelExposureCompensation
-        self.exposureColor = exposureColor
+        self.exposureTextColor = exposureTextColor
+        self.exposureBackgroundColor = exposureBackgroundColor
         self.isPhotoMode = isPhotoMode
         self.isPhotoSignatureEnabled = isPhotoSignatureEnabled
         self.isSelected = isSelected
@@ -111,21 +118,24 @@ class CameraWidgetState: BarButtonState, EquatableState, Copying {
     ///    - labelCameraSpecificProperty2: string representing camera fps in recording mode
     ///    - labelShutterSpeed: string representing camera shutter speed
     ///    - labelExposureCompensation: string representing camera exposure compensation
-    ///    - exposureColor: color representing camera exposure compensation
+    ///    - exposureTextColor: color representing camera exposure compensation
+    ///    - exposureBackgroundColor: background color representing camera exposure compensation
     ///    - isPhotoMode: boolean to determine if camera is in photo mode or recording mode
     ///    - isPhotoSignatureEnabled: boolean to indicate if photo signature is activated
     func update(with labelCameraSpecificProperty1: String,
                 labelCameraSpecificProperty2: String? = nil,
                 labelShutterSpeed: String,
                 labelExposureCompensation: String,
-                exposureColor: Color,
+                exposureTextColor: Color,
+                exposureBackgroundColor: Color,
                 isPhotoMode: Bool,
                 isPhotoSignatureEnabled: Bool) {
         self.labelCameraSpecificProperty1 = labelCameraSpecificProperty1
         self.labelCameraSpecificProperty2 = labelCameraSpecificProperty2
         self.labelShutterSpeed = labelShutterSpeed
         self.labelExposureCompensation = labelExposureCompensation
-        self.exposureColor = exposureColor
+        self.exposureTextColor = exposureTextColor
+        self.exposureBackgroundColor = exposureBackgroundColor
         self.isPhotoMode = isPhotoMode
         self.isPhotoSignatureEnabled = isPhotoSignatureEnabled
     }
@@ -136,7 +146,8 @@ class CameraWidgetState: BarButtonState, EquatableState, Copying {
             && self.labelCameraSpecificProperty2 == other.labelCameraSpecificProperty2
             && self.labelShutterSpeed == other.labelShutterSpeed
             && self.labelExposureCompensation == other.labelExposureCompensation
-            && self.exposureColor == other.exposureColor
+            && self.exposureTextColor == other.exposureTextColor
+            && self.exposureBackgroundColor == other.exposureBackgroundColor
             && self.isPhotoMode == other.isPhotoMode
             && self.isPhotoSignatureEnabled == other.isPhotoSignatureEnabled
     }
@@ -147,7 +158,8 @@ class CameraWidgetState: BarButtonState, EquatableState, Copying {
                                         labelCameraSpecificProperty2: labelCameraSpecificProperty2,
                                         labelShutterSpeed: labelShutterSpeed,
                                         labelExposureCompensation: labelExposureCompensation,
-                                        exposureColor: exposureColor,
+                                        exposureTextColor: exposureTextColor,
+                                        exposureBackgroundColor: exposureBackgroundColor,
                                         isPhotoMode: isPhotoMode,
                                         isPhotoSignatureEnabled: isPhotoSignatureEnabled,
                                         isSelected: isSelected) as? Self {
@@ -165,14 +177,6 @@ final class CameraWidgetViewModel: BarButtonViewModel<CameraWidgetState> {
     private var cancellables = Set<AnyCancellable>()
     private var mainCameraRef: Ref<MainCamera2>?
     private var exposureValuesRef: Ref<Camera2ExposureIndicator>?
-    private var lastExposureValue: Camera2ShutterSpeed? {
-        guard let lastShutterSpeedRawValue = Defaults.lastShutterSpeedValue,
-              let lastShutterSpeed = Camera2ShutterSpeed(rawValue: lastShutterSpeedRawValue) else {
-            return nil
-        }
-
-        return lastShutterSpeed
-    }
 
     // MARK: - init
     /// Constructor.
@@ -207,6 +211,21 @@ final class CameraWidgetViewModel: BarButtonViewModel<CameraWidgetState> {
     override func listenDrone(drone: Drone) {
         listenCamera(drone: drone)
         listenExposureValues(drone: drone)
+    }
+
+    override func toggleSelectionState() {
+        super.toggleSelectionState()
+        updateState(drone: drone)
+    }
+
+    override func select() {
+        super.select()
+        updateState(drone: drone)
+    }
+
+    override func deselect() {
+        super.deselect()
+        updateState(drone: drone)
     }
 }
 
@@ -245,18 +264,25 @@ private extension CameraWidgetViewModel {
         let photoSignature = camera.config[Camera2Params.photoDigitalSignature]?.value
 
         let newState = state.value.copy()
+        let isSelected = newState.isSelected.value
+        let exposureBackgroundColor = evCompensation == .ev0_00
+            ? .clear
+            : (isSelected ? .white : ColorName.warningColor.color)
+        let exposureTextColor = evCompensation == .ev0_00
+            ? (isSelected ? .white : ColorName.defaultTextColor80.color)
+            : (isSelected ? ColorName.highlightColor.color : .white)
         switch cameraMode {
         case .recording:
             guard let resolution = camera.config[Camera2Params.videoRecordingResolution]?.value,
                   let framerate = camera.config[Camera2Params.videoRecordingFramerate]?.value else {
                 return
             }
-
             newState.update(with: resolution.title,
                             labelCameraSpecificProperty2: framerate.fpsTitle,
                             labelShutterSpeed: shutterSpeed?.shortTitle ?? L10n.unitSecond.dashPrefixed,
                             labelExposureCompensation: evCompensation.title,
-                            exposureColor: evCompensation == .ev0_00 ? UIColor.white.withAlphaComponent(0.5) : UIColor(named: .yellowSea),
+                            exposureTextColor: exposureTextColor,
+                            exposureBackgroundColor: exposureBackgroundColor,
                             isPhotoMode: false,
                             isPhotoSignatureEnabled: false)
         case .photo:
@@ -265,7 +291,8 @@ private extension CameraWidgetViewModel {
             newState.update(with: photoFormat.title,
                             labelShutterSpeed: shutterSpeed?.shortTitle ?? L10n.unitSecond.dashPrefixed,
                             labelExposureCompensation: evCompensation.title,
-                            exposureColor: evCompensation == .ev0_00 ? UIColor.white.withAlphaComponent(0.5) : UIColor(named: .yellowSea),
+                            exposureTextColor: exposureTextColor,
+                            exposureBackgroundColor: exposureBackgroundColor,
                             isPhotoMode: true,
                             isPhotoSignatureEnabled: photoSignature == .drone)
         }

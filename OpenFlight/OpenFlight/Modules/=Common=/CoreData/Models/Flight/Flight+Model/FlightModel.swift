@@ -72,12 +72,25 @@ public struct FlightModel {
     /// - cloudLastUpdate: Last modification date of Flight
     public var cloudLastUpdate: Date?
 
-    /// - Ccontains the Date of last synchro trying if is not succeeded
+    /// - Contains the Date of last synchro trying if is not succeeded
     public var synchroDate: Date?
 
     /// - Contains 0 if not yet synchronized, 1 if yes
         /// statusCode if sync failed
     public var synchroStatus: Int16?
+
+    /// - Contains the Date of the last external synchro
+    public var externalSynchroDate: Date?
+
+    /// - externalSynchroStatus contains:
+    ///     - 0 Not yet synchronized
+    ///     - 1 Synchronized
+    public var externalSynchroStatus: Int16?
+
+    /// - Return GutmaFile data type
+    public var gutmaFileData: Data? {
+        return gutmaFile?.data(using: .utf8)
+    }
 
     // MARK: - Public init
 
@@ -101,7 +114,9 @@ public struct FlightModel {
                 synchroStatus: Int16? = 0,
                 cloudLastUpdate: Date? = nil,
                 fileSynchroStatus: Int16? = 0,
-                fileSynchroDate: Date? = nil) {
+                fileSynchroDate: Date? = nil,
+                externalSynchroStatus: Int16? = 0,
+                externalSynchroDate: Date? = nil) {
 
         self.apcId = apcId
         self.title = title
@@ -124,5 +139,7 @@ public struct FlightModel {
         self.fileSynchroStatus = fileSynchroStatus
         self.fileSynchroDate = fileSynchroDate
         self.cloudLastUpdate = cloudLastUpdate
+        self.externalSynchroStatus = externalSynchroStatus
+        self.externalSynchroDate = externalSynchroDate
     }
 }

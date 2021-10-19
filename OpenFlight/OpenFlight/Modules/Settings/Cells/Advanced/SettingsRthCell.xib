@@ -34,7 +34,7 @@
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </view>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7II-P4-d7e" customClass="SettingsRthActionView" customModule="OpenFlight" customModuleProvider="target">
-                        <rect key="frame" x="0.0" y="5" width="466" height="191"/>
+                        <rect key="frame" x="0.0" y="20" width="466" height="176"/>
                         <subviews>
                             <view alpha="0.5" contentMode="scaleToFill" id="Cp7-Xk-hvp">
                                 <rect key="frame" x="341" y="8" width="85" height="28"/>
@@ -42,7 +42,7 @@
                                 <color key="backgroundColor" name="default_bgcolor"/>
                             </view>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconUser" translatesAutoresizingMaskIntoConstraints="NO" id="mI8-lA-89a">
-                                <rect key="frame" x="40" y="151" width="14" height="40"/>
+                                <rect key="frame" x="40" y="136" width="14" height="40"/>
                                 <color key="tintColor" name="default_text_color"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="14" id="YM8-yc-WIK"/>
@@ -50,7 +50,7 @@
                                 </constraints>
                             </imageView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconDroneFace" translatesAutoresizingMaskIntoConstraints="NO" id="PeS-fB-RVV">
-                                <rect key="frame" x="395" y="183" width="31" height="8"/>
+                                <rect key="frame" x="395" y="168" width="31" height="8"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="8" id="fcX-zM-aLV"/>
                                     <constraint firstAttribute="width" constant="31" id="oN5-iM-7LU"/>
@@ -95,7 +95,7 @@
                     <constraint firstAttribute="bottom" secondItem="ZzF-dG-eaJ" secondAttribute="bottom" constant="5" id="6Q1-QN-gaw"/>
                     <constraint firstAttribute="trailing" secondItem="ZzF-dG-eaJ" secondAttribute="trailing" id="6uR-yR-aGi"/>
                     <constraint firstItem="7II-P4-d7e" firstAttribute="trailing" secondItem="ZzF-dG-eaJ" secondAttribute="trailing" id="HLS-n4-WPg"/>
-                    <constraint firstItem="7II-P4-d7e" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="Hnv-mr-yES"/>
+                    <constraint firstItem="7II-P4-d7e" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="20" id="Hnv-mr-yES"/>
                     <constraint firstItem="L0s-y8-BcI" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="Pdq-Xa-PqT"/>
                     <constraint firstItem="ZzF-dG-eaJ" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="20" id="RM3-48-BFM"/>
                     <constraint firstAttribute="trailing" secondItem="L0s-y8-BcI" secondAttribute="trailing" id="Vap-b3-plp"/>

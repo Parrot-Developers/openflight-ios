@@ -59,6 +59,7 @@ final class GalleryPanoramaViewController: UIViewController {
     private var singleTapGesture: UITapGestureRecognizer?
     private var displaylink: CADisplayLink?
     private var panoramaViewIsSetup: Bool = false
+    private var areControlsShown: Bool = true
 
     // MARK: - Private Enums
     private enum Constants {
@@ -145,8 +146,8 @@ final class GalleryPanoramaViewController: UIViewController {
 private extension GalleryPanoramaViewController {
     /// Sets up all the UI for the view controller.
     func setupUI() {
-        gyroscopeButton.cornerRadiusedWith(backgroundColor: ColorName.defaultTextColor.color, radius: Style.largeCornerRadius)
-        exitButton.cornerRadiusedWith(backgroundColor: ColorName.defaultTextColor.color, radius: Style.largeCornerRadius)
+        gyroscopeButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
+        exitButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
     }
 
     /// Init gestures.
@@ -272,12 +273,18 @@ private extension GalleryPanoramaViewController {
         }
     }
 
-    @objc func handleSingleTap(recognizer: UITapGestureRecognizer) {
-        guard let viewModel = viewModel else { return }
+    func showControls(_ show: Bool) {
+        exitButton.showFromEdge(.bottom,
+                                 offset: view.safeAreaInsets.bottom + 30,
+                                 show: show)
+        gyroscopeButton.showFromEdge(.bottom,
+                                 offset: view.safeAreaInsets.bottom + 30,
+                                 show: show)
+    }
 
-        viewModel.toggleShouldHideControls()
-        gyroscopeButton.isHidden = viewModel.shouldHideControls
-        exitButton.isHidden = viewModel.shouldHideControls
+    @objc func handleSingleTap(recognizer: UITapGestureRecognizer) {
+        areControlsShown.toggle()
+        showControls(areControlsShown)
     }
 }
 

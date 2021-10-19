@@ -178,7 +178,7 @@ public final class UnitHelper: NSObject {
     ///    - distance: distance in meter (Double)
     ///    - spacing: boolean to add or remove spacing between value and unit
     /// - Returns: a string containing the value and the unit, seperated by a whitespace
-    static func stringDistanceWithDouble(_ distance: Double, spacing: Bool = true) -> String {
+    public static func stringDistanceWithDouble(_ distance: Double, spacing: Bool = true) -> String {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .decimal
         switch unitSetting {

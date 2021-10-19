@@ -233,28 +233,25 @@ private extension TargetView {
         self.removeLayers()
         self.removeCloseButton()
         self.removeTapGesture()
-
         switch state {
         // Case where user is drawing the selection.
         case .drawing:
             self.drawSelectionFrame()
         // Case where a target is tracked.
         case .locked:
-            self.drawBackTargetLocked()
-            self.drawBottomCircle()
-            self.drawCloseButton()
+            self.drawSimpleRectangle()
         // Case where a target is lost.
         case .pending:
-            self.drawBackTargetLocked(drawDashPattern: true)
-            self.drawTopCircle(drawDashPattern: true)
-            self.drawBottomCircle(drawDashPattern: true)
-            self.drawCloseButton()
+            self.drawSimpleRectangle()
         // Case where the drone returns proposals.
         case .proposal:
-            self.drawBackProposal()
-            self.drawBottomCircle()
+            self.drawSimpleRectangle()
             self.addTapGesture()
         }
+    }
+
+    func drawSimpleRectangle() {
+        backgroundColor = self.state.color.withAlphaComponent(0.5)
     }
 
     /// Draws a rectangle shape when user trace a movement with his finger.

@@ -88,13 +88,13 @@ private extension OnboardingTermsOfUseViewController {
     @IBAction func acceptButtonTouchedUpInside(_ sender: Any) {
         guard let termsOfUseKey = termsOfUseKey,
               Defaults[key: termsOfUseKey] == false else {
-            goToLocalizationScreen()
+            goToOnBoardingThirdScreen()
             return
         }
 
         if canAcceptTermsOfUse {
             Defaults[key: termsOfUseKey] = true
-            goToLocalizationScreen()
+            goToOnBoardingThirdScreen()
         } else if scrollDownView.isHidden {
             UIView.animate(withDuration: Style.shortAnimationDuration) {
                 self.scrollDownView.isHidden = false
@@ -156,8 +156,8 @@ private extension OnboardingTermsOfUseViewController {
         acceptButton.setTitleColor(canAcceptTermsOfUse ? ColorName.highlightColor.color : ColorName.defaultTextColor.color, for: .normal)
     }
 
-    /// Redirects to localization screen.
-    func goToLocalizationScreen() {
-        coordinator?.showLocalizationAccessScreen()
+    /// Redirects to onboarding third screen.
+    func goToOnBoardingThirdScreen() {
+        coordinator?.showOnBoardingThirdScreen()
     }
 }

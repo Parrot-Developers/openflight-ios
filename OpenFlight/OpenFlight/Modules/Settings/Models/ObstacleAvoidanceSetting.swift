@@ -42,10 +42,6 @@ extension ObstacleAvoidanceMode: SettingMode {
         return true
     }
 
-    var isObstacleAvoidanceActivated: Bool {
-        return self == .standard
-    }
-
     var key: String {
         return description
     }

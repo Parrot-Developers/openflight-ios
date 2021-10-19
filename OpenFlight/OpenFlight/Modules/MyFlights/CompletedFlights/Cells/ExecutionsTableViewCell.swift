@@ -108,7 +108,7 @@ final class ExecutionsTableViewCell: UITableViewCell, NibReusable {
                      tableType: HistoryTableType,
                      showDate: Bool) {
         let isCompactCell = tableType == .miniHistory
-        resumeButton.isHidden = !(!isCompactCell && flightPlan.state != .completed)
+        resumeButton.isHidden = isCompactCell
         chevronImage.isHidden = !isCompactCell
         monthLabel.isHidden = !(UIApplication.isLandscape || showDate) || isCompactCell
         yearLabel.isHidden = !(UIApplication.isLandscape || showDate) || isCompactCell
@@ -153,7 +153,8 @@ final class ExecutionsTableViewCell: UITableViewCell, NibReusable {
         dateLabel.text = flightPlan.fomattedExecutionDate(isShort: false)
         dateLabel.makeUp(with: .large, and: .defaultTextColor)
 
-        if flightPlan.state != .completed {
+        let resumableStates: [FlightPlanModel.FlightPlanState] = [.flying, .stopped]
+        if resumableStates.contains(flightPlan.state) {
             statusLabel.text = L10n.flightPlanRunStopped
             statusLabel.textColor = ColorName.warningColor.color
         } else {
@@ -190,9 +191,12 @@ private extension ExecutionsTableViewCell {
     /// - Parameters:
     ///     - executionState: execution state of flight plan model
     func setupExecutionButton(for executionState: FlightPlanModel.FlightPlanState?, type: HistoryTableType) {
-        resumeButton.isEnabled = executionState != .completed
-        if executionState == .completed {
+        let resumableStates: [FlightPlanModel.FlightPlanState] = [.flying, .stopped]
+        resumeButton.isEnabled = resumableStates.contains(executionState)
+        if !resumableStates.contains(executionState) {
             resumeButton.isHidden = true
+            resumeButton.cornerRadiusedWith(backgroundColor: ColorName.white.color,
+                                            radius: Style.largeCornerRadius)
         } else {
             resumeButton.isHidden = type == .miniHistory
             resumeButton.makeup()

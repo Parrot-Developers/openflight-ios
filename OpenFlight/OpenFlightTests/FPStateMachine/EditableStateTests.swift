@@ -77,11 +77,11 @@ class EditableStateTests: XCTestCase {
 
         // given
         sut.open(flightPlan: editFlightPlan)
-        
+
         var newState: State = .machineStarted
         sut.statePrivate.sink { (state) in
             switch state {
-            case .editable( _):
+            case .editable:
                 newState = state
                 expectation.fulfill()
             case .machineStarted: break
@@ -132,7 +132,7 @@ class EditableStateTests: XCTestCase {
         var newState: State = .machineStarted
         sut.statePrivate.sink { (state) in
             switch state {
-            case .editable( _):
+            case .editable:
                 newState = state
                 expectation.fulfill()
             case .machineStarted: break
@@ -182,7 +182,7 @@ class EditableStateTests: XCTestCase {
 
         var newState: State = .machineStarted
         sut.statePrivate.sink { (state) in
-            if case let .editable(_) = state {
+            if case let .editable = state {
                 newState = state
                 expectation.fulfill()
             }
@@ -230,7 +230,7 @@ class EditableStateTests: XCTestCase {
 
         var newState: State = .machineStarted
         sut.statePrivate.sink { (state) in
-            if case .editable(_) = state {
+            if case .editable = state {
                 newState = state
                 expectation.fulfill()
             }

@@ -59,8 +59,6 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
         static let outlineWidth: CGFloat = 1.0
         static let textColor: UIColor = ColorName.black.color
         static let labelSize: CGFloat = 34.0
-        // Labels altitude should be offset to prevent from colliding with other graphics.
-        static let textAltitudeOffset: Double = 0.05
         static let fontSize: CGFloat = 13.0
     }
 
@@ -91,7 +89,7 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
 
         zIndex = Int(poiPoint.altitude)
         self.poiPoint = poiPoint
-        self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = index
+        attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = index
         refreshText(altitude: poiPoint.formattedAltitude)
         applyRotation()
         self.symbol = getSymbol()
@@ -119,7 +117,7 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
                    symbol: symbol,
                    attributes: nil)
 
-        self.attributes[AGSConstants.poiPointAttributeKey] = true
+        attributes[AGSConstants.poiPointAttributeKey] = true
         refreshText(altitude: location.formattedAltitude)
         self.symbol = getSymbol()
     }
@@ -133,7 +131,7 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
 
     override func updateAltitude(_ altitude: Double) {
         let changeAltitude = (poiPoint?.altitude ?? 0.0) != altitude
-        self.geometry = mapPoint?.withAltitude(altitude)
+        geometry = mapPoint?.withAltitude(altitude)
         poiPoint?.altitude = altitude
 
         if changeAltitude {
@@ -149,7 +147,7 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     /// - Parameters:
     ///     - altitude: altitude to display
     private func refreshText(altitude: String) {
-        let altitudeImage = FlightPlanPointGraphic.imageWith(name: poiPoint?.formattedAltitude,
+        let altitudeImage = FlightPlanPointGraphic.imageWith(name: altitude,
                             textColor: Constants.textColor,
                             fontSize: Constants.fontSize,
                             size: CGSize(width: Constants.diamondSize, height: Constants.diamondSize))
@@ -175,9 +173,9 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     ///
     /// - Parameters:
     ///     - heading: camera heading
-    func update(heading: Double) {
-        if self.heading != Int(heading) {
-            self.heading = Int(heading)
+    func update(heading newHeading: Double) {
+        if heading != Int(newHeading) {
+            heading = Int(newHeading)
             applyRotation()
             symbol = getSymbol()
         }
@@ -197,6 +195,6 @@ public extension FlightPlanPoiPointGraphic {
     /// - Parameters:
     ///    - point: new point to apply
     func update(with point: AGSPoint) {
-        self.geometry = point
+        geometry = point
     }
 }

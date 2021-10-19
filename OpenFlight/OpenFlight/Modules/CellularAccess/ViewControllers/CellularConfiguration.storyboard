@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -18,123 +17,111 @@
         <scene sceneID="gAF-Wg-Bhz">
             <objects>
                 <viewController storyboardIdentifier="CellularConfiguration" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="CellularConfigurationViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="MSd-T9-FLL"/>
+                        <viewControllerLayoutGuide type="bottom" id="ggD-xL-SoA"/>
+                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="kIA-By-VFN">
                         <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kvv-yI-Y5U" userLabel="invisibleButton">
-                                <rect key="frame" x="44" y="0.0" width="808" height="414"/>
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                                 <connections>
                                     <action selector="backgroundButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="juI-AE-8FY"/>
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Lye-ov-bV6" userLabel="Panel View">
-                                <rect key="frame" x="81" y="80" width="734" height="340"/>
+                                <rect key="frame" x="60" y="141.5" width="776" height="272.5"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="18" translatesAutoresizingMaskIntoConstraints="NO" id="gV3-Y2-hGU">
-                                        <rect key="frame" x="0.0" y="4" width="734" height="306"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="gV3-Y2-hGU">
+                                        <rect key="frame" x="119" y="20" width="538" height="220.5"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UJD-QS-TXP" userLabel="TopView">
-                                                <rect key="frame" x="0.0" y="0.0" width="734" height="40"/>
-                                                <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8u2-Aw-Ozm">
-                                                        <rect key="frame" x="12" y="9.5" width="21" height="21"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" constant="21" id="W3c-KI-MQz"/>
-                                                            <constraint firstAttribute="width" secondItem="8u2-Aw-Ozm" secondAttribute="height" multiplier="1:1" id="gCn-9v-5In"/>
-                                                        </constraints>
-                                                        <color key="tintColor" name="default_text_color"/>
-                                                        <state key="normal" image="icClose"/>
-                                                        <connections>
-                                                            <action selector="closeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="RPT-GA-yeL"/>
-                                                        </connections>
-                                                    </button>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8PR-qy-1EX">
-                                                        <rect key="frame" x="344" y="9" width="46.5" height="22.5"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
-                                                        <color key="textColor" name="default_text_color"/>
-                                                        <nil key="highlightedColor"/>
-                                                    </label>
-                                                </subviews>
-                                                <constraints>
-                                                    <constraint firstItem="8PR-qy-1EX" firstAttribute="centerX" secondItem="UJD-QS-TXP" secondAttribute="centerX" id="2EN-dB-1N7"/>
-                                                    <constraint firstAttribute="height" constant="40" id="5MV-PF-12r"/>
-                                                    <constraint firstItem="8PR-qy-1EX" firstAttribute="centerY" secondItem="UJD-QS-TXP" secondAttribute="centerY" id="LH3-cL-R2G"/>
-                                                    <constraint firstItem="8u2-Aw-Ozm" firstAttribute="centerY" secondItem="UJD-QS-TXP" secondAttribute="centerY" id="Ld2-nM-YAr"/>
-                                                    <constraint firstItem="8u2-Aw-Ozm" firstAttribute="leading" secondItem="UJD-QS-TXP" secondAttribute="leading" constant="12" id="Nh3-6Y-1Cg"/>
-                                                </constraints>
-                                            </view>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8PR-qy-1EX">
+                                                <rect key="frame" x="0.0" y="0.0" width="538" height="22.5"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                <color key="textColor" name="default_text_color"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icSimCard" translatesAutoresizingMaskIntoConstraints="NO" id="7aR-YB-PYI">
-                                                <rect key="frame" x="0.0" y="58" width="734" height="68"/>
+                                                <rect key="frame" x="0.0" y="42.5" width="538" height="68"/>
                                                 <color key="tintColor" name="default_text_color"/>
                                             </imageView>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="751" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AWD-cZ-QGb">
-                                                <rect key="frame" x="0.0" y="144" width="734" height="94"/>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AWD-cZ-QGb">
+                                                <rect key="frame" x="0.0" y="130.5" width="538" height="20"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xdX-EI-BfR" userLabel="ButtonsView">
-                                                <rect key="frame" x="0.0" y="256" width="734" height="50"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="40" translatesAutoresizingMaskIntoConstraints="NO" id="X5K-k4-9Ad">
+                                                <rect key="frame" x="0.0" y="170.5" width="538" height="50"/>
                                                 <subviews>
-                                                    <stackView opaque="NO" contentMode="center" distribution="fillEqually" spacing="32" translatesAutoresizingMaskIntoConstraints="NO" id="X5K-k4-9Ad">
-                                                        <rect key="frame" x="110" y="0.0" width="514" height="50"/>
-                                                        <subviews>
-                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Faf-FV-1Sw">
-                                                                <rect key="frame" x="0.0" y="0.0" width="241" height="50"/>
-                                                                <color key="backgroundColor" name="white_albescent"/>
-                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                                <state key="normal" title="Later">
-                                                                    <color key="titleColor" name="default_text_color"/>
-                                                                </state>
-                                                                <connections>
-                                                                    <action selector="laterButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="EOB-hP-QBD"/>
-                                                                </connections>
-                                                            </button>
-                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WIu-vp-ty1">
-                                                                <rect key="frame" x="273" y="0.0" width="241" height="50"/>
-                                                                <color key="backgroundColor" name="highlight_color"/>
-                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                                <state key="normal" title="Configure">
-                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                </state>
-                                                                <connections>
-                                                                    <action selector="configureButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="ubm-WH-Cvr"/>
-                                                                </connections>
-                                                            </button>
-                                                        </subviews>
-                                                    </stackView>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Faf-FV-1Sw">
+                                                        <rect key="frame" x="0.0" y="0.0" width="249" height="50"/>
+                                                        <color key="backgroundColor" name="white_albescent"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="50" id="ewb-IG-aK5"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                        <state key="normal" title="Later">
+                                                            <color key="titleColor" name="default_text_color"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="laterButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="EOB-hP-QBD"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WIu-vp-ty1">
+                                                        <rect key="frame" x="289" y="0.0" width="249" height="50"/>
+                                                        <color key="backgroundColor" name="highlight_color"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                        <state key="normal" title="Configure">
+                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="configureButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="ubm-WH-Cvr"/>
+                                                        </connections>
+                                                    </button>
                                                 </subviews>
                                                 <constraints>
-                                                    <constraint firstItem="X5K-k4-9Ad" firstAttribute="centerX" secondItem="xdX-EI-BfR" secondAttribute="centerX" id="0Ic-Oc-RCy"/>
-                                                    <constraint firstAttribute="height" constant="50" id="Dmx-mc-Nsn"/>
-                                                    <constraint firstItem="X5K-k4-9Ad" firstAttribute="width" secondItem="xdX-EI-BfR" secondAttribute="width" multiplier="0.7" id="JEI-AD-68Q"/>
-                                                    <constraint firstAttribute="bottom" secondItem="X5K-k4-9Ad" secondAttribute="bottom" id="fTF-CX-R5d"/>
-                                                    <constraint firstItem="X5K-k4-9Ad" firstAttribute="top" secondItem="xdX-EI-BfR" secondAttribute="top" id="ji8-Lt-3DE"/>
+                                                    <constraint firstItem="WIu-vp-ty1" firstAttribute="width" secondItem="Faf-FV-1Sw" secondAttribute="width" id="NBC-JG-mhg"/>
+                                                    <constraint firstItem="WIu-vp-ty1" firstAttribute="height" secondItem="Faf-FV-1Sw" secondAttribute="height" id="clg-t6-Eif"/>
                                                 </constraints>
-                                            </view>
+                                            </stackView>
                                         </subviews>
                                     </stackView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8u2-Aw-Ozm">
+                                        <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="60" id="W3c-KI-MQz"/>
+                                            <constraint firstAttribute="width" secondItem="8u2-Aw-Ozm" secondAttribute="height" multiplier="1:1" id="gCn-9v-5In"/>
+                                        </constraints>
+                                        <color key="tintColor" name="default_text_color"/>
+                                        <state key="normal" image="icClose"/>
+                                        <connections>
+                                            <action selector="closeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="RPT-GA-yeL"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstItem="gV3-Y2-hGU" firstAttribute="top" secondItem="Lye-ov-bV6" secondAttribute="top" constant="4" id="FEr-sM-Znn"/>
-                                    <constraint firstAttribute="trailing" secondItem="gV3-Y2-hGU" secondAttribute="trailing" id="gmi-iH-vCe"/>
-                                    <constraint firstAttribute="bottom" secondItem="gV3-Y2-hGU" secondAttribute="bottom" constant="30" id="h77-RJ-HOq"/>
-                                    <constraint firstItem="gV3-Y2-hGU" firstAttribute="leading" secondItem="Lye-ov-bV6" secondAttribute="leading" id="yhg-a6-KJJ"/>
+                                    <constraint firstItem="8u2-Aw-Ozm" firstAttribute="top" secondItem="Lye-ov-bV6" secondAttribute="top" id="EwQ-cD-qts"/>
+                                    <constraint firstItem="gV3-Y2-hGU" firstAttribute="top" secondItem="Lye-ov-bV6" secondAttribute="top" constant="20" id="FEr-sM-Znn"/>
+                                    <constraint firstItem="gV3-Y2-hGU" firstAttribute="centerX" secondItem="Lye-ov-bV6" secondAttribute="centerX" id="Hq8-dy-mGV"/>
+                                    <constraint firstAttribute="bottom" secondItem="gV3-Y2-hGU" secondAttribute="bottom" constant="32" id="ZqW-DN-Hpd"/>
+                                    <constraint firstItem="8u2-Aw-Ozm" firstAttribute="leading" secondItem="Lye-ov-bV6" secondAttribute="leading" id="wh5-c3-IJO"/>
                                 </constraints>
                             </view>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="eec-RK-zun"/>
                         <constraints>
-                            <constraint firstAttribute="bottom" secondItem="kvv-yI-Y5U" secondAttribute="bottom" id="0O2-v0-mlO"/>
-                            <constraint firstItem="kvv-yI-Y5U" firstAttribute="top" secondItem="eec-RK-zun" secondAttribute="top" id="40W-oG-118"/>
-                            <constraint firstItem="Lye-ov-bV6" firstAttribute="top" secondItem="eec-RK-zun" secondAttribute="top" constant="80" id="5Hi-gN-GdM"/>
-                            <constraint firstAttribute="bottom" secondItem="Lye-ov-bV6" secondAttribute="bottom" constant="-6" id="9Yk-WD-zuH"/>
-                            <constraint firstItem="eec-RK-zun" firstAttribute="trailing" secondItem="Lye-ov-bV6" secondAttribute="trailing" constant="37" id="Hmz-O9-S1b" userLabel="Safe Area.trailing = Panel View.trailing"/>
-                            <constraint firstItem="Lye-ov-bV6" firstAttribute="leading" secondItem="eec-RK-zun" secondAttribute="leading" constant="37" id="KGw-xk-CrJ" userLabel="Panel View.leading = Safe Area.leading"/>
-                            <constraint firstItem="kvv-yI-Y5U" firstAttribute="trailing" secondItem="eec-RK-zun" secondAttribute="trailing" id="P9l-Bw-Syc"/>
-                            <constraint firstItem="kvv-yI-Y5U" firstAttribute="leading" secondItem="eec-RK-zun" secondAttribute="leading" id="Ufi-yp-tyj"/>
+                            <constraint firstItem="Lye-ov-bV6" firstAttribute="leading" secondItem="kIA-By-VFN" secondAttribute="leadingMargin" id="2Ds-mJ-ehd"/>
+                            <constraint firstItem="kvv-yI-Y5U" firstAttribute="top" secondItem="MSd-T9-FLL" secondAttribute="bottom" id="40W-oG-118"/>
+                            <constraint firstItem="Lye-ov-bV6" firstAttribute="top" relation="greaterThanOrEqual" secondItem="MSd-T9-FLL" secondAttribute="bottom" constant="16" id="68z-7F-WM0"/>
+                            <constraint firstItem="gV3-Y2-hGU" firstAttribute="width" secondItem="kIA-By-VFN" secondAttribute="width" multiplier="0.6" id="6U3-Yk-CXB"/>
+                            <constraint firstAttribute="bottom" secondItem="Lye-ov-bV6" secondAttribute="bottom" id="9Yk-WD-zuH"/>
+                            <constraint firstItem="kvv-yI-Y5U" firstAttribute="trailing" secondItem="kIA-By-VFN" secondAttribute="trailing" id="P9l-Bw-Syc"/>
+                            <constraint firstAttribute="bottom" secondItem="kvv-yI-Y5U" secondAttribute="bottom" id="Ttk-a2-MzA"/>
+                            <constraint firstItem="kvv-yI-Y5U" firstAttribute="leading" secondItem="kIA-By-VFN" secondAttribute="leading" id="Ufi-yp-tyj"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="Lye-ov-bV6" secondAttribute="trailing" id="aJJ-7c-1nu"/>
                         </constraints>
                     </view>
                     <connections>
@@ -154,11 +141,11 @@
     <resources>
         <image name="icClose" width="17" height="17"/>
         <image name="icSimCard" width="59" height="68"/>
-        <namedColor name="highlight_color">
-            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-        </namedColor>
         <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="highlight_color">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="white_albescent">
             <color red="0.87450980392156863" green="0.84705882352941175" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

@@ -100,7 +100,6 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
     private var wifiAccessPointRef: Ref<WifiAccessPoint>?
     private var wifiScannerRef: Ref<WifiScanner>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
-    private var cellularRef: Ref<Cellular>?
     private var driRef: Ref<Dri>?
 
     // MARK: - Internal Properties

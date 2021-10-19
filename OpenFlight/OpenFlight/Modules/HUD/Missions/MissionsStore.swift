@@ -40,6 +40,8 @@ public protocol MissionsStore: AnyObject {
 
     /// Add missions to the store
     func addMissions(_ missions: [MissionProvider])
+
+    func missionFor(flightPlan: FlightPlanModel) -> (provider: MissionProvider, mission: MissionMode)?
 }
 
 public final class MissionsStoreImpl: MissionsStore {
@@ -72,5 +74,21 @@ public final class MissionsStoreImpl: MissionsStore {
     ///    - missions: List of MissionProviders objects to add.
     public func addMissions(_ missions: [MissionProvider]) {
         allMissions.append(contentsOf: missions)
+    }
+
+    public func missionFor(flightPlan: FlightPlanModel) -> (provider: MissionProvider, mission: MissionMode)? {
+        // Get mission matching flightPlan
+        var missionProvider: MissionProvider?
+        var missionMode: MissionMode?
+        for provider in self.allMissions {
+            for mode in provider.mission.modes {
+                if mode.flightPlanProvider?.hasFlightPlanType(flightPlan.type) ?? false {
+                    missionProvider = provider
+                    missionMode = mode
+                }
+            }
+        }
+        guard let mProvider = missionProvider, let mMode = missionMode else { return nil }
+        return (mProvider, mMode)
     }
 }

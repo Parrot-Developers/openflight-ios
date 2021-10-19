@@ -28,6 +28,7 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Combine
 import SwiftyUserDefaults
 import GroundSdk
 
@@ -79,7 +80,10 @@ final class HUDCameraStreamingState: ViewModelState, EquatableState, Copying {
 
 final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamingState> {
     // MARK: - Internal Properties
-    var cameraLiveUpdateCallback: ((CameraLive?) -> Void)?
+    /// Front camera stream.
+    @Published var cameraLive: CameraLive?
+    /// Whether snow view is visible.
+    @Published var snowVisible = true
 
     // MARK: - Private Properties
     private var overexposureSettingObserver: DefaultsDisposable?
@@ -133,7 +137,7 @@ final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamin
             _ = cameraLiveRef?.value?.pause()
             streamServerRef = nil
             cameraLiveRef = nil
-            cameraLiveUpdateCallback?(nil)
+            cameraLive = nil
         }
     }
 }
@@ -142,22 +146,25 @@ final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamin
 private extension HUDCameraStreamingViewModel {
     /// Starts watcher for stream server state.
     func listenStreamServer(drone: Drone) {
-        streamServerRef = drone.getPeripheral(Peripherals.streamServer) { [weak self] streamServer in
-            guard let strongSelf = self,
-                let streamServer = streamServer,
-                streamServer.enabled
-                else {
-                    self?.updateStreamEnabled(false)
-                    return
+        streamServerRef = drone.getPeripheral(Peripherals.streamServer) { [unowned self] streamServer in
+            guard let streamServer = streamServer else {
+                cameraLiveRef = nil
+                snowVisible = true
+                return
             }
-            strongSelf.updateStreamEnabled(streamServer.enabled)
+
+            snowVisible = false
+            updateStreamEnabled(streamServer.enabled)
+
             // Start watcher for camera live.
-            strongSelf.cameraLiveRef = drone.getPeripheral(Peripherals.streamServer)?.live { [weak self] cameraLive in
-                guard let cameraLive = cameraLive else {
-                    return
+            if cameraLiveRef == nil {
+                cameraLiveRef = streamServer.live { [unowned self] live in
+                    guard let live = live else {
+                        return
+                    }
+                    cameraLive = live
+                    playStreamIfNeeded(cameraLive: live)
                 }
-                self?.cameraLiveUpdateCallback?(cameraLive)
-                self?.playStreamIfNeeded(cameraLive: cameraLive)
             }
         }
     }
@@ -184,12 +191,12 @@ private extension HUDCameraStreamingViewModel {
     /// Plays the stream if all conditions are met.
     func playStreamIfNeeded(cameraLive: CameraLive) {
         guard state.value.streamEnabled,
-            cameraLive.playState != .playing
-            else {
-                return
+              cameraLive.playState != .playing else {
+            return
         }
         // Play live stream.
         _ = cameraLive.play()
+
         // Retry later to recover from potential playing error (for instance when connection quality is low).
         playStreamRetryTimer?.invalidate()
         playStreamRetryTimer = Timer.scheduledTimer(withTimeInterval: Constants.playStreamRetryDelay, repeats: false) { [weak self] _ in

@@ -85,14 +85,6 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
             return currentUnit?.value(withFloat: slider.value) ?? ""
         }
     }
-    private var formattedValueStepper: String {
-        switch currentUnit {
-        case .percent?:
-            return currentUnit?.value(withFloat: slider.value.percentValue(min: slider.minimumValue, max: slider.maximumValue)) ?? ""
-        default:
-            return currentUnit?.value(withFloat: slider.value) ?? ""
-        }
-    }
 
     // MARK: - Private Enums
     private enum Constants {
@@ -134,21 +126,22 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
         setupBackground(shouldShow: shouldShowBackground)
 
         self.settingEntry = settingEntry
-        self.titleLabel.text = settingEntry.title
-        self.currentUnit = settingEntry.unit ?? UnitType.none
+        titleLabel.text = settingEntry.title
+        currentUnit = settingEntry.unit ?? UnitType.none
         self.indexPath = indexPath
 
-        self.sliderOverLimitValue = settingEntry.overLimitValue
-        self.slider.overLimitValue = settingEntry.overLimitValue
-        self.sliderDefaultValue = settingEntry.defaultValue
-        self.addImage(settingEntry.image)
-        self.isEnabled = settingEntry.isEnabled
-        self.slider.isEnabled = settingEntry.isEnabled
+        sliderOverLimitValue = settingEntry.overLimitValue
+        slider.overLimitValue = settingEntry.overLimitValue
+        slider.maximumTrackTintColor = settingEntry.bgColor ?? ColorName.defaultTextColor.color
+        sliderDefaultValue = settingEntry.defaultValue
+        addImage(settingEntry.image)
+        isEnabled = settingEntry.isEnabled
+        slider.isEnabled = settingEntry.isEnabled
 
         if let setting = settingEntry.setting as? DoubleSetting {
-            self.slider.maximumValue = Float(setting.max)
-            self.slider.minimumValue = Float(setting.min)
-            self.slider.value = settingEntry.savedValue ?? Float(setting.value)
+            slider.maximumValue = Float(setting.max)
+            slider.minimumValue = Float(setting.min)
+            slider.value = settingEntry.savedValue ?? Float(setting.value)
         }
 
         stackViewLeadingConstraint.constant = leadingConstraint

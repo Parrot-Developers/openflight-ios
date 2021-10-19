@@ -37,6 +37,8 @@ enum FlightPlansListDisplayMode {
     case full
     /// Part of a sub view controller.
     case compact
+    /// Part of of the view controller is visible but all executions should be loaded
+    case dashboard
 }
 
 /// Struct used in order to pass the necessary information to the `CellFlightPlanList`
@@ -51,8 +53,10 @@ struct CellFlightPlanListProvider {
 protocol FlightPlansListViewModelDelegate: AnyObject {
     /// Called when user selects a `ProjectModel`.
     func didSelect(project: ProjectModel)
+    /// Called when user selects a `FlightPlanModel`.
+    func didSelect(execution: FlightPlanModel)
     /// Called when user double tap on a project
-    func didDoubleTapOn(project: ProjectModel)
+    func didDoubleTap(on project: ProjectModel)
 }
 
 /// Protocol allow to communicate from UIViewController to ViewModel
@@ -73,6 +77,21 @@ protocol FlightPlansListViewModelUIInput {
     ///     - index: Choosed index
     func selectedItem(at index: Int)
 
+    /// Select project.
+    ///
+    /// - Parameters:
+    ///     - project: The project model
+    func selectedProject(_ project: ProjectModel)
+
+    /// Deselect project.
+    func deselectProject()
+
+    /// Select flight plan execution from flight Plans executions array.
+    ///
+    /// - Parameters:
+    ///     - execution: the flight plan model representing the execution
+    func selectedExecution(_ execution: FlightPlanModel)
+
     /// Setup corresponding delegate of type `FlightPlansListViewModelDelegate`
     ///
     /// - Parameters:
@@ -80,13 +99,19 @@ protocol FlightPlansListViewModelUIInput {
     func setupDelegate(with delegate: FlightPlansListViewModelDelegate)
 
     /// Initialize ViewModel at beginning
-    func initialized()
+    func initViewModel()
 
     /// Select flight plan from flight Plans array.
     ///
     /// - Parameters:
     ///     - delegate: Handle selection of flight plan
     func getFlightPlan(at index: Int) -> CellFlightPlanListProvider?
+
+    /// Retrieve flight plan executions from project.
+    ///
+    /// - Parameters:
+    ///     - project: The project to retrieve execution for.
+    func flightPlanExecutions(ofProject project: ProjectModel) -> [FlightPlanModel]
 
     /// Return number of flight plan available
     func modelsCount() -> Int
@@ -140,11 +165,19 @@ final class FlightPlansListViewModel {
     private weak var delegate: FlightPlansListViewModelDelegate?
     private var flightPlanTypeStore: FlightPlanTypeStore
     private let manager: ProjectManager
+    private var cancellable = Set<AnyCancellable>()
 
     init(manager: ProjectManager,
-         flightPlanTypeStore: FlightPlanTypeStore) {
+         flightPlanTypeStore: FlightPlanTypeStore,
+         cloudSynchroWatcher: CloudSynchroWatcher?) {
         self.manager = manager
         self.flightPlanTypeStore = flightPlanTypeStore
+
+        cloudSynchroWatcher?.isSynchronizingDataPublisher.sink(receiveValue: { [unowned self] isSynchronizingData in
+            if !isSynchronizingData {
+                self.initViewModel()
+            }
+        }).store(in: &cancellable)
     }
 
     // MARK: - Private funcs
@@ -157,7 +190,11 @@ final class FlightPlansListViewModel {
     }
 
     private func didSelect(project: ProjectModel) {
-        uuid = project.uuid
+        updateUUID(with: project.uuid)
+    }
+
+    private func didDeselectProjects() {
+        updateUUID(with: nil)
     }
 
     /// Construct array of `FlightPlanListHeaderCellProvider` from given array of `ProjectModel`
@@ -193,9 +230,22 @@ final class FlightPlansListViewModel {
 
 // MARK: - FlightPlansListViewModelUIInput
 extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
+
+    func flightPlanExecutions(ofProject project: ProjectModel) -> [FlightPlanModel] {
+        manager.executedFlightPlans(for: project)
+    }
+
+    func selectedProject(_ project: ProjectModel) {
+        didSelect(project: project)
+    }
+
+    func deselectProject() {
+        didDeselectProjects()
+    }
+
     func openProject(at index: Int) {
         self.selectedItem(at: index)
-        self.delegate?.didDoubleTapOn(project: filteredFlightPlan[index])
+        self.delegate?.didDoubleTap(on: filteredFlightPlan[index])
     }
 
     var uuidPublisher: AnyPublisher<String?, Never> {
@@ -213,14 +263,18 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
         delegate?.didSelect(project: flightPlan)
     }
 
+    func selectedExecution(_ execution: FlightPlanModel) {
+        delegate?.didSelect(execution: execution)
+    }
+
     func setupDelegate(with delegate: FlightPlansListViewModelDelegate) {
         self.delegate = delegate
     }
 
-    func initialized() {
+    func initViewModel() {
         let flight = getAllFlightPlans()
         switch displayMode {
-        case .full:
+        case .full, .dashboard:
             allFlightPlans = flight
             buildHeader(allFlightPlans)
             filteredFlightPlan = allFlightPlans

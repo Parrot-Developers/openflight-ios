@@ -49,12 +49,12 @@
                                 <stackView opaque="NO" contentMode="scaleToFill" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="MdE-uU-be1">
                                     <rect key="frame" x="0.0" y="93" width="392" height="91"/>
                                     <subviews>
-                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="253" verticalHuggingPriority="251" horizontalCompressionResistancePriority="752" image="icChecked" translatesAutoresizingMaskIntoConstraints="NO" id="gdK-WV-6N6">
-                                            <rect key="frame" x="0.0" y="0.0" width="20" height="91"/>
+                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="253" verticalHuggingPriority="251" horizontalCompressionResistancePriority="752" image="icCheckedSmall" translatesAutoresizingMaskIntoConstraints="NO" id="gdK-WV-6N6">
+                                            <rect key="frame" x="0.0" y="0.0" width="11" height="91"/>
                                             <color key="tintColor" name="highlight_color"/>
                                         </imageView>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Label" textAlignment="natural" lineBreakMode="wordWrap" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="lT5-m1-BIY">
-                                            <rect key="frame" x="22" y="0.0" width="370" height="91"/>
+                                            <rect key="frame" x="13" y="0.0" width="379" height="91"/>
                                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                             <color key="textColor" name="default_text_color"/>
                                             <nil key="highlightedColor"/>
@@ -79,7 +79,7 @@
         </view>
     </objects>
     <resources>
-        <image name="icChecked" width="20" height="20"/>
+        <image name="icCheckedSmall" width="11" height="8"/>
         <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

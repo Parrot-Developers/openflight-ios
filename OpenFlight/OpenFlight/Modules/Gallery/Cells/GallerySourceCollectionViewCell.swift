@@ -123,8 +123,10 @@ internal extension GallerySourceCollectionViewCell {
         titleLabel.text = source.type.title
         iconImageView.image = source.image
         let storageText = isCompact ? L10n.galleryMemoryFreeCompact : L10n.galleryMemoryFree
+        // Avoid -0 display due to precision issue.
+        let freeStorage = max(0, source.storageCapacity - source.storageUsed)
         storageLabel.text = String(format: "%.1lf/%.1lf %@",
-                                   (source.storageCapacity - source.storageUsed),
+                                   freeStorage,
                                    source.storageCapacity,
                                    storageText)
 
@@ -162,7 +164,7 @@ private extension GallerySourceCollectionViewCell {
         titleLabel.text = source.type.title
         titleLabel.textColor = ColorName.disabledTextColor.color
         storageLabel.text = L10n.commonOffline
-        storageLabel.textColor = ColorName.white50.color
+        storageLabel.textColor = ColorName.disabledTextColor.color
         storageRatio = 0.0
         circleProgressView.bgStokeColor = ColorName.black40.color
         circleProgressView.setProgress(Float(storageRatio))

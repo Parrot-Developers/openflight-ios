@@ -35,12 +35,14 @@ import Combine
 final class DroneDetailsButtonsViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var mapButtonView: DeviceDetailsButtonView!
+    @IBOutlet private weak var mapContainerView: UIView!
     @IBOutlet private weak var calibrationButtonView: DeviceDetailsButtonView!
     @IBOutlet private weak var firmwareUpdateButtonView: DeviceDetailsButtonView!
     @IBOutlet private weak var cellularAccessButtonView: DeviceDetailsButtonView!
     @IBOutlet private weak var passwordButtonView: DeviceDetailsButtonView!
 
     // MARK: - Private Properties
+    private var mapViewController: MapViewController?
     private var viewModel = DroneDetailsButtonsViewModel()
     private var firmwareAndMissionsInteractorListener: FirmwareAndMissionsListener?
     private weak var coordinator: DroneCoordinator?
@@ -63,9 +65,9 @@ final class DroneDetailsButtonsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        setupView()
+        initUI()
+        initMap()
         bindToViewModel()
-        setupViewModel()
     }
 }
 
@@ -89,7 +91,7 @@ private extension DroneDetailsButtonsViewController {
     @IBAction func cellularAccessButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyDroneDetailsButtons.cellularAccess)
         viewModel.resetPairingDroneListIfNeeded()
-        coordinator?.displayCellularDetails()
+        coordinator?.displayDroneDetailsCellular()
     }
 
     @IBAction func passwordEditionButtonTouchedUpInside(_ sender: Any) {
@@ -101,15 +103,27 @@ private extension DroneDetailsButtonsViewController {
 // MARK: - Private Funcs
 private extension DroneDetailsButtonsViewController {
 
+    /// Init map view controller.
+    func initMap() {
+        let controller = MapViewController.instantiate(mapMode: .mapOnly)
+        addChild(controller)
+        mapViewController = controller
+        if let mapView = mapViewController?.view {
+            mapContainerView.addWithConstraints(subview: mapView)
+        }
+        mapContainerView.applyCornerRadius(Style.largeCornerRadius)
+        mapViewController?.didMove(toParent: self)
+    }
+
     /// Sets up initial view display.
-    func setupView() {
+    func initUI() {
         mapButtonView.applyCornerRadius(Style.largeCornerRadius)
         calibrationButtonView.applyCornerRadius(Style.largeCornerRadius)
         firmwareUpdateButtonView.applyCornerRadius(Style.largeCornerRadius)
         cellularAccessButtonView.applyCornerRadius(Style.largeCornerRadius)
         passwordButtonView.applyCornerRadius(Style.largeCornerRadius)
 
-        mapButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconMap.image,
+        mapButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.MyFlights.poi.image,
                                                        title: L10n.droneDetailsLastKnownPosition)
         calibrationButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDrone.image,
                                                                title: L10n.remoteDetailsCalibration)
@@ -117,33 +131,29 @@ private extension DroneDetailsButtonsViewController {
                                                                   title: L10n.remoteDetailsSoftware)
         cellularAccessButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconCellularDatas.image,
                                                                   title: L10n.droneDetailsCellularAccess,
-                                                                  subtitle: viewModel.cellularButtonSubtitle)
+                                                                  subtitle: "")
         passwordButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.icDronePassword.image,
                                                             title: L10n.droneDetailsWifiPassword,
                                                             subtitle: nil)
-    }
-
-    /// Sets up view model.
-    func setupViewModel() {
-        firmwareAndMissionsInteractorListener = FirmwareAndMissionsInteractor.shared
-            .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
-                self?.updateFirmwareUpdateButtonView(for: firmwareAndMissionToUpdateModel)
-            }
     }
 
     /// Binds the views to the view model
     func bindToViewModel() {
         viewModel.$cellularStatus
             .removeDuplicates()
-            .sink { [unowned self] cellularStatus in
+            .combineLatest(viewModel.cellularButtonSubtitlePublisher)
+            .sink { [unowned self] (cellularStatus, cellularButtonSubtitle) in
                 // Cellular button.
-                cellularAccessButtonView.model?.subtitle = viewModel.cellularButtonSubtitle
+                cellularAccessButtonView.model?.subtitle = cellularButtonSubtitle
                 cellularAccessButtonView.model?.subtitleColor = cellularStatus.detailsTextColor
                 }
             .store(in: &cancellables)
 
         viewModel.$canShowCellular
-            .sink { [unowned self] canShowCellular in cellularAccessButtonView.isEnabled = canShowCellular }
+            .sink { [unowned self] canShowCellular in
+                cellularAccessButtonView.isEnabled = canShowCellular
+                cellularAccessButtonView.alphaWithEnabledState(canShowCellular)
+            }
             .store(in: &cancellables)
 
         viewModel.$lastKnownPosition
@@ -155,14 +165,33 @@ private extension DroneDetailsButtonsViewController {
             .store(in: &cancellables)
 
         viewModel.$connectionState
-            .sink { [unowned self] connectionState in
-                passwordButtonView.isEnabled = connectionState == .connected
+            .combineLatest(viewModel.$flyingState)
+            .sink { [unowned self] (connectionState, flyingState) in
+                let isEnabled = connectionState == .connected && flyingState == .landed
+                passwordButtonView.isEnabled = isEnabled
+                passwordButtonView.alphaWithEnabledState(isEnabled)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$connectionState
+            .combineLatest(viewModel.$lastKnownPosition, viewModel.$mapThumbnail)
+            .sink { [unowned self] (connectionState, lastKnownPosition, mapThumbnail) in
+                let displayMap = connectionState == .connected && lastKnownPosition != nil
+                mapContainerView.isHidden = !displayMap
+                mapButtonView.model?.mainImage = displayMap ? nil : mapThumbnail
             }
             .store(in: &cancellables)
 
         viewModel.calibrationSubtitle
             .sink { [unowned self] calibrationSubtitle in
                 calibrationButtonView.model?.subtitle = calibrationSubtitle
+            }
+            .store(in: &cancellables)
+
+        viewModel.calibrationTitleColor
+            .sink { [unowned self] calibrationTitleColor in
+                calibrationButtonView.model?.titleColor = calibrationTitleColor
+                calibrationButtonView.model?.mainImageTintColor = calibrationTitleColor
             }
             .store(in: &cancellables)
 
@@ -188,8 +217,14 @@ private extension DroneDetailsButtonsViewController {
         viewModel.isCalibrationButtonAvailable
             .sink { [unowned self] isCalibrationButtonAvailable in
                 calibrationButtonView.isEnabled = isCalibrationButtonAvailable
+                calibrationButtonView.alphaWithEnabledState(isCalibrationButtonAvailable)
             }
             .store(in: &cancellables)
+
+        firmwareAndMissionsInteractorListener = FirmwareAndMissionsInteractor.shared
+            .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
+                self?.updateFirmwareUpdateButtonView(for: firmwareAndMissionToUpdateModel)
+            }
     }
 
     /// Updates the firmwareUpdateButtonView UI.

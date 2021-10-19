@@ -43,6 +43,15 @@ final class PairingWhereIsWifiViewController: UIViewController {
     }
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var descriptionLabel: UILabel!
+    @IBOutlet private weak var descriptionWarningView: UIView! {
+        didSet {
+            descriptionWarningView.cornerRadiusedWith(backgroundColor: .clear,
+                                                      borderColor: ColorName.warningColor.color,
+                                                      radius: Style.largeCornerRadius,
+                                                      borderWidth: Style.mediumBorderWidth)
+        }
+    }
+    @IBOutlet private weak var descriptionWarningLabel: UILabel!
 
     // MARK: - Internal Properties
     weak var coordinator: PairingCoordinator?
@@ -104,5 +113,6 @@ private extension PairingWhereIsWifiViewController {
     func updateView() {
         titleLabel.text = L10n.pairingWhereIsWifiPassword
         descriptionLabel.text = L10n.pairingScanQrCode
+        descriptionWarningLabel.text = L10n.pairingScanQrCodeWarning
     }
 }

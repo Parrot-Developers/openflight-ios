@@ -58,23 +58,35 @@ final class SettingValuesChoiceTableViewCell: UITableViewCell, NibReusable, Edit
     // MARK: - Internal Funcs
     func fill(with settingType: FlightPlanSettingType?) {
         self.settingType = settingType
-        titleLabel.text = settingType?.valueToDisplay()
+        titleLabel.text = settingType?.valueToDisplay().uppercased()
 
         settingType?.allValues.forEach { value in
-            let button = UIButton(type: UIButton.ButtonType.custom)
+            let button = SettingsButton(type: UIButton.ButtonType.custom)
             button.tag = value
             if let customTitle = settingType?.valueDescriptions?.elementAt(index: value) {
                 button.setTitle(customTitle, for: .normal)
             } else {
                 button.setTitle(value == 0 ? L10n.commonYes : L10n.commonNo, for: .normal)
             }
+
+            let buttonTitle = button.titleLabel?.text ?? ""
+            if buttonTitle == L10n.commonNo {
+                button.setTitleColor(ColorName.defaultTextColor.color, for: .selected)
+            } else {
+                button.setTitleColor(ColorName.white.color, for: .selected)
+            }
+
             button.makeup(color: .defaultTextColor)
-            button.tintColor = ColorName.defaultTextColor.color
-            button.setTitleColor(ColorName.white.color, for: .selected)
+            button.contentEdgeInsets = UIEdgeInsets(top: 15, left: 10, bottom: 15, right: 10)
             button.addTarget(self,
                              action: #selector(settingValueButtonTouchedUpInside),
                              for: .touchUpInside)
             settingValuesStackView.addArrangedSubview(button)
+            if let image = self.settingType?.valueImages?.elementAt(index: value) {
+                button.setImage(image, for: .normal)
+            } else {
+                button.setImage(nil, for: .normal)
+            }
         }
 
         if let value = settingType?.currentValue {
@@ -95,7 +107,17 @@ private extension SettingValuesChoiceTableViewCell {
     ///     - sender: selected value for the current setting
     @objc func settingValueButtonTouchedUpInside(sender: UIButton) {
         updateType(tag: sender.tag)
-        delegate?.updateChoiceSetting(for: settingType?.key, value: sender.tag == 0)
+        guard let key = settingType?.key else { return }
+        
+        switch key {
+        case ClassicFlightPlanSettingType.imageMode.key,
+             ClassicFlightPlanSettingType.resolution.key,
+             ClassicFlightPlanSettingType.photoResolution.key,
+             ClassicFlightPlanSettingType.whiteBalance.key:
+            delegate?.updateSettingValue(for: settingType?.key, value: sender.tag)
+        default:
+            delegate?.updateChoiceSetting(for: settingType?.key, value: sender.tag == 0)
+        }
     }
 }
 
@@ -103,7 +125,8 @@ private extension SettingValuesChoiceTableViewCell {
 private extension SettingValuesChoiceTableViewCell {
     /// Inits the view.
     func initView() {
-        titleLabel.makeUp(and: .defaultTextColor)
+        titleLabel.makeUp(with: .small, and: .defaultTextColor)
+        settingValuesStackView.layer.cornerRadius = Style.largeCornerRadius
     }
 
     /// Resets view.
@@ -123,11 +146,20 @@ private extension SettingValuesChoiceTableViewCell {
             .compactMap { $0 as? UIButton}
             .forEach { button in
             let isSelected = settingValuesStackView?.arrangedSubviews.firstIndex(of: button) == tag
-            let backgroundColor = isSelected ? ColorName.highlightColor.color : .clear
+                var backgroundColor = UIColor.clear
+                if isSelected {
+                    let buttonTitle = button.titleLabel?.text ?? ""
+                    if buttonTitle == L10n.commonNo {
+                        backgroundColor = ColorName.white.color
+                    } else {
+                        backgroundColor = ColorName.highlightColor.color
+                    }
+                }
             button.cornerRadiusedWith(backgroundColor: backgroundColor,
                                       radius: Style.largeCornerRadius,
                                       borderWidth: Style.largeBorderWidth)
             button.isSelected = isSelected
+            button.tintColor = button.isSelected ? .white : ColorName.defaultTextColor.color
         }
     }
 }

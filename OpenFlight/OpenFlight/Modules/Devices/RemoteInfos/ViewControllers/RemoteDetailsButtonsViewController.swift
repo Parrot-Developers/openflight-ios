@@ -43,7 +43,7 @@ final class RemoteDetailsButtonsViewController: UIViewController {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let minimumBatteryLevel: Double = 20.0
+        static let minimumBatteryLevel: Double = 5.0
     }
 
     // MARK: - Setup

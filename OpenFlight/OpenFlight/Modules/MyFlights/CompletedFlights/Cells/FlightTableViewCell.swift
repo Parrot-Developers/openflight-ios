@@ -51,8 +51,6 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
     @IBOutlet private weak var durationLabel: UILabel!
     @IBOutlet private weak var photoLabel: UILabel!
     @IBOutlet private weak var videoLabel: UILabel!
-    @IBOutlet private weak var warningStackView: UIStackView!
-    @IBOutlet private weak var warningLabel: UILabel!
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -76,8 +74,6 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
         }
         dateLabel.text = viewModel.flight.formattedDate
         durationLabel.text = viewModel.flight.longFormattedDuration
-        // TODO manage issues
-        warningStackView.isHidden = true
         photoLabel.text = viewModel.flight.photoCount == 0 ? Style.dash : viewModel.flight.photoCount.description
         videoLabel.text = viewModel.flight.videoCount == 0 ? Style.dash : viewModel.flight.videoCount.description
         viewModel.$name

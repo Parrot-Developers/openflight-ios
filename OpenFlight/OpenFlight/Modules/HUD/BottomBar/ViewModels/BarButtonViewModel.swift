@@ -135,6 +135,15 @@ public protocol BarButtonState: BottomBarState {
     /// Current reasons why buttons are not enabled.
     /// Keys are BarItemMode.key fields.
     var unavailableReason: [String: String] { get }
+    /// Maximum number of items displayed at the same time on segmented bar.
+    var maxItems: Int? { get }
+    /// When `true` the button is not touchable and only displays the image (no text).
+    var singleMode: Bool { get }
+}
+
+/// Extensions for default implementation of `BarButtonState` fields.
+extension BarButtonState {
+    var singleMode: Bool { false }
 }
 
 /// Protocol for an item that can get deselected.

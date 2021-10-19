@@ -117,6 +117,16 @@ extension ProposalAndTrackingView {
         } else {
             self.clearTrackingAndProposals()
         }
+        guard let panGesture = panGesture else {
+            clearDrawingView()
+            return
+        }
+        switch panGesture.state {
+        case .possible:
+            clearDrawingView()
+        default:
+            break
+        }
     }
 
     /// Clears tracking view and proposal views.
@@ -162,11 +172,10 @@ private extension ProposalAndTrackingView {
             let metadata = metadata else {
                 return
         }
-
+        self.clearTrackingView()
         if metadata.proposals.isEmpty {
             self.clearProposalsViews()
         } else {
-            self.clearTrackingView()
             var arrayUId = [UInt]()
             for proposal in metadata.proposals {
                 arrayUId.append(UInt(proposal.uid))
@@ -213,11 +222,10 @@ private extension ProposalAndTrackingView {
                 (cookie == metadata.cookie || cookie == 1) else {
                     return
             }
-
+            self.clearProposalsViews()
             if !metadata.hasTarget {
                 self.clearTrackingView()
             } else {
-                self.clearProposalsViews()
                 let state = targetState(from: metadata.state)
                 if let contentZone = self.contentZone {
                     let originPoint = CGPoint(x: CGFloat(metadata.target.x) * contentZone.width,

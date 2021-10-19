@@ -36,15 +36,10 @@ import Combine
 final class DashboardMyFlightsCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var totalDistanceTitleLabel: UILabel!
     @IBOutlet private weak var totalDistanceLabel: UILabel!
-    @IBOutlet private weak var totalTimeTitleLabel: UILabel!
     @IBOutlet private weak var totalTimeLabel: UILabel!
-    @IBOutlet private weak var lastFlightDistanceTitleLabel: UILabel!
-    @IBOutlet private weak var lastFlightDistanceLabel: UILabel!
-    @IBOutlet private weak var lastFlightTimeTitleLabel: UILabel!
-    @IBOutlet private weak var lastFlightTimeLabel: UILabel!
     @IBOutlet private weak var numberOfFlightLabel: UILabel!
+    @IBOutlet private weak var syncLoaderImageView: UIImageView!
 
     // MARK: - Private vars
 
@@ -76,23 +71,25 @@ final class DashboardMyFlightsCell: UICollectionViewCell, NibReusable {
     ///     - viewModel: cell's view model
     func setup(viewModel: DashboardMyFlightsCellModel) {
         cancellables = []
-        titleLabel.text = L10n.dashboardMyFlightsTitle.uppercased()
-        totalDistanceTitleLabel.text = L10n.dashboardMyFlightsTotalDistance.uppercased()
-
-        totalTimeTitleLabel.text = L10n.dashboardMyFlightsTotalTime.uppercased()
-        lastFlightDistanceTitleLabel.text = L10n.dashboardMyFlightsSubtitle.uppercased()
-        lastFlightTimeTitleLabel.text = L10n.dashboardMyFlightsLastFlightTime.uppercased()
-        viewModel.lastFlight
-            .sink { [weak self] in
-                self?.lastFlightDistanceLabel.text = $0?.formattedDistance ?? Constants.defaultDistance
-                self?.lastFlightTimeLabel.text = $0?.formattedDuration ?? Constants.defaultTime
-            }
-            .store(in: &cancellables)
+        titleLabel.text = L10n.dashboardMyFlightFlightLogs
         viewModel.summary
             .sink { [weak self] in
                 self?.totalDistanceLabel.text = $0.totalFlightsDistance
                 self?.totalTimeLabel.text = $0.totalFlightsDuration
                 self?.numberOfFlightLabel.text = String($0.numberOfFlights)
+            }
+            .store(in: &cancellables)
+
+        viewModel.isSynchronizingData
+            .sink { [unowned self] isSync in
+                if !isSync {
+                    viewModel.service.updateFlights()
+                }
+
+                DispatchQueue.main.async {
+                    isSync ? self.syncLoaderImageView.startRotate() : self.syncLoaderImageView.stopRotate()
+                    self.syncLoaderImageView.isHidden = !isSync
+                }
             }
             .store(in: &cancellables)
     }
@@ -104,14 +101,7 @@ private extension DashboardMyFlightsCell {
     func initView() {
         self.cornerRadiusedWith(backgroundColor: ColorName.clear.color,
                                 radius: Style.largeCornerRadius)
-        titleLabel.makeUp(with: .small)
-        totalDistanceTitleLabel.makeUp(with: .tiny, and: .white50)
         totalDistanceLabel.makeUp()
-        totalTimeTitleLabel.makeUp(with: .tiny, and: .white50)
         totalTimeLabel.makeUp()
-        lastFlightTimeTitleLabel.makeUp(with: .tiny, and: .white50)
-        lastFlightTimeLabel.makeUp()
-        lastFlightDistanceTitleLabel.makeUp(with: .tiny, and: .white50)
-        lastFlightDistanceLabel.makeUp()
     }
 }

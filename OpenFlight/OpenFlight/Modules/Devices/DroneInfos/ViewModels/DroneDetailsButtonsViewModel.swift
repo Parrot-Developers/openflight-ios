@@ -44,6 +44,8 @@ final class DroneDetailsButtonsViewModel {
     @Published private(set) var cellularStateDescription: String?
     /// Drone's flying state.
     @Published private(set) var flyingState: FlyingIndicatorsState?
+    /// Whether a gimbal calibration is needed.
+    @Published private(set) var isGimbalCalibrationNeeded: Bool = false
     /// Whether a gimbal front stereo vision calibration is needed.
     @Published private(set) var isGimbalFrontStereoCalibrationNeeded: Bool = false
     /// Whether magnetometer calibration is needed.
@@ -58,9 +60,10 @@ final class DroneDetailsButtonsViewModel {
     @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
     /// Tells if we can display the cellular modal.
     @Published private(set) var canShowCellular: Bool = false
+    /// Tells if we can display the cellular modal.
+    @Published private(set) var mapThumbnail: UIImage? = Asset.MyFlights.poi.image
 
     // MARK: - Private Properties
-
     private var gpsRef: Ref<Gps>?
     private var gimbalRef: Ref<Gimbal>?
     private var stereoVisionSensorRef: Ref<StereoVisionSensor>?
@@ -68,10 +71,9 @@ final class DroneDetailsButtonsViewModel {
     private var frontStereoGimbalRef: Ref<FrontStereoGimbal>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var connectionStateRef: Ref<DeviceState>?
-    private let cellularViewModel = DroneDetailsCellularViewModel()
     private var cancellables = Set<AnyCancellable>()
     private var currentDrone = Services.hub.currentDroneHolder
-
+    private var pairingService = Services.hub.drone.cellularPairingService
     // MARK: - Init
 
     init() {
@@ -87,15 +89,15 @@ final class DroneDetailsButtonsViewModel {
             }
             .store(in: &cancellables)
 
-        cellularViewModel.$cellularStatus
+        pairingService.cellularStatusPublisher
             .sink { [unowned self] cellularStatus in updateCellularState(cellularStatus: cellularStatus) }
             .store(in: &cancellables)
 
         updateCellularState(cellularStatus: cellularStatus)
 
-        cellularViewModel.$connectionState
+        $connectionState
             .removeDuplicates()
-            .combineLatest($cellularStatus)
+            .combineLatest(pairingService.cellularStatusPublisher)
             .sink { [unowned self] (connectionState, cellularStatus) in
                 canShowCellular = cellularStatus != .noState && connectionState == .connected
             }
@@ -160,13 +162,13 @@ final class DroneDetailsButtonsViewModel {
         $connectionState
             .combineLatest($flyingState,
                            isCalibrationNeeded)
-            .map { (connectionState, flyingState, isCalibrationNeeded) in
+            .map { [unowned self] (connectionState, flyingState, isCalibrationNeeded) in
                 if !(connectionState == .connected) || flyingState == .flying {
                     return .defaultTextColor
                 } else if isCalibrationNeeded {
                     return .white
                 } else {
-                    return .defaultTextColor
+                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.titleColor ?? .white
                 }
             }
             .eraseToAnyPublisher()
@@ -200,21 +202,28 @@ final class DroneDetailsButtonsViewModel {
                 } else if isCalibrationNeeded {
                     return .white
                 } else {
-                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.subtextColor ?? .highlightColor
+                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.subtitleColor ?? .highlightColor
                 }
             }
             .eraseToAnyPublisher()
     }
 
-    /// Returns custom cellular button subtitle.
-    var cellularButtonSubtitle: String {
-        var subtitle: String = cellularStatus.droneDetailsTileDescription ?? ""
+    var cellularButtonSubtitlePublisher: AnyPublisher<String, Never> {
+        $cellularStatus
+            .combineLatest($connectionState)
+            .map { [unowned self] (cellularStatus, connectionState) in
+                if connectionState == .disconnected {
+                    return Style.dash
+                }
 
-        if cellularStatus == .cellularConnected,
-           let provider = currentDrone.drone.getPeripheral(Peripherals.cellular)?.operator {
-            subtitle.append(Style.colon + Style.whiteSpace + provider)
-        }
-        return subtitle
+                var subtitle = cellularStatus.droneDetailsTileDescription ?? ""
+                if cellularStatus == .cellularConnected,
+                   let provider = currentDrone.drone.getPeripheral(Peripherals.cellular)?.operator {
+                    subtitle.append(Style.colon + Style.whiteSpace + provider)
+                }
+                return subtitle
+            }
+            .eraseToAnyPublisher()
     }
 
     // MARK: - Internal Funcs
@@ -232,7 +241,6 @@ final class DroneDetailsButtonsViewModel {
 }
 
 // MARK: - Private Funcs
-
 private extension DroneDetailsButtonsViewModel {
 
     /// Starts watcher for drone's connection state.
@@ -241,6 +249,7 @@ private extension DroneDetailsButtonsViewModel {
     func listenConnectionState(drone: Drone) {
         connectionStateRef = drone.getState { [weak self] state in
             self?.connectionState = state?.connectionState ?? .disconnected
+            self?.generateThumbnail(drone.getInstrument(Instruments.gps)?.lastKnownLocation)
         }
     }
 
@@ -248,6 +257,28 @@ private extension DroneDetailsButtonsViewModel {
     func listenGps(_ drone: Drone) {
         gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
             self?.lastKnownPosition = gps?.lastKnownLocation
+            self?.generateThumbnail(self?.lastKnownPosition)
+        }
+        generateThumbnail(drone.getInstrument(Instruments.gps)?.lastKnownLocation)
+    }
+
+    /// Generates thumbnail from the center of the location.
+    func generateThumbnail(_ location: CLLocation?) {
+        guard let location = location else {
+            mapThumbnail = Asset.MyFlights.poi.image
+            return
+        }
+
+        switch connectionState {
+        case .disconnected:
+            ThumbnailUtils.generateMapThumbnail(location: location) { [weak self] image in
+                guard let image = image else {
+                    return
+                }
+                self?.mapThumbnail = image
+            }
+        default:
+            mapThumbnail = nil
         }
     }
 

@@ -58,10 +58,6 @@ final class SegmentedBarItemView: UIControl, NibOwnerLoadable {
     // MARK: - Private Properties
     private var isControlSelected: Bool = false
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let customCornerBorderWidth: CGFloat = 4.0
-    }
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)

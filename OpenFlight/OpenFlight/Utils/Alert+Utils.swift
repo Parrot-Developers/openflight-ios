@@ -42,14 +42,17 @@ enum AlertLevel {
     case warning
     /// Critical alert.
     case critical
+    /// Very critical alert.
+    case veryCritical
 
     /// Default color associated with alert level.
     var color: UIColor {
         switch self {
         case .warning:
-            return UIColor(named: .orangePeel)
-        case .critical:
-            return UIColor(named: .redTorch)
+            return UIColor(named: .warningColor)
+        case .critical,
+             .veryCritical:
+            return UIColor(named: .errorColor)
         default:
             return .clear
         }
@@ -59,9 +62,10 @@ enum AlertLevel {
     var radarColor: UIColor {
         switch self {
         case .warning:
-            return UIColor(named: .orangePeel)
-        case .critical:
-            return UIColor(named: .redTorch)
+            return UIColor(named: .warningColor)
+        case .critical,
+             .veryCritical:
+            return UIColor(named: .errorColor)
         default:
             return UIColor(named: .highlightColor)
         }
@@ -70,7 +74,9 @@ enum AlertLevel {
     /// Returns true if alert level is warning or critical.
     var isWarningOrCritical: Bool {
         switch self {
-        case .critical, .warning:
+        case .critical,
+             .veryCritical,
+             .warning:
             return true
         default:
             return false

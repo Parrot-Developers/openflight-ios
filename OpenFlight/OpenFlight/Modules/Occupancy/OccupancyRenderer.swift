@@ -76,7 +76,7 @@ class OccupancyRenderer: NSObject, SCNSceneRendererDelegate {
     /// Trajectory beam Entity
     private var beamEntity: BeamEntity!
     /// Following Camera
-    private var ogFollowingCamera = OGFollowingCamera2()
+    private var ogFollowingCamera = OGFollowingCamera()
     private var previousDroneUpdateTime = TimeInterval(0)
 
     /// - Parameters:

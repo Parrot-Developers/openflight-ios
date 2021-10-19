@@ -39,6 +39,9 @@ public struct ColorName {
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#00b7ff"></span>
   /// Alpha: 50% <br/> (0x00b7ff80)
   public static let blueDodger50 = ColorName(rgbaValue: 0x00b7ff80)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#146ed8"></span>
+  /// Alpha: 100% <br/> (0x146ed8ff)
+  public static let blueNavy = ColorName(rgbaValue: 0x146ed8ff)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#000000"></span>
   /// Alpha: 0% <br/> (0x00000000)
   public static let clear = ColorName(rgbaValue: 0x00000000)
@@ -114,6 +117,9 @@ public struct ColorName {
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#34c175"></span>
   /// Alpha: 100% <br/> (0x34c175ff)
   public static let highlightColor = ColorName(rgbaValue: 0x34c175ff)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#3b302a"></span>
+  /// Alpha: 50% <br/> (0x3b302a80)
+  public static let lightShadowColor = ColorName(rgbaValue: 0x3b302a80)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#2f2f2f"></span>
   /// Alpha: 100% <br/> (0x2f2f2fff)
   public static let nightRider = ColorName(rgbaValue: 0x2f2f2fff)

@@ -34,7 +34,7 @@ import ArcGIS
 extension AGSGraphicsOverlay {
     /// Deselects all currently selected graphics.
     @objc func deselectAllGraphics() {
-        self.graphics
+        graphics
             .compactMap { $0 as? AGSGraphic }
             .filter { $0.isSelected }
             .forEach { $0.isSelected = false }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
-    <device id="retina3_5" orientation="landscape" appearance="light"/>
+    <device id="retina6_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
@@ -19,11 +19,11 @@
             <objects>
                 <viewController storyboardIdentifier="PairingViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="PairingViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Wf3-fd-o0X">
-                        <rect key="frame" x="0.0" y="0.0" width="480" height="320"/>
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MDG-Ra-o0D">
-                                <rect key="frame" x="36" y="0.0" width="408" height="85"/>
+                                <rect key="frame" x="80" y="0.0" width="736" height="85"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="92A-qY-FP5">
                                         <rect key="frame" x="0.0" y="29" width="41" height="27"/>
@@ -36,7 +36,7 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="4yL-c7-JRm" userLabel="Title">
-                                        <rect key="frame" x="160" y="33" width="88" height="19"/>
+                                        <rect key="frame" x="140" y="33" width="456" height="19"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
@@ -58,7 +58,7 @@
                                 </constraints>
                             </view>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Mml-5P-o95">
-                                <rect key="frame" x="36" y="85" width="408" height="235"/>
+                                <rect key="frame" x="202.66666666666666" y="85" width="490.66666666666674" height="329"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="xzr-mc-OGf">
                                     <size key="itemSize" width="170" height="245"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
@@ -84,7 +84,7 @@
                             <constraint firstItem="MDG-Ra-o0D" firstAttribute="leading" secondItem="JrM-dl-wGD" secondAttribute="leading" constant="36" id="fbq-2C-YRD">
                                 <variation key="heightClass=regular-widthClass=compact" constant="30"/>
                             </constraint>
-                            <constraint firstItem="Mml-5P-o95" firstAttribute="width" secondItem="MDG-Ra-o0D" secondAttribute="width" id="gxQ-QM-tRN"/>
+                            <constraint firstItem="Mml-5P-o95" firstAttribute="width" secondItem="MDG-Ra-o0D" secondAttribute="width" multiplier="2/3" id="gxQ-QM-tRN"/>
                             <constraint firstItem="Mml-5P-o95" firstAttribute="width" secondItem="MDG-Ra-o0D" secondAttribute="width" multiplier="0.58" id="hWa-Ys-Pwa"/>
                             <constraint firstItem="Mml-5P-o95" firstAttribute="centerX" secondItem="Wf3-fd-o0X" secondAttribute="centerX" id="lmQ-li-3nx"/>
                         </constraints>

@@ -51,7 +51,17 @@ public final class HUDAlertPanelActionButton: HighlightableUIControl, NibOwnerLo
     // MARK: - Private Properties
     private var isBlinking: Bool = false
     private var timer: Timer?
-    private var countdown: TimeInterval = Constants.animationDuration
+    private var initialCountdown: TimeInterval = Constants.animationDuration // Used for non-continuous progress animation.
+    private var countdown: TimeInterval = Constants.animationDuration {
+        didSet {
+            guard !isCountdownStarted else { return }
+            // Store initial value in order to be able to compute potential non-continuous progress.
+            initialCountdown = countdown
+        }
+    }
+    private var startProgress: Float {
+        min(1, Float(countdown) / Float(initialCountdown))
+    }
     private var isCountdownStarted: Bool {
         return timer != nil
     }
@@ -60,7 +70,6 @@ public final class HUDAlertPanelActionButton: HighlightableUIControl, NibOwnerLo
     private enum Constants {
         static let firstColor: UIColor = UIColor(named: .blueDodger).withAlphaComponent(0.8)
         static let secondColor: UIColor = UIColor(named: .blueDodger).withAlphaComponent(0.2)
-        static let alpha20: CGFloat = 0.2
         static let animationDuration: TimeInterval = 10.0
     }
 
@@ -98,8 +107,8 @@ public extension HUDAlertPanelActionButton {
         actionLabel.isHidden = !showActionLabel
         actionLabel.text = actionLabelText
         circleProgressView.borderWidth = Style.largeBorderWidth
-        circleProgressView.bgStokeColor = ColorName.white20.color
-        circleProgressView.strokeColor = state.subtitleColor ?? .white
+        circleProgressView.bgStokeColor = ColorName.whiteAlbescent.color
+        circleProgressView.strokeColor = state.subtitleColor ?? ColorName.defaultTextColor.color
     }
 
     /// Starts button animation.
@@ -130,15 +139,11 @@ public extension HUDAlertPanelActionButton {
     ///     - delay: delay used for the timer and the progress
     ///     - countdownMessage: func which provides a countdown message for the alert
     func startProgressAnimation(delay: TimeInterval, countdownMessage: ((Int) -> String)?) {
-        stopProgress()
-        countdown = delay == 0.0 ? Constants.animationDuration : delay
-        self.circleProgressView.isHidden = false
-        self.circleProgressView.delegate = self
-        self.actionLabel.isHidden = false
-        self.startCountdown(delay: countdown, countdownMessage: countdownMessage)
-        DispatchQueue.main.asyncAfter(deadline: .now() + Style.mediumAnimationDuration) {
-            self.circleProgressView.setProgress(1.0,
-                                                duration: self.countdown)
+        initProgressAnimation(delay: delay, countdownMessage: countdownMessage)
+
+        // Delay countdown as progressView first needs to be rendered at 100 % before being animated.
+        DispatchQueue.main.asyncAfter(deadline: .now() + Style.shortAnimationDuration) {
+            self.animateProgress(delay: delay, countdownMessage: countdownMessage)
         }
     }
 
@@ -150,7 +155,7 @@ public extension HUDAlertPanelActionButton {
     func startCountdown(delay: TimeInterval, countdownMessage: ((Int) -> String)?) {
         guard !isCountdownStarted else { return }
 
-        timer = Timer.scheduledTimer(withTimeInterval: Style.longAnimationDuration, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: Values.oneSecond, repeats: true) { [weak self] _ in
             self?.updateTimerLabel(with: countdownMessage)
         }
     }
@@ -159,7 +164,7 @@ public extension HUDAlertPanelActionButton {
     func stopProgress() {
         circleProgressView.resetProgress()
         circleProgressView.isHidden = true
-        actionLabel.isHidden = true
+        actionLabel.alphaHidden(actionLabel.isHidden)
         countdown = 0.0
     }
 }
@@ -170,7 +175,6 @@ private extension HUDAlertPanelActionButton {
     func commonInitHUDAlertPanelActionButton() {
         self.loadNibContent()
         circleProgressView.isHidden = true
-        actionLabel.makeUp()
     }
 
     /// Starts an animation between several images.
@@ -190,12 +194,49 @@ private extension HUDAlertPanelActionButton {
     @objc func updateTimerLabel(with countdownMessage: ((Int) -> String)?) {
         if countdown > 0.0 {
             countdown -= 1.0
-            actionLabel.text = countdownMessage?(Int(countdown))
         } else {
             timer?.invalidate()
             timer = nil
             countdown = 0.0
         }
+        refreshCountdownLabel(with: countdownMessage)
+    }
+
+    /// Refreshes countdownLabel content according to countdown value.
+    ///
+    /// - Parameters:
+    ///     - countdownMessage: Func which provides a countdown message for the alert.
+    func refreshCountdownLabel(with countdownMessage: ((Int) -> String)?) {
+        actionLabel.text = countdownMessage?(Int(countdown))
+        actionLabel.alphaHidden(countdown == 0)
+    }
+
+    /// Inits countdown animation by setting initial counter value and UI states.
+    ///
+    /// - Parameters:
+    ///     - delay: Delay used for the timer and the progress.
+    ///     - countdownMessage: Func which provides a countdown message for the alert.
+    func initProgressAnimation(delay: TimeInterval, countdownMessage: ((Int) -> String)?) {
+        stopProgress()
+        countdown = delay == 0.0 ? Constants.animationDuration : delay
+        circleProgressView.isHidden = false
+        circleProgressView.delegate = self
+
+        DispatchQueue.main.async {
+            self.refreshCountdownLabel(with: countdownMessage)
+            self.circleProgressView.setProgress(self.startProgress)
+        }
+    }
+
+    /// Launches actual countdown animation.
+    ///
+    /// - Parameters:
+    ///     - delay: Delay used for the timer and the progress.
+    ///     - countdownMessage: Func which provides a countdown message for the alert.
+    func animateProgress(delay: TimeInterval, countdownMessage: ((Int) -> String)?) {
+        startCountdown(delay: countdown, countdownMessage: countdownMessage)
+        actionLabel.alphaHidden(false)
+        circleProgressView.setProgress(0, duration: countdown)
     }
 }
 

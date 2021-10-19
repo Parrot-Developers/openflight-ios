@@ -30,88 +30,136 @@
 
 import GroundSdk
 import CoreLocation
-
-/// State for `DroneDetailsMapViewModel`.
-
-final class DroneDetailsMapState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    /// Current drone location.
-    fileprivate(set) var location: CLLocation?
-    /// Tells if beeper is playing.
-    fileprivate(set) var beeperIsPlaying: Bool?
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - connectionState: drone connection state
-    ///    - location: drone location
-    ///    - beeperIsPlaying: tells if beeper is playing
-    init(connectionState: DeviceState.ConnectionState,
-         location: CLLocation?,
-         beeperIsPlaying: Bool?) {
-        super.init(connectionState: connectionState)
-        self.location = location
-        self.beeperIsPlaying = beeperIsPlaying
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? DroneDetailsMapState else {
-            return false
-        }
-        return super.isEqual(to: other)
-            && self.location == other.location
-            && self.beeperIsPlaying == other.beeperIsPlaying
-    }
-
-    override func copy() -> DroneDetailsMapState {
-        return DroneDetailsMapState(connectionState: connectionState,
-                                    location: location,
-                                    beeperIsPlaying: beeperIsPlaying)
-    }
-}
+import Combine
 
 /// View Model for map which is displayed in the drone details screen.
+final class DroneDetailsMapViewModel {
+    // MARK: - Internal Properties
+    /// Current drone location.
+    @Published private(set) var location: CLLocation?
+    /// Tells if beeper is playing.
+    @Published private(set) var beeperIsPlaying: Bool = false
+    /// Tells if drone is connected.
+    @Published private(set) var droneIsConnected: Bool = false
 
-final class DroneDetailsMapViewModel: DroneStateViewModel<DroneDetailsMapState> {
     // MARK: - Private Properties
+    private var currentDroneHolder = Services.hub.currentDroneHolder
+    private var cancellables = Set<AnyCancellable>()
+    private var connectionStateRef: Ref<DeviceState>?
     private var gpsRef: Ref<Gps>?
-    private var beeper: Beeper? {
-        return drone?.getPeripheral(Peripherals.beeper)
+    private var beeperRef: Ref<Beeper>?
+
+    // MARK: - Init
+    init() {
+        currentDroneHolder.dronePublisher
+            .sink { [unowned self] drone in
+                listenGps(drone)
+                listenBeeper(drone)
+                listenConnectionState(drone)
+            }
+            .store(in: &cancellables)
     }
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-        listenGps(drone)
-    }
-
-    // MARK: - Internal Funcs
-    /// Starts or stops drone beeper.
-    func startOrStopBeeper() {
-        let copy = state.value.copy()
-        if beeper?.alertSoundPlaying == false {
-            copy.beeperIsPlaying = beeper?.startAlertSound() == true
+    /// Toggles drone beeper.
+    func toggleBeeper() {
+        if beeperIsPlaying {
+            _ = beeperRef?.value?.stopAlertSound()
         } else {
-            copy.beeperIsPlaying = beeper?.stopAlertSound() == false
+            _ = beeperRef?.value?.startAlertSound()
         }
-        state.set(copy)
+    }
+
+    /// Publishes the bell background color.
+    var bellButtonBgColor: AnyPublisher<UIColor, Never> {
+        $beeperIsPlaying
+            .map {
+                return $0 ? ColorName.whiteAlbescent.color : ColorName.highlightColor.color
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Publishes the bell background color.
+    var bellImage: AnyPublisher<UIImage, Never> {
+        $beeperIsPlaying
+            .map {
+                return $0 ? Asset.Drone.icBellOn.image : Asset.Drone.icBellOff.image
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Publishes the bell text and tint color.
+    var bellTextColor: AnyPublisher<UIColor, Never> {
+        $beeperIsPlaying
+            .map {
+                return $0 ? ColorName.defaultTextColor.color : .white
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Publishes the bell text.
+    var bellText: AnyPublisher<String, Never> {
+        $beeperIsPlaying
+            .map {
+                return $0 ? L10n.droneDetailsStopRinging : L10n.droneDetailsRingTheDrone
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Publishes the enabled state of the bell button.
+    var isBellButtonEnabled: AnyPublisher<Bool, Never> {
+        $droneIsConnected
+            .map { return $0 }
+            .eraseToAnyPublisher()
+    }
+
+    /// Publishes the bell button title.
+    var coordinateButtonTitle: AnyPublisher<String?, Never> {
+        $location
+            .map {
+                return $0?.coordinate.convertToDmsCoordinate()
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Publishes the bell button title.
+    var subTitle: AnyPublisher<String, Never> {
+        $location
+            .map {
+                guard let location = $0 else {
+                    return Style.dash
+                }
+                return location.timestamp.formattedString(dateStyle: .short, timeStyle: .medium)
+            }
+            .eraseToAnyPublisher()
     }
 }
 
 // MARK: - Private Funcs
 private extension DroneDetailsMapViewModel {
+    /// Starts watcher for drone's connection state.
+    ///
+    /// - Parameter drone: the current drone
+    func listenConnectionState(_ drone: Drone) {
+        connectionStateRef = drone.getState { [weak self] state in
+            self?.droneIsConnected = state?.connectionState == .connected
+        }
+    }
+
     /// Starts watcher for drone gps.
+    ///
+    /// - Parameter drone: the current drone
     func listenGps(_ drone: Drone) {
         gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
-            let copy = self?.state.value.copy()
-            copy?.location = gps?.lastKnownLocation
-            self?.state.set(copy)
+            self?.location = gps?.lastKnownLocation
+        }
+    }
+
+    /// Starts watcher for drone beeper.
+    ///
+    /// - Parameter drone: the current drone
+    func listenBeeper(_ drone: Drone) {
+        beeperRef = drone.getPeripheral(Peripherals.beeper) { [weak self] beeper in
+            self?.beeperIsPlaying = beeper?.alertSoundPlaying == true
         }
     }
 }

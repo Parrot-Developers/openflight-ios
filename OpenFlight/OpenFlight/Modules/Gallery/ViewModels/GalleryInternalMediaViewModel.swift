@@ -200,10 +200,8 @@ final class GalleryInternalMediaState: GalleryContentState {
 /// ViewModel for InternalCard Gallery Media Item.
 final class GalleryInternalMediaViewModel: DroneStateViewModel<GalleryInternalMediaState> {
     // MARK: - Private Properties
-    private let groundSdk = GroundSdk()
     private var internalRef: Ref<InternalUserStorage>?
     private var mediaListRef: Ref<[MediaItem]>?
-    private var mediaList: [MediaItem] = []
     private var internalMediaListener: Set<GalleryInternalMediaListener> = []
 
     // MARK: - Internal Properties
@@ -251,12 +249,7 @@ final class GalleryInternalMediaViewModel: DroneStateViewModel<GalleryInternalMe
         super.droneConnectionStateDidChange()
 
         if !self.state.value.isConnected() {
-            let copy = self.state.value.copy()
-            copy.sourceType = .droneInternal
-            copy.referenceDate = Date()
-            copy.medias = []
-            copy.availableSpace = 0.0
-            self.state.set(copy)
+            clearMedia()
         } else {
             guard let drone = drone else { return }
 
@@ -306,7 +299,10 @@ extension GalleryInternalMediaViewModel {
 
     /// Refresh media list.
     func refreshMedias() {
-        guard let drone = drone else { return }
+        guard let drone = drone else {
+            clearMedia()
+            return
+        }
 
         loadMedia(drone: drone)
     }
@@ -377,9 +373,15 @@ private extension GalleryInternalMediaViewModel {
     /// - Parameters:
     ///     - drone: current drone
     func loadMedia(drone: Drone) {
-        mediaListRef = self.mediaStore?.newList { [weak self] droneMediaList in
+        guard let mediaStore = mediaStore else {
+            clearMedia()
+            return
+        }
+
+        mediaListRef = mediaStore.newList { [weak self] droneMediaList in
             guard let strongSelf = self,
                   let droneMediaList = droneMediaList else {
+                self?.clearMedia()
                 return
             }
 
@@ -443,7 +445,7 @@ private extension GalleryInternalMediaViewModel {
         }
 
         return GalleryMedia(uid: mediaItem.uid,
-                            source: .droneSdCard,
+                            source: .droneInternal,
                             mediaItems: mediaItems,
                             type: mediaItem.mediaType,
                             downloadState: downloadState,
@@ -491,13 +493,13 @@ private extension GalleryInternalMediaViewModel {
     /// - Returns: gallery url for this media
     func ressourceGalleryURL(_ media: GalleryMedia?, _ index: Int = 0) -> URL? {
         guard let media = media,
-              let mediaItem = media.mainMediaItem,
-              mediaItem.resources.count > index else {
+              let mediaItem = media.mediaItem(for: index),
+              let mediaResource = media.mediaResource(for: index) else {
             return nil
         }
 
-        return mediaItem.resources[index].galleryURL(droneId: self.state.value.droneUid,
-                                                     mediaType: mediaItem.mediaType)
+        return mediaResource.galleryURL(droneId: self.state.value.droneUid,
+                                        mediaType: mediaItem.mediaType)
     }
 
     /// Determine if a media is downloaded.
@@ -508,13 +510,22 @@ private extension GalleryInternalMediaViewModel {
     /// - Returns: boolean determining if the media is downloaded
     func isResourceDownloaded(_ media: GalleryMedia?, _ index: Int = 0) -> Bool {
         guard let media = media,
-              let mediaItem = media.mainMediaItem,
-              mediaItem.resources.count > index else {
+              let mediaItem = media.mediaItem(for: index),
+              let mediaResource = media.mediaResource(for: index) else {
             return false
         }
 
-        return mediaItem.resources[index].isDownloaded(droneId: self.state.value.droneUid,
-                                                       mediaType: mediaItem.mediaType)
+        return mediaResource.isDownloaded(droneId: self.state.value.droneUid,
+                                          mediaType: mediaItem.mediaType)
+    }
+
+    func clearMedia() {
+        let copy = self.state.value.copy()
+        copy.sourceType = .droneInternal
+        copy.referenceDate = Date()
+        copy.medias = []
+        copy.availableSpace = 0.0
+        self.state.set(copy)
     }
 }
 

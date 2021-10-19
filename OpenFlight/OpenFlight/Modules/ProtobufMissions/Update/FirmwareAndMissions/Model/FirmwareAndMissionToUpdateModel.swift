@@ -68,9 +68,9 @@ enum FirmwareAndMissionToUpdateModel {
     ///
     /// - Parameters:
     ///   - firmwareToUpdateData: a `FirmwareToUpdateData`
-    ///   - firmwareAndMissionsDataSource: a `ProtobufMissionsUpdateDataSource`
+    ///   - firmwareAndMissionsDataSource: a `DroneFirmwaresDataSource`
     init(firmwareToUpdateData: FirmwareToUpdateData,
-         firmwareAndMissionsDataSource: ProtobufMissionsUpdateDataSource) {
+         firmwareAndMissionsDataSource: DroneFirmwaresDataSource) {
         if !firmwareToUpdateData.allOperationsNeeded.isEmpty {
             self = .firmware(currentVersion: firmwareToUpdateData.firmwareVersion,
                              versionToUpdate: firmwareToUpdateData.firmwareIdealVersion)
@@ -110,7 +110,7 @@ extension FirmwareAndMissionToUpdateModel {
         switch self {
         case .upToDate,
              .notInitialized:
-            return Asset.Common.Checks.icChecked.image
+            return Asset.Common.Checks.icCheckedSmall.image
         case .firmware,
              .singleMission,
              .missions:

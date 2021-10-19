@@ -28,7 +28,7 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
+import Combine
 import GroundSdk
 import SwiftyUserDefaults
 
@@ -44,18 +44,20 @@ class CameraBarButtonState: BarButtonState, EquatableState, Copying {
     }
     var mode: BarItemMode?
     var supportedModes: [BarItemMode]?
-    var showUnsupportedModes: Bool = false
+    var showUnsupportedModes: Bool = true
     var subMode: BarItemSubMode?
     var subtitle: String?
     var enabled: Bool = true
     var isSelected: Observable<Bool> = Observable(false)
     var unavailableReason: [String: String] = [:]
+    var maxItems: Int?
+    var singleMode = false
 
     // MARK: - Init
     required init() {
     }
 
-    /// Init.
+    /// Constructor.
     ///
     /// - Parameters:
     ///    - title: mode title
@@ -64,34 +66,42 @@ class CameraBarButtonState: BarButtonState, EquatableState, Copying {
     ///    - enabled: availability of the mode
     ///    - isSelected: observable for item selection
     ///    - unavalaibleReasons: reasons why not enabled
+    ///    - supportedModes: supported modes
     init(title: String? = nil,
          mode: BarItemMode?,
          subMode: BarItemSubMode? = nil,
          enabled: Bool,
          isSelected: Observable<Bool>,
-         unavailableReason: [String: String]) {
+         unavailableReason: [String: String],
+         supportedModes: [BarItemMode]? = nil) {
         self.title = title
         self.mode = mode
         self.subMode = subMode
         self.enabled = enabled
         self.isSelected = isSelected
         self.unavailableReason = unavailableReason
+        self.supportedModes = supportedModes
     }
 
     // MARK: - Internal Funcs
     func isEqual(to other: CameraBarButtonState) -> Bool {
-        return self.mode?.key == other.mode?.key
-            && self.subMode?.key == other.subMode?.key
+        return mode?.key == other.mode?.key
+        && subMode?.key == other.subMode?.key
+        && title == other.title
+        && enabled == other.enabled
+        && unavailableReason == other.unavailableReason
+        && (supportedModes as? [CameraCaptureMode]) == (other.supportedModes as? [CameraCaptureMode])
     }
 
     /// Returns a copy of the object.
     func copy() -> Self {
-        if let copy = CameraBarButtonState(title: self.title,
+        if let copy = CameraBarButtonState(title: title,
                                            mode: mode,
-                                           subMode: self.subMode,
-                                           enabled: self.enabled,
+                                           subMode: subMode,
+                                           enabled: enabled,
                                            isSelected: isSelected,
-                                           unavailableReason: self.unavailableReason) as? Self {
+                                           unavailableReason: unavailableReason,
+                                           supportedModes: supportedModes) as? Self {
             return copy
         } else {
             fatalError("Must override...")
@@ -103,15 +113,42 @@ class CameraBarButtonState: BarButtonState, EquatableState, Copying {
 final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState> {
 
     // MARK: - Private Properties
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
     private var mainCameraRef: Ref<MainCamera2>?
     private var defaultsDisposables = [DefaultsDisposable]()
+    /// Panorama service.
+    private unowned let panoramaService: PanoramaService
+    /// Current mission manager.
+    private unowned let currentMissionManager: CurrentMissionManager
 
     // MARK: - Init
-    init() {
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///   - panoramaService: panorama mode service
+    ///   - currentMissionManager: current mission mode manager
+    init(panoramaService: PanoramaService, currentMissionManager: CurrentMissionManager) {
+        self.panoramaService = panoramaService
+        self.currentMissionManager = currentMissionManager
         super.init(barId: "CameraCaptureMode")
 
         state.value.title = L10n.commonMode.uppercased()
         listenDefaults()
+
+        // update state when current mission changes
+        currentMissionManager.modePublisher
+            .sink { [unowned self] _ in
+                let copy = state.value.copy()
+                if let restrictions = currentMissionManager.mode.cameraRestrictions {
+                    copy.supportedModes = restrictions.supportedModes
+                } else {
+                    copy.supportedModes = nil
+                }
+                copy.singleMode = copy.supportedModes?.count == 1
+                state.set(copy)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Override Funcs
@@ -130,39 +167,46 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
         }
 
         // Update user defaults for Timer and Panorama modes that both use single photo mode.
-        Defaults.isPanoramaModeActivated = cameraMode == .panorama
+        panoramaService.panoramaModeActiveValue = cameraMode == .panorama
 
-        let currentEditor = camera.currentEditor
+        let editor = camera.config.edit(fromScratch: true)
 
         switch cameraMode {
         case .photo, .bracketing, .burst, .gpslapse, .timelapse, .panorama:
-            currentEditor[Camera2Params.mode]?.value = .photo
+            editor[Camera2Params.mode]?.value = .photo
             // Always use CONTINUOUS mode for photo streaming mode.
-            currentEditor[Camera2Params.photoStreamingMode]?.value = .continuous
+            editor[Camera2Params.photoStreamingMode]?.value = .continuous
             if let photoMode = cameraMode.photoMode {
-                currentEditor[Camera2Params.photoMode]?.value = photoMode
+                editor[Camera2Params.photoMode]?.value = photoMode
             }
         case .video:
-            currentEditor[Camera2Params.mode]?.value = .recording
+            editor[Camera2Params.mode]?.value = .recording
             if let recordingMode = cameraMode.recordingMode {
-                currentEditor[Camera2Params.videoRecordingMode]?.value = recordingMode
+                editor[Camera2Params.videoRecordingMode]?.value = recordingMode
             }
+        }
+
+        // adjust photo format, photo file format and HDR settings for panorama mode
+        if cameraMode == .panorama {
+            editor.applyValueNotForced(Camera2Params.photoFormat, .rectilinear)
+            editor.applyValueNotForced(Camera2Params.photoFileFormat, .jpeg)
+            editor.applyValueNotForced(Camera2Params.photoDynamicRange, .sdr)
         }
 
         // Update timelapse/gpslapse with preset value if
         // drone returns a value that is not handled.
         if cameraMode == .timelapse,
             camera.timeLapseMode == nil {
-            currentEditor[Camera2Params.photoTimelapseInterval]?.value = TimeLapseMode.preset.interval
+            editor[Camera2Params.photoTimelapseInterval]?.value = TimeLapseMode.preset.interval
         } else if cameraMode == .gpslapse,
             camera.gpsLapseMode == nil,
             let value = GpsLapseMode.preset.value {
-            currentEditor[Camera2Params.photoGpslapseInterval]?.value = Double(value)
+            editor[Camera2Params.photoGpslapseInterval]?.value = Double(value)
         } else if cameraMode == .burst {
-            currentEditor[Camera2Params.photoBurst]?.value = .burst10Over1s
+            editor[Camera2Params.photoBurst]?.value = .burst10Over1s
         }
 
-        currentEditor.saveSettings(currentConfig: camera.config)
+        editor.saveSettings(currentConfig: camera.config)
     }
 
     /// Update camera sub-mode.
@@ -227,7 +271,7 @@ private extension CameraCaptureModeViewModel {
     /// Utility method to update state.
     func updateState() {
         guard let camera = drone?.currentCamera else { return }
-        self.updateState(withCamera: camera)
+        updateState(withCamera: camera)
     }
 
     /// Listen updates on user defaults to detect photo mode changes.

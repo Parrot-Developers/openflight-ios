@@ -20,7 +20,7 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uFb-Sf-Co6">
-                    <rect key="frame" x="20" y="8" width="326" height="22"/>
+                    <rect key="frame" x="12" y="0.0" width="354" height="34"/>
                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                     <color key="textColor" name="default_text_color"/>
                     <nil key="highlightedColor"/>
@@ -28,10 +28,10 @@
             </subviews>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
-                <constraint firstAttribute="bottom" secondItem="uFb-Sf-Co6" secondAttribute="bottom" constant="4" id="9kO-R3-dDV"/>
-                <constraint firstItem="uFb-Sf-Co6" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="20" id="EN6-Ko-Uka"/>
-                <constraint firstAttribute="trailing" secondItem="uFb-Sf-Co6" secondAttribute="trailing" constant="20" id="TmS-0n-Kme"/>
-                <constraint firstItem="uFb-Sf-Co6" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="fpa-6f-eLL"/>
+                <constraint firstAttribute="bottom" secondItem="uFb-Sf-Co6" secondAttribute="bottom" id="9kO-R3-dDV"/>
+                <constraint firstItem="uFb-Sf-Co6" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="12" id="EN6-Ko-Uka"/>
+                <constraint firstAttribute="trailing" secondItem="uFb-Sf-Co6" secondAttribute="trailing" id="TmS-0n-Kme"/>
+                <constraint firstItem="uFb-Sf-Co6" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="fpa-6f-eLL"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>

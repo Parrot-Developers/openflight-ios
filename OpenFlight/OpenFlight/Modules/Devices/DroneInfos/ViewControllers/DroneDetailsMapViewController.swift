@@ -30,6 +30,7 @@
 
 import UIKit
 import MapKit
+import Combine
 
 /// Display map into drone details screen.
 final class DroneDetailsMapViewController: UIViewController {
@@ -41,11 +42,15 @@ final class DroneDetailsMapViewController: UIViewController {
     @IBOutlet private weak var coordinateView: UIView!
     @IBOutlet private weak var coordinateButton: UIButton!
     @IBOutlet private weak var bellButton: UIButton!
+    @IBOutlet private weak var bellStackView: UIStackView!
+    @IBOutlet private weak var bellImageView: UIImageView!
+    @IBOutlet private weak var bellLabel: UILabel!
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
     private var mapController: MapViewController?
     private let viewModel = DroneDetailsMapViewModel()
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Setup
     static func instantiate(coordinator: Coordinator) -> DroneDetailsMapViewController {
@@ -60,7 +65,7 @@ final class DroneDetailsMapViewController: UIViewController {
 
         initView()
         initMap()
-        observeDatas()
+        setupViewModel()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -94,11 +99,11 @@ private extension DroneDetailsMapViewController {
     }
 
     @IBAction func bellButtonTouchedUpInside(_ sender: Any) {
-        viewModel.startOrStopBeeper()
+        viewModel.toggleBeeper()
     }
 
     @IBAction func coordinateButtonTouchedUpInside(_ sender: Any) {
-        if let location = viewModel.state.value.location {
+        if let location = viewModel.location {
             let placemark = MKPlacemark(coordinate: location.coordinate, addressDictionary: nil)
             let mapItem = MKMapItem(placemark: placemark)
             mapItem.openInMaps()
@@ -113,8 +118,8 @@ private extension DroneDetailsMapViewController {
         mainView.customCornered(corners: [.topLeft, .topRight],
                                 radius: Style.largeCornerRadius)
         containerView?.isUserInteractionEnabled = false
-        coordinateView.customCornered(corners: [.allCorners],
-                                      radius: Style.largeCornerRadius)
+        coordinateView.layer.cornerRadius = Style.largeCornerRadius
+        bellStackView.layer.cornerRadius = Style.largeCornerRadius
         lastPositionTitleLabel.text = L10n.droneDetailsLastKnownPosition
     }
 
@@ -129,34 +134,55 @@ private extension DroneDetailsMapViewController {
         mapController?.didMove(toParent: self)
     }
 
-    /// Observes data from the view model.
-    func observeDatas() {
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.updateView(state)
-        }
-        updateView(viewModel.state.value)
-    }
+    /// Sets up the view model.
+    func setupViewModel() {
+        viewModel.bellButtonBgColor
+            .sink { [unowned self] in
+                bellStackView.backgroundColor = $0
+            }
+            .store(in: &cancellables)
 
-    /// Update the view.
-    ///
-    /// - Parameters:
-    ///     - state: drone map state
-    func updateView(_ state: DroneDetailsMapState) {
-        let bellImage = state.beeperIsPlaying == true ? Asset.Drone.icBellOn.image : Asset.Drone.icBellOff.image
-        bellButton.setImage(bellImage, for: .normal)
+        viewModel.bellImage
+            .sink { [unowned self] in
+                bellImageView.image = $0
+            }
+            .store(in: &cancellables)
 
-        if let location = state.location {
-            coordinateButton.setTitle(location.coordinate.convertToDmsCoordinate(),
-                                      for: .normal)
-            lastPositionValueLabel.text = location.timestamp.formattedString(dateStyle: .short, timeStyle: .medium)
-        }
+        viewModel.bellTextColor
+            .sink { [unowned self] in
+                bellLabel.textColor = $0
+                bellImageView.tintColor = $0
+            }
+            .store(in: &cancellables)
 
-        let shouldHide: Bool = state.location == nil
-        coordinateView.isHidden = shouldHide
-        lastPositionTitleLabel.isHidden = shouldHide
-        lastPositionValueLabel.isHidden = shouldHide
+        viewModel.bellText
+            .sink { [unowned self] in
+                bellLabel.text = $0
+            }
+            .store(in: &cancellables)
 
-        // Hide bell button when drone is disconnected.
-        bellButton.isHidden = !state.isConnected()
+        viewModel.isBellButtonEnabled
+            .sink { [unowned self] in
+                bellButton.isUserInteractionEnabled = $0
+                bellStackView.alphaWithEnabledState($0)
+            }
+            .store(in: &cancellables)
+
+        viewModel.coordinateButtonTitle
+            .sink { [unowned self] in
+                guard let title = $0 else {
+                    coordinateView.isHidden = true
+                    return
+                }
+                coordinateView.isHidden = false
+                coordinateButton.setTitle(title, for: .normal)
+            }
+            .store(in: &cancellables)
+
+        viewModel.subTitle
+            .sink { [unowned self] in
+                lastPositionValueLabel.text = $0
+            }
+            .store(in: &cancellables)
     }
 }

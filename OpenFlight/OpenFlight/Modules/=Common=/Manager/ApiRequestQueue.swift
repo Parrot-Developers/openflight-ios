@@ -52,37 +52,37 @@ class ApiRequestQueueImpl: ApiRequestQueue {
     /// Queue to ensure only one API Request call per session
     private(set) var semaphore: DispatchSemaphore
 
+    private var dispatchQueue: DispatchQueue
+
     /// Store Academy URLSessionDataTask
     private var academyRequestList: [URLSessionDataTask] = []
 
     init() {
         semaphore = DispatchSemaphore(value: 1)
+        dispatchQueue = DispatchQueue(label: "academy-api", qos: .background)
     }
 
     func execute(_ request: URLRequest,
                  _ session: URLSession,
                  _ completion: @escaping (Data?, URLResponse?, Error?) -> Void) {
 
-        DispatchQueue.global(qos: .background).async { [weak self] in
+        dispatchQueue.async { [weak self] in
             self?.semaphore.wait()
-            let dataTask = session.dataTask(with: request) { data, response, error in
+            let dataTask = session.dataTask(with: request) { [weak self] data, response, error in
+                self?.semaphore.signal()
                 DispatchQueue.main.async {
                     completion(data, response, error)
-                    self?.semaphore.signal()
                 }
             }
-
-            dataTask.resume()
             self?.academyRequestList.append(dataTask)
+            dataTask.resume()
         }
     }
 
     func cancelAcademyRequest() {
         academyRequestList.forEach { task in
-            if task.state == .running {
-                ULog.i(.academyApiTag, "Cancelling Academy API call: \(task.taskDescription ?? "")")
-                task.cancel()
-            }
+            ULog.i(.academyApiTag, "Cancelling Academy API call: \(task.taskDescription ?? "")")
+            task.cancel()
             if let taskIndex = academyRequestList.firstIndex(of: task) {
                 academyRequestList.remove(at: taskIndex)
             }

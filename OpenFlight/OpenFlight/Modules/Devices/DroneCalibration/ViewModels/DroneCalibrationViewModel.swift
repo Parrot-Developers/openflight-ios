@@ -50,8 +50,10 @@ final class DroneCalibrationViewModel {
     @Published private(set) var flyingState: FlyingIndicatorsState?
     /// Gimbal calibration state description.
     @Published private(set) var gimbalCalibrationDescription: String?
-    /// Gimbal calibration description color.
-    @Published private(set) var gimbalCalibrationTextColor: ColorName?
+    /// Gimbal calibration title color.
+    @Published private(set) var gimbalCalibrationTitleColor: ColorName?
+    /// Gimbal calibration subtitle color.
+    @Published private(set) var gimbalCalibrationSubtitleColor: ColorName?
     /// Gimbal calibration description background.
     @Published private(set) var gimbalCalibrationBackgroundColor: ColorName?
     /// Tells if a gimbal calibration has been requested.
@@ -149,14 +151,16 @@ private extension DroneCalibrationViewModel {
         guard let gimbal = gimbal else {
             gimbalState = .calibrated
             gimbalCalibrationDescription = ""
-            gimbalCalibrationTextColor = .defaultTextColor
+            gimbalCalibrationTitleColor = .defaultTextColor
+            gimbalCalibrationSubtitleColor = .defaultTextColor
             gimbalCalibrationBackgroundColor = .white
             return
         }
 
         gimbalState = gimbal.state
         gimbalCalibrationDescription = gimbal.calibrationStateDescription
-        gimbalCalibrationTextColor = gimbal.subtextColor
+        gimbalCalibrationTitleColor = gimbal.titleColor
+        gimbalCalibrationSubtitleColor = gimbal.subtitleColor
         gimbalCalibrationBackgroundColor = gimbal.backgroundColor
 
         switch gimbal.calibrationProcessState {

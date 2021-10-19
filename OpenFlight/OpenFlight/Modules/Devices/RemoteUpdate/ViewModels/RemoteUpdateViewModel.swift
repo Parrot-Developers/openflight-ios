@@ -36,6 +36,7 @@ import Reachability
 final class RemoteUpdateState: DevicesConnectionState {
     // MARK: - Internal Properties
     var isNetworkReachable: Bool?
+    var idealFirmwareVersion: String?
     var deviceUpdateStep: Observable<RemoteUpdateStep> = Observable(RemoteUpdateStep.none)
     var deviceUpdateEvent: RemoteUpdateEvent?
     var currentProgress: Int?
@@ -51,17 +52,20 @@ final class RemoteUpdateState: DevicesConnectionState {
     ///     - droneConnectionState: connection state of the drone
     ///     - remoteConnectionState: connection state of the remote
     ///     - isNetworkReachable: network reachability
+    ///     - idealFirmwareVersion: The ideal firmware version
     ///     - deviceUpdateStep: state of the update
     ///     - deviceUpdateEvent: event during the update
     ///     - currentProgress: update progress
     init(droneConnectionState: DeviceConnectionState?,
          remoteControlConnectionState: DeviceConnectionState?,
          isNetworkReachable: Bool?,
+         idealFirmwareVersion: String?,
          deviceUpdateStep: Observable<RemoteUpdateStep>,
          deviceUpdateEvent: RemoteUpdateEvent?,
          currentProgress: Int?) {
         super.init(droneConnectionState: droneConnectionState, remoteControlConnectionState: remoteControlConnectionState)
         self.isNetworkReachable = isNetworkReachable
+        self.idealFirmwareVersion = idealFirmwareVersion
         self.deviceUpdateStep = deviceUpdateStep
         self.deviceUpdateEvent = deviceUpdateEvent
         self.currentProgress = currentProgress
@@ -74,6 +78,7 @@ final class RemoteUpdateState: DevicesConnectionState {
         }
         return super.isEqual(to: other)
             && self.isNetworkReachable == other.isNetworkReachable
+            && self.idealFirmwareVersion == other.idealFirmwareVersion
             && self.deviceUpdateStep.value == other.deviceUpdateStep.value
             && self.deviceUpdateEvent == other.deviceUpdateEvent
             && self.currentProgress == other.currentProgress
@@ -83,6 +88,7 @@ final class RemoteUpdateState: DevicesConnectionState {
         let copy = RemoteUpdateState(droneConnectionState: self.droneConnectionState,
                                      remoteControlConnectionState: self.remoteControlConnectionState,
                                      isNetworkReachable: self.isNetworkReachable,
+                                     idealFirmwareVersion: self.idealFirmwareVersion,
                                      deviceUpdateStep: self.deviceUpdateStep,
                                      deviceUpdateEvent: self.deviceUpdateEvent,
                                      currentProgress: self.currentProgress)
@@ -177,9 +183,20 @@ private extension RemoteUpdateViewModel {
         remoteControlUpdaterRef = remoteControl.getPeripheral(Peripherals.updater) { [weak self] updater in
             guard let updater = updater else { return }
 
+            self?.updateFirmwareVersion(updater)
             self?.updateCurrentDownload(updater)
             self?.updateCurrentUpdate(updater)
         }
+    }
+
+    /// Updates ideal firmware version.
+    ///
+    /// - Parameters:
+    ///     - updater: current updater
+    func updateFirmwareVersion(_ updater: Updater) {
+        let copy = self.state.value.copy()
+        copy.idealFirmwareVersion = updater.idealVersion?.description
+        self.state.set(copy)
     }
 
     /// Updates current download state.
@@ -188,6 +205,7 @@ private extension RemoteUpdateViewModel {
     ///     - updater: current updater
     func updateCurrentDownload(_ updater: Updater) {
         guard let currentDownload = updater.currentDownload else { return }
+        ULog.d(.remoteUpdateTag, "Current download: \(currentDownload)")
 
         let copy = state.value.copy()
         switch currentDownload.state {
@@ -211,6 +229,7 @@ private extension RemoteUpdateViewModel {
     ///     - updater: current updater
     func updateCurrentUpdate(_ updater: Updater) {
         guard let currentUpdate = updater.currentUpdate else { return }
+        ULog.d(.remoteUpdateTag, "Current update: \(currentUpdate)")
 
         let copy = state.value.copy()
         switch currentUpdate.state {

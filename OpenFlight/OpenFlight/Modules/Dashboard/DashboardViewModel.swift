@@ -42,8 +42,12 @@ final class DashboardViewModel {
     var remoteInfosViewModel: RemoteInfosViewModel!
     var droneInfosViewModel: DroneInfosViewModel!
     var userDeviceViewModel: UserDeviceViewModel!
+    var dashboardProjectManagerCellModel: DashboardProjectManagerCellModel!
 
     private let service: VariableAssetsService
+    private let projectManager: ProjectManager
+    private let cloudSynchroWatcher: CloudSynchroWatcher?
+    private let projectManagerUiProvider: ProjectManagerUiProvider!
 
     enum ViewState {
         case initialize
@@ -55,8 +59,14 @@ final class DashboardViewModel {
     ///
     /// - Parameters:
     ///     - service: the variable assets service.
-    init(service: VariableAssetsService) {
+    init(service: VariableAssetsService,
+         projectManager: ProjectManager,
+         cloudSynchroWatcher: CloudSynchroWatcher?,
+         projectManagerUiProvider: ProjectManagerUiProvider) {
         self.service = service
+        self.projectManager = projectManager
+        self.cloudSynchroWatcher = cloudSynchroWatcher
+        self.projectManagerUiProvider = projectManagerUiProvider
     }
 
     func initViewModels() {
@@ -72,5 +82,8 @@ final class DashboardViewModel {
         self.remoteInfosViewModel = RemoteInfosViewModel()
         self.droneInfosViewModel = DroneInfosViewModel()
         self.userDeviceViewModel = UserDeviceViewModel(userLocationManager: UserLocationManager())
+        dashboardProjectManagerCellModel = DashboardProjectManagerCellModel(manager: projectManager,
+                                                                            cloudSynchroWatcher: cloudSynchroWatcher,
+                                                                            projectManagerUiProvider: projectManagerUiProvider)
     }
 }

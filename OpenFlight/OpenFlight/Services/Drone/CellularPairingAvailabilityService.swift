@@ -50,18 +50,24 @@ class CellularPairingAvailabilityServiceImpl {
     private var dronesPairedObserver: DefaultsDisposable?
     private var currentDroneHolder: CurrentDroneHolder
     private var connectedDroneHolder: ConnectedDroneHolder
+    private var cellularPairingService: CellularPairingService
     private var cancellables = Set<AnyCancellable>()
 
     var isPairingProcessDismissedSubject = CurrentValueSubject<Bool, Never>(false)
     var isCellularAvailableSubject = CurrentValueSubject<Bool, Never>(false)
     var isDroneAlreadyPairedSubject = CurrentValueSubject<Bool, Never>(false)
 
-    init(currentDroneHolder: CurrentDroneHolder, connectedDroneHolder: ConnectedDroneHolder, academyApiService: AcademyApiService) {
+    init(currentDroneHolder: CurrentDroneHolder,
+         connectedDroneHolder: ConnectedDroneHolder,
+         academyApiService: AcademyApiService,
+         cellularPairingService: CellularPairingService) {
         self.currentDroneHolder = currentDroneHolder
         self.connectedDroneHolder = connectedDroneHolder
         self.academyApiService = academyApiService
+        self.cellularPairingService = cellularPairingService
         listenDronesPairedList()
         listenPairingModalDefaults()
+        listenPairingAvailability()
 
         connectedDroneHolder.dronePublisher
             .compactMap { $0 }
@@ -87,7 +93,7 @@ private extension CellularPairingAvailabilityServiceImpl {
 
     /// Updates visibility of the process according to drone list.
     func updateVisibilityState() {
-        guard let _ = connectedDroneHolder.drone?.isConnected else { return }
+        guard connectedDroneHolder.drone?.isConnected != nil else { return }
 
         let uid = connectedDroneHolder.drone?.uid
 
@@ -158,6 +164,22 @@ private extension CellularPairingAvailabilityServiceImpl {
             self?.updateDronePairingState()
         }
     }
+
+    /// When pairing is available, start a pairing process
+    func listenPairingAvailability() {
+        currentDroneHolder.dronePublisher
+            .combineLatest(isCellularAvailablePublisher.removeDuplicates(),
+                           isDroneAlreadyPairedPublisher.removeDuplicates(),
+                           isPairingProcessDismissedPublisher.removeDuplicates())
+            .sink { [unowned self] (drone, isCellularAvailable, isDroneAlreadyPaired, isPairingProcessDismissed) in
+                guard isCellularAvailable,
+                      drone.state.connectionState == .connected,
+                      !isPairingProcessDismissed,
+                      !isDroneAlreadyPaired else { return }
+                cellularPairingService.startPairingProcessRequest()
+            }
+            .store(in: &cancellables)
+    }
 }
 
 extension CellularPairingAvailabilityServiceImpl {
@@ -165,5 +187,4 @@ extension CellularPairingAvailabilityServiceImpl {
     var isPairingProcessDismissedPublisher: AnyPublisher<Bool, Never> { isPairingProcessDismissedSubject.eraseToAnyPublisher() }
     var isCellularAvailablePublisher: AnyPublisher<Bool, Never> { isCellularAvailableSubject.eraseToAnyPublisher() }
     var isDroneAlreadyPairedPublisher: AnyPublisher<Bool, Never> { isDroneAlreadyPairedSubject.eraseToAnyPublisher() }
-
 }

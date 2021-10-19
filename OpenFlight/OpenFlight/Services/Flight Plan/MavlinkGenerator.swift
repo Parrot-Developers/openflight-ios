@@ -37,6 +37,7 @@ private extension ULogTag {
 }
 
 public struct MavlinkGenerationResult {
+    public let flightPlan: FlightPlanModel
     public let path: String
     public let commands: [MavlinkStandard.MavlinkCommand]
 }
@@ -44,7 +45,7 @@ public struct MavlinkGenerationResult {
 public enum MavlinkGenerationError: Error {
     case parsingFromExistingFailed(Error)
     case generateFileFromCommandsFailed(Error)
-    case cannotGenerateMavlinkAndNoFile
+    case cannotGenerateMavlinkAndNoData
     case unknown
 }
 
@@ -58,11 +59,15 @@ public class MavlinkGeneratorImpl {
 
     private let typeStore: FlightPlanTypeStore
     private let filesManager: FlightPlanFilesManager
+    private let repo: FlightPlanRepository
     private var cancellables = Set<AnyCancellable>()
 
-    init(typeStore: FlightPlanTypeStore, filesManager: FlightPlanFilesManager) {
+    init(typeStore: FlightPlanTypeStore,
+         filesManager: FlightPlanFilesManager,
+         repo: FlightPlanRepository) {
         self.typeStore = typeStore
         self.filesManager = filesManager
+        self.repo = repo
     }
 }
 
@@ -87,17 +92,19 @@ extension MavlinkGeneratorImpl: MavlinkGenerator {
             if !canGenerateMavlink {
                 ULog.i(.tag, "Can not generate mavlink for this type of Flight Plan: (\(flightPlan.type))")
                 // Do not generate Mavlink, use the stored one.
-                if FileManager.default.fileExists(atPath: path),
-                   flightPlanType.mavLinkType == .standard {
+                if flightPlanType.mavLinkType == .standard,
+                   let data = flightPlan.dataSetting?.mavlinkDataFile,
+                   let str = String(data: data, encoding: .utf8) {
                     // If Flight Plan uses MavlinkStandard we can parse its commands to display progress.
                     do {
-                        commands = try MavlinkStandard.MavlinkFiles.parse(filepath: path)
+                        commands = try MavlinkStandard.MavlinkFiles.parse(mavlinkString: str)
+                        filesManager.writeFile(of: flightPlan)
                     } catch {
                         mainQueueCompletion(.failure(.parsingFromExistingFailed(error)))
                         return
                     }
                 } else {
-                    mainQueueCompletion(.failure(.cannotGenerateMavlinkAndNoFile))
+                    mainQueueCompletion(.failure(.cannotGenerateMavlinkAndNoData))
                     return
                 }
             } else {
@@ -106,12 +113,15 @@ extension MavlinkGeneratorImpl: MavlinkGenerator {
                 commands = generateMavlinkCommands(for: flightPlan)
                 do {
                     try MavlinkStandard.MavlinkFiles.generate(filepath: path, commands: commands)
+                    let data = try Data(contentsOf: URL(fileURLWithPath: path))
+                    flightPlan.dataSetting?.mavlinkDataFile = data
+                    repo.persist(flightPlan, true)
                 } catch {
                     mainQueueCompletion(.failure(.generateFileFromCommandsFailed(error)))
                     return
                 }
             }
-            mainQueueCompletion(.success(MavlinkGenerationResult(path: path, commands: commands)))
+            mainQueueCompletion(.success(MavlinkGenerationResult(flightPlan: flightPlan, path: path, commands: commands)))
         }
     }
 }
@@ -233,8 +243,10 @@ private extension MavlinkGeneratorImpl {
             didAddStartCaptureCommand = false
         }
 
-        if let returnToLaunchCommand = flightPlan.dataSetting?.returnToLaunchCommand {
+        if let returnToLaunchCommand = flightPlan.dataSetting?.returnToLaunchCommand,
+           let delayReturnToLaunchCommand = flightPlan.dataSetting?.delayReturnToLaunchCommand {
             // Insert return to launch command if FlightPlan is buckled.
+            commands.append(delayReturnToLaunchCommand)
             commands.append(returnToLaunchCommand)
         }
 

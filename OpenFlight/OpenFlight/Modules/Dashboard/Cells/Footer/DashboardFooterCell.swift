@@ -102,21 +102,4 @@ private extension DashboardFooterCell {
     @objc func showParrotDebugScreen() {
         delegate?.startParrotDebugScreen()
     }
-
-    /// Used to split version string to an array of strings.
-    ///
-    /// - Parameters:
-    ///     - label: label to assign strings
-    ///     - versionString: string to split
-    func splitStringWithDash(label: UILabel,
-                             versionString: String?) {
-        guard let versionString = versionString,
-              versionString != Style.dash else {
-            label.text = Style.dash
-            return
-        }
-
-        let versionStringsArray = versionString.components(separatedBy: Style.dash)
-        label.text = versionStringsArray.joined(separator: Style.newLine)
-    }
 }

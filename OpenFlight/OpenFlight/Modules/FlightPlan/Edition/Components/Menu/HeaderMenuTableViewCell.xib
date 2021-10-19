@@ -18,13 +18,13 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7ZO-q6-9Yb">
-                        <rect key="frame" x="16" y="23" width="288" height="17"/>
+                        <rect key="frame" x="16" y="18" width="288" height="22"/>
                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                         <color key="textColor" name="default_text_color"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7Z8-2A-125">
-                        <rect key="frame" x="0.0" y="10" width="320" height="1"/>
+                        <rect key="frame" x="0.0" y="5" width="320" height="1"/>
                         <color key="backgroundColor" name="disabled_text_color"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="1" id="wFJ-i0-BAY"/>
@@ -34,7 +34,7 @@
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
                     <constraint firstItem="7ZO-q6-9Yb" firstAttribute="top" secondItem="7Z8-2A-125" secondAttribute="bottom" constant="12" id="6ph-2H-Z0p"/>
-                    <constraint firstItem="7Z8-2A-125" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="10" id="Jt7-ND-YGo"/>
+                    <constraint firstItem="7Z8-2A-125" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="Jt7-ND-YGo"/>
                     <constraint firstItem="7ZO-q6-9Yb" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="KXV-NI-csw"/>
                     <constraint firstAttribute="bottom" secondItem="7ZO-q6-9Yb" secondAttribute="bottom" constant="4" id="bgR-BI-6kF"/>
                     <constraint firstAttribute="trailing" secondItem="7ZO-q6-9Yb" secondAttribute="trailing" constant="16" id="mhd-zV-Ibc"/>

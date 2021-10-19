@@ -79,7 +79,7 @@ final class SegmentedBarView<T: BarButtonState>: UIView, NibOwnerLoadable, NibLo
 
     /// Max items displayed at same time on segmented bar.
     /// Additionnal items are accessible via navigation arrows.
-    var maxItems: Int = 5
+    var maxItems: Int { viewModel?.state.value.maxItems ?? 5 }
 
     /// Orientation of the items.
     /// - Note: Should be set before viewModel.

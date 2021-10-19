@@ -35,7 +35,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     // MARK: - Internal Properties
     /// Returns middle point of the line.
     var middlePoint: AGSPoint? {
-        return self.polyline?.middlePoint
+        return polyline?.middlePoint
     }
     /// Origin waypoint.
     private(set) weak var originWayPoint: WayPoint?
@@ -48,7 +48,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
 
         return compositeSymbol.symbols
             .compactMap { $0 as? AGSSimpleLineSymbol }
-            .first(where: { $0.style == .solid })
+            .last(where: { $0.style == .solid })
     }
     private var polyline: AGSPolyline? {
         return geometry as? AGSPolyline
@@ -63,7 +63,9 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     private enum Constants {
         static let defaultColor: UIColor = ColorName.blueDodger.color
         static let selectedColor: UIColor = ColorName.greenSpring.color
-        static let lineWidth: CGFloat = 5.0
+        static let touchAreaColor: UIColor = .clear
+        static let lineWidth: CGFloat = 2.0
+        static let lineWidthTouchArea: CGFloat = 20.0
         static let invisibleLineWidth: CGFloat = 40.0
     }
 
@@ -79,6 +81,12 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
          originIndex: Int) {
         let polyline = AGSPolyline(points: [origin.agsPoint,
                                             destination.agsPoint])
+
+        // Symbol used to make touch area bigger, invisible.
+        let symbolTouchArea = AGSSimpleLineSymbol(style: .solid,
+                                                  color: Constants.touchAreaColor,
+                                                  width: Constants.lineWidthTouchArea)
+        // visible line
         let symbol = AGSSimpleLineSymbol(style: .solid,
                                          color: Constants.defaultColor,
                                          width: Constants.lineWidth)
@@ -89,16 +97,16 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
                                                   color: UIColor.clear,
                                                   width: Constants.invisibleLineWidth)
 
-        let compositeSymbol = AGSCompositeSymbol(symbols: [symbol, invisibleSymbol])
+        let compositeSymbol = AGSCompositeSymbol(symbols: [symbolTouchArea, symbol, invisibleSymbol])
 
         super.init(geometry: polyline,
                    symbol: compositeSymbol,
                    attributes: nil)
 
-        self.originWayPoint = origin
-        self.destinationWayPoint = destination
-        self.attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = originIndex
-        self.attributes[FlightPlanAGSConstants.lineDestinationWayPointAttributeKey] = originIndex + 1
+        originWayPoint = origin
+        destinationWayPoint = destination
+        attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = originIndex
+        attributes[FlightPlanAGSConstants.lineDestinationWayPointAttributeKey] = originIndex + 1
     }
 
     // MARK: - Override Funcs
@@ -114,7 +122,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     /// - Parameters:
     ///    - startPoint: new start point
     func updateStartPoint(_ startPoint: AGSPoint) {
-        self.geometry = polyline?.replacingFirstPoint(startPoint)
+        geometry = polyline?.replacingFirstPoint(startPoint)
     }
 
     /// Updates polyline end point.
@@ -122,7 +130,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     /// - Parameters:
     ///    - endPoint: new end point
     func updateEndPoint(_ endPoint: AGSPoint) {
-        self.geometry = polyline?.replacingLastPoint(endPoint)
+        geometry = polyline?.replacingLastPoint(endPoint)
     }
 }
 
@@ -146,8 +154,8 @@ extension FlightPlanWayPointLineGraphic: WayPointRelatedGraphic {
     func incrementWayPointIndex() {
         guard let index = wayPointIndex else { return }
 
-        self.attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = index + 1
-        self.attributes[FlightPlanAGSConstants.lineDestinationWayPointAttributeKey] = index + 2
+        attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = index + 1
+        attributes[FlightPlanAGSConstants.lineDestinationWayPointAttributeKey] = index + 2
     }
 
     /// Decrements waypoint's index.
@@ -159,7 +167,7 @@ extension FlightPlanWayPointLineGraphic: WayPointRelatedGraphic {
             return
         }
 
-        self.attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = index - 1
-        self.attributes[FlightPlanAGSConstants.lineDestinationWayPointAttributeKey] = index
+        attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = index - 1
+        attributes[FlightPlanAGSConstants.lineDestinationWayPointAttributeKey] = index
     }
 }

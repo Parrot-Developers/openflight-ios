@@ -293,7 +293,6 @@ enum PilotingStyle: String, SettingMode, BarItemMode {
 }
 
 /// Arcade unavailability issues defines why arcade mode cannot be activated.
-
 enum ArcadeUnavailabilityIssues {
     case remoteDisconnected
     case droneDisconnected
@@ -301,15 +300,4 @@ enum ArcadeUnavailabilityIssues {
     case droneTakingOff
     case droneLanding
     case rthInProgress
-
-    var unavailabilityHelpText: String? {
-        switch self {
-        case .remoteDisconnected:
-            return L10n.settingsControlsArcadeHelpRemoteNeeded
-        case .droneLanded:
-            return L10n.settingsControlsArcadeHelpTakeoffNeeded
-        default:
-            return nil
-        }
-    }
 }

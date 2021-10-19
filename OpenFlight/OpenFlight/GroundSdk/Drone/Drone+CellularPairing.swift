@@ -35,6 +35,6 @@ import SwiftyUserDefaults
 extension Drone {
     /// Returns true if drone is already paired to 4G network.
     var isAlreadyPaired: Bool {
-        return Defaults.cellularPairedDronesList.contains(self.uid)
+        return Defaults.cellularPairedDronesList.contains(uid)
     }
 }

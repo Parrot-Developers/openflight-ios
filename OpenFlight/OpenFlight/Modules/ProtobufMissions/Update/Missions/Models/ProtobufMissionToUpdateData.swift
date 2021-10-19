@@ -35,15 +35,17 @@ import GroundSdk
 /// A struct to represent a protobuf mission to update.
 struct ProtobufMissionToUpdateData: Equatable, Decodable {
     // MARK: - Internal Properties
+    let protobufMissionsManager = Services.hub.drone.protobufMissionsManager
     let missionVersion: String
     let internalName: String
     let missionUID: String
     let missionFilePath: String
+    let minTargetVersion: String
     var missionNameAndVersion: String {
         return missionName + " " + missionVersion
     }
     var missionName: String {
-        return ProtobufMissionsManager.shared.missionsToLoadAtDroneConnection
+        return protobufMissionsManager.getMissionToLoadAtStart()
             .first(where: { $0.missionUID == missionUID })?
             .name ?? internalName
     }
@@ -63,6 +65,7 @@ struct ProtobufMissionToUpdateData: Equatable, Decodable {
         case internalName = "name"
         case missionUID = "uid"
         case missionFilePath = "embeddedPath"
+        case minTargetVersion = "minTargetVersion"
     }
 
     // MARK: - Equatable
@@ -75,7 +78,7 @@ struct ProtobufMissionToUpdateData: Equatable, Decodable {
     }
 
     // MARK: - Internal Funcs
-    /// Returns true if the mission is the same as the one given in parameter, but with an upper version.
+    /// Returns `true` if the mission is the same as the one given in parameter, but with an upper version.
     ///
     /// - Parameters:
     ///   - mission: a mission
@@ -93,14 +96,32 @@ struct ProtobufMissionToUpdateData: Equatable, Decodable {
             return missionVersion > mission.missionVersion
         }
     }
+
+    /// Returns `true` if the mission is compatible with the given firmware version.
+    ///
+    /// - Parameters:
+    ///   - firmwareVersionStr: a firmware version
+    func isCompatible(with firmwareVersionStr: String) -> Bool {
+        if let firmwareVersion = FirmwareVersion.parse(versionStr: firmwareVersionStr),
+           let minVersion = FirmwareVersion.parse(versionStr: minTargetVersion) {
+            // versions are formated in 'firmware version format',
+            // compare versions using GroundSdk helpers
+            return firmwareVersion > minVersion || firmwareVersion == minVersion
+        } else {
+            // fallback, should not happen
+            return true
+        }
+    }
 }
 
 /// A struct to represent a protobuf mission.
 struct ProtobufMissionBasicInformation: Equatable {
     let missionUID: String
     let missionVersion: String
+    let protobufMissionsManager = Services.hub.drone.protobufMissionsManager
+
     var missionName: String? {
-        return ProtobufMissionsManager.shared.missionsToLoadAtDroneConnection
+        return protobufMissionsManager.getMissionToLoadAtStart()
             .first(where: { $0.missionUID == missionUID })?
             .name
     }

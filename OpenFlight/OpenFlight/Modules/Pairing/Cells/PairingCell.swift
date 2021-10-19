@@ -89,6 +89,8 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
         static let droneWaitingTaskKey: String = "droneWaiting"
         static let droneNotDetectedDelay: Double = 5.0
         static let droneNotDetectedTaskKey: String = "droneNotDetected"
+        static let droneConnectedDelay: Double = 2.0
+        static let droneConnectedTaskKey: String = "droneConnected"
     }
 
     // MARK: - Override Funcs
@@ -107,6 +109,7 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
         cancelDelayedTask(key: Constants.remoteNotRecognizedTaskKey)
         cancelDelayedTask(key: Constants.droneWaitingTaskKey)
         cancelDelayedTask(key: Constants.droneNotDetectedTaskKey)
+        cancelDelayedTask(key: Constants.droneConnectedTaskKey)
     }
 
     override func willMove(toWindow newWindow: UIWindow?) {
@@ -164,6 +167,10 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
                     self.errorButton.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.droneNotDetected)))},
                                  delay: Constants.droneNotDetectedDelay,
                                  key: Constants.droneNotDetectedTaskKey)
+            } else if taskIsDone {
+                setupDelayedTask({self.navDelegate?.canFly()},
+                                 delay: Constants.droneConnectedDelay,
+                                 key: Constants.droneConnectedTaskKey)
             }
         } else if let entry = entry as? WifiPairingModel {
             // Show wifi button view.
@@ -171,6 +178,10 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
             if taskIsDoing {
                 removeUserInteraction()
                 errorButton.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.whereIsWifiPassword)))
+            } else if taskIsDone {
+                setupDelayedTask({self.navDelegate?.canFly()},
+                                 delay: Constants.droneConnectedDelay,
+                                 key: Constants.droneConnectedTaskKey)
             }
         } else if let entry = entry as? DroneWithoutRemotePairingModel {
             removeUserInteraction()
@@ -183,11 +194,6 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
             if taskIsDoing {
                 removeUserInteraction()
                 errorButton.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.switchOnDroneDone)))
-                // User can come back to the HUD when he can fly.
-            }
-        } else if entry is FlyPairingModel {
-            if taskIsDoing {
-                cellView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.dismissPairingView)))
                 // User can come back to the HUD when he can fly.
             }
         }
@@ -283,10 +289,6 @@ private extension PairingCell {
 
     @IBAction func actionButtonTouchedUpInside(_ sender: Any) {
         navDelegate?.onClickAction()
-    }
-
-    @objc func dismissPairingView(tap: UITapGestureRecognizer) {
-        navDelegate?.canFly()
     }
 
     @objc func remoteNotRecognized(tap: UITapGestureRecognizer) {

@@ -38,9 +38,13 @@ final class RemoteDetailsDeviceViewController: UIViewController {
     @IBOutlet private weak var remoteImageView: UIImageView!
     @IBOutlet private weak var batteryImageView: UIImageView!
     @IBOutlet private weak var batteryValueLabel: UILabel!
+    @IBOutlet private weak var batteryDeviceImageView: UIImageView!
+    @IBOutlet private weak var batteryDeviceValueLabel: UILabel!
+    @IBOutlet private weak var iconGpsImageView: UIImageView!
 
     // MARK: - Private Properties
     private var viewModel: RemoteInfosViewModel?
+    private var userDeviceViewModel: UserDeviceViewModel?
     private weak var coordinator: RemoteCoordinator?
 
     // MARK: - Setup
@@ -56,6 +60,7 @@ final class RemoteDetailsDeviceViewController: UIViewController {
         super.viewDidLoad()
 
         observeViewModel()
+        observeUserDeviceViewModel()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -81,6 +86,8 @@ private extension RemoteDetailsDeviceViewController {
             self?.nameChanged(name)
         }, stateDidChange: { [weak self] connectionState in
             self?.updateVisibility(connectionState == .connected)
+            self?.batteryLevelUserDeviceChanged(self?.userDeviceViewModel?.state.value.userDeviceBatteryLevel.value, connectionState == .connected)
+            self?.gpsStrengthChanged(self?.userDeviceViewModel?.state.value.userDeviceGpsStrength.value, isConnected: connectionState == .connected)
         })
 
         if let state = viewModel?.state.value {
@@ -90,6 +97,15 @@ private extension RemoteDetailsDeviceViewController {
             nameChanged(state.remoteName.value)
             updateVisibility(isConnected)
         }
+    }
+
+    func observeUserDeviceViewModel() {
+        userDeviceViewModel = UserDeviceViewModel(userLocationManager: UserLocationManager(),
+                                                  batteryLevelDidChange: { [weak self] battery in
+            self?.batteryLevelUserDeviceChanged(battery, self?.viewModel?.state.value.remoteConnectionState.value == .connected)
+        }, gpsStrengthDidChange: { [weak self] gps in
+            self?.gpsStrengthChanged(gps, isConnected: self?.viewModel?.state.value.remoteConnectionState.value == .connected)
+        })
     }
 
     /// Updates remote name changed.
@@ -110,7 +126,7 @@ private extension RemoteDetailsDeviceViewController {
     /// Manages remote image view according to the connection state.
     ///
     /// - Parameters:
-    ///     - isConnected: drone connection state
+    ///     - isConnected: remote connection state
     func updateVisibility(_ isConnected: Bool) {
         remoteImageView.image = isConnected
             ? Asset.Remote.icRemoteBigConnected.image
@@ -120,9 +136,30 @@ private extension RemoteDetailsDeviceViewController {
     /// Updates remote battery changed.
     ///
     /// - Parameters:
-    ///     - battery: current battery value
+    ///     - battery: current remote battery value
+    ///     - isConnected: remote connection state
     func batteryLevelChanged(_ battery: BatteryValueModel, _ isConnected: Bool) {
         batteryValueLabel.attributedText = NSMutableAttributedString(withBatteryLevel: battery.currentValue)
-        batteryImageView.image = isConnected ? battery.batteryImage : Asset.Common.Icons.icBattery.image
+        batteryImageView.image = isConnected ? battery.batteryRemoteControl : Asset.Remote.icBatteryRemoteNone.image
+    }
+
+    /// Updates user's device gps strength display.
+    ///
+    /// - Parameters:
+    ///     - gps: user device gps strength
+    ///     - isConnected: remote connection state
+    func gpsStrengthChanged(_ gps: UserLocationGpsStrength?, isConnected: Bool) {
+        iconGpsImageView.image = isConnected ? gps?.image : UserLocationGpsStrength.unavailable.image
+    }
+
+    /// Updates user's device battery level display.
+    ///
+    /// - Parameters:
+    ///     - battery: current user device battery value
+    ///     - isConnected: remote connection state
+    func batteryLevelUserDeviceChanged(_ battery: BatteryValueModel?, _ isConnected: Bool) {
+        let currentValue = isConnected ? battery?.currentValue : nil
+        batteryDeviceValueLabel.attributedText = NSMutableAttributedString(withBatteryLevel: currentValue)
+        batteryDeviceImageView.image = isConnected ? battery?.batteryUserDevice : Asset.Remote.icBatteryUserDeviceNone.image
     }
 }

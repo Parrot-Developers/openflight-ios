@@ -33,6 +33,18 @@ import SwiftyUserDefaults
 
 /// View Model which handles right slider grab events.
 final class RightSliderViewModel: DroneStateViewModel<DeviceConnectionState> {
+
+    /// Service for zoom control.
+    private unowned var zoomService: ZoomService
+
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///   - zoomService: zoom service
+    init(zoomService: ZoomService) {
+        self.zoomService = zoomService
+    }
+
     // MARK: - Private Properties
     private var isEvTriggerSettingEnabled: Bool {
         return Defaults.evTriggerSetting == true
@@ -156,6 +168,6 @@ private extension RightSliderViewModel {
         guard state == .pressed else {
             return
         }
-        Services.hub.drone.zoomService.setZoomVelocity(newValue)
+        zoomService.setZoomVelocity(newValue)
     }
 }

@@ -29,45 +29,49 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
+import GroundSdk
 
 /// Gallery media player ViewController.
 
 final class GalleryMediaPlayerViewController: UIViewController {
+    private weak var viewModel: GalleryMediaViewModel?
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Outlets
-    @IBOutlet private weak var bgView: UIView!
-    @IBOutlet private weak var topToolbarSuperView: UIVisualEffectView!
-    @IBOutlet private weak var topToolbarView: UIView!
+    @IBOutlet private weak var topToolbarView: UIStackView!
     @IBOutlet private weak var backButton: UIButton!
-    @IBOutlet private weak var titleViewTopConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var titleImageView: UIImageView!
-    @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var subtitleLabel: UILabel!
+    @IBOutlet private weak var mediaTitleView: GalleryMediaTitleView!
     @IBOutlet private weak var actionsView: UIView!
+    @IBOutlet private weak var topSoundButton: UIButton!
     @IBOutlet private weak var topDeleteButton: UIButton!
     @IBOutlet private weak var topShareButton: UIButton!
     @IBOutlet private weak var topDownloadButton: DownloadButton!
     @IBOutlet private weak var loadingView: GalleryLoadingView!
-    @IBOutlet private weak var bottomToolbarView: UIView!
-    @IBOutlet private weak var bottomToolbarViewHeightConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var bottomDeleteButton: UIButton!
-    @IBOutlet private weak var bottomShareButton: UIButton!
-    @IBOutlet private weak var bottomDownloadButton: DownloadButton!
-    @IBOutlet private weak var generateButton: UIButton!
+    @IBOutlet private weak var pageControl: UIPageControl!
 
     // MARK: - Private Properties
     private weak var coordinator: GalleryCoordinator?
-    private weak var viewModel: GalleryMediaViewModel?
-    private var index: Int = 0
-    private var imageIndex: Int = 0
+    private var mediaIndex: Int = 0
+    private var imageIndex: Int = 0 {
+        didSet {
+            pageControl.currentPage = imageIndex
+        }
+    }
     private var mediaListener: GalleryMediaListener?
     private var mediaPagerViewController: GalleryPlayerPagerViewController?
+    private var pageControlInitialTransform: CGAffineTransform = .init(rotationAngle: .pi / 2)
+    private var autoHideControlsTimer: Timer?
 
-    // MARK: - Private Enums
+    // Convenience Computed Properties
+    private var media: GalleryMedia? {
+        viewModel?.getMedia(index: mediaIndex)
+    }
+
+    // MARK: - Constants
     private enum Constants {
-        static let showBottomToolbarViewHeightConstraint: CGFloat = 80.0
-        static let hideBottomToolbarViewHeightConstraint: CGFloat = 0.0
-        static let titleViewWithSubtitleLabelTopConstraint: CGFloat = 0.0
-        static let titleViewWithoutSubtitleLabelTopConstraint: CGFloat = 10.0
+        static let autoHideControlsTimerDelay: TimeInterval = 2
+        static let pageControlMargin: CGFloat = 30
     }
 
     // MARK: - Setup
@@ -84,7 +88,7 @@ final class GalleryMediaPlayerViewController: UIViewController {
         let viewController = StoryboardScene.GalleryMediaPlayerViewController.initialScene.instantiate()
         viewController.coordinator = coordinator
         viewController.viewModel = viewModel
-        viewController.index = index
+        viewController.mediaIndex = index
 
         return viewController
     }
@@ -99,12 +103,7 @@ final class GalleryMediaPlayerViewController: UIViewController {
         super.viewDidLoad()
 
         initView()
-        removeBackButtonText()
-        setupViewModel()
-        updateButtons()
-        updateContent()
-        updateCurrentMedia()
-        loadingView.delegate = self
+        observeViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -113,20 +112,22 @@ final class GalleryMediaPlayerViewController: UIViewController {
         LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.galleryViewer, logType: .screen)
     }
 
-    override var prefersHomeIndicatorAutoHidden: Bool {
-        return true
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        disableAutoHideControlsTimer()
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        // Update gradient @didLayoutSubviews in order to avoid display issue if layer not rendered yet.
+        topToolbarView.addGradient(startAlpha: 0.7)
     }
 
-    /// Update display when orientation changed.
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-
-        updateContent()
-    }
+    override var prefersHomeIndicatorAutoHidden: Bool { true }
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .landscape }
+    override var prefersStatusBarHidden: Bool { true }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         super.prepare(for: segue, sender: sender)
@@ -135,18 +136,66 @@ final class GalleryMediaPlayerViewController: UIViewController {
             mediaPagerViewController = destination
             mediaPagerViewController?.coordinator = coordinator
             mediaPagerViewController?.viewModel = viewModel
-            mediaPagerViewController?.index = index
-            mediaPagerViewController?.pagerDelegate = self
+            mediaPagerViewController?.index = mediaIndex
         }
     }
 
-    override var prefersStatusBarHidden: Bool {
-        return true
+    /// Observes Gallery VM updates.
+    func observeViewModel() {
+        // Controls showing update.
+        viewModel?.mediaBrowsingViewModel.$areControlsShown
+            .sink { [weak self] areControlsShown in
+                self?.showControls(areControlsShown)
+            }
+            .store(in: &cancellables)
+
+        // PageControl index update.
+        viewModel?.mediaBrowsingViewModel.$resourceIndex
+            .sink { [weak self] index in
+                self?.imageIndex = index
+                self?.resetAutoHideControlsTimer()
+            }
+            .store(in: &cancellables)
+
+        // Media index update.
+        viewModel?.mediaBrowsingViewModel.$mediaIndex
+            .sink { [weak self] index in
+                self?.mediaIndex = index
+                self?.updateMediaDetails()
+                self?.resetAutoHideControlsTimer()
+            }
+            .store(in: &cancellables)
+
+        // Media resource counts update.
+        viewModel?.mediaBrowsingViewModel.$resourcesCount
+            .sink { [weak self] count in
+                self?.pageControl.numberOfPages = count
+                self?.showPageControl(self?.viewModel?.mediaBrowsingViewModel.areControlsShown ?? false)
+            }
+            .store(in: &cancellables)
+
+        // Media state update.
+        mediaListener = self.viewModel?.registerListener { [weak self] state in
+            self?.updateMediaDetails()
+            self?.loadingView.setProgress(state.downloadProgress,
+                                          status: state.downloadStatus)
+        }
     }
 }
 
 // MARK: - Actions
 private extension GalleryMediaPlayerViewController {
+    @objc func singleTapRecognized() {
+        updateControlsDisplayState()
+    }
+
+    @objc func doubleTapRecognized() {
+        updateZoomState()
+    }
+
+    @IBAction func pageControlValueChanged(_ sender: UIPageControl) {
+        viewModel?.mediaBrowsingViewModel.didDisplayResourceAt(sender.currentPage)
+    }
 
     @IBAction func backButtonTouchedUpInside(_ sender: AnyObject) {
         coordinator?.back()
@@ -156,15 +205,7 @@ private extension GalleryMediaPlayerViewController {
         deleteMediaPopup()
     }
 
-    @IBAction func bottomDeleteButtonTouchedUpInside(_ sender: AnyObject) {
-        deleteMediaPopup()
-    }
-
     @IBAction func topShareButtonTouchedUpInside(_ sender: AnyObject) {
-        shareMedia()
-    }
-
-    @IBAction func bottomShareButtonTouchedUpInside(_ sender: AnyObject) {
         shareMedia()
     }
 
@@ -172,27 +213,9 @@ private extension GalleryMediaPlayerViewController {
         downloadMedia()
     }
 
-    @IBAction func bottomDownloadButtonTouchedUpInside(_ sender: AnyObject) {
-        downloadMedia()
-    }
-
-    @IBAction func generateButtonTouchedUpInside(_ sender: AnyObject) {
-        guard let viewModel = viewModel,
-              let currentMedia = viewModel.getMedia(index: index) else {
-            return
-        }
-
-        let galleryPanoramaViewModel = GalleryPanoramaViewModel(galleryViewModel: viewModel)
-        switch currentMedia.type {
-        case .panoWide,
-             .panoVertical,
-             .panoHorizontal:
-            coordinator?.showPanoramaQualityChoiceScreen(viewModel: galleryPanoramaViewModel, index: index)
-        case .pano360:
-            coordinator?.showPanoramaChoiceTypeScreen(viewModel: viewModel, index: index)
-        default:
-            return
-        }
+    @IBAction func topSoundButtonTouchedUpInside(_ sender: Any) {
+        viewModel?.mediaBrowsingViewModel.didTapSoundButton()
+        updateVideoMuteButtonState()
     }
 }
 
@@ -200,115 +223,107 @@ private extension GalleryMediaPlayerViewController {
 private extension GalleryMediaPlayerViewController {
     /// Init view elements.
     func initView() {
-        navigationController?.setNavigationBarHidden(true, animated: false)
-        loadingView.isHidden = true
-        titleLabel.text = ""
-        subtitleLabel.text = ""
-        titleViewTopConstraint.constant = Constants.titleViewWithoutSubtitleLabelTopConstraint
-        generateButton.setTitle(L10n.galleryPanoramaGenerate, for: .normal)
-        generateButton.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color, radius: Style.largeCornerRadius)
+        loadingView.delegate = self
+
+        // Top Toolbar
+        mediaTitleView.style = .light
         topDownloadButton.setup()
-        bottomDownloadButton.setup()
+        updateVideoMuteButtonState()
+
+        // Rotate pageControl for vertical display.
+        pageControl.transform = pageControlInitialTransform
+
+        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(doubleTapRecognized))
+        doubleTapGesture.numberOfTapsRequired = 2
+        view.addGestureRecognizer(doubleTapGesture)
+
+        // Tap gesture for controls dismissal gesture recognition.
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(singleTapRecognized))
+        tapGesture.numberOfTapsRequired = 1
+        tapGesture.require(toFail: doubleTapGesture)
+        tapGesture.delegate = self
+        view.addGestureRecognizer(tapGesture)
     }
 
-    /// Setup everything related to view model.
-    func setupViewModel() {
-        mediaListener = self.viewModel?.registerListener(didChange: { [weak self] state in
-            self?.updateContent(forceHideBars: state.shouldHideControls)
-            self?.updateCurrentMedia()
-            self?.loadingView.setProgress(state.downloadProgress,
-                                          status: state.downloadStatus)
-        })
+    func showPageControl(_ show: Bool) {
+        let isPageAvailable = pageControl.numberOfPages > 1 && media?.type != .video
+        // Page control is already .pi /2 rotated in order to be displayed vertically.
+        // => Need to animate appearance from its .top edge.
+        pageControl.showFromEdge(.top,
+                                 offset: Constants.pageControlMargin,
+                                 show: show && isPageAvailable,
+                                 initialTransform: pageControlInitialTransform)
     }
 
-    /// Updates content display.
-    ///
-    /// - Parameters:
-    ///    - forceHideBars: if true, hide top and bottom bar
-    func updateContent(forceHideBars: Bool = false) {
-        topToolbarView.isHidden = forceHideBars
-        topToolbarSuperView.isHidden = forceHideBars
-        bottomToolbarView.isHidden = forceHideBars ? forceHideBars : UIApplication.isLandscape
-        if UIApplication.isLandscape {
-            bottomToolbarViewHeightConstraint.constant = Constants.hideBottomToolbarViewHeightConstraint
-        } else {
-            bottomToolbarViewHeightConstraint.constant = Constants.showBottomToolbarViewHeightConstraint
-        }
+    func showControls(_ show: Bool) {
+        topToolbarView.showFromEdge(.top, show: show)
+        showPageControl(show)
     }
 
-    /// Updates current media.
-    func updateCurrentMedia() {
-        // Updates title view.
-        updateTitleView()
-        // Updates action buttons.
-        updateButtons()
+    func updateMediaDetails() {
+        mediaTitleView.model = media
+        updateToolbarButtonsState()
     }
 
-    /// Updates title content regarding media type.
-    func updateTitleView() {
-        guard let viewModel = viewModel,
-              let currentMedia = viewModel.getMedia(index: index),
-              let titleImage = currentMedia.type.filterImage else {
-            return
-        }
-
-        titleImageView.image = titleImage
-        // Sets the flight plan execution's custom title and its location
-        if let customTitle = currentMedia.mainMediaItem?.customTitle,
-           !customTitle.isEmpty {
-            titleLabel.text = customTitle.replacingOccurrences(of: "(", with: "").replacingOccurrences(of: ")", with: "")
-            currentMedia.mainMediaItem?.locationDetail(completion: { [weak self] locationDetail in
-                self?.subtitleLabel.text = locationDetail
-                self?.titleViewTopConstraint.constant = Constants.titleViewWithSubtitleLabelTopConstraint
-            })
-        } else {
-            titleLabel.text = currentMedia.date.formattedString(dateStyle: .long, timeStyle: .medium)
-            subtitleLabel.text = ""
-            titleViewTopConstraint.constant = Constants.titleViewWithoutSubtitleLabelTopConstraint
-        }
+    func updateVideoMuteButtonState() {
+        topSoundButton.setImage(viewModel?.mediaBrowsingViewModel.videoSoundButtonImage, for: .normal)
     }
 
     /// Updates buttons regarding download state.
-    func updateButtons() {
-        // Bottom bar buttons (landscape).
-        guard let viewModel = viewModel,
-              let currentMedia = viewModel.getMedia(index: index) else {
-            return
+    func updateToolbarButtonsState() {
+        guard let downloadState = media?.downloadState else { return }
+
+        topShareButton.isHiddenInStackView = !downloadState.isShareActionInfoShown
+        topDownloadButton.isHiddenInStackView = !downloadState.isDownloadActionInfoShown
+
+        if downloadState.isDownloadActionInfoShown {
+            topDownloadButton.updateState(downloadState,
+                                          title: media?.formattedSize)
         }
 
-        bottomDownloadButton.updateState(currentMedia.downloadState, title: currentMedia.formattedSize)
-        bottomDeleteButton.isEnabled = currentMedia.downloadState != .downloading
-        switch currentMedia.downloadState {
-        case .toDownload,
-             .downloading,
-             .error:
-            bottomShareButton.isHidden = true
-            topShareButton.isHidden = true
-            bottomDownloadButton.isHidden = currentMedia.source == .mobileDevice
-            topDownloadButton.isHidden = currentMedia.source == .mobileDevice
-        case .downloaded:
-            bottomShareButton.isHidden = false
-            bottomDownloadButton.isHidden = true
-            topShareButton.isHidden = false
-            topDownloadButton.isHidden = true
-        default:
-            bottomShareButton.isHidden = false
-            bottomDownloadButton.isHidden = false
-            topShareButton.isHidden = false
-            topDownloadButton.isHidden = false
-        }
+        topSoundButton.isHiddenInStackView = media?.type != .video || media?.source != .mobileDevice
 
-        // Top bar buttons (portrait).
-        topDownloadButton.updateState(currentMedia.downloadState, title: currentMedia.formattedSize)
-        topShareButton.isHidden = bottomShareButton.isHidden
-        topDownloadButton.isHidden = bottomDownloadButton.isHidden
-        generateButton.isHidden = viewModel.shouldHideGenerationOption(currentMedia: currentMedia)
+        // Refresh controls state as we may switch from/to photo/video.
+        // => Need to update according to isPageControlShown.
+        showControls(viewModel?.mediaBrowsingViewModel.areControlsShown ?? false)
     }
 
+    func updateControlsDisplayState() {
+        viewModel?.mediaBrowsingViewModel.didInteractForControlsDisplay()
+        if viewModel?.mediaBrowsingViewModel.areControlsShown == true {
+            resetAutoHideControlsTimer()
+        }
+    }
+
+    func updateZoomState() {
+        viewModel?.mediaBrowsingViewModel.didInteractForDoubleTapZoom()
+    }
+}
+
+private extension GalleryMediaPlayerViewController {
+    func resetAutoHideControlsTimer() {
+        if viewModel?.mediaBrowsingViewModel.areControlsShown != true {
+            // We reveived media update info and controls are hidden.
+            // => User interaction detected, show controls back.
+            viewModel?.mediaBrowsingViewModel.didInteractForControlsDisplay(true)
+        }
+
+        disableAutoHideControlsTimer()
+        autoHideControlsTimer = Timer.scheduledTimer(withTimeInterval: Constants.autoHideControlsTimerDelay, repeats: false) { [weak self] _ in
+            self?.viewModel?.mediaBrowsingViewModel.didInteractForControlsDisplay(false)
+        }
+    }
+
+    func disableAutoHideControlsTimer() {
+        autoHideControlsTimer?.invalidate()
+    }
+}
+
+extension GalleryMediaPlayerViewController {
     /// Shares the current media.
     func shareMedia() {
         guard let viewModel = viewModel,
-              let currentMedia = viewModel.getMedia(index: index) else {
+              let currentMedia = viewModel.getMedia(index: mediaIndex) else {
             return
         }
 
@@ -332,8 +347,7 @@ private extension GalleryMediaPlayerViewController {
         let cancelAction = AlertAction(title: L10n.cancel,
                                        style: .cancel,
                                        actionHandler: {})
-        // TODO: handle this properly when working on delete / download actions
-        let message: String = ""
+        let message: String = viewModel?.sourceType?.deleteConfirmMessage(count: 1) ?? ""
         showAlert(title: L10n.commonDelete,
                   message: message,
                   cancelAction: cancelAction,
@@ -343,7 +357,7 @@ private extension GalleryMediaPlayerViewController {
     /// Deletes current media.
     func deleteCurrentMedia() {
         guard let viewModel = viewModel,
-              let currentMedia = viewModel.getMedia(index: index) else {
+              let currentMedia = viewModel.getMedia(index: mediaIndex) else {
             return
         }
 
@@ -374,7 +388,7 @@ private extension GalleryMediaPlayerViewController {
     /// Downloads the current media.
     func downloadMedia() {
         guard let viewModel = viewModel,
-              let currentMedia = viewModel.getMedia(index: index) else {
+              let currentMedia = viewModel.getMedia(index: mediaIndex) else {
             return
         }
 
@@ -386,21 +400,26 @@ private extension GalleryMediaPlayerViewController {
     }
 }
 
-// MARK: - Gallery Player Pager Delegate
-extension GalleryMediaPlayerViewController: GalleryPlayerPagerDelegate {
-    func galleryPagerDidChangeToIndex(_ index: Int) {
-        self.index = index
-        updateCurrentMedia()
-    }
-
-    func galleryPagerDidChangeToImageIndex(_ index: Int) {
-        imageIndex = index
-    }
-}
-
 // MARK: - Gallery Loading View Delegate
 extension GalleryMediaPlayerViewController: GalleryLoadingViewDelegate {
     func shouldStopProgress() {
         viewModel?.cancelDownloads()
+    }
+}
+
+extension GalleryMediaPlayerViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        let controlsDismissalTapDetected = touch.view is GalleryMediaFullScreenCollectionViewCell
+            || touch.view is MediaVideoView
+            || touch.view is GSStreamView
+
+        if !controlsDismissalTapDetected {
+            // General user interaction detected => disable autoHideControlsTimer for now.
+            // Will be fired back if controls are manually hidden or when new media is displayed.
+            disableAutoHideControlsTimer()
+        }
+
+        // Handle tap only if controls dismissal is detected.
+        return controlsDismissalTapDetected
     }
 }

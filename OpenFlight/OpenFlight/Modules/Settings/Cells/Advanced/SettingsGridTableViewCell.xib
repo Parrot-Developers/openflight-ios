@@ -34,10 +34,10 @@
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </view>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gkb-0E-kFu" customClass="SettingsGridActionView" customModule="OpenFlight" customModuleProvider="target">
-                        <rect key="frame" x="0.0" y="20" width="368" height="212"/>
+                        <rect key="frame" x="0.0" y="20" width="368" height="223"/>
                         <subviews>
                             <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZOr-0Y-6L1">
-                                <rect key="frame" x="0.0" y="85" width="203" height="131"/>
+                                <rect key="frame" x="0.0" y="92" width="203" height="131"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" name="disabled_highlight_color"/>
                             </view>
@@ -49,7 +49,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconUser" translatesAutoresizingMaskIntoConstraints="NO" id="umg-t6-bFx">
-                                <rect key="frame" x="8" y="164" width="14" height="40"/>
+                                <rect key="frame" x="8" y="183" width="14" height="40"/>
                                 <color key="tintColor" name="default_text_color"/>
                             </imageView>
                             <imageView clipsSubviews="YES" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="iconDroneFaceActive" translatesAutoresizingMaskIntoConstraints="NO" id="yA1-km-ntS">
@@ -67,7 +67,7 @@
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="umg-t6-bFx" firstAttribute="leading" secondItem="gkb-0E-kFu" secondAttribute="leading" constant="8" id="WoK-73-8XR"/>
-                            <constraint firstAttribute="bottom" secondItem="umg-t6-bFx" secondAttribute="bottom" constant="8" id="fgu-9W-gM6"/>
+                            <constraint firstAttribute="bottom" secondItem="umg-t6-bFx" secondAttribute="bottom" id="fgu-9W-gM6"/>
                         </constraints>
                         <connections>
                             <outlet property="distanceLabel" destination="KnQ-Oz-bCW" id="FJE-Du-eha"/>
@@ -91,7 +91,7 @@
                     <constraint firstAttribute="trailing" secondItem="gkb-0E-kFu" secondAttribute="trailing" constant="64" id="a9X-hK-WHR"/>
                     <constraint firstAttribute="bottom" secondItem="qJs-Vd-PdK" secondAttribute="bottom" id="n50-zf-ptD"/>
                     <constraint firstItem="TfN-f8-Tgg" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="qv2-06-qHo"/>
-                    <constraint firstAttribute="bottom" secondItem="gkb-0E-kFu" secondAttribute="bottom" constant="16" id="r2Y-bo-ke0"/>
+                    <constraint firstAttribute="bottom" secondItem="gkb-0E-kFu" secondAttribute="bottom" constant="5" id="r2Y-bo-ke0"/>
                     <constraint firstAttribute="trailing" secondItem="TfN-f8-Tgg" secondAttribute="trailing" id="t0s-5N-qfj"/>
                 </constraints>
             </tableViewCellContentView>

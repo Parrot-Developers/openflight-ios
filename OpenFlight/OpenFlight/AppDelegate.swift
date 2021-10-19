@@ -61,24 +61,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: - Public Funcs
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // Enable device battery monitoring.
+        UIDevice.current.isBatteryMonitoringEnabled = true
+
         // Setup GroundSdk
         AppDelegateSetup.sdkSetup()
         // Create instance of services
+        let missionsToLoadAtStart: [ProtobufMissionSignature] = [OFMissionSignatures.defaultMission,
+                                                                 OFMissionSignatures.helloWorld]
+
         let services = Services.createInstance(variableAssetsService: VariableAssetsServiceImpl(),
-                                               persistentContainer: persistentContainer)
+                                               persistentContainer: persistentContainer,
+                                               missionsToLoadAtStart: missionsToLoadAtStart)
         self.services = services
+        // TODO move to service hub
+        addMissionsToHUDPanel()
 
         /// Sets up grabber view model
-        grabberViewModel = RemoteControlGrabberViewModel()
+        grabberViewModel = RemoteControlGrabberViewModel(zoomService: services.drone.zoomService)
 
-        /// Sets up global managers and interactors
-        setupProtobufMissionManager()
         setupFirmwareAndMissionsInteractor()
 
         /// Start AppCoordinator.
         self.appCoordinator = AppCoordinator(services: services)
         self.appCoordinator.start()
-        addMissionsToHUDPanel()
 
         /// Configure Main Window of the App.
         self.window = UIWindow(frame: UIScreen.main.bounds)
@@ -88,9 +94,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Keep screen on while app is running (Enable).
         application.isIdleTimerDisabled = true
-
-        // Enable device battery monitoring.
-        UIDevice.current.isBatteryMonitoringEnabled = true
 
         return true
     }
@@ -114,12 +117,6 @@ extension AppDelegate: ProtobufMissionsSetupProtocol {
     /// Sets up `FirmwareAndMissionsInteractor`
     func setupFirmwareAndMissionsInteractor() {
         FirmwareAndMissionsInteractor.shared.setup()
-    }
-
-    /// Sets up the ProtobufMissionManager.
-    func setupProtobufMissionManager() {
-        ProtobufMissionsManager.shared.setup(with: [OFMissionSignatures.defaultMission,
-                                                    OFMissionSignatures.helloWorld])
     }
 
     /// Add protobuf missions to the HUD Panel.

@@ -34,7 +34,7 @@ import GroundSdk
 
 /// Dedicated view controller to edit drone wifi password.
 final class SettingsPasswordEditionViewController: UIViewController, StoryboardBased {
-    // MARK: - Outlets
+    // MARK: _ Outlets
     @IBOutlet private weak var titleLabel: UILabel! {
         didSet {
             titleLabel.text = L10n.settingsEditPasswordTitle
@@ -45,20 +45,14 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
             warningLabel.text = L10n.settingsEditPasswordWarning
         }
     }
-    @IBOutlet private weak var passwordTextField: UITextField! {
+    @IBOutlet private weak var passwordTextField: POFTextField! {
         didSet {
-            passwordTextField.addShadow(shadowColor: ColorName.whiteAlbescent.color)
-            passwordTextField.attributedPlaceholder = NSAttributedString(
-                string: L10n.settingsEditPasswordTitle,
-                attributes: [NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor80.color])
+            passwordTextField.setPlaceholderTitle(L10n.settingsEditPasswordTitle)
         }
     }
-    @IBOutlet private weak var confirmPasswordTextField: UITextField! {
+    @IBOutlet private weak var confirmPasswordTextField: POFTextField! {
         didSet {
-            confirmPasswordTextField.addShadow(shadowColor: ColorName.whiteAlbescent.color)
-            confirmPasswordTextField.attributedPlaceholder = NSAttributedString(
-                string: L10n.settingsEditPasswordConfirmPassword,
-                attributes: [NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor80.color])
+            confirmPasswordTextField.setPlaceholderTitle(L10n.settingsEditPasswordConfirmPassword)
         }
     }
     @IBOutlet private weak var passwordWarningLabel: UILabel! {
@@ -68,6 +62,7 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     }
     @IBOutlet private weak var changePasswordButton: UIButton! {
         didSet {
+            changePasswordButton.addShadow(shadowColor: ColorName.whiteAlbescent.color)
             changePasswordButton.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color,
                                                     borderColor: .clear,
                                                     radius: Style.mediumCornerRadius)
@@ -83,13 +78,12 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
             cancelButton.setTitle(L10n.cancel, for: .normal)
         }
     }
-    @IBOutlet private weak var toggleConfirmVisibilityButton: UIButton!
-    @IBOutlet private weak var togglePasswordVisibilityButton: UIButton!
+    @IBOutlet private weak var backgroundView: UIView!
     @IBOutlet private weak var contentScrollView: UIScrollView!
     @IBOutlet private weak var textfieldsContainer: UIView!
     @IBOutlet private weak var scrollViewBottomConstraint: NSLayoutConstraint!
 
-    // MARK: - Private Properties
+    // MARK: _ Private Properties
     private var coordinator: Coordinator?
     private var viewModel: SettingsNetworkViewModel?
     private var isValidPassword: Bool {
@@ -144,24 +138,14 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupUI()
+        setupKeyboardNotifications()
+        setupTapGesture()
+    }
 
-        view.backgroundColor = ColorName.black.color
-
-        // Setup textfields.
-        passwordTextField.delegate = self
-        passwordTextField.rightView = togglePasswordVisibilityButton
-        passwordTextField.rightViewMode = .always
-        confirmPasswordTextField.rightView = toggleConfirmVisibilityButton
-        confirmPasswordTextField.rightViewMode = .always
-        confirmPasswordTextField.delegate = self
-
-        // Manage keyboard appearance.
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(keyboardWillShow(sender:)),
-                                               name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(keyboardWillHide(sender:)),
-                                               name: UIResponder.keyboardWillHideNotification, object: nil)
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        setupBackgroundOverlayAnimation()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -175,6 +159,109 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     override var prefersStatusBarHidden: Bool {
         return true
     }
+
+    // MARK: - UI
+    /// Setup UI
+    private func setupUI() {
+        // Colors
+        view.backgroundColor = ColorName.clear.color
+        backgroundView.backgroundColor = ColorName.clear.color
+        contentScrollView.backgroundColor = ColorName.white.color
+        passwordTextField.backgroundColor = ColorName.whiteAlbescent.color
+        confirmPasswordTextField.backgroundColor = ColorName.whiteAlbescent.color
+
+        // Custom
+        contentScrollView.customCornered(
+            corners: [.topLeft, .topRight],
+            radius: Style.largeCornerRadius)
+
+        // Setup textfields
+        passwordTextField.delegate = self
+        passwordTextField.secureEntryDelegate = self
+        confirmPasswordTextField.delegate = self
+        confirmPasswordTextField.secureEntryDelegate = self
+
+        // Buttons
+        cancelButton.setBorder(borderColor: ColorName.defaultTextColor20.color, borderWidth: 1.0)
+    }
+
+    /// Register for keyboard notifications display
+    private func setupKeyboardNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardNotificationHandler(sender:)),
+            name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardNotificationHandler(sender:)),
+            name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+
+    /// Setup tap gesture
+    private func setupTapGesture() {
+        // Dismiss keyboard on tap view
+        let tapGestureDismissKeyboard = UITapGestureRecognizer.init(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tapGestureDismissKeyboard)
+
+        // Dismiss VC on tap backgroundView
+        let tapGestureDismissVC = UITapGestureRecognizer.init(target: self, action: #selector(dismissTapHandlers))
+        backgroundView.addGestureRecognizer(tapGestureDismissVC)
+    }
+
+    /// Present VC overlay animation
+    private func setupBackgroundOverlayAnimation() {
+        UIView.animate(
+            withDuration: Style.shortAnimationDuration,
+            delay: Style.shortAnimationDuration,
+            animations: {
+                self.view.backgroundColor = ColorName.nightRider80.color
+            })
+    }
+
+    // MARK: _ Handlers
+    /// Dismiss view controller
+    private func dismissVC() {
+        view.backgroundColor = ColorName.clear.color
+        self.coordinator?.dismiss()
+    }
+
+    /// Handle dismiss tap backgroundView
+    @objc func dismissTapHandlers() {
+        if passwordTextField.isFirstResponder || confirmPasswordTextField.isFirstResponder {
+            dismissKeyboard()
+        } else {
+            dismissVC()
+        }
+    }
+
+    /// Dismiss keyboard
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+
+    /// Handle keyboard notification display
+    @objc private func keyboardNotificationHandler(sender notification: Notification) {
+        var animationDuration = 0.30
+
+        // get the animation duration
+        if let animationDurationVal = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval {
+            animationDuration = animationDurationVal
+        }
+
+        // keyboard will display
+        if let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+            scrollViewBottomConstraint.constant = keyboardFrame.cgRectValue.size.height
+        }
+
+        // keyboard will dismiss
+        if notification.name == UIResponder.keyboardWillHideNotification {
+            scrollViewBottomConstraint.constant = 0.0
+        }
+
+        UIView.animate(withDuration: animationDuration, animations: {
+            self.view.layoutIfNeeded()
+        })
+    }
 }
 
 // MARK: - Actions
@@ -184,23 +271,7 @@ private extension SettingsPasswordEditionViewController {
         LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.cancel,
                              newValue: nil,
                              logType: .button)
-        self.coordinator?.back()
-    }
-
-    /// Toggle password visibility action.
-    @IBAction func toggleButtonTouchedUpInside(_ sender: Any) {
-        passwordTextField.toggleVisibility()
-        togglePasswordVisibilityButton.setImage(passwordTextField.isSecureTextEntry ?
-                                                    Asset.Common.Icons.icPasswordShow.image :
-                                                    Asset.Common.Icons.icPasswordHide.image, for: .normal)
-    }
-
-    /// Toggle confirm password visibility action.
-    @IBAction func toggleConfirmButtonTouchedUpInside(_ sender: Any) {
-        confirmPasswordTextField.toggleVisibility()
-        toggleConfirmVisibilityButton.setImage(confirmPasswordTextField.isSecureTextEntry ?
-                                                Asset.Common.Icons.icPasswordShow.image :
-                                                Asset.Common.Icons.icPasswordHide.image, for: .normal)
+        dismissVC()
     }
 
     /// Change password action.
@@ -217,7 +288,7 @@ private extension SettingsPasswordEditionViewController {
         self.view.endEditing(true)
         let validateAction = AlertAction(title: L10n.settingsEditPasswordValidateChange, actionHandler: { [weak self] in
             if self?.viewModel?.changePassword(password) ?? false {
-                self?.coordinator?.back()
+                self?.dismissVC()
             }
         })
         self.showAlert(title: L10n.commonWarning,
@@ -226,26 +297,8 @@ private extension SettingsPasswordEditionViewController {
     }
 }
 
-// MARK: - Private Funcs
-private extension SettingsPasswordEditionViewController {
-    /// Manages view display when keyboard is displayed.
-    @objc func keyboardWillShow(sender: NSNotification) {
-        if let userInfo = sender.userInfo,
-           let keyboardFrame = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
-            // Move view upward.
-            scrollViewBottomConstraint.constant = keyboardFrame.size.height
-        }
-    }
-
-    /// Manages view display after keyboard was displayed.
-    @objc func keyboardWillHide(sender: NSNotification) {
-        // Move view to original position.
-        scrollViewBottomConstraint.constant = 0.0
-    }
-}
-
 // MARK: - UITextField Delegate
-extension SettingsPasswordEditionViewController: UITextFieldDelegate {
+extension SettingsPasswordEditionViewController: UITextFieldDelegate, POFTextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         // Handle responder + tooltip message (passwordWarningLabel).
         if textField == passwordTextField, isValidPassword {
@@ -264,5 +317,13 @@ extension SettingsPasswordEditionViewController: UITextFieldDelegate {
         }
 
         return true
+    }
+
+    func didTapToggleSecureEntry(sender: POFTextField, isSecure: Bool) {
+        if passwordTextField.isFirstResponder {
+            confirmPasswordTextField.toggleSecureEntry(force: isSecure)
+        } else {
+            passwordTextField.toggleSecureEntry(force: isSecure)
+        }
     }
 }

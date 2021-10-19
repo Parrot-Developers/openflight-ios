@@ -30,22 +30,6 @@
 
 import UIKit
 
-// MARK: - Protocols
-/// Gallery Player Pager ViewController Delegate.
-protocol GalleryPlayerPagerDelegate: AnyObject {
-    /// Notify delegate when media changes.
-    ///
-    /// - Parameters:
-    ///    - index: Media index in the gallery media array
-    func galleryPagerDidChangeToIndex(_ index: Int)
-
-    /// Notify delegate when media image index changes.
-    ///
-    /// - Parameters:
-    ///     - index: Media index in the gallery media array
-    func galleryPagerDidChangeToImageIndex(_ index: Int)
-}
-
 /// Protocol used to identify Gallery Player Pager ViewControllers.
 protocol SwipableViewController {
     /// Page index.
@@ -56,7 +40,6 @@ protocol SwipableViewController {
 
 final class GalleryPlayerPagerViewController: UIPageViewController {
     // MARK: - Internal Properties
-    weak var pagerDelegate: GalleryPlayerPagerDelegate?
     weak var coordinator: GalleryCoordinator?
     weak var viewModel: GalleryMediaViewModel?
     var index: Int = 0
@@ -85,11 +68,9 @@ final class GalleryPlayerPagerViewController: UIPageViewController {
         super.viewDidLoad()
 
         dataSource = self
-        delegate = self
 
         guard let firstVC = pageViewController(atIndex: index) else { return }
 
-        pagerDelegate?.galleryPagerDidChangeToIndex(index)
         setViewControllers([firstVC], direction: .forward, animated: false, completion: nil)
     }
 
@@ -126,7 +107,6 @@ private extension GalleryPlayerPagerViewController {
                                                           index: index)
         default:
             return GalleryImageViewController.instantiate(coordinator: coordinator,
-                                                          delegate: self,
                                                           viewModel: viewModel,
                                                           index: index)
         }
@@ -152,28 +132,5 @@ extension GalleryPlayerPagerViewController: UIPageViewControllerDataSource {
         }
 
         return self.pageViewController(atIndex: swipableVC.index + 1)
-    }
-}
-
-// MARK: - UIPageView Controller Delegate
-extension GalleryPlayerPagerViewController: UIPageViewControllerDelegate {
-    func pageViewController(_ pageViewController: UIPageViewController,
-                            didFinishAnimating finished: Bool,
-                            previousViewControllers: [UIViewController],
-                            transitionCompleted completed: Bool) {
-        guard let currentViewController = pageViewController.viewControllers?.first as? SwipableViewController,
-            let viewModel = viewModel,
-            currentViewController.index < viewModel.numberOfMedias else {
-                return
-        }
-
-        pagerDelegate?.galleryPagerDidChangeToIndex(currentViewController.index)
-    }
-}
-
-// MARK: - GalleryImageViewController Delegate
-extension GalleryPlayerPagerViewController: GalleryImageViewControllerDelegate {
-    func selectionDidChangeToImageIndex(_ index: Int) {
-        pagerDelegate?.galleryPagerDidChangeToImageIndex(index)
     }
 }

@@ -48,6 +48,7 @@ final class GalleryMediaCollectionViewCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var typeImage: UIImageView!
     @IBOutlet private weak var thumbnailImageView: UIImageView!
+    @IBOutlet private weak var internalStorageIcon: UIView!
     @IBOutlet private weak var downloadButton: DownloadButton! {
         didSet {
             downloadButton.setup()
@@ -68,6 +69,7 @@ final class GalleryMediaCollectionViewCell: UICollectionViewCell, NibReusable {
         super.prepareForReuse()
         typeImage.image = nil
         thumbnailImageView.image = nil
+        internalStorageIcon.isHidden = true
     }
 }
 
@@ -140,5 +142,7 @@ internal extension GalleryMediaCollectionViewCell {
         selectionView.isHidden = !selected
         selectionCheckmarkView.isHidden = !selected
         setBorder(borderColor: ColorName.greenSpring.color, borderWidth: selected ? 2.0 : 0.0)
+        internalStorageIcon.applyCornerRadius(Style.mediumCornerRadius)
+        internalStorageIcon.isHidden = media.source != .droneInternal
     }
 }

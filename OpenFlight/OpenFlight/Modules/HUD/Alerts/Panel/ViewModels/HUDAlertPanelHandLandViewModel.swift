@@ -40,7 +40,7 @@ public final class HUDAlertPanelHandLandState: DeviceConnectionState, AlertPanel
         return L10n.alertHandLandLanding
     }
     public var subtitleColor: UIColor? {
-        return ColorName.greenSpring.color
+        return ColorName.highlightColor.color
     }
     public var icon: UIImage? {
         return Asset.Alertes.HandLand.icHandLand.image

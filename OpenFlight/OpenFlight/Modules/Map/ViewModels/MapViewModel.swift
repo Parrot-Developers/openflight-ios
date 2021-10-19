@@ -85,6 +85,8 @@ public class MapViewModel {
             return nil
         }
     }
+    /// Terrain elevation source.
+    public var elevationSource = MapElevationSource()
 
     // MARK: Init
 

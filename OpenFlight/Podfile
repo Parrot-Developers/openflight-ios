@@ -1,14 +1,11 @@
-
-source 'https://github.com/Parrot-Developers/gsdk2-trunk.git'
-source 'https://github.com/CocoaPods/Specs.git'
-platform :ios, '12.0'
+platform :ios, '13.0'
 
 target 'OpenFlightApp' do
     use_frameworks!
-    pod 'GroundSdk', '~> 7.0.0-rc2'
-    pod 'ArsdkEngine', '~> 7.0.0-rc2'
-    pod 'SdkCore', '~> 7.0.0-rc2'
-    pod 'OpenFlightCore', '~> 7.0.0-beta53'
+    pod 'GroundSdk', '~> 7.0.0'
+    pod 'ArsdkEngine', '~> 7.0.0'
+    pod 'SdkCore', '~> 7.0.0'
+    pod 'OpenFlightCore', '~> 7.0.1'
     pod 'Reusable'
     pod 'SwiftyUserDefaults'
     pod 'KeychainAccess'

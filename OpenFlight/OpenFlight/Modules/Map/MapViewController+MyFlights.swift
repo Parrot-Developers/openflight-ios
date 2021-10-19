@@ -42,29 +42,73 @@ internal extension MapViewController {
     }
 
     // MARK: - Internal Funcs
-    /// Displays a line for flight course and moves the map towards its location.
+    /// Displays flights trajectories and adjusts map viewpoint to show them.
     ///
     /// - Parameters:
-    ///    - gutma: the gutma
-    func displayFlightCourse(gutma: Gutma) {
+    ///    - flightsPoints: flights trajectories
+    ///    - hasAsmlAltitude: `true` if flights points have altitudes in ASML
+    func displayFlightCourse(flightsPoints: [[TrajectoryPoint]],
+                             hasAsmlAltitude: Bool) {
         removeGraphicOverlay(forKey: Constants.overlayKey)
 
+        guard let firstPoint = flightsPoints.first?.first else { return }
+
         let customOverlay = AGSGraphicsOverlay()
-        customOverlay.sceneProperties?.surfacePlacement = .drapedFlat
+        customOverlay.sceneProperties?.surfacePlacement = .absolute
         addGraphicOverlay(customOverlay, forKey: Constants.overlayKey, at: 0)
-        let flightPoints = gutma.points
-        guard let firstPoint = flightPoints.first else { return }
-        let polyline = AGSPolyline(points: flightPoints)
-        let polylineSymbol = AGSSimpleLineSymbol(style: .solid, color: Constants.lineColor, width: Constants.lineWidth)
-        let polylineGraphic = AGSGraphic(geometry: polyline, symbol: polylineSymbol, attributes: nil)
-        customOverlay.graphics.add(polylineGraphic)
 
-        let homePicture = AGSPictureMarkerSymbol(image: Asset.MyFlights.mapRth.image)
-        let homePoint = AGSGraphic(geometry: firstPoint, symbol: homePicture, attributes: nil)
-        customOverlay.graphics.add(homePoint)
+        // add polyline for each flight
+        flightsPoints.forEach { flightPoints in
+            let agsPoints = flightPoints.map { $0.point }
+            let polyline = AGSPolyline(points: agsPoints)
+            let polylineSymbol = AGSSimpleLineSymbol(style: .solid, color: Constants.lineColor, width: Constants.lineWidth)
+            let polylineGraphic = AGSGraphic(geometry: polyline, symbol: polylineSymbol, attributes: nil)
+            customOverlay.graphics.add(polylineGraphic)
+        }
 
+        // starting point marker
+        if firstPoint.isFirstPoint {
+            let homePicture = AGSPictureMarkerSymbol(image: Asset.MyFlights.mapRth.image)
+            let homePoint = AGSGraphic(geometry: firstPoint.point, symbol: homePicture, attributes: nil)
+            customOverlay.graphics.add(homePoint)
+        }
+
+        let allPoints = flightsPoints.reduce([]) { $0 + $1.map {$0.point} }
+        let polyline = AGSPolyline(points: allPoints)
         let bufferedExtent = polyline.envelopeWithMargin()
         let viewPoint = AGSViewpoint(targetExtent: bufferedExtent)
-        self.updateViewPoint(viewPoint)
+        updateViewPoint(viewPoint)
+
+        // wait for elevation data to be ready before applying an altitude offset
+        viewModel.elevationSource.$elevationLoaded
+            .filter { $0 }
+            .removeDuplicates()
+            .sink { [unowned self] _ in
+                adjustAltitude(overlay: customOverlay,
+                               firstPoint: firstPoint.point,
+                               hasAsmlAltitude: hasAsmlAltitude)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Applies an altitude offset to graphics overlay to ensure that first point is drawn above the ground.
+    ///
+    /// If altitudes are in ASML, the overlay offset is applied only if first point in below the map ground.
+    /// If altitudes are not in ASML, the overlay offset is always applied to draw the first point on the ground.
+    /// This is the case for GUTMA files prior to Parrot version "1.0.1".
+    ///
+    /// - Parameters:
+    ///   - overlay: graphics overlay that handles trajectory display
+    ///   - firstPoint: first trajectory point
+    ///   - hasAsmlAltitude: `true` if altitudes are in ASML, `false` otherwise
+    func adjustAltitude(overlay: AGSGraphicsOverlay, firstPoint: AGSPoint, hasAsmlAltitude: Bool) {
+        sceneView.scene?.baseSurface?.elevation(for: firstPoint) { elevation, error in
+            guard error == nil else { return }
+            let altitudeOffset = elevation - firstPoint.z
+            if !hasAsmlAltitude
+                || altitudeOffset > 0 {
+                overlay.sceneProperties?.altitudeOffset = altitudeOffset
+            }
+        }
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="3us-Rm-O6e">
-    <device id="retina4_7" orientation="landscape" appearance="light"/>
+    <device id="ipad9_7" orientation="landscape" layout="fullscreen" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
@@ -17,13 +17,18 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" indicatorStyle="white" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Vko-Sw-IvP">
-                                <rect key="frame" x="60.5" y="0.0" width="480" height="330"/>
+                                <rect key="frame" x="15" y="0.0" width="571" height="330"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="600" id="ZXR-p0-OTM">
                                         <variation key="heightClass=compact-widthClass=compact" constant="480"/>
                                     </constraint>
                                 </constraints>
+                                <variation key="heightClass=regular-widthClass=regular">
+                                    <mask key="constraints">
+                                        <exclude reference="ZXR-p0-OTM"/>
+                                    </mask>
+                                </variation>
                                 <connections>
                                     <outlet property="dataSource" destination="3us-Rm-O6e" id="0aF-ID-JTo"/>
                                     <outlet property="delegate" destination="3us-Rm-O6e" id="eaN-5y-goy"/>
@@ -33,10 +38,28 @@
                         <viewLayoutGuide key="safeArea" id="8tJ-B3-lkG"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="Vko-Sw-IvP" firstAttribute="leading" secondItem="8tJ-B3-lkG" secondAttribute="leading" constant="0.5" id="4a1-c4-qBe">
+                                <variation key="heightClass=regular-widthClass=regular" constant="15"/>
+                            </constraint>
                             <constraint firstItem="Vko-Sw-IvP" firstAttribute="bottom" secondItem="VbN-R7-jEu" secondAttribute="bottom" id="9WC-33-30L"/>
                             <constraint firstItem="Vko-Sw-IvP" firstAttribute="top" secondItem="8tJ-B3-lkG" secondAttribute="top" id="BAi-Vb-RPJ"/>
                             <constraint firstItem="Vko-Sw-IvP" firstAttribute="centerX" secondItem="8tJ-B3-lkG" secondAttribute="centerX" id="TfL-QN-SbP"/>
+                            <constraint firstItem="8tJ-B3-lkG" firstAttribute="trailing" secondItem="Vko-Sw-IvP" secondAttribute="trailing" constant="0.5" id="v7J-0L-4rg">
+                                <variation key="heightClass=regular-widthClass=regular" constant="15"/>
+                            </constraint>
                         </constraints>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="v7J-0L-4rg"/>
+                                <exclude reference="4a1-c4-qBe"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=regular">
+                            <mask key="constraints">
+                                <include reference="v7J-0L-4rg"/>
+                                <include reference="4a1-c4-qBe"/>
+                            </mask>
+                        </variation>
                     </view>
                     <size key="freeformSize" width="601" height="330"/>
                     <connections>

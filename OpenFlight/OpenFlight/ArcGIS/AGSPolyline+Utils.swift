@@ -31,7 +31,6 @@
 import ArcGIS
 
 /// Utility extension for `AGSPolyline`.
-
 public extension AGSPolyline {
     // MARK: - Public Properties
     /// Returns middle point of the polyline, if any.
@@ -52,9 +51,9 @@ public extension AGSPolyline {
     /// - Returns: new computed polyline
     func replacingFirstPoint(_ point: AGSPoint) -> AGSPolyline {
         // Init with all segments end points.
-        var allPoints = self.parts.array()
-            .flatMap { return $0.array() }
-            .map { return $0.endPoint }
+        var allPoints = parts.array()
+            .flatMap { $0.array() }
+            .map { $0.endPoint }
         // Add new start point.
         allPoints.insert(point, at: 0)
 
@@ -68,9 +67,9 @@ public extension AGSPolyline {
     /// - Returns: new computed polyline
     func replacingLastPoint(_ point: AGSPoint) -> AGSPolyline {
         // Init with all segments start points.
-        var allPoints = self.parts.array()
-            .flatMap { return $0.array() }
-            .map { return $0.startPoint }
+        var allPoints = parts.array()
+            .flatMap { $0.array() }
+            .map { $0.startPoint }
         // Add new end point.
         allPoints.append(point)
 

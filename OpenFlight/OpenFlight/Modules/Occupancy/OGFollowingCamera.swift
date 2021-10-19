@@ -31,12 +31,111 @@ import Foundation
 import simd
 import SceneKit
 
+private class CameraAngle {
+    /// The maximum speed never to be exceeded exceeded. Expressed as the time required to rotate pi radians. In rad/s
+    let maxSpeed: Float
+    /// Increment (added or subtracted) at the current speed. This is the acceleration / deceleration factor. In rad/s
+    let incSpeed: Float
+    /// Specify the plane to consider (h or v)
+    let cameraPlane: CameraPlane
+
+    var computedAngle: Float {
+        if currentAngle > Float.pi {
+            return currentAngle - Float.pi * 2
+        } else {
+            return currentAngle
+        }
+    }
+    private var currentAngle = Float()
+    var targetAngle = Float() {
+        didSet {
+            if targetAngle != oldValue {
+                targetAngle = targetAngle.truncatingRemainder(dividingBy: Float.pi * 2)
+                if targetAngle < 0 {
+                    targetAngle += (Float.pi * 2)
+                }
+            }
+        }
+    }
+    private var deltaToTarget = Float()
+    // current rotation speed (in rad/s)
+    private var currentSpeed = Float()
+    private var previousUpdateTime = TimeInterval(0)
+
+    /// Constructor
+    init(cameraPlane: CameraPlane) {
+        self.cameraPlane = cameraPlane
+        switch cameraPlane {
+        case .horizontal:
+            maxSpeed = Float.pi * 0.6
+            incSpeed = Float.pi * 0.006 * 60
+            currentAngle = Float.pi
+        case .vertical:
+            maxSpeed = Float.pi * 0.4 * 60
+            incSpeed = Float.pi * 0.004
+        }
+    }
+
+    private func computeDeltaToTarget() {
+        // compute closest way to go to this target
+        deltaToTarget = (targetAngle - currentAngle).truncatingRemainder(dividingBy: Float.pi * 2)
+        if deltaToTarget < -Float.pi {
+            deltaToTarget += (Float.pi * 2)
+        } else if deltaToTarget > Float.pi {
+            deltaToTarget -= (Float.pi * 2)
+        }
+    }
+
+    func update(atTime: TimeInterval) {
+
+        let elpasedTime = atTime - previousUpdateTime
+        previousUpdateTime = atTime
+
+        // compute the diff : currentAngle vs targetAngle
+        computeDeltaToTarget()
+
+        // currentMaxSpped is a ratio (deltaToTarget / Float.pi)
+        // if delta is Float.pi -> 100 % of max speed
+        // if delta is (Float.pi / 2) -> 50% max speed
+        //
+        // the '% value' is smmoothed
+        let normMaxSpeed = abs(deltaToTarget) / Float.pi
+        // let smoothNormMaxSpeed = simd_smoothstep(0, Float(1), normMaxSpeed * 0.5)
+        let realIncSpeed = incSpeed * Float(elpasedTime)
+        let currentMaxSpeed = max(maxSpeed * normMaxSpeed, realIncSpeed)
+
+        if abs(deltaToTarget) < abs(currentSpeed) && deltaToTarget.sign == currentSpeed.sign {
+            currentAngle = targetAngle
+            currentSpeed = 0
+        } else {
+            if deltaToTarget != 0 {
+                if deltaToTarget < 0 {
+                    currentSpeed -= realIncSpeed
+                    if abs(currentSpeed) > currentMaxSpeed {
+                        currentSpeed = -currentMaxSpeed
+                    }
+                } else {
+                    currentSpeed += realIncSpeed
+                    if abs(currentSpeed) > currentMaxSpeed {
+                        currentSpeed = currentMaxSpeed
+                    }
+                }
+            }
+        }
+        // the speed is in rad / sec. Apply the delta time
+        currentAngle += currentSpeed * Float(elpasedTime)
+        currentAngle = currentAngle.truncatingRemainder(dividingBy: Float.pi * 2)
+    }
+}
+
 public class OGFollowingCamera {
 
     private var targetSphere: TargetSphere?
-    private var horizontalAngleAnalyser = FollowingAngleAnalyser(slicesNumber: 6, plane: .horizontal)
-    private var verticalAngleAnalyser = FollowingAngleAnalyser(slicesNumber: 4, plane: .vertical)
     private var previousUpdateTime = TimeInterval(0)
+    private var horizontalCameraAngle = CameraAngle(cameraPlane: .horizontal)
+    private var verticalCameraAngle = CameraAngle(cameraPlane: .vertical)
+    private var hSightAngleAnalyser = SightAngleAnalyser(slicesNumber: 6, plane: .horizontal)
+    private var vSightAngleAnalyser = SightAngleAnalyser(slicesNumber: 6, plane: .vertical)
 
     func update(cameraNode: SCNNode, targetNode: SCNNode, targetSpeed: simd_float3,
                 targetRotationSpeed: simd_float3, isStationary: Bool, atTime: TimeInterval) {
@@ -59,10 +158,11 @@ public class OGFollowingCamera {
             if let destination = goToDestination {
                 goToDestination = destination + simd_float3(0, 0, 0)
             }
-            horizontalAngleAnalyser.analyseNewDestination(
-                destinationCoordinate: goToDestination, isStationary: isStationary, atTime: atTime)
-            verticalAngleAnalyser.analyseNewDestination(
-                destinationCoordinate: goToDestination, isStationary: isStationary, atTime: atTime)
+            let hAngle = hSightAngleAnalyser.update(targetPosition: goToDestination) ?? Float.pi
+            let vAngle = vSightAngleAnalyser.update(targetPosition: goToDestination) ?? 0
+
+            horizontalCameraAngle.targetAngle = hAngle
+            verticalCameraAngle.targetAngle = vAngle
 
             if let debugSphere = targetSphere {
                 if let goToDestination = goToDestination {
@@ -72,18 +172,17 @@ public class OGFollowingCamera {
                     debugSphere.isHidden = true
                 }
             }
-        } else {
-            // opti:we do not provide a new destination but if a animation is running, we update the angle
-            horizontalAngleAnalyser.smartUpdateIfAnimationIsRunnig(atTime: atTime)
-            verticalAngleAnalyser.smartUpdateIfAnimationIsRunnig(atTime: atTime)
         }
+
+        horizontalCameraAngle.update(atTime: atTime)
+        verticalCameraAngle.update(atTime: atTime)
 
         // set camera position
         let aboveDrone = Float(0.6)
         cameraNode.position = SCNVector3(
             targetNode.position.x,
             targetNode.position.y + aboveDrone,
-            targetNode.position.z + 6
+            targetNode.position.z + 3.5
         )
         cameraNode.eulerAngles = SCNVector3Zero
         let targetQuaternion = getTargetQuaternion(targetNode: targetNode)
@@ -97,15 +196,14 @@ public class OGFollowingCamera {
 
     private func getTargetQuaternion(targetNode: SCNNode) -> SCNQuaternion {
         return SCNQuaternion(eulerAngles: simd_float3(
-            verticalAngleAnalyser.currentAngle,
-            targetNode.eulerAngles.y + horizontalAngleAnalyser.currentAngle,
+            verticalCameraAngle.computedAngle,
+            targetNode.eulerAngles.y + horizontalCameraAngle.computedAngle,
             0
         ))
     }
 }
 
 private class TargetSphere: SCNNode {
-    var planeNode: SCNNode!
     let sphereGeometry: SCNGeometry = {
         let geoSphere = SCNSphere(radius: 0.35)
         geoSphere.segmentCount = 12
@@ -213,7 +311,7 @@ private class SightAngleAnalyser: SightAngleAnalysis {
                 if retVerticalAngle > Float.pi {
                     retVerticalAngle -= Float.pi * 2
                 }
-                return retVerticalAngle * 0.75
+                return retVerticalAngle
             } else {
                 return nil
             }
@@ -233,118 +331,5 @@ private class SightAngleAnalyser: SightAngleAnalysis {
         // last and 0 as half_indicices is the indice 0
         let correctedIndex = (halfSliceIndice + 1) == nbHalfSlice ? 0 : (halfSliceIndice + 1)
         return correctedIndex / 2
-    }
-}
-
-private protocol FollowingAngleAnalysis: AnyObject {
-    var currentAngle: Float { get }
-    // var nilMotionTrigerOveride: (TimeInterval, EnumMotionAnalyse)? { get set }
-    init(slicesNumber: UInt, plane: CameraPlane)
-    func analyseNewDestination(destinationCoordinate: simd_float3?, isStationary: Bool, atTime: TimeInterval)
-    func smartUpdateIfAnimationIsRunnig(atTime: TimeInterval)
-}
-
-private class FollowingAngleAnalyser: FollowingAngleAnalysis {
-
-    private let transitionDuration: Float
-    private var setNilMotionAtTime = TimeInterval(0)
-    private var isTransitionRunning = false
-    private var startTransitionTime = TimeInterval(0)
-    private var currentUpdateTime = TimeInterval(0)
-    private var transitionDelta: Float { return Float(currentUpdateTime - startTransitionTime) }
-    private var storedAngleForNilMotion: Float
-    private var toTransitionAngle: Float = 0
-    private var fromTransitionAngle: Float = 0
-    private var sightAngleAnalyser: SightAngleAnalysis
-    private var latestAngle: Float?
-    private var latestDestisationUpdate: simd_float3?
-
-    var nilMotionTrigerOveride: (TimeInterval, Float)?
-
-    internal var currentAngle: Float {
-        if !isTransitionRunning {
-            if let latestAngle = latestAngle {
-                return latestAngle
-            } else {
-                return storedAngleForNilMotion
-            }
-        } else {
-            let normalizedDelta = Float(simd_smoothstep(0, transitionDuration, transitionDelta))
-            let intermediateAngle = simd_mix(fromTransitionAngle, toTransitionAngle, normalizedDelta)
-            return intermediateAngle
-        }
-    }
-
-    required init(slicesNumber: UInt, plane: CameraPlane) {
-        self.sightAngleAnalyser = SightAngleAnalyser(slicesNumber: slicesNumber, plane: plane)
-        switch plane {
-        case .horizontal:
-            transitionDuration = 2.5
-            storedAngleForNilMotion = Float.pi
-            latestAngle = Float.pi
-            nilMotionTrigerOveride = (0.5, Float.pi)
-        case .vertical:
-            transitionDuration = 1.5
-            storedAngleForNilMotion = 0
-            latestAngle = 0
-            nilMotionTrigerOveride = (0.5, 0)
-        }
-    }
-
-    func smartUpdateIfAnimationIsRunnig(atTime: TimeInterval) {
-        guard isTransitionRunning else { return }
-        analyseNewDestination(destinationCoordinate: latestDestisationUpdate, atTime: atTime)
-    }
-
-    func analyseNewDestination(destinationCoordinate: simd_float3?, isStationary: Bool = false, atTime: TimeInterval) {
-        latestDestisationUpdate = destinationCoordinate
-        currentUpdateTime = atTime
-        if isTransitionRunning && transitionDelta > transitionDuration {
-            isTransitionRunning = false
-            latestAngle = toTransitionAngle
-            storedAngleForNilMotion = currentAngle
-        }
-
-        if !isTransitionRunning {
-            // test if we need to overide the nil value
-
-            var analyzedAngle: Float?
-            if isStationary {
-                // force the default position (the drone is stationary)
-                if let nilMotionTrigerOveride = nilMotionTrigerOveride {
-                    analyzedAngle = nilMotionTrigerOveride.1
-                }
-            } else {
-                analyzedAngle = sightAngleAnalyser.update(targetPosition: destinationCoordinate)
-                if analyzedAngle == nil {
-                    if setNilMotionAtTime == 0 {
-                        // start the timer
-                        setNilMotionAtTime = atTime
-                    } else {
-                        // test the timer
-                        if let nilMotionTrigerOveride = nilMotionTrigerOveride,
-                           (atTime - setNilMotionAtTime) > nilMotionTrigerOveride.0 {
-                            // timer is done. We use the overrided angle
-                            analyzedAngle = nilMotionTrigerOveride.1
-                        }
-                    }
-                } else {
-                    setNilMotionAtTime = 0
-                }
-            }
-
-            // Analyse the speed -> start a transition if necessary (neutral state don't trig the transition)
-            if let analyzedAngle = analyzedAngle {
-                if analyzedAngle != currentAngle {
-                    // store the from angle before to start the transition
-                    fromTransitionAngle = currentAngle
-                    isTransitionRunning = true
-                    startTransitionTime = atTime
-                    toTransitionAngle = analyzedAngle
-                }
-            } else {
-                latestAngle = nil // neutral position
-            }
-        }
     }
 }

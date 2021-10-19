@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// Utility extension for `MotorError`.
-
 extension MotorError {
     /// Returns corresponding error for motor error.
     var error: HUDAlertType? {

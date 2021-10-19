@@ -172,12 +172,11 @@ public protocol FlightPlanEditionService {
 public class FlightPlanEditionServiceImpl {
 
     private var undoStack: [String] = []
-    private let requester: FlightPlanThumnailRequester = FlightPlanThumnailRequester()
+    private let requester: FlightPlanThumbnailRequester = FlightPlanThumbnailRequester()
     private let repo: FlightPlanRepository
     private let typeStore: FlightPlanTypeStore
     private let currentMissionManager: CurrentMissionManager
     private let currentUser: UserInformation
-    private let filesManager: FlightPlanFilesManager
 
     public var canUpdatePolygon: Bool = true
     private var currentFlightPlanSubject = CurrentValueSubject<FlightPlanModel?, Never>(nil)
@@ -204,13 +203,11 @@ public class FlightPlanEditionServiceImpl {
     init(flightPlanRepo: FlightPlanRepository,
          typeStore: FlightPlanTypeStore,
          currentMissionManager: CurrentMissionManager,
-         currentUser: UserInformation,
-         filesManager: FlightPlanFilesManager) {
+         currentUser: UserInformation) {
         repo = flightPlanRepo
         self.typeStore = typeStore
         self.currentMissionManager = currentMissionManager
         self.currentUser = currentUser
-        self.filesManager = filesManager
     }
 }
 
@@ -259,7 +256,7 @@ extension FlightPlanEditionServiceImpl {
 
         // Create new waypoint.
         let wayPoint = WayPoint(coordinate: mapPoint.toCLLocationCoordinate2D(),
-                                altitude: mapPoint.z,
+                                altitude: mapPoint.z.rounded(),
                                 speed: nextWayPoint.speed,
                                 shouldContinue: dataSettings.shouldContinue ?? true,
                                 tilt: tilt.rounded())
@@ -444,6 +441,7 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
         guard var flightPlan = currentFlightPlan else { return }
         flightPlan.type = type
         currentFlightPlan = flightPlan
+        resetUndoStack()
     }
 
     /// Reset undo stack.
@@ -483,7 +481,6 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
             }
             var flightplan = currentFlightPlan
             flightplan?.dataSetting = dataSetting
-            currentFlightPlan?.type = flighType.key
             currentFlightPlan = flightplan
         }
     }
@@ -578,7 +575,7 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
 
         flightPlan?.type = typeKey
 
-        flightPlan?.dataSetting?.mavelinkDataFile = nil
+        flightPlan?.dataSetting?.mavlinkDataFile = nil
 
         currentFlightPlan = flightPlan
     }
@@ -587,7 +584,7 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
         let flightPlan = currentFlightPlan
         flightPlan?.dataSetting?.wayPoints.removeAll()
         flightPlan?.dataSetting?.pois.removeAll()
-        flightPlan?.dataSetting?.mavelinkDataFile = nil
+        flightPlan?.dataSetting?.mavlinkDataFile = nil
         currentFlightPlan = flightPlan
     }
 
@@ -621,14 +618,15 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
             
             // Generate flightPlanData from mavlink.
             var flightPlanData: FlightPlanModel?
-            if let currentFlightPlan = currentFlightPlan {
+            if let currentFlightPlan = currentFlightPlan, let data = try? Data(contentsOf: url) {
                 flightPlanData = type.mavLinkType.generateFlightPlanFromMavlink(
                     url: url,
                     mavlinkString: nil,
                     flightPlan: currentFlightPlan)
                 // Save Mavlink into the intended Mavlink url if needed.
                 if let flightPlan = flightPlanData, !type.canGenerateMavlink {
-                    filesManager.copyMavlink(of: flightPlan, from: url)
+                    flightPlan.dataSetting?.mavlinkDataFile = data
+                    repo.persist(flightPlan, true)
                 }
             }
             currentFlightPlan = flightPlanData
@@ -641,8 +639,11 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
                                                                             mavlinkString: nil,
                                                                             flightPlan: currentFP)
         // Save Mavlink into the intended Mavlink url if needed.
-        if let flightPlan = flightPlanData, !type.canGenerateMavlink {
-            filesManager.copyMavlink(of: flightPlan, from: url)
+        if !type.canGenerateMavlink,
+           let flightPlan = flightPlanData,
+           let data = try? Data(contentsOf: url) {
+            flightPlan.dataSetting?.mavlinkDataFile = data
+            repo.persist(flightPlan, true)
         }
 
         // Backup OA settings.

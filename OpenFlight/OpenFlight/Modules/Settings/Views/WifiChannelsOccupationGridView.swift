@@ -51,6 +51,7 @@ final class WifiChannelsOccupationGridView: WifiChannelsOccupationView {
 
     // MARK: - Internal Properties
     var currentChannel: WifiChannel?
+    var currentChannelUpdating: Bool?
     weak var delegate: WifiChannelsOccupationGridViewDelegate?
 
     // MARK: - Overrides Funcs
@@ -163,7 +164,12 @@ private extension WifiChannelsOccupationGridView {
                                    width: range,
                                    height: frame.size.height)
 
-            ctx.setFillColor(ColorName.highlightColor.color.cgColor)
+            var alpha: CGFloat = 1.0
+            if let currentChannelUpdating = currentChannelUpdating, currentChannelUpdating {
+                alpha = 0.5
+            }
+
+            ctx.setFillColor(ColorName.highlightColor.color.withAlphaComponent(alpha).cgColor)
             ctx.fill(rectangle)
         }
     }

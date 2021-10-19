@@ -54,7 +54,34 @@ enum GallerySourceType: CaseIterable {
         case .droneInternal:
             return L10n.gallerySourceDroneInternal
         case .mobileDevice:
-            return L10n.gallerySourceMobile
+            return L10n.gallerySourceLocalMemory
+        default:
+            return ""
+        }
+    }
+
+    var panoramaCopyTitle: String {
+        switch self {
+        case .droneSdCard:
+            return L10n.galleryPanoramaSdCopy
+        case .droneInternal:
+            return L10n.galleryPanoramaInternalCopy
+        default:
+            return ""
+        }
+    }
+
+    func deleteConfirmMessage(count: Int) -> String {
+        switch self {
+        case .droneSdCard,
+             .droneInternal:
+            return count > 1
+                ? L10n.galleryRemoveDroneMemoryConfirmPlural
+                : L10n.galleryRemoveDroneMemoryConfirm
+        case .mobileDevice:
+            return count > 1
+                ? L10n.galleryRemoveLocalMemoryConfirmPlural
+                : L10n.galleryRemoveLocalMemoryConfirm
         default:
             return ""
         }
@@ -79,15 +106,6 @@ struct GallerySource {
             return Asset.Dashboard.icPhoneLight.image
         default:
             return nil
-        }
-    }
-
-    var removeWarning: String {
-        switch type {
-        case .droneSdCard:
-            return L10n.galleryRemoveSdConfirm
-        default:
-            return ""
         }
     }
 }

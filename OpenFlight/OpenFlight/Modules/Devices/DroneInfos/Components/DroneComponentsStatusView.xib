@@ -13,8 +13,8 @@
                 <outlet property="frontLeftMotorImageView" destination="jKw-Dx-S6B" id="AzH-ZA-2g9"/>
                 <outlet property="frontRightMotorImageView" destination="RPT-jx-xMx" id="ovh-wv-w1d"/>
                 <outlet property="gimbalImageView" destination="RXV-25-NqT" id="Ic2-9l-btM"/>
-                <outlet property="rearLeftMotorImageView" destination="dLV-uC-eig" id="grO-fv-ah2"/>
-                <outlet property="rearRightMotorImageView" destination="DIF-m8-zVM" id="1ge-RZ-6nl"/>
+                <outlet property="rearLeftMotorImageView" destination="DIF-m8-zVM" id="hoY-BJ-Y4p"/>
+                <outlet property="rearRightMotorImageView" destination="dLV-uC-eig" id="RPA-q8-Rda"/>
                 <outlet property="stereoVisionImageView" destination="zVO-WU-6Ja" id="vpv-od-0Am"/>
                 <outletCollection property="allStatusView" destination="RXV-25-NqT" collectionClass="NSMutableArray" id="ltW-G0-XcJ"/>
                 <outletCollection property="allStatusView" destination="jKw-Dx-S6B" collectionClass="NSMutableArray" id="NzH-7y-b8M"/>
@@ -39,12 +39,12 @@
                     </constraints>
                 </imageView>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="meQ-xC-FwT" userLabel="StereoView">
-                    <rect key="frame" x="206" y="205" width="138" height="147"/>
+                    <rect key="frame" x="206" y="215.33333333333334" width="138" height="126.33333333333334"/>
                     <subviews>
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icDroneStereoVisionOk" translatesAutoresizingMaskIntoConstraints="NO" id="zVO-WU-6Ja" userLabel="icDroneStereoVisionOk">
-                            <rect key="frame" x="45.333333333333343" y="0.0" width="47.333333333333343" height="33.333333333333336"/>
+                            <rect key="frame" x="45.333333333333343" y="0.0" width="47.333333333333343" height="28"/>
                             <constraints>
-                                <constraint firstAttribute="width" secondItem="zVO-WU-6Ja" secondAttribute="height" multiplier="27:19" id="NgQ-mr-TPn"/>
+                                <constraint firstAttribute="width" secondItem="zVO-WU-6Ja" secondAttribute="height" multiplier="27:16" id="NgQ-mr-TPn"/>
                             </constraints>
                         </imageView>
                     </subviews>
@@ -54,7 +54,7 @@
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="53b-a9-JLR" userLabel="GimbalView">
-                    <rect key="frame" x="233.66666666666666" y="195.66666666666669" width="82.666666666666657" height="165.66666666666669"/>
+                    <rect key="frame" x="233.66666666666666" y="207.33333333333331" width="82.666666666666657" height="142.33333333333331"/>
                     <subviews>
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGimbalOk" translatesAutoresizingMaskIntoConstraints="NO" id="RXV-25-NqT" userLabel="icGimbalOk">
                             <rect key="frame" x="33.333333333333343" y="0.0" width="16" height="45.666666666666664"/>
@@ -133,14 +133,14 @@
                 <constraint firstItem="53b-a9-JLR" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="bNK-ld-Ger"/>
                 <constraint firstItem="RPT-jx-xMx" firstAttribute="width" secondItem="Xm9-T1-V3E" secondAttribute="width" multiplier="0.09" id="cCH-GV-tGP"/>
                 <constraint firstItem="dLV-uC-eig" firstAttribute="width" secondItem="Xm9-T1-V3E" secondAttribute="width" multiplier="0.09" id="cbC-Zp-9XN"/>
-                <constraint firstItem="53b-a9-JLR" firstAttribute="height" secondItem="Xm9-T1-V3E" secondAttribute="height" multiplier="0.72" id="dMg-MG-OzM"/>
+                <constraint firstItem="53b-a9-JLR" firstAttribute="height" secondItem="Xm9-T1-V3E" secondAttribute="height" multiplier="0.62" id="dMg-MG-OzM"/>
                 <constraint firstItem="c4s-nd-qJX" firstAttribute="centerX" secondItem="Xm9-T1-V3E" secondAttribute="centerX" id="glm-cY-pfP"/>
                 <constraint firstItem="c4s-nd-qJX" firstAttribute="centerY" secondItem="Xm9-T1-V3E" secondAttribute="centerY" id="iOO-uF-5Q6"/>
                 <constraint firstItem="Xm9-T1-V3E" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="mnR-wR-o0b"/>
                 <constraint firstItem="53b-a9-JLR" firstAttribute="centerX" secondItem="Xm9-T1-V3E" secondAttribute="centerX" id="pAo-WJ-sFF"/>
                 <constraint firstItem="zVO-WU-6Ja" firstAttribute="width" secondItem="Xm9-T1-V3E" secondAttribute="width" multiplier="0.206107" id="uKV-mn-skf"/>
                 <constraint firstItem="53b-a9-JLR" firstAttribute="width" secondItem="Xm9-T1-V3E" secondAttribute="width" multiplier="0.358779" id="uQT-7v-oWN"/>
-                <constraint firstItem="meQ-xC-FwT" firstAttribute="height" secondItem="Xm9-T1-V3E" secondAttribute="height" multiplier="0.64" id="zv8-7k-fyQ"/>
+                <constraint firstItem="meQ-xC-FwT" firstAttribute="height" secondItem="Xm9-T1-V3E" secondAttribute="height" multiplier="0.55" id="zv8-7k-fyQ"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>

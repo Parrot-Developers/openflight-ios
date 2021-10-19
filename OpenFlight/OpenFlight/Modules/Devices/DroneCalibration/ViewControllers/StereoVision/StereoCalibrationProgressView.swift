@@ -47,6 +47,7 @@ class StereoCalibrationProgressView: UIView, NibOwnerLoadable {
     @IBOutlet weak var finishedButton: UIButton!
     @IBOutlet weak var stopButton: UIButton!
     @IBOutlet weak var calibrationCompleteImageView: UIImageView!
+    @IBOutlet weak var landingButton: UIButton!
 
     private var progressView = CircleProgressView()
     private var cancellables = Set<AnyCancellable>()
@@ -95,58 +96,79 @@ private extension StereoCalibrationProgressView {
 
     /// Binds the view model to the view.
     func bindViewModel() {
-
-        stereoCalibViewModel.$calibrationStateMessage
+        stereoCalibViewModel.calibrationStateMessage
             .compactMap { $0 }
             .sink { [unowned self] calibrationMessage in
                 missionStateLabel.text = calibrationMessage
             }
             .store(in: &cancellables)
 
-        stereoCalibViewModel.$calibrationPercentage
+        stereoCalibViewModel.calibrationPercentage
             .compactMap { $0 }
             .sink { [unowned self] percentage in
                 progressView.setProgress(percentage/100)
             }
             .store(in: &cancellables)
 
-        stereoCalibViewModel.$calibrationStatus
-            .compactMap { $0 }
-            .removeDuplicates()
-            .combineLatest(stereoCalibViewModel.$isFlying.removeDuplicates())
-            .sink { [unowned self] (status, isFlying) in
-                ULog.i(.tag, "sink status : \(status), sink isFlying : \(isFlying)")
-                switch status {
-                case .ok:
-                    if isFlying == false {
-                        stopButton.isHidden = true
-                        finishedButton.isHidden = false
-                        calibrationTitle.text = L10n.loveCalibrationOk
-                    }
-
-                case .ko:
-                    if isFlying == false {
-                        stopButton.isHidden = true
-                        finishedButton.isHidden = false
-                        calibrationCompleteImageView.image = UIImage(named: "")
-                        calibrationTitle.text = L10n.loveCalibrationKo
-                        missionStateLabel.text = L10n.loveCalibrationKoAdvice
-                    }
-
-                case .aborted:
-                    stopButton.isHidden = true
-                    if isFlying == true {
-                        calibrationTitle.text = "Calibration stopped"
-                        missionStateLabel.text = "Please land the drone to exit calibration"
-                        missionStateLabel.textColor = ColorName.warningColor.color
-                    }
-                    if isFlying == false {
-                        removeFromSuperview()
-                    }
-
-                default:
-                    return
+        stereoCalibViewModel.$shouldHideProgressView
+            .sink { [unowned self] shouldHideProgressView in
+                if shouldHideProgressView == true {
+                    progressView.removeFromSuperview()
                 }
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.$stopButtonHidden
+            .sink { [unowned self] stopButtonHidden in
+                stopButton.isHidden = stopButtonHidden
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.$finishedButtonHidden
+            .sink { [unowned self] finishedButtonHidden in
+                finishedButton.isHidden = finishedButtonHidden
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.$missionStateHidden
+            .sink { [unowned self] missionStateHidden in
+                missionStateLabel.isHidden = missionStateHidden
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.$calibrationCompleteImageHidden
+            .sink { [unowned self] calibrationCompleteImageHidden in
+                calibrationCompleteImageView.isHidden = calibrationCompleteImageHidden
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.$calibrationTitle
+            .sink { [unowned self] title in
+                calibrationTitle.text = title
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.$calibrationTitleColor
+            .sink { [unowned self] calibrationTitleColor in
+                calibrationTitle.textColor = calibrationTitleColor
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.calibrationStateMessage
+            .sink { [unowned self] calibrationMessage in
+                missionStateLabel.text = calibrationMessage
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.$landingButtonHidden
+            .sink { [unowned self] landingButtonHidden in
+                landingButton.isHidden = landingButtonHidden
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.$calibrationMessageColor
+            .sink { [unowned self] messageColor in
+                missionStateLabel.textColor = messageColor
             }
             .store(in: &cancellables)
     }
@@ -163,6 +185,10 @@ extension StereoCalibrationProgressView {
 
     @IBAction func closeAfterCalibration(_ sender: Any) {
         stereoCalibViewModel.dismissProgressView(endState: .noError)
-        removeFromSuperview()
+        stereoCalibViewModel.back()
+    }
+
+    @IBAction func landingDrone(_ sender: Any) {
+        stereoCalibViewModel.landDrone()
     }
 }

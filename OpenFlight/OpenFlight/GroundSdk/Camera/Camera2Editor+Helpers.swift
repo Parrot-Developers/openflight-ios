@@ -329,7 +329,7 @@ private extension Camera2Editor {
             photoMode: self[Camera2Params.photoMode]?.value ?? savedConfig?.photoMode,
             photoResolution: self[Camera2Params.photoResolution]?.value ?? savedConfig?.photoResolution,
             photoStreamingMode: self[Camera2Params.photoStreamingMode]?.value ?? savedConfig?.photoStreamingMode,
-            photoTimelapseInterval: self[Camera2Params.alignmentOffsetPitch]?.value ?? savedConfig?.alignmentOffsetPitch,
+            photoTimelapseInterval: self[Camera2Params.photoTimelapseInterval]?.value ?? savedConfig?.photoTimelapseInterval,
             shutterSpeed: self[Camera2Params.shutterSpeed]?.value ?? savedConfig?.shutterSpeed,
             storagePolicy: self[Camera2Params.storagePolicy]?.value ?? savedConfig?.storagePolicy,
             videoRecordingBitrate: self[Camera2Params.videoRecordingBitrate]?.value ?? savedConfig?.videoRecordingBitrate,

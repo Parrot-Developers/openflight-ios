@@ -103,10 +103,20 @@ public protocol FlightPlanRepository: AnyObject {
     /// - return : Array of FlightPlanModel
     func loadAllFlightsPlans() -> [FlightPlanModel]
 
+    /// Perform remove FlightPlan with Flag
+    /// - Parameters:
+    ///     - flightPlan: FlightPlanModel to remove
+    func performRemoveFlightPlan(_ flightPlan: FlightPlanModel)
+
     /// Remove FlightPlan from CoreData by UUID
     /// - Parameters:
     ///     - flightPlanUuid: flightPlanUuid to remove
     func removeFlightPlan(_ flightPlanUuid: String)
+
+    /// Remove FlightPlan from CoreData by UUID even is synchronized
+    /// - Parameters:
+    ///     - flightPlanUuid: flightPlanUuid to remove
+    func removeSyncFlightPlan(_ flightPlanUuid: String)
 
     /// Load FlightPlans from CoreData by excluding flightPlan from returned list of a given types:
     ///
@@ -127,9 +137,13 @@ public protocol FlightPlanRepository: AnyObject {
     /// Migrate FlightPlans made by a Logged user to ANONYMOUS user
     /// - Parameter completion: empty block indicates when process is finished
     func migrateFlightPlansToAnonymous(_ completion: @escaping () -> Void)
+
+    /// Get the last flight date of a flight plan if any
+    /// - Parameter flightPlan: flight plan
+    func lastFlightDate(_ flightPlan: FlightPlanModel) -> Date?
 }
 
-extension CoreDataServiceIml: FlightPlanRepository {
+extension CoreDataServiceImpl: FlightPlanRepository {
 
     public func persist(_ flightPlan: FlightPlanModel, _ byUserUpdate: Bool = true) {
         // Prepare content to save.
@@ -139,7 +153,7 @@ extension CoreDataServiceIml: FlightPlanRepository {
         let flightPlanObject: NSManagedObject?
 
         // Check object if exists.
-        if let object = self.flightPlan(flightPlan.uuid) {
+        if let object = loadFlightPlans(["uuid": flightPlan.uuid], false).first {
             // Use persisted object.
             flightPlanObject = object
         } else {
@@ -171,7 +185,7 @@ extension CoreDataServiceIml: FlightPlanRepository {
         flightPlanObj.customTitle = flightPlan.customTitle
         flightPlanObj.thumbnailUuid = flightPlan.thumbnailUuid
         flightPlanObj.pgyProjectId = flightPlan.pgyProjectId
-        flightPlanObj.dataString = flightPlan.dataSetting?.toJSONString()
+        flightPlanObj.dataString = flightPlan.dataStringData
         flightPlanObj.mediaCustomId = flightPlan.mediaCustomId
         flightPlanObj.state = flightPlan.state.rawValue
         flightPlanObj.lastMissionItemExecuted = flightPlan.lastMissionItemExecuted
@@ -182,13 +196,13 @@ extension CoreDataServiceIml: FlightPlanRepository {
         flightPlanObj.lastUploadAttempt = flightPlan.lastUploadAttempt
         flightPlanObj.uploadAttemptCount = flightPlan.uploadAttemptCount
 
-        if let project = self.project("uuid", flightPlan.projectUuid).first {
+        if let project = self.loadProjects("uuid", flightPlan.projectUuid).first {
             flightPlanObj.ofProject = project
         }
 
         // Sets thumbnail of the FlightPlan if it exists
         if let thumbnailModel = flightPlan.thumbnail {
-            let thumbnailObject = self.thumbnail("uuid", thumbnailModel.uuid).first ?? Thumbnail(context: managedContext)
+            let thumbnailObject = self.loadThumbnails("uuid", thumbnailModel.uuid, false).first ?? Thumbnail(context: managedContext)
 
             thumbnailObject.synchroStatus = (byUserUpdate) ? 0 : thumbnailModel.synchroStatus ?? 0
             thumbnailObject.fileSynchroStatus = (byUserUpdate) ? 0 : thumbnailModel.fileSynchroStatus ?? 0
@@ -203,11 +217,18 @@ extension CoreDataServiceIml: FlightPlanRepository {
             thumbnailObject.parrotCloudToBeDeleted = thumbnailModel.parrotCloudToBeDeleted
 
             flightPlanObj.thumbnail = thumbnailObject
+
+            if byUserUpdate {
+                objectToUpload.send(thumbnailModel)
+            }
         }
 
         managedContext.perform {
             do {
                 try managedContext.save()
+                if byUserUpdate {
+                    self.objectToUpload.send(flightPlan)
+                }
             } catch let error {
                 ULog.e(.dataModelTag, "Error during persist FlightPlan with UUID \(flightPlan.uuid) into Coredata: \(error.localizedDescription)")
             }
@@ -222,47 +243,123 @@ extension CoreDataServiceIml: FlightPlanRepository {
 
     public func loadAllFlightsPlans() -> [FlightPlanModel] {
         // Return flightPlans of current User
-        return self.flightPlan(["apcId": userInformation.apcId]).compactMap({$0.model()})
+        return loadFlightPlans(["apcId": userInformation.apcId])
+            .compactMap({ $0.model() })
     }
 
     public func loadFlightPlan(_ key: String, _ value: String) -> FlightPlanModel? {
-        return self.flightPlan([key: value]).first?.model()
+        return loadFlightPlans([ key: value,
+                                 "apcId": userInformation.apcId ])
+            .first?.model()
     }
 
     public func loadFlightPlans(_ key: String, _ value: String) -> [FlightPlanModel] {
-        return self.flightPlan([key: value]).map({$0.model()})
+        return loadFlightPlans([ key: value,
+                                 "apcId": userInformation.apcId ])
+            .map({ $0.model() })
     }
 
     public func loadFlightPlan(_ keysValues: [String: String]) -> FlightPlanModel? {
-        return self.flightPlan(keysValues).first?.model()
+        return loadFlightPlans(keysValues)
+            .first?.model()
     }
 
     public func loadFlightPlans(_ keysValues: [String: String]) -> [FlightPlanModel] {
-        return self.flightPlan(keysValues).map({$0.model()})
+        return loadFlightPlans(keysValues)
+            .map({ $0.model() })
     }
 
     public func loadFlightPlansToRemove() -> [FlightPlanModel] {
-        return self.loadAllFlightsPlans().filter({ $0.parrotCloudToBeDeleted })
+        return loadFlightPlans(["apcId": userInformation.apcId], false)
+            .filter({ $0.parrotCloudToBeDeleted })
+            .map({ $0.model() })
     }
 
-    public func removeFlightPlan(_ flightPlanUuid: String) {
+    public func performRemoveFlightPlan(_ flightPlan: FlightPlanModel) {
         guard let managedContext = currentContext,
-              let flightPlan = self.flightPlan(flightPlanUuid) else {
+              let flightPlanObject = loadFlightPlans(["uuid": flightPlan.uuid], false).first else {
             return
         }
 
         // Remove related Thumbnail
-        flightPlan.thumbnailUuid = nil
+        if let relatedThumbnail = flightPlan.thumbnail {
+            flightPlanObject.thumbnailUuid = nil
+            flightPlanObject.thumbnail = nil
+            performRemoveThumbnail(relatedThumbnail)
+        }
 
-        managedContext.delete(flightPlan)
+        let relatedFlightPlanFlights = loadflightPlanFlightsKv("flightplanUuid", flightPlan.uuid)
+        if !relatedFlightPlanFlights.isEmpty {
+            relatedFlightPlanFlights.forEach({ performRemoveFlightPlanFlight($0.flightUuid, $0.flightplanUuid)})
+            flightPlanObject.flightPlanFlights = nil
+        }
+
+        if let relatedPgyProject = loadPgyProject(flightPlan.pgyProjectId) {
+            performRemovePgyProject(relatedPgyProject.pgyProjectId)
+        }
+
+        if flightPlan.parrotCloudId == 0 {
+            managedContext.delete(flightPlanObject)
+        } else {
+            flightPlanObject.parrotCloudToBeDeleted = true
+            objectToRemove.send(flightPlan)
+        }
 
         managedContext.perform {
             do {
                 try managedContext.save()
             } catch let error {
-                ULog.e(.dataModelTag, "Error removing FlightPlan with UUID : \(flightPlanUuid) from CoreData : \(error.localizedDescription)")
+                ULog.e(.dataModelTag, "Error perform deletion FlightPlan with UUID : \(flightPlan.uuid) from CoreData : \(error.localizedDescription)")
             }
         }
+    }
+
+    public func removeFlightPlan(_ flightPlanUuid: String) {
+        guard let flightPlan = loadFlightPlans(["uuid": flightPlanUuid], false).first else {
+            return
+        }
+
+        // Remove related thumbnail
+        if let relatedThumbnail = flightPlan.thumbnail?.model() {
+            performRemoveThumbnail(relatedThumbnail)
+            flightPlan.thumbnail = nil
+            flightPlan.thumbnailUuid = nil
+        }
+
+        let relatedFlightPlanFlights = loadflightPlanFlightsKv("flightplanUuid", flightPlan.uuid)
+        if !relatedFlightPlanFlights.isEmpty {
+            relatedFlightPlanFlights.forEach({ performRemoveFlightPlanFlight($0.flightUuid, $0.flightplanUuid)})
+            flightPlan.flightPlanFlights = nil
+        }
+
+        if let relatedPgyProject = loadPgyProject(flightPlan.pgyProjectId) {
+            performRemovePgyProject(relatedPgyProject.pgyProjectId)
+        }
+        remove(flightPlan)
+    }
+
+    public func removeSyncFlightPlan(_ flightPlanUuid: String) {
+        guard let flightPlan = loadFlightPlans(["uuid": flightPlanUuid], false).first else {
+            return
+        }
+
+        // Remove related thumbnail
+        if let relatedThumbnail = flightPlan.thumbnail?.model() {
+            removeThumbnail(relatedThumbnail.uuid)
+            flightPlan.thumbnail = nil
+            flightPlan.thumbnailUuid = nil
+        }
+
+        let relatedFlightPlanFlights = loadflightPlanFlightsKv("flightplanUuid", flightPlan.uuid)
+        if !relatedFlightPlanFlights.isEmpty {
+            relatedFlightPlanFlights.forEach({ removeFlightPlanFlight($0.flightUuid, $0.flightplanUuid)})
+            flightPlan.flightPlanFlights = nil
+        }
+
+        if let relatedPgyProject = loadPgyProject(flightPlan.pgyProjectId) {
+            removePgyProject(relatedPgyProject.pgyProjectId)
+        }
+        remove(flightPlan)
     }
 
     public func migrateFlightPlansToLoggedUser(_ completion: @escaping () -> Void) {
@@ -276,11 +373,13 @@ extension CoreDataServiceIml: FlightPlanRepository {
     }
 
     public func loadFlightPlansByExcluding(types: [String]) -> [FlightPlanModel] {
-        return loadFlightPlansByExcluding(types: types).map({ $0.model() })
+        return loadFlightPlansByExcluding(types: types)
+            .map({ $0.model() })
     }
 
     public func loadFlightPlansByPgyProject(pgyProjectId: Int64) -> FlightPlanModel? {
-        return loadFlightPlansByPgyProject(pgyProjectId: pgyProjectId).map({ $0.model() })
+        return loadFlightPlansByPgyProject(pgyProjectId: pgyProjectId)
+            .map({ $0.model() })
     }
 
     public func migrateFlightPlansToAnonymous(_ completion: @escaping () -> Void) {
@@ -292,12 +391,20 @@ extension CoreDataServiceIml: FlightPlanRepository {
             completion()
         }
     }
+
+    public func lastFlightDate(_ flightPlan: FlightPlanModel) -> Date? {
+        guard let flightPlan = self.flightPlan(flightPlan.uuid) else {
+            return nil
+        }
+        return flightPlan.flightPlanFlights?.compactMap { $0.ofFlight?.startTime }.max() ?? flightPlan.lastUpdate
+    }
 }
 
 // MARK: - Utils
-internal extension CoreDataServiceIml {
+internal extension CoreDataServiceImpl {
 
-    func loadFlightPlansByExcluding(types: [String]) -> [FlightPlan] {
+    func loadFlightPlansByExcluding(types: [String],
+                                    _ onlyNotDeleted: Bool = true) -> [FlightPlan] {
         guard let managedContext = currentContext else {
             return []
         }
@@ -312,8 +419,12 @@ internal extension CoreDataServiceIml {
             typesPredicateLog = String(format: "%@, %@", typesPredicateLog, type)
         }
 
-        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
-        fetchRequest.predicate = compoundPredicates
+        if onlyNotDeleted {
+            let predicate = NSPredicate(format: "parrotCloudToBeDeleted == %@", NSNumber(value: false))
+            predicates.append(predicate)
+        }
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
 
         // Sort by `lastUpdate´ descending
         let sort = NSSortDescriptor(key: "lastUpdate", ascending: false)
@@ -327,7 +438,8 @@ internal extension CoreDataServiceIml {
         }
     }
 
-    func flightPlan (_ keysValues: [String: String]) -> [FlightPlan] {
+    func loadFlightPlans (_ keysValues: [String: String] = [:],
+                          _ onlyNotDeleted: Bool = true) -> [FlightPlan] {
         guard let managedContext = currentContext else {
             return []
         }
@@ -344,8 +456,12 @@ internal extension CoreDataServiceIml {
             predicates.append(predicate)
         }
 
-        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
-        fetchRequest.predicate = compoundPredicates
+        if onlyNotDeleted {
+            let predicate = NSPredicate(format: "parrotCloudToBeDeleted == %@", NSNumber(value: false))
+            predicates.append(predicate)
+        }
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
 
         var flightPlans = [FlightPlan]()
 
@@ -360,28 +476,37 @@ internal extension CoreDataServiceIml {
         flightPlans.indices.forEach {
             if flightPlans[$0].thumbnail == nil,
                let thumbnailUuid = flightPlans[$0].thumbnailUuid {
-                flightPlans[$0].thumbnail = self.thumbnail("uuid", thumbnailUuid).first
+                flightPlans[$0].thumbnail = self.loadThumbnails("uuid", thumbnailUuid).first
             }
 
             if flightPlans[$0].flightPlanFlights == nil ||
                 ((flightPlans[$0].flightPlanFlights?.isEmpty) != nil),
                let flightPlanUUid = flightPlans[$0].uuid {
-                flightPlans[$0].flightPlanFlights = Set(self.flightPlanFlightKv("flightplanUuid", flightPlanUUid).map { $0 })
+                flightPlans[$0].flightPlanFlights = Set(self.loadflightPlanFlightsKv("flightplanUuid", flightPlanUUid).map { $0 })
             }
         }
 
         return flightPlans
     }
 
-    func loadFlightPlansByPgyProject(pgyProjectId: Int64) -> FlightPlan? {
+    func loadFlightPlansByPgyProject(pgyProjectId: Int64,
+                                     _ onlyNotDeleted: Bool = true) -> FlightPlan? {
 
         guard let managedContext = currentContext else {
             return nil
         }
 
+        var predicates: [NSPredicate] = []
+
         let fetchRequest: NSFetchRequest<FlightPlan> = FlightPlan.fetchRequest()
-        let predicate = NSPredicate(format: "pgyProjectId == %ld", pgyProjectId)
-        fetchRequest.predicate = predicate
+        predicates.append(NSPredicate(format: "pgyProjectId == %ld", pgyProjectId))
+
+        if onlyNotDeleted {
+            let predicate = NSPredicate(format: "parrotCloudToBeDeleted == %@", NSNumber(value: false))
+            predicates.append(predicate)
+        }
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
 
         do {
             return try managedContext.fetch(fetchRequest).first
@@ -390,10 +515,26 @@ internal extension CoreDataServiceIml {
             return nil
         }
     }
+
+    func remove(_ flightPlan: FlightPlan) {
+        guard let managedContext = currentContext else {
+            return
+        }
+        managedContext.delete(flightPlan)
+
+        managedContext.perform {
+            do {
+                try managedContext.save()
+            } catch let error {
+                ULog.e(.dataModelTag, "Error removing FlightPlan with UUID:\(flightPlan.uuid ?? ""))"
+                        + " from CoreData:\(error.localizedDescription)")
+            }
+        }
+    }
 }
 
-extension CoreDataServiceIml {
+extension CoreDataServiceImpl {
     func flightPlan(_ uuid: String) -> FlightPlan? {
-        self.flightPlan(["uuid": uuid]).first
+        self.loadFlightPlans(["uuid": uuid]).first
     }
 }

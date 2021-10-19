@@ -34,7 +34,6 @@ import Foundation
 final class FirmwareUpdatingDataSource {
     // MARK: - Internal Properties
     let elements: [FirmwareMissionsUpdatingCase]
-    let subtitle: String
     let currentTotalProgress: Float
 
     // MARK: - Private Enum
@@ -51,7 +50,6 @@ final class FirmwareUpdatingDataSource {
 
         guard let firmwareToUpdate = firmwareUpdaterManager.firmwareToUpdate else {
             elements = []
-            subtitle = ""
             currentTotalProgress = Constants.minProgress
             return
         }
@@ -59,12 +57,12 @@ final class FirmwareUpdatingDataSource {
         if firmwareToUpdate.allOperationsNeeded.contains(.download) {
             temporaryProgress += Float(firmwareUpdaterManager.currentProgress(for: .download))
             let updatinStep = firmwareUpdaterManager.currentUpdatingStep(for: .download)
-            temporaryElements.append(.downloadingFirmware(updatinStep))
+            temporaryElements.append(.downloadingFirmware(updatinStep, firmwareToUpdate))
         }
         if firmwareToUpdate.allOperationsNeeded.contains(.update) {
             temporaryProgress += Float(firmwareUpdaterManager.currentProgress(for: .update))
             let updatinStep = firmwareUpdaterManager.currentUpdatingStep(for: .update)
-            temporaryElements.append(.updatingFirmware(updatinStep))
+            temporaryElements.append(.updatingFirmware(updatinStep, firmwareToUpdate))
         }
         if firmwareToUpdate.allOperationsNeeded.contains(.reboot) {
             temporaryProgress += Float(firmwareUpdaterManager.currentProgress(for: .reboot))
@@ -73,7 +71,6 @@ final class FirmwareUpdatingDataSource {
         }
 
         elements = temporaryElements
-        subtitle = firmwareToUpdate.firmwareNameAndVersion
         currentTotalProgress = elements.isEmpty ? Constants.maxProgress : temporaryProgress / Float(elements.count)
     }
 }

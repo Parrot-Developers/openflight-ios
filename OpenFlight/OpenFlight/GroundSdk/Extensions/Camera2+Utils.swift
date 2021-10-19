@@ -72,7 +72,7 @@ enum PhotoFormatMode: String, BarItemMode, CaseIterable {
     }
 
     static var allValues: [BarItemMode] {
-        return self.allCases
+        return allCases
     }
 
     var subModes: [BarItemSubMode]? {

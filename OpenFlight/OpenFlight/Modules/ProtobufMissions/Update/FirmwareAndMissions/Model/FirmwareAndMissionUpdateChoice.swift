@@ -36,7 +36,8 @@ enum FirmwareAndMissionUpdateChoice: Comparable {
     case firmwareAndProtobufMissions(firmware: FirmwareToUpdateData,
                                      missions: [ProtobufMissionToUpdateData])
     case protobufMission(ProtobufMissionToUpdateData,
-                         existOnDrone: ProtobufMissionExistOnDrone)
+                         existOnDrone: ProtobufMissionExistOnDrone,
+                         isCompatible: Bool)
     case upToDateProtobufMission(ProtobufMissionBasicInformation)
     case firmware(FirmwareToUpdateData)
 
@@ -48,8 +49,8 @@ enum FirmwareAndMissionUpdateChoice: Comparable {
             return true
         case (.firmware, .firmware):
             return true
-        case (let .protobufMission(mission1, existOnDrone: _),
-              let .protobufMission(mission2, existOnDrone: _)):
+        case (let .protobufMission(mission1, existOnDrone: _, isCompatible: _),
+              let .protobufMission(mission2, existOnDrone: _, isCompatible: _)):
             return mission1.missionUID == mission2.missionUID
         default:
             return false
@@ -63,8 +64,8 @@ enum FirmwareAndMissionUpdateChoice: Comparable {
             return true
         case (.firmware, .protobufMission):
             return true
-        case (let .protobufMission(mission1, existOnDrone: _),
-              let .protobufMission(mission2, existOnDrone: _)):
+        case (let .protobufMission(mission1, existOnDrone: _, isCompatible: _),
+              let .protobufMission(mission2, existOnDrone: _, isCompatible: _)):
             return mission1.missionName < mission2.missionName
         default:
             return false
@@ -101,7 +102,7 @@ extension FirmwareAndMissionUpdateChoice {
         }
     }
 
-    /// Returns the `ProtobufMissionToUpdateData` array  for this choice.
+    /// Returns the `ProtobufMissionToUpdateData` array for this choice.
     var missionsToUpdate: [ProtobufMissionToUpdateData] {
         switch self {
         case .firmware:
@@ -110,7 +111,7 @@ extension FirmwareAndMissionUpdateChoice {
             return missionsToUpdate
         case .upToDateProtobufMission:
             return []
-        case let .protobufMission(mission, existOnDrone: _):
+        case let .protobufMission(mission, existOnDrone: _, isCompatible: _):
             return [mission]
         }
     }
@@ -132,12 +133,10 @@ extension FirmwareAndMissionUpdateChoice {
         switch self {
         case .firmwareAndProtobufMissions:
             return ParrotFontStyle.small.font
-        case .firmware:
-            return ParrotFontStyle.regular.font
-        case .protobufMission:
-            return ParrotFontStyle.regular.font
-        case .upToDateProtobufMission:
-            return ParrotFontStyle.regular.font
+        case .firmware,
+             .protobufMission,
+             .upToDateProtobufMission:
+            return ParrotFontStyle.large.font
         }
     }
 

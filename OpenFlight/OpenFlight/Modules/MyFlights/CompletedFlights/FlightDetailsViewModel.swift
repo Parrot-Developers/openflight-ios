@@ -30,24 +30,33 @@
 import Foundation
 import Combine
 import CoreLocation
+import GroundSdk
 import MapKit
 
 open class FlightDetailsViewModel {
 
     public struct FlightPlanCellModel {
-
         public let icon: UIImage?
         public let flightPlan: FlightPlanModel
-
     }
 
     private let service: FlightService
+    private let currentDroneHolder = Services.hub.currentDroneHolder
+    private var coordinator: DashboardCoordinator?
+    private var cancellables = Set<AnyCancellable>()
+    private var sdCardRef: Ref<RemovableUserStorage>?
+    private var mediaListRef: Ref<[MediaItem]>?
 
-    @Published private(set) public var name: String?
+    @Published private(set) var name: String?
+    @Published private(set) var sdcardAvailableSpace: String = Style.dash
+    @Published private(set) var memoryUsed: String = Style.dash
 
     open private(set) var flight: FlightModel
     public let flightPlanCells: [FlightPlanCellModel]
-    public let gutma: Gutma?
+    /// Flight trajectory points.
+    public let flightPoints: [TrajectoryPoint]
+    /// Whether trajectory points altitudes are in ASML.
+    public let hasAsmlAltitude: Bool
 
     open var shareFileName: String? {
         name
@@ -56,24 +65,107 @@ open class FlightDetailsViewModel {
         flight.gutmaFile?.data(using: .utf8)
     }
 
-    init(service: FlightService, flight: FlightModel, flightPlanTypeStore: FlightPlanTypeStore) {
+    var actions: [FlightDetailsActionCellModel] {
+        return [FlightDetailsActionCellModel(buttonTitle: L10n.dashboardMyFlightShareFlight,
+                                                    action: .share),
+                FlightDetailsActionCellModel(buttonTitle: L10n.dashboardMyFlightDeleteFlight,
+                                                            action: .delete)]
+    }
+
+    init(service: FlightService, flight: FlightModel, flightPlanTypeStore: FlightPlanTypeStore, coordinator: DashboardCoordinator? = nil) {
         self.service = service
         self.flight = flight
-        self.flightPlanCells = service.flightPlans(flight: flight).map {
+        self.coordinator = coordinator
+        flightPlanCells = service.flightPlans(flight: flight).map {
             FlightPlanCellModel(icon: flightPlanTypeStore.typeForKey($0.type)?.icon, flightPlan: $0)
         }
-        gutma = Gutma.instantiate(with: flight.gutmaFile)
+
+        let gutma = Gutma.instantiate(with: flight.gutmaFile)
+        flightPoints = gutma?.points() ?? []
+        hasAsmlAltitude = gutma?.hasAsmlAltitude ?? false
+
         name = flight.title
+        currentDroneHolder.dronePublisher
+            .sink { [unowned self] drone in
+                listenRemovableStorage(drone: drone)
+            }
+            .store(in: &cancellables)
         CLGeocoder().reverseGeocodeLocation(flight.location) { [weak self] (placemarks: [CLPlacemark]?, error: Error?) in
-            guard let place = placemarks?.first, error == nil, self?.name == nil else { return }
-            self?.name = place.addressDescription
+            guard let place = placemarks?.first,
+                  error == nil,
+                  let strongSelf = self,
+                  (strongSelf.name == nil || strongSelf.name?.isEmptyOrWhitespace() == true)
+            else { return }
+            strongSelf.name = place.addressDescription
         }
     }
 }
 
 public extension FlightDetailsViewModel {
+    /// Return flight plan models of current Flight
+    var flightPlans: [FlightPlanModel] {
+        service.flightPlans(flight: flight)
+    }
+
     func set(name: String) {
         flight = service.update(flight: flight, title: name)
         self.name = flight.title
+    }
+
+    /// Delete flight.
+    func deleteFlight() {
+        service.delete(flight: flight)
+    }
+
+    /// Back button tapped.
+    func didTapBack() {
+        coordinator?.back()
+    }
+
+    /// Ask confirmation to delete flight.
+    func askForDeletion() {
+        coordinator?.showDeleteFlightPopupConfirmation(didTapDelete: {
+            self.service.delete(flight: self.flight)
+            self.coordinator?.back()
+        })
+     }
+
+    /// Show details of a Flight Execution.
+    func showFlightDetailsExecution(at index: Int) {
+        coordinator?.startFlightExecutionDetails(flightPlans[index])
+     }
+}
+
+private extension FlightDetailsViewModel {
+
+    /// Listens removable media storage peripheral.
+    func listenRemovableStorage(drone: Drone) {
+        sdCardRef = drone.getPeripheral(Peripherals.removableUserStorage) { [weak self] storage in
+            guard let storage = storage, storage.availableSpace >= 0 else {
+                self?.sdcardAvailableSpace = Style.dash
+                return
+            }
+            self?.sdcardAvailableSpace = StorageUtils.sizeForFile(size: UInt64(storage.availableSpace))
+        }
+    }
+    /// Starts watcher on MediaList from mediaStore peripherial.
+    func listenMedias(_ drone: Drone) {
+        mediaListRef = drone.getPeripheral(Peripherals.mediaStore)?.newList { [weak self] droneMediaList in
+            guard let droneMedias = droneMediaList else { return }
+
+            self?.updateMemoryUsed(medias: droneMedias)
+        }
+    }
+
+    /// Updates memory used during a flight.
+    ///
+    /// - Parameters:
+    ///     - medias: list of drone medias
+    func updateMemoryUsed(medias: [MediaItem]) {
+        let correspondingMedias = medias.filter { $0.runUid == flight.uuid }
+        let memoryUsedInBytes = correspondingMedias.reduce(0) {
+            $0 + $1.resources.reduce(0) { $0 + $1.size }
+        }
+        memoryUsed = StorageUtils.sizeForFile(size: memoryUsedInBytes)
     }
 }

@@ -44,6 +44,7 @@ final class SettingsRthActionView: UIView {
     // MARK: - Private Enums
     private enum Constants {
         static let homeHeightRatio: CGFloat = 1.3
+        static let pointImageAreaRatio: CGFloat = 2.0
         static let margin: CGFloat = 8.0
         static let arrowLength: CGFloat = 5.0
         static let dashedLineWidth: CGFloat = 1.0
@@ -110,6 +111,18 @@ final class SettingsRthActionView: UIView {
         dashedLinePath.stroke()
     }
 
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let pointImageArea = CGRect(center: pointImage.center,
+                                    width: Constants.pointImageAreaRatio * pointImage.frame.width,
+                                    height: Constants.pointImageAreaRatio * pointImage.frame.height)
+
+        guard pointImageArea.contains(point) else {
+            return superview
+        }
+
+        return self
+    }
+
     // MARK: - Internal Funcs
     /// Updates pointer view.
     func updatePointerView() {
@@ -134,9 +147,6 @@ private extension SettingsRthActionView {
         // Init recognizers.
         let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
         self.addGestureRecognizer(panRecognizer)
-
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        self.addGestureRecognizer(tapRecognizer)
     }
 
     /// Listens the view model.
@@ -144,16 +154,6 @@ private extension SettingsRthActionView {
         viewModel.state.valueChanged = { [weak self] _ in
             self?.updatePointerView()
         }
-    }
-
-    /// Handle tap gesture.
-    @objc func handleTap(recognizer: UIPanGestureRecognizer) {
-        var location = recognizer.location(in: self)
-        if location.y > self.bounds.height - minHeight {
-            location = CGPoint(x: location.x, y: self.bounds.height - minHeight)
-        }
-        updatePointerLocation(location,
-                              shouldSaveValue: true)
     }
 
     /// Handle pan gesture.
@@ -172,6 +172,7 @@ private extension SettingsRthActionView {
                 location = CGPoint(x: location.x, y: 0.0)
             }
         }
+
         if recognizer.state == UIGestureRecognizer.State.ended {
             // Position is saved only when the gesture ends.
             shouldSaveValue = true
@@ -191,6 +192,7 @@ private extension SettingsRthActionView {
                                shouldSaveValue: Bool = false) {
         let revertPosition = self.bounds.height - location.y
         let gridXCenter = homeImage.center.x + (droneImage.center.x - homeImage.center.x) / 2
+
         // Set position view position.
         positionView.frame = CGRect(x: homeImage.center.x,
                                     y: location.y,
@@ -238,7 +240,6 @@ final class SettingsRthCell: UITableViewCell, NibReusable {
         super.awakeFromNib()
 
         gridView.isYAxisHidden = true
-        gridView.isXAxisHidden = true
     }
 
     // MARK: - Internal Funcs

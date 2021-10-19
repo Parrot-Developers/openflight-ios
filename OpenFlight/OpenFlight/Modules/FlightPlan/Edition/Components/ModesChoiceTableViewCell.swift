@@ -85,8 +85,7 @@ private extension ModesChoiceTableViewCell {
         modeLabel.makeUp(and: .defaultTextColor)
         titleLabel.makeUp(with: .small, and: .defaultTextColor)
         titleLabel.text = L10n.commonMode.uppercased()
-        modesBackgroundView.cornerRadiusedWith(backgroundColor: ColorName.clear.color,
-                                               radius: Style.largeCornerRadius)
+        modesBackgroundView.layer.cornerRadius = Style.largeCornerRadius
     }
 
     /// Resets view.

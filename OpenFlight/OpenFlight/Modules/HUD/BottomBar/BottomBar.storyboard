@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="AlH-kU-2ES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19162" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="AlH-kU-2ES">
     <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19144"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -148,26 +148,6 @@
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="4uF-C9-wIe">
                                         <rect key="frame" x="0.0" y="0.0" width="120" height="50"/>
                                         <subviews>
-                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="95K-3O-dec">
-                                                <rect key="frame" x="-40" y="0.0" width="40" height="50"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="40" id="LvL-cw-01A"/>
-                                                </constraints>
-                                                <state key="normal" image="icCollapse"/>
-                                                <connections>
-                                                    <action selector="collapseButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="lUZ-0u-NBB"/>
-                                                </connections>
-                                            </button>
-                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ctZ-fO-zno">
-                                                <rect key="frame" x="-40" y="0.0" width="40" height="50"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="40" id="Wfl-T8-fsN"/>
-                                                </constraints>
-                                                <state key="normal" image="icExpand"/>
-                                                <connections>
-                                                    <action selector="expandButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="plA-U8-vAy"/>
-                                                </connections>
-                                            </button>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Whv-gc-ugc" customClass="BarButtonView" customModule="OpenFlight" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="0.0" width="60" height="50"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -255,8 +235,6 @@
                         <outlet property="cameraModeView" destination="Whv-gc-ugc" id="dxs-uQ-yay"/>
                         <outlet property="cameraShutterButton" destination="Moq-UE-Mq3" id="zz1-1V-N2U"/>
                         <outlet property="cameraWidgetView" destination="Mlh-JI-FAA" id="WJt-3V-M8D"/>
-                        <outlet property="collapseButton" destination="95K-3O-dec" id="Bbt-Zw-Mbc"/>
-                        <outlet property="expandButton" destination="ctZ-fO-zno" id="LCL-Cg-heZ"/>
                         <outlet property="missionLauncherButton" destination="3sY-Wu-zmw" id="KQY-O6-wGZ"/>
                         <outlet property="rightStackView" destination="4uF-C9-wIe" id="Y3S-7E-2AH"/>
                         <outlet property="shutterButtonView" destination="qnh-0R-mgj" id="ksa-NK-XU6"/>
@@ -268,8 +246,4 @@
             <point key="canvasLocation" x="827.67857142857144" y="95.652173913043484"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="icCollapse" width="12" height="20"/>
-        <image name="icExpand" width="12" height="20"/>
-    </resources>
 </document>

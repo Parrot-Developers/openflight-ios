@@ -49,18 +49,18 @@ public final class HUDAlertPanelHandLaunchState: DeviceConnectionState, AlertPan
     public var subtitleColor: UIColor? {
         switch state {
         case .started:
-            return ColorName.greenSpring.color
+            return ColorName.highlightColor.color
         case .available:
-            return ColorName.blueDodger.color
+            return ColorName.blueNavy.color
         default:
-            return ColorName.white.color
+            return ColorName.defaultTextColor.color
         }
     }
     public var icon: UIImage? {
-        return Asset.Alertes.icPanelActionButton.image
+        return Asset.Alertes.HandLaunch.icHandLaunch.image
     }
     public var animationImages: [UIImage]? {
-        return Asset.Alertes.HandLaunch.allValues.compactMap { $0.image }
+        return Asset.Alertes.HandLaunch.Animation.allValues.compactMap { $0.image }
     }
     public var state: AlertPanelCurrentState?
     public var isAlertForceHidden: Bool = false

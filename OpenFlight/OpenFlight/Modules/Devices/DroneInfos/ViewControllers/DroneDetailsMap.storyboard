@@ -61,13 +61,48 @@
                                                     </label>
                                                 </subviews>
                                             </stackView>
-                                            <button opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6e7-At-0eC">
-                                                <rect key="frame" x="717" y="0.0" width="75" height="65"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="75" id="wa6-Sb-fGS"/>
-                                                </constraints>
-                                                <color key="tintColor" name="default_text_color"/>
-                                                <state key="normal" image="icBellOff">
+                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="Czj-at-29z">
+                                                <rect key="frame" x="631" y="15" width="146" height="35"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3Fb-Yc-A2h">
+                                                        <rect key="frame" x="0.0" y="0.0" width="5" height="35"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="5" id="b0B-sT-ybw"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBellOn" translatesAutoresizingMaskIntoConstraints="NO" id="urO-Lb-zqq">
+                                                        <rect key="frame" x="10" y="9" width="32" height="17"/>
+                                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="32" id="CsU-Mn-Qdd"/>
+                                                            <constraint firstAttribute="height" constant="17" id="kWc-ZS-UFf"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Ring my drone" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cTi-SN-RNr">
+                                                        <rect key="frame" x="47" y="10" width="89" height="15"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7eT-aH-g3v">
+                                                        <rect key="frame" x="141" y="0.0" width="5" height="35"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="5" id="x7q-yJ-hdE"/>
+                                                        </constraints>
+                                                    </view>
+                                                </subviews>
+                                                <color key="backgroundColor" name="highlight_color"/>
+                                            </stackView>
+                                            <button opaque="NO" contentMode="left" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6e7-At-0eC">
+                                                <rect key="frame" x="631" y="15" width="146" height="35"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <inset key="contentEdgeInsets" minX="5" minY="0.0" maxX="5" maxY="0.0"/>
+                                                <inset key="titleEdgeInsets" minX="5" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                                <state key="normal">
                                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </state>
                                                 <connections>
@@ -77,15 +112,19 @@
                                         </subviews>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstItem="6e7-At-0eC" firstAttribute="top" secondItem="XFI-kh-kSC" secondAttribute="top" id="8eR-dL-B0g"/>
+                                            <constraint firstAttribute="bottom" secondItem="Czj-at-29z" secondAttribute="bottom" constant="15" id="9Jl-7d-8UX"/>
                                             <constraint firstItem="LUv-Mc-STo" firstAttribute="centerX" secondItem="XFI-kh-kSC" secondAttribute="centerX" id="DBc-um-RiR"/>
+                                            <constraint firstItem="Czj-at-29z" firstAttribute="top" secondItem="XFI-kh-kSC" secondAttribute="top" constant="15" id="DZX-Kv-VeJ"/>
                                             <constraint firstAttribute="height" constant="65" id="G5w-wf-V63"/>
+                                            <constraint firstItem="6e7-At-0eC" firstAttribute="leading" secondItem="Czj-at-29z" secondAttribute="leading" id="H0s-mX-D0i"/>
                                             <constraint firstAttribute="bottom" secondItem="7ou-1A-r6k" secondAttribute="bottom" id="P9O-Yl-9fr"/>
-                                            <constraint firstAttribute="bottom" secondItem="6e7-At-0eC" secondAttribute="bottom" id="TMe-mp-kxk"/>
+                                            <constraint firstItem="6e7-At-0eC" firstAttribute="bottom" secondItem="Czj-at-29z" secondAttribute="bottom" id="Vas-AL-QHA"/>
+                                            <constraint firstItem="6e7-At-0eC" firstAttribute="trailing" secondItem="Czj-at-29z" secondAttribute="trailing" id="ezp-hY-ytI"/>
                                             <constraint firstItem="LUv-Mc-STo" firstAttribute="centerY" secondItem="XFI-kh-kSC" secondAttribute="centerY" id="hmd-3z-rJx"/>
+                                            <constraint firstAttribute="trailing" secondItem="Czj-at-29z" secondAttribute="trailing" constant="15" id="pz4-qY-Bgo"/>
                                             <constraint firstItem="7ou-1A-r6k" firstAttribute="leading" secondItem="XFI-kh-kSC" secondAttribute="leading" id="qpa-dP-fKl"/>
                                             <constraint firstItem="7ou-1A-r6k" firstAttribute="top" secondItem="XFI-kh-kSC" secondAttribute="top" id="yRV-CD-E2I"/>
-                                            <constraint firstAttribute="trailing" secondItem="6e7-At-0eC" secondAttribute="trailing" id="zo1-l2-ws1"/>
+                                            <constraint firstItem="6e7-At-0eC" firstAttribute="top" secondItem="Czj-at-29z" secondAttribute="top" id="zTp-KB-29d"/>
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WrI-We-EIa">
@@ -148,7 +187,10 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="bellButton" destination="6e7-At-0eC" id="JPr-mo-8bW"/>
+                        <outlet property="bellButton" destination="6e7-At-0eC" id="qsk-xQ-mgt"/>
+                        <outlet property="bellImageView" destination="urO-Lb-zqq" id="l3i-ex-2sP"/>
+                        <outlet property="bellLabel" destination="cTi-SN-RNr" id="FgE-FK-F7U"/>
+                        <outlet property="bellStackView" destination="Czj-at-29z" id="iJ1-dm-mPG"/>
                         <outlet property="containerView" destination="IQK-Rg-HHV" id="hfq-6l-eNd"/>
                         <outlet property="coordinateButton" destination="hyc-Fn-BHY" id="158-GN-ygX"/>
                         <outlet property="coordinateView" destination="WrI-We-EIa" id="w08-X9-2B8"/>
@@ -163,11 +205,14 @@
         </scene>
     </scenes>
     <resources>
-        <image name="icBellOff" width="32" height="17"/>
+        <image name="icBellOn" width="18" height="18"/>
         <image name="icClose" width="17" height="17"/>
         <image name="icRightArrow" width="9" height="16"/>
         <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="highlight_color">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
     </resources>
 </document>

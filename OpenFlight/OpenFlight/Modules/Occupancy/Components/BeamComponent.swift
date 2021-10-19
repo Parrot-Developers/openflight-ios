@@ -36,31 +36,6 @@ import simd
 
 private let tag = ULogTag(name: "Occupancy")
 
-private class DottedBeam {
-
-    static let dimX = Float(0.8)
-    static let dimY = Float(0.6)
-
-    static func getNode() -> SCNNode {
-
-        let rootNode = SCNNode()
-        let dotGeometry = SCNBox(width: 0.1, height: 0.5, length: 0.1, chamferRadius: 0)
-        let dotNode1 = SCNNode(geometry: dotGeometry)
-        let dotNode2 = dotNode1.clone()
-        let dotNode3 = dotNode1.clone()
-        let dotNode4 = dotNode1.clone()
-        dotNode1.position = SCNVector3(-dimX, 0, -dimY)
-        dotNode2.position = SCNVector3(-dimX, 0, dimY)
-        dotNode3.position = SCNVector3(dimX, 0, -dimY)
-        dotNode4.position = SCNVector3(dimX, 0, dimY)
-        rootNode.addChildNode(dotNode1)
-        rootNode.addChildNode(dotNode2)
-        rootNode.addChildNode(dotNode3)
-        rootNode.addChildNode(dotNode4)
-        return rootNode.flattenedClone()
-    }
-}
-
 private class BeamRing: SCNNode {
     var ringNode: SCNNode!
 
@@ -118,24 +93,6 @@ private class BeamRing: SCNNode {
         flatRing.scale = SCNVector3(0.8, 0.8, 0.5)
         self.ringNode.addChildNode(flatRing)
         self.addChildNode(ringNode)
-    }
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
-private class DangerLight: SCNNode {
-
-    override init() {
-        super.init()
-        let light = SCNLight()
-        light.type = .omni
-        light.intensity = 2000
-        light.color = UIColor.init(red: 255, green: 0, blue: 0, alpha: 1)
-        light.attenuationStartDistance = 0.5
-        light.attenuationEndDistance = 5
-        light.attenuationFalloffExponent = 2
-        self.light = light
     }
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

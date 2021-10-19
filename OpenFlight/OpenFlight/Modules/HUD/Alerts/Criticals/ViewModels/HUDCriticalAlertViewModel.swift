@@ -35,19 +35,21 @@ final class HUDCriticalAlertState: DevicesConnectionState {
     // MARK: - Internal Properties
     /// Stack of alerts.
     fileprivate(set) var alertStack: Set<HUDCriticalAlertType> = []
-    /// Stack of alerts dismissed by the user.
-    fileprivate(set) var alertStackDismissed: Set<HUDCriticalAlertType> = []
+    /// Return true if takeoff is requested.
+    fileprivate(set) var isTakeoffRequested: Bool = false
+    /// Return true if update alert has been dismissed.
+    fileprivate(set) var isUpdateAlertDismissed: Bool = false
     /// Return true if drone is Flying.
     fileprivate(set) var isDroneFlying: Bool = false
 
-    /// Returns the alert to display according to its priority and if it's not in the dismissed alert stack.
+    /// Returns the alert to display according to its priority and if it should be displayed.
     var currentAlert: HUDCriticalAlertType? {
         return alertStack
             .sorted()
-            .first(where: {!alertStackDismissed.contains($0)})
+            .first(where: { isTakeoffRequested ? true : $0.isUpdateRequired && !isUpdateAlertDismissed })
     }
 
-    /// Tells if the alert should be display.
+    /// Tells if the alert should be displayed.
     var canShowAlert: Bool {
         return currentAlert != nil
             && droneConnectionState?.isConnected() == true
@@ -70,28 +72,32 @@ final class HUDCriticalAlertState: DevicesConnectionState {
     ///    - droneConnectionState: drone connection state
     ///    - remoteControlConnectionState: remote control connection state
     ///    - alertStack: stack of HUD critical alerts
-    ///    - alertStackDismissed: stack of take off unavailability alerts which have been dismissed by the user
+    ///    - isTakeoffRequested: tells if takeoff is requested
+    ///    - isUpdateAlertDismissed: tells if update alert has been dismissed
     ///    - isDroneFlying: tells if drone is flying
     init(droneConnectionState: DeviceConnectionState?,
          remoteControlConnectionState: DeviceConnectionState?,
          alertStack: Set<HUDCriticalAlertType>,
-         alertStackDismissed: Set<HUDCriticalAlertType>,
+         isTakeoffRequested: Bool,
+         isUpdateAlertDismissed: Bool,
          isDroneFlying: Bool) {
         super.init(droneConnectionState: droneConnectionState,
                    remoteControlConnectionState: remoteControlConnectionState)
 
         self.alertStack = alertStack
-        self.alertStackDismissed = alertStackDismissed
+        self.isTakeoffRequested = isTakeoffRequested
+        self.isUpdateAlertDismissed = isUpdateAlertDismissed
         self.isDroneFlying = isDroneFlying
     }
 
     // MARK: - Override Funcs
     override func copy() -> HUDCriticalAlertState {
         return HUDCriticalAlertState(droneConnectionState: droneConnectionState,
-                                 remoteControlConnectionState: remoteControlConnectionState,
-                                 alertStack: alertStack,
-                                 alertStackDismissed: alertStackDismissed,
-                                 isDroneFlying: isDroneFlying)
+                                     remoteControlConnectionState: remoteControlConnectionState,
+                                     alertStack: alertStack,
+                                     isTakeoffRequested: isTakeoffRequested,
+                                     isUpdateAlertDismissed: isUpdateAlertDismissed,
+                                     isDroneFlying: isDroneFlying)
     }
 
     override func isEqual(to other: DevicesConnectionState) -> Bool {
@@ -99,7 +105,8 @@ final class HUDCriticalAlertState: DevicesConnectionState {
 
         return super.isEqual(to: other)
             && self.alertStack == other.alertStack
-            && self.alertStackDismissed == other.alertStackDismissed
+            && self.isTakeoffRequested == other.isTakeoffRequested
+            && self.isUpdateAlertDismissed == other.isUpdateAlertDismissed
             && self.isDroneFlying == other.isDroneFlying
     }
 }
@@ -107,18 +114,15 @@ final class HUDCriticalAlertState: DevicesConnectionState {
 /// Manages critical alert screen visibility.
 final class HUDCriticalAlertViewModel: DevicesStateViewModel<HUDCriticalAlertState> {
     // MARK: - Private Properties
-    private var alarmRef: Ref<Alarms>?
+    private var takeoffChecklistRef: Ref<TakeoffChecklist>?
     private var remoteUpdaterRef: Ref<Updater>?
     private var droneUpdaterRef: Ref<Updater>?
-    private var magnetometerRef: Ref<Magnetometer>?
     private var takeOffRequestedObserver: Any?
-    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
 
     // MARK: - Init
     override init() {
         super.init()
 
-        observesAppContext()
         listenTakeOffRequestDidChange()
     }
 
@@ -132,31 +136,26 @@ final class HUDCriticalAlertViewModel: DevicesStateViewModel<HUDCriticalAlertSta
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
 
-        listenAlarm(drone)
+        listenTakeoffChecklist(drone)
         listenDroneUpdater(drone)
-        listenDroneMagnetometer(drone)
         listenFlyingIndicators(drone)
-        updateAlertsState()
     }
 
     override func listenRemoteControl(remoteControl: RemoteControl) {
         super.listenRemoteControl(remoteControl: remoteControl)
 
         listenRemoteUpdater(remoteControl)
-        updateAlertsState()
     }
 }
 
 // MARK: - Internal Funcs
 extension HUDCriticalAlertViewModel {
-    /// Dismisses current alert.
-    func dimissCurrentAlert() {
-        guard let alertToDismiss = state.value.currentAlert else { return }
-
+    /// Called when current alert is dismissed.
+    func onAlertDismissed() {
         let copy = state.value.copy()
-        copy.alertStackDismissed.insert(alertToDismiss)
-        if alertToDismiss == .droneAndRemoteUpdateRequired {
-            copy.alertStackDismissed.insert(.droneUpdateRequired)
+        copy.isTakeoffRequested = false
+        if state.value.currentAlert?.isUpdateRequired == true {
+            copy.isUpdateAlertDismissed = true
         }
         state.set(copy)
     }
@@ -164,48 +163,76 @@ extension HUDCriticalAlertViewModel {
 
 // MARK: - Private Funcs
 private extension HUDCriticalAlertViewModel {
-    /// Starts watcher for drone alarm.
-    func listenAlarm(_ drone: Drone) {
-        alarmRef = drone.getInstrument(Instruments.alarms) { [weak self] _ in
-            self?.updateAlertsState()
+    /// Starts watcher for takeoff checklist.
+    func listenTakeoffChecklist(_ drone: Drone) {
+        takeoffChecklistRef = drone.getInstrument(Instruments.takeoffChecklist) { [weak self] checklist in
+            let copy = self?.state.value.copy()
+
+            var sensors: [TakeoffAlarm.Kind] = []
+            for kind in TakeoffAlarm.Kind.allCases {
+                let isAlarmSet = checklist?.getAlarm(kind: kind).level == .on
+                let type: HUDCriticalAlertType?
+                switch kind {
+                case .baro,
+                     .gps,
+                     .gyro,
+                     .magneto,
+                     .ultrasound,
+                     .vcam,
+                     .verticalTof:
+                    if isAlarmSet {
+                        sensors.append(kind)
+                    }
+                    type = nil
+                default:
+                    type = HUDCriticalAlertType.from(kind)
+                }
+                if let type = type {
+                    copy?.alertStack.update(type, shouldAdd: isAlarmSet)
+                }
+            }
+
+            if let oldSensorAlarm = copy?.alertStack.first(where: { $0.isSensorAlarm }) {
+                copy?.alertStack.remove(oldSensorAlarm)
+            }
+            if !sensors.isEmpty {
+                copy?.alertStack.insert(.sensorFailure(sensors))
+            }
+
+            self?.state.set(copy)
         }
     }
 
     /// Starts watcher for remote update.
     func listenRemoteUpdater(_ remoteControl: RemoteControl) {
         remoteUpdaterRef = remoteControl.getPeripheral(Peripherals.updater) { [weak self] _ in
-            self?.updateAlertsState()
+            self?.updateFirmwareAlerts()
         }
     }
 
     /// Starts watcher for drone update.
     func listenDroneUpdater(_ drone: Drone) {
         droneUpdaterRef = drone.getPeripheral(Peripherals.updater) { [weak self] _ in
-            self?.updateAlertsState()
-        }
-    }
-
-    /// Starts watcher for drone magnetometer state.
-    func listenDroneMagnetometer(_ drone: Drone) {
-        magnetometerRef = drone.getPeripheral(Peripherals.magnetometer) { [weak self] _ in
-            self?.updateAlertsState()
+            self?.updateFirmwareAlerts()
         }
     }
 
     /// Starts watcher for flying indicators.
     func listenFlyingIndicators(_ drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
-            self?.updateAlertsState()
+        _ = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicators in
+            let copy = self?.state.value.copy()
+            copy?.isDroneFlying = flyingIndicators?.state == .flying
+            self?.state.set(copy)
         }
     }
 
-    /// Updates each alert state.
-    func updateAlertsState() {
+    /// Updates firmware update alerts.
+    func updateFirmwareAlerts() {
         let copy = state.value.copy()
 
         // Updates drone and remote version alert state.
-        let remoteUpdateNeeded = remoteControl?.getPeripheral(Peripherals.updater)?.applicableFirmwares.isEmpty == false
-        let droneUpdateNeeded = drone?.getPeripheral(Peripherals.updater)?.applicableFirmwares.isEmpty == false
+        let remoteUpdateNeeded = remoteUpdaterRef?.value?.applicableFirmwares.isEmpty == false
+        let droneUpdateNeeded = droneUpdaterRef?.value?.applicableFirmwares.isEmpty == false
 
         copy.alertStack.update(.droneAndRemoteUpdateRequired,
                                shouldAdd: remoteUpdateNeeded && droneUpdateNeeded)
@@ -220,36 +247,7 @@ private extension HUDCriticalAlertViewModel {
         }
         #endif
 
-        // Updates Alarms alerts.
-        let alarms = drone?.getInstrument(Instruments.alarms)
-        copy.alertStack.update(.highTemperature,
-                               shouldAdd: alarms?.getAlarm(kind: .batteryTooHot).level == .critical)
-        copy.alertStack.update(.lowTemperature,
-                               shouldAdd: alarms?.getAlarm(kind: .batteryTooCold).level == .critical)
-        copy.alertStack.update(.verticalCameraFailure,
-                               shouldAdd: alarms?.getAlarm(kind: .verticalCamera).level == .critical)
-        copy.alertStack.update(.tooMuchAngle,
-                               shouldAdd: alarms?.getAlarm(kind: .inclinationTooHigh).level == .critical)
-        copy.alertStack.update(.droneCalibrationRequired,
-                               shouldAdd: drone?.getPeripheral(Peripherals.magnetometer)?.calibrationState == .required)
-
-        // Updates current flying state.
-        copy.isDroneFlying = drone?.getInstrument(Instruments.flyingIndicators)?.state == .flying
-
         state.set(copy)
-    }
-
-    /// Starts watcher for app entering in background.
-    func observesAppContext() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(cleanDimissedAlertsStackView),
-                                               name: UIApplication.willEnterForegroundNotification,
-                                               object: nil)
-    }
-
-    /// Cleans the dismissed alert stack.
-    @objc func cleanDimissedAlertsStackView() {
-        cleanDismissedAlerts()
     }
 
     /// Starts watcher for take off availability.
@@ -260,16 +258,10 @@ private extension HUDCriticalAlertViewModel {
             let takeOffNotification = notification.userInfo?[HUDCriticalAlertConstants.takeOffRequestedNotificationKey]
             guard (takeOffNotification as? Bool) != nil else { return }
 
-            self?.cleanDismissedAlerts()
+            let copy = self?.state.value.copy()
+            copy?.isTakeoffRequested = true
+            copy?.isUpdateAlertDismissed = false
+            self?.state.set(copy)
         }
-    }
-
-    /// Cleans dismissed alerts when user wants to take off.
-    func cleanDismissedAlerts() {
-        guard !state.value.alertStackDismissed.isEmpty else { return }
-
-        let copy = state.value.copy()
-        copy.alertStackDismissed.removeAll()
-        state.set(copy)
     }
 }

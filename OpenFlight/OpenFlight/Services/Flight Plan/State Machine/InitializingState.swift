@@ -47,7 +47,9 @@ open class InitializingState: GKState {
     }
 
     open override func didEnter(from previousState: GKState?) {
-        let resumable = flightPlan.lastMissionItemExecuted > 0 && (flightPlan.state == .stopped || flightPlan.state == .flying)
+        let resumable = flightPlan.hasReachedFirstWayPoint
+            && !flightPlan.hasReachedLastWayPoint
+            && (flightPlan.state == .stopped || flightPlan.state == .flying)
         if resumable {
             delegate?.initializingFlightPlanIsResumable(flightPlan)
         } else {

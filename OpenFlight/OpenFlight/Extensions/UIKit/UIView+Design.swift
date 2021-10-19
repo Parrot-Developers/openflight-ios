@@ -142,6 +142,30 @@ public extension UIView {
         self.layer.shadowRadius = 2.0
     }
 
+    /// Applies a shadow to the view. Allows full parameters customization.
+    ///
+    /// - Parameters:
+    ///    - shadowColor: The color of the shadow.
+    ///    - shadowOffset: The offset of the shadow.
+    ///    - shadowOpacity: The opacity of the shadow.
+    ///    - shadowRadius: The radius of the shadow.
+    ///    - condition: Apply shadow only if `condition` is `true`.
+    func addShadow(shadowColor: UIColor = .systemGray,
+                   shadowOffset: CGSize = .init(width: 0, height: 2),
+                   shadowOpacity: Float = 0.5,
+                   shadowRadius: CGFloat = 3.0,
+                   condition: Bool = true) {
+        guard condition else {
+            layer.shadowColor = UIColor.clear.cgColor
+            return
+        }
+
+        layer.shadowColor = shadowColor.cgColor
+        layer.shadowOffset = shadowOffset
+        layer.shadowOpacity = shadowOpacity
+        layer.shadowRadius = shadowRadius
+    }
+
     /// Apply default corner radius to a view.
     ///
     /// - Parameters:
@@ -160,7 +184,7 @@ public extension UIView {
     /// - Parameters:
     ///  - alpha: black color alpha to start gradient
     ///  - superview: view to compute gradient layer width
-    func addGradient(startAlpha: CGFloat, endAlpha: CGFloat = 0.0, superview: UIView) {
+    func addGradient(startAlpha: CGFloat = 1.0, endAlpha: CGFloat = 0.0, superview: UIView? = nil) {
         // Remove previous CustomGradientLayer
         self.layer.sublayers?.forEach {
             if $0 is CustomGradientLayer {
@@ -169,6 +193,7 @@ public extension UIView {
         }
 
         let gradient = CustomGradientLayer()
+        let superview = superview ?? self
         gradient.frame = CGRect(x: 0.0, y: 0.0,
                                 width: superview.bounds.size.width, height: superview.bounds.size.height)
         gradient.colors = [UIColor.black.withAlphaComponent(startAlpha).cgColor,
@@ -181,7 +206,7 @@ public extension UIView {
     /// - Parameters:
     ///    - isEnabled: boolean describing enabled state
     func alphaWithEnabledState(_ isEnabled: Bool) {
-        self.alpha = isEnabled ? 1.0 : 0.55
+        self.alpha = isEnabled ? 1.0 : 0.5
     }
 
     /// Hides/shows the view using alpha and removes user interaction.

@@ -42,20 +42,16 @@ open class AlertBannerSorter {
         // Components_Motor    Motors cutout temperature issue    The engines of the drone have cut out.
         .motorCutoutPowerSupply,
         // Components_Motor    Motors cutout power supply issue    The engines of the drone have cut out.
-        .forceLandingFlyAway,
-        // Auto landing    Force Landing fly away    Auto Landing
         .forceLandingTemperature,
         // Auto landing    Force Landing High/Low °C    Auto Landing
         .forceLandingLowBattery,
         // Auto landing    Force Landing Low battery    Auto Landing
-        .veryLowBatteryLanding,
-        // RTH    Too Low Battery will Autoland    %s before auto landing
-        .veryLowBattery,
-        //        RTH    Very Low Battery will RTH    %s before auto return home
-        //        RTH    Very Low Battery Will Autoland    The drone will soon land
-        //        RTH    Returning Home Too Low Battery    Very low battery. Drone will land automatically.
-        //        RTH    Returning Home Very Low Battery    Very low battery. Drone will return home soon.
+        .wontReachHome,
         //        RTH    Very Low Battery will RTH    Can’t reach Home
+        .takeoffUnavailable,
+        // Takeoff    Default takeoff issue    Take off is unavailable
+        .obstacleAvoidanceComputationalError,
+        // Obstacle avoidance    Computational error    Obstacle avoidance disabled - Internal error
         .obstacleAvoidanceSensorsFailure,
         // Obstacle avoidance    Stereo images unavailable + OA activated    Obstacle avoidance disabled - Stereo camera failure.
         .obstacleAvoidanceTooDark,
@@ -101,10 +97,12 @@ open class AlertBannerSorter {
     public var sortedWarningAlerts: [HUDBannerWarningAlertType] = [
         .lowAndPerturbedWifi,
         // Wi-Fi    No 4G - Low and Perturbed Wi-Fi    Weak Wi-Fi signal. Strong interferences
-        .obstacleAvoidanceDroneStucked,
-        // Obstacle avoidance    Drone stuck    Obstacle avoidance  - Drone was not able to find a path.
+        .obstacleAvoidanceBlindMotionDirection,
+        // Obstacle avoidance    Blind motion direction    Obstacle avoidance - Drone blind in this direction.
         .highDeviation,
         // Obstacle avoidance    High deviation    Obstacle avoidance - High deviation
+        .obstacleAvoidanceDroneStucked,
+        // Obstacle avoidance    Drone stuck    Obstacle avoidance  - Drone was not able to find a path.
         .imuVibration,
         // Components_IMU    IMU Saturation    Vibrations detected . Check that propellers are tightly screwed.
         .targetLost,

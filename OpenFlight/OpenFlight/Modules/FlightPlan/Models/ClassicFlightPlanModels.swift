@@ -31,6 +31,7 @@
 import Foundation
 import GroundSdk
 import ArcGIS
+import Combine
 
 private enum Constants {
     static let defaultType = "default"
@@ -65,22 +66,28 @@ struct ClassicFlightPlanProvider: FlightPlanProvider {
         return false
     }
 
-    var flightPlanCoordinator: FlightPlanCoordinator? {
-        return nil
-    }
-
     // MARK: - Internal Funcs
-    func executionSummaryVC(flightPlan: FlightPlanModel, coordinator: FlightPlanPanelCoordinator) -> UIViewController? {
-        return nil
-    }
-
-    func graphicsWithFlightPlan(_ flightPlan: FlightPlanModel) -> [FlightPlanGraphic] {
-        return flightPlan.dataSetting?.allLinesAndMarkersGraphics ?? []
+    func graphicsWithFlightPlan(_ flightPlan: FlightPlanModel, mapMode: MapMode) -> [FlightPlanGraphic] {
+        switch mapMode {
+        case .myFlights:
+            return flightPlan.dataSetting?.linesAndWaypointsGraphics ?? []
+        default:
+            return flightPlan.dataSetting?.allLinesAndMarkersGraphics ?? []
+        }
     }
 
     func hasFlightPlanType(_ type: String) -> Bool {
         return type == typeKey
     }
+
+    var statusView: UIView? { nil }
+
+    var customProgressPublisher: AnyPublisher<CustomFlightPlanProgress?, Never> {
+        Just<CustomFlightPlanProgress?>(nil)
+            .eraseToAnyPublisher()
+    }
+
+    var executionTitle: String { L10n.dashboardMyFlightsPlanExecution }
 }
 
 /// Enum describing classic flight plan type
@@ -170,10 +177,13 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     }
 
     public var allValues: [Int] {
+        allValues(forFlightPlan: currentFlightPlan)
+    }
+
+    public func allValues(forFlightPlan flightPlan: FlightPlanModel?) -> [Int] {
         switch self {
         case .framerate:
-            guard let currentFlightPlan = currentFlightPlan,
-                  let dataSetting = currentFlightPlan.dataSetting else { return [] }
+            guard let dataSetting = flightPlan?.dataSetting else { return [] }
 
             let resolution = dataSetting.resolution
             return Camera2Params.supportedRecordingFramerate(for: resolution).indices.map { $0 }
@@ -182,8 +192,7 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         case .resolution:
             return Camera2Params.supportedRecordingResolution().indices.map { $0 }
         case .timeLapseCycle:
-            guard let currentFlightPlan = currentFlightPlan,
-                  let resolution = currentFlightPlan.dataSetting?.photoResolution else { return [] }
+            guard let resolution = flightPlan?.dataSetting?.photoResolution else { return [] }
 
             let supportedTimelapses = TimeLapseMode.supportedValuesForResolution(for: resolution)
             return supportedTimelapses.compactMap { $0.value }
@@ -201,14 +210,17 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     }
 
     public var valueDescriptions: [String]? {
+        valueDescriptions(forFlightPlan: currentFlightPlan)
+    }
+
+    public func valueDescriptions(forFlightPlan flightPlan: FlightPlanModel?) -> [String]? {
         switch self {
         case .continueMode,
              .lastPointRth,
              .obstacleAvoidance:
             return [L10n.commonYes, L10n.commonNo]
         case .framerate:
-            guard let currentFlightPlan = currentFlightPlan,
-                  let resolution = currentFlightPlan.dataSetting?.resolution else { return nil }
+            guard let resolution = flightPlan?.dataSetting?.resolution else { return nil }
 
             return Camera2Params.supportedRecordingFramerate(for: resolution).map { $0.title }
         case .resolution:
@@ -216,8 +228,7 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         case .imageMode:
             return FlightPlanCaptureMode.allCases.map { $0.title }
         case .timeLapseCycle:
-            guard let currentFlightPlan = currentFlightPlan,
-                  let resolution = currentFlightPlan.dataSetting?.photoResolution else { return [] }
+            guard let resolution = flightPlan?.dataSetting?.photoResolution else { return [] }
 
             let supportedTimelapses = TimeLapseMode.supportedValuesForResolution(for: resolution)
             return supportedTimelapses.compactMap { $0.title }
@@ -236,14 +247,19 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         switch self {
         case .imageMode:
             return FlightPlanCaptureMode.allCases.map { $0.image }
+        case .whiteBalance:
+            return Camera2WhiteBalanceMode.availableModes.compactMap { $0.image }
         default:
             return nil
         }
     }
 
     public var currentValue: Int? {
-        guard let currentFlightPlan = currentFlightPlan,
-              let dataSetting = currentFlightPlan.dataSetting else { return nil }
+        currentValue(forFlightPlan: currentFlightPlan)
+    }
+
+    public func currentValue(forFlightPlan flightPlan: FlightPlanModel?) -> Int? {
+        guard let dataSetting = flightPlan?.dataSetting else { return nil }
 
         switch self {
         case .continueMode:
@@ -291,16 +307,16 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         switch self {
         case .continueMode,
              .lastPointRth,
+             .resolution,
+             .imageMode,
+             .whiteBalance,
+             .photoResolution,
              .obstacleAvoidance:
             return .choice
         case .framerate,
-             .resolution,
-             .imageMode,
              .gpsLapseDistance,
              .timeLapseCycle,
-             .exposure,
-             .whiteBalance,
-             .photoResolution:
+             .exposure:
             return .centeredRuler
         }
     }
@@ -424,14 +440,14 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
         default:
             break
         }
-    
     }
 
     func settings(for flightPlan: FlightPlanModel) -> [FlightPlanSetting] {
-        var planSettings: [FlightPlanSetting] = [ClassicFlightPlanSettingType.continueMode.toFlightPlanSetting(),
-                ClassicFlightPlanSettingType.lastPointRth.toFlightPlanSetting(),
-                ClassicFlightPlanSettingType.obstacleAvoidance.toFlightPlanSetting(),
-                ClassicFlightPlanSettingType.imageMode.toFlightPlanSetting()]
+        var planSettings: [FlightPlanSetting] =
+            [ClassicFlightPlanSettingType.obstacleAvoidance.toFlightPlanSetting(),
+            ClassicFlightPlanSettingType.continueMode.toFlightPlanSetting(),
+            ClassicFlightPlanSettingType.lastPointRth.toFlightPlanSetting(),
+            ClassicFlightPlanSettingType.imageMode.toFlightPlanSetting()]
 
         switch flightPlan.dataSetting?.captureModeEnum {
         case .video:

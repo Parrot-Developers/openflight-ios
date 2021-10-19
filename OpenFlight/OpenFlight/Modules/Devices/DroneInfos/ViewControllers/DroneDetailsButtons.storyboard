@@ -31,7 +31,21 @@
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="G1H-BN-fL2" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="67" width="806.5" height="60"/>
+                                        <subviews>
+                                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="M77-Se-NVD">
+                                                <rect key="frame" x="8" y="8" width="44" height="44"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" secondItem="M77-Se-NVD" secondAttribute="height" multiplier="1:1" id="bpg-Rb-JqB"/>
+                                                </constraints>
+                                            </view>
+                                        </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="M77-Se-NVD" firstAttribute="leading" secondItem="G1H-BN-fL2" secondAttribute="leading" constant="8" id="Ojr-RW-dUy"/>
+                                            <constraint firstItem="M77-Se-NVD" firstAttribute="top" secondItem="G1H-BN-fL2" secondAttribute="top" constant="8" id="Rml-am-nO8"/>
+                                            <constraint firstAttribute="bottom" secondItem="M77-Se-NVD" secondAttribute="bottom" constant="8" id="xts-fm-Cg9"/>
+                                        </constraints>
                                         <connections>
                                             <action selector="mapButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="jyN-Xk-U0k"/>
                                         </connections>
@@ -93,6 +107,7 @@
                         <outlet property="cellularAccessButtonView" destination="naE-FZ-7Cg" id="qxZ-QL-mPA"/>
                         <outlet property="firmwareUpdateButtonView" destination="vWN-fC-h5d" id="IUv-O4-tFJ"/>
                         <outlet property="mapButtonView" destination="G1H-BN-fL2" id="Y3Z-o3-bL4"/>
+                        <outlet property="mapContainerView" destination="M77-Se-NVD" id="sSJ-Xs-720"/>
                         <outlet property="passwordButtonView" destination="sdQ-bX-ago" id="96f-p2-q6p"/>
                     </connections>
                 </viewController>

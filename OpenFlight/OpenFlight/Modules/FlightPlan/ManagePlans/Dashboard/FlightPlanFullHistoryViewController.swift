@@ -75,7 +75,6 @@ final class FlightPlanFullHistoryViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         initView()
     }
 

@@ -168,6 +168,8 @@ extension GalleryMediaType: CaseIterable {
             return .vertical
         case .panoWide:
             return .superWide
+        case .pano360:
+            return .sphere
         default:
             return nil
         }

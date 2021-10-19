@@ -32,13 +32,7 @@ import UIKit
 import SwiftyUserDefaults
 import GroundSdk
 
-// MARK: - Internal Enums
-enum MediaConstants {
-    static let defaultImageCompression: CGFloat = 0.5
-}
-
 /// Medias utility class.
-
 final class MediaUtils {
     // MARK: - Internal Funcs
     /// Builds a MediaResourceList from an array of resources associated to a specific mediaItem
@@ -107,18 +101,6 @@ final class MediaUtils {
         var mediasRunUids = Defaults.mediasRunUidGallery as? [String: String] ?? [String: String]()
         if let mediaRelativeUrl = url.mediaRelativeUrl, !runUid.isEmpty {
             mediasRunUids[mediaRelativeUrl] = runUid
-            Defaults.mediasRunUidGallery = mediasRunUids
-        }
-    }
-
-    /// Disassociate a runUid from a media relative Url.
-    ///
-    /// - Parameters:
-    ///     - url: media Url
-    static func removeMediaRunUid(forUrl url: URL) {
-        var mediasRunUids = Defaults.mediasRunUidGallery as? [String: String] ?? [String: String]()
-        if let mediaRelativeUrl = url.mediaRelativeUrl {
-            mediasRunUids.removeValue(forKey: mediaRelativeUrl)
             Defaults.mediasRunUidGallery = mediasRunUids
         }
     }

@@ -40,15 +40,31 @@ public struct ProtobufMissionMessageToSend: MissionMessage {
     public let serviceUid: UInt
     public let payload: Data
 
+    /// Incrementing integer generator
+    public struct UidGenerator: IteratorProtocol {
+        private var counter: UInt = 0
+
+        public init(_ counter: UInt) {
+            self.counter = counter
+        }
+
+        public mutating func next() -> UInt? {
+            let uid = counter
+            counter += 1
+            return uid
+        }
+    }
+
     // MARK: - Init
     /// Inits.
     /// - Parameters:
     ///   - mission: The related mission
     ///   - payload: The payload
     public init(mission: ProtobufMissionSignature,
-                payload: Data) {
+                payload: Data,
+                messageUidGenerator: inout UidGenerator) {
         self.missionUid = mission.missionUID
-        self.messageUid = 1
+        self.messageUid = messageUidGenerator.next() ?? 0
         self.serviceUid = mission.serviceUidCommand
         self.payload = payload
     }

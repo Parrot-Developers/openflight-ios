@@ -113,7 +113,6 @@ final class HUDIndicatorState: DeviceConnectionState {
 
 final class HUDIndicatorViewModel: DroneStateViewModel<HUDIndicatorState> {
     // MARK: - Private Properties
-    private var droneConnectionStateRef: Ref<DeviceState>?
     private var splitModeObserver: Any?
     private var bottomBarModeObserver: Any?
     private var missionLauncherModeObserver: Any?

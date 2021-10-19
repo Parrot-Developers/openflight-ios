@@ -48,6 +48,7 @@ class ImagingBarState: BarButtonState, EquatableState, Copying {
     var enabled: Bool = true
     var isSelected: Observable<Bool> = Observable(false)
     var unavailableReason: [String: String] = [:]
+    var maxItems: Int?
 
     // MARK: - Init
     required init() { }
@@ -64,13 +65,15 @@ class ImagingBarState: BarButtonState, EquatableState, Copying {
          supportedModes: [BarItemMode]?,
          showUnsupportedModes: Bool = false,
          isSelected: Observable<Bool>,
-         unavailableReason: [String: String]? = nil) {
+         unavailableReason: [String: String]? = nil,
+         maxItems: Int? = nil) {
         self.mode = mode
         self.subMode = subMode
         self.supportedModes = supportedModes
         self.showUnsupportedModes = showUnsupportedModes
         self.isSelected = isSelected
         self.unavailableReason = unavailableReason ?? [:]
+        self.maxItems = maxItems
     }
 
     // MARK: - Internal Funcs
@@ -81,6 +84,7 @@ class ImagingBarState: BarButtonState, EquatableState, Copying {
             && showUnsupportedModes == other.showUnsupportedModes
             && enabled == other.enabled
             && unavailableReason == other.unavailableReason
+            && maxItems == other.maxItems
     }
 
     /// Returns a copy of the object.
@@ -90,7 +94,8 @@ class ImagingBarState: BarButtonState, EquatableState, Copying {
                                       supportedModes: supportedModes,
                                       showUnsupportedModes: showUnsupportedModes,
                                       isSelected: isSelected,
-                                      unavailableReason: unavailableReason) as? Self {
+                                      unavailableReason: unavailableReason,
+                                      maxItems: maxItems) as? Self {
             copy.image = image
             return copy
         } else {

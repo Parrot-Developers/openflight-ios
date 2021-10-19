@@ -57,7 +57,7 @@ open class OnboardingCoordinator: Coordinator {
     open func start() {
         // AUTO ACCEPT TERM OF USE FOR OPENFLIGHT
         Defaults[key: DefaultsKeys.areOFTermsOfUseAccepted] = true
-        showLocalizationAccessScreen()
+        showOnBoardingThirdScreen()
     }
 
     /// Used to show terms of use screen.
@@ -71,12 +71,6 @@ open class OnboardingCoordinator: Coordinator {
                                                                             fileName: filename,
                                                                             termsOfUseKey: termsOfUseKey)
         self.navigationController?.viewControllers = [viewController]
-    }
-
-    /// Used to show localization access screen.
-    open func showLocalizationAccessScreen() {
-        let viewController = OnboardingLocalizationViewController.instantiate(coordinator: self)
-        push(viewController)
     }
 
     /// Used to show screen after localization access.

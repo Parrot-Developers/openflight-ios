@@ -29,12 +29,31 @@
                             <constraint firstAttribute="width" secondItem="IeF-wl-tXL" secondAttribute="height" multiplier="1:1" id="isL-Zd-IXI"/>
                         </constraints>
                     </imageView>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="HOy-q7-Fp9">
+                        <rect key="frame" x="6" y="91" width="23" height="23"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icUpdateFirmwareAndMission" translatesAutoresizingMaskIntoConstraints="NO" id="LSY-PM-idU">
+                                <rect key="frame" x="2" y="2" width="19" height="19"/>
+                                <color key="tintColor" name="default_text_color"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="LSY-PM-idU" secondAttribute="height" multiplier="1:1" id="cjK-MS-XZ9"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="LSY-PM-idU" firstAttribute="top" secondItem="HOy-q7-Fp9" secondAttribute="top" constant="2" id="CYV-Vh-FiP"/>
+                            <constraint firstItem="LSY-PM-idU" firstAttribute="leading" secondItem="HOy-q7-Fp9" secondAttribute="leading" constant="2" id="Syj-Zi-5hG"/>
+                            <constraint firstAttribute="trailing" secondItem="LSY-PM-idU" secondAttribute="trailing" constant="2" id="iNF-5i-eNb"/>
+                            <constraint firstAttribute="bottom" secondItem="LSY-PM-idU" secondAttribute="bottom" constant="2" id="jMH-ec-MHA"/>
+                        </constraints>
+                    </view>
                     <view hidden="YES" alpha="0.5" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Tkt-uo-YeU">
                         <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
                         <color key="backgroundColor" name="suva_grey"/>
                     </view>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4UJ-jo-38g">
-                        <rect key="frame" x="96" y="4" width="20" height="20"/>
+                        <rect key="frame" x="94" y="6" width="20" height="20"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconSelected" translatesAutoresizingMaskIntoConstraints="NO" id="w3o-pf-ecb">
                                 <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
@@ -53,7 +72,7 @@
                         </constraints>
                     </view>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nFP-i0-hR0" customClass="DownloadButton" customModule="OpenFlight" customModuleProvider="target">
-                        <rect key="frame" x="58" y="92" width="58" height="24"/>
+                        <rect key="frame" x="56" y="90" width="58" height="24"/>
                         <color key="backgroundColor" name="highlight_color"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="24" id="q5K-A6-pNF"/>
@@ -70,23 +89,26 @@
                 </subviews>
             </view>
             <constraints>
+                <constraint firstItem="HOy-q7-Fp9" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="6" id="2Ig-Vv-Yk8"/>
                 <constraint firstItem="Tkt-uo-YeU" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="2hE-Hi-3rG"/>
                 <constraint firstItem="IeF-wl-tXL" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="31m-FL-2cA"/>
+                <constraint firstAttribute="bottom" secondItem="HOy-q7-Fp9" secondAttribute="bottom" constant="6" id="BvN-SO-k8J"/>
                 <constraint firstAttribute="bottom" secondItem="SbH-Q4-Jqs" secondAttribute="bottom" id="EK6-6f-yOD"/>
-                <constraint firstAttribute="trailing" secondItem="4UJ-jo-38g" secondAttribute="trailing" constant="4" id="MbZ-y8-Ht9"/>
-                <constraint firstAttribute="trailing" secondItem="nFP-i0-hR0" secondAttribute="trailing" constant="4" id="OmZ-3Z-zPn"/>
+                <constraint firstAttribute="trailing" secondItem="4UJ-jo-38g" secondAttribute="trailing" constant="6" id="MbZ-y8-Ht9"/>
+                <constraint firstAttribute="trailing" secondItem="nFP-i0-hR0" secondAttribute="trailing" constant="6" id="OmZ-3Z-zPn"/>
                 <constraint firstItem="SbH-Q4-Jqs" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="QZe-kC-npP"/>
-                <constraint firstItem="4UJ-jo-38g" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" constant="4" id="UMJ-4I-gYg"/>
+                <constraint firstItem="4UJ-jo-38g" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" constant="6" id="UMJ-4I-gYg"/>
                 <constraint firstAttribute="bottom" secondItem="Tkt-uo-YeU" secondAttribute="bottom" id="UxE-vT-ywz"/>
                 <constraint firstAttribute="trailing" secondItem="Tkt-uo-YeU" secondAttribute="trailing" id="bBV-9S-4gS"/>
                 <constraint firstItem="IeF-wl-tXL" firstAttribute="centerX" secondItem="gTV-IL-0wX" secondAttribute="centerX" id="flJ-lS-vF7"/>
-                <constraint firstAttribute="bottom" secondItem="nFP-i0-hR0" secondAttribute="bottom" constant="4" id="lOZ-NO-dtv"/>
+                <constraint firstAttribute="bottom" secondItem="nFP-i0-hR0" secondAttribute="bottom" constant="6" id="lOZ-NO-dtv"/>
                 <constraint firstItem="Tkt-uo-YeU" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="qBg-gN-dCs"/>
                 <constraint firstItem="SbH-Q4-Jqs" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="qfe-xz-fcu"/>
                 <constraint firstAttribute="trailing" secondItem="SbH-Q4-Jqs" secondAttribute="trailing" id="v4Y-hN-3cy"/>
             </constraints>
             <connections>
                 <outlet property="downloadButton" destination="nFP-i0-hR0" id="kek-Du-HSA"/>
+                <outlet property="internalStorageIcon" destination="HOy-q7-Fp9" id="toL-hN-MKH"/>
                 <outlet property="selectionCheckmarkView" destination="4UJ-jo-38g" id="2OF-L7-LkY"/>
                 <outlet property="selectionView" destination="Tkt-uo-YeU" id="wqw-fC-fnz"/>
                 <outlet property="thumbnailImageView" destination="SbH-Q4-Jqs" id="YGv-63-o6J"/>
@@ -96,8 +118,12 @@
         </collectionViewCell>
     </objects>
     <resources>
+        <image name="icUpdateFirmwareAndMission" width="19" height="19"/>
         <image name="iconSelected" width="20" height="20"/>
         <image name="mediaDownload" width="7" height="8"/>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>

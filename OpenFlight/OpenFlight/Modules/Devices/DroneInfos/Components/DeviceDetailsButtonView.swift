@@ -120,6 +120,7 @@ private extension DeviceDetailsButtonView {
     /// Fills up the view with current model.
     func fill() {
         mainImageView.image = model?.mainImage
+        mainImageView.layer.cornerRadius = Style.largeCornerRadius
         mainImageView.tintColor = model?.mainImageTintColor?.color
         titleLabel.text = model?.title
         subImageView.image = model?.subImage

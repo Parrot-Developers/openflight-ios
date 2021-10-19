@@ -70,9 +70,14 @@ public protocol PgyProjectRepository: AnyObject {
     /// - Parameters:
     ///     - pgyProjectId: pgyProjectIdProject identifier to remove
     func removePgyProject(_ pgyProjectId: Int64)
+
+    /// Perform remove PgyProject by pgyProjectsId from CoreData
+    /// - Parameters:
+    ///     - pgyProjectId: pgyProjectIdProject identifier to remove
+    func performRemovePgyProject(_ pgyProjectId: Int64)
 }
 
-extension CoreDataServiceIml: PgyProjectRepository {
+extension CoreDataServiceImpl: PgyProjectRepository {
 
     public func persist(_ pgyProject: PgyProjectModel, _ byUserUpdate: Bool = true) {
         // Prepare content to save.
@@ -82,7 +87,7 @@ extension CoreDataServiceIml: PgyProjectRepository {
         let pgyProjectObject: NSManagedObject?
 
         // Check object if exists.
-        if let object = self.pgyProjects("pgyProjectId", "\(pgyProject.pgyProjectId)").first {
+        if let object = self.pgyProjects("pgyProjectId", "\(pgyProject.pgyProjectId)", false).first {
             // Use persisted object.
             pgyProjectObject = object
         } else {
@@ -123,24 +128,45 @@ extension CoreDataServiceIml: PgyProjectRepository {
     }
 
     public func loadPgyProject(_ pgyProjectId: Int64) -> PgyProjectModel? {
-        return self.pgyProjects("pgyProjectId", "\(pgyProjectId)").first?.model()
+        return pgyProjects("pgyProjectId", "\(pgyProjectId)")
+            .first?.model()
     }
 
     public func loadPgyProject(_ key: String, _ value: String) -> [PgyProjectModel] {
-        return self.pgyProjects(key, value).compactMap({ $0.model() })
+        return pgyProjects(key, value)
+            .compactMap({ $0.model() })
     }
 
     public func loadAllPgyProject() -> [PgyProjectModel] {
-        return self.pgyProjects("apcId", userInformation.apcId).compactMap({ $0.model() })
+        return pgyProjects("apcId", userInformation.apcId)
+            .compactMap({ $0.model() })
     }
 
     public func loadPgyProjectToRemove() -> [PgyProjectModel] {
-        return self.loadAllPgyProject().filter({ $0.cloudToBeDeleted })
+        return pgyProjects("apcId", userInformation.apcId, false)
+            .filter({ $0.cloudToBeDeleted })
+            .compactMap({ $0.model() })
+    }
+
+    public func performRemovePgyProject(_ pgyProjectId: Int64) {
+        guard let managedContext = currentContext,
+              let pgyProject = pgyProjects("pgyProjectId", "\(pgyProjectId)", false).first else {
+            return
+        }
+
+        pgyProject.cloudToBeDeleted = true
+        objectToRemove.send(pgyProject.model())
+
+        do {
+            try managedContext.save()
+        } catch let error {
+            ULog.e(.dataModelTag, "Error perform removing PgyProject with pgyProjectId : \(pgyProjectId) from CoreData : \(error.localizedDescription)")
+        }
     }
 
     public func removePgyProject(_ pgyProjectId: Int64) {
         guard let managedContext = currentContext,
-              let pgyProject = self.pgyProjects("pgyProjectId", "\(pgyProjectId)").first else {
+              let pgyProject = pgyProjects("pgyProjectId", "\(pgyProjectId)", false).first else {
             return
         }
 
@@ -155,20 +181,35 @@ extension CoreDataServiceIml: PgyProjectRepository {
 }
 
 // MARK: - Utils
-private extension CoreDataServiceIml {
-
-    func pgyProjects(_ key: String? = nil, _ value: String? = nil) -> [PgyProject] {
+private extension CoreDataServiceImpl {
+    /// Return List of PgyProjects type of NSManagedObject by Key and Value if needed
+    /// - Parameters:
+    ///     - key: key to search
+    ///     - value: value of the key to search
+    ///     - onlyNotDeleted: flag to filter on flagged deleted object
+    func pgyProjects(_ key: String? = nil,
+                     _ value: String? = nil,
+                     _ onlyNotDeleted: Bool = true) -> [PgyProject] {
         guard let managedContext = currentContext else {
             return []
         }
+
+        var predicates: [NSPredicate] = []
 
         /// Fetch PgyProjects
         let fetchRequest: NSFetchRequest<PgyProject> = PgyProject.fetchRequest()
         if let key = key,
            let value = value {
             let predicate = NSPredicate(format: "%K == %@", key, value)
-            fetchRequest.predicate = predicate
+            predicates.append(predicate)
         }
+
+        if onlyNotDeleted {
+            let predicate = NSPredicate(format: "cloudToBeDeleted == %@", NSNumber(value: false))
+            predicates.append(predicate)
+        }
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
 
         do {
             return try (managedContext.fetch(fetchRequest))

@@ -45,13 +45,13 @@ final class FlightPlansListViewController: UIViewController {
 
     func setupViewModel(with viewModel: (FlightPlansListViewModelUIInput & FlightPlanListHeaderDelegate)) {
         self.viewModel = viewModel
-        self.viewModel.initialized()
+        self.viewModel.initViewModel()
     }
 
     func setupViewModel(with viewModel: (FlightPlansListViewModelUIInput & FlightPlanListHeaderDelegate), delegate: FlightPlansListViewModelDelegate) {
         self.viewModel = viewModel
         self.viewModel.setupDelegate(with: delegate)
-        self.viewModel.initialized()
+        self.viewModel.initViewModel()
     }
 
     private func bindViewModel() {

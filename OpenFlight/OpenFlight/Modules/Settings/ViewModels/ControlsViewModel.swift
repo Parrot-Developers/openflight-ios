@@ -113,22 +113,6 @@ final class ControlsViewModel: DevicesStateViewModel<ControlsState> {
     private var manualPilotingRef: Ref<ManualCopterPilotingItf>?
 
     // MARK: - Internal Properties
-    /// Return text to understand why arcade mode is not available.
-    var arcadeUnavailabilityHelp: String? {
-        let arcadeUnavailabilityIssues = state.value.arcadeUnavailabilityIssues
-        /// Rules are defined here is a text is required
-        if arcadeUnavailabilityIssues.contains(.remoteDisconnected) {
-            return ArcadeUnavailabilityIssues.remoteDisconnected.unavailabilityHelpText
-        }
-        if !arcadeUnavailabilityIssues.contains(.remoteDisconnected)
-            && !arcadeUnavailabilityIssues.contains(.droneDisconnected)
-            && (arcadeUnavailabilityIssues.contains(.droneLanded)
-                    || arcadeUnavailabilityIssues.contains(.droneLanding)
-                    || arcadeUnavailabilityIssues.contains(.rthInProgress)) {
-            return ArcadeUnavailabilityIssues.droneLanded.unavailabilityHelpText
-        }
-        return nil
-    }
     var settingEntries: [SettingEntry] {
         return [SettingEntry(setting: SettingsCellType.controlMode)]
     }

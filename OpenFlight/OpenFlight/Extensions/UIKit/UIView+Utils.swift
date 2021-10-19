@@ -37,4 +37,14 @@ extension UIView {
     var isRegularSizeClass: Bool {
         return traitCollection.horizontalSizeClass == .regular && traitCollection.verticalSizeClass == .regular
     }
+
+    var isHiddenInStackView: Bool {
+        get { isHidden }
+        set {
+            // Set isHidden property only if value has changed in order to WA stackView isHidden issue.
+            // (isHidden calls appear to be cumulative in stackViews.)
+            guard isHidden != newValue else { return }
+            isHidden = newValue
+        }
+    }
 }

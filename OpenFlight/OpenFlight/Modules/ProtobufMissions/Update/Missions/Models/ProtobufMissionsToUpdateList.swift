@@ -166,12 +166,4 @@ extension ProtobufMissionsToUpdateList {
             }
         }
     }
-
-    /// Returns a formatted string to represent the names and versions of the missions
-    ///
-    /// - Returns: The formatted string
-    func missionsNamesAndVersion() -> String {
-        let missionsNames = missionsToUpdateArray.map { $0.missionToUpdateData.missionNameAndVersion }
-        return missionsNames.joined(separator: Style.dash)
-    }
 }

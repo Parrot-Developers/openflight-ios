@@ -34,6 +34,6 @@ import GroundSdk
 extension Drone {
     /// Returns saved medias directory.
     var droneSavedMediaDirectory: DownloadDestination {
-        return .document(directoryName: "\(Paths.mediasDirectory)/\(self.uid)")
+        return .document(directoryName: "\(Paths.mediasDirectory)/\(uid)")
     }
 }

@@ -33,12 +33,22 @@ import Combine
 
 public class DashboardMyFlightsCellModel {
 
-    private let service: FlightService
+    public let service: FlightService
 
     public var summary: AnyPublisher<AllFlightsSummary, Never> { service.allFlightsSummary }
     public var lastFlight: AnyPublisher<FlightModel?, Never> { service.lastFlight }
+    private var isSynchronizingSubject = CurrentValueSubject<Bool, Never>(false)
+    private var cancellable = Set<AnyCancellable>()
 
     init(service: FlightService) {
         self.service = service
+        self.service.updateFlights()
+        Services.hub.cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { [unowned self] isSynch in
+            isSynchronizingSubject.value = isSynch
+        }.store(in: &cancellable)
+    }
+
+    var isSynchronizingData: AnyPublisher<Bool, Never> {
+        isSynchronizingSubject.eraseToAnyPublisher()
     }
 }

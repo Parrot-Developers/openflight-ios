@@ -153,6 +153,11 @@ public extension UIView {
             }
         }
     }
+
+    func addLightShadow(condition: Bool = true) {
+        addShadow(shadowColor: ColorName.lightShadowColor.color,
+                  condition: condition)
+    }
 }
 
 // MARK: - UITextField

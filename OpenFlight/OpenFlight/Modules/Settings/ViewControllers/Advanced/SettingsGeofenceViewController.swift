@@ -60,8 +60,14 @@ final class SettingsGeofenceViewController: SettingsContentViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        // Dedicated treatment with the right frame size.
-        maxGridHeight = self.view.bounds.height - (self.settingsTableView.visibleCells.first?.frame.size.height ?? 0) - view.safeAreaInsets.bottom
+        // Target iphone
+        if !isRegularSizeClass {
+            // Dedicated treatment with the right frame size.
+            maxGridHeight = self.view.bounds.height
+                - (self.settingsTableView.visibleCells.first?.frame.size.height ?? 0)
+                - view.safeAreaInsets.bottom
+        }
+
         settingsTableView.reloadData()
     }
 

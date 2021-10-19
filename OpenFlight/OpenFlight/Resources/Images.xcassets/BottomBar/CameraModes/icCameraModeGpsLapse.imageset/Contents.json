@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "iconImageModeGpsLapse.png",
+      "filename" : "ImageMode.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "iconImageModeGpsLapse@2x.png",
+      "filename" : "ImageMode@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "iconImageModeGpsLapse@3x.png",
+      "filename" : "ImageMode@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

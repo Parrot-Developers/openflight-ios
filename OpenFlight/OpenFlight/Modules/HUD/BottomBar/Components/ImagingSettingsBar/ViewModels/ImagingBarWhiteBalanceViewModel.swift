@@ -33,6 +33,12 @@ import GroundSdk
 /// View model for imaging settings bar white balance item.
 
 final class ImagingBarWhiteBalanceViewModel: BarButtonViewModel<ImagingBarState> {
+    // MARK: - Constants
+    private enum Constants {
+        /// Maximum number of items displayed at the same time on segmented bar.
+        static let maxItemsDisplayed = 6
+    }
+
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
 
@@ -41,9 +47,10 @@ final class ImagingBarWhiteBalanceViewModel: BarButtonViewModel<ImagingBarState>
     init() {
         super.init(barId: "WhiteBalance")
 
-        let copy = self.state.value.copy()
+        let copy = state.value.copy()
         copy.showUnsupportedModes = true
-        self.state.set(copy)
+        copy.maxItems = Constants.maxItemsDisplayed
+        state.set(copy)
     }
 
     // MARK: - Override Funcs

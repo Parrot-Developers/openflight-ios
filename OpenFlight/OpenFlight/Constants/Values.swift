@@ -32,4 +32,6 @@
 enum Values {
     /// One hundred as double.
     static let oneHundred: Double = 100.0
+    /// One second as TimeInterval
+    static let oneSecond: TimeInterval = 1
 }

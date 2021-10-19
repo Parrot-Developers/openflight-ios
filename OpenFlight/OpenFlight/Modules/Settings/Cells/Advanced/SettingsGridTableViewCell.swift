@@ -87,6 +87,7 @@ class SettingsGridActionView: UIView {
         static let labelSize: CGSize = CGSize(width: 100.0, height: 25.0)
         static let dashedLineWidth: CGFloat = 1.0
         static let dashes: [CGFloat] = [2.0, 2.0]
+        static let droneImageAreaRatio: CGFloat = 3.0 / 2.0
     }
 
     // MARK: - Override Funcs
@@ -127,6 +128,18 @@ class SettingsGridActionView: UIView {
         dashedLinePath.close()
         isEnabled ? ColorName.highlightColor.color.setStroke() : ColorName.disabledHighlightColor.color.setStroke()
         dashedLinePath.stroke()
+    }
+
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let droneImageArea = CGRect(center: droneImage.center,
+                                    width: Constants.droneImageAreaRatio * droneImage.frame.width,
+                                    height: Constants.droneImageAreaRatio * droneImage.frame.height)
+
+        guard droneImageArea.contains(point) else {
+            return superview
+        }
+
+        return self
     }
 
     // MARK: - Internal Funcs
@@ -253,32 +266,62 @@ private extension SettingsGridActionView {
         }
 
         // Update userImage visibility regarding drone position.
-        let xDelta: CGFloat
-        let yDelta: CGFloat
-        if location.y > userTopLimit
-            || location.x < userLeftLimit + distanceLabel.textWidth() {
-            userImage.isHidden = true
-            distanceLabel.textAlignment = .left
-            xDelta = -Constants.margin
-            yDelta = Constants.labelSize.height
+        var xDelta: CGFloat
+        var yDelta: CGFloat
+        let halfDroneImageSize = CGSize(width: droneImage.frame.width / 2.0,
+                                        height: droneImage.frame.height / 2.0)
+        let hiddenLimitSize = CGSize(width: userImage.frame.origin.x +
+                                        userImage.frame.width +
+                                        Constants.margin,
+                                     height: userImage.frame.height +
+                                        Constants.margin)
+        userImage.isHidden = positionView.frame.width < hiddenLimitSize.width ||
+            positionView.frame.height < hiddenLimitSize.height
+
+        // Computes distance label position.
+        var checkXDroneImage = false
+        var checkYDroneImage = false
+        var distanceAlignment: NSTextAlignment = .left
+        if positionView.frame.width > userImage.frame.origin.x +
+            userImage.frame.width +
+            distanceLabel.textWidth() +
+            2 * Constants.margin {
+            xDelta = distanceLabel.textWidth() + Constants.margin
         } else {
-            userImage.isHidden = false
-            distanceLabel.textAlignment = .right
-            xDelta = Constants.labelSize.width + Constants.margin
-            yDelta = 0.0
+            distanceAlignment = .right
+            xDelta = -Constants.margin
+            checkXDroneImage = true
         }
 
-        // Update label position.
+        // Computes height label position.
+        if positionView.frame.height > userImage.frame.height +
+            heightLabel.frame.height +
+            2 * Constants.margin {
+            yDelta = 0.0
+        } else {
+            yDelta = Constants.labelSize.height
+            checkYDroneImage = true
+        }
+
+        if checkXDroneImage && positionView.frame.width >= halfDroneImageSize.width {
+            yDelta = Constants.labelSize.height + halfDroneImageSize.height
+        }
+
+        if checkYDroneImage && positionView.frame.height >= halfDroneImageSize.height {
+            xDelta = -halfDroneImageSize.width
+        }
+
+        // Updates labels position
+        distanceLabel.frame = CGRect(x: positionView.frame.size.width - xDelta,
+                                     y: self.bounds.height - distanceLabel.frame.height,
+                                     width: distanceLabel.textWidth(),
+                                     height: distanceLabel.frame.height)
+        distanceLabel.textAlignment = distanceAlignment
+
         heightLabel.frame = CGRect(x: Constants.margin,
                                    y: location.y - yDelta,
                                    width: Constants.labelSize.width,
                                    height: Constants.labelSize.height)
-
-        distanceLabel.frame = CGRect(x: positionView.frame.size.width - xDelta,
-                                     y: self.bounds.height - Constants.labelSize.height,
-                                     width: Constants.labelSize.width,
-                                     height: Constants.labelSize.height)
-
         setNeedsDisplay()
     }
 }

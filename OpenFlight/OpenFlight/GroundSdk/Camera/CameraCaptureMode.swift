@@ -33,7 +33,7 @@ import GroundSdk
 
 // MARK: - Internal Enums
 /// Enum defining camera modes.
-enum CameraCaptureMode: String, BarItemMode, CaseIterable {
+public enum CameraCaptureMode: String, BarItemMode, CaseIterable {
     case video
     case photo
     case timelapse
@@ -42,7 +42,7 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
     case bracketing
     case burst
 
-    static var allValues: [BarItemMode] {
+    public static var allValues: [BarItemMode] {
         return [video, photo, timelapse, gpslapse, panorama, bracketing, burst]
     }
 
@@ -66,7 +66,7 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
         }
     }
 
-    var title: String {
+    public var title: String {
         switch self {
         case .video:
             return L10n.cameraModeVideo
@@ -85,7 +85,7 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
         }
     }
 
-    var image: UIImage? {
+    public var image: UIImage? {
         switch self {
         case .video:
             return Asset.BottomBar.CameraModes.icCameraModeVideo.image
@@ -104,7 +104,7 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
         }
     }
 
-    var subModes: [BarItemSubMode]? {
+    public var subModes: [BarItemSubMode]? {
         switch self {
         case .bracketing:
             return BracketingMode.allValues as? [BarItemSubMode]
@@ -119,7 +119,7 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
         }
     }
 
-    var key: String {
+    public var key: String {
         return rawValue
     }
 
@@ -150,7 +150,7 @@ enum CameraCaptureMode: String, BarItemMode, CaseIterable {
         }
     }
 
-    var logKey: String {
+    public var logKey: String {
         return LogEvent.LogKeyHUDBottomBarButton.imageMode.name
     }
 }

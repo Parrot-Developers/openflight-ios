@@ -52,10 +52,8 @@ protocol GalleryVideoCompatible {
 
     /// Triggered when we ask to play the video.
     ///
-    /// - Parameters:
-    ///    - index: Media index in the gallery media array page
     /// - Returns: boolean for success.
-    func videoPlay(index: Int) -> Bool
+    func videoPlay() -> Bool
 
     /// Triggered when we ask to pause the video.
     ///
@@ -119,8 +117,8 @@ extension GalleryMediaViewModel: GalleryVideoCompatible {
         return getCurrentViewModel()?.getVideoState() ?? .none
     }
 
-    func videoPlay(index: Int) -> Bool {
-        return getCurrentViewModel()?.videoPlay(index: index) ?? false
+    @discardableResult func videoPlay() -> Bool {
+        return getCurrentViewModel()?.videoPlay() ?? false
     }
 
     func videoPause() -> Bool {

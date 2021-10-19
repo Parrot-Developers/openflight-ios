@@ -113,6 +113,8 @@ private extension SettingsNetworkNameCell {
         isUserInteractionEnabled = isEnable
         textfield.isEnabled = isEnable
         passwordButton.isEnabled = isEnable
+        textfield.alphaWithEnabledState(isEnable)
+        passwordButton.alphaWithEnabledState(isEnable)
     }
 }
 

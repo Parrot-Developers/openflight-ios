@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <device id="retina6_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
@@ -22,39 +22,73 @@
                 <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconAvoidanceInactive" translatesAutoresizingMaskIntoConstraints="NO" id="AaL-Pk-LAS">
-                        <rect key="frame" x="21" y="28" width="68" height="34"/>
-                        <color key="tintColor" name="default_text_color"/>
-                        <constraints>
-                            <constraint firstAttribute="width" secondItem="AaL-Pk-LAS" secondAttribute="height" multiplier="2:1" id="4aq-nL-H87"/>
-                            <constraint firstAttribute="height" constant="34" id="PUw-oM-JK9"/>
-                        </constraints>
-                    </imageView>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bVM-6r-b4d">
-                        <rect key="frame" x="4" y="78.5" width="102" height="15.5"/>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bVM-6r-b4d">
+                        <rect key="frame" x="6" y="78" width="98" height="22"/>
                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                         <color key="textColor" name="default_text_color"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="u4Y-wo-ZTw">
-                        <rect key="frame" x="0.0" y="94" width="110" height="16"/>
+                        <rect key="frame" x="0.0" y="95" width="110" height="15"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="15" id="1Fp-nU-Ugh"/>
+                        </constraints>
                         <color key="pageIndicatorTintColor" name="default_text_color"/>
                         <color key="currentPageIndicatorTintColor" name="highlight_color"/>
                     </pageControl>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wUH-HP-yng">
+                        <rect key="frame" x="10" y="10" width="90" height="68"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconAvoidanceInactive" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AaL-Pk-LAS">
+                                <rect key="frame" x="24.333333333333332" y="13.333333333333332" width="41.333333333333343" height="41.333333333333343"/>
+                                <color key="tintColor" name="default_text_color"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="AaL-Pk-LAS" secondAttribute="height" multiplier="1:1" id="25b-J5-Vo3"/>
+                                    <constraint firstAttribute="height" constant="23" id="ukk-Gy-pYu">
+                                        <variation key="heightClass=regular-widthClass=regular" constant="45"/>
+                                    </constraint>
+                                </constraints>
+                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="30" scale="default"/>
+                                <variation key="default">
+                                    <mask key="constraints">
+                                        <exclude reference="ukk-Gy-pYu"/>
+                                    </mask>
+                                </variation>
+                                <variation key="heightClass=regular-widthClass=regular">
+                                    <mask key="constraints">
+                                        <include reference="ukk-Gy-pYu"/>
+                                    </mask>
+                                </variation>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="AaL-Pk-LAS" firstAttribute="centerY" secondItem="wUH-HP-yng" secondAttribute="centerY" id="AI8-yF-Byh"/>
+                            <constraint firstItem="AaL-Pk-LAS" firstAttribute="centerX" secondItem="wUH-HP-yng" secondAttribute="centerX" id="Bbe-0Q-Fgc"/>
+                            <constraint firstItem="AaL-Pk-LAS" firstAttribute="width" secondItem="wUH-HP-yng" secondAttribute="width" multiplier="0.45" constant="1" id="gUA-Jr-SFF"/>
+                        </constraints>
+                    </view>
                 </subviews>
             </view>
             <color key="backgroundColor" name="white_albescent"/>
             <constraints>
-                <constraint firstItem="AaL-Pk-LAS" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" constant="28" id="2CE-93-nkc"/>
                 <constraint firstAttribute="trailing" secondItem="u4Y-wo-ZTw" secondAttribute="trailing" id="3PU-sg-6et"/>
-                <constraint firstItem="AaL-Pk-LAS" firstAttribute="centerX" secondItem="gTV-IL-0wX" secondAttribute="centerX" id="6MY-Q9-i04"/>
-                <constraint firstAttribute="trailing" secondItem="bVM-6r-b4d" secondAttribute="trailing" constant="4" id="7cO-cD-u3C"/>
-                <constraint firstAttribute="bottom" secondItem="bVM-6r-b4d" secondAttribute="bottom" constant="16" id="8iL-tJ-bsN"/>
+                <constraint firstItem="bVM-6r-b4d" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="6" id="9MG-f0-PCQ"/>
+                <constraint firstAttribute="trailing" secondItem="bVM-6r-b4d" secondAttribute="trailing" constant="6" id="Cyj-IM-Tah"/>
+                <constraint firstItem="bVM-6r-b4d" firstAttribute="height" relation="greaterThanOrEqual" secondItem="gTV-IL-0wX" secondAttribute="height" multiplier="0.2" id="EUj-SJ-vjx"/>
                 <constraint firstAttribute="bottom" secondItem="u4Y-wo-ZTw" secondAttribute="bottom" id="F5a-Pd-GcE"/>
-                <constraint firstItem="u4Y-wo-ZTw" firstAttribute="top" secondItem="bVM-6r-b4d" secondAttribute="bottom" id="KUX-Ex-6Tc"/>
+                <constraint firstAttribute="trailing" secondItem="wUH-HP-yng" secondAttribute="trailing" constant="10" id="Im3-Ji-ni5"/>
+                <constraint firstAttribute="bottom" secondItem="bVM-6r-b4d" secondAttribute="bottom" constant="10" id="MMw-2W-PPO"/>
                 <constraint firstItem="u4Y-wo-ZTw" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="ctw-0w-YuW"/>
-                <constraint firstItem="bVM-6r-b4d" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="4" id="pVM-Bc-QGL"/>
+                <constraint firstItem="wUH-HP-yng" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="10" id="i3L-ZY-naU"/>
+                <constraint firstItem="wUH-HP-yng" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" constant="10" id="pJN-0W-9o1"/>
+                <constraint firstItem="bVM-6r-b4d" firstAttribute="top" secondItem="wUH-HP-yng" secondAttribute="bottom" id="tgr-s5-iJc"/>
             </constraints>
+            <variation key="default">
+                <mask key="subviews">
+                    <exclude reference="u4Y-wo-ZTw"/>
+                </mask>
+            </variation>
             <connections>
                 <outlet property="pageControl" destination="u4Y-wo-ZTw" id="Svr-aS-DAz"/>
                 <outlet property="settingImage" destination="AaL-Pk-LAS" id="9pB-Ts-gHQ"/>

@@ -35,7 +35,7 @@ final class CalibrationChoiceView: UIControl, NibOwnerLoadable {
 
     // MARK: - Outlets
     @IBOutlet private weak var imageView: UIImageView!
-    @IBOutlet private weak var label: UILabel!
+    @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var subtitleLabel: UILabel!
 
     // MARK: - Private Enums
@@ -55,7 +55,7 @@ final class CalibrationChoiceView: UIControl, NibOwnerLoadable {
     override var isEnabled: Bool {
         didSet {
             imageView.alpha = isEnabled ? Constants.alphaEnabled : Constants.alphaDisabled
-            label.alpha = isEnabled ? Constants.alphaEnabled : Constants.alphaDisabled
+            titleLabel.alpha = isEnabled ? Constants.alphaEnabled : Constants.alphaDisabled
         }
     }
 
@@ -87,10 +87,10 @@ private extension CalibrationChoiceView {
     ///    - viewModel: view model for the view.
     func update(with viewModel: CalibrationChoiceModel?) {
         self.imageView.image = viewModel?.image
-        self.label.text = viewModel?.text
-        self.label.textColor = viewModel?.textColor
+        self.titleLabel.text = viewModel?.title
+        self.titleLabel.textColor = viewModel?.titleColor
         backgroundColor = viewModel?.backgroundColor.color
-        self.subtitleLabel.text = viewModel?.subText
-        self.subtitleLabel.textColor = viewModel?.subTextColor.color
+        self.subtitleLabel.text = viewModel?.subtitle
+        self.subtitleLabel.textColor = viewModel?.subtitleColor.color
     }
 }

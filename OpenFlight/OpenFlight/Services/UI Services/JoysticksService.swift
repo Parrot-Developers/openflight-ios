@@ -33,7 +33,7 @@ import Combine
 import GroundSdk
 
 /// Joysticks availability service
-protocol JoysticksAvailabilityService: AnyObject {
+public protocol JoysticksAvailabilityService: AnyObject {
 
     /// Publisher for joysticks availability
     var joysticksAvailablePublisher: AnyPublisher<Bool, Never> { get }

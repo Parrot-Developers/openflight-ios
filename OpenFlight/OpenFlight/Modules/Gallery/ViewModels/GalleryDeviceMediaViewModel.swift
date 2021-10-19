@@ -131,9 +131,6 @@ final class GalleryDeviceMediaState: GalleryContentState {
 
 final class GalleryDeviceMediaViewModel: DroneStateViewModel<GalleryDeviceMediaState> {
     // MARK: - Private Properties
-    private let groundSdk = GroundSdk()
-    private var mediaListRef: Ref<[MediaItem]>?
-    private var mediaList: [MediaItem] = []
     private var deviceMediaListener: Set<GalleryDeviceMediaListener> = []
 
     // MARK: - Internal Properties
@@ -236,6 +233,6 @@ extension GalleryDeviceMediaViewModel {
     ///    - uid: uid
     /// - Returns: a gallery media
     func getMediaFromUid(_ uid: String) -> GalleryMedia? {
-        return self.state.value.medias.first { $0.uid == uid }
+        return self.state.value.medias.first { $0.uid == uid.prefix(AssetUtils.Constants.prefixLength) }
     }
 }

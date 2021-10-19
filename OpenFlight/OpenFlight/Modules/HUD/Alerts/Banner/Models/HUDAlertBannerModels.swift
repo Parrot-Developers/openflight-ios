@@ -36,11 +36,10 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     case motorCutout
     case motorCutoutTemperature
     case motorCutoutPowerSupply
-    case forceLandingFlyAway
     case forceLandingLowBattery
     case forceLandingTemperature
-    case veryLowBatteryLanding
-    case veryLowBattery
+    case wontReachHome
+    case takeoffUnavailable
     case noGpsTooDark
     case noGpsTooHigh
     case noGps
@@ -61,6 +60,7 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     case obstacleAvoidanceSensorsNotCalibrated
     case obstacleAvoidanceDeteriorated
     case obstacleAvoidanceStrongWind
+    case obstacleAvoidanceComputationalError
     case cameraError
 
     public var level: HUDAlertLevel {
@@ -73,12 +73,12 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
              .motorCutoutTemperature,
              .motorCutoutPowerSupply:
             return .componentsMotor
-        case .forceLandingFlyAway,
-             .forceLandingLowBattery,
+        case .forceLandingLowBattery,
              .forceLandingTemperature,
-             .veryLowBatteryLanding,
-             .veryLowBattery:
+             .wontReachHome:
             return .autoLanding
+        case .takeoffUnavailable:
+            return .takeoff
         case .noGpsTooDark,
              .noGpsTooHigh,
              .noGps,
@@ -103,7 +103,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
              .obstacleAvoidanceSensorsFailure,
              .obstacleAvoidanceSensorsNotCalibrated,
              .obstacleAvoidanceStrongWind,
-             .obstacleAvoidanceDeteriorated:
+             .obstacleAvoidanceDeteriorated,
+             .obstacleAvoidanceComputationalError:
             return .obstacleAvoidance
         case .cameraError:
             return .componentsCamera
@@ -122,13 +123,13 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return L10n.alertMotorCutoutTemperature
         case .motorCutoutPowerSupply:
             return L10n.alertMotorCutoutPowerSupply
-        case .forceLandingFlyAway,
-             .forceLandingLowBattery,
-             .forceLandingTemperature,
-             .veryLowBatteryLanding:
+        case .forceLandingLowBattery,
+             .forceLandingTemperature:
             return L10n.alertAutoLanding
-        case .veryLowBattery:
-            return L10n.alertVeryLowBattery
+        case .wontReachHome:
+            return L10n.alertReturnHomeWontReachHome
+        case .takeoffUnavailable:
+            return L10n.takeoffAlertDefaultMessage
         case .noGpsTooDark:
             return L10n.alertNoGpsTooDark
         case .noGpsTooHigh:
@@ -167,6 +168,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return L10n.alertAvoidanceDeteriorated
         case .obstacleAvoidanceStrongWind:
             return L10n.alertDeterioratedAvoidanceStrongWinds
+        case .obstacleAvoidanceComputationalError:
+            return L10n.alertObstacleAvoidanceComputationalError
         case .cameraError:
             return L10n.alertCameraError
         }
@@ -179,11 +182,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
              .motorCutoutPowerSupply,
              .strongImuVibration:
             return Asset.Common.Icons.icDroneSmall.image
-        case .forceLandingFlyAway,
-             .forceLandingLowBattery,
-             .forceLandingTemperature,
-             .veryLowBatteryLanding,
-             .veryLowBattery:
+        case .forceLandingLowBattery,
+             .forceLandingTemperature:
             return Asset.Common.Icons.icWarningWhite.image
         case .tooMuchWind,
              .obstacleAvoidanceStrongWind:
@@ -208,22 +208,11 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     }
 
     public var actionType: AlertActionType? {
-        switch self {
-        case .veryLowBatteryLanding:
-            return .landing
-        default:
-            return nil
-        }
+        return nil
     }
 
     public var vibrationDelay: TimeInterval {
-        switch self {
-        case .veryLowBatteryLanding,
-             .veryLowBattery:
-            return 0.0
-        default:
-            return HUDAlertConstants.defaultVibrationDelay
-        }
+        return HUDAlertConstants.defaultVibrationDelay
     }
 }
 
@@ -231,6 +220,7 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
 public enum HUDBannerWarningAlertType: String, HUDAlertType {
     case lowAndPerturbedWifi
     case obstacleAvoidanceDroneStucked
+    case obstacleAvoidanceBlindMotionDirection
     case imuVibration
     case targetLost
     case droneGpsKo
@@ -248,6 +238,7 @@ public enum HUDBannerWarningAlertType: String, HUDAlertType {
         case .lowAndPerturbedWifi:
             return .wifi
         case .obstacleAvoidanceDroneStucked,
+             .obstacleAvoidanceBlindMotionDirection,
              .highDeviation:
             return .obstacleAvoidance
         case .imuVibration:
@@ -285,6 +276,8 @@ public enum HUDBannerWarningAlertType: String, HUDAlertType {
             return L10n.alertUnauthorizedFlightZone
         case .highDeviation:
             return L10n.alertHighDeviation
+        case .obstacleAvoidanceBlindMotionDirection:
+            return L10n.alertObstacleAvoidanceBlindDirection
         }
     }
 

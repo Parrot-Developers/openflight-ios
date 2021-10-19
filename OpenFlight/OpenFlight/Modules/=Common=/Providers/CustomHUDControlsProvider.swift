@@ -35,10 +35,12 @@ import ArcGIS
 /// Defines a custom controls object for the HUD.
 public protocol CustomHUDControls: AnyObject {
     var mapViewController: MapViewController? { get set }
-    var validationView: UIView? { get set }
-    var available: Bool { get }
     func start()
-    func handleCustomMapTap(_ geoView: AGSGeoView, didTapAtScreenPoint: CGPoint, mapPoint: AGSPoint)
+    func handleCustomMapTap(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?)
+    func handleCustomMapLongPress(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?)
+    func handleCustomMapTouchDown(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?, completion: @escaping (Bool) -> Void)
+    func handleCustomMapDrag(mapPoint: AGSPoint)
+    func handleCustomMapTouchUp(mapPoint: AGSPoint)
 }
 
 /// Manages current HUD custom controls. 

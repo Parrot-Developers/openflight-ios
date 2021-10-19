@@ -64,8 +64,6 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
         static let hideInfoLabelTaskKey: String = "hideInfoLabel"
         static let hideTiltMaxLabelTaskKey: String = "hideTiltMaxLabel"
         static let maxReachedNotificationDuration: TimeInterval = 1.0
-        static let defaultZoomVelocity: Double = 1.0
-        static let defaultDezoomVelocity: Double = -1.0
         static let defaultAnimationDuration: TimeInterval = 0.2
     }
 

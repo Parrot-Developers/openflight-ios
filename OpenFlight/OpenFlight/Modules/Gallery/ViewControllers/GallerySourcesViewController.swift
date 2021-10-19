@@ -41,6 +41,8 @@ protocol GallerySourcesViewDelegate: AnyObject {
 final class GallerySourcesViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var collection: UICollectionView!
+    @IBOutlet private weak var internalLabel: UILabel!
+    @IBOutlet private weak var internalImageView: UIImageView!
 
     // MARK: - Private Properties
     private var dataSource: [GallerySource] = []
@@ -55,13 +57,14 @@ final class GallerySourcesViewController: UIViewController {
 
     // MARK: - Internal Properties
     weak var delegate: GallerySourcesViewDelegate?
+    var isSingleRowDisplayEnabled: Bool = true
 
     // MARK: - Private Enums
-    private enum Constants {
+    enum Constants {
         static let nbColumnsLandscape: CGFloat = 1.0
         static let nbColumnsPortrait: CGFloat = 3.0
         static let itemSpacing: CGFloat = 10.0
-        static let cellHeight: CGFloat = 80.0
+        static let cellHeight: CGFloat = 60.0
     }
 
     // MARK: - Setup
@@ -89,8 +92,6 @@ final class GallerySourcesViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        self.view.backgroundColor = .white
 
         setupCollection()
 
@@ -166,45 +167,83 @@ private extension GallerySourcesViewController {
         collection.dataSource = self
         collection.delegate = self
         collection.backgroundColor = .clear
-        collection.contentInsetAdjustmentBehavior = .always
+        collection.contentInsetAdjustmentBehavior = isSingleRowDisplayEnabled ? .never : .always
+        collection.isUserInteractionEnabled = !isSingleRowDisplayEnabled
     }
 
     /// Update data source.
     func updateDataSource() {
         dataSource.removeAll()
-        GallerySourceType.allCases.forEach { type in
-            var storageUsed: Double = 0.0
-            var storageCapacity: Double =  0.0
-            var isOffline: Bool = true
 
-            switch type {
-            case .droneSdCard:
-                if let sdState = gallerySDMediaViewModel?.state.value {
-                    storageUsed = sdState.storageUsed
-                    storageCapacity = sdState.capacity
-                    isOffline = !(sdState.isConnected() && sdState.physicalStorageState == .available)
-                }
-            case .droneInternal:
-                if let internalState = galleryInternalMediaViewModel?.state.value {
-                    storageUsed = internalState.storageUsed
-                    storageCapacity = internalState.capacity
-                    isOffline = !(internalState.isConnected() && internalState.physicalStorageState == .available)
-                }
-            case .mobileDevice:
-                storageUsed = UIDevice.current.usedStorageAsDouble
-                storageCapacity = UIDevice.current.capacityAsDouble
-                isOffline = false
-            case .unknown:
-                return
+        if isSingleRowDisplayEnabled {
+            appendDataSource(viewModel?.sourceType)
+        } else {
+            // Keeping legacy collectionView display for now, if needed.
+            GallerySourceType.allCases.forEach { type in
+                appendDataSource(type)
             }
-            let source = GallerySource(type: type,
-                                       storageUsed: storageUsed,
-                                       storageCapacity: storageCapacity,
-                                       isOffline: isOffline)
-            dataSource.append(source)
         }
 
         reloadContent()
+    }
+
+    func appendDataSource(_ source: GallerySourceType?) {
+        var storageUsed: Double = 0.0
+        var storageCapacity: Double =  0.0
+        var isOffline: Bool = true
+
+        guard let type = viewModel?.sourceType else { return }
+
+        switch type {
+        case .droneSdCard:
+            if let sdState = gallerySDMediaViewModel?.state.value {
+                storageUsed = sdState.storageUsed
+                storageCapacity = sdState.capacity
+                isOffline = !(sdState.isConnected() && sdState.physicalStorageState == .available)
+            }
+        case .droneInternal:
+            if let internalState = galleryInternalMediaViewModel?.state.value {
+                storageUsed = internalState.storageUsed
+                storageCapacity = internalState.capacity
+                isOffline = !(internalState.isConnected() && internalState.physicalStorageState == .available)
+            }
+        case .mobileDevice:
+            storageUsed = UIDevice.current.usedStorageAsDouble
+            storageCapacity = UIDevice.current.capacityAsDouble
+            isOffline = false
+        default:
+            return
+        }
+        let source = GallerySource(type: type,
+                                   storageUsed: storageUsed,
+                                   storageCapacity: storageCapacity,
+                                   isOffline: isOffline)
+        dataSource.append(source)
+
+        if isSingleRowDisplayEnabled {
+            updateInternalStateLabel()
+        }
+    }
+
+    func updateInternalStateLabel() {
+        if let internalState = galleryInternalMediaViewModel?.state.value {
+            let freeInternalState = max(0, internalState.capacity - internalState.storageUsed)
+            let internalStorageString = String(format: "\(L10n.gallerySourceDroneInternal) %.1lf/%.1lf %@",
+                                               freeInternalState,
+                                               internalState.capacity,
+                                               L10n.galleryMemoryFree)
+            internalLabel.text = internalStorageString
+
+            let colorName = ColorName.disabledTextColor
+            internalLabel.makeUp(and: colorName)
+            internalImageView.tintColor = colorName.color
+
+            let isVisible = viewModel?.sourceType == .droneSdCard
+                && internalState.storageUsed != 0
+                && viewModel?.isSdCardReady ?? false
+            internalImageView.alphaHidden(!isVisible)
+            internalLabel.alphaHidden(!isVisible)
+        }
     }
 }
 
@@ -225,7 +264,8 @@ extension GallerySourcesViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(for: indexPath) as GallerySourceCollectionViewCell
         let source = dataSource[indexPath.row]
-        cell.setup(source: source, isSelected: viewModel?.sourceType == source.type)
+        let isSelected = isSingleRowDisplayEnabled ? false : viewModel?.sourceType == source.type
+        cell.setup(source: source, isSelected: isSelected)
         cell.isUserInteractionEnabled = !source.isOffline
 
         return cell
@@ -248,6 +288,11 @@ extension GallerySourcesViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
+        guard !isSingleRowDisplayEnabled else {
+            return .init(width: collectionView.bounds.width,
+                         height: collectionView.bounds.height)
+        }
+
         // Remove top and bottom insets (2 * Constants.itemSpacing)
         var collectionViewHeight = collectionView.frame.height - 2 * Constants.itemSpacing
         // Handle safe area screens (bottom).
@@ -270,9 +315,11 @@ extension GallerySourcesViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: Constants.itemSpacing,
-                            left: Constants.itemSpacing,
-                            bottom: Constants.itemSpacing,
-                            right: Constants.itemSpacing)
+        isSingleRowDisplayEnabled
+            ? .zero
+            : UIEdgeInsets(top: Constants.itemSpacing,
+                           left: Constants.itemSpacing,
+                           bottom: Constants.itemSpacing,
+                           right: Constants.itemSpacing)
     }
 }

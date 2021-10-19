@@ -65,7 +65,6 @@ final class GalleryFiltersViewController: UIViewController {
     // MARK: - Private Enums
     private enum Constants {
         static let cellSpacing: CGFloat = 10.0
-        static let topMargin: CGFloat = 0.0
     }
 
     // MARK: - Setup
@@ -112,13 +111,17 @@ private extension GalleryFiltersViewController {
         collection.dataSource = self
         collection.delegate = self
         collection.backgroundColor = .clear
+        collection.insetsLayoutMarginsFromSafeArea = true
+        collection.contentInsetAdjustmentBehavior = .always
         let flowLayout = GalleryFiltersFlowLayout()
         flowLayout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
         flowLayout.minimumInteritemSpacing = Constants.cellSpacing
         flowLayout.minimumLineSpacing = Constants.cellSpacing
         flowLayout.scrollDirection = .vertical
-        flowLayout.sectionInset.right = Constants.cellSpacing
-        flowLayout.sectionInset.left = Constants.cellSpacing
+        flowLayout.sectionInset = .init(top: Constants.cellSpacing,
+                                        left: Constants.cellSpacing,
+                                        bottom: Constants.cellSpacing,
+                                        right: Constants.cellSpacing)
         collection.collectionViewLayout = flowLayout
     }
 
@@ -175,7 +178,9 @@ extension GalleryFiltersViewController: GalleryViewDelegate {
             self.dataSource.append(item)
         }
         self.collection.reloadData()
-        adjustCollectionConstraints()
+        DispatchQueue.main.async {
+            self.adjustCollectionConstraints()
+        }
     }
 
     func multipleSelectionDidChange(enabled: Bool) {

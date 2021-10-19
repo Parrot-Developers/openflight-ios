@@ -200,7 +200,6 @@ private extension TrackingViewModel {
         onboardTrackerRef = drone.getPeripheral(Peripherals.onboardTracker) { [weak self] onboardTracker in
             self?.onboardTracker = onboardTracker
         }
-        drone.getPeripheral(Peripherals.onboardTracker)?.startTrackingEngine(boxProposals: true)
     }
 
     /// Starts watcher for gimbal.
@@ -231,7 +230,6 @@ private extension TrackingViewModel {
 
     /// Clear every variables of the view model.
     func stopImageProcessing() {
-        onboardTracker?.removeAllTargets()
         removeAllReferences()
     }
 
@@ -241,7 +239,6 @@ private extension TrackingViewModel {
         cameraLiveRef = nil
         sink = nil
         onboardTrackerRef = nil
-        onboardTracker?.stopTrackingEngine()
         onboardTracker = nil
         gimbalRef = nil
     }

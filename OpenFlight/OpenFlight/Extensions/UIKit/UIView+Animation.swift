@@ -57,4 +57,65 @@ public extension UIView {
                         if let complete = completion { complete() }
                        })
     }
+
+    func animateIsHidden(_ isHidden: Bool, duration: TimeInterval = 0.3) {
+        UIView.animate(withDuration: duration, delay: 0, options: .curveEaseOut) {
+            self.isHidden = isHidden
+            self.alphaHidden(isHidden)
+        }
+    }
+
+    func animateIsHiddenInStackView(_ isHidden: Bool, duration: TimeInterval = 0.3) {
+        UIView.animate(withDuration: duration, delay: 0, options: .curveEaseOut) {
+            self.isHiddenInStackView = isHidden
+            self.alphaHidden(isHidden)
+        }
+    }
+
+    /// Animates showing/hiding of the view from one of its edges.
+    ///
+    /// - Parameters:
+    ///    - edge: Edge to animate the view from/to.
+    ///    - offset: An optional offset to add the the translation.
+    ///    - show: Show view if `true`, hide it else.
+    ///    - fadeFrom: View's opacity will be animated from 0 to `fadeFrom` value if not nil.
+    ///    - animate: Animate showing/hiding if `true`, directly apply transform else.
+    ///    - duration: Animation duration.
+    ///    - delay: Delay for the animation.
+    ///    - initialTransform: Translation transform will be concatenated to `initialTransform` if specified.
+    func showFromEdge(_ edge: UIRectEdge,
+                      offset: CGFloat = 0,
+                      show: Bool,
+                      fadeFrom: CGFloat? = nil,
+                      animate: Bool = true,
+                      duration: TimeInterval = 0.2,
+                      delay: TimeInterval = 0,
+                      initialTransform: CGAffineTransform = .identity) {
+        let translation: CGPoint
+
+        switch edge {
+        case .top: translation = .init(x: 0, y: -bounds.height - offset)
+        case .bottom: translation = .init(x: 0, y: bounds.height + offset)
+        case .left: translation = .init(x: -bounds.width - offset, y: 0)
+        case .right: translation = .init(x: bounds.width + offset, y: 0)
+        default: translation = .zero
+        }
+
+        let transformBlock = {
+            self.transform = show
+                ? initialTransform
+                : initialTransform.translatedBy(x: translation.x, y: translation.y)
+            if let fadeFrom = fadeFrom {
+                self.alpha = show ? fadeFrom : 0
+            }
+        }
+
+        if animate {
+            UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut) {
+                transformBlock()
+            }
+        } else {
+            transformBlock()
+        }
+    }
 }

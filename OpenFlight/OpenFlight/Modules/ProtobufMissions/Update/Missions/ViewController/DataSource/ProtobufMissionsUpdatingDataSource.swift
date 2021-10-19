@@ -43,7 +43,6 @@ enum ProtobufMissionsManualRebootingState {
 final class ProtobufMissionsUpdatingDataSource {
     // MARK: - Internal Properties
     let elements: [FirmwareMissionsUpdatingCase]
-    let subtitle: String
     let currentTotalProgress: Float
 
     // MARK: - Private Enums
@@ -83,7 +82,6 @@ final class ProtobufMissionsUpdatingDataSource {
             temporaryProgress += Constants.maxProgress
         }
 
-        subtitle = missionsUpdaterManager.missionsNamesAndVersion()
         elements = temporaryElements
         currentTotalProgress = elements.isEmpty ? Constants.maxProgress : temporaryProgress / Float(elements.count)
     }

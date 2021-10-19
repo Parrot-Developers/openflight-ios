@@ -204,16 +204,6 @@ extension CameraSlidersViewModel {
         gimbalSliderTimer?.invalidate()
     }
 
-    func hideGimbalTiltSlider() {
-        gimbalSliderTimer?.invalidate()
-        showGimbalTiltSlider = false
-    }
-
-    func hideZoomSlider() {
-        gimbalSliderTimer?.invalidate()
-        showZoomSlider = false
-    }
-
     func scheduleGimbalSliderHiding() {
         gimbalSliderTimer?.invalidate()
         gimbalSliderTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: false, block: { [weak self] _ in
@@ -231,10 +221,6 @@ extension CameraSlidersViewModel {
             self?.showInfoTiltLabelFlag = false
             self?.resetConstraintInfoTiltLabel()
         }
-    }
-
-    func updateConstraintInfoTiltLabel() {
-        constraintInfoLabelUpdated = true
     }
 
     func resetConstraintInfoTiltLabel() {

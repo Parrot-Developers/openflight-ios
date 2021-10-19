@@ -33,7 +33,7 @@ import Combine
 import GroundSdk
 
 /// Drone camera zoom service
-protocol ZoomService: AnyObject {
+public protocol ZoomService: AnyObject {
     // MARK: - Zoom values
     /// Current zoom value
     var currentZoomPublisher: AnyPublisher<Double, Never> { get }

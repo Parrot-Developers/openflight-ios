@@ -50,7 +50,7 @@ extension GallerySDMediaViewModel: GalleryVideoCompatible {
         return convertToVideoState(streamingCurrentReplay.playState)
     }
 
-    func videoPlay(index: Int = 0) -> Bool {
+    func videoPlay() -> Bool {
         guard let streamingCurrentReplay = streamingCurrentReplay else { return false }
         return streamingCurrentReplay.play()
     }

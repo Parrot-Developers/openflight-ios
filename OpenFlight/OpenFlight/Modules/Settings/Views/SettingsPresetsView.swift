@@ -40,12 +40,6 @@ protocol SettingsPresetViewDelegate: AnyObject {
 
 /// Tab like view which manage settings behaviours mode.
 final class SettingsPresetsView: UIView, NibOwnerLoadable {
-    // MARK: - Outlets
-    @IBOutlet private weak var presetTitle: UILabel! {
-        didSet {
-            presetTitle.text = L10n.settingsBehaviourMode.uppercased()
-        }
-    }
     @IBOutlet private weak var presetStackView: UIStackView!
 
     // MARK: - Private Properties
@@ -101,13 +95,14 @@ final class SettingsPresetsView: UIView, NibOwnerLoadable {
             index += 1
             button.addTarget(self, action: #selector(modeTouchedUpInside(sender:)), for: .touchUpInside)
             let textColor: ColorName = item == selectedMode ? .white : .defaultTextColor
-            button.backgroundColor = item == selectedMode ? ColorName.highlightColor.color : .clear
+            button.backgroundColor = item == selectedMode ? ColorName.highlightColor.color : .white
             button.tintColor = textColor.color
             button.makeup(color: textColor)
             presetStackView.addArrangedSubview(button)
         }
     }
 }
+
 // MARK: - Actions
 private extension SettingsPresetsView {
     /// Called when user touch one of the preset stackview button.
@@ -116,7 +111,7 @@ private extension SettingsPresetsView {
         for view in presetStackView.arrangedSubviews {
             guard let button = view as? UIButton else { break }
             let textColor = sender == button ? ColorName.white.color : ColorName.defaultTextColor.color
-            button.backgroundColor = sender == button ? ColorName.highlightColor.color : .clear
+            button.backgroundColor = sender == button ? ColorName.highlightColor.color : .white
             button.tintColor = textColor
             button.setTitleColor(textColor, for: .normal)
         }

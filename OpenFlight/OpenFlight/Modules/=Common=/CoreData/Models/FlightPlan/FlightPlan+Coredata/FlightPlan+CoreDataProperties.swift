@@ -46,7 +46,7 @@ extension FlightPlan {
     @NSManaged public var projectUuid: String!
     @NSManaged public var dataStringType: String!
     @NSManaged public var version: String!
-    @NSManaged public var dataString: String?
+    @NSManaged public var dataString: Data?
     @NSManaged public var pgyProjectId: Int64
     @NSManaged public var mediaCustomId: String?
     @NSManaged public var state: String!
@@ -96,6 +96,10 @@ extension FlightPlan {
 
     /// Return FlightPlanModel from FlightPlan type of NSManagedObject
     func model() -> FlightPlanModel {
+        var flightPlanSettings: String?
+        if let dataString = dataString {
+            flightPlanSettings = String(decoding: dataString, as: UTF8.self)
+        }
         return FlightPlanModel(apcId: apcId,
                                 type: type,
                                 uuid: uuid,
@@ -104,7 +108,7 @@ extension FlightPlan {
                                 thumbnailUuid: thumbnailUuid,
                                 projectUuid: projectUuid,
                                 dataStringType: dataStringType,
-                                dataString: dataString,
+                                dataString: flightPlanSettings,
                                 pgyProjectId: pgyProjectId,
                                 mediaCustomId: mediaCustomId,
                                 state: FlightPlanModel.FlightPlanState(rawString: state) ?? .editable,

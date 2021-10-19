@@ -48,7 +48,7 @@ final class PairingViewController: UIViewController {
         static let defaultLanscapeMargin: CGFloat = 40.0
         static let defaultPortraitMargin: CGFloat = 20.0
         static let activeCellExtraHeight: CGFloat = 80.0
-        static let thirdScreen: CGFloat = 3.0
+        static let secondScreen: CGFloat = 2.0
     }
 
     // MARK: - Setup
@@ -152,8 +152,8 @@ extension PairingViewController: UICollectionViewDataSource {
 
         if UIApplication.isLandscape {
             height = collectionView.frame.height
-            // Set content width to the third of the screen with 2 margins.
-            width = (collectionView.frame.width - 2 * Constants.defaultLanscapeMargin)  / Constants.thirdScreen
+            // Set content width to the second of the screen with 1 margin.
+            width = (collectionView.frame.width - Constants.defaultLanscapeMargin)  / Constants.secondScreen
         } else {
             width = collectionView.frame.width
             switch pairingList[indexPath.row].pairingState {

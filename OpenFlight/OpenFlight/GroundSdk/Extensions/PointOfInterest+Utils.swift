@@ -32,13 +32,12 @@ import GroundSdk
 import CoreLocation
 
 /// Utility extension for `PointOfInterest`.
-
 public extension PointOfInterest {
     /// Returns point of interest as a `Location3D`.
     var toLocation3D: Location3D {
-        let coordinate = CLLocationCoordinate2D(latitude: self.latitude,
-                                                longitude: self.longitude)
+        let coordinate = CLLocationCoordinate2D(latitude: latitude,
+                                                longitude: longitude)
         return Location3D(coordinate: coordinate,
-                          altitude: self.altitude)
+                          altitude: altitude)
     }
 }

@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -16,8 +17,8 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="CalibrationChoiceView" customModule="OpenFlight" customModuleProvider="target">
             <connections>
                 <outlet property="imageView" destination="cm4-Pa-1Sd" id="Mww-2G-dfu"/>
-                <outlet property="label" destination="Igg-Lq-evX" id="s04-83-Mhc"/>
                 <outlet property="subtitleLabel" destination="rUw-8N-Ixg" id="zwp-99-WX0"/>
+                <outlet property="titleLabel" destination="Igg-Lq-evX" id="s04-83-Mhc"/>
             </connections>
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>

@@ -34,7 +34,6 @@ import Reusable
 /// Displays a single label information, with a white bullet point at the beginning.
 final class DroneCalibrationInstructionItemView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
-    @IBOutlet private weak var bulletPointView: UIView!
     @IBOutlet private weak var mainLabel: UILabel!
 
     // MARK: - Internal Properties
@@ -65,6 +64,5 @@ final class DroneCalibrationInstructionItemView: UIView, NibOwnerLoadable {
 private extension DroneCalibrationInstructionItemView {
     func commonInitDroneCalibrationInstructionItemView() {
         self.loadNibContent()
-        bulletPointView.roundCornered()
     }
 }

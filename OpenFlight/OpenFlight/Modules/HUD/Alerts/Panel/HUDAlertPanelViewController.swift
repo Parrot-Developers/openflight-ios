@@ -104,12 +104,9 @@ private extension HUDAlertPanelViewController {
         // Default style.
         stopView.style = .cancelAlert
         stopView.delegate = self
-        titleLabel.makeUp(with: .huge)
-        subtitleLabel.makeUp(with: .large)
         actionButton.delegate = self
         startView.isHidden = true
         goLabel.text = L10n.commonGo.uppercased()
-        goLabel.makeUp(with: .giant)
     }
 
     /// Inits the alert view model.
@@ -168,7 +165,10 @@ private extension HUDAlertPanelViewController {
 
         titleLabel.text = alert.title
         subtitleLabel.text = alert.subtitle
-        subtitleLabel.textColor = alert.subtitleColor
+
+        // Use .defaultTextColor if nil in order to avoid system textColor issues (dark mode).
+        subtitleLabel.textColor = alert.subtitleColor ?? ColorName.defaultTextColor.color
+
         titleLabel.isHidden = false
     }
 

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Flight Details View Controller-->
+        <scene sceneID="NTa-oq-d2X">
+            <objects>
+                <viewController storyboardIdentifier="FlightDetailsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="SNC-vW-uNS" customClass="FlightDetailsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="8Rb-KU-JxR"/>
+                        <viewControllerLayoutGuide type="bottom" id="1ZV-SW-hi8"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="03P-Fz-FgH">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iBZ-wI-qYN" userLabel="mapContainer">
+                                <rect key="frame" x="0.0" y="0.0" width="651" height="414"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jcr-Ix-v88">
+                                <rect key="frame" x="20" y="8" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="90a-hv-DH9"/>
+                                    <constraint firstAttribute="width" secondItem="jcr-Ix-v88" secondAttribute="height" multiplier="1:1" id="GgD-cX-40C"/>
+                                </constraints>
+                                <color key="tintColor" name="default_text_color"/>
+                                <state key="normal" image="ic_back"/>
+                                <connections>
+                                    <action selector="backButtonTouchedUpInside:" destination="SNC-vW-uNS" eventType="touchUpInside" id="Zk3-2d-raV"/>
+                                </connections>
+                            </button>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" delaysContentTouches="NO" dataMode="prototypes" style="grouped" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JHP-9b-aln" userLabel="rightPanel">
+                                <rect key="frame" x="651" y="0.0" width="245" height="414"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </tableView>
+                        </subviews>
+                        <color key="backgroundColor" name="default_bgcolor"/>
+                        <constraints>
+                            <constraint firstItem="jcr-Ix-v88" firstAttribute="top" secondItem="03P-Fz-FgH" secondAttribute="top" constant="8" id="5xv-v7-zcc"/>
+                            <constraint firstItem="JHP-9b-aln" firstAttribute="bottom" secondItem="03P-Fz-FgH" secondAttribute="bottom" id="9PN-L1-0qd"/>
+                            <constraint firstItem="iBZ-wI-qYN" firstAttribute="leading" secondItem="03P-Fz-FgH" secondAttribute="leading" id="9QV-rc-Vun"/>
+                            <constraint firstAttribute="bottom" secondItem="iBZ-wI-qYN" secondAttribute="bottom" id="SO1-av-Sgi"/>
+                            <constraint firstItem="JHP-9b-aln" firstAttribute="top" secondItem="03P-Fz-FgH" secondAttribute="top" id="Uuv-Mj-dYR"/>
+                            <constraint firstItem="jcr-Ix-v88" firstAttribute="width" secondItem="jcr-Ix-v88" secondAttribute="height" multiplier="1:1" id="YyO-rt-QgB"/>
+                            <constraint firstAttribute="trailing" secondItem="JHP-9b-aln" secondAttribute="trailing" id="Zja-bX-j9d"/>
+                            <constraint firstItem="jcr-Ix-v88" firstAttribute="leading" secondItem="03P-Fz-FgH" secondAttribute="leading" constant="20" id="oLx-6J-jl0"/>
+                            <constraint firstItem="iBZ-wI-qYN" firstAttribute="top" secondItem="03P-Fz-FgH" secondAttribute="top" id="qga-Iu-c7h"/>
+                            <constraint firstItem="JHP-9b-aln" firstAttribute="width" secondItem="03P-Fz-FgH" secondAttribute="width" multiplier="0.273438" id="tCs-is-gtD"/>
+                            <constraint firstItem="JHP-9b-aln" firstAttribute="leading" secondItem="iBZ-wI-qYN" secondAttribute="trailing" id="vtL-Lv-27J"/>
+                        </constraints>
+                    </view>
+                    <size key="freeformSize" width="896" height="414"/>
+                    <connections>
+                        <outlet property="backButton" destination="jcr-Ix-v88" id="hRl-RI-Cjj"/>
+                        <outlet property="mapContainerView" destination="iBZ-wI-qYN" id="4Wd-Bg-XDd"/>
+                        <outlet property="rightTableView" destination="JHP-9b-aln" id="KeM-vC-hji"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="G5a-2J-EfS" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="270.31484257871068" y="203.19999999999999"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="ic_back" width="21" height="21"/>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

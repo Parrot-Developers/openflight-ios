@@ -53,13 +53,12 @@ final class SettingsRTHViewController: SettingsContentViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        // Dedicated treatment with the right frame size.
-        if settingsTableView.visibleCells.count >= Constants.minimumCellsCount {
-            maxGridHeight = self.view.bounds.height
-                - self.settingsTableView.visibleCells[Constants.firstCellIndex].frame.size.height
-                - view.safeAreaInsets.bottom
-        } else {
-            maxGridHeight = self.view.bounds.height - view.safeAreaInsets.bottom
+        // Target iphone
+        if !isRegularSizeClass {
+            // Dedicated treatment with the right frame size.
+                maxGridHeight = self.view.bounds.height
+                    - self.settingsTableView.visibleCells[Constants.firstCellIndex].frame.size.height
+                    - view.safeAreaInsets.bottom
         }
 
         settingsTableView.reloadData()

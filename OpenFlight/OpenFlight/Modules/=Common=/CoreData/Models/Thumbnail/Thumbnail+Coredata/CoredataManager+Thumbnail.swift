@@ -74,6 +74,11 @@ public protocol ThumbnailRepository: AnyObject {
     ///     - thumbnailUuid: Thumbnail identifier to remove
     func removeThumbnail(_ thumbnailUuid: String)
 
+    /// Perform remove Thumbnail with Flag
+    /// - Parameters:
+    ///     - thumbnail: ThumbnailModel to remove
+    func performRemoveThumbnail(_ thumbnail: ThumbnailModel)
+
     /// Retrieve any thumbnail associated with a flight
     /// - Parameter flight: the flight
     func thumbnail(for flight: FlightModel) -> ThumbnailModel?
@@ -87,7 +92,7 @@ public protocol ThumbnailRepository: AnyObject {
     func migrateThumbnailToAnonymous(_ completion: @escaping () -> Void)
 }
 
-extension CoreDataServiceIml: ThumbnailRepository {
+extension CoreDataServiceImpl: ThumbnailRepository {
 
     public func persist(_ thumbnail: ThumbnailModel, _ byUserUpdate: Bool = true) {
         // Prepare content to save.
@@ -103,7 +108,7 @@ extension CoreDataServiceIml: ThumbnailRepository {
         let thumbnailObject: NSManagedObject?
 
         // Check object if exists.
-        if let object = self.thumbnail("uuid", thumbnail.uuid).first {
+        if let object = self.loadThumbnails("uuid", thumbnail.uuid, false).first {
             // Use persisted object.
             thumbnailObject = object
         } else {
@@ -130,12 +135,17 @@ extension CoreDataServiceIml: ThumbnailRepository {
         thumbnailObj.cloudLastUpdate = thumbnail.cloudLastUpdate
         thumbnailObj.parrotCloudId = thumbnail.parrotCloudId
         thumbnailObj.parrotCloudToBeDeleted = thumbnail.parrotCloudToBeDeleted
-        thumbnailObj.ofFlight = flight
+        if let flight = flight {
+            thumbnailObj.ofFlight = flight
+        }
 
         managedContext.perform {
             do {
                 try managedContext.save()
-            } catch let error {
+                if byUserUpdate {
+                    self.objectToUpload.send(thumbnail)
+                }
+            } catch let error as NSError {
                 ULog.e(.dataModelTag, "Error during persist Thumbnail uuid: \(thumbnail.uuid) into Coredata: \(error.localizedDescription)")
             }
         }
@@ -143,32 +153,59 @@ extension CoreDataServiceIml: ThumbnailRepository {
 
     public func persist(_ thumbnailsList: [ThumbnailModel], _ byUserUpdate: Bool = true) {
         for thumbnail in thumbnailsList {
-            self.persist(thumbnail, byUserUpdate)
+            persist(thumbnail, byUserUpdate)
         }
     }
 
     public func loadThumbnail(_ key: String, _ value: String) -> ThumbnailModel? {
-        return self.thumbnail(key, value).first?.model()
+        return loadThumbnails(key, value)
+            .first?.model()
     }
 
     public func loadThumbnail(parrotCloudId: Int64?) -> ThumbnailModel? {
         guard let parrotCloudId = parrotCloudId else {
             return nil
         }
-        return self.thumbnail("parrotCloudId", "\(parrotCloudId)").first?.model()
+        return loadThumbnails("parrotCloudId", "\(parrotCloudId)")
+            .first?.model()
     }
 
     public func loadThumbnailsToRemove() -> [ThumbnailModel] {
-        return self.loadAllThumbnails().filter({ $0.parrotCloudToBeDeleted })
+        return loadThumbnails("apcId", userInformation.apcId, false)
+            .filter({ $0.parrotCloudToBeDeleted })
+            .compactMap({ $0.model() })
     }
 
     public func loadAllThumbnails() -> [ThumbnailModel] {
-        return self.thumbnail("apcId", userInformation.apcId).compactMap({ $0.model() })
+        return loadThumbnails("apcId", userInformation.apcId)
+            .compactMap({ $0.model() })
+    }
+
+    public func performRemoveThumbnail(_ thumbnail: ThumbnailModel) {
+        guard let managedContext = currentContext,
+              let thumbnailObject = self.loadThumbnails("uuid", thumbnail.uuid, false).first else {
+            return
+        }
+
+        if thumbnailObject.parrotCloudId == 0 {
+            managedContext.delete(thumbnailObject)
+        } else {
+            thumbnailObject.parrotCloudToBeDeleted = true
+            objectToRemove.send(thumbnail)
+        }
+
+        managedContext.perform {
+            do {
+                try managedContext.save()
+            } catch let error {
+                ULog.e(.dataModelTag, "Error perform deletion of Thumbnail with UUID : \(thumbnail.uuid) from CoreData : \(error.localizedDescription)")
+            }
+        }
     }
 
     public func removeThumbnail(_ thumbnailUuid: String) {
         guard let managedContext = currentContext,
-              let thumbnail = self.thumbnail("uuid", thumbnailUuid).first else {
+              let thumbnail = self.loadThumbnails("uuid", thumbnailUuid, false).first else {
             return
         }
 
@@ -184,7 +221,8 @@ extension CoreDataServiceIml: ThumbnailRepository {
     }
 
     public func thumbnail(for flight: FlightModel) -> ThumbnailModel? {
-        thumbnail("ofFlight.uuid", flight.uuid).first?.model()
+        loadThumbnails("ofFlight.uuid", flight.uuid)
+            .first?.model()
     }
 
     public func migrateThumbnailToLoggedUser(_ completion: @escaping () -> Void) {
@@ -209,23 +247,41 @@ extension CoreDataServiceIml: ThumbnailRepository {
 }
 
 // MARK: - Utils
-internal extension CoreDataServiceIml {
-    func thumbnail(_ key: String?, _ value: String?) -> [Thumbnail] {
-        guard let managedContext = currentContext,
-              let key = key,
-              let value = value else {
+internal extension CoreDataServiceImpl {
+    /// Returns list of Thumbnails type of NSManagedObject by key and Value if needed
+    /// - Parameters:
+    ///     - key: Key of value to search
+    ///     - value: Value to search
+    ///     - onlyNotDeleted: flag to filter on flagged deleted object
+    func loadThumbnails(_ key: String? = nil,
+                        _ value: String? = nil,
+                        _ onlyNotDeleted: Bool = true) -> [Thumbnail] {
+        guard let managedContext = currentContext else {
             return []
         }
 
-        /// fetch Thumbnails by Key Value
+        var predicates: [NSPredicate] = []
+
         let fetchRequest: NSFetchRequest<Thumbnail> = Thumbnail.fetchRequest()
-        let predicate = NSPredicate(format: "%K == %@", key, value)
-        fetchRequest.predicate = predicate
+
+        /// fetch Thumbnails by Key Value
+        if let key = key,
+           let value = value {
+            let predicate = NSPredicate(format: "%K == %@", key, value)
+            predicates.append(predicate)
+        }
+
+        if onlyNotDeleted {
+            let predicate = NSPredicate(format: "parrotCloudToBeDeleted == %@", NSNumber(value: false))
+            predicates.append(predicate)
+        }
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
 
         do {
-            return try (managedContext.fetch(fetchRequest))
+            return try managedContext.fetch(fetchRequest)
         } catch let error {
-            ULog.e(.dataModelTag, "No Thumbnail found with \(key): \(value) in CoreData: \(error.localizedDescription)")
+            ULog.e(.dataModelTag, "No Thumbnail found with \(key ?? ""): \(value ?? "") in CoreData: \(error.localizedDescription)")
             return []
         }
     }

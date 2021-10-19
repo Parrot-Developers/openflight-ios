@@ -52,7 +52,6 @@ public extension Notification.Name {
     static let alertPanelModeDidChange = NSNotification.Name("alertPanelModeDidChange")
     static let handDetectedAlertModalPresentDidChange = NSNotification.Name("handDetectedAlertModalPresentDidChange")
     static let takeOffRequestedDidChange = NSNotification.Name("takeOffRequestedDidChange")
-    static let requestCellularPairingProcess = NSNotification.Name("requestCellularPairingProcess")
 }
 
 // MARK: - Internal Properties

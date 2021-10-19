@@ -31,6 +31,12 @@
 import GroundSdk
 import UIKit
 
+/// Delay before triggering alerts (in seconds).
+public struct AlertDelayThreshold {
+    static let smartRth: TimeInterval = 10
+    static let autoLanding: TimeInterval = 10
+}
+
 /// State for `HUDAlertPanelReturnHomeViewModel`.
 public final class HUDAlertPanelReturnHomeState: DevicesConnectionState, AlertPanelState {
     // MARK: - AlertPanelState Properties
@@ -45,7 +51,7 @@ public final class HUDAlertPanelReturnHomeState: DevicesConnectionState, AlertPa
     public var icon: UIImage? {
         switch currentAlert {
         case .autoLandingAlert:
-            return Asset.Alertes.icPanelActionButton.image
+            return Asset.Alertes.AutoLanding.icAutoLanding.image
         default:
             return Asset.Alertes.Rth.icRTHAlertPanel.image
         }
@@ -59,7 +65,6 @@ public final class HUDAlertPanelReturnHomeState: DevicesConnectionState, AlertPa
     public var animationImages: [UIImage]?
     public var state: AlertPanelCurrentState?
     public var isAlertForceHidden: Bool = false
-    public var cancelDelayEnded: Bool?
     public var countdown: Int?
     public var startViewIsVisible: Bool {
         return false
@@ -72,12 +77,14 @@ public final class HUDAlertPanelReturnHomeState: DevicesConnectionState, AlertPa
         return currentAlert
     }
     public var stopViewStyle: StopViewStyle? {
-        return .classic
+        currentAlert == .autoLandingAlert
+            ? .cancelAlert
+            : .classic
     }
     /// Should be shown if it is available and if it is not in force hidden state.
     public var shouldShowAlertPanel: Bool {
-        return droneConnectionState?.isConnected() == true
-            && (state == .available || currentAlert == .autoLandingAlert)
+        droneConnectionState?.isConnected() == true
+            && (shouldShowRthAlert || shouldShowAutolandingAlert)
             && canShowAlert
     }
     public var hasAnimation: Bool {
@@ -100,7 +107,7 @@ public final class HUDAlertPanelReturnHomeState: DevicesConnectionState, AlertPa
     /// Returns current alert type with the highest priority.
     var currentAlert: RthAlertType? {
         return currentAlertsStack
-            .sorted(by: { $0.priority > $1.priority })
+            .sorted(by: { $0.priority < $1.priority })
             .first(where: {!alertsDismissed.contains($0)})
     }
 
@@ -108,6 +115,12 @@ public final class HUDAlertPanelReturnHomeState: DevicesConnectionState, AlertPa
     /// Tells whether the current alert as been dismissed.
     private var canShowAlert: Bool {
         return currentAlert != nil
+    }
+    private var shouldShowRthAlert: Bool {
+        state == .available && countdown != 0 // Need to close alert when countdown has reached 0.
+    }
+    private var shouldShowAutolandingAlert: Bool {
+        currentAlert == .autoLandingAlert && countdown != 0 // Need to close alert when countdown has reached 0.
     }
 
     // MARK: - Init
@@ -172,16 +185,13 @@ final class HUDAlertPanelReturnHomeViewModel: DevicesStateViewModel<HUDAlertPane
     private var batteryRemoteControlRef: Ref<BatteryInfo>?
     private var alarmsRef: Ref<Alarms>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
-    /// Returns true if the home is unreachable.
-    private var isHomeUnreachable: Bool {
-        guard let returnHome = drone?.getPilotingItf(PilotingItfs.returnHome) else {
-            return true
-        }
 
-        return returnHome.homeReachability == .notReachable
-            || returnHome.homeReachability == .unknown
-            || state.value.state == .unavailable
-    }
+    // Convenience computed properties
+    private var isLanding: Bool { flyingIndicatorsRef?.value?.flyingState == .landing }
+    private var smartRthDelay: TimeInterval? { returnHomeRef?.value?.autoTriggerDelay }
+    private var homeReachability: HomeReachability? { returnHomeRef?.value?.homeReachability }
+    private var autolandingDelay: TimeInterval? { alarmsRef?.value?.automaticLandingDelay }
+    private var autolandingAlarmLevel: Alarm.Level? { alarmsRef?.value?.getAlarm(kind: .automaticLandingBatteryIssue).level }
 
     // MARK: - Init
     override init() {
@@ -200,7 +210,7 @@ final class HUDAlertPanelReturnHomeViewModel: DevicesStateViewModel<HUDAlertPane
         super.listenDrone(drone: drone)
         listenReturnHome(drone: drone)
         listenFlyingIndicators(drone: drone)
-        listenArlams(drone: drone)
+        listenAlarms(drone: drone)
     }
 
     override func listenRemoteControl(remoteControl: RemoteControl) {
@@ -238,7 +248,7 @@ private extension HUDAlertPanelReturnHomeViewModel {
     }
 
     /// Starts watcher for drone power alarm.
-    func listenArlams(drone: Drone) {
+    func listenAlarms(drone: Drone) {
         alarmsRef = drone.getInstrument(Instruments.alarms) { [weak self] _ in
             self?.updatePowerAlarm()
         }
@@ -256,11 +266,28 @@ private extension HUDAlertPanelReturnHomeViewModel {
     func updateReturnHomeAvailability() {
         let copy = state.value.copy()
 
+        guard copy.currentAlert != .autoLandingAlert else { return }
+
         switch returnHomeRef?.value?.state {
         case .active:
             copy.state = .started
         case .idle:
-            copy.state = .available
+            // Delay reported by drone may decrease faster than every second.
+            // => Need to check if threshold has been reached or passed.
+            if let smartRthDelay = smartRthDelay,
+               smartRthDelay <= AlertDelayThreshold.smartRth,
+               let homeReachability = homeReachability,
+               homeReachability == .warning,
+               !isLanding {
+                copy.countdown = Int(smartRthDelay)
+                if !copy.currentAlertsStack.contains(.droneBatteryWarningAlert) {
+                    copy.currentAlertsStack.insert(.droneBatteryWarningAlert)
+                }
+                copy.subtitleColor = AlertLevel.warning.color
+                copy.state = .available
+            } else {
+                copy.state = .unavailable
+            }
         default:
             copy.state = .unavailable
         }
@@ -281,52 +308,40 @@ private extension HUDAlertPanelReturnHomeViewModel {
     ///     - deviceType: device type
     func updateBatteryInfoState(alertLevel: AlertLevel?, deviceType: DeviceType) {
         let copy = state.value.copy()
-        if flyingIndicatorsRef?.value?.flyingState.isFlyingOrWaiting == true,
-           returnHomeRef?.value?.state == .idle,
-           alertLevel?.isWarningOrCritical == true {
-            copy.subtitleColor = alertLevel?.color
 
-            switch alertLevel {
-            case .critical where deviceType == .drone:
-                guard !copy.alertsDismissed.contains(.droneBatteryCriticalAlert) else {
-                    return
-                }
-
-                copy.currentAlertsStack.insert(.droneBatteryCriticalAlert)
-            case .critical where deviceType == .remoteControl:
-                guard !copy.alertsDismissed.contains(.remoteBatteryCriticalAlert) else {
-                    return
-                }
-
-                copy.currentAlertsStack.insert(.remoteBatteryCriticalAlert)
-            case .critical where deviceType == .userDevice:
-                guard !copy.alertsDismissed.contains(.userDeviceCriticalAlert) else {
-                    return
-                }
-
-                copy.currentAlertsStack.insert(.userDeviceCriticalAlert)
-            case .warning where deviceType == .drone:
-                guard !copy.alertsDismissed.contains(.droneBatteryWarningAlert) else {
-                    return
-                }
-
-                copy.currentAlertsStack.insert(.droneBatteryWarningAlert)
-            case .warning where deviceType == .remoteControl:
-                guard !copy.alertsDismissed.contains(.remoteBatteryWarningAlert) else {
-                    return
-                }
-
-                copy.currentAlertsStack.insert(.remoteBatteryWarningAlert)
-            case .warning where deviceType == .userDevice:
-                guard !copy.alertsDismissed.contains(.userDeviceWarningAlert) else {
-                    return
-                }
-
-                copy.currentAlertsStack.insert(.userDeviceWarningAlert)
-            default:
-                break
-            }
+        guard copy.currentAlert != .autoLandingAlert,
+              flyingIndicatorsRef?.value?.flyingState.isFlyingOrWaiting == true,
+              returnHomeRef?.value?.state == .idle,
+              alertLevel?.isWarningOrCritical == true else {
+            return
         }
+
+        copy.subtitleColor = alertLevel?.color
+
+        switch alertLevel {
+        case .veryCritical where deviceType == .remoteControl:
+            guard !copy.alertsDismissed.contains(.remoteBatteryCriticalAlert) else {
+                return
+            }
+
+            copy.currentAlertsStack.insert(.remoteBatteryCriticalAlert)
+        case .critical where deviceType == .userDevice:
+            guard !copy.alertsDismissed.contains(.userDeviceCriticalAlert) else {
+                return
+            }
+
+            copy.currentAlertsStack.insert(.userDeviceCriticalAlert)
+        case .warning where deviceType == .userDevice:
+            guard !copy.alertsDismissed.contains(.userDeviceWarningAlert) else {
+                return
+            }
+
+            copy.currentAlertsStack.insert(.userDeviceWarningAlert)
+        default:
+            break
+        }
+
+        copy.state = .available
 
         state.set(copy)
     }
@@ -345,6 +360,14 @@ private extension HUDAlertPanelReturnHomeViewModel {
                              newValue: nil,
                              logType: .button)
         _ = returnHomeRef?.value?.deactivate()
+    }
+
+    /// Cancels auto-triggered RTH.
+    func cancelAutoTriggerRTH() {
+        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.cancel.name,
+                             newValue: nil,
+                             logType: .button)
+        _ = drone?.cancelAutoTriggerReturnHome()
     }
 
     /// Manages panel visibility for the current alert.
@@ -376,30 +399,20 @@ private extension HUDAlertPanelReturnHomeViewModel {
 
     /// Updates drone power alarm.
     func updatePowerAlarm() {
-        let delay = alarmsRef?.value?.automaticLandingDelay ?? 0
-        let autoLandingAlarm = alarmsRef?.value?.getAlarm(kind: .automaticLandingBatteryIssue).level
-
-        if autoLandingAlarm == .critical,
-           delay > 0.0,
-           drone?.isStateFlying == true,
-           isHomeUnreachable {
+        // Delay reported by drone may decrease faster than every second.
+        // => Need to check if threshold has been reached or passed.
+        if let autolandingDelay = autolandingDelay,
+           autolandingDelay <= AlertDelayThreshold.autoLanding,
+           let autolandingAlarmLevel = autolandingAlarmLevel,
+           autolandingAlarmLevel != .off,
+           autolandingAlarmLevel != .notAvailable,
+           drone?.isStateFlying == true {
             let copy = state.value.copy()
             copy.currentAlertsStack.insert(.autoLandingAlert)
-            copy.subtitleColor = ColorName.redTorch.color
-            copy.countdown = Int(delay)
+            copy.subtitleColor = AlertLevel.critical.color
+            copy.countdown = Int(autolandingDelay)
+
             state.set(copy)
-        } else {
-            let powerAlarmLevel = alarmsRef?.value?.getAlarm(kind: .power).level
-            switch powerAlarmLevel {
-            case .critical:
-                updateBatteryInfoState(alertLevel: .critical,
-                                       deviceType: .drone)
-            case .warning:
-                updateBatteryInfoState(alertLevel: .warning,
-                                       deviceType: .drone)
-            default:
-                break
-            }
         }
     }
 }
@@ -414,7 +427,7 @@ extension HUDAlertPanelReturnHomeViewModel: AlertPanelActionType {
     }
 
     func cancelAction() {
-        stopReturnHome()
+        cancelAutoTriggerRTH()
         dismissPanel()
     }
 

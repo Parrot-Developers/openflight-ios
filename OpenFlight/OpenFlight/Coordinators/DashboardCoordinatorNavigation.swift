@@ -36,11 +36,12 @@ protocol DashboardCoordinatorNavigation: AnyObject {
     func startUpdate(model: DeviceUpdateModel)
     func startMedias()
     func startMyFlights()
-    func startFlightDetailsExecution(execution: FlightPlanModel)
+    func startFlightExecutionDetails(_ execution: FlightPlanModel)
     func startFlightDetails(flight: FlightModel)
     func startConfidentiality()
     func startMyAccount()
     func startMapPreloading()
     func dismissDashboard(completion: (() -> Void)?)
     func startPhotogrammetryDebug()
+    func startSettings()
 }

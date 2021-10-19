@@ -39,9 +39,9 @@ final class StereoCalibrationViewController: UIViewController {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var warningLabel: UILabel!
-    @IBOutlet weak var startCalibrationButton: UIButton!
+    @IBOutlet weak var optimalCalibrationButton: UIButton!
     @IBOutlet weak var welcomeStackView: UIStackView!
-    @IBOutlet weak var altitudeTextField: UITextField!
+    @IBOutlet weak var quickCalibrationButton: UIButton!
 
     // MARK: - Private Properties
 
@@ -52,6 +52,8 @@ final class StereoCalibrationViewController: UIViewController {
 
     private enum Constants {
         static let currentOrientation: String = "orientation"
+        static let optimalAltitude: Float = 120.0
+        static let quickAltitude: Float = 50.0
     }
 
     // MARK: - Setup
@@ -74,7 +76,6 @@ final class StereoCalibrationViewController: UIViewController {
         super.viewDidLoad()
 
         initUI()
-        setupDelegate()
         bindViewModel()
     }
 
@@ -110,11 +111,20 @@ final class StereoCalibrationViewController: UIViewController {
 
 private extension StereoCalibrationViewController {
 
-    @IBAction func startCalibration(_ sender: Any) {
+    @IBAction func startOptimalCalibration(_ sender: Any) {
         welcomeStackView.isHidden = true
         let progressView = StereoCalibrationProgressView.instantiateView(viewModel: viewModel)
         rightPanelView.addWithConstraints(subview: progressView)
-        viewModel.startCalibration(altitude: Float(altitudeTextField.text ?? "") ?? 0)
+        viewModel.updateCalibrationWith(altitude: 120)
+        viewModel.startCalibration(altitude: Constants.optimalAltitude)
+    }
+
+    @IBAction func startQuickCalibration(_ sender: Any) {
+        welcomeStackView.isHidden = true
+        let progressView = StereoCalibrationProgressView.instantiateView(viewModel: viewModel)
+        rightPanelView.addWithConstraints(subview: progressView)
+        viewModel.updateCalibrationWith(altitude: 50)
+        viewModel.startCalibration(altitude: Constants.quickAltitude)
     }
 
     @IBAction func backButtonTouchedUpInside(_ sender: Any) {
@@ -127,60 +137,39 @@ private extension StereoCalibrationViewController {
 private extension StereoCalibrationViewController {
 
     func initUI() {
-        startCalibrationButton.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color,
-                                                  radius: Style.largeCornerRadius)
-    }
+        messageLabel.text = L10n.loveCalibrationSetupMessage
 
-    func setupDelegate() {
-        altitudeTextField.delegate = self
+        optimalCalibrationButton.cornerRadiusedWith(backgroundColor: UIColor.white,
+                                                  radius: Style.largeCornerRadius)
+        optimalCalibrationButton.setTitle(L10n.loveCalibrationOptimal, for: .normal)
+        optimalCalibrationButton.titleLabel?.textAlignment = .center
+
+        quickCalibrationButton.cornerRadiusedWith(backgroundColor: UIColor.white,
+                                                  radius: Style.largeCornerRadius)
+        quickCalibrationButton.setTitle(L10n.loveCalibrationQuick, for: .normal)
+        quickCalibrationButton.titleLabel?.textAlignment = .center
+
     }
 
     func bindViewModel() {
-        viewModel.$calibrationEnded
-            .compactMap { $0 }
-            .removeDuplicates()
-            .sink { [unowned self] calibrationEnded in
-                if calibrationEnded == .aborted {
-                    viewModel.back()
-                }
-
-            }
-            .store(in: &cancellables)
-
-        viewModel.$gpsStrength
-            .combineLatest(viewModel.$isFlying)
-            .sink { [unowned self] (gpsStrength, isFlying) in
-                warningLabel.text = viewModel.warningText(isFlying: isFlying, gpsStrength: gpsStrength)
+        viewModel.$warningText
+            .sink { [unowned self] warningText in
+                warningLabel.text = warningText
             }
             .store(in: &cancellables)
 
         viewModel.$calibrationButtonIsEnable
             .sink { [unowned self] buttonIsEnable in
-                startCalibrationButton.isEnabled = buttonIsEnable
+                optimalCalibrationButton.isEnabled = buttonIsEnable
+                quickCalibrationButton.isEnabled = buttonIsEnable
                 if buttonIsEnable == false {
-                    startCalibrationButton.alpha = 0.6
+                    optimalCalibrationButton.alpha = 0.6
+                    quickCalibrationButton.alpha = 0.6
                 } else {
-                    startCalibrationButton.alpha = 1.0
+                    optimalCalibrationButton.alpha = 1.0
+                    quickCalibrationButton.alpha = 1.0
                 }
             }
             .store(in: &cancellables)
-
-        viewModel.$missionDescriptionMessage
-            .sink { [unowned self] descriptionMessage in
-                messageLabel.attributedText = descriptionMessage
-            }
-            .store(in: &cancellables)
-    }
-}
-
-extension StereoCalibrationViewController: UITextFieldDelegate {
-
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return true
-    }
-
-    func textFieldDidChangeSelection(_ textField: UITextField) {
-        viewModel.descriptionTitle(altitude: Int(altitudeTextField.text ?? "") ?? 0)
     }
 }

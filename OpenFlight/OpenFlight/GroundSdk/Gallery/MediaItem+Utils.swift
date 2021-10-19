@@ -33,7 +33,6 @@ import GroundSdk
 import CoreLocation
 
 /// Utility extension for `MediaItem`.
-
 extension MediaItem {
     /// Converts MediaItem's mediaType into GalleryMediaType.
     var mediaType: GalleryMediaType {
@@ -106,7 +105,7 @@ extension MediaItem {
     /// - Parameters:
     ///     - completion: callback which returns the location detail string
     func locationDetail(completion: @escaping(String?) -> Void) {
-        guard let location = self.resources.first?.location else {
+        guard let location = resources.first?.location else {
             completion(nil)
             return
         }
@@ -117,7 +116,6 @@ extension MediaItem {
 }
 
 /// Utility extension for `MediaItem.Resource`.
-
 extension MediaItem.Resource {
     // MARK: - Gallery helpers
     /// Provides Url for gallery image directory.
@@ -166,7 +164,7 @@ extension MediaItem.Resource {
             imgGalleryDirectoryUrl = imgGalleryDirectoryUrl.appendingPathComponent(mediaType.stringValue)
         }
 
-        return imgGalleryDirectoryUrl.appendingPathComponent(self.uid, isDirectory: false)
+        return imgGalleryDirectoryUrl.appendingPathComponent(uid, isDirectory: false)
     }
 
     // MARK: - Cache helpers
@@ -195,7 +193,7 @@ extension MediaItem.Resource {
     func cachedImgUrl(droneId: String?) -> URL? {
         guard let imgPreviewDirectoryUrl = MediaItem.Resource.previewDirectoryUrl(droneId: droneId) else { return nil }
 
-        return imgPreviewDirectoryUrl.appendingPathComponent(self.uid, isDirectory: false)
+        return imgPreviewDirectoryUrl.appendingPathComponent(uid, isDirectory: false)
     }
 
     /// Tells if image cache directory exists.

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
-    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <device id="ipad9_7" orientation="landscape" layout="fullscreen" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
@@ -20,18 +20,30 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="I44-ch-pnG">
-                                <rect key="frame" x="104" y="0.0" width="392" height="300"/>
+                                <rect key="frame" x="150" y="0.0" width="300" height="300"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
+                                    <constraint firstAttribute="width" constant="392" id="5Fh-aK-wvD"/>
                                     <constraint firstAttribute="width" constant="392" id="cwM-Jh-4hn"/>
                                 </constraints>
-                                <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="zqF-kg-7D5">
+                                <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="zqF-kg-7D5">
                                     <size key="itemSize" width="110" height="110"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells/>
+                                <variation key="default">
+                                    <mask key="constraints">
+                                        <exclude reference="5Fh-aK-wvD"/>
+                                        <exclude reference="cwM-Jh-4hn"/>
+                                    </mask>
+                                </variation>
+                                <variation key="heightClass=compact">
+                                    <mask key="constraints">
+                                        <include reference="5Fh-aK-wvD"/>
+                                    </mask>
+                                </variation>
                                 <connections>
                                     <outlet property="dataSource" destination="om2-Bk-pxl" id="rzq-7l-rgw"/>
                                     <outlet property="delegate" destination="om2-Bk-pxl" id="5vo-Vn-Vaz"/>
@@ -41,13 +53,30 @@
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="I44-ch-pnG" firstAttribute="centerX" secondItem="Wf3-fd-o0X" secondAttribute="centerX" id="064-Dy-yVX"/>
+                            <constraint firstItem="I44-ch-pnG" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" constant="160" id="Pex-ez-kNn"/>
                             <constraint firstItem="I44-ch-pnG" firstAttribute="top" secondItem="C1A-cC-ySo" secondAttribute="bottom" id="YpK-FF-zdt"/>
                             <constraint firstItem="zGs-At-gSm" firstAttribute="top" secondItem="I44-ch-pnG" secondAttribute="bottom" id="owC-JC-WYe"/>
+                            <constraint firstAttribute="trailing" secondItem="I44-ch-pnG" secondAttribute="trailing" constant="160" id="piy-xh-tYt"/>
+                            <constraint firstItem="I44-ch-pnG" firstAttribute="width" secondItem="Wf3-fd-o0X" secondAttribute="width" multiplier="0.5" id="zKo-uZ-VEe"/>
                         </constraints>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="Pex-ez-kNn"/>
+                                <exclude reference="piy-xh-tYt"/>
+                                <exclude reference="zKo-uZ-VEe"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=regular">
+                            <mask key="constraints">
+                                <exclude reference="Pex-ez-kNn"/>
+                                <exclude reference="piy-xh-tYt"/>
+                                <include reference="zKo-uZ-VEe"/>
+                            </mask>
+                        </variation>
                     </view>
                     <size key="freeformSize" width="600" height="300"/>
                     <connections>
-                        <outlet property="collection" destination="I44-ch-pnG" id="c9D-o6-GIs"/>
+                        <outlet property="collectionView" destination="I44-ch-pnG" id="c9D-o6-GIs"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>

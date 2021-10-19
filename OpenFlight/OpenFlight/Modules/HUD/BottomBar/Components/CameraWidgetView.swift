@@ -32,21 +32,13 @@ import UIKit
 import Reusable
 
 /// Custom view displaying camera info : ShutterSpeed, EV, resolution, FPS...
-
 final class CameraWidgetView: UIControl, NibOwnerLoadable {
 
     // MARK: - Outlets
-    @IBOutlet private weak var cameraWidgetLabel1: UILabel! {
-        didSet {
-            cameraWidgetLabel1.makeUp()
-            cameraWidgetLabel1.alpha = 0.5
-        }
-    }
-    @IBOutlet private weak var cameraWidgetLabel2: UILabel! {
-        didSet {
-            cameraWidgetLabel2.makeUp()
-        }
-    }
+    @IBOutlet private weak var cameraWidgetLabel1: UILabel!
+    @IBOutlet private weak var cameraWidgetSubLabel1: UILabel!
+    @IBOutlet private weak var cameraWidgetSubLabelView: UIView!
+    @IBOutlet private weak var cameraWidgetLabel2: UILabel!
     @IBOutlet private weak var macaronImageView: UIImageView!
 
     // MARK: - Internal Properties
@@ -72,6 +64,10 @@ final class CameraWidgetView: UIControl, NibOwnerLoadable {
 private extension CameraWidgetView {
     func customInitCameraWidgetView() {
         self.loadNibContent()
+        cameraWidgetLabel1.textColor = ColorName.defaultTextColor80.color
+        cameraWidgetSubLabel1.textColor = ColorName.defaultTextColor80.color
+        cameraWidgetSubLabelView.applyCornerRadius(Style.verySmallCornerRadius)
+        cameraWidgetLabel2.textColor = ColorName.defaultTextColor.color
     }
 
     /// Fills the UI elements of the view with given model.
@@ -79,9 +75,8 @@ private extension CameraWidgetView {
     /// - Parameters:
     ///    - viewModel: model representing the contents
     func fill(with viewModel: CameraWidgetState) {
-        cameraWidgetLabel1.attributedText = attributedTextFor(shutterSpeed: model.labelShutterSpeed,
-                                                              exposure: model.labelExposureCompensation.uppercased(),
-                                                              exposureColor: model.exposureColor)
+        cameraWidgetLabel1.text = model.labelShutterSpeed + " · "
+        cameraWidgetSubLabel1.text = model.labelExposureCompensation.uppercased()
         if let labelCameraValue2 = model.labelCameraSpecificProperty2 {
             cameraWidgetLabel2.text = model.labelCameraSpecificProperty1 + " · " + labelCameraValue2
         } else {
@@ -93,19 +88,6 @@ private extension CameraWidgetView {
         updateBackgroundColor()
     }
 
-    /// Compute attributed string given shutter speed and exposure.
-    ///
-    /// - Parameters:
-    ///    - shutterSpeed: shutter speed value
-    ///    - exposure: exposure value
-    ///    - exposureColor: expousre color
-    /// - Returns: an attributed string representing shutter speed and exposure
-    func attributedTextFor(shutterSpeed: String, exposure: String, exposureColor: UIColor) -> NSAttributedString {
-        let attrString = NSMutableAttributedString(string: shutterSpeed + " · ")
-        attrString.append(NSAttributedString(string: exposure, attributes: [.foregroundColor: exposureColor]))
-        return attrString
-    }
-
     func updateIcon() {
         let photoSignature = model.isPhotoSignatureEnabled
         macaronImageView.isHidden = !photoSignature
@@ -114,17 +96,19 @@ private extension CameraWidgetView {
     }
 
     func updateTextColor() {
-        let textColor = model.isSelected.value ? .white : ColorName.defaultTextColor.color
-        cameraWidgetLabel1.textColor = textColor
-        cameraWidgetLabel2.textColor = textColor
+        let isSelected = model.isSelected.value
+        cameraWidgetLabel1.textColor = isSelected ? .white : ColorName.defaultTextColor80.color
+        cameraWidgetSubLabel1.textColor = model.exposureTextColor
+        cameraWidgetLabel2.textColor = isSelected ? .white : ColorName.defaultTextColor.color
     }
 
     func updateBackgroundColor() {
-        let isSelected = model.isSelected.value == true
+        let isSelected = model.isSelected.value
         let backgroundColor = isSelected ? ColorName.highlightColor.color : ColorName.white90.color
         customCornered(corners: [.topRight, .bottomRight],
                        radius: Style.largeCornerRadius,
                        backgroundColor: backgroundColor,
                        borderColor: .clear)
+        cameraWidgetSubLabelView.backgroundColor = model.exposureBackgroundColor
     }
 }

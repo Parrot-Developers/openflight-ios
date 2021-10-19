@@ -31,6 +31,8 @@
 import UIKit
 import SwiftyUserDefaults
 
+// TODO: Should be useless after TFF7-283 validation
+
 /// Displays a suggestion screen to tell that cellular connection is available.
 final class CellularConfigurationViewController: UIViewController {
     // MARK: - Outlets
@@ -83,7 +85,7 @@ private extension CellularConfigurationViewController {
     }
 
     @IBAction func configureButtonTouchedUpInside(_ sender: Any) {
-        coordinator?.dismissConfigurationScreen()
+//        coordinator?.dismissConfigurationScreen()
     }
 
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {

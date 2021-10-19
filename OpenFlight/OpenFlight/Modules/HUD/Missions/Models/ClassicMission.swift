@@ -51,7 +51,7 @@ struct ClassicMission: MissionProvider {
                                                         logName: LogEvent.LogKeyHUDMissionProviderSelectorButton.manual,
                                                         preferredSplitMode: .splited,
                                                         isMapRequired: false,
-                                                        isFlightPlanPanelRequired: false,
+                                                        isRightPanelRequired: false,
                                                         isTrackingMode: false)
     static var manualMode = MissionMode(configurator: manualModeConf,
                                         bottomBarLeftStack: { () -> [UIView] in

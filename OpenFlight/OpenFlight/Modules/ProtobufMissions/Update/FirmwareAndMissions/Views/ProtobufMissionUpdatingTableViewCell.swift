@@ -90,9 +90,9 @@ private extension ProtobufMissionUpdatingTableViewCell {
         switch currentUpdatingCase {
         case let .mission(updatingState, _):
             updateUI(with: updatingState)
-        case let .downloadingFirmware(updatingState):
+        case let .downloadingFirmware(updatingState, _):
             updateUI(with: updatingState)
-        case let .updatingFirmware(updatingState):
+        case let .updatingFirmware(updatingState, _):
             updateUI(with: updatingState)
         case let .reboot(updatingState):
             updateUI(with: updatingState)

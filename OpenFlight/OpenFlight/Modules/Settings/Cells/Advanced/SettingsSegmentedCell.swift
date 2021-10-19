@@ -49,11 +49,14 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
             segmentControl.customMakeup()
         }
     }
+    @IBOutlet private weak var subtitleView: UIView! {
+        didSet {
+            subtitleView.layer.cornerRadius = Style.largeCornerRadius
+        }
+    }
     @IBOutlet private weak var subtitleLabel: UILabel!
-
-    /// Leading constraint used for the stack view.
-    @IBOutlet private weak var stackViewLeadingConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var segmentControlTrailingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var leadingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var trailingConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var delegate: SettingsSegmentedCellDelegate?
@@ -105,6 +108,7 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
                        isEnabled: Bool = true,
                        alpha: CGFloat = 1.0,
                        subtitleColor: UIColor = ColorName.defaultTextColor.color,
+                       subtitleBackgroundColor: UIColor = ColorName.defaultBgcolor.color,
                        showInfo: (() -> Void)? = nil,
                        infoText: String? = nil,
                        atIndexPath indexPath: IndexPath,
@@ -154,10 +158,9 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
                                                         .underlineColor: ColorName.defaultTextColor.color]
             let attributeString = NSMutableAttributedString(string: infoText ?? L10n.commonInfos, attributes: attrs)
             infoLabel.attributedText = attributeString
-        } else {
-            viewContentInfos.isHidden = true
-            viewContentInfos.invalidateIntrinsicContentSize()
         }
+        viewContentInfos.isHidden = showInfo == nil
+        viewContentInfos.invalidateIntrinsicContentSize()
 
         if (0...segmentModel.segments.count - 1).contains(segmentModel.selectedIndex) {
             segmentControl.selectedSegmentIndex = segmentModel.selectedIndex
@@ -166,9 +169,10 @@ final class SettingsSegmentedCell: UITableViewCell, NibReusable {
         segmentControl.isEnabled = isEnabled
         subtitleLabel.text = subtitle
         subtitleLabel.textColor = subtitleColor
-        subtitleLabel.isHidden = subtitle == nil
-        stackViewLeadingConstraint.constant = leadingConstraint
-        segmentControlTrailingConstraint.constant = trailingConstraint
+        subtitleView.backgroundColor = subtitleBackgroundColor
+        subtitleView.isHidden = subtitle == nil
+        self.leadingConstraint.constant = leadingConstraint
+        self.trailingConstraint.constant = trailingConstraint
     }
 
     /// Sets up background.

@@ -5,10 +5,12 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
+        <array key="Rajdhani-Medium.ttf">
+            <string>Rajdhani-Medium</string>
+        </array>
         <array key="Rajdhani-SemiBold.ttf">
             <string>Rajdhani-Semibold</string>
         </array>
@@ -33,27 +35,30 @@
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dUi-9S-9it" userLabel="Panel View">
-                                <rect key="frame" x="8" y="40" width="651" height="341"/>
+                                <rect key="frame" x="20" y="59" width="627" height="316"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="ewn-yS-Ewp">
-                                        <rect key="frame" x="65" y="12" width="521" height="299"/>
+                                        <rect key="frame" x="53" y="60" width="521" height="214"/>
                                         <subviews>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRemoteAlertShutdown" translatesAutoresizingMaskIntoConstraints="NO" id="Nyl-Yu-yMQ">
-                                                <rect key="frame" x="0.0" y="0.0" width="521" height="129"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRemoteAlertShutdown" translatesAutoresizingMaskIntoConstraints="NO" id="Nyl-Yu-yMQ">
+                                                <rect key="frame" x="0.0" y="0.0" width="521" height="86"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="86" id="t9A-Vy-zAG"/>
+                                                </constraints>
                                             </imageView>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XWG-3C-jp5">
-                                                <rect key="frame" x="0.0" y="141" width="521" height="50"/>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XWG-3C-jp5">
+                                                <rect key="frame" x="0.0" y="98" width="521" height="50"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="YfS-3R-uKb"/>
                                                 </constraints>
-                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="17"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="51F-xI-NBV">
-                                                <rect key="frame" x="0.0" y="203" width="521" height="54"/>
+                                                <rect key="frame" x="0.0" y="160" width="521" height="54"/>
                                                 <subviews>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="BZb-jT-TtL" userLabel="Left spacing view">
                                                         <rect key="frame" x="0.0" y="0.0" width="160.5" height="54"/>
@@ -143,14 +148,6 @@
                                                     <constraint firstItem="HNS-lz-TsN" firstAttribute="leading" secondItem="Bs7-n1-4eD" secondAttribute="trailing" id="nLe-tK-gu4"/>
                                                 </constraints>
                                             </stackView>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GmG-c6-MtB" userLabel="Spacing view">
-                                                <rect key="frame" x="0.0" y="269" width="521" height="30"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="30" id="GWi-ik-iOF"/>
-                                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="25" id="K8r-gL-tvU"/>
-                                                </constraints>
-                                            </view>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
@@ -175,25 +172,23 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstItem="ewn-yS-Ewp" firstAttribute="width" secondItem="dUi-9S-9it" secondAttribute="width" multiplier="0.8" priority="999" id="2mN-qJ-OUN"/>
-                                    <constraint firstAttribute="bottom" secondItem="ewn-yS-Ewp" secondAttribute="bottom" constant="30" id="AeJ-d9-c2s"/>
-                                    <constraint firstItem="ewn-yS-Ewp" firstAttribute="top" secondItem="dUi-9S-9it" secondAttribute="top" constant="12" id="GaX-Hi-f13"/>
+                                    <constraint firstAttribute="bottom" secondItem="ewn-yS-Ewp" secondAttribute="bottom" constant="42" id="AeJ-d9-c2s"/>
+                                    <constraint firstItem="ewn-yS-Ewp" firstAttribute="top" secondItem="dUi-9S-9it" secondAttribute="top" constant="60" id="GaX-Hi-f13"/>
                                     <constraint firstItem="Am2-2H-wcc" firstAttribute="top" secondItem="dUi-9S-9it" secondAttribute="top" id="NZB-lk-48k"/>
                                     <constraint firstItem="Am2-2H-wcc" firstAttribute="leading" secondItem="dUi-9S-9it" secondAttribute="leading" id="eU6-8E-WbK"/>
                                     <constraint firstItem="ewn-yS-Ewp" firstAttribute="centerX" secondItem="dUi-9S-9it" secondAttribute="centerX" id="tBL-KJ-HNl"/>
                                 </constraints>
                             </view>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="6Bd-VT-cM6"/>
                         <constraints>
-                            <constraint firstItem="9ht-yQ-vEm" firstAttribute="top" secondItem="6Bd-VT-cM6" secondAttribute="top" id="0rF-A6-LiQ"/>
-                            <constraint firstItem="dUi-9S-9it" firstAttribute="centerX" secondItem="ZbD-UC-aLY" secondAttribute="centerX" id="GDf-Bv-o4c"/>
-                            <constraint firstItem="dUi-9S-9it" firstAttribute="leading" secondItem="6Bd-VT-cM6" secondAttribute="leading" constant="8" id="WxK-uF-eB6" userLabel="Panel View.leading = Safe Area.leading"/>
+                            <constraint firstItem="9ht-yQ-vEm" firstAttribute="top" secondItem="ZbD-UC-aLY" secondAttribute="top" id="0rF-A6-LiQ"/>
+                            <constraint firstItem="dUi-9S-9it" firstAttribute="top" relation="greaterThanOrEqual" secondItem="C1A-cC-ySo" secondAttribute="bottom" constant="16" id="UbV-cO-AqT"/>
+                            <constraint firstItem="dUi-9S-9it" firstAttribute="leading" secondItem="ZbD-UC-aLY" secondAttribute="leadingMargin" id="WxK-uF-eB6" userLabel="Panel View.leading = Safe Area.leading"/>
                             <constraint firstItem="9ht-yQ-vEm" firstAttribute="trailing" secondItem="ZbD-UC-aLY" secondAttribute="trailing" id="Yoj-uM-376"/>
                             <constraint firstItem="9ht-yQ-vEm" firstAttribute="leading" secondItem="ZbD-UC-aLY" secondAttribute="leading" id="bmV-OQ-1CI"/>
-                            <constraint firstAttribute="bottom" secondItem="dUi-9S-9it" secondAttribute="bottom" constant="-6" id="dfy-eR-udV"/>
+                            <constraint firstAttribute="bottom" secondItem="dUi-9S-9it" secondAttribute="bottom" id="dfy-eR-udV"/>
                             <constraint firstAttribute="bottom" secondItem="9ht-yQ-vEm" secondAttribute="bottom" id="h7F-wh-Z80"/>
-                            <constraint firstItem="dUi-9S-9it" firstAttribute="top" secondItem="6Bd-VT-cM6" secondAttribute="top" constant="40" id="yCc-T3-2u2"/>
-                            <constraint firstItem="6Bd-VT-cM6" firstAttribute="trailing" secondItem="dUi-9S-9it" secondAttribute="trailing" constant="8" id="zN4-sx-Q34" userLabel="Safe Area.trailing = Panel View.trailing"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="dUi-9S-9it" secondAttribute="trailing" id="zN4-sx-Q34" userLabel="Safe Area.trailing = Panel View.trailing"/>
                         </constraints>
                     </view>
                     <connections>

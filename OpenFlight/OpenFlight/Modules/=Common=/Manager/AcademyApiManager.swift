@@ -176,10 +176,14 @@ public class AcademyApiServiceImpl: AcademyApiService {
     /// Queue to synchronize API calls
     private(set) var requestQueue: ApiRequestQueue
 
+    private(set) var userInformation: UserInformation
+
     // MARK: - Init
-    public init (requestQueue: ApiRequestQueue) {
-        self.academyErrorSubject.value = academyError
+    public init (requestQueue: ApiRequestQueue,
+                 userInformation: UserInformation) {
         self.requestQueue = requestQueue
+        self.userInformation = userInformation
+        self.academyErrorSubject.value = academyError
     }
 }
 
@@ -192,11 +196,11 @@ public extension AcademyApiServiceImpl {
     }
 
     /// Stores Academy end points url.
-    enum AcademyEndPoints {
-        static let getChallenge = "/apiv1/4g/pairing/challenge?operation=associate"
-        static let getUnpairChallenge = "/apiv1/4g/pairing/challenge?operation=unpair_all"
-        static let getDroneList = "/apiv1/drone/list"
-        static let commonPairingEndpoint = "/apiv1/4g/pairing"
+    enum DroneAcademyEndPoints: String, CaseIterable {
+        case getChallenge = "/apiv1/4g/pairing/challenge?operation=associate"
+        case getUnpairChallenge = "/apiv1/4g/pairing/challenge?operation=unpair_all"
+        case getDroneList = "/apiv1/drone/list"
+        case commonPairingEndpoint = "/apiv1/4g/pairing"
     }
 }
 
@@ -204,8 +208,6 @@ public extension AcademyApiServiceImpl {
 public extension AcademyApiServiceImpl {
     /// Stores academy API errors.
     enum AcademyApiManagerError: Int, Error {
-        case notSynchro
-        case synchroOk
         case unknownError
         case serverError
         case jsonError
@@ -229,11 +231,11 @@ private extension AcademyApiServiceImpl {
     /// Returns a custom URLSession to communicate with Academy API.
     func authSession() -> URLSession {
         var token: String = ""
-        if Services.hub.userInformation.token.isEmpty,
+        if userInformation.token.isEmpty,
            !SecureKeyStorage.current.temporaryToken.isEmpty {
             token = SecureKeyStorage.current.temporaryToken
         } else {
-            token = Services.hub.userInformation.token
+            token = userInformation.token
         }
 
         let config = URLSessionConfiguration.default
@@ -242,6 +244,15 @@ private extension AcademyApiServiceImpl {
                                         RequestHeaderFields.xApiKey: ServicesConstants.academySecretKey]
         config.addUserAgentHeader()
         return URLSession(configuration: config)
+    }
+
+    /// If should manage access denied error from Academy
+    /// - Parameters :
+    ///     - urlResponse: HTTPURLResponse to verify
+    /// - Returns :
+    ///     - Bool indicates if should manage the error or not
+    func manageAccessDeniedError(_ urlResponse: HTTPURLResponse) -> Bool {
+        return !DroneAcademyEndPoints.allCases.contains(DroneAcademyEndPoints(rawValue: urlResponse.url?.path ?? ""))
     }
 }
 
@@ -270,8 +281,8 @@ public extension AcademyApiServiceImpl {
         var request: URLRequest = URLRequest(url: url)
         request.httpMethod = RequestType.delete
         request.setValue(RequestHeaderFields.appJson, forHTTPHeaderField: RequestHeaderFields.contentType)
-        requestQueue.execute(request, session) { data, response, error in
-            self.treatResponse(data: data,
+        requestQueue.execute(request, session) { [weak self] data, response, error in
+            self?.treatResponse(data: data,
                                response: response,
                                error: error,
                                completion: completion)
@@ -293,8 +304,8 @@ public extension AcademyApiServiceImpl {
             return
         }
 
-        requestQueue.execute(URLRequest(url: url), session) { data, response, error in
-            self.treatResponse(data: data, response: response, error: error, completion: completion)
+        requestQueue.execute(URLRequest(url: url), session) { [weak self] data, response, error in
+            self?.treatResponse(data: data, response: response, error: error, completion: completion)
         }
     }
 
@@ -321,8 +332,8 @@ public extension AcademyApiServiceImpl {
             let httpBody = try JSONSerialization.data(withJSONObject: params, options: [])
             request.httpBody = httpBody
 
-            requestQueue.execute(request, session) { data, response, error in
-                self.treatResponse(data: data,
+            requestQueue.execute(request, session) { [weak self] data, response, error in
+                self?.treatResponse(data: data,
                                    response: response,
                                    error: error,
                                    completion: completion)
@@ -354,8 +365,8 @@ public extension AcademyApiServiceImpl {
         do {
             let httpBody = try JSONSerialization.data(withJSONObject: params, options: [])
             request.httpBody = httpBody
-            requestQueue.execute(request, session) { data, response, error in
-                self.treatResponse(data: data,
+            requestQueue.execute(request, session) { [weak self] data, response, error in
+                self?.treatResponse(data: data,
                                    response: response,
                                    error: error,
                                    completion: completion)
@@ -372,8 +383,7 @@ public extension AcademyApiServiceImpl {
         // TODO: Change competion type to Result<Data, Error>
 
         guard canPerformAcademyRequest else {
-            completion(nil, AcademyApiManagerError.cancelled)
-            return
+            return completion(nil, AcademyApiManagerError.cancelled)
         }
 
         guard error == nil else {
@@ -390,27 +400,33 @@ public extension AcademyApiServiceImpl {
         switch httpResponse.statusCode {
         case 412:
             returnError = .preconditionFailed
+
         case 401:
-            DispatchQueue.main.async {
-                // UserInformationImpl.current.disconnect() // TODO: Find a solution to disconnect user in FF
-            }
             returnError = .authenticationError
             academyErrorSubject.value = returnError
-            completion(nil, returnError)
-            return
+            return completion(nil, returnError)
 
         case 403:
             returnError = .accessDenied
-            academyErrorSubject.value = returnError
-            completion(nil, returnError)
-            return
 
+            if self.manageAccessDeniedError(httpResponse) {
+                academyErrorSubject.value = returnError
+                return completion(nil, returnError)
+            }
         case 404:
             returnError = .ressourceNotFound
+
         case 0..<200:
             returnError = .badResponseCode
+
+        case 499..<527:
+            returnError = .serverError
+            academyErrorSubject.value = returnError
+            return completion(nil, returnError)
+
         case 300...1000:
             returnError = .badResponseCode
+
         default:
             returnError = nil
         }
@@ -430,7 +446,7 @@ public extension AcademyApiServiceImpl {
     func performPairedDroneListRequest(completion: @escaping (([PairedDroneListResponse]?) -> Void)) {
         let session = self.authSession()
 
-        get(AcademyEndPoints.getDroneList, session: session) { data, error in
+        get(DroneAcademyEndPoints.getDroneList.rawValue, session: session) { data, error in
             guard error == nil,
                   let responseData = data else {
                 completion(nil)
@@ -457,10 +473,10 @@ public extension AcademyApiServiceImpl {
 
         switch action {
         case .pairUser:
-            endpoint = AcademyEndPoints.getChallenge
+            endpoint = DroneAcademyEndPoints.getChallenge.rawValue
 
         case .unpairUser:
-            endpoint = AcademyEndPoints.getUnpairChallenge
+            endpoint = DroneAcademyEndPoints.getUnpairChallenge.rawValue
         }
 
         get(endpoint, session: session) { data, error in
@@ -487,7 +503,7 @@ public extension AcademyApiServiceImpl {
             return
         }
 
-        post(AcademyEndPoints.commonPairingEndpoint, params: body, session: session) { data, error in
+        post(DroneAcademyEndPoints.commonPairingEndpoint.rawValue, params: body, session: session) { data, error in
             guard error == nil,
                   data != nil else {
                 completion(false)
@@ -502,7 +518,7 @@ public extension AcademyApiServiceImpl {
     func unpairDrone(commonName: String, completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
         let session = self.authSession()
 
-        guard let url = URL(string: AcademyURL.prodBaseURL + AcademyEndPoints.commonPairingEndpoint + "/" + commonName) else {
+        guard let url = URL(string: AcademyURL.prodBaseURL + DroneAcademyEndPoints.commonPairingEndpoint.rawValue + "/" + commonName) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }
@@ -511,8 +527,8 @@ public extension AcademyApiServiceImpl {
         request.httpMethod = RequestType.delete
         request.setValue(RequestHeaderFields.appJson, forHTTPHeaderField: RequestHeaderFields.contentType)
 
-        session.dataTask(with: request) { data, response, error in
-            self.treatResponse(data: data, response: response, error: error, completion: completion)
+        session.dataTask(with: request) { [weak self] data, response, error in
+            self?.treatResponse(data: data, response: response, error: error, completion: completion)
         }.resume()
     }
 
@@ -525,7 +541,7 @@ public extension AcademyApiServiceImpl {
             return
         }
 
-        guard let url = URL(string: AcademyURL.prodBaseURL + AcademyEndPoints.commonPairingEndpoint) else {
+        guard let url = URL(string: AcademyURL.prodBaseURL + DroneAcademyEndPoints.commonPairingEndpoint.rawValue) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }
@@ -537,8 +553,8 @@ public extension AcademyApiServiceImpl {
         do {
             let httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
             request.httpBody = httpBody
-            session.dataTask(with: request) { data, response, error in
-                self.treatResponse(data: data,
+            session.dataTask(with: request) { [weak self] data, response, error in
+                self?.treatResponse(data: data,
                                    response: response,
                                    error: error,
                                    completion: completion)
@@ -552,7 +568,7 @@ public extension AcademyApiServiceImpl {
                           completion: @escaping (_ usersCount: Int?, _ error: Error?) -> Void) {
         let session = self.authSession()
 
-        guard let url = URL(string: AcademyURL.prodBaseURL + AcademyEndPoints.commonPairingEndpoint + "/" + commonName) else {
+        guard let url = URL(string: AcademyURL.prodBaseURL + DroneAcademyEndPoints.commonPairingEndpoint.rawValue + "/" + commonName) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }

@@ -77,9 +77,20 @@ extension CalibratableGimbal {
         }
     }
 
-    /// Color for gimbal calibration subtext.
-    var subtextColor: ColorName {
-        switch self.state {
+    /// Color for gimbal calibration title.
+    var titleColor: ColorName {
+        switch state {
+        case .calibrated,
+             .unavailable:
+            return .defaultTextColor
+        default:
+            return .white
+        }
+    }
+
+    /// Color for gimbal calibration subtitle.
+    var subtitleColor: ColorName {
+        switch state {
         case .calibrated,
              .unavailable:
             return .highlightColor
@@ -90,7 +101,7 @@ extension CalibratableGimbal {
 
     /// Color for gimbal calibration background.
     var backgroundColor: ColorName {
-        switch self.state {
+        switch state {
         case .calibrated,
              .unavailable:
             return .white
@@ -113,7 +124,7 @@ extension Gimbal {
 
     /// String describing gimbal calibration state.
     var calibrationStateDescription: String? {
-        switch self.state {
+        switch state {
         case .calibrated,
              .unavailable:
             return nil

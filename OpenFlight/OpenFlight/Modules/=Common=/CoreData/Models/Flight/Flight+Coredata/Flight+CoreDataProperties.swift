@@ -47,7 +47,7 @@ extension Flight {
     @NSManaged public var batteryConsumption: Int16
     @NSManaged public var distance: Double
     @NSManaged public var duration: Double
-    @NSManaged public var gutmaFile: String!
+    @NSManaged public var gutmaFile: Data!
     @NSManaged public var startLatitude: Double
     @NSManaged public var startLongitude: Double
     @NSManaged public var startTime: Date?
@@ -59,6 +59,8 @@ extension Flight {
     @NSManaged public var fileSynchroStatus: Int16
     @NSManaged public var fileSynchroDate: Date?
     @NSManaged public var cloudLastUpdate: Date?
+    @NSManaged public var externalSynchroStatus: Int16
+    @NSManaged public var externalSynchroDate: Date?
 
     // MARK: - Relationship
 
@@ -102,7 +104,7 @@ extension Flight {
                            batteryConsumption: batteryConsumption,
                            distance: distance,
                            duration: duration,
-                           gutmaFile: gutmaFile,
+                           gutmaFile: String(decoding: gutmaFile, as: UTF8.self),
                            parrotCloudId: parrotCloudId,
                            parrotCloudToBeDeleted: parrotCloudToBeDeleted,
                            parrotCloudUploadUrl: parrotCloudUploadUrl,
@@ -110,6 +112,8 @@ extension Flight {
                            synchroStatus: synchroStatus,
                            cloudLastUpdate: cloudLastUpdate,
                            fileSynchroStatus: fileSynchroStatus,
-                           fileSynchroDate: fileSynchroDate)
+                           fileSynchroDate: fileSynchroDate,
+                           externalSynchroStatus: externalSynchroStatus,
+                           externalSynchroDate: externalSynchroDate)
     }
 }

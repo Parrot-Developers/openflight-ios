@@ -37,7 +37,7 @@ import SwiftyUserDefaults
 public protocol CellularPairingService: AnyObject {
 
     func retryPairingProcess()
-    func listenPairingProcessRequest()
+    func startPairingProcessRequest()
     func startUnpairProcessRequest()
 
     var pairingProcessErrorPublisher: AnyPublisher<PairingProcessError?, Never> { get }
@@ -45,6 +45,8 @@ public protocol CellularPairingService: AnyObject {
     var operatorNamePublisher: AnyPublisher<String?, Never> { get }
     var cellularStatusPublisher: AnyPublisher<DetailsCellularStatus, Never> { get }
     var unpairStatePublisher: AnyPublisher<UnpairDroneState, Never> { get }
+
+    var isWaitingAutoRetry: Bool { get }
 }
 
 public enum PairingAction {
@@ -60,6 +62,8 @@ class CellularPairingServiceImpl: CellularPairingService {
     var cellularStatusSubject = CurrentValueSubject<DetailsCellularStatus, Never>(.noState)
     var unpairStateSubject = CurrentValueSubject<UnpairDroneState, Never>(.notStarted)
 
+    var isWaitingPairingAutoRetry = false
+
     // MARK: - Private Properties
     private var cellularRef: Ref<Cellular>?
     private var secureElementRef: Ref<SecureElement>?
@@ -68,8 +72,7 @@ class CellularPairingServiceImpl: CellularPairingService {
     private var academyApiService: AcademyApiService
     private var apcAPIManager = APCApiManager()
     private var pairingRequestObserver: Any?
-    private var isUserLogged: Bool = Defaults.isUserConnected
-        || SecureKeyStorage.current.isTemporaryAccountCreated
+    private var isUserLogged: Bool { Defaults.isUserConnected || SecureKeyStorage.current.isTemporaryAccountCreated }
     private var token: String?
     private var challenge: String?
     private var isSimLocked: Bool = true
@@ -79,6 +82,8 @@ class CellularPairingServiceImpl: CellularPairingService {
     private let userRepo: UserRepository
     private var pairingAction: PairingAction = .pairUser
     private var unpairState: UnpairDroneState = .notStarted
+    /// Retry Pairing timer
+    private var retryPairingTimer: Timer?
 
     init(currentDroneHolder: CurrentDroneHolder, userRepo: UserRepository, connectedDroneHolder: ConnectedDroneHolder, academyApiService: AcademyApiService) {
         self.currentDroneHolder = currentDroneHolder
@@ -86,7 +91,6 @@ class CellularPairingServiceImpl: CellularPairingService {
         self.connectedDroneHolder = connectedDroneHolder
         self.academyApiService = academyApiService
         listenReachability()
-        listenPairingProcessRequest()
 
         currentDroneHolder.dronePublisher
             .sink { [unowned self] drone in
@@ -101,6 +105,18 @@ class CellularPairingServiceImpl: CellularPairingService {
                 listenNetworkControl(drone)
             }
             .store(in: &cancellables)
+
+        pairingProcessErrorPublisher
+            .filter { $0 != .noError }
+            .sink {  [unowned self] error in
+                updatePairingProcessAutoRetryState(for: error)
+            }
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Constants
+    enum Constants {
+        static let uploadRetrySlotTime = TimeInterval(30)
     }
 }
 
@@ -108,6 +124,7 @@ extension CellularPairingServiceImpl {
 
     /// Retry pairing process if there is an error.
     func retryPairingProcess() {
+        retryPairingTimer?.invalidate()
         pairingAction = .pairUser
 
         updateProcessError(error: .noError)
@@ -141,25 +158,19 @@ extension CellularPairingServiceImpl {
         }
     }
 
-    // TODO: Remove notification and integrate in the coordinator
-    /// Observes notification on pairing process request.
-    func listenPairingProcessRequest() {
-        pairingRequestObserver = NotificationCenter.default.addObserver(forName: .requestCellularPairingProcess,
-                                                                        object: nil,
-                                                                        queue: nil) { [weak self] _ in
-            self?.pairingAction = .pairUser
-            self?.updateLoggingState()
-            self?.startProcess(action: .pairUser)
-        }
+    /// Triggers a pairing process
+    func startPairingProcessRequest() {
+        retryPairingTimer?.invalidate()
+        pairingAction = .pairUser
+        startProcess(action: pairingAction)
     }
 
     /// Triggers an unpair process
     func startUnpairProcessRequest() {
+        retryPairingTimer?.invalidate()
         pairingAction = .unpairUser
-        updateLoggingState()
         startProcess(action: .unpairUser)
     }
-
 }
 
 private extension CellularPairingServiceImpl {
@@ -206,7 +217,6 @@ private extension CellularPairingServiceImpl {
                 self.updateProcessError(error: .noError)
                 SecureKeyStorage.current.temporaryToken = token
                 self.userRepo.updateTokenForAnonymousUser(token)
-                self.updateLoggingState()
                 self.startProcess(action: .pairUser)
             }
         })
@@ -348,12 +358,6 @@ private extension CellularPairingServiceImpl {
     ///     - signature: the signed token given by the drone
     func updateToken(with signature: String?) {
         token = signature
-    }
-
-    /// Updates user login state.
-    func updateLoggingState() {
-        isUserLogged = Defaults.isUserConnected
-            || SecureKeyStorage.current.isTemporaryAccountCreated
     }
 
     /// Unpairs the current drone.
@@ -586,6 +590,27 @@ extension CellularPairingServiceImpl {
     }
 }
 
+// MARK: - Handling Pairing Process Retries
+extension CellularPairingServiceImpl {
+
+    /// Updates Pairing Process auto retry state.
+    ///
+    /// - Parameters:
+    ///     - error: new error
+    func updatePairingProcessAutoRetryState(for error: PairingProcessError?) {
+        // Be sure there is an error
+        guard let error = error, error != .noError else { return }
+
+        // Configure the auto retry timer
+        retryPairingTimer?.invalidate()
+        isWaitingPairingAutoRetry = true
+        retryPairingTimer = Timer.scheduledTimer(withTimeInterval: Constants.uploadRetrySlotTime, repeats: false) { [unowned self] _ in
+            isWaitingPairingAutoRetry = false
+            retryPairingProcess()
+        }
+    }
+}
+
 extension CellularPairingServiceImpl {
 
     var pairingProcessErrorPublisher: AnyPublisher<PairingProcessError?, Never> { pairingProcessErrorSubject.eraseToAnyPublisher() }
@@ -593,4 +618,6 @@ extension CellularPairingServiceImpl {
     var operatorNamePublisher: AnyPublisher<String?, Never> { operatorNameSubject.eraseToAnyPublisher() }
     var cellularStatusPublisher: AnyPublisher<DetailsCellularStatus, Never> { cellularStatusSubject.eraseToAnyPublisher() }
     var unpairStatePublisher: AnyPublisher<UnpairDroneState, Never> { unpairStateSubject.eraseToAnyPublisher() }
+
+    var isWaitingAutoRetry: Bool { isWaitingPairingAutoRetry }
 }

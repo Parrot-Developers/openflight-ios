@@ -33,7 +33,6 @@ import GroundSdk
 
 // MARK: - Internal Enums
 /// Enum used to display panorama sub-modes in bottom bar.
-
 enum PanoramaMode: String, BarItemSubMode, DefaultsLoadableBarItem {
     case vertical
     case horizontal

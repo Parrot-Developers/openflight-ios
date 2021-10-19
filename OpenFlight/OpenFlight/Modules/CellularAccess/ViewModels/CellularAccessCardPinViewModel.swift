@@ -119,9 +119,6 @@ final class CellularAccessCardPinViewModel {
     /// Dismisses the cellular access modal.
     /// We can show it again if the application restarts or if the drone is connected again.
     func dismissCellularModal() {
-        guard let cellular = currentDroneHolder.drone.getPeripheral(Peripherals.cellular) else { return }
-
-        cellular.mode.value = .disabled
         updateLoaderState(shouldShow: false)
     }
 }

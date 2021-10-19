@@ -34,9 +34,9 @@ extension Drone {
     // MARK: - Internal Properties
     /// Returns true if Hand Launch is available.
     var isHandLaunchAvailable: Bool {
-        guard let manualPiloting = self.getPilotingItf(PilotingItfs.manualCopter),
-              let flyingIndicators = self.getInstrument(Instruments.flyingIndicators),
-              self.isStateLanded,
+        guard let manualPiloting = getPilotingItf(PilotingItfs.manualCopter),
+              let flyingIndicators = getInstrument(Instruments.flyingIndicators),
+              isStateLanded,
               manualPiloting.smartTakeOffLandAction == .thrownTakeOff,
               flyingIndicators.landedState == .idle else {
             return false
@@ -47,9 +47,9 @@ extension Drone {
 
     /// Returns true if Hand Launch is ready.
     var isHandLaunchReady: Bool {
-        guard let manualPiloting = self.getPilotingItf(PilotingItfs.manualCopter),
-              self.isStateLanded,
-              self.landedState == .waitingUserAction,
+        guard let manualPiloting = getPilotingItf(PilotingItfs.manualCopter),
+              isStateLanded,
+              landedState == .waitingUserAction,
               manualPiloting.smartTakeOffLandAction == .land else {
             return false
         }
@@ -60,6 +60,6 @@ extension Drone {
     // MARK: - Internal Funcs
     /// Starts Hand Launch.
     func startHandLaunch() {
-        self.getPilotingItf(PilotingItfs.manualCopter)?.thrownTakeOff()
+        getPilotingItf(PilotingItfs.manualCopter)?.thrownTakeOff()
     }
 }

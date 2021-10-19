@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// Utility extension for `Alarms`.
-
 extension Alarms {
     /// Computes current conditions alerts.
     ///
@@ -116,6 +115,15 @@ extension Alarms {
         // Check alert for strong wind with obstacle avoidance
         if getAlarm(kind: .obstacleAvoidanceStrongWind).hasError {
             alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceStrongWind)
+        }
+
+        // Check alert for OA computational error
+        if getAlarm(kind: .obstacleAvoidanceComputationalError).hasError {
+            alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceComputationalError)
+        }
+
+        if getAlarm(kind: .obstacleAvoidanceBlindMotionDirection).hasError {
+            alerts.append(HUDBannerWarningAlertType.obstacleAvoidanceBlindMotionDirection)
         }
 
         return alerts

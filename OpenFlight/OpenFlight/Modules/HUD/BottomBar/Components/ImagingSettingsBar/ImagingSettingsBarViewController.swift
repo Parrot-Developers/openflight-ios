@@ -76,11 +76,15 @@ final class ImagingSettingsBarViewController: UIViewController {
         exposureService: Services.hub.drone.exposureService,
         exposureLockService: Services.hub.drone.exposureLockService)
     private var whiteBalanceItemViewModel = ImagingBarWhiteBalanceViewModel()
-    private var dynamicRangeBarViewModel = DynamicRangeBarViewModel()
-    private var photoFormatItemViewModel = ImagingBarPhotoFormatViewModel()
+    private var dynamicRangeBarViewModel = DynamicRangeBarViewModel(
+        panoramaService: Services.hub.panoramaService)
+    private var photoFormatItemViewModel = ImagingBarPhotoFormatViewModel(
+        panoramaService: Services.hub.panoramaService)
     private var photoResolutionItemViewModel = ImagingBarPhotoResolutionViewModel()
-    private var videoResolutionItemViewModel = ImagingBarVideoResolutionViewModel()
-    private var framerateItemViewModel = ImagingBarFramerateViewModel()
+    private var videoResolutionItemViewModel = ImagingBarVideoResolutionViewModel(
+        currentMissionManager: Services.hub.currentMissionManager)
+    private var framerateItemViewModel = ImagingBarFramerateViewModel(
+        currentMissionManager: Services.hub.currentMissionManager)
     private var deselectableViewModels = [Deselectable]()
     /// Combine subscriptions.
     private var cancellables = Set<AnyCancellable>()

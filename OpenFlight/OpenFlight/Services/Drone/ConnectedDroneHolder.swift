@@ -46,9 +46,11 @@ class ConnectedDroneHolderImpl: ConnectedDroneHolder {
     private var autoConnectionRef: Ref<AutoConnectionDesc.ApiProtocol>?
     private var droneStateRef: Ref<DeviceState>?
 
-    @Published private(set) var drone: Drone?
+    private let droneSubject = CurrentValueSubject<Drone?, Never>(nil)
 
-    var dronePublisher: AnyPublisher<Drone?, Never> { $drone.eraseToAnyPublisher() }
+    var drone: Drone? { droneSubject.value }
+
+    var dronePublisher: AnyPublisher<Drone?, Never> { droneSubject.eraseToAnyPublisher() }
 
     init() {
         setupListening()
@@ -86,7 +88,7 @@ class ConnectedDroneHolderImpl: ConnectedDroneHolder {
 
     private func setDrone(_ drone: Drone?) {
         // Only trigger anything when there's an effective change
-        guard drone?.uid != self.drone?.uid else { return }
-        self.drone = drone
+        guard drone?.uid != self.droneSubject.value?.uid else { return }
+        self.droneSubject.value = drone
     }
 }

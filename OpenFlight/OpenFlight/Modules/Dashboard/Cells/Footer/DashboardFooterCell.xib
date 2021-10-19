@@ -22,10 +22,10 @@
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dxX-xu-4ml">
-                        <rect key="frame" x="0.0" y="0.0" width="476.5" height="29"/>
+                        <rect key="frame" x="0.0" y="0.0" width="476.5" height="49"/>
                         <subviews>
                             <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="B1J-xC-GGG">
-                                <rect key="frame" x="0.0" y="19.5" width="154" height="15.5"/>
+                                <rect key="frame" x="0.0" y="17" width="154" height="13"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                 <color key="textColor" name="black_pearl"/>
                                 <nil key="highlightedColor"/>
@@ -34,7 +34,7 @@
                                 </variation>
                             </label>
                             <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Gq0-6j-hme">
-                                <rect key="frame" x="162" y="19.5" width="154.5" height="15.5"/>
+                                <rect key="frame" x="162" y="17" width="154.5" height="13"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                 <color key="textColor" name="black_pearl"/>
                                 <nil key="highlightedColor"/>
@@ -43,7 +43,7 @@
                                 </variation>
                             </label>
                             <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Controller" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dx4-gi-Xtr">
-                                <rect key="frame" x="162" y="0.0" width="142.5" height="15.5"/>
+                                <rect key="frame" x="162" y="0.0" width="142.5" height="13"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                 <color key="textColor" name="black_pearl"/>
                                 <nil key="highlightedColor"/>
@@ -52,7 +52,7 @@
                                 </variation>
                             </label>
                             <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="App" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cne-ai-XYQ">
-                                <rect key="frame" x="0.0" y="0.0" width="142" height="15.5"/>
+                                <rect key="frame" x="0.0" y="0.0" width="142" height="13"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                 <color key="textColor" name="black_pearl"/>
                                 <nil key="highlightedColor"/>
@@ -61,7 +61,7 @@
                                 </variation>
                             </label>
                             <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Drone" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KyW-Gs-jae">
-                                <rect key="frame" x="324.5" y="0.0" width="142" height="15.5"/>
+                                <rect key="frame" x="324.5" y="0.0" width="142" height="13"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                 <color key="textColor" name="black_pearl"/>
                                 <nil key="highlightedColor"/>
@@ -70,7 +70,7 @@
                                 </variation>
                             </label>
                             <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0UK-Sb-8tW">
-                                <rect key="frame" x="324.5" y="19.5" width="32" height="15.5"/>
+                                <rect key="frame" x="324.5" y="17" width="29" height="13"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                 <color key="textColor" name="black_pearl"/>
                                 <nil key="highlightedColor"/>
@@ -107,10 +107,10 @@
                         </constraints>
                     </view>
                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="top" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="bms-Eq-Ycm">
-                        <rect key="frame" x="476.5" y="0.0" width="204.5" height="35"/>
+                        <rect key="frame" x="476.5" y="0.0" width="204.5" height="49"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="top" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FSy-7P-qsp">
-                                <rect key="frame" x="0.0" y="0.0" width="204.5" height="28"/>
+                                <rect key="frame" x="0.0" y="0.0" width="204.5" height="25"/>
                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                 <state key="normal" title="Data confidentiality">
                                     <color key="titleColor" name="black_pearl"/>
@@ -128,11 +128,11 @@
             </view>
             <constraints>
                 <constraint firstItem="dxX-xu-4ml" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="0LA-Y6-Bgd"/>
-                <constraint firstItem="bms-Eq-Ycm" firstAttribute="bottom" secondItem="0UK-Sb-8tW" secondAttribute="bottom" id="0lX-uJ-iyC"/>
+                <constraint firstItem="bms-Eq-Ycm" firstAttribute="bottom" secondItem="gTV-IL-0wX" secondAttribute="bottom" id="0lX-uJ-iyC"/>
                 <constraint firstItem="dxX-xu-4ml" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="U7A-U9-4rN"/>
                 <constraint firstItem="dxX-xu-4ml" firstAttribute="width" secondItem="gTV-IL-0wX" secondAttribute="width" multiplier="0.7" id="Xri-xe-Gsx"/>
-                <constraint firstItem="bms-Eq-Ycm" firstAttribute="top" secondItem="dxX-xu-4ml" secondAttribute="top" id="Yce-jr-GDH"/>
-                <constraint firstAttribute="bottom" secondItem="dxX-xu-4ml" secondAttribute="bottom" constant="20" id="YdX-Eb-gdQ"/>
+                <constraint firstItem="bms-Eq-Ycm" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="Yce-jr-GDH"/>
+                <constraint firstAttribute="bottom" secondItem="dxX-xu-4ml" secondAttribute="bottom" id="YdX-Eb-gdQ"/>
                 <constraint firstAttribute="trailing" secondItem="bms-Eq-Ycm" secondAttribute="trailing" id="dMs-wR-6dg"/>
                 <constraint firstItem="bms-Eq-Ycm" firstAttribute="leading" secondItem="dxX-xu-4ml" secondAttribute="trailing" id="hYT-m8-mAG"/>
             </constraints>

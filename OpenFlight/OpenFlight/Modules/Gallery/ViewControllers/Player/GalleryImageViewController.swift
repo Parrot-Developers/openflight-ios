@@ -30,51 +30,67 @@
 
 import UIKit
 import GroundSdk
-
-// MARK: - Protocols
-/// Gallery image ViewController Delegate.
-protocol GalleryImageViewControllerDelegate: AnyObject {
-    /// Notify delegate when media image index changes.
-    ///
-    /// - Parameters:
-    ///     - index: Media index in the gallery media array
-    func selectionDidChangeToImageIndex(_ index: Int)
-}
+import Combine
 
 /// Gallery image ViewController.
 
 final class GalleryImageViewController: UIViewController, SwipableViewController {
+    private weak var viewModel: GalleryMediaViewModel?
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Outlets
-    @IBOutlet private weak var scrollView: UIScrollView! {
-        didSet {
-            scrollView.minimumZoomScale = Constants.minZoom
-            scrollView.maximumZoomScale = Constants.maxZoom
-        }
-    }
-    @IBOutlet private weak var photoImageView: UIImageView!
+    @IBOutlet private weak var scrollView: UIScrollView!
+    @IBOutlet private weak var zoomableImageView: UIImageView!
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
-    @IBOutlet private weak var pickerSideView: UIView!
-    @IBOutlet private weak var pickerView: UIPickerView!
-    @IBOutlet private weak var pickerSelectionView: UIView!
-    @IBOutlet private weak var generateSideView: UIView!
     @IBOutlet private weak var generateButton: UIButton!
-    @IBOutlet private weak var generateFullScreenButton: UIButton!
+    @IBOutlet private weak var itemsCollectionView: UICollectionView!
 
     // MARK: - Internal Properties
-    weak var delegate: GalleryImageViewControllerDelegate?
     private(set) var index: Int = 0
 
     // MARK: - Private Properties
     private weak var coordinator: GalleryCoordinator?
-    private weak var viewModel: GalleryMediaViewModel?
     private var imageIndex: Int = 0
-    private var imageUrl: URL?
+    private var mediaListener: GalleryMediaListener?
+
+    // Convenience Computed Properties
+    private var media: GalleryMedia? {
+        viewModel?.getMedia(index: index)
+    }
+    private var hasAdditionalPanoramaGenerationImage: Bool {
+        guard let viewModel = viewModel,
+              let media = media else { return false }
+        // Currently checking if device's panorama can be generated.
+        // Will need to check from current source (drone or device) when panorama upload is available.
+        return viewModel.canGeneratePanorama(media: media)
+    }
+    /// The offset used for collectionView items handling in case of an additional blurred panorama image.
+    private var additionalImageIndexOffset: Int {
+        hasAdditionalPanoramaGenerationImage ? 1 : 0
+    }
+    private var resourcesCount: Int {
+        guard let viewModel = viewModel,
+              let media = media else {
+            return 0
+        }
+        return viewModel.getMediaImageCount(media) + additionalImageIndexOffset
+    }
+    private var currentZoomableCell: GalleryMediaFullScreenCollectionViewCell? {
+        guard let cell = itemsCollectionView.visibleCells.first as? GalleryMediaFullScreenCollectionViewCell,
+              let model = cell.model,
+              !model.hasGeneratePanoramaButton else {
+            return nil
+        }
+        return cell
+    }
+    private var isCurrentCellZoomable: Bool {
+        currentZoomableCell != nil
+    }
 
     // MARK: - Private Enums
     private enum Constants {
         static let minZoom: CGFloat = 1.0
         static let maxZoom: CGFloat = 5.0
-        static let pickerRowSize: CGFloat = 50.0
     }
 
     // MARK: - Setup
@@ -87,12 +103,10 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
     ///     - index: Media index in the media array
     /// - Returns: a GalleryImageViewController.
     static func instantiate(coordinator: GalleryCoordinator?,
-                            delegate: GalleryImageViewControllerDelegate?,
                             viewModel: GalleryMediaViewModel?,
                             index: Int) -> GalleryImageViewController {
         let viewController = StoryboardScene.GalleryMediaPlayerViewController.galleryImageViewController.instantiate()
         viewController.coordinator = coordinator
-        viewController.delegate = delegate
         viewController.viewModel = viewModel
         viewController.index = index
 
@@ -103,84 +117,128 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Setup interactions.
-        photoImageView.isUserInteractionEnabled = true
-
-        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(doubleTapOnImage))
-        doubleTapGesture.numberOfTapsRequired = 2
-        photoImageView.addGestureRecognizer(doubleTapGesture)
-
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapOnImage))
-        tapGesture.numberOfTapsRequired = 1
-        tapGesture.require(toFail: doubleTapGesture)
-        photoImageView.addGestureRecognizer(tapGesture)
-
-        setupDefaultImageIndex()
-        setupPickerView()
-        setupGenerateView()
+        setupUI()
+        observeViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        loadImage()
+        displayMedia()
+        setupDefaultImageIndex()
     }
 
-    override var prefersHomeIndicatorAutoHidden: Bool {
-        return true
+    override var prefersHomeIndicatorAutoHidden: Bool { true }
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .landscape }
+    override var prefersStatusBarHidden: Bool { true }
+
+    /// Observe panorama VM updates.
+    func observeViewModel() {
+        viewModel?.mediaBrowsingViewModel.$panoramaGenerationStatus
+            .sink { [unowned self] status in
+                guard status == .success else { return }
+                self.displayMedia()
+                self.reloadVisibleCell()
+            }
+            .store(in: &cancellables)
+
+        viewModel?.mediaBrowsingViewModel.$zoomLevel
+            .sink { [weak self] zoomLevel in
+                self?.updateZoomLevel(zoomLevel)
+            }
+            .store(in: &cancellables)
+    }
+}
+
+private extension GalleryImageViewController {
+    /// Sets up UI elements.
+    func setupUI() {
+        scrollView.minimumZoomScale = Constants.minZoom
+        scrollView.maximumZoomScale = Constants.maxZoom
+
+        setupCollectionView()
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
+    /// Sets up media resources collectionView.
+    func setupCollectionView() {
+        itemsCollectionView.register(cellType: GalleryMediaFullScreenCollectionViewCell.self)
+
+        itemsCollectionView.isPagingEnabled = true
+        itemsCollectionView.contentInsetAdjustmentBehavior = .never
+
+        let layout = UICollectionViewFlowLayout()
+        layout.itemSize = view.bounds.size
+        layout.scrollDirection = .vertical
+        layout.minimumInteritemSpacing = 0
+        layout.minimumLineSpacing = 0
+
+        itemsCollectionView.collectionViewLayout = layout
+    }
+}
+
+// MARK: - Images Fetching
+private extension GalleryImageViewController {
+    /// Fetches an image for a given resource index.
+    ///
+    /// - Parameters:
+    ///     - index: The resource index in VM `mediaUrls` array.
+    func fetchImage(at index: Int?) {
+        guard let index = index,
+              index < viewModel?.mediaBrowsingViewModel.mediaUrls.count ?? 0,
+              viewModel?.mediaBrowsingViewModel.mediaUrls[index] == nil, // Fetch only if URL not known yet.
+              let media = media else {
+            return
+        }
+
+        viewModel?.getMediaPreviewImageUrl(media,
+                                           index) { [weak self] url in
+            self?.viewModel?.mediaBrowsingViewModel.didLoadUrl(url, at: index)
+            self?.reloadVisibleCell()
+        }
     }
 
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-
-        setupPickerView()
-        setupGenerateView()
-    }
-
-    override var prefersStatusBarHidden: Bool {
-        return true
+    /// Reloads current visible collectionView cell.
+    func reloadVisibleCell() {
+        guard let visibleIndex = visibleIndex,
+              visibleIndex < resourcesCount else { return }
+        itemsCollectionView.reloadItems(at: [IndexPath(item: visibleIndex, section: 0)])
     }
 }
 
 // MARK: - Actions
 private extension GalleryImageViewController {
-    /// Single tap on image.
-    @objc func tapOnImage() {
-        viewModel?.toggleShouldHideControls()
-    }
+    func updateZoomLevel(_ level: GalleryMediaBrowsingViewModel.ZoomLevel) {
+        guard level != .custom else { return }
 
-    /// Double tap on image.
-    @objc func doubleTapOnImage() {
-        /// Reset zoom.
-        scrollView.zoomScale = Constants.minZoom
-    }
-
-    @IBAction func generateButtonTouchedUpInside(_ sender: AnyObject) {
-        guard let viewModel = viewModel,
-              let currentMedia = viewModel.getMedia(index: index) else {
-            return
+        if level == .maximum {
+            // Immediately hide itemsCollectionView if we are about to zoom in.
+            itemsCollectionView.isHidden = level == .maximum
         }
 
-        let galleryPanoramaViewModel = GalleryPanoramaViewModel(galleryViewModel: viewModel)
-        switch currentMedia.type {
-        case .panoWide,
-             .panoVertical,
-             .panoHorizontal:
-            coordinator?.showPanoramaQualityChoiceScreen(viewModel: galleryPanoramaViewModel, index: index)
-        case .pano360:
-            coordinator?.showPanoramaChoiceTypeScreen(viewModel: viewModel, index: index)
-        default:
-            return
+        UIView.animate(withDuration: Style.shortAnimationDuration) {
+            self.scrollView.zoomScale = level == .maximum
+                ? Constants.maxZoom
+                : Constants.minZoom
+        } completion: { _ in
+            // Unhide itemsCollectionView if we just zoomed out.
+            self.itemsCollectionView.isHidden = self.scrollView.zoomScale != Constants.minZoom
         }
     }
 
-    @IBAction func generateFullScreenButtonTouchedUpInside(_ sender: AnyObject) {
+    /// Shows panorama generation view.
+    func generatePanorama() {
+        guard let viewModel = viewModel  else { return }
+
+        let galleryPanoramaViewModel = GalleryPanoramaViewModel(galleryMediaViewModel: viewModel,
+                                                                coordinator: coordinator,
+                                                                mediaIndex: index)
+        coordinator?.showPanoramaGenerationScreen(viewModel: galleryPanoramaViewModel, index: index)
+    }
+
+    /// Shows immersive panorama view.
+    func showImmersivePanorama() {
         guard let viewModel = viewModel,
-              let media = viewModel.getMedia(index: index),
+              let media = media,
               let mediaUrls = media.urls,
               mediaUrls.count > imageIndex else {
             return
@@ -192,219 +250,122 @@ private extension GalleryImageViewController {
 
 // MARK: - Private Funcs
 private extension GalleryImageViewController {
-    /// Load current image.
-    func loadImage() {
-        guard let media = viewModel?.getMedia(index: index) else { return }
-
-        pickerView.isUserInteractionEnabled = false
-        photoImageView.image = nil
-        activityIndicator.startAnimating()
-        viewModel?.getMediaPreviewImageUrl(media,
-                                           imageIndex,
-                                           completion: { [weak self] url in
-                                            guard let url = url else { return }
-
-                                            self?.pickerView.isUserInteractionEnabled = true
-                                            self?.activityIndicator.stopAnimating()
-                                            self?.displayImage(with: url)
-                                           })
-    }
-
-    /// Display image.
-    ///
-    /// - Parameters:
-    ///     - url: image url
-    func displayImage(with url: URL?) {
-        scrollView.zoomScale = Constants.minZoom
-        guard let url = url else { return }
-
-        imageUrl = url
-
-        let loadImage: (URL, @escaping (UIImage?) -> Void) -> Void
-        switch url.pathExtension {
-        case GalleryMediaType.photo.pathExtension:
-            loadImage = AssetUtils.shared.loadImage
-        case GalleryMediaType.dng.pathExtension:
-            loadImage = AssetUtils.shared.loadRawImage
-        default:
-            return
-        }
-
-        activityIndicator.startAnimating()
-        loadImage(url) { [weak self] image in
-            self?.activityIndicator.stopAnimating()
-            self?.photoImageView.contentMode = .scaleAspectFit
-            self?.photoImageView.image = image
-            self?.setupPickerView()
-            self?.setupGenerateView()
-        }
+    /// Updates view model with media info and fetches image.
+    func displayMedia() {
+        viewModel?.mediaBrowsingViewModel.didDisplayMedia(media, index: index, count: resourcesCount)
+        fetchImage(at: urlIndex(imageIndex))
     }
 
     /// Setup default image index.
     func setupDefaultImageIndex() {
         guard let viewModel = viewModel,
-              let media = viewModel.getMedia(index: index) else {
+              let media = media else {
             return
         }
 
         imageIndex = viewModel.getMediaImageDefaultIndex(media)
-        delegate?.selectionDidChangeToImageIndex(imageIndex)
-    }
-
-    /// Setup picker view.
-    func setupPickerView() {
-        pickerSelectionView.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color, radius: Style.largeCornerRadius)
-        pickerSideView.isHidden = true
-        pickerView.dataSource = self
-        pickerView.selectRow(imageIndex, inComponent: 0, animated: false)
-        pickerView.delegate = self
-        pickerView.isUserInteractionEnabled = true
-        pickerView.subviews.forEach { $0.backgroundColor = .clear }
-        if let viewModel = viewModel,
-           let media = viewModel.getMedia(index: index),
-           viewModel.getMediaImageCount(media) > 1 {
-            pickerSideView.isHidden = false
+        viewModel.mediaBrowsingViewModel.didDisplayResourceAt(imageIndex)
+        DispatchQueue.main.async {
+            // Need to dispatch scrolling to defaultIndex, as collectionView may not be visible yet.
+            // => visibleIndex not updated.
+            self.gotoImageAtIndex(self.imageIndex)
         }
     }
 
-    /// Setup picker view.
-    func setupGenerateView() {
-        guard let viewModel = viewModel,
-              let currentMedia = viewModel.getMedia(index: index) else {
-            return
-        }
+    /// Scrolls collectionView to a specific index and fetches corresponding image.
+    /// - Parameters:
+    ///     - index: The index of the resource to display.
+    func gotoImageAtIndex(_ index: Int) {
+        guard index != visibleIndex else { return }
 
-        if UIApplication.isLandscape == false {
-            generateSideView.isHidden = true
-        } else {
-            generateSideView.isHidden = viewModel.shouldHideGenerationOption(currentMedia: currentMedia)
-        }
-        generateButton.setTitle(L10n.galleryPanoramaGenerate, for: .normal)
-        generateButton.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color, radius: Style.largeCornerRadius)
-        generateFullScreenButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
-        generateFullScreenButton.isHidden = true
-        if let imageUrl = imageUrl {
-            let panoramaRelatedEntries = PanoramaMediaType.allCases.map({ $0.rawValue })
-            if panoramaRelatedEntries.contains(where: imageUrl.lastPathComponent.contains) {
-                let matchingTerms = panoramaRelatedEntries.filter({ imageUrl.lastPathComponent.contains($0) })
-                if let panoramaType = matchingTerms.first, panoramaType == PanoramaMediaType.sphere.rawValue {
-                    generateFullScreenButton.isHidden = false
-                }
-            }
-        }
+        fetchImage(at: urlIndex(index))
+        let indexPath = IndexPath.init(item: index, section: 0)
+        itemsCollectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
+    }
+
+    /// The collectionView index of currently displayed cell.
+    private var visibleIndex: Int? {
+        let visibleRect = CGRect(origin: itemsCollectionView.contentOffset, size: itemsCollectionView.bounds.size)
+        let visiblePoint = CGPoint(x: visibleRect.midX, y: visibleRect.midY)
+
+        return itemsCollectionView.indexPathForItem(at: visiblePoint)?.item
     }
 }
 
 // MARK: - UIScrollView Delegate
 extension GalleryImageViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return photoImageView
+        guard let currentZoomableCell = currentZoomableCell else { return nil }
+
+        zoomableImageView.image = currentZoomableCell.imageView.image
+        return zoomableImageView
     }
 
-    func scrollViewDidZoom(_ scrollView: UIScrollView) {
-        guard let viewModel = viewModel,
-              let currentMedia = viewModel.getMedia(index: index) else {
+    func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
+        guard isCurrentCellZoomable else { return }
+        viewModel?.mediaBrowsingViewModel.didInteractForControlsDisplay(false)
+        itemsCollectionView.isHidden = true
+    }
+
+    func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+        viewModel?.mediaBrowsingViewModel.didUpdateZoomLevel(.custom)
+        guard scale == Constants.minZoom else { return }
+        itemsCollectionView.isHidden = false
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard scrollView == itemsCollectionView,
+              let visibleIndex = visibleIndex else {
             return
         }
 
-        pickerSideView.isHidden = scrollView.zoomScale != Constants.minZoom
-        if UIApplication.isLandscape == false {
-            generateSideView.isHidden = true
-        } else {
-            generateSideView.isHidden = viewModel.shouldHideGenerationOption(currentMedia: currentMedia)
-                || scrollView.zoomScale != Constants.minZoom
+        viewModel?.mediaBrowsingViewModel.didDisplayResourceAt(visibleIndex)
+    }
+
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        guard scrollView == itemsCollectionView,
+              let visibleIndex = visibleIndex else {
+            return
         }
+
+        fetchImage(at: urlIndex(visibleIndex))
     }
 }
 
-// MARK: - UIPickerView Data source
-extension GalleryImageViewController: UIPickerViewDataSource {
-    func numberOfComponents(in pickerView: UIPickerView) -> Int {
-        pickerView.subviews.forEach({
-            $0.isHidden = $0.frame.height < 1.0
-        })
-        return 1
+// MARK: - UICollectionView DataSource
+extension GalleryImageViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        resourcesCount
     }
 
-    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        guard let viewModel = viewModel,
-              let media = viewModel.getMedia(index: index) else {
-            return 0
-        }
+    func urlIndex(_ item: Int) -> Int {
+        hasAdditionalPanoramaGenerationImage
+            ? max(0, item - 1)
+            : item
+    }
 
-        return viewModel.getMediaImageCount(media)
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(for: indexPath) as GalleryMediaFullScreenCollectionViewCell
+
+        let urlIndex = urlIndex(indexPath.item)
+        guard urlIndex < viewModel?.mediaBrowsingViewModel.mediaUrls.count ?? 0 else { return cell }
+
+        cell.delegate = self
+        cell.model = GalleryMediaFullScreenCellModel(url: viewModel?.mediaBrowsingViewModel.mediaUrls[urlIndex],
+                                                     hasGeneratePanoramaButton: hasAdditionalPanoramaGenerationImage && indexPath.item == 0,
+                                                     hasShowImmersivePanoramaButton: (media?.canShowImmersivePanorama ?? false) && indexPath.item == 0)
+
+        return cell
     }
 }
 
-// MARK: - UIPickerView Delegate
-extension GalleryImageViewController: UIPickerViewDelegate {
-    func pickerView(_ pickerView: UIPickerView, rowHeightForComponent component: Int) -> CGFloat {
-        return Constants.pickerRowSize
+// MARK: - GalleryMediaFullScreenCell Delegate
+extension GalleryImageViewController: GalleryMediaFullScreenCellDelegate {
+    func fullScreenCellDidTapGeneratePanorama() {
+        generatePanorama()
     }
 
-    func pickerView(_ pickerView: UIPickerView, widthForComponent component: Int) -> CGFloat {
-        return Constants.pickerRowSize
-    }
-
-    func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
-        if let viewModel = viewModel,
-           let media = viewModel.getMedia(index: index) {
-            let title = viewModel.getMediaImagePickerTitle(media, index: row)
-            let panoramaRelatedEntries = PanoramaMediaType.allCases.map({ $0.rawValue })
-            if panoramaRelatedEntries.contains(title) {
-                var imageView: UIImageView
-                if let view = view as? UIImageView {
-                    imageView = view
-                } else {
-                    imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.pickerRowSize, height: Constants.pickerRowSize))
-                }
-                imageView.contentMode = .center
-                imageView.tintColor = ColorName.defaultTextColor.color
-                imageView.isUserInteractionEnabled = false
-
-                switch PanoramaMediaType(rawValue: title) {
-                case .vertical:
-                    imageView.image = Asset.BottomBar.CameraSubModes.icPanoVertical.image
-                case .horizontal:
-                    imageView.image = Asset.BottomBar.CameraSubModes.icPanoHorizontal.image
-                case .superWide:
-                    imageView.image = Asset.BottomBar.CameraSubModes.icPanoWide.image
-                case .sphere:
-                    imageView.image = Asset.Gallery.Panorama.icSphere.image
-                case .tinyPlanet:
-                    imageView.image = Asset.Gallery.Panorama.icTinyPlanet.image
-                case .tunnel:
-                    imageView.image = Asset.Gallery.Panorama.icTunnel.image
-                case nil :
-                    break
-                }
-                return imageView
-
-            } else {
-                var label: UILabel
-                if let view = view as? UILabel {
-                    label = view
-                } else {
-                    label = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.pickerRowSize, height: Constants.pickerRowSize))
-                }
-                label.makeUp(with: .large, and: .defaultTextColor)
-                label.textAlignment = .center
-                label.text = title
-                label.isUserInteractionEnabled = false
-                return label
-            }
-        }
-        return UIView()
-    }
-
-    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        imageIndex = row
-        delegate?.selectionDidChangeToImageIndex(imageIndex)
-        loadImage()
-    }
-
-    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        // this will trigger attributedTitleForRow-method to be called
-        pickerView.reloadAllComponents()
+    func fullScreenCellDidTapShowImmersivePanorama() {
+        showImmersivePanorama()
     }
 }

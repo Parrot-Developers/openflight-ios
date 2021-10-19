@@ -36,7 +36,7 @@ protocol FlightPlanSettingTitleDelegate: AnyObject {
 }
 
 /// Displays Flight Plan Settings panel title.
-final class FlightPlanSettingTitleCell: UITableViewCell, NibReusable {
+final class FlightPlanSettingTitleCell: UITableViewHeaderFooterView, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet weak var backButton: UIButton!

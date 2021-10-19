@@ -67,6 +67,7 @@ open class StartedFlyingState: GKState {
     private var cancellables = Set<AnyCancellable>()
     private var state = State.activating
     private var lastMissionItemExecutedOnStart: Int?
+    private var durationOnStart: TimeInterval?
 
     required public init(delegate: StartedFlyingStateDelegate,
                          runManager: FlightPlanRunManager,
@@ -103,8 +104,9 @@ open class StartedFlyingState: GKState {
             }
         }
         .store(in: &cancellables)
-        if let lastMissionItemExecuted = self.lastMissionItemExecutedOnStart {
-            runManager.catchUp(lastMissionItemExecuted: lastMissionItemExecuted)
+        if let lastMissionItemExecuted = self.lastMissionItemExecutedOnStart,
+           let duration = self.durationOnStart {
+            runManager.catchUp(lastMissionItemExecuted: lastMissionItemExecuted, duration: duration)
         } else {
             activate()
         }
@@ -155,7 +157,8 @@ open class StartedFlyingState: GKState {
         }
     }
 
-    open func setup(flightPlan: FlightPlanModel, commands: [MavlinkStandard.MavlinkCommand], lastMissionItemExecuted: Int?) {
+    open func setup(flightPlan: FlightPlanModel, commands: [MavlinkStandard.MavlinkCommand],
+                    lastMissionItemExecuted: Int?, runningTime: TimeInterval?) {
         self.flightPlan = flightPlan
         self.commands = commands
         if let lastMissionItemExecuted = lastMissionItemExecuted {
@@ -164,6 +167,12 @@ open class StartedFlyingState: GKState {
         } else {
             lastMissionItemExecutedOnStart = nil
             state = .activating
+        }
+
+        if let duration = runningTime {
+            durationOnStart = duration
+        } else {
+            durationOnStart = 0
         }
     }
 
@@ -177,6 +186,10 @@ open class StartedFlyingState: GKState {
 
     open func resumePausedRun() {
         runManager.unpause()
+    }
+
+    open func updateRun(lastMissionItemExecuted: Int, runningTime: TimeInterval) {
+        runManager.catchUp(lastMissionItemExecuted: lastMissionItemExecuted, duration: runningTime)
     }
 
     open func flightPlanWasUpdated(_ flightPlan: FlightPlanModel) {

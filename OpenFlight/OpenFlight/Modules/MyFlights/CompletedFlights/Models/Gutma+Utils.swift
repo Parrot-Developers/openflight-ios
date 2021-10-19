@@ -30,12 +30,19 @@
 import Foundation
 import CoreLocation
 import ArcGIS
+import GroundSdk
 
 // MARK: - Internal Enums
 enum GutmaConstants {
     static let dateFormatLogging: String = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"
     static let dateFormatFile: String = "yyyy-MM-dd'T'HH:mm:ssZ"
     static let extensionName: String = "gutma"
+    static let unknownCoordinate: Double = 500
+    static let firstVesionWithAsml: String = "1.0.1"
+    static let eventInfoFlightPlan: String = "FLIGHTPLAN"
+    static let eventTypeFlightPlan: String = "CONTROLLER_FLIGHTPLAN"
+    static let eventStepMissionItem: String = "MISSION_ITEM"
+    static let eventStepStop: String = "STOP"
 }
 
 // MARK: - Gutma helpers.
@@ -49,11 +56,11 @@ extension Gutma {
 
     var flightLocation: CLLocation? {
         // Last position is used here to get the most accurate value.
-        return self.exchange?.message?.flightLogging?.finalPosition
+        return exchange?.message?.flightLogging?.finalPosition
     }
 
     var startDate: Date? {
-        if let dateString = self.exchange?.message?.flightLogging?.loggingStartDtg {
+        if let dateString = exchange?.message?.flightLogging?.loggingStartDtg {
             let formatter = DateFormatter()
             formatter.dateFormat = GutmaConstants.dateFormatFile
             return formatter.date(from: dateString)
@@ -62,27 +69,44 @@ extension Gutma {
     }
 
     var duration: TimeInterval {
-        return self.exchange?.message?.flightLogging?.duration ?? 0.0
+        return exchange?.message?.flightLogging?.duration ?? 0.0
     }
 
     var flightId: String? {
-        return self.exchange?.message?.flightData?.flightID
+        return exchange?.message?.flightData?.flightID
     }
 
     var batteryConsumption: Double? {
-        return self.exchange?.message?.flightLogging?.batteryConsumption
+        return exchange?.message?.flightLogging?.batteryConsumption
     }
 
     var distance: Double {
-        return self.exchange?.message?.flightLogging?.distance ?? 0.0
+        return exchange?.message?.flightLogging?.distance ?? 0.0
     }
 
     var file: File? {
-        return self.exchange?.message?.file
+        return exchange?.message?.file
     }
 
-    var points: [AGSPoint] {
-        return self.exchange?.message?.flightLogging?.points ?? []
+    /// Gets trajectory points.
+    ///
+    /// - Parameters:
+    ///   - startTime: minimal timestamp of trajectory points to include, if not `nil`
+    ///   - endTime: maximal timestamp of trajectory points to include, if not `nil`
+    /// - Returns: trajectory points
+    func points(startTime: Double? = nil, endTime: Double? = nil) -> [TrajectoryPoint] {
+        exchange?.message?.flightLogging?.points(startTime: startTime, endTime: endTime) ?? []
+    }
+
+    /// Whether file contains point with altitudes in ASML coordinates.
+    var hasAsmlAltitude: Bool {
+        // compare file version with first version containing ASML altitudes
+        if let parrotVersion = exchange?.message?.file?.parrotVersion,
+           let version = FirmwareVersion.parse(versionStr: parrotVersion),
+           let firstVesionWithAsml = FirmwareVersion.parse(versionStr: GutmaConstants.firstVesionWithAsml) {
+            return !(version < firstVesionWithAsml)
+        }
+        return false
     }
 
     var photoCount: Int { exchange?.message?.flightLogging?.events?.filter { $0.eventInfo == "PHOTO" }.count ?? 0 }
@@ -91,11 +115,11 @@ extension Gutma {
 
     func flightPlanExecutions(apcId: String, flightUuid: String) -> [FlightPlanFlightsModel] {
         guard let startDate = startDate else { return [] }
-        return exchange?.message?.flightLogging?.events?
+        let fpfs: [FlightPlanFlightsModel] = exchange?.message?.flightLogging?.events?
             .compactMap {
-                if $0.eventInfo == "FLIGHTPLAN",
-                   $0.eventType == "CONTROLLER_FLIGHTPLAN",
-                   $0.step == "START",
+                if $0.eventInfo == GutmaConstants.eventInfoFlightPlan,
+                   $0.eventType == GutmaConstants.eventTypeFlightPlan,
+                   $0.step == GutmaConstants.eventStepMissionItem,
                    let flightPlanUuid = $0.customId,
                    let timestampString = $0.eventTimestamp,
                    let timestamp = Double(timestampString) {
@@ -107,6 +131,48 @@ extension Gutma {
                 }
                 return nil
             } ?? []
+        // Keep only one FPF by flightPlan (the earliest)
+        let dict = Dictionary(fpfs.map { ($0.flightplanUuid, $0) },
+                              uniquingKeysWith: { $0.dateExecutionFlight < $1.dateExecutionFlight ? $0 : $1 })
+        return Array(dict.values)
+    }
+
+    /// Gets timestamp of first event indicating flight plan start.
+    ///
+    /// - Parameters:
+    ///   - flightPlanUuid: flight plan UUID
+    /// - Returns: flight plan start timestamp if found, `nil` otherwise
+    public func flightPlanStartTimestamp(flightPlanUuid: String) -> Double? {
+        let firstEvent: Event? = exchange?.message?.flightLogging?.events?
+            .first {
+                $0.eventInfo == GutmaConstants.eventInfoFlightPlan
+                && $0.eventType == GutmaConstants.eventTypeFlightPlan
+                && $0.step == GutmaConstants.eventStepMissionItem
+                && $0.customId == flightPlanUuid
+            }
+        if let timestampString = firstEvent?.eventTimestamp {
+            return Double(timestampString)
+        }
+        return nil
+    }
+
+    /// Gets timestamp of first event indicating flight plan end.
+    ///
+    /// - Parameters:
+    ///   - flightPlanUuid: flight plan UUID
+    /// - Returns: flight plan start timestamp if found, `nil` otherwise
+    public func flightPlanEndTimestamp(flightPlanUuid: String) -> Double? {
+        let firstEvent: Event? = exchange?.message?.flightLogging?.events?
+            .first {
+                $0.eventInfo == GutmaConstants.eventInfoFlightPlan
+                && $0.eventType == GutmaConstants.eventTypeFlightPlan
+                && $0.step == GutmaConstants.eventStepStop
+                && $0.customId == flightPlanUuid
+            }
+        if let timestampString = firstEvent?.eventTimestamp {
+            return Double(timestampString)
+        }
+        return nil
     }
 
     /// Returns Data object from a Gutma.
@@ -200,7 +266,7 @@ extension Data {
 extension Gutma.FlightLogging {
     /// Start flight date.
     var startDate: Date? {
-        if let dateString = self.loggingStartDtg {
+        if let dateString = loggingStartDtg {
             let formatter = DateFormatter()
             formatter.dateFormat = GutmaConstants.dateFormatLogging
             return formatter.date(from: dateString)
@@ -210,8 +276,8 @@ extension Gutma.FlightLogging {
 
     /// Flight duration.
     var duration: TimeInterval? {
-        if let first = self.item(for: .timestamp, atIndex: 0),
-            let last = self.item(for: .timestamp, atIndex: (self.flightLoggingItems?.count ?? 0) - 1) {
+        if let first = item(for: .timestamp, atIndex: 0),
+            let last = item(for: .timestamp, atIndex: (flightLoggingItems?.count ?? 0) - 1) {
             return last - first
         }
         return nil
@@ -220,22 +286,22 @@ extension Gutma.FlightLogging {
     /// Flight battery consumption.
     var batteryConsumption: Double? {
         var initialBatteryValue: Double = 1.0
-        let itemCount = self.flightLoggingItems?.count ?? 0
+        let itemCount = flightLoggingItems?.count ?? 0
         // Find real battery value (0 is not a real one for a initial value).
         for index in 0...itemCount {
-            if let value = self.item(for: .batteryPercent, atIndex: index), value > 0.0 {
+            if let value = item(for: .batteryPercent, atIndex: index), value > 0.0 {
                 initialBatteryValue = value
                 break
             }
         }
-        let finalBatteryValue = self.item(for: .batteryPercent, atIndex: itemCount - 1) ?? 0.0
+        let finalBatteryValue = item(for: .batteryPercent, atIndex: itemCount - 1) ?? 0.0
 
         return initialBatteryValue - finalBatteryValue
     }
 
     /// Returns start position
     var startPosition: CLLocation? {
-        guard let itemsCount = self.flightLoggingItems?.count,
+        guard let itemsCount = flightLoggingItems?.count,
               itemsCount > 0 else { return nil }
         for index in 0...(itemsCount - 1) {
             if let location = location(at: index), location.isValid {
@@ -247,7 +313,7 @@ extension Gutma.FlightLogging {
 
     /// Returns final position.
     var finalPosition: CLLocation? {
-        let itemCount = self.flightLoggingItems?.count ?? 0
+        let itemCount = flightLoggingItems?.count ?? 0
         if let location = location(at: itemCount - 1) {
             return CLLocation(latitude: location.latitude, longitude: location.longitude)
         } else {
@@ -255,23 +321,26 @@ extension Gutma.FlightLogging {
         }
     }
 
-    /// Returns all points as AGSPoint.
-    var points: [AGSPoint] {
-        return self.flightLoggingItems?.enumerated().compactMap({ (offset, _) -> AGSPoint? in
-            guard let location = location(at: offset) else {
+    /// Gets trajectory points.
+    ///
+    /// - Parameters:
+    ///   - startTime: minimal timestamp of trajectory points to include, if not `nil`
+    ///   - endTime: maximal timestamp of trajectory points to include, if not `nil`
+    /// - Returns: trajectory points
+    func points(startTime: Double?, endTime: Double?) -> [TrajectoryPoint] {
+        flightLoggingItems?.enumerated().compactMap({ (offset, _) -> TrajectoryPoint? in
+            if let agsPoint = agsPoint(at: offset, startTime: startTime, endTime: endTime) {
+                return TrajectoryPoint(point: agsPoint, isFirstPoint: offset == 0)
+            } else {
                 return nil
             }
-
-            return AGSPoint(x: location.longitude,
-                            y: location.latitude,
-                            spatialReference: AGSSpatialReference.wgs84())
         }) ?? []
     }
 
     /// Add distance between all points.
     var distance: Double {
         var computedDistance: Double = 0.0
-        guard let nbItems = self.flightLoggingItems?.count
+        guard let nbItems = flightLoggingItems?.count
             else { return computedDistance }
 
         var previousLocation: CLLocation?
@@ -296,10 +365,33 @@ private extension Gutma.FlightLogging {
     ///     - index: FlightLogging index
     /// - Returns: location as CLLocationCoordinate2D?
     func location(at index: Int) -> CLLocationCoordinate2D? {
-        let longitude = self.item(for: .longitude, atIndex: index) ?? 0.0
-        let latitude = self.item(for: .latitude, atIndex: index) ?? 0.0
+        let longitude = item(for: .longitude, atIndex: index) ?? 0.0
+        let latitude = item(for: .latitude, atIndex: index) ?? 0.0
         let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         return coordinate.isValid ? coordinate : nil
+    }
+
+    /// Gets coordinates of a trajectory points.
+    ///
+    /// - Parameters:
+    ///   - startTime: minimal timestamp of trajectory point, if not `nil`
+    ///   - endTime: maximal timestamp of trajectory point, if not `nil`
+    /// - Returns: trajectory point coordinates if found and within given timestamp bounds, `nil` otherwise
+    func agsPoint(at index: Int, startTime: Double?, endTime: Double?) -> AGSPoint? {
+        guard let latitude = item(for: .latitude, atIndex: index),
+              let longitude = item(for: .longitude, atIndex: index),
+              latitude != GutmaConstants.unknownCoordinate,
+              longitude != GutmaConstants.unknownCoordinate,
+              let timestamp = item(for: .timestamp, atIndex: index),
+              startTime.map({ timestamp >= $0 }) ?? true,
+              endTime.map({ timestamp <= $0 }) ?? true else {
+            return nil
+        }
+        let altitude = item(for: .altitudeAmsl, atIndex: index) ?? item(for: .altitude, atIndex: index) ?? 0.0
+        return AGSPoint(x: longitude,
+                        y: latitude,
+                        z: altitude,
+                        spatialReference: AGSSpatialReference.wgs84())
     }
 
     /// Logging keys.
@@ -308,6 +400,7 @@ private extension Gutma.FlightLogging {
         case longitude = "gps_lon"
         case latitude = "gps_lat"
         case altitude = "gps_altitude"
+        case altitudeAmsl = "gps_amsl_altitude"
         case speedVx = "speed_vx"
         case speedVy = "speed_vy"
         case speedVz = "speed_vz"
@@ -332,10 +425,10 @@ private extension Gutma.FlightLogging {
     ///     - key: flightLoggingKeys
     ///     - atIndex: flightLoggingItems index
     func item(for key: LoggingKeys, atIndex: Int) -> Double? {
-        if let items = self.flightLoggingItems,
+        if let items = flightLoggingItems,
             atIndex >= 0,
             items.count > atIndex,
-            let valueIndex = self.index(for: key.rawValue) {
+            let valueIndex = index(for: key.rawValue) {
             let item = items[atIndex]
             return item[valueIndex]
         }
@@ -344,6 +437,6 @@ private extension Gutma.FlightLogging {
 
     /// Returns flightLoggingKeys index.
     func index(for key: String) -> Int? {
-        return self.flightLoggingKeys?.firstIndex(of: key)
+        return flightLoggingKeys?.firstIndex(of: key)
     }
 }

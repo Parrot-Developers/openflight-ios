@@ -47,10 +47,14 @@ open class FlightTableViewCellModel {
     init(service: FlightService, flight: FlightModel) {
         self.service = service
         self.flight = flight
-        name = flight.title
-        if name == nil {
+        if let title = flight.title, !title.isEmpty {
+            name = title
+        } else {
             CLGeocoder().reverseGeocodeLocation(location) { [weak self] (placemarks: [CLPlacemark]?, error: Error?) in
-                guard let place = placemarks?.first, error == nil, self?.name == nil else { return }
+                guard let place = placemarks?.first, error == nil, self?.name == nil else {
+                    self?.name = L10n.dashboardMyFlightUnknownLocation
+                    return
+                }
                 self?.name = place.addressDescription
             }
         }

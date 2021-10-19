@@ -120,6 +120,7 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
            let flightStoreProvider = getFligthPlanType(with: lastFlightPlan?.type) {
             // Set image for custom Flight Plan types
             typeImage.image = flightStoreProvider.icon
+            typeImage.isHidden = false
         } else {
             typeImage.image = nil
             typeImage.isHidden = true

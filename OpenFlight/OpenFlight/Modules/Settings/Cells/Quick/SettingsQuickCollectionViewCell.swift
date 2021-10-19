@@ -35,15 +35,11 @@ import GroundSdk
 
 // MARK: - Protocols
 protocol SettingsQuickCollectionViewCellDelegate: AnyObject {
-    /// Called when user will swipe on a cell.
-    func settingsQuickCellWillSwipe()
-
-    /// Called when user did swipe on a cell.
+    /// Called when user did tap on a cell.
     ///
     /// - Parameters:
-    ///     - direction: cell gesture recognizer
     ///     - indexPath: index path of the cell
-    func settingsQuickCelldidSwipe(_ direction: UISwipeGestureRecognizer.Direction, at indexPath: IndexPath)
+    func settingsQuickCelldidTap(indexPath: IndexPath)
 }
 
 /// Settings Quick Collection View Cell.
@@ -75,15 +71,12 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let animationDuration: TimeInterval = 0.2
-        static let imageMoveRatio: CGFloat = 1.3
-        static let defaultImagePosition = CGPoint(x: 55.0, y: 44.0)
+         static let animationDuration: TimeInterval = 0.2
     }
 
     // MARK: - Override Funcs
     override func prepareForReuse() {
         super.prepareForReuse()
-
         self.resetCellContent()
     }
 
@@ -98,13 +91,6 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
                                 radius: Style.largeCornerRadius,
                                 borderWidth: Style.noBorderWidth)
 
-        // Setup swipe gesture recognizer.
-        let leftSwipeRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(didSwipe))
-        leftSwipeRecognizer.direction = .left
-        self.addGestureRecognizer(leftSwipeRecognizer)
-        let rightSwipeRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(didSwipe))
-        rightSwipeRecognizer.direction = .right
-        self.addGestureRecognizer(rightSwipeRecognizer)
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTap))
         self.addGestureRecognizer(tapRecognizer)
     }
@@ -116,9 +102,7 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
     ///    - settingEntry: cell setting entry.
     ///    - indexPath: index path
     ///    - delegate: Settings Segmented Cell Delegate
-    func configureCell(settingEntry: SettingEntry,
-                       atIndexPath indexPath: IndexPath,
-                       delegate: SettingsQuickCollectionViewCellDelegate) {
+    func configureCell(settingEntry: SettingEntry, atIndexPath indexPath: IndexPath, delegate: SettingsQuickCollectionViewCellDelegate) {
         guard let segmentModel = settingEntry.segmentModel else { return }
 
         self.settingEntry = settingEntry
@@ -132,7 +116,7 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
         self.settingImage.image = segmentModel.segments.elementAt(index: selectedIndex)?.image
 
         if segmentModel.isBoolean {
-            let textColor = (selectedIndex == 0) ? ColorName.disabledTextColor : ColorName.defaultTextColor
+            let textColor = (selectedIndex == 0) ? ColorName.defaultTextColor : ColorName.defaultTextColor
             self.settingTitle.text = settingEntry.title
             self.contentView.backgroundColor = (selectedIndex == 0) ? ColorName.whiteAlbescent.color : ColorName.white.color
             self.settingImage.tintColor = textColor.color
@@ -156,6 +140,7 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
     }
 }
 
+// MARK: - DELEGATE
 // MARK: - Private Funcs
 private extension SettingsQuickCollectionViewCell {
     /// Reset cell content.
@@ -163,11 +148,6 @@ private extension SettingsQuickCollectionViewCell {
         self.settingTitle.text = ""
         self.settingImage.image = nil
         self.isEnabled = false
-        self.pageControl.isHidden = true
-        self.contentView.backgroundColor = ColorName.whiteAlbescent.color
-        self.settingImage.tintColor = ColorName.disabledTextColor.color
-        self.settingImage.center = Constants.defaultImagePosition
-        self.animationImage.center = CGPoint(x: -self.frame.width, y: self.settingImage.center.y)
     }
 
     /// Called when cell is tapped.
@@ -182,52 +162,11 @@ private extension SettingsQuickCollectionViewCell {
         }
 
         guard isEnabled else { return }
-
-        changeItem(with: .left, animated: isSwipeAllowed)
+        changeItem()
     }
 
-    /// Called when cell is swiped.
-    @objc func didSwipe(sender: UISwipeGestureRecognizer) {
-        if let model = settingEntry?.segmentModel {
-            guard let entry = settingEntry else { return }
-
-            let index = sender.direction == .left
-                ? model.nextIndex
-                : model.previousIndex
-            LogEvent.logAppEvent(itemName: settingEntry?.itemLogKey,
-                                 newValue: LogEvent.formatNewValue(settingEntry: entry,
-                                                                   index: index),
-                                 logType: LogEvent.LogType.button)
-        }
-
-        guard isSwipeAllowed && isEnabled else { return }
-
-        changeItem(with: sender.direction)
-    }
-
-    /// Change cell content as pager style.
-    ///
-    /// - Parameters:
-    ///     - direction: left mean next item, right previous
-    ///     - animated: animation of the cell
-    func changeItem(with direction: UISwipeGestureRecognizer.Direction, animated: Bool = true) {
-        self.delegate?.settingsQuickCellWillSwipe()
-        // FIXME: investigate if two cells are tapped very fast.
-        let completion: ((Bool) -> Void)? = { [weak self] _ in
-            guard let indexPath = self?.indexPath else { return }
-            self?.delegate?.settingsQuickCelldidSwipe(direction, at: indexPath)
-        }
-
-        if animated {
-            let xMove = Constants.imageMoveRatio * (direction == .left ? -self.frame.width : self.frame.width)
-            self.animationImage.center = CGPoint(x: -xMove, y: self.settingImage.center.y)
-            self.animationImage.image = direction == .left ? nextImage : previousImage
-            UIView.animate(withDuration: Constants.animationDuration, animations: {
-                self.settingImage.center = CGPoint(x: xMove, y: self.settingImage.center.y)
-                self.animationImage.center = Constants.defaultImagePosition
-            }, completion: completion)
-        } else {
-            completion?(true)
-        }
+    func changeItem() {
+        guard let indexPath = self.indexPath else { return }
+        self.delegate?.settingsQuickCelldidTap(indexPath: indexPath)
     }
 }

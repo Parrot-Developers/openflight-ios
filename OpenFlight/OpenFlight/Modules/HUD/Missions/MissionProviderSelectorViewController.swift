@@ -84,6 +84,7 @@ extension MissionProviderSelectorViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         LogEvent.logAppEvent(itemName: items[indexPath.row].title.description,
                              logType: .simpleButton)
+
         viewModel.userDidTap(on: indexPath.row)
     }
 }

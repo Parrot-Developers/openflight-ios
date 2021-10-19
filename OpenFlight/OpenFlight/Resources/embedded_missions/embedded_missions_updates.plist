@@ -4,31 +4,39 @@
 <array>
 	<dict>
 		<key>embeddedPath</key>
-		<string>embedded_missions/com.parrot.missions.samples.hello_7.0.0-rc18.tar.gz</string>
+		<string>embedded_missions/com.parrot.missions.samples.hello_7.0.0-rc24.tar.gz</string>
+		<key>maxTargetVersion</key>
+		<string>7.0.20</string>
 		<key>md5</key>
-		<string>6175cc0a184eb2f2c64e676fbab8d7a5</string>
+		<string>03773c02aea0656e3afd5ca398e1df92</string>
+		<key>minTargetVersion</key>
+		<string>7.0.0-rc23</string>
 		<key>name</key>
 		<string>Hello mission</string>
 		<key>size</key>
-		<integer>41534</integer>
+		<integer>44149</integer>
 		<key>uid</key>
 		<string>com.parrot.missions.samples.hello</string>
 		<key>version</key>
-		<string>7.0.0-rc18</string>
+		<string>7.0.0-rc24</string>
 	</dict>
 	<dict>
 		<key>embeddedPath</key>
-		<string>embedded_missions/com.parrot.missions.ophtalmo_7.0.0-rc18.tar.gz</string>
+		<string>embedded_missions/com.parrot.missions.ophtalmo_7.0.0-rc24.tar.gz</string>
+		<key>maxTargetVersion</key>
+		<string>7.0.20</string>
 		<key>md5</key>
-		<string>49045317c4b1580b0ab01cf06e13bb66</string>
+		<string>2e0b5a6e0c962090065fa220bdf9d023</string>
+		<key>minTargetVersion</key>
+		<string>7.0.0-rc23</string>
 		<key>name</key>
 		<string>ophtalmo</string>
 		<key>size</key>
-		<integer>2268306</integer>
+		<integer>2279212</integer>
 		<key>uid</key>
 		<string>com.parrot.missions.ophtalmo</string>
 		<key>version</key>
-		<string>7.0.0-rc18</string>
+		<string>7.0.0-rc24</string>
 	</dict>
 </array>
 </plist>

@@ -37,7 +37,7 @@ extension Camera2WhiteBalanceMode: BarItemMode, Sortable {
         switch self {
         case .incandescent:
             return L10n.cameraWhiteBalanceIncandescent
-        case .fluorescent:
+        case .coolWhiteFluorescent:
             return L10n.cameraWhiteBalanceFluo
         case .sunny:
             return L10n.cameraWhiteBalanceSunny
@@ -60,7 +60,7 @@ extension Camera2WhiteBalanceMode: BarItemMode, Sortable {
             return Asset.BottomBar.Icons.iconAuto.image
         case .incandescent:
             return Asset.BottomBar.CameraWhiteBalance.iconWbTungstene.image
-        case .fluorescent:
+        case .coolWhiteFluorescent:
             return Asset.BottomBar.CameraWhiteBalance.iconWbCoolFluo.image
         case .sunny:
             return Asset.BottomBar.CameraWhiteBalance.iconWbSunny.image
@@ -83,7 +83,7 @@ extension Camera2WhiteBalanceMode: BarItemMode, Sortable {
         // This doesn't include available automatic mode which is
         // not displayed inside segmented bar view.
         return [Camera2WhiteBalanceMode.incandescent,
-                Camera2WhiteBalanceMode.fluorescent,
+                Camera2WhiteBalanceMode.coolWhiteFluorescent,
                 Camera2WhiteBalanceMode.sunny,
                 Camera2WhiteBalanceMode.cloudy,
                 Camera2WhiteBalanceMode.shaded,
@@ -98,9 +98,9 @@ extension Camera2WhiteBalanceMode: BarItemMode, Sortable {
 
     /// Returns mode for an index, based on all modes available.
     public static func modeForIndex(_ index: Int) -> Camera2WhiteBalanceMode {
-        guard index < self.availableModes.count else { return defaultMode }
+        guard index < availableModes.count else { return defaultMode }
 
-        return self.availableModes[index]
+        return availableModes[index]
     }
 
     /// Default value.

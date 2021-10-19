@@ -353,6 +353,10 @@ extension WayPoint {
         }
     }
 
+    func clearTiltRelation() {
+        self.tilt = 0
+    }
+
     /// Assigns point of interest to waypoint.
     ///
     /// - Parameters:
@@ -374,5 +378,6 @@ extension WayPoint {
         self.shouldFollowPOI = false
         self.poiPoint = nil
         self.updateYaw()
+        self.clearTiltRelation()
     }
 }

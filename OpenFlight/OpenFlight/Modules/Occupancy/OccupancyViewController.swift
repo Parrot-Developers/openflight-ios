@@ -116,10 +116,4 @@ private extension OccupancyViewController {
     func enableMonitoring(_ enabled: Bool) {
         self.occupancyViewModel?.enableMonitoring(enabled)
     }
-
-    /// Removes all traces from occupancy functionnality.
-    func clearOccupancy() {
-        self.occupancyViewModel?.enableMonitoring(false)
-        self.occupancyViewModel = nil
-    }
 }

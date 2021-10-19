@@ -85,7 +85,7 @@ class EndedStateTests: XCTestCase {
                 newState = state
                 expectation.fulfill()
             case .machineStarted: break
-            case .editable( _): break
+            case .editable: break
             default:
                 XCTAssertFalse(true)
             }

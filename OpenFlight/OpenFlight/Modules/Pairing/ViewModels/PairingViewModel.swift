@@ -62,7 +62,6 @@ extension PairingViewModel {
         // Default values for state.
         var pairingRemoteState: PairingState = PairingState.todo
         var pairingDroneWithRemoteState: PairingState = PairingState.todo
-        var pairingFlyState: PairingState = PairingState.todo
         var pairingWifiState: PairingState = PairingState.todo
         var pairingDroneWihtoutRemoteState: PairingState = PairingState.todo
 
@@ -70,35 +69,28 @@ extension PairingViewModel {
             pairingRemoteState = .doing
             if !isRemoteControlConnected && !isDroneConnected {
                 pairingDroneWithRemoteState = .todo
-                pairingFlyState = .todo
             } else if isRemoteControlConnected && !isDroneConnected {
                 pairingRemoteState = .done
                 pairingDroneWithRemoteState = .doing
             } else if isRemoteControlConnected && isDroneConnected {
                 pairingRemoteState = .done
                 pairingDroneWithRemoteState = .done
-                pairingFlyState = .doing
             }
             return [RemotePairingModel(state: pairingRemoteState),
-                    DroneWithRemotePairingModel(state: pairingDroneWithRemoteState),
-                    FlyPairingModel(state: pairingFlyState)]
+                    DroneWithRemotePairingModel(state: pairingDroneWithRemoteState)]
         } else {
             if isDroneConnected {
                 pairingDroneWihtoutRemoteState = .done
                 pairingWifiState = .done
-                pairingFlyState = .doing
             } else if !isDroneSwitchedOn {
                 pairingDroneWihtoutRemoteState = .doing
                 pairingWifiState = .todo
-                pairingFlyState = .todo
             } else {
                 pairingDroneWihtoutRemoteState = .done
                 pairingWifiState = .doing
-                pairingFlyState = .todo
             }
             return [DroneWithoutRemotePairingModel(state: pairingDroneWihtoutRemoteState),
-                    WifiPairingModel(state: pairingWifiState),
-                    FlyPairingModel(state: pairingFlyState)]
+                    WifiPairingModel(state: pairingWifiState)]
         }
     }
 }

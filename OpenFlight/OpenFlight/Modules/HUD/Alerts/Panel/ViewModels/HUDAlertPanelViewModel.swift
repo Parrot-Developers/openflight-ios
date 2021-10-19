@@ -48,8 +48,7 @@ open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
 
     /// Whether alert should be shown.
     open var canShowAlert: Bool {
-        return !isMissionMenuDisplayed
-            && shouldShowAlertPanel
+        return shouldShowAlertPanel
             && !isOverContextModalPresented
     }
 

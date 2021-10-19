@@ -40,11 +40,6 @@ final class DashboardViewController: UIViewController {
     private var viewModel: DashboardViewModel!
     private var cancellables = [AnyCancellable]()
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let supportUrl: String = "https://support.parrot.com/"
-    }
-
     // MARK: - Init
     static func instantiate(coordinator: DashboardCoordinator, viewModel: DashboardViewModel) -> DashboardViewController {
         let viewController = StoryboardScene.Dashboard.initialScene.instantiate()
@@ -127,6 +122,10 @@ extension DashboardViewController: UICollectionViewDelegate {
             self.coordinator?.startMedias()
         case .content(.photogrammetryDebug):
             self.coordinator?.startPhotogrammetryDebug()
+        case .content(.settings):
+            self.coordinator?.startSettings()
+        case .content(.projectManager):
+            self.coordinator?.startProjectManager()
         default:
             break
         }
@@ -173,8 +172,6 @@ extension DashboardViewController: UICollectionViewDataSource {
         switch contentType {
         case .content(.dashboardMyAccount):
             return createDashboardAccountCell(self.viewModel.dashboardMyAccountViewModel, indexPath)
-        case .content(.userDevice):
-            return createUserDeviceCell(self.viewModel.userDeviceViewModel, indexPath)
         case .content(.remoteInfos):
             return createRemoteCell(self.viewModel.remoteInfosViewModel, indexPath)
         case .content(.droneInfos):
@@ -185,6 +182,10 @@ extension DashboardViewController: UICollectionViewDataSource {
             return createMyFlightsCell(indexPath)
         case .content(.photogrammetryDebug):
             return createPhotogrammetryDebugCell(indexPath: indexPath)
+        case .content(.settings):
+            return createSettingsCell(indexPath: indexPath)
+        case .content(.projectManager):
+            return createProjectManagerCell(viewModel.dashboardProjectManagerCellModel, indexPath)
         default:
             assertionFailure("\(String(describing: contentType)) not yet implemented")
         }
@@ -323,14 +324,33 @@ private extension DashboardViewController {
     /// - Returns: DashboardInfosCell
     func createMyFlightsCell(_ indexPath: IndexPath) -> DashboardMyFlightsCell {
         let myFlightCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardMyFlightsCell
-        myFlightCell.setup(viewModel: DashboardMyFlightsCellModel(service: Services.hub.flight.service))
+        let viewModel = DashboardMyFlightsCellModel(service: Services.hub.flight.service)
+        myFlightCell.setup(viewModel: viewModel)
         return myFlightCell
+    }
+
+    /// Instantiates the Project Manager Cell.
+    ///
+    /// - Parameters:
+    ///    - viewModel: ViewModel for the cell
+    ///    - indexPath: The indexPath of the cell
+    /// - Returns: DashboardProjectManagerCell
+    func createProjectManagerCell(_ viewModel: DashboardProjectManagerCellModel, _ indexPath: IndexPath) -> DashboardProjectManagerCell {
+        let projectManagerCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardProjectManagerCell
+        projectManagerCell.setup(viewModel: viewModel)
+        return projectManagerCell
     }
 
     func createPhotogrammetryDebugCell(indexPath: IndexPath) -> DashboardPhotogrammetryDebugCell {
         let cell = collectionView.dequeueReusableCell(for: indexPath) as
             DashboardPhotogrammetryDebugCell
         cell.delegate = self
+        return cell
+    }
+
+    func createSettingsCell(indexPath: IndexPath) -> DashboardSettingsCell {
+        let cell = collectionView.dequeueReusableCell(for: indexPath) as DashboardSettingsCell
+        cell.setup()
         return cell
     }
 
@@ -366,6 +386,8 @@ private extension DashboardViewController {
         collectionView.register(cellType: DashboardFooterCell.self)
         collectionView.register(cellType: DashboardMediasCell.self)
         collectionView.register(cellType: DashboardPhotogrammetryDebugCell.self)
+        collectionView.register(cellType: DashboardSettingsCell.self)
+        collectionView.register(cellType: DashboardProjectManagerCell.self)
     }
 
     /// bind View Model.

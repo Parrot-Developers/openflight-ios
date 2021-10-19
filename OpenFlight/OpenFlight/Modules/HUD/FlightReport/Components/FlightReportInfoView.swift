@@ -33,7 +33,7 @@ import Reusable
 
 // MARK: - Internal Structs
 struct FlightReportInfoModel {
-    var image: UIImage
+    var image: UIImage?
     var title: String
     var value: String
 }
@@ -43,16 +43,8 @@ struct FlightReportInfoModel {
 final class FlightReportInfoView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var imageView: UIImageView!
-    @IBOutlet private weak var titleLabel: UILabel! {
-        didSet {
-            titleLabel.makeUp()
-        }
-    }
-    @IBOutlet private weak var valueLabel: UILabel! {
-        didSet {
-            valueLabel.makeUp(and: .white50)
-        }
-    }
+    @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet private weak var valueLabel: UILabel!
 
     // MARK: - Internal Properties
     var model: FlightReportInfoModel? {
@@ -80,6 +72,7 @@ private extension FlightReportInfoView {
     /// - Parameters:
     ///    - model: flight report info model
     func fill(with model: FlightReportInfoModel?) {
+        imageView.isHidden = model?.image == nil
         imageView.image = model?.image
         titleLabel.text = model?.title
         valueLabel.text = model?.value

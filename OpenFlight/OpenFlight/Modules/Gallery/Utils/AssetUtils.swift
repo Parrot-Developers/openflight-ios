@@ -267,15 +267,6 @@ private extension AssetUtils {
         Defaults.mediasDatesGallery = mediasDates
     }
 
-    /// Removes media date for an url.
-    ///
-    /// - Parameters:
-    ///     - url: url
-    func removeMediaDate(forURL url: URL) {
-        mediasDates.removeValue(forKey: url.lastPathComponent)
-        saveMediasDates()
-    }
-
     /// Returns a date for an url.
     ///
     /// - Parameters:

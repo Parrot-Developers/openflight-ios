@@ -32,7 +32,6 @@ import GroundSdk
 
 // MARK: - Internal Enums
 /// Enum used to display camera GPS Lapse sub-modes in bottom bar.
-
 public enum GpsLapseMode: Int, BarItemSubMode {
     case fiveMeters = 5
     case tenMeters = 10

@@ -51,8 +51,7 @@ final class CellularPairingProcessViewModel {
 
         if droneCellular?.isSimCardInserted == false
             || droneCellular?.isActivated == false
-            || (droneCellular?.simStatus == .locked && droneCellular?.pinRemainingTries == 0)
-            || droneCellular?.isAvailable == false {
+            || (droneCellular?.simStatus == .locked && droneCellular?.pinRemainingTries == 0) {
             isPinCodeRequested = false
         } else {
             isPinCodeRequested = droneCellular?.isPinCodeRequested == true
@@ -84,5 +83,10 @@ final class CellularPairingProcessViewModel {
     /// Retry pairing process if there is an error.
     func retryPairingProcess() {
         pairingService.retryPairingProcess()
+    }
+
+    /// Start pairing process.
+    func startPairingProcess() {
+        pairingService.startPairingProcessRequest()
     }
 }

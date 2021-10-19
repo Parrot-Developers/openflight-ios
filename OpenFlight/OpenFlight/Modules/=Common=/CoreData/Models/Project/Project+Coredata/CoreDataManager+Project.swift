@@ -77,11 +77,21 @@ public protocol ProjectRepository: AnyObject {
     /// - return : Array of ProjectModel
     func loadAllProjects() -> [ProjectModel]
 
-    /// Remove Project from CoreData by UUID
+    /// Perform remove Project with Flag
+    /// - Parameters:
+    ///     - project: ProjectModel to remove
+    func performRemoveProject(_ project: ProjectModel)
+
+    /// Remove Project Immediately from CoreData by UUID
     /// - Parameters:
     ///     - projectUuid: projectUuid to remove
     ///
     func removeProject(_ projectUuid: String?)
+
+    /// Remove Project Immediately from CoreData by UUID even is synchronized
+    /// - Parameters:
+    ///     - projectUuid: projectUuid to remove
+    func removeSyncProject(_ projectUuid: String?)
 
     /// Fetch flight plans of a project, ordered from newest to oldest
     /// - Parameter project: the project
@@ -100,10 +110,10 @@ public protocol ProjectRepository: AnyObject {
     func migrateProjectsToAnonymous(_ completion: @escaping () -> Void)
 }
 
-extension CoreDataServiceIml: ProjectRepository {
+extension CoreDataServiceImpl: ProjectRepository {
 
     public func flightPlans(of project: ProjectModel) -> [FlightPlanModel] {
-        self.project("uuid", project.uuid)
+        loadProjects("uuid", project.uuid)
             .first?
             .flightPlans?
             .compactMap { $0.model() }
@@ -112,7 +122,11 @@ extension CoreDataServiceIml: ProjectRepository {
 
     public func executedFlightPlan(of project: ProjectModel) -> [FlightPlanModel] {
         flightPlans(of: project)
-            .filter({ $0.lastMissionItemExecuted > 0 })
+            .filter({ $0.hasReachedFirstWayPoint })
+            .sorted {
+                ($0.lastFlightExecutionDate ?? Date.distantPast, $0.lastUpdate, $0.uuid) >
+                    ($1.lastFlightExecutionDate ?? Date.distantPast, $1.lastUpdate, $1.uuid)
+            }
     }
 
     public var projectsPublisher: AnyPublisher<[ProjectModel], Never> {
@@ -127,7 +141,7 @@ extension CoreDataServiceIml: ProjectRepository {
         let projectObject: NSManagedObject?
 
         // Check object if exists.
-        if let object = self.project("uuid", project.uuid).first {
+        if let object = self.loadProjects("uuid", project.uuid, false).first {
             // Use persisted object.
             projectObject = object
         } else {
@@ -156,6 +170,9 @@ extension CoreDataServiceIml: ProjectRepository {
         managedContext.perform {
             do {
                 try managedContext.save()
+                if byUserUpdate {
+                    self.objectToUpload.send(project)
+                }
             } catch let error {
                 ULog.e(.dataModelTag, "Error during persist Project with UUID \(project.uuid) into Coredata: \(error.localizedDescription)")
             }
@@ -170,12 +187,17 @@ extension CoreDataServiceIml: ProjectRepository {
 
     public func loadAllProjects() -> [ProjectModel] {
         // Return projects of current User
-        return self.project("apcId", userInformation.apcId).sorted { $0.lastUpdated > $1.lastUpdated }.compactMap({$0.model()})
+        return loadProjects("apcId", userInformation.apcId)
+            .sorted { $0.lastUpdated > $1.lastUpdated }
+            .compactMap({$0.model()})
     }
 
     public func executedProjects() -> [ProjectModel] {
-        self.project("apcId", Services.hub.userInformation.apcId)
-            .filter { $0.flightPlans?.contains(where: { $0.lastMissionItemExecuted > 0 }) ?? false }
+        loadProjects("apcId", userInformation.apcId)
+            .filter {
+                $0.flightPlans?.contains(where: {
+                    $0.lastMissionItemExecuted > 0 && $0.model().hasReachedFirstWayPoint
+                }) ?? false }
             .sorted { project1, project2 in
                 let date1 = project1.flightPlans?
                     .compactMap { $0.flightPlanFlights?.compactMap { $0.ofFlight?.startTime }.max() }
@@ -191,48 +213,75 @@ extension CoreDataServiceIml: ProjectRepository {
     }
 
     public func loadProject(_ projectUuid: String?) -> ProjectModel? {
-        return self.project("uuid", projectUuid).first?.model()
+        return loadProjects("uuid", projectUuid)
+            .first?.model()
     }
 
     public func loadProjectsToRemove() -> [ProjectModel] {
-        return self.loadAllProjects().filter({ $0.parrotCloudToBeDeleted })
+        return loadProjects("apcId", userInformation.apcId, false)
+            .filter({ $0.parrotCloudToBeDeleted })
+            .map { $0.model() }
     }
 
     public func loadProject(_ parrotCloudId: Int64?) -> ProjectModel? {
         guard let parrotCloudId = parrotCloudId else {
             return nil
         }
-        return self.project("parrotCloudId", "\(parrotCloudId)").first?.model()
+        return loadProjects("parrotCloudId", "\(parrotCloudId)")
+            .first?
+            .model()
     }
 
-    public func removeProject(_ projectUuid: String?) {
+    public func performRemoveProject(_ project: ProjectModel) {
         guard let managedContext = currentContext,
-              let projectUuid = projectUuid,
-              let project = self.project("uuid", projectUuid).first else {
+              let projectObject = loadProjects("uuid", project.uuid, false).first else {
             return
         }
 
-        // Remove related FlightPlans and thumbnails if they are not deleted automatically through relationship
-        if let relatedFlightPlans = project.flightPlans,
-           !relatedFlightPlans.isEmpty {
-            relatedFlightPlans.indices.forEach {
-                self.removeThumbnail(relatedFlightPlans[$0].thumbnailUuid ?? "")
-                relatedFlightPlans[$0].thumbnail = nil
-                relatedFlightPlans[$0].thumbnailUuid = nil
-                self.removeFlightPlan(relatedFlightPlans[$0].uuid)
-            }
-            project.flightPlans = nil
+        // Check and remove related FlightPlan
+        projectObject.flightPlans?.forEach({ performRemoveFlightPlan($0.model()) })
+        projectObject.flightPlans = nil
+
+        // Check and remove Project
+        if projectObject.parrotCloudId == 0 {
+            managedContext.delete(projectObject)
+        } else {
+            projectObject.parrotCloudToBeDeleted = true
+            objectToRemove.send(project)
         }
 
-        managedContext.delete(project)
-
+        // Save Deletetion flag
         managedContext.perform {
             do {
                 try managedContext.save()
             } catch let error {
-                ULog.e(.dataModelTag, "Error removing Project with UUID : \(projectUuid) from CoreData : \(error.localizedDescription)")
+                ULog.e(.dataModelTag, "Error perform deletion flag of Project with UUID : \(project.uuid) from CoreData : \(error.localizedDescription)")
             }
         }
+    }
+
+    public func removeProject(_ projectUuid: String?) {
+        guard let projectUuid = projectUuid,
+              let project = loadProjects("uuid", projectUuid, false).first else {
+            return
+        }
+
+        // Remove related FlightPlans
+        project.flightPlans?.forEach({ performRemoveFlightPlan($0.model()) })
+        project.flightPlans = nil
+        remove(project)
+    }
+
+    public func removeSyncProject(_ projectUuid: String?) {
+        guard let projectUuid = projectUuid,
+              let project = loadProjects("uuid", projectUuid, false).first else {
+            return
+        }
+
+        // Remove related FlightPlans
+        project.flightPlans?.forEach({ removeSyncFlightPlan($0.uuid) })
+        project.flightPlans = nil
+        remove(project)
     }
 
     /// Listen CoreData's FlightPlanModel add and remove to refresh view.
@@ -275,29 +324,61 @@ extension CoreDataServiceIml: ProjectRepository {
 }
 
 // MARK: - Utils
-extension CoreDataServiceIml {
+extension CoreDataServiceImpl {
 
-    func project(_ key: String?, _ value: String?) -> [Project] {
-        guard let managedContext = currentContext,
-              let key = key,
-              let value = value else {
+    /// Return List of projects type of NSManagedObject by Key and Value if needed
+    /// - Parameters:
+    ///     - key: key to search
+    ///     - value: value of the key to search
+    ///     - onlyNotDeleted: flag to filter on flagged deleted object
+    func loadProjects(_ key: String? = nil,
+                      _ value: String? = nil,
+                      _ onlyNotDeleted: Bool = true) -> [Project] {
+        guard let managedContext = currentContext else {
             return []
         }
 
-        /// Fetch Projects by Key Value
+        var predicates: [NSPredicate] = []
         let fetchRequest: NSFetchRequest<Project> = Project.fetchRequest()
-        let predicate = NSPredicate(format: "%K == %@", key, value)
-        fetchRequest.predicate = predicate
+
+        /// Fetch Projects by Key Value
+        if let key = key,
+           let value = value {
+            let predicate = NSPredicate(format: "%K == %@", key, value)
+            predicates.append(predicate)
+        }
+
+        if onlyNotDeleted {
+            let predicate = NSPredicate(format: "parrotCloudToBeDeleted == %@", NSNumber(value: false))
+            predicates.append(predicate)
+        }
+
+        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
+        fetchRequest.predicate = compoundPredicates
 
         var projects = [Project]()
 
         do {
             projects = try (managedContext.fetch(fetchRequest))
         } catch let error {
-            ULog.e(.dataModelTag, "No Project found with \(key): \(value) in CoreData : \(error.localizedDescription)")
+            ULog.e(.dataModelTag, "No Project found with \(key ?? ""): \(value ?? "") in CoreData : \(error.localizedDescription)")
             return []
         }
 
         return projects
+    }
+
+    func remove(_ project: Project) {
+        guard let managedContext = currentContext else {
+            return
+        }
+        managedContext.delete(project)
+        managedContext.perform {
+            do {
+                try managedContext.save()
+            } catch let error {
+                ULog.e(.dataModelTag, "Error removing Project with UUID : \(project.uuid ?? "") from CoreData : \(error.localizedDescription)")
+            }
+        }
     }
 }

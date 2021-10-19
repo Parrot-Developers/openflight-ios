@@ -48,7 +48,7 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ggq-2k-hfe">
-                                        <rect key="frame" x="330.66666666666669" y="19" width="46.666666666666686" height="22.333333333333329"/>
+                                        <rect key="frame" x="333" y="20.666666666666657" width="42" height="19"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
@@ -166,7 +166,7 @@
                                 <rect key="frame" x="5" y="0.0" width="802" height="60"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Magnetometer calibration" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z45-oC-V7s">
-                                        <rect key="frame" x="292" y="19" width="218" height="22.333333333333329"/>
+                                        <rect key="frame" x="299.66666666666669" y="20.666666666666668" width="202.66666666666669" height="19.000000000000004"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
@@ -386,13 +386,13 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5t2-5b-9dC">
-                                        <rect key="frame" x="330.66666666666669" y="22" width="46.666666666666686" height="22.333333333333329"/>
+                                        <rect key="frame" x="333" y="23.666666666666671" width="42" height="19"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGimbal" translatesAutoresizingMaskIntoConstraints="NO" id="vth-vk-G1J">
-                                        <rect key="frame" x="307" y="65" width="94" height="94"/>
+                                        <rect key="frame" x="307" y="63.333333333333343" width="94" height="94"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="171" id="fX4-hP-7Hd"/>
                                             <constraint firstAttribute="width" secondItem="vth-vk-G1J" secondAttribute="height" multiplier="1:1" id="oUj-MG-Q2E"/>
@@ -409,7 +409,7 @@
                                         </variation>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mUN-FR-AKZ">
-                                        <rect key="frame" x="229" y="226.66666666666669" width="250" height="50"/>
+                                        <rect key="frame" x="229" y="223" width="250" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="4oF-eV-r2y"/>
                                             <constraint firstAttribute="width" constant="250" id="8WV-Jn-JnZ"/>
@@ -418,30 +418,18 @@
                                         <state key="normal" title="Start">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         </state>
-                                        <variation key="default">
-                                            <mask key="constraints">
-                                                <exclude reference="4oF-eV-r2y"/>
-                                                <exclude reference="8WV-Jn-JnZ"/>
-                                            </mask>
-                                        </variation>
-                                        <variation key="heightClass=compact-widthClass=compact">
-                                            <mask key="constraints">
-                                                <include reference="4oF-eV-r2y"/>
-                                                <include reference="8WV-Jn-JnZ"/>
-                                            </mask>
-                                        </variation>
                                         <connections>
                                             <action selector="startButtonTouchedUpInside:" destination="cnZ-Fr-QvT" eventType="touchUpInside" id="EO2-eo-QdX"/>
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Vc-IQ-ayN">
-                                        <rect key="frame" x="335.66666666666669" y="179" width="37" height="17.666666666666657"/>
+                                        <rect key="frame" x="337.33333333333331" y="177.33333333333331" width="33.333333333333314" height="15.666666666666657"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                         <color key="textColor" name="warning_color"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icloading" translatesAutoresizingMaskIntoConstraints="NO" id="hiS-DO-7ek">
-                                        <rect key="frame" x="343.66666666666669" y="99" width="21" height="21"/>
+                                        <rect key="frame" x="343.66666666666669" y="97.333333333333343" width="21" height="21"/>
                                         <color key="tintColor" name="highlight_color"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="35" id="s0r-Ca-tLA"/>
@@ -464,13 +452,13 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="0Vc-IQ-ayN" secondAttribute="trailing" constant="50" id="39s-pg-Aoc"/>
+                                    <constraint firstAttribute="bottom" secondItem="mUN-FR-AKZ" secondAttribute="bottom" constant="12" id="7D0-SI-Szh"/>
                                     <constraint firstItem="0Vc-IQ-ayN" firstAttribute="top" secondItem="vth-vk-G1J" secondAttribute="bottom" constant="20" id="7Dg-vw-RCn"/>
                                     <constraint firstItem="P0u-XA-UyA" firstAttribute="top" secondItem="zfd-rC-Frr" secondAttribute="top" id="A0a-nI-NJs"/>
                                     <constraint firstItem="5t2-5b-9dC" firstAttribute="centerY" secondItem="P0u-XA-UyA" secondAttribute="centerY" id="CjB-Xk-pvf"/>
                                     <constraint firstAttribute="bottom" secondItem="P0u-XA-UyA" secondAttribute="bottom" constant="219" id="HzE-of-PTO">
                                         <variation key="heightClass=regular-widthClass=compact" constant="385"/>
                                     </constraint>
-                                    <constraint firstItem="mUN-FR-AKZ" firstAttribute="width" secondItem="zfd-rC-Frr" secondAttribute="width" multiplier="250:375" id="OY4-1s-8Ow"/>
                                     <constraint firstItem="vth-vk-G1J" firstAttribute="top" secondItem="hiS-DO-7ek" secondAttribute="bottom" constant="-55.000000000000028" id="V5J-36-THc">
                                         <variation key="heightClass=regular-widthClass=compact" constant="-98.666666666666686"/>
                                     </constraint>
@@ -494,11 +482,6 @@
                                         <exclude reference="mp0-tP-OaD"/>
                                     </mask>
                                 </variation>
-                                <variation key="heightClass=compact-widthClass=compact">
-                                    <mask key="constraints">
-                                        <exclude reference="OY4-1s-8Ow"/>
-                                    </mask>
-                                </variation>
                                 <variation key="heightClass=regular-widthClass=compact">
                                     <mask key="constraints">
                                         <include reference="hKb-bh-2ek"/>
@@ -514,18 +497,12 @@
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="1D9-4a-0ek" secondAttribute="trailing" id="D7E-BP-xyD"/>
                             <constraint firstItem="1D9-4a-0ek" firstAttribute="leading" secondItem="M96-4o-1b0" secondAttribute="leading" id="KBj-g0-Btl"/>
-                            <constraint firstItem="mUN-FR-AKZ" firstAttribute="height" secondItem="1D9-4a-0ek" secondAttribute="height" multiplier="50:812" id="Va7-VI-2Wq"/>
                             <constraint firstItem="1D9-4a-0ek" firstAttribute="top" secondItem="M96-4o-1b0" secondAttribute="top" id="YHe-F6-YlG"/>
                             <constraint firstItem="5ga-c6-ZOY" firstAttribute="trailing" secondItem="zfd-rC-Frr" secondAttribute="trailing" constant="8" id="a1g-gM-Uo1"/>
                             <constraint firstAttribute="bottom" secondItem="zfd-rC-Frr" secondAttribute="bottom" id="bwq-Z9-SHX"/>
                             <constraint firstItem="zfd-rC-Frr" firstAttribute="leading" secondItem="5ga-c6-ZOY" secondAttribute="leading" constant="8" id="f7K-gT-37W"/>
                             <constraint firstAttribute="bottom" secondItem="1D9-4a-0ek" secondAttribute="bottom" id="hDO-Oa-uOW"/>
                         </constraints>
-                        <variation key="heightClass=compact-widthClass=compact">
-                            <mask key="constraints">
-                                <exclude reference="Va7-VI-2Wq"/>
-                            </mask>
-                        </variation>
                     </view>
                     <connections>
                         <outlet property="descriptionLabel" destination="0Vc-IQ-ayN" id="d5k-8h-7ET"/>

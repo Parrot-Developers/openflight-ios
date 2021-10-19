@@ -39,7 +39,6 @@ enum GeofencePreset {
     static let maxDistance: Double = 4000.0
     static let minDistance: Double = 10.0
     static let defaultDistance: Double = 100.0
-    static let rthMinAltitude: Double = 30.0
 }
 
 /// SettingMode protocol helpers to SDK's GeofenceMode.

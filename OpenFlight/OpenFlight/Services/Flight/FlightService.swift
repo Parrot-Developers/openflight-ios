@@ -49,6 +49,7 @@ public protocol FlightService: AnyObject {
     var allFlights: AnyPublisher<[FlightModel], Never> { get }
     var allFlightsSummary: AnyPublisher<AllFlightsSummary, Never> { get }
     var allFlightsCount: Int { get }
+    func updateFlights()
     func update(flight: FlightModel, title: String) -> FlightModel
     func delete(flight: FlightModel)
     func save(gutmaOutput: [Gutma.Model])
@@ -63,16 +64,23 @@ open class FlightServiceImpl {
     private var userInformation: UserInformation
     private var thumbnailsRequests = [String: [((UIImage?) -> Void)]]()
     private var allFlightsSubject = CurrentValueSubject<[FlightModel], Never>([])
+    private var cancellable = Set<AnyCancellable>()
 
     init(repo: FlightRepository,
          fpFlightRepo: FlightPlanFlightsRepository,
          thumbnailRepo: ThumbnailRepository,
-         userInformation: UserInformation) {
+         userInformation: UserInformation,
+         cloudSynchroWatcher: CloudSynchroWatcher?) {
         self.repo = repo
         self.fpFlightRepo = fpFlightRepo
         self.thumbnailRepo = thumbnailRepo
         self.userInformation = userInformation
         updateFlights()
+        cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { isSynchronizingData in
+            if !isSynchronizingData {
+                self.updateFlights()
+            }
+        }.store(in: &cancellable)
     }
 }
 
@@ -83,10 +91,6 @@ private extension FlightServiceImpl {
         static let lineWidth: CGFloat = 5.0
         static let thumbnailMarginRatio: Double = 0.2
         static let thumbnailSize: CGSize = CGSize(width: 180.0, height: 160.0)
-    }
-
-    func updateFlights() {
-        allFlightsSubject.value = repo.loadAllFlights()
     }
 
     func computeThumbnail(uuid: String, center: CLLocationCoordinate2D) {
@@ -114,6 +118,10 @@ private extension FlightServiceImpl {
 }
 
 extension FlightServiceImpl: FlightService {
+    public func updateFlights() {
+        allFlightsSubject.value = repo.loadAllFlights()
+    }
+
     public var allFlightsCount: Int {
         allFlightsSubject.value.count
     }
@@ -150,7 +158,7 @@ extension FlightServiceImpl: FlightService {
     }
 
     public func delete(flight: FlightModel) {
-        repo.removeFlight(flight.uuid)
+        repo.performRemoveFlight(flight)
         updateFlights()
     }
 

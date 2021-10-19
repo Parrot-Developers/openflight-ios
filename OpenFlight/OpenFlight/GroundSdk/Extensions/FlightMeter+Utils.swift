@@ -31,10 +31,9 @@
 import GroundSdk
 
 /// Utility extension for FlightMeter.
-
 extension FlightMeter {
     /// Returns a string containing current time interval with MM:SS format.
     var flightDurationFormatted: String? {
-        return TimeInterval(self.totalFlightDuration).formattedHmsString
+        return TimeInterval(totalFlightDuration).formattedHmsString
     }
 }

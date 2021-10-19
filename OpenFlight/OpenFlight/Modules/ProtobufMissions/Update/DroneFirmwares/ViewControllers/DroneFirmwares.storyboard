@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Drone Firmwares View Controller-->
+        <scene sceneID="gAF-Wg-Bhz">
+            <objects>
+                <viewController storyboardIdentifier="DroneFirmwares" modalPresentationStyle="overFullScreen" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="DroneFirmwaresViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="hd0-iW-BW2">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="igG-Tb-Tz5">
+                                <rect key="frame" x="84" y="60" width="728" height="354"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DzY-Mu-b8Z">
+                                        <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="60" id="29T-H0-ZRq"/>
+                                            <constraint firstAttribute="width" secondItem="DzY-Mu-b8Z" secondAttribute="height" multiplier="1:1" id="r4F-rR-sdt"/>
+                                        </constraints>
+                                        <color key="tintColor" name="default_text_color"/>
+                                        <state key="normal" image="icClose"/>
+                                        <connections>
+                                            <action selector="closeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="RSc-fw-QpO"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1wA-Iw-hxE">
+                                        <rect key="frame" x="40" y="20.5" width="648" height="19"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                        <color key="textColor" name="default_text_color"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Aqt-dV-aZw">
+                                        <rect key="frame" x="15" y="60" width="698" height="274"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </tableView>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="DzY-Mu-b8Z" firstAttribute="top" secondItem="igG-Tb-Tz5" secondAttribute="top" id="9Qi-jE-2AP"/>
+                                    <constraint firstAttribute="bottom" secondItem="Aqt-dV-aZw" secondAttribute="bottom" constant="20" id="Rdv-N9-dZJ"/>
+                                    <constraint firstAttribute="trailing" secondItem="Aqt-dV-aZw" secondAttribute="trailing" constant="15" id="UMe-Dx-jC9"/>
+                                    <constraint firstItem="Aqt-dV-aZw" firstAttribute="leading" secondItem="igG-Tb-Tz5" secondAttribute="leading" constant="15" id="USv-qX-HAA"/>
+                                    <constraint firstItem="1wA-Iw-hxE" firstAttribute="leading" secondItem="igG-Tb-Tz5" secondAttribute="leading" constant="40" id="css-gx-t5e"/>
+                                    <constraint firstItem="DzY-Mu-b8Z" firstAttribute="leading" secondItem="igG-Tb-Tz5" secondAttribute="leading" id="flZ-b8-oAQ"/>
+                                    <constraint firstItem="Aqt-dV-aZw" firstAttribute="top" secondItem="DzY-Mu-b8Z" secondAttribute="bottom" id="hFe-HP-toO"/>
+                                    <constraint firstAttribute="trailing" secondItem="1wA-Iw-hxE" secondAttribute="trailing" constant="40" id="iQ6-xa-lms"/>
+                                    <constraint firstItem="1wA-Iw-hxE" firstAttribute="centerY" secondItem="DzY-Mu-b8Z" secondAttribute="centerY" id="nda-87-uCh"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="uhq-CK-3BU"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="igG-Tb-Tz5" secondAttribute="bottom" id="KfG-ud-z6D"/>
+                            <constraint firstItem="igG-Tb-Tz5" firstAttribute="top" secondItem="uhq-CK-3BU" secondAttribute="top" constant="60" id="RIy-P1-Vek">
+                                <variation key="heightClass=regular-widthClass=regular" constant="200"/>
+                            </constraint>
+                            <constraint firstItem="igG-Tb-Tz5" firstAttribute="leading" secondItem="uhq-CK-3BU" secondAttribute="leading" constant="40" id="a7m-sk-jOv">
+                                <variation key="heightClass=regular-widthClass=compact" constant="0.0"/>
+                            </constraint>
+                            <constraint firstItem="uhq-CK-3BU" firstAttribute="trailing" secondItem="igG-Tb-Tz5" secondAttribute="trailing" constant="40" id="ylC-oc-lqi">
+                                <variation key="heightClass=regular-widthClass=compact" constant="0.0"/>
+                            </constraint>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="contentView" destination="igG-Tb-Tz5" id="yfg-th-7Ra"/>
+                        <outlet property="tableView" destination="Aqt-dV-aZw" id="As6-3X-wJk"/>
+                        <outlet property="titleLabel" destination="1wA-Iw-hxE" id="6SQ-4Q-9HA"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-718" y="215"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="icClose" width="17" height="17"/>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

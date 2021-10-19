@@ -79,7 +79,6 @@ final class SettingsSlider: UISlider {
         updateThumbImage(self.thumbImage)
 
         self.minimumTrackTintColor = underLimitColor
-        self.maximumTrackTintColor = ColorName.defaultTextColor.color
 
         if let unwpThumbView = self.thumbView {
             unwpThumbView.tintColor = underLimitColor

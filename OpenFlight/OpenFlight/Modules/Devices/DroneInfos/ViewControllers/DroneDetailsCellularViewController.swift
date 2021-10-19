@@ -1,5 +1,5 @@
 //
-//  Copyright (C) 2020 Parrot Drones SAS.
+//  Copyright (C) 2021 Parrot Drones SAS.
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -28,216 +28,249 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
 import Combine
+import UIKit
+import GroundSdk
 
-/// Shows information about drone cellular access.
 final class DroneDetailsCellularViewController: UIViewController {
-    // MARK: - Outlets
-    @IBOutlet private weak var mainView: UIView!
-    @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var actionButton: UIButton!
-    @IBOutlet private weak var connectionSubtitleLabel: UILabel!
-    @IBOutlet private weak var reinitializeButton: UIButton!
-    @IBOutlet private weak var connectionStateLabel: UILabel!
-    @IBOutlet private weak var connectionStateDescriptionLabel: UILabel!
-    @IBOutlet private weak var accessSubtitleLabel: UILabel!
-    @IBOutlet private weak var usersCountLabel: UILabel!
-    @IBOutlet private weak var usersCountDescriptionLabel: UILabel!
-    @IBOutlet private weak var forgotErrorLabel: UILabel!
+
+    // MARK: - Outlet
+
+    @IBOutlet private weak var enterPinButton: UIButton!
+    @IBOutlet private weak var forgetPinButton: UIButton!
     @IBOutlet private weak var showDebugButton: UIButton!
+    @IBOutlet private weak var cellularView: UIView!
+    @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet private weak var cellularStatusLabel: UILabel!
+    @IBOutlet private weak var operatorNameLabel: UILabel!
+    @IBOutlet private weak var controllerErrorLabel: UILabel!
 
-    // MARK: - Private Properties
-    private weak var coordinator: DroneCoordinator?
-    private let viewModel = DroneDetailsCellularViewModel()
+    // Cellular view outlet
+
+    @IBOutlet private weak var controllerImageView: UIImageView!
+    @IBOutlet private weak var bottomLeftBranchImage: UIImageView!
+    @IBOutlet private weak var leftInternetImage: UIImageView!
+    @IBOutlet private weak var topLeftBranchImage: UIImageView!
+    @IBOutlet private weak var cellularStatusImage: UIImageView!
+    @IBOutlet private weak var topRightBranchImage: UIImageView!
+    @IBOutlet private weak var rightInternetImage: UIImageView!
+    @IBOutlet private weak var bottomRightBranchImage: UIImageView!
+    @IBOutlet private weak var droneStatusImage: UIImageView!
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let alphaEnabled: CGFloat = 1
+        static let alphaDisabled: CGFloat = 0.6
+    }
+
+    // MARK: - Variables
+
+    private var viewModel: DroneDetailCellularViewModel!
     private var cancellables = Set<AnyCancellable>()
-    private var currentDrone = Services.hub.currentDroneHolder
 
-    // MARK: - Setup
-    static func instantiate(coordinator: DroneCoordinator) -> DroneDetailsCellularViewController {
-        let viewController = StoryboardScene.DroneDetailsCellular.initialScene.instantiate()
-        viewController.coordinator = coordinator
+    static func instantiate(viewModel: DroneDetailCellularViewModel) -> DroneDetailsCellularViewController {
+        let viewController = StoryboardScene.DroneDetailCellularViewController.initialScene.instantiate()
+        viewController.viewModel = viewModel
         return viewController
     }
 
-    // MARK: - Override Funcs
+    // MARK: - View life cycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        initView()
-        bindToViewModel()
+
+        setupUI()
+        addTouchGesture()
+        bindViewModel()
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        addColorTransition()
+    }
 
-        UIView.animate(withDuration: Style.shortAnimationDuration) {
+    // MARK: - Action
+
+    @objc func closeCellularViewFromTouch() {
+        viewModel.dismissView()
+    }
+
+    @IBAction func closeCellularView(_ sender: Any) {
+        viewModel.dismissView()
+    }
+
+    @IBAction func showCellularDebug(_ sender: Any) {
+        viewModel.showDebug()
+    }
+
+    @IBAction func enterPin(_ sender: Any) {
+        viewModel.showPinCode()
+    }
+
+    @IBAction func unpairUser(_ sender: Any) {
+        viewModel.forgetPin()
+    }
+}
+
+// MARK: - Private Extension
+
+private extension DroneDetailsCellularViewController {
+
+    /// Adds a tap gesture recognizer to dismiss the modal
+    func addTouchGesture() {
+        let touchGesture = UITapGestureRecognizer(target: self, action: #selector(closeCellularViewFromTouch))
+        touchGesture.delegate = self
+        view.addGestureRecognizer(touchGesture)
+    }
+
+    /// Adds a background to the view at the back
+    func addColorTransition() {
+        UIView.animate(withDuration: Style.shortAnimationDuration, delay: 0, options: .allowUserInteraction) {
             self.view.backgroundColor = ColorName.greyDark60.color
         }
     }
 
-    override var prefersHomeIndicatorAutoHidden: Bool {
-        return true
-    }
+    /// Setsup the basic UI
+    func setupUI() {
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
-    override var prefersStatusBarHidden: Bool {
-        return true
-    }
-}
-
-// MARK: - Actions
-private extension DroneDetailsCellularViewController {
-    @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
-        closeView()
-    }
-
-    @IBAction func backgroundViewTouchedUpInside(_ sender: Any) {
-        closeView()
-    }
-
-    @IBAction func actionButtonTouchedUpInside(_ sender: Any) {
-        switch viewModel.cellularStatus {
-        case .simLocked:
-            logEvent(with: LogEvent.LogKeyDroneDetailsCellular.enterPinCode)
-            self.view.backgroundColor = .clear
-            coordinator?.dismiss {
-                self.coordinator?.displayCellularPinCode()
-            }
-        case .userNotPaired:
-            logEvent(with: LogEvent.LogKeyDroneDetailsCellular.pairDevice)
-            coordinator?.pairUser()
-
-        case .noData:
-            self.view.backgroundColor = .clear
-            coordinator?.dismiss {
-                self.viewModel.activateLTE()
-                if self.viewModel.shouldDisplayPinCodeModal() {
-                    self.coordinator?.displayCellularPinCode()
-                }
-            }
-        default:
-            break
-        }
-    }
-
-    @IBAction func reinitializeButtonTouchedUpInside(_ sender: Any) {
-        logEvent(with: LogEvent.LogKeyDroneDetailsCellular.reinitialize)
-        viewModel.unpairAllUsers()
-    }
-
-    @IBAction func showDebugButtonTouchedUpInside(_ sender: Any) {
-        coordinator?.dismiss {
-            self.coordinator?.displayCellularDebug()
-        }
-    }
-}
-
-// MARK: - Private Funcs
-private extension DroneDetailsCellularViewController {
-    /// Inits the view.
-    func initView() {
-        mainView.applyCornerRadius(Style.largeCornerRadius,
-                                   maskedCorners: [.layerMinXMinYCorner,
-                                                   .layerMaxXMinYCorner])
-        // Labels.
+        // Label's title
         titleLabel.text = L10n.droneDetailsCellularAccess
-        forgotErrorLabel.makeUp(and: ColorName.redTorch)
-        connectionSubtitleLabel.text = L10n.commonConnectionState
-        accessSubtitleLabel.text = L10n.cellularInfoAccess
-        usersCountDescriptionLabel.text = L10n.drone4gUserAccessSingular(0)
-
-        // Buttons.
-        actionButton.titleLabel?.textAlignment = .center
-        actionButton.cornerRadiusedWith(backgroundColor: UIColor(named: .whiteAlbescent),
-                                        radius: Style.largeCornerRadius)
-
-        reinitializeButton.setTitle(L10n.drone4gReinitializeConnections, for: .normal)
-        reinitializeButton.setTitleColor(ColorName.defaultTextColor.color, for: .normal)
-        reinitializeButton.setTitleColor(ColorName.disabledTextColor.color, for: .disabled)
-        reinitializeButton.titleLabel?.textAlignment = .center
-        reinitializeButton.cornerRadiusedWith(backgroundColor: UIColor(named: .whiteAlbescent),
-                                              radius: Style.largeCornerRadius)
-
+        enterPinButton.setTitle(L10n.drone4gEnterPin, for: .normal)
+        forgetPinButton.setTitle(L10n.cellularForgetPin, for: .normal)
         showDebugButton.setTitle(L10n.drone4gShowDebug, for: .normal)
-        showDebugButton.titleLabel?.textAlignment = .center
-        showDebugButton.cornerRadiusedWith(backgroundColor: .clear,
-                                           borderColor: .black,
-                                           radius: Style.largeCornerRadius,
-                                           borderWidth: Style.mediumBorderWidth)
+
+        // Corner radius
+        enterPinButton.layer.cornerRadius = Style.largeCornerRadius
+        forgetPinButton.layer.cornerRadius = Style.largeCornerRadius
+        showDebugButton.layer.cornerRadius = Style.largeCornerRadius
+        cellularView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
+
+        // Border
+        showDebugButton.layer.borderWidth = Style.mediumBorderWidth
+        showDebugButton.layer.borderColor = ColorName.defaultTextColor.color.cgColor
     }
 
-    /// Calls the different function to bind the view model.
-    func bindToViewModel() {
-        viewModel.updatesPairedUsersCount()
-        updateView()
-    }
+    func bindViewModel() {
 
-    /// Closes the view.
-    func closeView() {
-        self.view.backgroundColor = .clear
-        coordinator?.dismiss()
-    }
+        bindDroneSide()
+        bindRemoteSide()
+        bind4GIcon()
 
-    /// Binds the view model to the views.
-    func updateView() {
-        viewModel.$unpairState
-            .sink { [unowned self] unpairState in
-                if unpairState.shouldShowError {
-                    forgotErrorLabel.isHidden = false
-                    forgotErrorLabel.text = unpairState.title
+        viewModel.controllerError
+            .sink { [unowned self] remoteError in
+                controllerErrorLabel.text = remoteError
+            }
+            .store(in: &cancellables)
+
+        // Enter pin button's state
+        viewModel.isEnterPinEnabled
+            .sink { [unowned self] isEnabled in
+                if isEnabled {
+                    enterPinButton.isEnabled = true
+                    enterPinButton.alpha = Constants.alphaEnabled
                 } else {
-                    forgotErrorLabel.isHidden = true
+                    enterPinButton.isEnabled = false
+                    enterPinButton.alpha = Constants.alphaDisabled
                 }
             }
             .store(in: &cancellables)
 
-        viewModel.$cellularStatus
-            .sink { [unowned self] cellularStatus in
-                bindCellularStatus(cellularStatus: cellularStatus)
-            }
-            .store(in: &cancellables)
-
-        viewModel.$usersCount
-            .sink { [unowned self] usersCount in
-                if usersCount > 1 {
-                    usersCountDescriptionLabel.text = L10n.drone4gUserAccessPlural(usersCount)
-                } else {
-                    usersCountDescriptionLabel.text = L10n.drone4gUserAccessSingular(usersCount)
+        // Cellular status label's text
+        viewModel.cellularStatus
+            .combineLatest(viewModel.drone)
+            .sink { [unowned self] (cellularStatus, drone) in
+                if drone == nil {
+                    cellularStatusLabel.text = nil
+                    return
                 }
-                usersCountLabel.text = "\(usersCount)"
+
+                cellularStatusLabel.text = cellularStatus.cellularDetailsTitle
+                cellularStatusLabel.textColor = cellularStatus.detailsTextColor.color
+
+                forgetPinButton.isEnabled = cellularStatus == .cellularConnected
+                forgetPinButton.alpha = forgetPinButton.isEnabled ?  Constants.alphaEnabled : Constants.alphaDisabled
+            }
+            .store(in: &cancellables)
+
+        // Operator label's text
+        viewModel.operatorName
+            .sink { [unowned self] operatorName in
+                operatorNameLabel.text = operatorName
+            }
+            .store(in: &cancellables)
+    }
+}
+
+extension DroneDetailsCellularViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+         if touch.view?.isDescendant(of: cellularView) == true {
+            return false
+         }
+         return true
+    }
+}
+
+private extension DroneDetailsCellularViewController {
+
+    /// Binds all remote's elements from the view model
+    func bindRemoteSide() {
+        viewModel.controllerImage
+            .sink { [unowned self] in
+                controllerImageView.image = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.leftInternetImage
+            .sink { [unowned self] in
+                leftInternetImage.image = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.bottomLeftBranchImage
+            .sink { [unowned self] in
+                bottomLeftBranchImage.image = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.topLeftBranchImage
+            .sink { [unowned self] in
+                topLeftBranchImage.image = $0
             }
             .store(in: &cancellables)
     }
 
-    /// Binds the cellular status to the controller views.
-    ///
-    /// - Parameter cellularStatus: The current cellular status.
-    func bindCellularStatus(cellularStatus: DetailsCellularStatus) {
-        actionButton.isHidden = !cellularStatus.shouldShowActionButton
-        reinitializeButton.isEnabled = cellularStatus == .cellularConnected
-        connectionStateLabel.text = cellularStatus.cellularDetailsTitle
-        connectionStateLabel.textColor = cellularStatus.detailsTextColor.color
+    /// Binds all drone's element from the view model
+    func bindDroneSide() {
+        viewModel.droneImage
+            .sink { [unowned self] droneImage in
+                droneStatusImage.image = droneImage
+            }
+            .store(in: &cancellables)
 
-        if cellularStatus.isStatusError {
-            connectionStateDescriptionLabel.text = cellularStatus.cellularDetailsDescription
-            usersCountDescriptionLabel.text = Style.dash
-        } else {
-            connectionStateDescriptionLabel.text = viewModel.operatorName
-        }
+        viewModel.rightInternetImage
+            .sink { [unowned self] in
+                rightInternetImage.image = $0
+            }
+            .store(in: &cancellables)
 
-        actionButton.setTitle(cellularStatus.actionButtonTitle, for: .normal)
+        viewModel.bottomRightBranchImage
+            .sink { [unowned self] in
+                bottomRightBranchImage.image = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.topRightBranchImage
+            .sink { [unowned self] in
+                topRightBranchImage.image = $0
+            }
+            .store(in: &cancellables)
     }
 
-    /// Calls log event.
-    ///
-    /// - Parameters:
-    ///     - itemName: Button name
-    func logEvent(with itemName: String) {
-        LogEvent.logAppEvent(itemName: itemName,
-                             newValue: nil,
-                             logType: .button)
+    func bind4GIcon() {
+        viewModel.cellularImage
+            .sink { [unowned self] in
+                cellularStatusImage.image = $0
+            }
+            .store(in: &cancellables)
     }
 }

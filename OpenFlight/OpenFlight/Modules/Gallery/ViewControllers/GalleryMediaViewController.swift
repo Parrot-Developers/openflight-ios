@@ -38,6 +38,7 @@ protocol GalleryMediaViewDelegate: AnyObject {
     func multipleSelectionActionTriggered()
     /// Called when the multiple selection is enabled from here.
     func multipleSelectionEnabled()
+    func didUpdateMediaSelection(count: Int, size: UInt64)
 }
 
 /// Displays medias.
@@ -53,7 +54,15 @@ final class GalleryMediaViewController: UIViewController {
     private weak var coordinator: GalleryCoordinator?
     private weak var viewModel: GalleryMediaViewModel?
     private var loadingMedias: [GalleryMedia] = []
-    private var selectedMedias: [GalleryMedia] = []
+    private var unsortedMedias: [GalleryMedia] {
+        dataSource.map({ $0.medias }).flatMap({ $0 })
+    }
+    private var selectedMedias: [GalleryMedia] = [] {
+        didSet {
+            delegate?.didUpdateMediaSelection(count: selectedMedias.count,
+                                              size: selectedMediasSize)
+        }
+    }
     private var selectedMediasSize: UInt64 {
         return selectedMedias.reduce(0) { $0 + $1.size }
     }
@@ -65,10 +74,11 @@ final class GalleryMediaViewController: UIViewController {
     private enum Constants {
         static let nbColumnsLandscape: CGFloat = 4.0
         static let nbColumnsPortrait: CGFloat = 2.0
-        static let itemSpacing: CGFloat = 10.0
+        static let itemSpacing: CGFloat = 2.0
         static let cellWidthRatio: CGFloat = 1.0
-        static let headerHeight: CGFloat = 32.0
+        static let headerHeight: CGFloat = 26.0
         static let longPressDuration: TimeInterval = 0.5
+        static let collectionViewInsets: UIEdgeInsets = .init(top: 0, left: 12, bottom: 12, right: 12)
     }
 
     // MARK: - Setup
@@ -99,7 +109,7 @@ final class GalleryMediaViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        viewModel?.refreshMedias()
+        viewModel?.refreshMedias(source: viewModel?.sourceType)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -326,10 +336,10 @@ extension GalleryMediaViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
-        // Remove left and right insets (2 * Constants.itemSpacing)
-        var collectionViewWidth = collectionView.frame.width - 2 * Constants.itemSpacing
+        // Remove left and right insets
+        var collectionViewWidth = collectionView.frame.width - Constants.collectionViewInsets.left - Constants.collectionViewInsets.right
         // Handle safe area screens.
-        collectionViewWidth -= UIApplication.shared.keyWindow?.safeAreaInsets.left ?? 0.0
+        collectionViewWidth -= UIApplication.shared.windows.first?.safeAreaInsets.left ?? 0.0
         // Compute width.
         let nbColumns = UIApplication.isLandscape ? Constants.nbColumnsLandscape : Constants.nbColumnsPortrait
         let width = collectionViewWidth / nbColumns - Constants.itemSpacing
@@ -343,10 +353,7 @@ extension GalleryMediaViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: Constants.itemSpacing,
-                            left: Constants.itemSpacing,
-                            bottom: Constants.itemSpacing,
-                            right: Constants.itemSpacing)
+        Constants.collectionViewInsets
     }
 
     func collectionView(_ collectionView: UICollectionView,
@@ -421,7 +428,7 @@ extension GalleryMediaViewController: GallerySelectionDelegate {
                                        style: .cancel,
                                        cancelCustomColor: .highlightColor,
                                        actionHandler: {})
-        let message: String = String(format: L10n.galleryRemoveSdConfirm, viewModel?.sourceType?.title ?? "")
+        let message: String = viewModel?.sourceType?.deleteConfirmMessage(count: selectedMedias.count) ?? ""
         showAlert(title: L10n.commonDelete,
                   message: message,
                   cancelAction: cancelAction,
@@ -436,5 +443,15 @@ extension GalleryMediaViewController: GallerySelectionDelegate {
 
     func mustShareSelection() {
         handleShare()
+    }
+
+    func mustSelectAll() {
+        selectedMedias = unsortedMedias
+        collection.reloadData()
+    }
+
+    func mustDeselectAll() {
+        selectedMedias.removeAll()
+        collection.reloadData()
     }
 }

@@ -32,19 +32,19 @@ import GroundSdk
 import Combine
 
 // MARK: - Internal Enums
-enum HUDCameraStreamingMode {
+public enum HUDCameraStreamingMode {
     case fullscreen
     case preview
 }
 
 // MARK: - Protocols
-protocol HUDCameraStreamingViewControllerDelegate: AnyObject {
+public protocol HUDCameraStreamingViewControllerDelegate: AnyObject {
     /// Called when the stream content zone changes.
     func didUpdate(contentZone: CGRect?)
 }
 
 /// View controller that manages the different states and layers of the streaming.
-final class HUDCameraStreamingViewController: UIViewController {
+public final class HUDCameraStreamingViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var snowView: SnowView!
     @IBOutlet private weak var streamView: StreamView!
@@ -52,11 +52,14 @@ final class HUDCameraStreamingViewController: UIViewController {
     // MARK: - Internal Properties
     weak var delegate: HUDCameraStreamingViewControllerDelegate?
     /// Current mode of the streaming view (most layers are removed for preview mode.
-    var mode: HUDCameraStreamingMode = .fullscreen
+    public var mode: HUDCameraStreamingMode = .fullscreen
 
     // MARK: - Private Properties
     private var contentZone: CGRect = .zero
     private var cancellables = Set<AnyCancellable>()
+    /// Whether streaming is enabled.
+    private var streamingEnabled: Bool?
+
     // TODO: wrong injection
     private unowned var currentMissionManager = Services.hub.currentMissionManager
     // Views.
@@ -78,7 +81,7 @@ final class HUDCameraStreamingViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate() -> HUDCameraStreamingViewController {
+    public static func instantiate() -> HUDCameraStreamingViewController {
         return StoryboardScene.HUDCameraStreaming.initialScene.instantiate()
     }
 
@@ -88,7 +91,7 @@ final class HUDCameraStreamingViewController: UIViewController {
     }
 
     // MARK: - Override Funcs
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
 
         if !Platform.isSimulator {
@@ -96,14 +99,14 @@ final class HUDCameraStreamingViewController: UIViewController {
         }
     }
 
-    override func viewWillAppear(_ animated: Bool) {
+    public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        self.snowView.isHidden = false
-        self.enableMonitoring(true)
+        snowView.isHidden = false
+        enableMonitoring(streamingEnabled ?? true)
     }
 
-    override func viewDidAppear(_ animated: Bool) {
+    public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         updateContentZone(to: streamView.contentZone)
@@ -112,14 +115,14 @@ final class HUDCameraStreamingViewController: UIViewController {
         }
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
+    public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        self.enableMonitoring(false)
-        self.streamView.contentZoneListener = nil
+        enableMonitoring(false)
+        streamView.contentZoneListener = nil
     }
 
-    override var prefersStatusBarHidden: Bool {
+    public override var prefersStatusBarHidden: Bool {
         return true
     }
 }
@@ -145,12 +148,14 @@ extension HUDCameraStreamingViewController {
 
     /// Stops the stream (⚠️ only works after viewDidAppear).
     func stopStream() {
-        self.enableMonitoring(false)
+        streamingEnabled = false
+        enableMonitoring(false)
     }
 
     /// Restarts previously stopped stream.
     func restartStream() {
-        self.enableMonitoring(true)
+        streamingEnabled = true
+        enableMonitoring(true)
     }
 }
 
@@ -159,11 +164,20 @@ private extension HUDCameraStreamingViewController {
 
     /// Sets up view models associated with the view.
     func setupViewModels() {
-        self.cameraStreamingViewModel.state.valueChanged = { [weak self] state in
+        cameraStreamingViewModel.state.valueChanged = { [weak self] state in
             self?.onStateUpdate(state)
         }
-        self.cameraStreamingViewModel.cameraLiveUpdateCallback = onCameraLiveUpdate
-        self.onStateUpdate(cameraStreamingViewModel.state.value)
+        onStateUpdate(cameraStreamingViewModel.state.value)
+
+        cameraStreamingViewModel.$cameraLive
+            .sink { [unowned self] cameraLive in
+                onCameraLiveUpdate(cameraLive)
+            }.store(in: &cancellables)
+
+        cameraStreamingViewModel.$snowVisible
+            .sink { [unowned self] snowVisible in
+                snowView.isHidden = !snowVisible
+            }.store(in: &cancellables)
 
         listenMissionMode()
     }
@@ -209,8 +223,8 @@ private extension HUDCameraStreamingViewController {
     /// - Parameters:
     ///    - enabled: boolean that enable or disable monitoring.
     func enableMonitoring(_ enabled: Bool) {
-        self.cameraStreamingViewModel.enableMonitoring(enabled)
-        self.trackingViewModel?.enableMonitoring(enabled)
+        cameraStreamingViewModel.enableMonitoring(enabled)
+        trackingViewModel?.enableMonitoring(enabled)
     }
 
     /// Called when streaming state is updated.
@@ -218,8 +232,6 @@ private extension HUDCameraStreamingViewController {
     /// - Parameters:
     ///    - state: state from HUDCameraStreamingViewModel.
     func onStateUpdate(_ state: HUDCameraStreamingState) {
-        snowView.isHidden = state.streamEnabled
-
         if !state.streamEnabled {
             self.clearTracking()
         } else if currentMissionManager.mode.isTrackingMode,

@@ -115,12 +115,22 @@ extension RemoteDetailsButtonsState {
     /// Returns a model for remote calibration device view.
     var calibrationModel: DeviceDetailsButtonModel {
         let isRemoteConnected = remoteControlConnectionState?.isConnected() == true
-        let backgroundColor: ColorName = needCalibration ? .errorColor : .white
+        let backgroundColor: ColorName
+        let subtitle: String
+
+        if !isRemoteConnected {
+            backgroundColor = .whiteAlbescent
+            subtitle = Style.dash
+        } else {
+            backgroundColor = needCalibration ? .errorColor : .white
+            subtitle = needCalibration ? L10n.remoteCalibrationRequired : L10n.droneDetailsCalibrationOk
+        }
         let titleColor: ColorName = needCalibration ? .white : .defaultTextColor
         let subtitleColor: ColorName = needCalibration ? .white : (isRemoteConnected ? .highlightColor : .defaultTextColor)
+
         return DeviceDetailsButtonModel(mainImage: Asset.Common.Icons.icRemoteControl.image,
                                         title: L10n.remoteDetailsCalibration,
-                                        subtitle: needCalibration ? L10n.remoteCalibrationRequired : L10n.droneDetailsCalibrationOk,
+                                        subtitle: subtitle,
                                         backgroundColor: backgroundColor,
                                         mainImageTintColor: titleColor,
                                         titleColor: titleColor,
@@ -157,7 +167,7 @@ extension RemoteDetailsButtonsState {
         let titleColor: ColorName = needUpdate ? .white : .defaultTextColor
         return DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDownload.image,
                                         title: L10n.remoteDetailsSoftware,
-                                        subImage: needUpdate ? nil : Asset.Common.Checks.icChecked.image,
+                                        subImage: needUpdate ? nil : Asset.Common.Checks.icCheckedSmall.image,
                                         subtitle: subtitle,
                                         backgroundColor: needUpdate ? .warningColor : .white,
                                         mainImageTintColor: titleColor,

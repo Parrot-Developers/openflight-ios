@@ -59,7 +59,7 @@ enum HelloWorldMissionMode: String, CaseIterable {
                                                    logName: "TODO", // TODO: Add log name
                                                    preferredSplitMode: self.preferredSplitMode,
                                                    isMapRequired: false,
-                                                   isFlightPlanPanelRequired: self.isFlightPlanPanelRequired,
+                                                   isRightPanelRequired: self.isRightPanelRequired,
                                                    isTrackingMode: false)
 
         return MissionMode(configurator: configurator,
@@ -92,7 +92,7 @@ enum HelloWorldMissionMode: String, CaseIterable {
         }
     }
 
-    private var isFlightPlanPanelRequired: Bool {
+    private var isRightPanelRequired: Bool {
         return false
     }
 

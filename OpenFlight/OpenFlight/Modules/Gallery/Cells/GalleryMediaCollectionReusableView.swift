@@ -42,6 +42,8 @@ final class GalleryMediaCollectionReusableView: UICollectionReusableView, NibReu
     /// - Parameters:
     ///    - date: a date
     func setup(date: Date) {
-        sectionTitle.text = date.formattedString(dateStyle: .long, timeStyle: .none)
+        sectionTitle.text = date.formattedString(dateStyle: .long,
+                                                 timeStyle: .none,
+                                                 doesRelativeFormatting: true)
     }
 }

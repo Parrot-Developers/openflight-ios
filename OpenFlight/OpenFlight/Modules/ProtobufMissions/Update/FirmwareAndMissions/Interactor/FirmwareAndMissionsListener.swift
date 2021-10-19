@@ -32,7 +32,7 @@ import Foundation
 import GroundSdk
 
 /// Typealias for `ProtobufMissionUpdaterListener`  callback signature.
-typealias FirmwareAndMissionsClosure = (_ : ProtobufMissionsUpdateDataSource,
+typealias FirmwareAndMissionsClosure = (_ : DroneFirmwaresDataSource,
                                         FirmwareAndMissionToUpdateModel) -> Void
 
 // MARK: - ProtobufMissionUpdaterListener

@@ -39,7 +39,6 @@ final class RemoteUpdateViewController: UIViewController {
     @IBOutlet private weak var rebootingStepView: UpdateStepView!
     @IBOutlet private weak var progressView: RemoteImageView!
     @IBOutlet private weak var backButton: UIButton!
-    @IBOutlet private weak var subtitleLabel: UILabel!
     @IBOutlet private weak var continueButton: UIButton!
 
     // MARK: - Private Properties
@@ -127,9 +126,6 @@ private extension RemoteUpdateViewController {
     func initView() {
         titleLabel.text = L10n.remoteUpdateControllerUpdate
         backButton.setTitle(L10n.cancel, for: .normal)
-        downloadingStepView.model = UpdateStepModel(state: .todo, title: L10n.remoteUpdateDownloadStep)
-        sendingStepView.model = UpdateStepModel(state: .todo, title: L10n.remoteUpdateSendingStep)
-        rebootingStepView.model = UpdateStepModel(state: .todo, title: L10n.remoteUpdateRebootStep)
         progressView.updateRemoteImage(image: Asset.Remote.icRemoteUpdate.image)
         continueButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                           borderColor: .clear,
@@ -301,6 +297,13 @@ private extension RemoteUpdateViewController {
             && viewModel?.state.value.remoteControlConnectionState?.isConnected() == false
         isFirmwareAlreadyDownloaded = viewModel?.needDownload() == false
 
+        let version = viewModel?.state.value.idealFirmwareVersion ?? ""
+        downloadingStepView.model = UpdateStepModel(state: .todo,
+                                                    title: L10n.firmwareMissionUpdateDownloadingFirmware(version))
+        sendingStepView.model = UpdateStepModel(state: .todo,
+                                                title: L10n.firmwareMissionUpdateSendingToRemoteControl(version))
+        rebootingStepView.model = UpdateStepModel(state: .todo, title: L10n.firmwareMissionUpdateRebootAndUpdate)
+
         viewModel?.state.valueChanged = { [weak self] state in
             self?.updateDeviceUpdateState(state)
         }
@@ -311,7 +314,6 @@ private extension RemoteUpdateViewController {
         // Check if we can start the update.
         if viewModel?.canStartUpdate() == true {
             viewModel?.startUpdateProcess()
-            subtitleLabel.text = L10n.remoteUpdateDescription
             // In case of download only.
             if isDownloadOnly {
                 progressView.displayDownloadOnly()

@@ -150,6 +150,8 @@ extension FlightPlanDataSetting {
         }
     }
 
+    private var delayReturnToLaunch: TimeInterval { 2 }
+
     // MARK: - Internal Properties
     /// Capture MAVLink command.
     var startCaptureCommand: MavlinkStandard.MavlinkCommand? {
@@ -178,6 +180,13 @@ extension FlightPlanDataSetting {
              .gpsLapse:
             return MavlinkStandard.StopPhotoCaptureCommand()
         }
+    }
+
+    /// Return to launch MAVLink command.
+    var delayReturnToLaunchCommand: MavlinkStandard.DelayCommand? {
+        guard lastPointRth == true else { return nil }
+
+        return MavlinkStandard.DelayCommand(delay: Double(delayReturnToLaunch))
     }
 
     /// Return to launch MAVLink command, if FlightPlan is buckled.

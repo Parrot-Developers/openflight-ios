@@ -89,7 +89,7 @@ extension Camera2EvCompensation: BarItemMode, RulerDisplayable, Sortable {
     }
 
     public static var allValues: [BarItemMode] {
-        return self.allCases.sorted()
+        return allCases.sorted()
     }
 
     public var subModes: [BarItemSubMode]? {
@@ -123,9 +123,9 @@ extension Camera2EvCompensation: BarItemMode, RulerDisplayable, Sortable {
 
     /// Returns compensation for an index, based on all compensations available.
     public static func compensationForIndex(_ index: Int) -> Camera2EvCompensation {
-        guard index < self.sortedCases.count else { return defaultValue }
+        guard index < sortedCases.count else { return defaultValue }
 
-        return self.availableValues[index]
+        return availableValues[index]
     }
 
     /// List of available Values.

@@ -33,7 +33,7 @@ import CoreData
 extension UserParrot {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<UserParrot> {
-        return NSFetchRequest<UserParrot>(entityName: "UserParrot")
+        return NSFetchRequest<UserParrot>(entityName: UserParrot.userParrotEntityName)
     }
 
     // MARK: - Properties

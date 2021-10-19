@@ -205,12 +205,15 @@ private extension DashboardDroneCell {
             status = .disconnected
             title = L10n.commonNotConnected
         case .connected:
-            if firmwareAndMissionToUpdateModel.needUpdate {
+            if firmwareAndMissionToUpdateModel.needFirmwareUpdate {
                 status = .updateAvailable
                 title = firmwareAndMissionToUpdateModel.stateButtonTitle
             } else if droneInfosViewModel.requiresCalibration {
                 status = .calibrationRequired
                 title = L10n.remoteCalibrationRequired
+            } else if firmwareAndMissionToUpdateModel.needUpdate {
+                status = .updateAvailable
+                title = firmwareAndMissionToUpdateModel.stateButtonTitle
             } else {
                 status = .notDisconnected
                 title = connectionState.title

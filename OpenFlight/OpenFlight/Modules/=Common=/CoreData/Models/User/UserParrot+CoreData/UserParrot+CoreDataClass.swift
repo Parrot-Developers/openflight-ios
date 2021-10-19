@@ -33,4 +33,7 @@ import CoreData
 @objc(UserParrot)
 public class UserParrot: NSManagedObject {
 
+    // MARK: - Constant
+    static let userParrotEntityName = "UserParrot"
+
 }

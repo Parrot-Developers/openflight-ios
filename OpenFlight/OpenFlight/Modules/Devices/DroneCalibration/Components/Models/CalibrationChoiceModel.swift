@@ -37,14 +37,14 @@ struct CalibrationChoiceModel {
     // MARK: - Internal Properties
     /// Calibration image.
     var image: UIImage
-    /// Calibration main text.
-    var text: String
-    /// Calibration main text color.
-    var textColor: UIColor
-    /// Calibration subtitle text.
-    var subText: String?
-    /// Calibration subtitle text color.
-    var subTextColor: ColorName
+    /// Calibration title.
+    var title: String
+    /// Calibration title color.
+    var titleColor: UIColor
+    /// Calibration subtitle.
+    var subtitle: String?
+    /// Calibration subtitle color.
+    var subtitleColor: ColorName
     /// Calibration background color.
     var backgroundColor: ColorName
 
@@ -53,22 +53,22 @@ struct CalibrationChoiceModel {
     ///
     /// - Parameters:
     ///    - image: Calibration image.
-    ///    - text: Calibration main text.
-    ///    - textColor: Calibration main text color.
-    ///    - subText: Calibration subtitle text.
-    ///    - subTextColor: Calibration subtitle text color.
+    ///    - title: Calibration title.
+    ///    - titleColor: Calibration title color.
+    ///    - subtitle: Calibration subtitle.
+    ///    - subtitleColor: Calibration subtitle color.
     ///    - backgroundColor: Calibration background color.
     init(image: UIImage,
-         text: String,
-         textColor: UIColor = ColorName.defaultTextColor.color,
-         subText: String? = nil,
-         subTextColor: ColorName = .defaultTextColor,
+         title: String,
+         titleColor: UIColor = ColorName.defaultTextColor.color,
+         subtitle: String? = nil,
+         subtitleColor: ColorName = .defaultTextColor,
          backgroundColor: ColorName = .white) {
         self.image = image
-        self.text = text
-        self.textColor = textColor
-        self.subText = subText
-        self.subTextColor = subTextColor
+        self.title = title
+        self.titleColor = titleColor
+        self.subtitle = subtitle
+        self.subtitleColor = subtitleColor
         self.backgroundColor = backgroundColor
     }
 }

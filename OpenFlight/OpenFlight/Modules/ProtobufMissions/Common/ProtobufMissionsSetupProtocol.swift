@@ -32,8 +32,6 @@
 public protocol ProtobufMissionsSetupProtocol {
     /// Set up `FirmwareAndMissionsInteractor` in this function.
     func setupFirmwareAndMissionsInteractor()
-    /// Set up  `ProtobufMissionsManager` in this function.
-    func setupProtobufMissionManager()
     /// Add protobuf missions in the HUD Panel in this function.
     func addMissionsToHUDPanel()
 }

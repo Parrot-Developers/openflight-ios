@@ -106,7 +106,10 @@ public protocol Coordinator: AnyObject {
     /// - Parameters:
     ///     - childCoordinator: coordinator to start
     ///     - animationDirection: direction of the animation
-    func presentCoordinatorWithAnimation(childCoordinator: Coordinator, animationDirection: CATransitionSubtype)
+    ///     - completion: completion closure called after the transition
+    func presentCoordinatorWithAnimation(childCoordinator: Coordinator,
+                                         animationDirection: CATransitionSubtype,
+                                         completion: (() -> Void)?)
 
     /// Dismisses a coordinator with an animation.
     ///
@@ -195,7 +198,9 @@ public extension Coordinator {
         self.navigationController?.visibleViewController?.present(viewController, animated: animated, completion: nil)
     }
 
-    func presentCoordinatorWithAnimation(childCoordinator: Coordinator, animationDirection: CATransitionSubtype) {
+    func presentCoordinatorWithAnimation(childCoordinator: Coordinator,
+                                         animationDirection: CATransitionSubtype,
+                                         completion: (() -> Void)? = nil) {
         childCoordinator.parentCoordinator = self
         childCoordinator.start()
         childCoordinators.append(childCoordinator)
@@ -216,7 +221,7 @@ public extension Coordinator {
                                                           forKey: kCATransition)
         self.navigationController?.present(childNavController,
                                            animated: false,
-                                           completion: nil)
+                                           completion: completion)
     }
 
     func dismissCoordinatorWithAnimation(animationDirection: CATransitionSubtype,

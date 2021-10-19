@@ -132,6 +132,14 @@ final class HUDTopBarViewController: UIViewController {
         view.addGradient(startAlpha: Constants.gradientStartAlpha,
                          endAlpha: Constants.gradientEndAlpha,
                          superview: view)
+
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            dashboardButton.contentHorizontalAlignment = .fill
+            dashboardButton.contentVerticalAlignment = .fill
+
+            settingsButton.contentHorizontalAlignment = .fill
+            settingsButton.contentVerticalAlignment = .fill
+        }
     }
 
     override func viewDidLayoutSubviews() {

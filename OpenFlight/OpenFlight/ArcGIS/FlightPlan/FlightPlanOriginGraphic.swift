@@ -65,7 +65,7 @@ public final class FlightPlanOriginGraphic: FlightPlanGraphic {
         arrow = AGSPictureMarkerSymbol(image: triangleView.asImage())
         arrow?.angleAlignment = .map
         arrow?.offsetY = Constants.offSetY
-        self.originWayPoint = origin
+        originWayPoint = origin
         super.init(geometry: origin.agsPoint,
                    symbol: arrow,
                    attributes: nil)
@@ -98,9 +98,9 @@ public final class FlightPlanOriginGraphic: FlightPlanGraphic {
     /// Hides arrow symbol
     func hidden(_ value: Bool) {
         if value {
-            self.symbol = nil
+            symbol = nil
         } else {
-            self.symbol = arrow
+            symbol = arrow
         }
     }
 

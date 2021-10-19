@@ -29,6 +29,7 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
 /// State for `CameraShutterButtonViewModel`.
 final class CameraShutterButtonState: DeviceConnectionState {
@@ -134,11 +135,18 @@ final class CameraShutterButtonState: DeviceConnectionState {
 /// View model for `CameraShutterButton`, notifies on recording/photo capture changes and handles user action.
 
 final class CameraShutterButtonViewModel: DroneStateViewModel<CameraShutterButtonState> {
+    // MARK: - Public Properties
+    public var hideBottomBarEventPublisher: AnyPublisher<Bool, Never> {
+        hideBottomBarEventSubject.eraseToAnyPublisher()
+    }
+
     // MARK: - Private Properties
+    private var hideBottomBarEventSubject = CurrentValueSubject<Bool, Never>(false)
     private var cameraRef: Ref<MainCamera2>?
     private var photoCaptureRef: Ref<Camera2PhotoCapture>?
     private var recordingRef: Ref<Camera2Recording>?
-    private let cameraCaptureModeViewModel = CameraCaptureModeViewModel()
+    private let cameraCaptureModeViewModel = CameraCaptureModeViewModel(
+        panoramaService: Services.hub.panoramaService, currentMissionManager: Services.hub.currentMissionManager)
     private let panoramaModeViewModel = PanoramaModeViewModel()
     private var userStorageViewModel = GlobalUserStorageViewModel()
     private var photoLapseModeViewModel = PhotoLapseModeViewModel()
@@ -397,6 +405,7 @@ private extension CameraShutterButtonViewModel {
             panoramaModeViewModel.cancelPanoramaPhotoCapture()
         case .panorama:
             panoramaModeViewModel.startPanoramaPhotoCapture()
+            hideBottomBarEventSubject.send(true)
         default:
             guard let photoCapture = camera.photoCapture else { return }
 

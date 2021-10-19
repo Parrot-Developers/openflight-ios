@@ -65,10 +65,12 @@ struct DashboardDataSource {
                     .content(.dashboardMyAccount),
                     .content(.remoteInfos),
                     .content(.droneInfos),
-                    .content(.userDevice),
+                    .content(.settings),
                     .content(.myFlights),
-                    .content(.galleryMedia),
-                    .content(.photogrammetryDebug)
+                    .content(.projectManager),
+                    .content(.galleryMedia)
+//                    Uncomment to display PGY debug cell
+//                    .content(.photogrammetryDebug)
                 ]
             }
         }
@@ -86,10 +88,11 @@ struct DashboardDataSource {
         case dashboardMyAccount
         case remoteInfos
         case droneInfos
-        case userDevice
         case myFlights
         case galleryMedia
         case photogrammetryDebug
+        case settings
+        case projectManager
     }
 }
 
@@ -135,7 +138,6 @@ extension DashboardDataSource {
     }
 
     fileprivate enum Constants {
-        static let wholeScreen: CGFloat = 1.0
         static let halfScreen: CGFloat = 2.0
         static let thirdScreen: CGFloat = 3.0
         static let quarterScreen: CGFloat = 4.0
@@ -255,14 +257,13 @@ extension DashboardDataSource.Item {
                 computedHeight = DashboardDataSource.SizeConstants.footerHeight
                 computedWidth = collectionWidth
             case let .content(contentType):
-                let galleryMediaWidth = (cellWidth + horizontalCellSpacing)
-                    * DashboardDataSource.Constants.thirdScreen / DashboardDataSource.Constants.halfScreen
                 computedHeight = cellHeight
                 switch contentType {
-                case .myFlights:
-                    computedWidth = collectionWidth - galleryMediaWidth - horizontalCellSpacing
-                case .galleryMedia:
-                    computedWidth = galleryMediaWidth
+                case .galleryMedia,
+                     .myFlights,
+                     .projectManager:
+                    let nbItemsOnRow = DashboardDataSource.Constants.thirdScreen
+                    computedWidth = (collectionWidth - horizontalCellSpacing * (nbItemsOnRow - 1)) / nbItemsOnRow
                 default:
                     computedWidth = cellWidth
                 }
@@ -288,7 +289,8 @@ extension DashboardDataSource.Item {
                 computedHeight = cellHeight
                 switch contentType {
                 case .myFlights,
-                     .galleryMedia:
+                     .galleryMedia,
+                     .projectManager:
                     // Set content width to the whole screen.
                     computedWidth = collectionWidth
                 default:

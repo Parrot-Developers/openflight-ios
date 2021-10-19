@@ -30,6 +30,7 @@
 
 import GroundSdk
 import UIKit
+import Combine
 
 // MARK: - Protocols
 /// AccountProvider protocol
@@ -74,6 +75,14 @@ public protocol MissionProvider {
     var mission: Mission { get }
     /// Returns mission signature
     var signature: ProtobufMissionSignature { get }
+
+    /// Check if given the drone active mission uid, this mission should be activated in the app
+    /// - Parameter missionUid: the drone active mission uid
+    func isCompatibleWith(missionUid: String) -> Bool
+}
+
+public extension MissionProvider {
+    func isCompatibleWith(missionUid: String) -> Bool { signature.missionUID == missionUid }
 }
 
 /// Protocol that defines a business item model used within the launcher in HUD.
@@ -89,6 +98,19 @@ public protocol MissionButtonState: BottomBarState {
 }
 
 // MARK: Flight Plan Provider
+
+public struct CustomFlightPlanProgress {
+    public let color: UIColor
+    public let progress: Double
+    public let label: String
+
+    public init(color: UIColor, progress: Double, label: String) {
+        self.color = color
+        self.progress = progress
+        self.label = label
+    }
+}
+
 /// FlightPlanProvider protocol, dedicated to provide Flight Plan specific content.
 public protocol FlightPlanProvider {
     /// Project type
@@ -107,27 +129,22 @@ public protocol FlightPlanProvider {
     var settingsProvider: FlightPlanSettingsProvider? { get }
     /// Indicate if the settings view is always visible in edition mode.
     var settingsAlwaysDisplayed: Bool { get }
-    /// Returns custom coordinator to present screens in the flight plan.
-    var flightPlanCoordinator: FlightPlanCoordinator? { get }
-
-    /// Returns a view controller to display at the end of a flight plan.
-    ///
-    /// - Parameters:
-    ///     - execution: Flight plan execution
-    ///     - coordinator: Flight Plan Panel Coordinator
-    /// - Returns: View controller
-    func executionSummaryVC(flightPlan: FlightPlanModel, coordinator: FlightPlanPanelCoordinator) -> UIViewController?
-
     /// Returns graphic items to diplay a Flight Plan.
     ///
     /// - Parameters:
-    ///     - flightPlan: Flight Plan Object
+    ///    - flightPlan: Flight Plan model
+    ///    - mapMode: map mode in which the Flight Plan will be displayed
     /// - Returns: Flight Plan Graphic array
-    func graphicsWithFlightPlan(_ flightPlan: FlightPlanModel) -> [FlightPlanGraphic]
-
+    func graphicsWithFlightPlan(_ flightPlan: FlightPlanModel, mapMode: MapMode) -> [FlightPlanGraphic]
     /// Check if this provider manages a given flight plan type
     /// - Parameter type: the flight plan type
     func hasFlightPlanType(_ type: String) -> Bool
+    /// Status view to be added to the FP panel
+    var statusView: UIView? { get }
+    /// Custom progress to take over classic progress when not nil
+    var customProgressPublisher: AnyPublisher<CustomFlightPlanProgress?, Never> { get }
+    /// Flight Plan execution title.
+    var executionTitle: String { get }
 }
 
 /// Provides Flight Plan types.
@@ -346,6 +363,14 @@ public protocol MissionActivationModel {
     func stopMissionIfNeeded()
 }
 
+/// Protocols used to provide camera configuration restrictions for a mission.
+public protocol MissionCameraRestrictionsModel {
+    /// Camera capture modes supported by the mission.
+    var supportedModes: [CameraCaptureMode] { get }
+    /// Camera recording framerates supported by the mission, by recording resolution.
+    var supportedFrameratesByResolution: [Camera2RecordingResolution: Set<Camera2RecordingFramerate>]? { get }
+}
+
 // MARK: - Structs
 
 /// Mission description.
@@ -406,7 +431,7 @@ public struct MissionModeConfigurator {
     /// Returns if map should always be visible instead of other right panel components.
     var isMapRequired: Bool
     /// Returns if FlightPlan panel is requiered for this mode.
-    var isFlightPlanPanelRequired: Bool
+    var isRightPanelRequired: Bool
     /// Returns the RTH title to show.
     var rthTitle: (ReturnHomeTarget?) -> String
     /// Returns if this mode is a Tracking one.
@@ -419,7 +444,7 @@ public struct MissionModeConfigurator {
                 logName: String,
                 preferredSplitMode: SplitScreenMode,
                 isMapRequired: Bool,
-                isFlightPlanPanelRequired: Bool,
+                isRightPanelRequired: Bool,
                 rthTitle: ((ReturnHomeTarget?) -> String)? = nil,
                 isTrackingMode: Bool) {
         self.key = key
@@ -428,7 +453,7 @@ public struct MissionModeConfigurator {
         self.logName = logName
         self.preferredSplitMode = preferredSplitMode
         self.isMapRequired = isMapRequired
-        self.isFlightPlanPanelRequired = isFlightPlanPanelRequired
+        self.isRightPanelRequired = isRightPanelRequired
         self.rthTitle = rthTitle ?? { target in
             switch target {
             case .controllerPosition:
@@ -443,6 +468,9 @@ public struct MissionModeConfigurator {
     }
 }
 
+public typealias HudRightPanelContentProvider = (_ services: ServiceHub,
+                                                 _ splitControls: SplitControls,
+                                                 _ rightPanelContainerControls: RightPanelContainerControls) -> Coordinator?
 /// Mission Mode description.
 public struct MissionMode: Equatable {
     /// Returns mission item key.
@@ -457,8 +485,12 @@ public struct MissionMode: Equatable {
     var preferredSplitMode: SplitScreenMode
     /// Returns if map should always be visible instead of other right panel components.
     var isMapRequired: Bool
-    /// Returns true if Flight Plan's right panel is needed for this mode.
-    var isFlightPlanPanelRequired: Bool
+    /// Returns true if HUD right panel is needed for this mode.
+    var isRightPanelRequired: Bool
+    /// Return a coordinator that should be inserted in the right panel if any
+    var hudRightPanelContentProvider: HudRightPanelContentProvider
+    /// Default map mode for this mission
+    public var mapMode: MapMode
     /// Returns Flight Plan provider.
     public var flightPlanProvider: FlightPlanProvider? // TODO: make it smarter by directly handling current mission mode
     /// Returns a model for mission activation.
@@ -469,10 +501,10 @@ public struct MissionMode: Equatable {
     var isTrackingMode: Bool
     /// Returns an array of elements to display in the right stack of the bottom bar.
     var bottomBarRightStack: [ImagingStackElement]
-    /// Provides a mission status view.
-    var missionStatusView: UIView?
     /// State machine
-    var stateMachine: FlightPlanStateMachine?
+    public var stateMachine: FlightPlanStateMachine?
+    /// Camera restrictions model for this mission, `nil` if there is no restrictions.
+    public var cameraRestrictions: MissionCameraRestrictionsModel?
 
     // MARK: Completion handler properties
     /// Using completion handler properties to create variable only when they are called and not when instantiating the struct.
@@ -487,29 +519,33 @@ public struct MissionMode: Equatable {
     public init(configurator: MissionModeConfigurator,
                 flightPlanProvider: FlightPlanProvider? = nil,
                 missionActivationModel: MissionActivationModel = DefaultMissionActivationModel(),
+                mapMode: MapMode = .standard(force2D: false),
                 customMapProvider: (() -> UIViewController)? = nil,
                 entryCoordinatorProvider: (() -> Coordinator)? = nil,
                 bottomBarLeftStack: (() -> [UIView])?,
                 bottomBarRightStack: [ImagingStackElement],
-                missionStatusView: UIView? = nil,
-                stateMachine: FlightPlanStateMachine? = nil) {
+                stateMachine: FlightPlanStateMachine? = nil,
+                hudRightPanelContentProvider: HudRightPanelContentProvider? = nil,
+                cameraRestrictions: MissionCameraRestrictionsModel? = nil) {
         self.key = configurator.key
         self.name = configurator.name
         self.icon = configurator.icon
         self.logName = configurator.logName
         self.preferredSplitMode = configurator.preferredSplitMode
         self.isMapRequired = configurator.isMapRequired
-        self.isFlightPlanPanelRequired = configurator.isFlightPlanPanelRequired
+        self.isRightPanelRequired = configurator.isRightPanelRequired
         self.rthTitle = configurator.rthTitle
         self.isTrackingMode = configurator.isTrackingMode
+        self.mapMode = mapMode
         self.flightPlanProvider = flightPlanProvider
         self.missionActivationModel = missionActivationModel
         self.customMapProvider = customMapProvider
         self.entryCoordinatorProvider = entryCoordinatorProvider
         self.bottomBarLeftStack = bottomBarLeftStack
         self.bottomBarRightStack = bottomBarRightStack
-        self.missionStatusView = missionStatusView
         self.stateMachine = stateMachine
+        self.hudRightPanelContentProvider = hudRightPanelContentProvider ?? { _, _, _ in nil }
+        self.cameraRestrictions = cameraRestrictions
     }
 
     // MARK: - Equatable Implementation

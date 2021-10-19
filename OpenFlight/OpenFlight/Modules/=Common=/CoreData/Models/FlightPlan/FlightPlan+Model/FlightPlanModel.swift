@@ -109,6 +109,11 @@ public struct FlightPlanModel {
 
     public var flightPlanFlights: [FlightPlanFlightsModel]?
 
+    /// - Return dataString data type
+    public var dataStringData: Data? {
+        return dataSetting?.asData
+    }
+
     // MARK: - Public init
 
     public init(apcId: String,
@@ -184,8 +189,9 @@ public struct FlightPlanModel {
 }
 
 extension FlightPlanModel {
-    public enum FlightPlanState: String {
+    public enum FlightPlanState: String, CaseIterable {
 
+        /// Flight Plan States Enum.
         case editable, stopped, flying, completed, uploading, processing, processed, unknown
 
         public init?(rawString: String?) {
@@ -242,4 +248,26 @@ extension FlightPlanModel {
         return self.dataSetting?.polygonPoints.isEmpty == true && points.isEmpty
     }
 
+    var hasReachedFirstWayPoint: Bool {
+        guard let commands = dataSetting?.mavlinkCommands else { return lastMissionItemExecuted > 0 }
+        guard let firstWayPointIndex = commands.firstIndex(where: { $0 is MavlinkStandard.NavigateToWaypointCommand })
+        else { return false }
+        return lastMissionItemExecuted >= firstWayPointIndex
+    }
+
+    var hasReachedLastWayPoint: Bool {
+        guard let commands = dataSetting?.mavlinkCommands,
+              let lastWayPointIndex = commands.lastIndex(where: { $0 is MavlinkStandard.NavigateToWaypointCommand })
+        else { return false }
+        return lastMissionItemExecuted >= lastWayPointIndex
+    }
+
+    var percentCompleted: Double {
+        guard let commands = dataSetting?.mavlinkCommands else { return 0 }
+        return Double(lastMissionItemExecuted) / Double(commands.count) * 100
+    }
+
+    var lastFlightExecutionDate: Date? {
+        return self.flightPlanFlights?.compactMap { $0.dateExecutionFlight }.max()
+    }
 }

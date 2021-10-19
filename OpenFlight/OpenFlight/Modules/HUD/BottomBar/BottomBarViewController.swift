@@ -46,8 +46,6 @@ public protocol MandatoryBottomBarView { }
 
 /// Enum that represent all elements in right stack of the bottom bar.
 public enum ImagingStackElement {
-    case expandButton
-    case collapseButton
     case cameraMode
     case cameraSettings
     case shutterButton
@@ -78,8 +76,6 @@ final class BottomBarViewController: UIViewController {
 
     @IBOutlet private weak var shutterButtonView: UIView!
     @IBOutlet private weak var cameraShutterButton: CameraShutterButton!
-    @IBOutlet private weak var expandButton: UIButton!
-    @IBOutlet private weak var collapseButton: UIButton!
 
     // MARK: - Internal Properties
     weak var delegate: BottomBarContainerDelegate?
@@ -101,17 +97,16 @@ final class BottomBarViewController: UIViewController {
     // TODO: wrong injection
     private let missionLauncherButtonModel = MissionLauncherButtonModel(currentMissionManager: Services.hub.currentMissionManager)
     private let cameraWidgetViewModel = CameraWidgetViewModel(exposureLockService: Services.hub.drone.exposureLockService)
-    private let cameraCaptureModeViewModel = CameraCaptureModeViewModel()
+    private let cameraCaptureModeViewModel = CameraCaptureModeViewModel(
+        panoramaService: Services.hub.panoramaService, currentMissionManager: Services.hub.currentMissionManager)
     private let cameraShutterButtonViewModel = CameraShutterButtonViewModel()
     private let bottomBarViewModel = BottomBarViewModel()
     private let landingStates = HUDLandingViewModel()
-    private let settingRth = SettingsRthViewModel()
     private var deselectableViewModels = [Deselectable]()
     // MARK: - Private Enums
     private enum Constants {
         static let defaultAnimationDuration: TimeInterval = 0.35
         static let collapseAnimationDuration: TimeInterval = 0.2
-        static let fadeInAnimationDuration: TimeInterval = 0.1
     }
 
     // MARK: - Override Funcs
@@ -122,13 +117,10 @@ final class BottomBarViewController: UIViewController {
         observeViewModels()
         initViewModelsState()
         observeViewModelsIsSelectedChange()
-        collapseButton.isHidden = true
-        expandButton.isHidden = true
         view.translatesAutoresizingMaskIntoConstraints = false
-        initButtons()
 
-        let missionMode = self.bottomBarViewModel.state.value.missionMode
-        self.updateView(for: missionMode)
+        let missionMode = bottomBarViewModel.state.value.missionMode
+        updateView(for: missionMode)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -161,14 +153,6 @@ private extension BottomBarViewController {
                  and: coordinator.isMissionLauncherShown.logValue)
     }
 
-    @IBAction func collapseButtonTouchedUpInside(_ sender: Any) {
-        updateExpandAndCollapseViews(isCollapsing: true)
-    }
-
-    @IBAction func expandButtonTouchedUpInside(_ sender: Any) {
-        updateExpandAndCollapseViews(isCollapsing: false)
-    }
-
     @IBAction func cameraWidgetTouchedUpInside(_ sender: Any) {
         cameraWidgetViewModel.toggleSelectionState()
         logEvent(with: LogEvent.LogKeyHUDBottomBarButton.cameraWidget.name,
@@ -188,58 +172,13 @@ private extension BottomBarViewController {
 
 // MARK: - Private Funcs
 private extension BottomBarViewController {
-    /// Init collapse and expand buttons.
-    func initButtons() {
-        collapseButton.customCornered(corners: [.topLeft, .bottomLeft],
-                                      radius: Style.largeCornerRadius,
-                                      backgroundColor: .clear,
-                                      borderColor: .clear)
-        expandButton.customCornered(corners: [.topLeft, .bottomLeft],
-                                    radius: Style.largeCornerRadius,
-                                    backgroundColor: .clear,
-                                    borderColor: .clear)
-    }
-
-    /// Update expand and collapse view.
-    ///
-    /// - Parameters:
-    ///     - isCollapsing: tells if we are collapsing or expanding the view
-    func updateExpandAndCollapseViews(isCollapsing: Bool) {
-        self.collapseButton.isHidden = isCollapsing
-        self.expandButton.isHidden = !isCollapsing
-        self.handleVisibiltyRightStack(hide: true)
-
-        UIView.animate(withDuration: Constants.collapseAnimationDuration, animations: {
-            let stackToLoad: [ImagingStackElement]? = isCollapsing ?
-                self.bottomBarViewModel.state.value.missionMode.bottomBarRightStack :
-                [.collapseButton, .cameraMode, .cameraSettings, .shutterButton]
-
-            self.loadRightStack(for: stackToLoad)
-        }, completion: { _ in
-            self.rightStackView.updateSeparators()
-            self.handleVisibiltyRightStack(hide: false)
-        })
-    }
-
-    /// Hide or display the elements in the right stack.
-    ///
-    /// - Parameters:
-    ///     - hide: boolean that specify if the elements in the right stack must be hidden or displayed
-    func handleVisibiltyRightStack(hide: Bool) {
-        self.cameraModeView.alpha = hide ? 0.0 : 1.0
-        self.expandButton.alpha = hide ? 0.0 : 1.0
-        self.collapseButton.alpha = hide ? 0.0 : 1.0
-        self.cameraWidgetView.alpha = hide ? 0.0 : 1.0
-        self.shutterButtonView.alpha = hide ? 0.0 : 1.0
-    }
-
     /// Update bottom bar view.
     ///
     /// - Parameters:
     ///     - missionMode: update the UI for this mission mode.
     func updateView(for missionMode: MissionMode?) {
-        self.behaviorStackView(for: missionMode)
-        self.loadRightStack(for: missionMode?.bottomBarRightStack)
+        behaviorStackView(for: missionMode)
+        loadRightStack(for: missionMode?.bottomBarRightStack)
     }
 
     /// Load views in left stackview.
@@ -248,15 +187,15 @@ private extension BottomBarViewController {
     ///     - missionMode: updates the UI for this mission mode.
     func behaviorStackView(for missionMode: MissionMode?) {
         // Remove all views in left stackView.
-        self.behaviorStackView.safelyRemoveArrangedSubviews()
-        self.subBehaviorStackView.safelyRemoveArrangedSubviews()
+        behaviorStackView.safelyRemoveArrangedSubviews()
+        subBehaviorStackView.safelyRemoveArrangedSubviews()
 
         let isReturningToHome = landingStates.state.value.isReturnHomeActive == true
 
         if isReturningToHome {
             let view = ReturnHomeBottomBarView()
             view.addBlurEffect()
-            self.subBehaviorStackView.addArrangedSubview(view)
+            subBehaviorStackView.addArrangedSubview(view)
         }
 
         // Add views for a specific mission.
@@ -269,7 +208,7 @@ private extension BottomBarViewController {
             if !views.isEmpty {
                 let separator = SeparatorView(size: Style.bottomBarSeparatorWidth,
                                               backColor: .clear)
-                self.subBehaviorStackView.addArrangedSubview(separator)
+                subBehaviorStackView.addArrangedSubview(separator)
             }
         }
         addMissionViews(views)
@@ -285,20 +224,20 @@ private extension BottomBarViewController {
             if let barButtonView = view as? BehaviourModeView {
                 barButtonView.delegate = delegate
                 barButtonView.deselectAllViewModelsDelegate = self
-                self.deselectableViewModels.append(barButtonView.viewModel)
+                deselectableViewModels.append(barButtonView.viewModel)
             }
 
             if view is BehaviourModeView {
-                self.behaviorStackView.addArrangedSubview(view)
+                behaviorStackView.addArrangedSubview(view)
             }
             if !(view is SeparatorView) && !(view is BehaviourModeView) {
-                 self.subBehaviorStackView.addArrangedSubview(view)
+                subBehaviorStackView.addArrangedSubview(view)
             }
         }
 
         // Prevents the BehaviourModeView to be hidden when the drone is connecting in some case.
-        self.behaviorStackView.layoutIfNeeded()
-        self.subBehaviorStackView.layoutIfNeeded()
+        behaviorStackView.layoutIfNeeded()
+        subBehaviorStackView.layoutIfNeeded()
     }
 
     /// Displays views in right stackview.
@@ -307,21 +246,17 @@ private extension BottomBarViewController {
     ///     - stackElements: updates the UI with the imaging stack to display
     func loadRightStack(for stackElements: [ImagingStackElement]?) {
         guard let rightStack = stackElements else {
-            self.expandButton.isHidden = true
-            self.collapseButton.isHidden = true
-            self.cameraModeView.isHidden = true
-            self.cameraWidgetView.isHidden = true
-            self.shutterButtonView.isHidden = true
+            cameraModeView.isHidden = true
+            cameraWidgetView.isHidden = true
+            shutterButtonView.isHidden = true
             return
         }
 
-        self.expandButton.isHidden = !rightStack.contains(.expandButton)
-        self.collapseButton.isHidden = !rightStack.contains(.collapseButton)
-        self.cameraModeView.isHidden = !rightStack.contains(.cameraMode)
-        self.cameraWidgetView.isHidden = !rightStack.contains(.cameraSettings)
-        self.shutterButtonView.isHidden = !rightStack.contains(.shutterButton)
+        cameraModeView.isHidden = !rightStack.contains(.cameraMode)
+        cameraWidgetView.isHidden = !rightStack.contains(.cameraSettings)
+        shutterButtonView.isHidden = !rightStack.contains(.shutterButton)
 
-        self.rightStackView.updateSeparators()
+        rightStackView.updateSeparators()
     }
 
     /// Observes View Models state changes.
@@ -342,6 +277,10 @@ private extension BottomBarViewController {
         cameraShutterButtonViewModel.state.valueChanged = { [weak self] state in
             self?.cameraShutterButton.model = state
         }
+        cameraShutterButtonViewModel.hideBottomBarEventPublisher.sink { [unowned self] _ in
+            deselectAllViewModels(except: nil)
+        }
+        .store(in: &cancellables)
         landingStates.state.valueChanged = { [weak self] _ in
             self?.updateView(for: self?.bottomBarViewModel.state.value.missionMode)
         }

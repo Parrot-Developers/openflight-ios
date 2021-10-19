@@ -69,7 +69,7 @@ public final class FlightPlanDataSetting: Codable {
     public var polygonPoints: [PolygonPoint] = []
     public var settings: [FlightPlanLightSetting] = []
     public var obstacleAvoidanceActivated: Bool = true
-    public var mavelinkDataFile: Data?
+    public var mavlinkDataFile: Data?
     public var takeoffActions: [Action]
     public var pois: [PoiPoint]
     public var wayPoints: [WayPoint]
@@ -80,6 +80,20 @@ public final class FlightPlanDataSetting: Codable {
     public var captureSettings: [String: String]?
     public var disablePhotoSignature: Bool = false
     public var freeSettings = [String: String]()
+    public var notPropagatedSettings = [String: String]()
+    private var _mavlinkCommands: [MavlinkStandard.MavlinkCommand]?
+    public var mavlinkCommands: [MavlinkStandard.MavlinkCommand]? {
+        if let commands = _mavlinkCommands {
+            return commands
+        }
+        guard let data = mavlinkDataFile,
+              let str = String(data: data, encoding: .utf8),
+              let commands = try? MavlinkStandard.MavlinkFiles.parse(mavlinkString: str) else {
+            return nil
+        }
+        _mavlinkCommands = commands
+        return commands
+    }
 
     // MARK: - Internal Properties
     var dirty: Bool
@@ -141,7 +155,7 @@ public final class FlightPlanDataSetting: Codable {
         case rotation
         case tilt
         case obstacleAvoidanceActivated
-        case mavelinkDataFile
+        case mavlinkDataFile
         case disablePhotoSignature
 
         // Plan
@@ -153,6 +167,7 @@ public final class FlightPlanDataSetting: Codable {
         case captureMode
         case captureSettings
         case freeSettings
+        case notPropagatedSettings
     }
 
     // MARK: - Init
@@ -170,7 +185,7 @@ public final class FlightPlanDataSetting: Codable {
                 settings: [FlightPlanLightSetting],
                 freeSettings: [String: String],
                 polygonPoints: [PolygonPoint]? = nil,
-                mavelinkDataFile: Data? = nil,
+                mavlinkDataFile: Data? = nil,
                 takeoffActions: [Action] = [],
                 pois: [PoiPoint] = [],
                 wayPoints: [WayPoint] = [],
@@ -184,7 +199,7 @@ public final class FlightPlanDataSetting: Codable {
         self.settings = settings
         self.freeSettings = freeSettings
         self.polygonPoints = polygonPoints ?? []
-        self.mavelinkDataFile = mavelinkDataFile
+        self.mavlinkDataFile = mavlinkDataFile
         self.disablePhotoSignature = disablePhotoSignature
 
         // Set Flight Plan object relations.
@@ -211,10 +226,11 @@ public final class FlightPlanDataSetting: Codable {
         self.rotation = try? container.decode(Double.self, forKey: .rotation)
         self.tilt = try? container.decode(Double.self, forKey: .tilt)
         self.obstacleAvoidanceActivated = (try? container.decode(Bool.self, forKey: .obstacleAvoidanceActivated)) ?? true
-        self.mavelinkDataFile = try? container.decode(Data.self, forKey: .mavelinkDataFile)
+        self.mavlinkDataFile = try? container.decode(Data.self, forKey: .mavlinkDataFile)
         self.disablePhotoSignature = try container.decode(Bool.self, forKey: .disablePhotoSignature)
         self.captureSettings = try? container.decode([String: String].self, forKey: .captureSettings)
         self.freeSettings = (try? container.decode([String: String].self, forKey: .freeSettings)) ?? [:]
+        self.notPropagatedSettings  = (try? container.decode([String: String].self, forKey: .notPropagatedSettings)) ?? [:]
         self.lastPointRth = try? container.decode(Bool.self, forKey: .lastPointRth)
 
         // Plan
@@ -223,6 +239,32 @@ public final class FlightPlanDataSetting: Codable {
         self.wayPoints = try container.decode([WayPoint].self, forKey: .wayPoints)
         // Set Flight Plan object relations.
         self.setRelations()
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(productName, forKey: .productName)
+        try container.encode(productId, forKey: .productId)
+        try container.encode(dirty, forKey: .dirty)
+        try container.encode(settings, forKey: .settings)
+        try container.encode(polygonPoints, forKey: .polygonPoints)
+        try container.encode(captureMode, forKey: .captureMode)
+        try container.encode(shouldContinue, forKey: .shouldContinue)
+        try container.encode(zoomLevel, forKey: .zoomLevel)
+        try container.encode(longitude, forKey: .longitude)
+        try container.encode(latitude, forKey: .latitude)
+        try container.encode(rotation, forKey: .rotation)
+        try container.encode(tilt, forKey: .tilt)
+        try container.encode(obstacleAvoidanceActivated, forKey: .obstacleAvoidanceActivated)
+        try container.encode(mavlinkDataFile, forKey: .mavlinkDataFile)
+        try container.encode(disablePhotoSignature, forKey: .disablePhotoSignature)
+        try container.encode(captureSettings, forKey: .captureSettings)
+        try container.encode(freeSettings, forKey: .freeSettings)
+        try container.encode(notPropagatedSettings, forKey: .notPropagatedSettings)
+        try container.encode(lastPointRth, forKey: .lastPointRth)
+        try container.encode(takeoffActions, forKey: .takeoffActions)
+        try container.encode(pois, forKey: .pois)
+        try container.encode(wayPoints, forKey: .wayPoints)
     }
 }
 

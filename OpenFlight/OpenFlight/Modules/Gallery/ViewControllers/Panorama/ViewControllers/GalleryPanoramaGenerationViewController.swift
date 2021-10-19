@@ -29,255 +29,128 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Panorama download and generation ViewController.
 final class GalleryPanoramaGenerationViewController: UIViewController {
+    var viewModel: GalleryPanoramaViewModel?
+
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Outlets
-    @IBOutlet private weak var backgroundView: UIView!
-    @IBOutlet private weak var backButton: UIButton!
+    @IBOutlet private weak var cancelButton: UIButton!
     @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var secondaryStackView: UIView!
+    @IBOutlet private weak var mediaTitleView: GalleryMediaTitleView!
     @IBOutlet private weak var circleProgressView: CircleProgressView!
     @IBOutlet private weak var progressLabel: UILabel!
-    @IBOutlet private weak var firstStepView: GalleryPanoramaStepView!
-    @IBOutlet private weak var secondStepView: GalleryPanoramaStepView!
+    @IBOutlet private weak var stepsStackView: UIStackView!
 
     // MARK: - Private Properties
-    private weak var coordinator: GalleryCoordinator?
-    private var viewModel: GalleryPanoramaViewModel?
     private var index: Int = 0
-    private var photoPano: PhotoPano?
-    private var photoPanoProgressTimer: Timer?
-    private var mediaListener: GalleryMediaListener?
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let progressTimerDelay: TimeInterval = 1.0
-        static let firstStepDone: Float = 0.5
-        static let downloadProcessDone: Double = 50
+    // MARK: - Init
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        setupUI()
+        observeViewModel()
     }
 
-    // MARK: - Setup
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        viewModel?.startProcessAsked()
+    }
+
+    override var prefersStatusBarHidden: Bool { true }
+
+    /// Observe panorama VM updates.
+    func observeViewModel() {
+        viewModel?.$generationProgress
+            .sink { [unowned self] progress in
+                updateProgressView(progress)
+            }
+            .store(in: &cancellables)
+
+        viewModel?.$generationStepModels
+            .sink { [unowned self] models in
+                updateSteps(models)
+            }
+            .store(in: &cancellables)
+    }
+
     /// Inits view controller.
     ///
     /// - Parameters:
-    ///    - coordinator: gallery coordinator.
     ///    - viewModel: gallery panorama viewModel.
     ///    - index: Media index in the gallery media array
     /// - Returns: a GalleryPanoramaGenerationViewController.
-    static func instantiate(coordinator: GalleryCoordinator,
-                            viewModel: GalleryPanoramaViewModel,
+    static func instantiate(viewModel: GalleryPanoramaViewModel,
                             index: Int) -> GalleryPanoramaGenerationViewController {
         let viewController = StoryboardScene.GalleryPanorama.galleryPanoramaGenerationViewController.instantiate()
-        viewController.coordinator = coordinator
         viewController.viewModel = viewModel
         viewController.index = index
 
         return viewController
     }
-
-    // MARK: - Deinit
-    deinit {
-        photoPanoProgressTimer?.invalidate()
-        photoPanoProgressTimer = nil
-    }
-
-    // MARK: - Override Funcs
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        setupUI()
-        setupModels()
-        setupViewModel()
-        downloadMedia()
-    }
-
-    override var prefersStatusBarHidden: Bool {
-        return true
-    }
 }
 
 // MARK: - Actions
 private extension GalleryPanoramaGenerationViewController {
-    @IBAction func backButtonTouchedUpInside(_ sender: Any) {
-        guard let downloadState = viewModel?.galleryViewModel?.getMedia(index: index)?.downloadState,
-              let galleryViewModel = viewModel?.galleryViewModel else {
-            return
-        }
-
-        if downloadState == .downloading {
-            galleryViewModel.cancelDownloads()
-        }
-
-        photoPano?.abort()
-        coordinator?.dismissPanoramaGenerationScreen()
+    @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
+        viewModel?.cancelButtonTapped()
     }
 }
 
 // MARK: - Private Funcs
+
+// UI Init
 private extension GalleryPanoramaGenerationViewController {
     /// Sets up all the UI for the view controller.
     func setupUI() {
-        guard let galleryViewModel = viewModel?.galleryViewModel,
-              let currentMedia = galleryViewModel.getMedia(index: index) else {
+        guard let galleryMediaViewModel = viewModel?.galleryMediaViewModel,
+              let currentMedia = galleryMediaViewModel.getMedia(index: index) else {
             return
         }
 
-        /// Forces to hide navigation bar.
-        viewModel?.galleryViewModel?.toggleShouldHideControls(forceHide: true)
-        progressLabel.makeUp(with: .large)
-        titleLabel.makeUp(with: .large)
+        mediaTitleView.model = currentMedia
+        progressLabel.makeUp(with: .huge, and: ColorName.defaultTextColor)
+        titleLabel.makeUp(with: .large, and: ColorName.defaultTextColor)
         titleLabel.attributedText = currentMedia.titleAttributedString
-        self.circleProgressView.strokeColor = ColorName.greenSpring.color
-        secondaryStackView.isHidden = false
+
+        initStepsStackView()
     }
 
-    /// Setup everything related to view model.
-    func setupViewModel() {
-        mediaListener = self.viewModel?.galleryViewModel?.registerListener(didChange: { [weak self] state in
-            self?.circleProgressView.setProgress(state.downloadProgress / 2.0)
-            self?.progressLabel.text = String(format: "%d%%", Int((state.downloadProgress / 2.0) * 100))
-            if state.downloadProgress == 1.0 && state.downloadStatus == .complete && self?.photoPano == nil {
-                self?.updateSteps()
-                self?.generatePanorama()
-            }
-        })
-    }
+    /// Inits steps stackView according to model content.
+    func initStepsStackView() {
+        guard let viewModel = viewModel else { return }
 
-    /// Sets up models associated with the choices view.
-    func setupModels() {
-        guard let downloadState = viewModel?.galleryViewModel?.getMedia(index: index)?.downloadState,
-              let panoType = viewModel?.selectedPanoramaMediaType else {
-            return
+        stepsStackView.removeSubViews()
+        for model in viewModel.generationStepModels {
+            let view = GalleryPanoramaStepView()
+            view.model = model
+            stepsStackView.addArrangedSubview(view)
         }
+    }
+}
 
-        self.firstStepView.model = viewModel?.updatePanoramaGenerationModels(downloadState: downloadState,
-                                                                             panoType: panoType).first
-        self.secondStepView.model = viewModel?.updatePanoramaGenerationModels(downloadState: downloadState,
-                                                                              panoType: panoType).last
+// UI Update
+private extension GalleryPanoramaGenerationViewController {
+    func updateProgressView(_ progress: Float) {
+        circleProgressView.setProgress(progress, duration: Style.mediumAnimationDuration)
+        progressLabel.text = String(format: "%d%%", Int((progress) * 100))
     }
 
-    /// Generate the panorama.
-    func generatePanorama() {
-        // Refresh gallery medias on device.
-        self.viewModel?.galleryViewModel?.refreshMedias(source: .mobileDevice)
+    func updateSteps(_ models: [GalleryPanoramaStepModel]) {
+        guard stepsStackView.arrangedSubviews.count == models.count else { return }
 
-        guard let viewModel = self.viewModel,
-              let currentMediaUid = viewModel.galleryViewModel?.getMedia(index: index)?.uid,
-              let mediaFromDevice = viewModel.galleryViewModel?.deviceViewModel?.getMediaFromUid(currentMediaUid),
-              let type = viewModel.selectedPanoramaMediaType,
-              let quality = viewModel.selectedPanoramaQuality,
-              let mediaUrls = mediaFromDevice.urls,
-              let mediaFolderPath = mediaFromDevice.folderPath,
-              let mediaPrefix = mediaFromDevice.url?.prefix else {
-            return
+        DispatchQueue.main.async {
+            self.circleProgressView.status = self.viewModel?.status.toProgressStatus ?? .inactive
         }
-
-        let panoramaRelatedEntries = PanoramaMediaType.allCases.map({ $0.rawValue })
-        let inputs = mediaUrls.filter({!panoramaRelatedEntries.contains(where: $0.lastPathComponent.contains)})
-        let width: Int32 = type.width(forQuality: quality)
-        let height: Int32 = type.height(forQuality: quality)
-        let outputUrl = URL(string: String(mediaFolderPath + mediaPrefix + "-" + type.rawValue + ".JPG"))
-
-        updateSteps()
-        photoPano = PhotoPano()
-        photoPanoProgressTimer = Timer.scheduledTimer(withTimeInterval: Constants.progressTimerDelay, repeats: true, block: { [weak self] _ in
-            guard let photoPano = self?.photoPano else { return }
-
-            let progress = photoPano.progress()
-            DispatchQueue.main.async {
-                self?.circleProgressView.setProgress(0.5 + (Float(progress) / 2))
-                self?.progressLabel.text = String(format: "%d%%", Int(Constants.downloadProcessDone + ((progress / 2) * 100)))
-            }
-        })
-
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let photoPano = self?.photoPano else { return }
-
-            _ = photoPano.process(preset: type.toPanoramaPreset,
-                                  inputs: inputs,
-                                  width: width,
-                                  height: height,
-                                  output: outputUrl,
-                                  estimationIn: nil,
-                                  estimationOut: nil,
-                                  description: nil) { [weak self] (status) in
-                DispatchQueue.main.async {
-                    if status == .success {
-                        self?.updateSteps(status)
-                        self?.coordinator?.dismissPanoramaGenerationScreen()
-                    } else if status == .failed {
-                        self?.coordinator?.dismissPanoramaGenerationScreen()
-                    }
-                }
+        UIView.animate(withDuration: Style.mediumAnimationDuration, delay: 0, options: .curveEaseOut) {
+            for index in 0..<models.count {
+                (self.stepsStackView.arrangedSubviews[index] as? GalleryPanoramaStepView)?.model = models[index]
             }
         }
-    }
-
-    /// Download media.
-    func downloadMedia() {
-        /// If we are not on SD card we don't need to download.
-        guard let galleryViewModel = viewModel?.galleryViewModel,
-              let currentMedia = viewModel?.galleryViewModel?.getMedia(index: index) else {
-            return
-        }
-
-        if currentMedia.downloadState == .toDownload {
-            galleryViewModel.downloadMedias([currentMedia], completion: { [weak self] success in
-                guard success else { return }
-
-                self?.handleDownloadEnd()
-            })
-        } else {
-            self.circleProgressView.setProgress(Float(Constants.downloadProcessDone) * 100)
-            self.progressLabel.text = String(format: "%d%%", Constants.downloadProcessDone * 100)
-            generatePanorama()
-        }
-    }
-
-    /// Handle download end.
-    func handleDownloadEnd() {
-        let deleteAction = AlertAction(title: L10n.commonDelete,
-                                       style: .destructive,
-                                       actionHandler: { [weak self] in
-                                        self?.deleteCurrentMedia()
-                                       })
-        let keepAction = AlertAction(title: L10n.commonKeep,
-                                     style: .default)
-        showAlert(title: L10n.galleryDownloadComplete,
-                  message: L10n.galleryDownloadKeep,
-                  cancelAction: deleteAction,
-                  validateAction: keepAction)
-    }
-
-    /// Delete current media.
-    func deleteCurrentMedia() {
-        guard let viewModel = viewModel,
-              let currentMedia = viewModel.galleryViewModel?.getMedia(index: index) else {
-            return
-        }
-
-        viewModel.galleryViewModel?.deleteMedias([currentMedia], completion: { [weak self] success in
-            guard success else { return }
-
-            self?.viewModel?.galleryViewModel?.refreshMedias()
-        })
-    }
-
-    /// Updates step of the panorama processing.
-    ///
-    /// - Parameters:
-    ///    - panoGenerationStatus: current panorama processing status
-    func updateSteps(_ panoGenerationStatus: PhotoPanoProcessingStatus? = nil) {
-        guard let viewModel = viewModel,
-              let panoType = viewModel.selectedPanoramaMediaType,
-              let downloadState = viewModel.galleryViewModel?.getMedia(index: index)?.downloadState else {
-            return
-        }
-
-        self.firstStepView.model = viewModel.updatePanoramaGenerationModels(downloadState: downloadState,
-                                                                            panoType: panoType).first
-        self.secondStepView.model = viewModel.updatePanoramaGenerationModels(downloadState: downloadState,
-                                                                             panoType: panoType).last
     }
 }

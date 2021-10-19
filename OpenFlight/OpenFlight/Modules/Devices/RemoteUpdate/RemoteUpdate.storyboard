@@ -26,7 +26,7 @@
                                 <rect key="frame" x="44" y="0.0" width="808" height="75"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="rfa-hm-AVa">
-                                        <rect key="frame" x="20" y="14" width="47" height="47"/>
+                                        <rect key="frame" x="20" y="17" width="41" height="41"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="rfa-hm-AVa" secondAttribute="height" multiplier="1:1" id="JS3-f8-dps"/>
                                         </constraints>
@@ -38,32 +38,21 @@
                                             <action selector="backButtonTouchedUpInside:" destination="BQF-ET-c84" eventType="touchUpInside" id="Rcg-EK-bX9"/>
                                         </connections>
                                     </button>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="jVU-Xo-4e1">
-                                        <rect key="frame" x="381" y="15" width="46.5" height="45"/>
-                                        <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fwQ-wi-FSA" userLabel="Title">
-                                                <rect key="frame" x="0.0" y="0.0" width="46.5" height="22.5"/>
-                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
-                                                <color key="textColor" name="default_text_color"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FKX-pD-twH">
-                                                <rect key="frame" x="4.5" y="27.5" width="37" height="17.5"/>
-                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                <color key="textColor" name="default_text_color"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                        </subviews>
-                                    </stackView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fwQ-wi-FSA" userLabel="Title">
+                                        <rect key="frame" x="383" y="28" width="42" height="19"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                        <color key="textColor" name="default_text_color"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="rfa-hm-AVa" firstAttribute="centerY" secondItem="PUH-Vi-fac" secondAttribute="centerY" id="2Qh-G9-4Pp"/>
-                                    <constraint firstItem="jVU-Xo-4e1" firstAttribute="centerX" secondItem="PUH-Vi-fac" secondAttribute="centerX" id="dtp-FF-BTA"/>
-                                    <constraint firstItem="jVU-Xo-4e1" firstAttribute="centerY" secondItem="PUH-Vi-fac" secondAttribute="centerY" id="jzU-zd-5Q6"/>
+                                    <constraint firstItem="fwQ-wi-FSA" firstAttribute="centerY" secondItem="PUH-Vi-fac" secondAttribute="centerY" id="eKy-z7-kJF"/>
                                     <constraint firstItem="rfa-hm-AVa" firstAttribute="leading" secondItem="PUH-Vi-fac" secondAttribute="leading" constant="20" id="mbe-bc-YKg"/>
                                     <constraint firstAttribute="height" constant="75" id="orA-PG-8Vj">
                                         <variation key="heightClass=regular-widthClass=compact" constant="110"/>
                                     </constraint>
+                                    <constraint firstItem="fwQ-wi-FSA" firstAttribute="centerX" secondItem="PUH-Vi-fac" secondAttribute="centerX" id="vWu-jH-zb7"/>
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bhp-kx-R8I">
@@ -195,7 +184,6 @@
                         <outlet property="progressView" destination="tIO-RH-RZ6" id="pWS-DS-W4U"/>
                         <outlet property="rebootingStepView" destination="wpK-Oj-my4" id="LP7-7V-FZL"/>
                         <outlet property="sendingStepView" destination="Kwa-Dt-WT3" id="RyJ-g4-Lft"/>
-                        <outlet property="subtitleLabel" destination="FKX-pD-twH" id="Ez1-h4-Jxr"/>
                         <outlet property="titleLabel" destination="fwQ-wi-FSA" id="ebI-VA-uIm"/>
                     </connections>
                 </viewController>

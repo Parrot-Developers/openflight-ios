@@ -56,10 +56,10 @@ extension Double {
     /// - Parameters:
     ///    - maximumFractionDigits: maximum fraction digits
     /// - Returns: percent string formated
-    func asPercent(maximumFractionDigits: Int = 2) -> String {
+    func asPercent(maximumFractionDigits: Int = 2, multiplier: NSNumber = 1.0) -> String {
         let percentFormatter = NumberFormatter()
         percentFormatter.numberStyle = .percent
-        percentFormatter.multiplier = 1.0
+        percentFormatter.multiplier = multiplier
         percentFormatter.maximumFractionDigits = maximumFractionDigits
         let value = percentFormatter.string(from: NSNumber(value: self)) ?? "\(self)%"
         // Replace "no break space" character (if exists) because it breaks

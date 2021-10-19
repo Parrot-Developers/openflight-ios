@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="collection view cell content view" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="8NO-TA-J1D" customClass="DashboardSettingsCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="162" height="158"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="27x-sq-gTN">
+                <rect key="frame" x="0.0" y="0.0" width="162" height="158"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ahe-lE-wdq">
+                        <rect key="frame" x="9" y="9" width="144" height="114"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" translatesAutoresizingMaskIntoConstraints="NO" id="UIP-Wo-pAV">
+                                <rect key="frame" x="0.0" y="0.0" width="144" height="114"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mgu-k3-Zel">
+                                        <rect key="frame" x="0.0" y="0.0" width="144" height="14"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="14" id="Jcv-BI-Vv8"/>
+                                        </constraints>
+                                    </view>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icController" translatesAutoresizingMaskIntoConstraints="NO" id="p7e-uJ-Ikt">
+                                        <rect key="frame" x="0.0" y="43" width="144" height="25"/>
+                                        <color key="tintColor" name="default_text_color"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="25" id="UjR-lK-WDY"/>
+                                        </constraints>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qqg-6f-rj2">
+                                        <rect key="frame" x="0.0" y="96.5" width="144" height="17.5"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                        <color key="textColor" name="default_text_color"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                    </stackView>
+                </subviews>
+                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="ahe-lE-wdq" secondAttribute="trailing" constant="9" id="17o-Z9-pOj"/>
+                    <constraint firstAttribute="bottom" secondItem="ahe-lE-wdq" secondAttribute="bottom" constant="35" id="P2L-pK-ucT"/>
+                    <constraint firstItem="ahe-lE-wdq" firstAttribute="leading" secondItem="27x-sq-gTN" secondAttribute="leading" constant="9" id="fp3-yi-cLO"/>
+                    <constraint firstItem="ahe-lE-wdq" firstAttribute="top" secondItem="27x-sq-gTN" secondAttribute="top" constant="9" id="w8r-Yd-qaf"/>
+                </constraints>
+            </collectionViewCellContentView>
+            <size key="customSize" width="162" height="158"/>
+            <connections>
+                <outlet property="imageView" destination="p7e-uJ-Ikt" id="Tfr-un-xOV"/>
+                <outlet property="titleLabel" destination="qqg-6f-rj2" id="3vb-sV-BYe"/>
+            </connections>
+            <point key="canvasLocation" x="204.34782608695653" y="93.080357142857139"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <image name="icController" width="33" height="25"/>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

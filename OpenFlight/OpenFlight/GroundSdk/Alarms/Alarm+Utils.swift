@@ -31,7 +31,6 @@
 import GroundSdk
 
 /// Utility extension for `Alarm`.
-
 extension Alarm {
     /// Returns true if current alarm level is an error level.
     var hasError: Bool {

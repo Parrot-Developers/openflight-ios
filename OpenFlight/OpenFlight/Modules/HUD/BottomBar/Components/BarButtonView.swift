@@ -97,12 +97,13 @@ private extension BarButtonView {
         title.text = viewModel.title
         currentMode.text = viewModel.subtext
         subTitle.text = viewModel.subtitle
-        modeView.isHidden = viewModel.title?.isEmpty == true && viewModel.subtext?.isEmpty == true && viewModel.subtitle?.isEmpty == true
+        modeView.isHidden = viewModel.singleMode ||
+            (viewModel.title?.isEmpty == true && viewModel.subtext?.isEmpty == true && viewModel.subtitle?.isEmpty == true)
         updateAlpha()
         updateIcon()
         updateTextColor()
         updateBackgroundColor()
-        isUserInteractionEnabled = viewModel.enabled
+        isUserInteractionEnabled = viewModel.enabled && !viewModel.singleMode
     }
 
     func updateAlpha() {

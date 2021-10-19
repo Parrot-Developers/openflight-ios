@@ -82,6 +82,7 @@ private extension ULogTag {
 final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
     // MARK: - Private Properties
     private var alarmsRef: Ref<Alarms>?
+    private var takeoffChecklistRef: Ref<TakeoffChecklist>?
     private var motorsRef: Ref<CopterMotors>?
     private var cameraRef: Ref<MainCamera2>?
     private var gimbalRef: Ref<Gimbal>?
@@ -95,11 +96,15 @@ final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
     private let userStorageViewModel = HUDAlertBannerUserStorageViewModel()
     private let commonAlertViewModel = HUDAlertBannerProvider.shared.alertBannerCommonViewModel
 
+    /// Latest received gimbal errors, `nil` if unavailable.
+    private var gimbalErrors: Set<GimbalError>?
+
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
 
         listenAlarms(drone: drone)
+        listenTakeoffChecklist(drone: drone)
         listenMotors(drone: drone)
         listenCamera(drone: drone)
         listenGimbal(drone: drone)
@@ -127,6 +132,16 @@ private extension HUDAlertBannerViewModel {
         }
     }
 
+    /// Starts watcher for alarms.
+    func listenTakeoffChecklist(drone: Drone) {
+        takeoffChecklistRef = drone.getInstrument(Instruments.takeoffChecklist) { [weak self] checklist in
+            if let checklist = checklist {
+                self?.updateTakeoffAlerts(checklist)
+                self?.updateState()
+            }
+        }
+    }
+
     /// Starts watcher for motors.
     func listenMotors(drone: Drone) {
         motorsRef = drone.getPeripheral(Peripherals.copterMotors) { [weak self] _ in
@@ -145,12 +160,21 @@ private extension HUDAlertBannerViewModel {
 
     /// Starts watcher for gimbal.
     func listenGimbal(drone: Drone) {
-        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
-            self?.alertList.cleanAlerts(withCategories: [.componentsCamera])
+        // reset latest received gimbal errors
+        gimbalErrors = nil
+
+        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [unowned self] gimbal in
+            // gimbal observer is called very often, so filter theses events,
+            // to do the state update only when gimbal errors change
+            let errors = gimbal?.currentErrors ?? []
+            guard errors != gimbalErrors else { return }
+            gimbalErrors = errors
+
+            alertList.cleanAlerts(withCategories: [.componentsCamera])
             if let alerts = gimbal?.currentAlerts {
-                self?.alertList.addAlerts(alerts)
+                alertList.addAlerts(alerts)
             }
-            self?.updateState()
+            updateState()
         }
     }
 
@@ -249,6 +273,15 @@ private extension HUDAlertBannerViewModel {
         alertList.cleanAlerts(withCategories: [.componentsImu])
         if let alert = drone.getInstrument(Instruments.alarms)?.imuSaturationAlerts(drone: drone) {
             alertList.addAlerts([alert])
+        }
+    }
+
+    /// Updates alerts from takeoff checklist.
+    func updateTakeoffAlerts(_ checklist: TakeoffChecklist) {
+        alertList.cleanAlerts(withCategories: [.takeoff])
+        if checklist.getAlarm(kind: TakeoffAlarm.Kind.batteryGaugeUpdateRequired).level == .on
+            || checklist.getAlarm(kind: TakeoffAlarm.Kind.batteryIdentification).level == .on {
+            alertList.addAlerts([HUDBannerCriticalAlertType.takeoffUnavailable])
         }
     }
 

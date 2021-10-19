@@ -40,13 +40,13 @@
                                         <rect key="frame" x="0.0" y="0.0" width="50" height="120"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tbw-F1-SEw">
-                                                <rect key="frame" x="0.0" y="8" width="50" height="17.5"/>
+                                                <rect key="frame" x="0.0" y="8" width="50" height="15"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Year" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wda-vh-11P">
-                                                <rect key="frame" x="0.0" y="29.5" width="23.5" height="14"/>
+                                                <rect key="frame" x="0.0" y="27" width="22.5" height="12"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="12"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
@@ -69,7 +69,7 @@
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="W30-xE-Xge">
                                                 <rect key="frame" x="0.0" y="0.0" width="372" height="120"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBaseAvatar" translatesAutoresizingMaskIntoConstraints="NO" id="UVu-g0-3yV">
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBaseAvatar" translatesAutoresizingMaskIntoConstraints="NO" id="UVu-g0-3yV">
                                                         <rect key="frame" x="0.0" y="0.0" width="56" height="56"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" secondItem="UVu-g0-3yV" secondAttribute="height" multiplier="1/1" id="l8u-fZ-hHF"/>
@@ -80,39 +80,21 @@
                                                         <rect key="frame" x="64" y="8" width="124" height="104"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="acQ-sZ-lMo">
-                                                                <rect key="frame" x="0.0" y="0.0" width="124" height="38"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="124" height="50"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                                 <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xfY-d0-hbO">
-                                                                <rect key="frame" x="0.0" y="42" width="124" height="38"/>
+                                                                <rect key="frame" x="0.0" y="54" width="124" height="50"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                                 <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
-                                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="SWv-Ll-z4F">
-                                                                <rect key="frame" x="0.0" y="84" width="124" height="20"/>
-                                                                <subviews>
-                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="252" verticalHuggingPriority="251" image="icWarningRed" translatesAutoresizingMaskIntoConstraints="NO" id="EVC-F6-HWH">
-                                                                        <rect key="frame" x="0.0" y="0.0" width="15" height="20"/>
-                                                                        <color key="tintColor" name="warning_color"/>
-                                                                    </imageView>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bUr-C8-g1H">
-                                                                        <rect key="frame" x="23" y="0.0" width="101" height="20"/>
-                                                                        <constraints>
-                                                                            <constraint firstAttribute="height" constant="20" id="aMT-MM-pwE"/>
-                                                                        </constraints>
-                                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
-                                                                        <color key="textColor" name="default_text_color"/>
-                                                                        <nil key="highlightedColor"/>
-                                                                    </label>
-                                                                </subviews>
-                                                            </stackView>
                                                         </subviews>
                                                     </stackView>
                                                     <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="1OY-iX-uZe">
-                                                        <rect key="frame" x="196" y="52.5" width="160" height="15.5"/>
+                                                        <rect key="frame" x="196" y="52.5" width="160" height="15"/>
                                                         <subviews>
                                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="dIF-PJ-AWd">
                                                                 <rect key="frame" x="0.0" y="1.5" width="48" height="12"/>
@@ -152,7 +134,7 @@
                                                                 </subviews>
                                                             </stackView>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00:00:00" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b7I-Kq-aGB">
-                                                                <rect key="frame" x="93" y="0.0" width="50" height="15.5"/>
+                                                                <rect key="frame" x="93" y="1" width="50" height="13"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" constant="50" id="M9y-5t-de0"/>
                                                                 </constraints>
@@ -224,8 +206,6 @@
                 <outlet property="monthLabel" destination="Tbw-F1-SEw" id="HhG-TV-lQT"/>
                 <outlet property="photoLabel" destination="I1R-yy-eql" id="TUV-t7-1y5"/>
                 <outlet property="videoLabel" destination="5Nf-G6-e6D" id="b7N-HB-q6a"/>
-                <outlet property="warningLabel" destination="bUr-C8-g1H" id="Zmu-lG-mX7"/>
-                <outlet property="warningStackView" destination="SWv-Ll-z4F" id="sdf-D5-d0h"/>
                 <outlet property="yearLabel" destination="Wda-vh-11P" id="Jpl-KH-1Le"/>
             </connections>
             <point key="canvasLocation" x="256" y="185.75712143928038"/>
@@ -237,12 +217,8 @@
         <image name="icPhotoMini" width="11" height="9"/>
         <image name="icRightArrow" width="9" height="16"/>
         <image name="icVideoMini" width="15" height="15"/>
-        <image name="icWarningRed" width="15" height="12"/>
         <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="warning_color">
-            <color red="1" green="0.44705882352941179" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

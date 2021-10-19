@@ -35,6 +35,12 @@ public final class DroneCoordinator: Coordinator {
     public var childCoordinators = [Coordinator]()
     public var parentCoordinator: Coordinator?
 
+    private let services: ServiceHub
+
+    init(services: ServiceHub) {
+        self.services = services
+    }
+
     // MARK: - Public Funcs
     /// Starts drone coordinator.
     public func start() {
@@ -55,7 +61,7 @@ extension DroneCoordinator {
 
     /// Starts calibration.
     func startCalibration() {
-        let droneCalibrationCoordinator = DroneCalibrationCoordinator()
+        let droneCalibrationCoordinator = DroneCalibrationCoordinator(services: services)
         droneCalibrationCoordinator.parentCoordinator = self
         droneCalibrationCoordinator.delegate = self
         droneCalibrationCoordinator.start()
@@ -63,11 +69,35 @@ extension DroneCoordinator {
                      overFullScreen: true)
     }
 
-    /// Starts cellular information.
-    func displayCellularDetails() {
-        presentModal(viewController: DroneDetailsCellularViewController.instantiate(coordinator: self))
+    func displayDroneDetailsCellular() {
+        let viewModel = DroneDetailCellularViewModel(coordinator: self,
+                                                     currentDroneHolder: services.currentDroneHolder,
+                                                     cellularPairingService: services.drone.cellularPairingService,
+                                                     connectedRemoteControlHolder: services.connectedRemoteControlHolder,
+                                                     connectedDroneHolder: services.connectedDroneHolder)
+        let viewController = DroneDetailsCellularViewController.instantiate(viewModel: viewModel)
+        presentModal(viewController: viewController)
     }
 
+    /// Displays reboot alert
+    func displayAlertReboot(action: @escaping () -> Void) {
+        let cancelAction = AlertAction(title: L10n.cancel,
+                                       style: .cancel,
+                                       cancelCustomColor: ColorName.errorColor)
+
+        let validateAction = AlertAction(title: L10n.firmwareMissionUpdateReboot, style: .default, cancelCustomColor: ColorName.emerald) {
+            action()
+        }
+
+        let alertViewController = AlertViewController.instantiate(title: L10n.rebootMessageDrone,
+                                                                  message: L10n.rebootMessageContinue,
+                                                                  messageColor: ColorName.defaultTextColor,
+                                                                  closeButtonStyle: .cross,
+                                                                  cancelAction: cancelAction,
+                                                                  validateAction: validateAction)
+
+        presentPopup(alertViewController)
+    }
     /// Displays cellular pin code modal.
     func displayCellularPinCode() {
         presentModal(viewController: CellularAccessCardPinViewController.instantiate(coordinator: self))
@@ -92,18 +122,20 @@ extension DroneCoordinator {
 
     /// Displays drone password edition setting.
     func displayDronePasswordEdition() {
-        let viewController = SettingsPasswordEditionViewController.instantiate(coordinator: self,
-                                                                               viewModel: SettingsNetworkViewModel(),
-                                                                               orientation: .all)
-        self.push(viewController)
+        let viewModel = SettingsNetworkViewModel()
+        let viewController = SettingsPasswordEditionViewController.instantiate(
+            coordinator: self,
+            viewModel: viewModel,
+            orientation: .all)
+        presentModal(viewController: viewController)
     }
 
     /// Starts the Firmware and Protobuf Missions updates process.
     func startFimwareAndProtobufMissionsUpdate() {
-        let missionUpdateCoordinator = ProtobufMissionUpdateCoordinator()
-        missionUpdateCoordinator.parentCoordinator = self
-        missionUpdateCoordinator.start()
-        self.present(childCoordinator: missionUpdateCoordinator,
+        let coordinator = DroneFirmwaresCoordinator()
+        coordinator.parentCoordinator = self
+        coordinator.start()
+        self.present(childCoordinator: coordinator,
                      overFullScreen: true)
     }
 }

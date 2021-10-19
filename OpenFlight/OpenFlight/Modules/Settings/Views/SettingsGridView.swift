@@ -39,7 +39,7 @@ class SettingsGridView: UIView {
     // MARK: - Private Properties
     private var path = UIBezierPath()
     private var gridWidth: CGFloat {
-        return bounds.width / Constants.gridWidthMultiple
+        return bounds.height / Constants.gridWidthMultiple
     }
     private var gridHeight: CGFloat {
         return bounds.height / Constants.gridHeightMultiple
@@ -49,12 +49,16 @@ class SettingsGridView: UIView {
     private enum Constants {
         static let gridLineWidth: CGFloat = 1.0
         static let axisLineWidth: CGFloat = 2.0
-        static let gridWidthMultiple: CGFloat = 20.0
+        static let gridWidthMultiple: CGFloat = 10.0
         static let gridHeightMultiple: CGFloat = 10.0
     }
 
     // MARK: - Override Funcs
     override func draw(_ rect: CGRect) {
+        guard let context = UIGraphicsGetCurrentContext() else { return }
+        UIColor.white.setFill()
+        context.fill(rect)
+
         drawGrid()
         ColorName.defaultTextColor20.color.setStroke()
         path.stroke()
@@ -95,7 +99,7 @@ private extension SettingsGridView {
         path.lineWidth = Constants.gridLineWidth
 
         // Horizontal lines.
-        for index in 0...Int(Constants.gridWidthMultiple) {
+        for index in 0...Int(bounds.height) {
             let start = CGPoint(x: CGFloat(index) * gridWidth, y: 0.0)
             let end = CGPoint(x: CGFloat(index) * gridWidth, y: bounds.height)
             path.move(to: start)

@@ -39,23 +39,6 @@ enum WifiStrength: Int {
     case ok2On4 = 2
     case ok3On4 = 3
     case ok4On4 = 4
-
-    // MARK: - Internal Properties
-    /// Returns alert level for current wifi strength.
-    var alertLevel: AlertLevel {
-        switch self {
-        case .offline:
-            return .none
-        case .ko0On4:
-            return .critical
-        case .ok1On4,
-             .ok2On4:
-            return .warning
-        case .ok3On4,
-             .ok4On4:
-            return .ready
-        }
-    }
 }
 
 // MARK: - SignalStrength

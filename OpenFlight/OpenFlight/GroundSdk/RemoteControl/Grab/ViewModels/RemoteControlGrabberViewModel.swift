@@ -34,9 +34,9 @@ import GroundSdk
 public final class RemoteControlGrabberViewModel {
     // MARK: - Private Properties
     /// ViewModels.
-    private var rightSliderViewModel: RightSliderViewModel = RightSliderViewModel()
+    private var rightSliderViewModel: RightSliderViewModel
     private var leftSliderViewModel: LeftSliderViewModel = LeftSliderViewModel()
-    private var rearLeftButtonViewModel: RearLeftButtonViewModel = RearLeftButtonViewModel()
+    private var rearLeftButtonViewModel: RearLeftButtonViewModel
     private var rearRightButtonViewModel: RearRightButtonViewModel = RearRightButtonViewModel()
     private var frontBottomButtonViewModel: FrontRightButtonViewModel = FrontRightButtonViewModel()
     /// Grabbers.
@@ -60,7 +60,15 @@ public final class RemoteControlGrabberViewModel {
     }
 
     // MARK: - Init
-    public init() {
+
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///    - zoomService: the zoom service
+    public init(zoomService: ZoomService) {
+        rightSliderViewModel = RightSliderViewModel(zoomService: zoomService)
+        rearLeftButtonViewModel = RearLeftButtonViewModel(zoomService: zoomService)
+
         // Right slider related grab.
         rcRightSliderUpButtonGrabber = RemoteControlAxisButtonGrabber(axis: .rightSlider,
                                                                       event: .rightSliderUp,
@@ -99,12 +107,12 @@ public final class RemoteControlGrabberViewModel {
                                                                key: Keys.rcFrontRightButtonKey,
                                                                action: frontBottomButtonViewModel.frontRightButtonTouchedUp)
 
-        self.grabAll()
+        grabAll()
     }
 
     // MARK: - Deinit
     deinit {
-        self.ungrabAll()
+        ungrabAll()
     }
 }
 

@@ -56,8 +56,6 @@ final class GalleryMediaState: GalleryContentState {
             mediasByDate = sortMediasByDate()
         }
     }
-    /// Should hide controls.
-    fileprivate(set) var shouldHideControls: Bool = false
 
     // MARK: - Init
     required init() {
@@ -120,7 +118,6 @@ final class GalleryMediaState: GalleryContentState {
     ///    - isRemoving: ViewModel is removing
     ///    - medias: media list
     ///    - selectedMediaType: selected media type
-    ///    - shouldHideControls: should hide controls
     ///    - sourceType: source type
     ///    - referenceDate: reference date
     required init(connectionState: DeviceState.ConnectionState,
@@ -132,7 +129,6 @@ final class GalleryMediaState: GalleryContentState {
                   isRemoving: Bool,
                   medias: [GalleryMedia],
                   selectedMediaTypes: [GalleryMediaType],
-                  shouldHideControls: Bool,
                   sourceType: GallerySourceType,
                   referenceDate: Date,
                   videoDuration: TimeInterval,
@@ -153,7 +149,6 @@ final class GalleryMediaState: GalleryContentState {
                    videoState: videoState)
         self.selectedMediaTypes = selectedMediaTypes
         self.sourceType = sourceType
-        self.shouldHideControls = shouldHideControls
     }
 
     // MARK: - Override Funcs
@@ -164,7 +159,6 @@ final class GalleryMediaState: GalleryContentState {
         return super.isEqual(to: typedOther)
             && self.selectedMediaTypes == typedOther.selectedMediaTypes
             && self.sourceType == typedOther.sourceType
-            && self.shouldHideControls == typedOther.shouldHideControls
     }
 
     override func copy() -> GalleryMediaState {
@@ -177,7 +171,6 @@ final class GalleryMediaState: GalleryContentState {
                                  isRemoving: self.isRemoving,
                                  medias: self.medias,
                                  selectedMediaTypes: self.selectedMediaTypes,
-                                 shouldHideControls: self.shouldHideControls,
                                  sourceType: self.sourceType,
                                  referenceDate: self.referenceDate,
                                  videoDuration: self.videoDuration,
@@ -230,6 +223,7 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
     private var deviceListener: GalleryDeviceMediaListener?
 
     // MARK: - Internal Properties
+    var mediaBrowsingViewModel = GalleryMediaBrowsingViewModel()
     var sdCardViewModel: GallerySDMediaViewModel? = GallerySDMediaViewModel.shared
     var internalViewModel: GalleryInternalMediaViewModel? = GalleryInternalMediaViewModel.shared
     var deviceViewModel: GalleryDeviceMediaViewModel? = GalleryDeviceMediaViewModel.shared
@@ -254,15 +248,20 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
         return self.state.value.selectedMediaTypes
     }
     public var sourceType: GallerySourceType? {
-        if self.state.value.sourceType == .unknown {
-            guard let sdState = sdCardViewModel?.state.value,
-                  sdState.isConnected(),
-                  sdState.fileSystemStorageState == .ready else {
-                return .mobileDevice
-            }
-            return .droneSdCard
-        } else {
-            return self.state.value.sourceType
+        switch state.value.sourceType {
+        case .droneSdCard,
+             .droneInternal:
+            // Need to switch between the 2 drone storages depending on SD card state.
+            return isSdCardActive ? .droneSdCard : .droneInternal
+        case .unknown:
+            // No source defined yet => select by highest priority according to storages state:
+            // SD card if ready, internal memory if ready and not empty, mobile otherwise.
+            return isSdCardReady ? .droneSdCard
+                : isInternalReady && !isInternalEmpty
+                ? .droneInternal
+                : .mobileDevice
+        default:
+            return state.value.sourceType
         }
     }
     /// Number of medias according to source type.
@@ -275,8 +274,28 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
     public var numberOfVideos: Int {
         return self.state.value.medias.filter({$0.type == .video}).count
     }
-    public var shouldHideControls: Bool {
-        return self.state.value.shouldHideControls
+    public var isSdCardActive: Bool {
+        isSdCardReady || !isInternalReady
+    }
+    public var isSdCardReady: Bool {
+        guard let sdState = sdCardViewModel?.state.value,
+              sdState.isConnected(),
+              sdState.fileSystemStorageState == .ready else {
+            return false
+        }
+        return true
+    }
+    public var isInternalReady: Bool {
+        guard let internalState = internalViewModel?.state.value,
+              internalState.isConnected(),
+              internalState.fileSystemStorageState == .ready else {
+            return false
+        }
+        return true
+    }
+    public var isInternalEmpty: Bool {
+        guard let internalState = internalViewModel?.state.value else { return true }
+        return internalState.storageUsed == 0
     }
 
     // MARK: - Init
@@ -314,17 +333,16 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
 
 // MARK: - Internal Funcs
 extension GalleryMediaViewModel {
-    /// Determines if generation view should be display or not.
-    ///
-    /// - Parameters:
-    ///     - currentMedia: current media.
-    /// - Returns: a boolean for hide state.
-    func shouldHideGenerationOption(currentMedia: GalleryMedia) -> Bool {
-        guard currentMedia.type.isPanorama == true else { return true }
-        guard let mediaOnDevice = deviceViewModel?.getMediaFromUid(currentMedia.uid) else { return false }
-
-        let panoramaViewModel = GalleryPanoramaViewModel(galleryViewModel: self)
-        return mediaOnDevice.isPanoramaAlreadyGenerated(type: panoramaViewModel.selectedPanoramaMediaType)
+    func canGeneratePanorama(media: GalleryMedia) -> Bool {
+        switch sourceType {
+        case .mobileDevice:
+            return media.canGeneratePanorama
+        case .droneSdCard,
+             .droneInternal:
+            return deviceViewModel?.getMediaFromUid(media.uid)?.canGeneratePanorama ?? media.type.isPanorama
+        default:
+            return false
+        }
     }
 
     /// Refresh media list.
@@ -350,7 +368,7 @@ extension GalleryMediaViewModel {
     ///    - medias: GalleryMedia array
     ///    - completion: completion block
     func downloadMedias(_ medias: [GalleryMedia], completion: @escaping (Bool) -> Void) {
-        let mediaItems = medias.compactMap({ $0.mainMediaItem })
+        let mediaItems = medias.compactMap({ $0.mediaItems }).flatMap({ $0 })
         switch sourceType {
         case .droneSdCard:
             sdCardViewModel?.downloadMedias(mediasToDownload: mediaItems,
@@ -389,12 +407,12 @@ extension GalleryMediaViewModel {
     func deleteMedias(_ medias: [GalleryMedia], completion: @escaping (Bool) -> Void) {
         switch sourceType {
         case .droneSdCard:
-            let mediaItems = medias.compactMap({ $0.mainMediaItem })
+            let mediaItems = medias.compactMap({ $0.mediaItems }).flatMap({ $0 })
             sdCardViewModel?.deleteMedias(mediaItems, completion: { success in
                 completion(success)
             })
         case .droneInternal:
-            let mediaItems = medias.compactMap({ $0.mainMediaItem })
+            let mediaItems = medias.compactMap({ $0.mediaItems }).flatMap({ $0 })
             internalViewModel?.deleteMedias(mediaItems, completion: { success in
                 completion(success)
             })
@@ -436,24 +454,24 @@ extension GalleryMediaViewModel {
     func fetchMedia(_ media: GalleryMedia, _ index: Int = 0, completion: @escaping (URL?) -> Void) {
         switch media.source {
         case .droneSdCard:
-            guard let mediaItem = media.mainMediaItem,
-                  mediaItem.resources.count > index else {
+            guard let mediaItem = media.mediaItem(for: index),
+                  let mediaResource = media.mediaResource(for: index) else {
                 return
             }
 
             sdCardViewModel?.downloadResource(media: mediaItem,
-                                              resources: [mediaItem.resources[index]],
+                                              resources: [mediaResource],
                                               completion: { url in
                                                 completion(url)
                                               })
         case .droneInternal:
-            guard let mediaItem = media.mainMediaItem,
-                  mediaItem.resources.count > index else {
+            guard let mediaItem = media.mediaItem(for: index),
+                  let mediaResource = media.mediaResource(for: index) else {
                 return
             }
 
             internalViewModel?.downloadResource(media: mediaItem,
-                                                resources: [mediaItem.resources[index]],
+                                                resources: [mediaResource],
                                                 completion: { url in
                                                     completion(url)
                                                 })
@@ -487,7 +505,7 @@ extension GalleryMediaViewModel {
     ///    - uid: uid
     /// - Returns: a gallery media.
     func getMediaFromUid(_ uid: String) -> GalleryMedia? {
-        return self.state.value.medias.first { $0.uid == uid }
+        return self.state.value.medias.first { $0.uid == uid.prefix(AssetUtils.Constants.prefixLength) }
     }
 
     /// Get a media index.
@@ -635,20 +653,6 @@ extension GalleryMediaViewModel {
         }
     }
 
-    /// Toggle hide controls.
-    ///
-    /// - Parameters:
-    ///    - forceHide: if set, do not toggle but force hide or not
-    func toggleShouldHideControls(forceHide: Bool? = nil) {
-        let copy = self.state.value.copy()
-        if let forceHide = forceHide {
-            copy.shouldHideControls = forceHide
-        } else {
-            copy.shouldHideControls.toggle()
-        }
-        self.state.set(copy)
-    }
-
     // Get available storage on current source, in giga bytes.
     func getAvailableSpace() -> Double {
         switch sourceType {
@@ -686,6 +690,7 @@ private extension GalleryMediaViewModel {
             if strongSelf.sourceType == .droneSdCard {
                 copy.medias = state.medias
                 copy.downloadingItem = state.downloadingItem
+                copy.availableSpace = state.availableSpace
             }
             copy.downloadStatus = state.downloadStatus
             copy.downloadProgress = state.downloadProgress
@@ -703,6 +708,7 @@ private extension GalleryMediaViewModel {
             if strongSelf.sourceType == .droneInternal {
                 copy.medias = state.medias
                 copy.downloadingItem = state.downloadingItem
+                copy.availableSpace = state.availableSpace
             }
             copy.downloadStatus = state.downloadStatus
             copy.downloadProgress = state.downloadProgress

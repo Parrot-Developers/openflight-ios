@@ -35,7 +35,6 @@ import GroundSdk
 final class FirmwareAndMissionsUpdateViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var subtitleLabel: UILabel!
     @IBOutlet private weak var progressView: FirmwareAndMissionProgressView!
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var cancelButton: UIButton!
@@ -43,7 +42,7 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
     @IBOutlet private weak var continueView: UpdatingDoneFooter!
 
     // MARK: - Private Properties
-    private weak var coordinator: ProtobufMissionUpdateCoordinator?
+    private weak var coordinator: DroneFirmwaresCoordinator?
     private var dataSource = FirmwareAndMissionsUpdatingDataSource(manualRebootState: .waiting)
     private var droneStateViewModel = DroneStateViewModel()
     private var globalUpdateState = GlobalUpdateState.initial
@@ -88,7 +87,7 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: ProtobufMissionUpdateCoordinator) -> FirmwareAndMissionsUpdateViewController {
+    static func instantiate(coordinator: DroneFirmwaresCoordinator) -> FirmwareAndMissionsUpdateViewController {
         let viewController = StoryboardScene.FirmwareAndMissionsUpdate.initialScene.instantiate()
         viewController.coordinator = coordinator
         return viewController
@@ -387,8 +386,7 @@ private extension FirmwareAndMissionsUpdateViewController {
 private extension FirmwareAndMissionsUpdateViewController {
     /// Inits the UI.
     func initUI() {
-        titleLabel.text = L10n.firmwareMissionUpdateFirmwareUpdate
-        subtitleLabel.text = dataSource.subtitle
+        titleLabel.text = L10n.firmwareMissionUpdateDroneUpdate
         cancelButton.setTitle(L10n.cancel, for: .normal)
         setupTableView()
         resetUI()

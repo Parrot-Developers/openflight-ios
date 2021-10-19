@@ -85,8 +85,8 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
         zIndex = Int(wayPoint.altitude)
         self.wayPoint = wayPoint
         self.poiPoint = poiPoint
-        self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = wayPointIndex
-        self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiIndex
+        attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = wayPointIndex
+        attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiIndex
         refreshArrow()
         symbol = getSymbol()
     }
@@ -108,12 +108,12 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
     /// Refresh position and color of the arrow.
     private func refreshArrow() {
         let innerColor = FlightPlanWayPointArrowGraphic.innerColor(poiIndex: poiIndex,
-                                                                   isSelected: self.isSelected)
+                                                                   isSelected: isSelected)
         let triangleView = TriangleView(frame: CGRect(x: 0, y: 0, width: Constants.arrowSizeWidth,
                                                       height: Constants.arrowSizeHeight), color: innerColor)
         arrow = AGSPictureMarkerSymbol(image: triangleView.asImage())
         arrow?.offsetY = Constants.arrowOffset
-        arrow?.angle = FlightPlanGraphic.Constants.rotationFactor * Float(self.wayPoint?.yaw ?? 0.0)
+        arrow?.angle = FlightPlanGraphic.Constants.rotationFactor * Float(wayPoint?.yaw ?? 0.0)
         arrow?.angleAlignment = .map
         self.symbol = getSymbol()
     }
@@ -136,17 +136,17 @@ extension FlightPlanWayPointArrowGraphic {
     /// - Parameters:
     ///    - poiPointGraphic: point of interest's graphic
     func addPoiPoint(_ poiPointGraphic: FlightPlanPoiPointGraphic) {
-        self.poiPoint = poiPointGraphic.poiPoint
-        self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiPointGraphic.poiIndex
-        self.refreshOrientation()
+        poiPoint = poiPointGraphic.poiPoint
+        attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiPointGraphic.poiIndex
+        refreshOrientation()
     }
 
     /// Removes relation with point of interest.
     func removePoiPoint() {
-        self.poiPoint = nil
-        self.attributes.removeObject(forKey: FlightPlanAGSConstants.poiIndexAttributeKey)
-        self.isSelected = false
-        self.refreshOrientation()
+        poiPoint = nil
+        attributes.removeObject(forKey: FlightPlanAGSConstants.poiIndexAttributeKey)
+        isSelected = false
+        refreshOrientation()
     }
 
     /// Returns whether arrow orientation can be edited when touching given point.

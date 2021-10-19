@@ -44,7 +44,7 @@ extension PoiPointRelatedGraphic where Self: FlightPlanGraphic {
         }
         set {
             attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = newValue
-            updateColors(isSelected: self.isSelected)
+            updateColors(isSelected: isSelected)
         }
     }
 

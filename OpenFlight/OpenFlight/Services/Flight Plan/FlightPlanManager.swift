@@ -69,38 +69,43 @@ public protocol FlightPlanManager {
     /// - Returns: List of flight plans ordered by lastUpdate
     func editableFlightPlansFor(projectId: String) -> [FlightPlanModel]
 
-    /// Gets all **Fliying** flight plans from the database ordered by **lastUpdate**
-    ///
-    /// - Returns: List of flight plans ordered by lastUpdate
-    func flyingFlightPlans() -> [FlightPlanModel]
-
-    /// Gets all **Uploading** flight plans from the database ordered by **lastUpdate**
-    ///
-    /// - Returns: List of flight plans ordered by lastUpdate
-    func uploadingFlightPlans() -> [FlightPlanModel]
-
     /// Updates a flight plan with **lastUploadAttempt** set to today date and **uploadAttemptCount** incremented
     ///
     /// - Parameter flightplan: flight plan to be updated
     /// - Returns: Flight plan updated
     func updateWithUploadAttempt(flightplan: FlightPlanModel) -> FlightPlanModel
 
-    /// Get a flight plan given its uuid
+    /// Gets a flight plan given its uuid
     /// - Parameter uuid: uuid of the flight plan
     func flightPlan(uuid: String) -> FlightPlanModel?
+
+    /// Gets a flight plan given its pgyId
+    /// - Parameter pgyId: pgyId of a project
+    func flightPlanWith(pgyId: Int64) -> FlightPlanModel?
+
+    /// Gets all flight plans according to a specific state
+    /// - Parameter state: state to filter
+    func flightPlansForState(_ state: FlightPlanModel.FlightPlanState) -> [FlightPlanModel]
+
+    /// Get the last flight date of a flight plan if any
+    /// - Parameter flightPlan: flight plan
+    func lastFlightDate(_ flightPlan: FlightPlanModel) -> Date?
 }
 
 public class FlightPlanManagerImpl: FlightPlanManager {
     private let persistenceFlightPlan: FlightPlanRepository
     private let currentUser: UserInformation
     private let filesManager: FlightPlanFilesManager
+    private let pgyProjectRepo: PgyProjectRepository
 
     public init(persistenceFlightPlan: FlightPlanRepository,
                 currentUser: UserInformation,
-                filesManager: FlightPlanFilesManager) {
+                filesManager: FlightPlanFilesManager,
+                pgyProjectRepo: PgyProjectRepository) {
         self.persistenceFlightPlan = persistenceFlightPlan
         self.currentUser = currentUser
         self.filesManager = filesManager
+        self.pgyProjectRepo = pgyProjectRepo
     }
 
     // MARK: - Private Functions
@@ -113,7 +118,7 @@ public class FlightPlanManagerImpl: FlightPlanManager {
 
     public func duplicate(flightPlan: FlightPlanModel) -> FlightPlanModel {
 
-        flightPlan.dataSetting?.mavelinkDataFile = nil
+        flightPlan.dataSetting?.mavlinkDataFile = nil
         let thumbnailUUID = UUID().uuidString
 
         var duplicatedFlightPlan = flightPlan
@@ -132,28 +137,26 @@ public class FlightPlanManagerImpl: FlightPlanManager {
                                                         thumbnailImage: flightPlan.thumbnail?.thumbnailImage)
         duplicatedFlightPlan.thumbnailUuid = thumbnailUUID
         duplicatedFlightPlan.flightPlanFlights = []
+        duplicatedFlightPlan.dataSetting?.notPropagatedSettings = [:]
 
         persist(duplicatedFlightPlan)
         return duplicatedFlightPlan
     }
 
     public func delete(flightPlan: FlightPlanModel) {
+        if flightPlan.pgyProjectId > 0 {
+            pgyProjectRepo.removePgyProject(flightPlan.pgyProjectId)
+        }
         filesManager.deleteMavlink(of: flightPlan)
-        persistenceFlightPlan.removeFlightPlan(flightPlan.uuid)
+        persistenceFlightPlan.performRemoveFlightPlan(flightPlan)
     }
 
     public func editableFlightPlansFor(projectId: String) -> [FlightPlanModel] {
         persistenceFlightPlan.loadFlightPlans(["projectUuid": projectId, "state": FlightPlanModel.FlightPlanState.editable.rawValue])
     }
 
-    public func flyingFlightPlans() -> [FlightPlanModel] {
-        persistenceFlightPlan.loadFlightPlans(["state": FlightPlanModel.FlightPlanState.flying.rawValue])
-            .sorted(by: { $0.lastUpdate > $1.lastUpdate })
-    }
-
-    public func uploadingFlightPlans() -> [FlightPlanModel] {
-        persistenceFlightPlan.loadFlightPlans(["state": FlightPlanModel.FlightPlanState.uploading.rawValue])
-            .sorted(by: { $0.lastUpdate > $1.lastUpdate })
+    public func flightPlansForState(_ state: FlightPlanModel.FlightPlanState) -> [FlightPlanModel] {
+        persistenceFlightPlan.loadFlightPlansByExcluding(types: ["default"]).filter { $0.state.rawValue == state.rawValue }
     }
 
     public func updateWithUploadAttempt(flightplan: FlightPlanModel) -> FlightPlanModel {
@@ -188,5 +191,13 @@ public class FlightPlanManagerImpl: FlightPlanManager {
 
     public func flightPlan(uuid: String) -> FlightPlanModel? {
         persistenceFlightPlan.loadFlightPlan("uuid", uuid)
+    }
+
+    public func flightPlanWith(pgyId: Int64) -> FlightPlanModel? {
+        persistenceFlightPlan.loadFlightPlansByPgyProject(pgyProjectId: pgyId)
+    }
+
+    public func lastFlightDate(_ flightPlan: FlightPlanModel) -> Date? {
+        persistenceFlightPlan.lastFlightDate(flightPlan)
     }
 }

@@ -43,8 +43,10 @@ public class FlightPlanEditionViewController: UIViewController {
     @IBOutlet private weak var settingsLeadConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
-    private weak var coordinator: FlightPlanEditionCoordinator?
+    weak var coordinator: FlightPlanEditionCoordinator?
     private weak var panelCoordinator: FlightPlanPanelCoordinator?
+    public var menuCoordinator: FlightPlanEditionMenuCoordinator?
+    public var editionSettingsCoordinator: EditionSettingsCoordinator?
     private weak var mapViewController: MapViewController?
     private weak var mapViewRestorer: MapViewRestorer?
     private var cancellables = [AnyCancellable]()
@@ -125,11 +127,6 @@ public class FlightPlanEditionViewController: UIViewController {
                 }
             }
             .store(in: &cancellables)
-        viewModel.showTopBarPublisher
-            .sink { [weak self] in
-                self?.topBarContainer.isHidden = !$0
-            }
-            .store(in: &cancellables)
     }
 
     override public func viewWillAppear(_ animated: Bool) {
@@ -143,16 +140,29 @@ public class FlightPlanEditionViewController: UIViewController {
 
         if let topBarVc = segue.destination as? HUDTopBarViewController {
             topBarVc.context = .flightPlanEdition
-        } else if let settingsEditionVc = segue.destination as? EditionSettingsViewController {
+        } else if segue.identifier == "EditionSettingsViewController",
+                  let navigationController = segue.destination as? NavigationController,
+                  let settingsEditionVc = navigationController.viewControllers.first as? EditionSettingsViewController {
+            editionSettingsCoordinator = EditionSettingsCoordinator()
+            let settingsViewModel = viewModel.updateSettingViewModel()
+            editionSettingsCoordinator?.viewModel = settingsViewModel
+            editionSettingsCoordinator?.flightPlanEditionViewController = self
             settingsEditionVc.delegate = self
-            settingsEditionVc.viewModel = viewModel.updateSettingViewModel()
+            settingsEditionVc.viewModel = settingsViewModel
             settingsEditionVc.viewModel.settingsProvider = viewModel.settingsProvider
             settingsEditionVc.viewModel.savedFlightPlan = viewModel.currentFlightPlanModel()
-        } else if let menuViewController = segue.destination as? FlightPlanEditionMenuViewController {
+            editionSettingsCoordinator?.start(navigationController: navigationController,
+                                              parentCoordinator: coordinator)
+        } else if segue.identifier == "FlightPlanEditionMenuViewController",
+                  let navigationController = segue.destination as? NavigationController,
+                  let menuViewController = navigationController.viewControllers.first as? FlightPlanEditionMenuViewController {
+            menuCoordinator = FlightPlanEditionMenuCoordinator()
             menuViewController.menuDelegate = self
             menuViewController.settingsDelegate = self
             menuViewController.settingsProvider = viewModel.settingsProvider
             menuViewController.viewModel = viewModel.updateEditionMenuViewModel()
+            menuCoordinator?.start(navigationController: navigationController,
+                                  parentCoordinator: coordinator)
         }
     }
 
@@ -198,18 +208,6 @@ private extension FlightPlanEditionViewController {
 
 // MARK: - Private Funcs
 private extension FlightPlanEditionViewController {
-
-    /// Shows or hides the interface.
-    ///
-    /// - Parameters:
-    ///    - isHidden: whether interface should be hidden
-    func updateInterfaceVisibility(isHidden: Bool) {
-        UIView.animate(withDuration: Style.shortAnimationDuration) {
-            self.allIntefaceViews.forEach {
-                $0.alphaHidden(isHidden)
-            }
-        }
-    }
 
     /// Handles selection of a new item from map.
     ///
@@ -257,7 +255,6 @@ private extension FlightPlanEditionViewController {
 // MARK: - OverContextModalDelegate
 extension FlightPlanEditionViewController: OverContextModalDelegate {
     func willDismissModal() {
-        updateInterfaceVisibility(isHidden: false)
     }
 }
 
@@ -313,7 +310,6 @@ extension FlightPlanEditionViewController: FlightPlanEditionMenuDelegate {
     }
 
     public func showProjectManager() {
-        updateInterfaceVisibility(isHidden: true)
         panelCoordinator?.startManagePlans()
     }
 }

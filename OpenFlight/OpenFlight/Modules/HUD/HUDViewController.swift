@@ -35,7 +35,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Internal Outlets
     @IBOutlet internal weak var splitControls: SplitControls!
     @IBOutlet internal weak var missionControls: MissionControls!
-    @IBOutlet internal weak var flightPlanControls: FlightPlanControls!
+    @IBOutlet internal weak var rightPanelContainerControls: RightPanelContainerControls!
     @IBOutlet internal weak var videoControls: VideoControls!
     @IBOutlet internal weak var alertControls: AlertControls!
 
@@ -46,6 +46,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     @IBOutlet private weak var AELockContainerView: UIView!
     @IBOutlet private weak var indicatorContainerView: UIView!
     @IBOutlet private weak var topStackView: UIStackView!
+    @IBOutlet private weak var dismissMissionLauncherButton: UIButton!
 
     // MARK: - Public Properties
     var customControls: CustomHUDControls?
@@ -57,18 +58,18 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Private Properties
     // TODO: wrong injection
     private unowned var currentMissionManager = Services.hub.currentMissionManager
+    private unowned var protobufMissionsManager = Services.hub.drone.protobufMissionsManager
     private unowned var topBarService = Services.hub.ui.hudTopBarService
 
     private var cancellables = Set<AnyCancellable>()
     private var defaultMapViewController: MapViewController?
-    private let flightPlanPanelCoordinator = FlightPlanPanelCoordinator(services: Services.hub)
 
     /// View models.
     private let joysticksViewModel = JoysticksViewModel()
     private let remoteShutdownAlertViewModel = RemoteShutdownAlertViewModel()
     private lazy var helloWorldViewModel: HelloWorldMissionViewModel? = {
         // Prevent from useless helloWorld init if mission is not loaded.
-        let missionsToLoad = ProtobufMissionsManager.shared.missionsToLoadAtDroneConnection
+        let missionsToLoad = protobufMissionsManager.getMissionToLoadAtStart()
         let helloMissionId = HelloWorldMissionSignature().missionUID
         guard missionsToLoad.contains(where: { $0.missionUID == helloMissionId }) else { return nil }
 
@@ -102,20 +103,17 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Override Funcs
     public override func viewDidLoad() {
         super.viewDidLoad()
-
         listenWillEnterForeground()
-        setupFlightPlanPanel()
         splitControls.start()
         customControls = CustomHUDControlsProvider.shared.customControls
-        customControls?.validationView = customValidationView
         customControls?.start()
         setupAlertPanel()
 
         listenMissionMode()
         listenTopBarChanges()
         listenRemoteShutdownAlert()
-        listenPairingAvailabilityViewModel()
         listenPairingProcessViewModel()
+        listenMissionLauncherState()
 
         // Handle rotation when coming from Onboarding.
         let value = UIInterfaceOrientation.landscapeRight.rawValue
@@ -128,8 +126,8 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         splitControls.setupSplitIfNeeded()
         splitControls.displayMapOr3DasChild()
         // Show flight plan panel if needed.
-        if currentMissionManager.mode.isFlightPlanPanelRequired {
-            flightPlanControls.viewModel.forceHidePanel(false)
+        if currentMissionManager.mode.isRightPanelRequired {
+            rightPanelContainerControls.viewModel.forceHidePanel(false)
         }
     }
 
@@ -138,14 +136,14 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
 
         LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.hud,
                              logType: .screen)
-        flightPlanControls.start()
+        rightPanelContainerControls.start()
         updateViewModels()
     }
 
     public override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
 
-        flightPlanControls.stop()
+        rightPanelContainerControls.stop()
         removeViewModelObservers()
         stopTasksIfNeeded()
         removeContainerViews()
@@ -193,11 +191,19 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         return true
     }
 
-    /// Shows the drone cellular process if its available.
-    func showCellularPairingIfNeeded() {
-        if cellularPairingAvailabilityViewModel.canShowModal {
-            coordinator?.displayCellularPairingAvailable()
+    /// Shows the SIM Pin Code if necessary.
+    func showCellularPinCodeIfNeeded() {
+        if cellularPairingProcessViewModel.isPinCodeRequested {
+            coordinator?.displayCellularPinCode()
         }
+    }
+}
+
+// MARK: - Actions
+private extension HUDViewController {
+    /// Dismiss mission Launcher by tapping outside it
+    @IBAction func dismissMissionLauncherButtonTouchedUpInside() {
+        coordinator?.hideMissionLauncher()
     }
 }
 
@@ -251,12 +257,8 @@ private extension HUDViewController {
             .sink { [unowned self] (pinCodeRequested, pairingProcessStep, pairingProcessError, canShowModal) in
                 if pinCodeRequested {
                     coordinator?.displayCellularPinCode()
-                } else if pairingProcessStep == .pairingProcessSuccess {
-                    DispatchQueue.main.async {
-                        coordinator?.displayPairingSuccess()
-                    }
-                    return
                 } else if canShowModal {
+                    // If allowed to auto retry, error is not displayed
                     guard pairingProcessStep == .pairingProcessSuccess else {
                         switch pairingProcessError {
                         case .connectionUnreachable,
@@ -277,36 +279,17 @@ private extension HUDViewController {
             .store(in: &cancellables)
     }
 
-    func listenPairingAvailabilityViewModel() {
-        cellularPairingAvailabilityViewModel.$canShowModal
-            .sink { [unowned self] canShowModal in
-                if coordinator?.canShowCellularPairing() == false { return }
-
-                if canShowModal {
-                showCellularPairingIfNeeded()
-                }
+    /// Listen for Mission Launcher sate changes
+    func listenMissionLauncherState() {
+        guard let coordinator = coordinator else { return }
+        coordinator.showMissionLauncherPublisher.sink { [unowned self] in
+            if $0 {
+                dismissMissionLauncherButton.isHidden = false
+            } else {
+                dismissMissionLauncherButton.isHidden = true
             }
-            .store(in: &cancellables)
-    }
-
-    /// Sets up right panel for flight plans.
-    func setupFlightPlanPanel() {
-        let viewModel = FlightPlanPanelViewModel(projectManager: Services.hub.flightPlan.projectManager,
-                                                 runStateProgress: Services.hub.flightPlan.run,
-                                                 currentMissionManager: Services.hub.currentMissionManager,
-                                                 coordinator: flightPlanPanelCoordinator)
-
-        let flightPlanPanelVC = FlightPlanPanelViewController.instantiate(flightPlanPanelViewModel: viewModel)
-        flightPlanPanelCoordinator.start(flightPlanPanelVC: flightPlanPanelVC,
-                                         splitControls: splitControls,
-                                         flightPlanControls: flightPlanControls)
-        flightPlanControls.flightPlanPanelViewController = flightPlanPanelVC
-
-        if let navigationController = flightPlanPanelCoordinator.navigationController {
-            navigationController.view.frame = flightPlanControls.flightPlanPanelView.bounds
-            self.addChild(navigationController)
-            flightPlanControls.flightPlanPanelView.addSubview(navigationController.view)
         }
+        .store(in: &cancellables)
     }
 
     /// Map setup.
@@ -314,7 +297,6 @@ private extension HUDViewController {
         let mode = currentMissionManager.mode
         if let map = mode.customMapProvider?() as? MapViewController {
             // Add custom map.
-            map.editionDelegate = flightPlanPanelCoordinator
             self.splitControls.addMap(map, parent: self)
             // Force recreate default map next time it will be necessary (this will deinit it).
             defaultMapViewController = nil
@@ -322,7 +304,6 @@ private extension HUDViewController {
             // Add default map, create it if needed.
             // defaultMapViewController is used to keep map when mission modes use same default map.
             let map = defaultMapViewController ?? StoryboardScene.Map.initialScene.instantiate()
-            map.editionDelegate = flightPlanPanelCoordinator
             defaultMapViewController = map
             map.customControls = customControls
             customControls?.mapViewController = map

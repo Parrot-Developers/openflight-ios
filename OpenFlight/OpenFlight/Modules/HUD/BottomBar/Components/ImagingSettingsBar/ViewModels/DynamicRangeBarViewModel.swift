@@ -28,19 +28,36 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Combine
 import GroundSdk
 
 /// View model for imaging settings bar dynamic range item.
 final class DynamicRangeBarViewModel: BarButtonViewModel<ImagingBarState> {
 
+    // MARK: - Private Properties
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
+    /// Reference to camera peripheral.
+    private var cameraRef: Ref<MainCamera2>?
+    /// Panorama service.
+    private unowned var panoramaService: PanoramaService
+
     // MARK: - init
     /// Constructor.
-    init() {
+    ///
+    /// - Parameter panoramaService: panorama mode service
+    init(panoramaService: PanoramaService) {
+        self.panoramaService = panoramaService
         super.init(barId: "DynamicRange")
-    }
 
-    // MARK: - Private Properties
-    private var cameraRef: Ref<MainCamera2>?
+        panoramaService.panoramaModeActivePublisher
+            .sink { [unowned self] _ in
+                if let camera = cameraRef?.value {
+                    updateAvailableModes(with: camera)
+                }
+            }
+            .store(in: &cancellables)
+    }
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
@@ -110,19 +127,16 @@ private extension DynamicRangeBarViewModel {
     /// - Parameters:
     ///     - camera: current camera
     func updateAvailableModes(with camera: MainCamera2) {
+        guard let cameraMode = CameraUtils.computeCameraMode(camera: camera) else { return }
+
         let copy = state.value.copy()
         var supportedModes: [DynamicRange] = [.hdrOff]
 
-        guard let currentMode = camera.mode else { return }
-        switch currentMode {
-        case .photo:
+        switch cameraMode {
+        case .bracketing, .burst, .gpslapse, .timelapse, .photo:
             copy.unavailableReason[DynamicRange.plog.key] = L10n.cameraPlogUnavailable
             if !camera.photoHdrAvailableForPhotoMode {
-                if let cameraMode = CameraUtils.computeCameraMode(camera: camera) {
-                    copy.unavailableReason[DynamicRange.hdrOn.key] = L10n.cameraHdrUnavailable(cameraMode.title)
-                } else {
-                    copy.unavailableReason[DynamicRange.hdrOn.key] = nil
-                }
+                copy.unavailableReason[DynamicRange.hdrOn.key] = L10n.cameraSettingUnavailable(cameraMode.title)
             } else if !camera.photoHdrAvailableForResolution {
                 copy.unavailableReason[DynamicRange.hdrOn.key] = L10n.cameraHdrUnavailablePhotoResolution
             } else if !camera.photoHdrAvailableForFileFormat {
@@ -132,10 +146,10 @@ private extension DynamicRangeBarViewModel {
                 supportedModes.append(.hdrOn)
             }
 
-        case .recording:
+        case .video:
             if !camera.recordingHdrAvailableForResolution {
                 if let resolution = camera.config[Camera2Params.videoRecordingResolution]?.value.title {
-                    copy.unavailableReason[DynamicRange.hdrOn.key] = L10n.cameraHdrUnavailable(resolution)
+                    copy.unavailableReason[DynamicRange.hdrOn.key] = L10n.cameraSettingUnavailable(resolution)
                 } else {
                     copy.unavailableReason[DynamicRange.hdrOn.key] = nil
                 }
@@ -145,6 +159,10 @@ private extension DynamicRangeBarViewModel {
                 copy.unavailableReason[DynamicRange.hdrOn.key] = nil
                 supportedModes.append(.hdrOn)
             }
+
+        case .panorama:
+            copy.unavailableReason[DynamicRange.hdrOn.key] = L10n.cameraSettingUnavailable(cameraMode.title)
+            copy.unavailableReason[DynamicRange.plog.key] = L10n.cameraSettingUnavailable(cameraMode.title)
         }
 
         if camera.plogAvailable {

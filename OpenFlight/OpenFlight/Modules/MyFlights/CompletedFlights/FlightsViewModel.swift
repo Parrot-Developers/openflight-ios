@@ -50,6 +50,12 @@ class FlightsViewModel {
         coordinator?.startFlightDetails(flight: flight)
     }
 
+    func askForDeletion(flight: FlightModel) {
+        coordinator?.showDeleteFlightPopupConfirmation(didTapDelete: {
+            self.service.delete(flight: flight)
+        })
+     }
+
     func cellViewModel(flight: FlightModel) -> FlightTableViewCellModel {
         FlightTableViewCellModel(service: service, flight: flight)
     }

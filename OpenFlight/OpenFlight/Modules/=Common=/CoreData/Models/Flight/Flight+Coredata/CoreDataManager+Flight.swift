@@ -58,10 +58,20 @@ public protocol FlightRepository: AnyObject {
     /// - return : Array of FlightModel
     func loadAllFlights() -> [FlightModel]
 
+    /// Perform remove Flight with Flag
+    /// - Parameters:
+    ///     - flight: FlightModel to remove
+    func performRemoveFlight(_ flight: FlightModel)
+
     /// Remove Flight from CoreData
     /// - Parameters:
     ///     - flightUuid: flightUuid to remove
     func removeFlight(_ flightUuid: String)
+
+    /// Remove Flight Immediately from CoreData by UUID even is synchronized
+    /// - Parameters:
+    ///     - flightUuid: flightUuid to remove
+    func removeSyncFlight(_ flightUuid: String?)
 
     /// Load flight plans executed during a specific flight
     ///
@@ -77,7 +87,7 @@ public protocol FlightRepository: AnyObject {
     func migrateFlightsToAnonymous(_ completion: @escaping () -> Void)
 }
 
-extension CoreDataServiceIml: FlightRepository {
+extension CoreDataServiceImpl: FlightRepository {
 
     public func persist(_ flight: FlightModel, _ byUserUpdate: Bool = true) {
         // Prepare content to save.
@@ -87,7 +97,7 @@ extension CoreDataServiceIml: FlightRepository {
         let flightObject: NSManagedObject?
 
         // Check object if exists.
-        if let object = self.flight(flight.uuid) {
+        if let object = self.loadFlights("uuid", flight.uuid, false).first {
             // Use persisted object.
             flightObject = object
         } else {
@@ -102,9 +112,10 @@ extension CoreDataServiceIml: FlightRepository {
         guard let flightObj = flightObject as? Flight else { return }
 
         // To ensure synchronisation
-        // reset `synchroStatus´ and `fileSynchroStatus´ when the modifications are made by User
+        // reset `synchroStatus´, `fileSynchroStatus´ and `externalSynchroStatus´ when the modifications are made by User
         flightObj.synchroStatus = ((byUserUpdate) ? 0 : flight.synchroStatus) ?? 0
         flightObj.fileSynchroStatus = ((byUserUpdate) ? 0 : flight.fileSynchroStatus) ?? 0
+        flightObj.externalSynchroStatus = ((byUserUpdate) ? 0 : flight.externalSynchroStatus) ?? 0
 
         flightObj.apcId = flight.apcId
         flightObj.title = flight.title
@@ -118,17 +129,21 @@ extension CoreDataServiceIml: FlightRepository {
         flightObj.batteryConsumption = flight.batteryConsumption
         flightObj.distance = flight.distance
         flightObj.duration = flight.duration
-        flightObj.gutmaFile = flight.gutmaFile
+        flightObj.gutmaFile = flight.gutmaFileData
         flightObj.parrotCloudId = flight.parrotCloudId
         flightObj.parrotCloudToBeDeleted = flight.parrotCloudToBeDeleted
         flightObj.parrotCloudUploadUrl = flight.parrotCloudUploadUrl
         flightObj.synchroDate = flight.synchroDate
         flightObj.fileSynchroDate = flight.fileSynchroDate
         flightObj.cloudLastUpdate = flight.cloudLastUpdate
+        flightObj.externalSynchroDate = flight.externalSynchroDate
 
         managedContext.perform {
             do {
                 try managedContext.save()
+                if byUserUpdate {
+                    self.objectToUpload.send(flight)
+                }
             } catch let error {
                 ULog.e(.dataModelTag, "Error during persist Flight UUID: \(flight.uuid) into Coredata: \(error.localizedDescription)")
             }
@@ -142,25 +157,75 @@ extension CoreDataServiceIml: FlightRepository {
     }
 
     public func loadFlightsToRemove() -> [FlightModel] {
-        return loadAllFlights().filter({ $0.parrotCloudToBeDeleted })
+        return loadFlights("apcId", userInformation.apcId, false)
+            .filter({ $0.parrotCloudToBeDeleted })
+            .compactMap({ $0.model() })
     }
 
     public func loadAllFlights() -> [FlightModel] {
         // Return flights of current User
-        return flight("apcId", userInformation.apcId).compactMap({$0.model()}).sorted(by: {
-            guard let date1 = $0.startTime, let date2 = $1.startTime else { return false }
-            return date1.timeIntervalSince1970 > date2.timeIntervalSince1970
-        })
+        return loadFlights("apcId", userInformation.apcId)
+            .compactMap({ $0.model() })
+            .sorted(by: {
+                guard let date1 = $0.startTime, let date2 = $1.startTime else { return false }
+                return date1.timeIntervalSince1970 > date2.timeIntervalSince1970
+            })
     }
 
     public func loadFlight(_ flightUuid: String) -> FlightModel? {
         return flight(flightUuid)?.model()
     }
 
+    public func performRemoveFlight(_ flight: FlightModel) {
+        guard let managedContext = currentContext,
+              let flightObject = loadFlights("uuid", flight.uuid, false).first else {
+            return
+        }
+
+        // Remove related Thumbnail
+        if let relatedThumbnail = thumbnail(for: flight) {
+            performRemoveThumbnail(relatedThumbnail)
+            flightObject.thumbnail = nil
+        }
+
+        if let relatedFlightPlanFlights = self.loadFlightPlanFlightKv("flightUuid", flight.uuid),
+           !relatedFlightPlanFlights.isEmpty {
+            relatedFlightPlanFlights.forEach({ performRemoveFlightPlanFlight($0.flightUuid, $0.flightplanUuid) })
+            flightObject.flightPlanFlights = nil
+        }
+
+        if flight.parrotCloudId == 0 {
+            managedContext.delete(flightObject)
+        } else {
+            flightObject.parrotCloudToBeDeleted = true
+            objectToRemove.send(flight)
+        }
+
+        managedContext.perform {
+            do {
+                try managedContext.save()
+            } catch let error {
+                ULog.e(.dataModelTag, "Error perform deletion Flight with UUID : \(flight.uuid) from CoreData : \(error.localizedDescription)")
+            }
+        }
+    }
+
     public func removeFlight(_ flightUuid: String) {
         guard let managedContext = currentContext,
-              let flight = flight(flightUuid) else {
+              let flight = loadFlights("uuid", flightUuid, false).first else {
             return
+        }
+
+        if let relatedFlightPlanFlights = loadFlightPlanFlightKv("flightUuid", flight.uuid),
+           !relatedFlightPlanFlights.isEmpty {
+            relatedFlightPlanFlights.forEach({ performRemoveFlightPlanFlight($0.flightUuid, $0.flightplanUuid) })
+            flight.flightPlanFlights = nil
+        }
+
+        // Remove related thumbnail
+        if let relatedThumbnail = thumbnail(for: flight.model()) {
+            performRemoveThumbnail(relatedThumbnail)
+            flight.thumbnail = nil
         }
 
         managedContext.delete(flight)
@@ -174,15 +239,34 @@ extension CoreDataServiceIml: FlightRepository {
         }
     }
 
+    public func removeSyncFlight(_ flightUuid: String?) {
+        guard let flight = loadFlights("uuid", flightUuid, false).first else {
+            return
+        }
+
+        if let relatedFlightPlanFlights = loadFlightPlanFlightKv("flightUuid", flight.uuid),
+           !relatedFlightPlanFlights.isEmpty {
+            relatedFlightPlanFlights.forEach({ removeFlightPlanFlight($0.flightUuid, $0.flightplanUuid) })
+            flight.flightPlanFlights = nil
+        }
+
+        // Remove related thumbnail
+        if let relatedThumbnail = thumbnail(for: flight.model()) {
+            removeThumbnail(relatedThumbnail.uuid)
+            flight.thumbnail = nil
+        }
+
+        remove(flight)
+    }
+
     public func loadFlightPlans(for flight: FlightModel) -> [FlightPlanModel] {
-        guard let flightPlanFlights = self.flight(flight.uuid)?.flightPlanFlights else { return [] }
+        guard let flight = self.flight(flight.uuid),
+              let flightPlanFlights = flight.flightPlanFlights else { return [] }
         let flightPlans = flightPlanFlights
-            .reduce(into: [String: FlightPlanModel]()) { dict, fpf in
-                if let flightPlan = fpf.ofFlightPlan?.model() {
-                    dict[flightPlan.uuid] = flightPlan
-                }
-            }.values
-        return Array(flightPlans)
+            .sorted { $0.dateExecutionFlight > $1.dateExecutionFlight }
+            .compactMap { $0.ofFlightPlan?.model() }
+
+        return flightPlans
     }
 
     public func migrateFlightsToLoggedUser(_ completion: @escaping () -> Void) {
@@ -207,12 +291,21 @@ extension CoreDataServiceIml: FlightRepository {
 }
 
 // MARK: - Utils
-private extension CoreDataServiceIml {
+private extension CoreDataServiceImpl {
 
-    func flight(_ key: String?, _ value: String?) -> [Flight] {
+    /// Return List of Flights type of NSManagedObject by Key and Value if needed
+    /// - Parameters:
+    ///     - key: key to search
+    ///     - value: value of the key to search
+    ///     - onlyNotDeleted: flag to filter on flagged deleted object
+    func loadFlights(_ key: String? = nil,
+                     _ value: String? = nil,
+                     _ onlyNotDeleted: Bool = true) -> [Flight] {
         guard let managedContext = currentContext else {
             return []
         }
+
+        var predicates: [NSPredicate] = []
 
         /// Fetch Flights
         let fetchRequest: NSFetchRequest<Flight> = Flight.fetchRequest()
@@ -221,8 +314,16 @@ private extension CoreDataServiceIml {
         if let key = key,
            let value = value {
             let predicate = NSPredicate(format: "%K == %@", key, value)
-            fetchRequest.predicate = predicate
+            predicates.append(predicate)
         }
+
+        if onlyNotDeleted {
+            let predicate = NSPredicate(format: "parrotCloudToBeDeleted == %@", NSNumber(value: false))
+            predicates.append(predicate)
+        }
+
+        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
+        fetchRequest.predicate = compoundPredicates
 
         do {
             flights = try (managedContext.fetch(fetchRequest))
@@ -233,10 +334,24 @@ private extension CoreDataServiceIml {
 
         return flights
     }
+
+    func remove(_ flight: Flight) {
+        guard let managedContext = currentContext else {
+            return
+        }
+        managedContext.delete(flight)
+        managedContext.perform {
+            do {
+                try managedContext.save()
+            } catch let error {
+                ULog.e(.dataModelTag, "Error removing Flight with UUID : \(flight.uuid ?? "") from CoreData : \(error.localizedDescription)")
+            }
+        }
+    }
 }
 
-extension CoreDataServiceIml {
+extension CoreDataServiceImpl {
     func flight(_ uuid: String) -> Flight? {
-        return flight("uuid", uuid).first
+        return loadFlights("uuid", uuid).first
     }
 }

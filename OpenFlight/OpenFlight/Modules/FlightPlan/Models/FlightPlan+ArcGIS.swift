@@ -33,10 +33,6 @@ import ArcGIS
 // MARK: - Internal Enums
 /// Public constants for flight plan display with ArcGIS.
 enum FlightPlanAGSConstants {
-    /// Key to store a point in graphic attributes.
-    static let agsPointAttributeKey = "agsPoint"
-    /// Key to store a draped point in graphic attribute.
-    static let drapedAgsPointAttributeKey = "drapedAgsPoint"
     /// Key to store WayPoint index.
     static let wayPointIndexAttributeKey = "wayPointIndex"
     /// Key to store Poi index.
@@ -45,8 +41,6 @@ enum FlightPlanAGSConstants {
     static let lineOriginWayPointAttributeKey = "lineOriginWayPointIndex"
     /// Key to store destination WayPoint index (for lines).
     static let lineDestinationWayPointAttributeKey = "lineDestinationWayPointIndex"
-    /// Key to store target Poi index (for Waypoints).
-    static let targetPoiAttributeKey = "targetPoiIndex"
     /// Set of colors for point of interest's related graphcis.
     // TODO: define point of interest's colors.
     private static let colors: [UIColor] = [.orange,

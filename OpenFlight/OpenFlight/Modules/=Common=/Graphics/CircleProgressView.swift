@@ -36,10 +36,32 @@ protocol CircleProgressViewDelegate: AnyObject {
     func animationProgressFinished()
 }
 
+enum ProgressStatus {
+    case inactive
+    case active
+    case succes
+    case failure
+
+    var color: UIColor {
+        switch self {
+        case .inactive: return ColorName.whiteAlbescent.color
+        case .active: return ColorName.highlightColor.color
+        case .succes: return ColorName.highlightColor.color
+        case .failure: return ColorName.errorColor.color
+        }
+    }
+}
+
 /// View displaying a circle representing a progress value.
 final class CircleProgressView: UIView, NibOwnerLoadable {
     // MARK: - Internal Properties
-    var strokeColor: UIColor = UIColor(named: .highlightColor)
+    var status: ProgressStatus = .active {
+        didSet {
+            guard status != oldValue else { return }
+            refreshProgressLayer()
+        }
+    }
+    var strokeColor: UIColor?
     var bgStokeColor: UIColor = UIColor(named: .whiteAlbescent) {
         didSet {
             progressLayerBackground.strokeColor = bgStokeColor.cgColor
@@ -53,6 +75,9 @@ final class CircleProgressView: UIView, NibOwnerLoadable {
     weak var delegate: CircleProgressViewDelegate?
 
     // MARK: - Private Properties
+    private var progressStrokeColor: UIColor {
+        strokeColor ?? status.color
+    }
     private var progressLayer = CAShapeLayer()
     private let progressLayerBackground = CAShapeLayer()
     private var animation = CABasicAnimation(keyPath: Constants.layerAnimationKey)
@@ -80,7 +105,7 @@ final class CircleProgressView: UIView, NibOwnerLoadable {
         super.layoutSubviews()
         progressLayer.removeFromSuperlayer()
         drawBackgroundProgressLayer()
-        drawProgressLayer(strokeColor: strokeColor, progress: 0.0, animated: false)
+        drawProgressLayer(strokeColor: progressStrokeColor, progress: 0.0, animated: false)
     }
 
     // MARK: - Internal Funcs
@@ -93,7 +118,7 @@ final class CircleProgressView: UIView, NibOwnerLoadable {
         let progress = min(1, max(0, progress))
         let isAnimated = duration > 0.0
         progressLayer.removeAnimation(forKey: Constants.layerAnimationKey)
-        drawProgressLayer(strokeColor: strokeColor, progress: CGFloat(progress), animated: isAnimated)
+        drawProgressLayer(strokeColor: progressStrokeColor, progress: CGFloat(progress), animated: isAnimated)
         if isAnimated {
             animateProgressLayer(duration: duration)
         }
@@ -103,7 +128,7 @@ final class CircleProgressView: UIView, NibOwnerLoadable {
     func resetProgress() {
         progressLayer.removeFromSuperlayer()
         progressLayer = CAShapeLayer()
-        drawProgressLayer(strokeColor: strokeColor, progress: 0.0, animated: false)
+        drawProgressLayer(strokeColor: progressStrokeColor, progress: 0.0, animated: false)
     }
 }
 
@@ -121,11 +146,11 @@ private extension CircleProgressView {
     ///     - duration: animation duration
     func animateProgressLayer(duration: TimeInterval) {
         animation.duration = duration
-        if let presentationStrokeEnd = progressLayer.presentation()?.strokeEnd, presentationStrokeEnd != 0 {
-            animation.fromValue = presentationStrokeEnd
-        } else {
-            animation.fromValue = progressLayer.strokeEnd
-        }
+
+        // Animate progressLayer starting from currently displayed strokeEnd if available.
+        // If not, animate starting from strokeStart.
+        animation.fromValue = progressLayer.presentation()?.strokeEnd ?? progressLayer.strokeStart
+
         animation.toValue = progressLayer.strokeEnd
         animation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)
         progressLayer.add(animation, forKey: Constants.layerAnimationKey)
@@ -139,7 +164,7 @@ private extension CircleProgressView {
     ///     - animated: animated of not
     func drawProgressLayer(strokeColor: UIColor, progress: CGFloat, animated: Bool) {
         let center = CGPoint(x: frame.width / 2.0, y: frame.height / 2.0)
-        let radius: CGFloat = (self.frame.width / 2.0) - (borderWidth * 2.0)
+        let radius: CGFloat = (frame.width / 2.0) - borderWidth
         let startAngle: CGFloat = CGFloat(Float.pi / -2.0)
         let progressPath = UIBezierPath(arcCenter: center,
                                         radius: radius,
@@ -163,7 +188,7 @@ private extension CircleProgressView {
     /// Draw the background layer.
     func drawBackgroundProgressLayer() {
         let center = CGPoint(x: frame.width / 2.0, y: frame.height / 2.0)
-        let radius: CGFloat = (self.frame.width / 2.0) - (borderWidth * 2.0)
+        let radius: CGFloat = (self.frame.width / 2.0) - borderWidth
         let startAngle: CGFloat = CGFloat(Float.pi / -2.0)
         let progressPath = UIBezierPath(arcCenter: center,
                                         radius: radius,
@@ -177,6 +202,10 @@ private extension CircleProgressView {
         if !(layer.sublayers?.contains(progressLayerBackground) ?? false) {
             layer.addSublayer(progressLayerBackground)
         }
+    }
+
+    func refreshProgressLayer() {
+        drawProgressLayer(strokeColor: progressStrokeColor, progress: progressLayer.strokeEnd, animated: false)
     }
 }
 

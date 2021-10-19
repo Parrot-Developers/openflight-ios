@@ -102,7 +102,7 @@ private extension StopView {
     /// Initalize UI for the view.
     func initUI() {
         self.backView.backgroundColor = ColorName.black.color
-        self.redView.backgroundColor = ColorName.redTorch.color
+        self.redView.backgroundColor = ColorName.errorColor.color
         self.centerView.cornerRadiusedWith(backgroundColor: ColorName.white.color,
                                            borderColor: .clear,
                                            radius: Style.tinyCornerRadius)
@@ -114,7 +114,7 @@ private extension StopView {
         self.updateRedViewConstraints()
         cancelImageView.isHidden = !style.isCancelAlert
         centerView.isHidden = style.isCancelAlert
-        self.redView.backgroundColor = style.isCancelAlert ? .clear : ColorName.redTorch.color
+        self.redView.backgroundColor = style.isCancelAlert ? .clear : ColorName.errorColor.color
 
         switch style {
         case .classic:
@@ -126,7 +126,7 @@ private extension StopView {
         case .bottomBar:
             self.customCornered(corners: [.topRight, .bottomRight],
                                 radius: Style.largeCornerRadius,
-                                backgroundColor: ColorName.redTorch.color,
+                                backgroundColor: ColorName.errorColor.color,
                                 borderColor: .clear)
         case .panorama:
             self.backView.cornerRadiusedWith(backgroundColor: ColorName.black.color,
@@ -136,7 +136,7 @@ private extension StopView {
             self.redView.applyCornerRadius(Style.mediumCornerRadius)
         case .cancelAlert:
             self.redView.applyCornerRadius(Style.mediumCornerRadius)
-            self.backView.cornerRadiusedWith(backgroundColor: ColorName.white10.color,
+            self.backView.cornerRadiusedWith(backgroundColor: .white,
                                              radius: Style.largeCornerRadius)
         }
     }

@@ -29,12 +29,6 @@
 
 import ArcGIS
 
-// MARK: - Private Enums
-private enum Constants {
-    /// Earth radius at equator, in meters.
-    static let earthRadius: Double = 6378137.0
-}
-
 /// Utility extension for `AGSPoint`.
 public extension AGSPoint {
     /// Creates a new point with given altitude.
@@ -43,7 +37,7 @@ public extension AGSPoint {
     ///    - altitude: altitude to apply
     /// - Returns: new point with custom altitude
     func withAltitude(_ altitude: Double) -> AGSPoint {
-        return AGSPoint(x: self.x, y: self.y, z: altitude, spatialReference: self.spatialReference)
+        return AGSPoint(x: x, y: y, z: altitude, spatialReference: spatialReference)
     }
 
     /// Computes the distance between self and another `AGSPoint`.
@@ -53,7 +47,7 @@ public extension AGSPoint {
     ///    - point: target point
     /// - Returns: distance between the two points, in meters
     func distanceToPoint(_ point: AGSPoint) -> Double {
-        let diffZ = point.z - self.z
+        let diffZ = point.z - z
         let points = AGSPolyline(points: [self, point])
         return sqrt(diffZ.square + AGSGeometryEngine.geodeticLength(of: points, lengthUnit: .meters(), curveType: .geodesic).square)
     }

@@ -39,7 +39,15 @@ public final class DroneCalibrationCoordinator: Coordinator {
     public var childCoordinators = [Coordinator]()
     public var parentCoordinator: Coordinator?
     weak var delegate: DroneCalibrationCoordinatorDelegate?
-    
+
+    // MARK: - Private
+
+    private let services: ServiceHub
+
+    init(services: ServiceHub) {
+        self.services = services
+    }
+
     public func start() {
         let viewController = DroneCalibrationViewController.instantiate(coordinator: self)
         self.navigationController = NavigationController(rootViewController: viewController)
@@ -78,7 +86,7 @@ extension DroneCalibrationCoordinator {
 
     /// Starts Stereo Vision calibration.
     func startStereoVisionCalibration() {
-        let viewModel = StereoCalibrationViewModel(coordinator: self)
+        let viewModel = StereoCalibrationViewModel(coordinator: self, ophtalmoService: services.drone.ophtalmoService)
         let controller = StereoCalibrationViewController.instantiate(viewModel: viewModel)
         self.push(controller)
     }

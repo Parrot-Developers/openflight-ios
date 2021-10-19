@@ -69,6 +69,7 @@ open class StartedNotFlyingState: GKState {
             guard !stopped else { return }
             switch $0 {
             case .success(let result):
+                let flightPlan = result.flightPlan
                 delegate?.mavlinkSendingStarted(flightPlan: flightPlan)
                 mavlinkSender.sendToDevice(result.path, customFlightPlanId: flightPlan.uuid) {
                     guard !stopped else { return }

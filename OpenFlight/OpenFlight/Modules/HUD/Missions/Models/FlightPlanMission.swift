@@ -34,6 +34,7 @@ import UIKit
 
 /// FlightPlan mission provider struct.
 public struct FlightPlanMission: MissionProvider {
+
     // MARK: - Public Properties
     public init() {}
 
@@ -73,6 +74,15 @@ enum FlightPlanMissionMode: String, CaseIterable {
     // MARK: - Internal Properties
     static var allMissionItems: [MissionMode] = FlightPlanMissionMode.allCases.map({$0.missionMode})
 
+    func createFlightPlanPanelCoordinator(services: ServiceHub,
+                                          splitControls: SplitControls,
+                                          rightPanelContainerControls: RightPanelContainerControls) -> Coordinator? {
+        let flightPlanPanelCoordinator = FlightPlanPanelCoordinator(services: Services.hub)
+        flightPlanPanelCoordinator.start(splitControls: splitControls,
+                                         rightPanelContainerControls: rightPanelContainerControls)
+        return flightPlanPanelCoordinator
+    }
+
     var missionMode: MissionMode {
         let configurator = MissionModeConfigurator(key: self.rawValue,
                                                    name: self.title,
@@ -80,16 +90,18 @@ enum FlightPlanMissionMode: String, CaseIterable {
                                                    logName: LogEvent.LogKeyHUDMissionModePanel.missionMode,
                                                    preferredSplitMode: self.preferredSplitMode,
                                                    isMapRequired: true,
-                                                   isFlightPlanPanelRequired: self.isFlightPlanPanelRequired,
+                                                   isRightPanelRequired: self.isRightPanelRequired,
                                                    isTrackingMode: false)
         return MissionMode(configurator: configurator,
                            flightPlanProvider: self.flightPlanProvider,
                            missionActivationModel: FlightPlanActivationModel(),
+                           mapMode: .flightPlan,
                            bottomBarLeftStack: {
                             self.bottomBarViews
                            },
                            bottomBarRightStack: [],
-                           stateMachine: Services.hub.flightPlan.stateMachine)
+                           stateMachine: Services.hub.flightPlan.stateMachine,
+                           hudRightPanelContentProvider: createFlightPlanPanelCoordinator(services:splitControls:rightPanelContainerControls:))
     }
 
     var icon: UIImage {
@@ -105,7 +117,7 @@ enum FlightPlanMissionMode: String, CaseIterable {
         return .secondary
     }
 
-    private var isFlightPlanPanelRequired: Bool {
+    private var isRightPanelRequired: Bool {
         return true
     }
 

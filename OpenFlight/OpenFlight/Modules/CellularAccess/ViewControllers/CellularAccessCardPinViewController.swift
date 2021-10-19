@@ -173,9 +173,7 @@ private extension CellularAccessCardPinViewController {
                 if connectionState == CellularConnectionState.none {
                     coordinator?.dismiss(animated: true, completion: nil)
                 } else if connectionState == CellularConnectionState.ready {
-                    coordinator?.dismiss {
-                        (self.coordinator as? HUDCoordinator)?.displayPairingSuccess()
-                    }
+                    coordinator?.dismiss {}
                 } else {
                     descriptionLabel.textColor = connectionState?.descriptionColor
                 }

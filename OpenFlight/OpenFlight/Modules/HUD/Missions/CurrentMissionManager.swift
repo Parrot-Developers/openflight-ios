@@ -98,8 +98,9 @@ extension CurrentMissionManagerImpl: CurrentMissionManager {
     }
 
     public func updateActiveMissionIfNeeded(activeMissionUid: String) {
-        if providerSubject.value.signature.missionUID != activeMissionUid,
-           let missionProvider = store.allMissions.first(where: { $0.signature.missionUID ==  activeMissionUid}) {
+        if !providerSubject.value.isCompatibleWith(missionUid: activeMissionUid),
+           let missionProvider = store.allMissions.first(where: { $0.signature.missionUID ==  activeMissionUid }) {
+            set(provider: missionProvider)
             set(mode: missionProvider.mission.defaultMode)
         }
     }

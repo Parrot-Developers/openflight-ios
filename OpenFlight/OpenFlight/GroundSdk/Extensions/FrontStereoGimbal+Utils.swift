@@ -66,48 +66,4 @@ extension FrontStereoGimbal {
             return .calibrated
         }
     }
-
-    /// String describing front stereo vision sensors calibration state.
-    var description: String {
-        switch state {
-        case .calibrated,
-             .unavailable:
-            return ""
-        case .recommended:
-            return L10n.commonRecommended
-        case .needed,
-             .error:
-            return L10n.commonRequired
-        }
-    }
-
-    /// Color for stereo vision sensors calibration.
-    var subtextColor: ColorName {
-        switch self.state {
-        case .calibrated,
-             .unavailable:
-            return .highlightColor
-        default:
-            return .white
-        }
-    }
-
-    /// Background color for stereo vision sensors calibration.
-    var backgroundColor: ColorName {
-       switch self.state {
-       case .calibrated,
-            .unavailable:
-        return .white
-       case .recommended:
-        return .warningColor
-       case .needed,
-            .error:
-        return .errorColor
-       }
-    }
-
-    /// Tells is front stereo gimbal calibration is needed or not.
-    private var isCalibrationNeeded: Bool {
-        return (state == .needed) || (state == .error)
-    }
 }

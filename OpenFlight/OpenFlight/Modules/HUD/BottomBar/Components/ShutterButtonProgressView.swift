@@ -45,7 +45,6 @@ final class ShutterButtonProgressView: UIView, NibOwnerLoadable {
         static let hugeBorderWidth: CGFloat = 50.0
         static let strokeColor: UIColor = UIColor(named: .greenSpring)
         static let backgroundStrokeColor: UIColor = UIColor(named: .white20)
-        static let widthCenterFactor: CGFloat = 400.0
         static let startAngle: CGFloat = CGFloat(Float.pi / -2.0)
     }
 

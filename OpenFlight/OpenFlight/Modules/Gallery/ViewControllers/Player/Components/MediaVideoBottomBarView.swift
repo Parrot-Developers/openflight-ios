@@ -30,6 +30,17 @@
 
 import Reusable
 
+enum MediaVideoSliderStyle {
+    case full, minimal
+
+    var thumbImage: UIImage? {
+        switch self {
+        case .full: return Asset.Common.Slider.slider.image
+        case .minimal: return UIImage()
+        }
+    }
+}
+
 /// Protocol for `MediaVideoBottomBar`.
 protocol MediaVideoBottomBarViewDelegate: AnyObject {
     /// Called when slider moved.
@@ -41,11 +52,17 @@ final class MediaVideoBottomBarView: UIView, NibOwnerLoadable {
 
     // MARK: - Outlets
     @IBOutlet private weak var slider: SettingsSlider!
+    @IBOutlet private weak var timingInfosView: UIStackView!
     @IBOutlet private weak var positionLabel: UILabel!
     @IBOutlet private weak var durationLabel: UILabel!
 
     // MARK: - Internal Properties
     weak var delegate: MediaVideoBottomBarViewDelegate?
+    var sliderStyle: MediaVideoSliderStyle = .full {
+        didSet {
+            updateSliderStyle()
+        }
+    }
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
@@ -68,7 +85,12 @@ final class MediaVideoBottomBarView: UIView, NibOwnerLoadable {
         slider.maximumValue = Float(duration)
         durationLabel.text = duration.formattedString
         positionLabel.text = position.formattedString
-        self.slider.setValue(Float(position), animated: true)
+        slider.setValue(Float(position), animated: true)
+    }
+
+    func updateSliderStyle() {
+        timingInfosView.showFromEdge(.bottom, show: sliderStyle == .full, fadeFrom: 1)
+        slider.updateThumbImage(sliderStyle.thumbImage)
     }
 }
 

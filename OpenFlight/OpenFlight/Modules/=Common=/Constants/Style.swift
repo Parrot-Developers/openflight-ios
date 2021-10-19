@@ -59,6 +59,8 @@ public enum Style {
     public static let tapGestureDuration: TimeInterval = 0.15
     /// Corner radius = 2.0.
     public static let tinyCornerRadius: CGFloat = 2.0
+    /// Corner radius = 3.0.
+    public static let verySmallCornerRadius: CGFloat = 3.0
     /// Corner radius = 4.0.
     public static let smallCornerRadius: CGFloat = 4.0
     /// Corner radius = 6.0.
@@ -124,7 +126,7 @@ public enum ParrotFontStyle {
     /// Rajdhani Bold 68.
     case monumental
 
-    var font: UIFont {
+    public var font: UIFont {
         switch self {
         case .tiny:
             return UIFont.rajdhaniSemiBold(size: 10)

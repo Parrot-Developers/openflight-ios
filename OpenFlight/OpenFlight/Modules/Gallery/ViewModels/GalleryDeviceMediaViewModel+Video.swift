@@ -53,7 +53,7 @@ extension GalleryDeviceMediaViewModel: GalleryVideoCompatible {
         return videoIsPlaying() ? .playing : .paused
     }
 
-    func videoPlay(index: Int) -> Bool {
+    func videoPlay() -> Bool {
         guard let videoPlayer = videoPlayer else { return false }
 
         videoPlayer.play()
@@ -68,6 +68,7 @@ extension GalleryDeviceMediaViewModel: GalleryVideoCompatible {
     }
 
     func videoStop() {
+        videoPlayer?.pause()
         videoPlayer = nil
     }
 

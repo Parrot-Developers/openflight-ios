@@ -31,17 +31,6 @@
 import UIKit
 import Reusable
 
-public struct FlightPlanPanelProgressInfo {
-    public init(runState: FlightPlanRunningState, progress: Double) {
-        self.runState = runState
-        self.progress = progress
-    }
-
-    var runState: FlightPlanRunningState
-    var progress: Double
-
-}
-
 // MARK: Public Structs
 /// Model for Flight Plan panel progress view display.
 public struct FlightPlanPanelProgressModel {
@@ -70,73 +59,6 @@ public struct FlightPlanPanelProgressModel {
         self.progress = progress
         self.hasError = hasError
     }
-
-    /// Init with `RunFlightPlanState`.
-    ///
-    /// - Parameters:
-    ///    - state: Flight Plan's run state
-    init(runState: FlightPlanRunningState,
-         statMachine: FlightPlanStateMachineState,
-         progress: Double,
-         distance: Double) {
-        let percentString: String = (progress * 100).asPercent(maximumFractionDigits: 0)
-        let distanceString: String = UnitHelper.stringDistanceWithDouble(distance,
-                                                                         spacing: false)
-
-        switch statMachine {
-        case .flying:
-            switch runState {
-            case let .playing(droneConnected, _, rth):
-                if rth {
-                    self.init(mainText: L10n.commonReturnHome,
-                              mainColor: ColorName.greySilver.color,
-                              subColor: ColorName.whiteAlbescent.color,
-                              progress: 1.0)
-                } else {
-                    self.init(mainText: String(format: "%@・%@",
-                                               percentString,
-                                               distanceString),
-                              mainColor: droneConnected ? ColorName.highlightColor.color : ColorName.defaultIconColor.color,
-                              subColor: ColorName.whiteAlbescent.color,
-                              progress: progress)
-                }
-            case .paused:
-                self.init(mainText: L10n.flightPlanAlertStoppedAt(String(format: "%@・%@",
-                                                                         percentString,
-                                                                         distanceString)),
-                          mainColor: ColorName.warningColor.color,
-                          subColor: ColorName.whiteAlbescent.color,
-                          progress: progress)
-            default:
-                self.init(mainText: "")
-            }
-        case .startedNotFlying:
-            self.init(mainText: L10n.flightPlanInfoUploading)
-        case .end:
-            self.init(mainText: "")
-        case let .resumable(_, startAvailability),
-             let .editable(_, startAvailability):
-            switch startAvailability {
-            case .available:
-                self.init(mainText: L10n.flightPlanInfoDroneReady)
-            case let .unavailable(reason):
-                switch reason {
-                case .droneDisconnected:
-                    self.init(mainText: L10n.commonDroneNotConnected,
-                              mainColor: ColorName.redTorch.color,
-                              hasError: true)
-                case let .pilotingItfUnavailable(reasons):
-                    self.init(mainText: reasons.errorText ?? L10n.error,
-                              mainColor: ColorName.redTorch.color,
-                              hasError: true)
-                }
-            case .alreadyRunning:
-                self.init(mainText: "")
-            }
-        case .machineStarted, .initialized:
-            self.init(mainText: "")
-        }
-    }
 }
 
 /// Displays a progress view inside Flight Plan's panel.
@@ -160,7 +82,7 @@ public final class FlightPlanPanelProgressView: UIView, NibOwnerLoadable {
         self.commonInitFlightPlanPanelProgressView()
     }
 
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         super.init(frame: frame)
 
         self.commonInitFlightPlanPanelProgressView()
@@ -183,6 +105,7 @@ private extension FlightPlanPanelProgressView {
     /// Common init.
     func commonInitFlightPlanPanelProgressView() {
         self.loadNibContent()
+        self.isHidden = true
         topLeftLabel.makeUp()
     }
 
@@ -197,5 +120,6 @@ private extension FlightPlanPanelProgressView {
         progressView.trackTintColor = model.subColor
         progressView.progress = Float(model.progress)
         progressView.isHidden = model.hasError
+        extraViewsStackView.isHidden = model.hasError
     }
 }

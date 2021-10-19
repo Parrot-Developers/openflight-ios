@@ -19,6 +19,7 @@
                 <outlet property="calibrationCompleteImageView" destination="ueO-0K-c9z" id="mZj-5Y-mGE"/>
                 <outlet property="calibrationTitle" destination="ZoQ-HF-iee" id="9jw-dU-EZV"/>
                 <outlet property="finishedButton" destination="geo-Zl-Beh" id="uRf-99-cMT"/>
+                <outlet property="landingButton" destination="QOX-uq-cfd" id="W55-Ml-d3r"/>
                 <outlet property="missionStateLabel" destination="vLc-z3-T9v" id="Acb-Af-FTU"/>
                 <outlet property="progressViewContainer" destination="Q7h-Xv-bnM" id="IbK-Yd-aBr"/>
                 <outlet property="stopButton" destination="BdN-oY-wXU" id="iyz-lD-X2h"/>
@@ -30,30 +31,37 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Q7h-Xv-bnM" userLabel="State Description View">
-                    <rect key="frame" x="20" y="10" width="625" height="194"/>
+                    <rect key="frame" x="0.0" y="10" width="665" height="194"/>
                     <subviews>
                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="19" translatesAutoresizingMaskIntoConstraints="NO" id="d1F-eR-zxn">
-                            <rect key="frame" x="109.5" y="70.5" width="406" height="53"/>
+                            <rect key="frame" x="116.5" y="79" width="432" height="36"/>
                             <subviews>
                                 <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icFillChecked" translatesAutoresizingMaskIntoConstraints="NO" id="ueO-0K-c9z">
-                                    <rect key="frame" x="183" y="-40" width="40" height="40"/>
+                                    <rect key="frame" x="196" y="-40" width="40" height="40"/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="40" id="EYa-Ds-tGy"/>
                                         <constraint firstAttribute="width" secondItem="ueO-0K-c9z" secondAttribute="height" multiplier="1:1" id="G8N-JK-EJ9"/>
                                     </constraints>
                                 </imageView>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Obstacle avoidance calibration" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZoQ-HF-iee" userLabel="Mission Title">
-                                    <rect key="frame" x="97" y="0.0" width="212" height="17"/>
+                                    <rect key="frame" x="110" y="0.0" width="212" height="17"/>
                                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                     <color key="textColor" name="default_text_color"/>
                                     <nil key="highlightedColor"/>
                                 </label>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vLc-z3-T9v" userLabel="Mission State">
-                                    <rect key="frame" x="184" y="36" width="38" height="17"/>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vLc-z3-T9v" userLabel="Mission State">
+                                    <rect key="frame" x="216" y="36" width="0.0" height="0.0"/>
                                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                     <color key="textColor" name="emerald"/>
                                     <nil key="highlightedColor"/>
                                 </label>
+                                <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QOX-uq-cfd">
+                                    <rect key="frame" x="173" y="36" width="86" height="0.0"/>
+                                    <state key="normal" image="icAutoLanding"/>
+                                    <connections>
+                                        <action selector="landingDrone:" destination="-1" eventType="touchUpInside" id="m2R-yn-kgb"/>
+                                    </connections>
+                                </button>
                             </subviews>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </stackView>
@@ -81,7 +89,7 @@
                             </connections>
                         </button>
                         <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="geo-Zl-Beh">
-                            <rect key="frame" x="0.0" y="0.0" width="406.5" height="50"/>
+                            <rect key="frame" x="0.0" y="0.0" width="432.5" height="50"/>
                             <color key="backgroundColor" name="emerald"/>
                             <state key="normal" title="Ok">
                                 <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -99,16 +107,17 @@
                 <constraint firstAttribute="bottom" secondItem="dpc-Mi-g9K" secondAttribute="bottom" constant="20" id="9Km-y2-BpS"/>
                 <constraint firstItem="geo-Zl-Beh" firstAttribute="width" secondItem="d1F-eR-zxn" secondAttribute="width" id="LDp-NV-96l"/>
                 <constraint firstItem="dpc-Mi-g9K" firstAttribute="top" secondItem="Q7h-Xv-bnM" secondAttribute="bottom" constant="10" id="Njt-xu-8g2"/>
-                <constraint firstAttribute="trailing" secondItem="Q7h-Xv-bnM" secondAttribute="trailing" constant="20" id="TYf-N0-c20"/>
+                <constraint firstAttribute="trailing" secondItem="Q7h-Xv-bnM" secondAttribute="trailing" id="TYf-N0-c20"/>
                 <constraint firstItem="Q7h-Xv-bnM" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="10" id="UJq-j4-b64"/>
                 <constraint firstItem="dpc-Mi-g9K" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="Wkv-kg-s5Q"/>
-                <constraint firstItem="Q7h-Xv-bnM" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="20" id="xLf-dK-Sqs"/>
+                <constraint firstItem="Q7h-Xv-bnM" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="xLf-dK-Sqs"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <point key="canvasLocation" x="300.72463768115944" y="-96.428571428571431"/>
         </view>
     </objects>
     <resources>
+        <image name="icAutoLanding" width="86" height="86"/>
         <image name="icFillChecked" width="14" height="14"/>
         <image name="stopIcon" width="58" height="58"/>
         <namedColor name="default_bgcolor">

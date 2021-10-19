@@ -32,6 +32,7 @@ import UIKit
 
 // MARK: - Private Enums
 private enum Constants {
+    static let veryCriticalLevel: Int = 5
     static let criticalLevel: Int = 10
     static let warningLevel: Int = 20
 }
@@ -49,7 +50,9 @@ public struct BatteryValueModel: Equatable {
         }
 
         switch value {
-        case ...Constants.criticalLevel:
+        case ...Constants.veryCriticalLevel:
+            return .veryCritical
+        case Constants.veryCriticalLevel...Constants.criticalLevel:
             return .critical
         case Constants.criticalLevel...Constants.warningLevel:
             return .warning
@@ -63,7 +66,8 @@ public struct BatteryValueModel: Equatable {
     /// Image for current alert level.
     var batteryImage: UIImage {
         switch alertLevel {
-        case .critical:
+        case .critical,
+             .veryCritical:
             return Asset.Remote.icBatteryCritic.image
         case .warning:
             return Asset.Remote.icBatteryLow.image
@@ -71,6 +75,34 @@ public struct BatteryValueModel: Equatable {
             return Asset.Remote.icBatteryFull.image
         case .none:
             return Asset.Remote.icBatteryNone.image
+        }
+    }
+
+    var batteryRemoteControl: UIImage {
+        switch alertLevel {
+        case .critical,
+             .veryCritical:
+            return Asset.Remote.icBatteryRemoteCritic.image
+        case .warning:
+            return Asset.Remote.icBatteryRemoteLow.image
+        case .ready:
+            return Asset.Remote.icBatteryRemoteFull.image
+        case .none:
+            return Asset.Remote.icBatteryRemoteNone.image
+        }
+    }
+
+    var batteryUserDevice: UIImage {
+        switch alertLevel {
+        case .critical,
+             .veryCritical:
+            return Asset.Remote.icBatteryUserDeviceCritic.image
+        case .warning:
+            return Asset.Remote.icBatteryUserDeviceLow.image
+        case .ready:
+            return Asset.Remote.icBatteryUserDeviceFull.image
+        case .none:
+            return Asset.Remote.icBatteryUserDeviceNone.image
         }
     }
 }

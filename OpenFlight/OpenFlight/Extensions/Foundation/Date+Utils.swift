@@ -68,10 +68,13 @@ extension Date {
     }
 
     /// Returns date's formatted string with given style.
-    func formattedString(dateStyle: DateFormatter.Style, timeStyle: DateFormatter.Style) -> String {
+    func formattedString(dateStyle: DateFormatter.Style,
+                         timeStyle: DateFormatter.Style,
+                         doesRelativeFormatting: Bool = false) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = dateStyle
         formatter.timeStyle = timeStyle
+        formatter.doesRelativeDateFormatting = doesRelativeFormatting
         return formatter.string(from: self)
     }
 

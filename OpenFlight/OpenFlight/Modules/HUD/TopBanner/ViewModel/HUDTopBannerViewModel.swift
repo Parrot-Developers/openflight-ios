@@ -274,7 +274,7 @@ private extension HUDTopBannerViewModel {
         }
 
         if preciseHome.state == .available
-            && preciseHome.state != lastPreciseHomeState
+            && lastPreciseHomeState == .unavailable
             && drone.isStateFlying {
             shouldShowHomeSetInfo = false
             let copy = state.value.copy()

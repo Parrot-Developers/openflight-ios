@@ -45,12 +45,6 @@ final class MissionLauncherButton: UIControl, NibOwnerLoadable {
         }
     }
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let defaultBorderWidth: CGFloat = 1.0
-        static let selectedBorderWidth: CGFloat = 4.0
-    }
-
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
 

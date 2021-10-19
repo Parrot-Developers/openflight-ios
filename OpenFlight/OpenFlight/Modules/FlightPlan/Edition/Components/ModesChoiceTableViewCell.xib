@@ -36,6 +36,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rZL-Hu-Q73">
                                 <rect key="frame" x="0.0" y="24.5" width="300" height="35.5"/>
@@ -45,6 +46,7 @@
                                         <color key="tintColor" name="default_text_color"/>
                                     </stackView>
                                 </subviews>
+                                <color key="backgroundColor" name="setting_group"/>
                                 <constraints>
                                     <constraint firstItem="I8B-eU-Wdl" firstAttribute="top" secondItem="rZL-Hu-Q73" secondAttribute="top" id="0hL-w5-jv4"/>
                                     <constraint firstAttribute="bottom" secondItem="I8B-eU-Wdl" secondAttribute="bottom" id="NfO-Tg-8iY"/>
@@ -84,6 +86,9 @@
     <resources>
         <namedColor name="default_text_color">
             <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="setting_group">
+            <color red="0.87450980392156863" green="0.84705882352941175" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

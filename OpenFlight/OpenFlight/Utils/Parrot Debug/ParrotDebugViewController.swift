@@ -113,6 +113,10 @@ class ParrotDebugViewController: UIViewController {
     override var prefersStatusBarHidden: Bool {
         return true
     }
+
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return true
+    }
 }
 
 // MARK: - Actions

@@ -33,9 +33,6 @@ import ArcGIS
 /// Graphic class for Flight Plan's waypoint to point of interest line.
 final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, WayPointRelatedGraphic, PoiPointRelatedGraphic {
     // MARK: - Private Properties
-    private var lineSymbol: AGSSimpleLineSymbol? {
-        return symbol as? AGSSimpleLineSymbol
-    }
     private var polyline: AGSPolyline? {
         return geometry as? AGSPolyline
     }
@@ -80,8 +77,8 @@ final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, WayPointRelat
 
         self.wayPoint = wayPoint
         self.poiPoint = poiPoint
-        self.attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = wayPointIndex
-        self.attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiIndex
+        attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = wayPointIndex
+        attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiIndex
     }
 
     /// Init.
@@ -110,7 +107,7 @@ final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, WayPointRelat
     /// - Parameters:
     ///    - wayPoint: waypoint's location
     func updateWayPoint(_ wayPoint: AGSPoint) {
-        self.geometry = polyline?.replacingFirstPoint(wayPoint)
+        geometry = polyline?.replacingFirstPoint(wayPoint)
     }
 
     /// Updates point of interest location.
@@ -118,6 +115,6 @@ final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, WayPointRelat
     /// - Parameters:
     ///    - poiPoint: point of interest's location
     func updatePoiPoint(_ poiPoint: AGSPoint) {
-        self.geometry = polyline?.replacingLastPoint(poiPoint)
+        geometry = polyline?.replacingLastPoint(poiPoint)
     }
 }

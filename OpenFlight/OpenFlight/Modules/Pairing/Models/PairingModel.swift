@@ -84,7 +84,6 @@ enum PairingState {
 enum PairingCellModel {
     case remote
     case drone
-    case fly
 }
 
 /// Remote pairing model.
@@ -129,33 +128,7 @@ class DroneWithRemotePairingModel: PairingModel {
     }
 }
 
-/// Fly pairing model.
-class FlyPairingModel: PairingModel {
-    // MARK: - Internal Properties
-    var pairingState: PairingState
-    var image: UIImage = Asset.Pairing.icFly.image
-    var imageTintColor: UIColor {
-        switch pairingState {
-        case .done:
-            return UIColor(named: .highlightColor)
-        default:
-            return UIColor(named: .defaultTextColor)
-        }
-    }
-    var title: String = L10n.pairingPilot
-    var actionTitle: String?
-
-    // MARK: - Init
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - state: specify the current state of the model
-    init(state: PairingState = .todo) {
-        self.pairingState = state
-    }
-}
-
-/// Fly pairing model.
+/// Wifi pairing model.
 class WifiPairingModel: PairingModel {
     // MARK: - Internal Properties
     var pairingState: PairingState

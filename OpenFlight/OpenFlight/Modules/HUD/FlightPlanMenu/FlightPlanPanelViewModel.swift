@@ -51,6 +51,7 @@ final class FlightPlanPanelViewModel {
     @Published private(set) var imageRate: ImageRateProvider?
 
     private weak var coordinator: FlightPlanPanelCoordinator?
+    private weak var splitControls: SplitControls?
 
     // MARK: - Private Properties
 
@@ -67,11 +68,13 @@ final class FlightPlanPanelViewModel {
     init(projectManager: ProjectManager,
          runStateProgress: FlightPlanRunManager,
          currentMissionManager: CurrentMissionManager,
-         coordinator: FlightPlanPanelCoordinator) {
+         coordinator: FlightPlanPanelCoordinator,
+         splitControls: SplitControls) {
         self.projectManager = projectManager
         self.runManager = runStateProgress
         self.currentMissionManager = currentMissionManager
         self.coordinator = coordinator
+        self.splitControls = splitControls
         listenMissionMode()
         listenSelectedProject()
     }
@@ -133,29 +136,25 @@ final class FlightPlanPanelViewModel {
 
     /// Edit button touched up inside.
     @IBAction func editButtonTouchedUpInside() {
-        guard let projectType = currentMissionManager.mode.flightPlanProvider?.projectType else { return }
         if getProjectModel().map(projectManager.lastFlightPlan) == nil,
            let flightPlanProvider = getFlightPlanProvider() {
-            // There's no loaded flight plan
-            if projectManager.loadProjects(type: projectType).isEmpty,
-               flightPlanProvider.flightPlanCoordinator != nil {
-                // There's no flight plan at all: display first time menu
-                coordinator?.startNewFlightPlan(flightPlanProvider: flightPlanProvider, creationCompletion: { [weak self] flightPlanCreated in
-                    DispatchQueue.main.async {
-                        guard flightPlanCreated else { return }
-                        self?.newFlightplan(flightPlanProvider: flightPlanProvider)
-                        self?.startEditionMode(false)
-                    }
-                })
-            } else {
-                // There are already flight plans, create a new project and go to edition
-                newFlightplan(flightPlanProvider: flightPlanProvider)
-                startEditionMode(true)
-            }
+            // There are not already flight plans, create a new project and go to edition
+            newFlightplan(flightPlanProvider: flightPlanProvider)
+            startEditionMode(true)
         } else {
             // Edit current project
             startEditionMode(false)
         }
+    }
+
+    public func showStream() {
+        splitControls?.forceStream = true
+        splitControls?.displayMapOr3DasChild()
+    }
+
+    public func showMap() {
+        splitControls?.forceStream = false
+        splitControls?.displayMapOr3DasChild()
     }
 }
 
@@ -177,6 +176,7 @@ private extension FlightPlanPanelViewModel {
 
     func listenMissionMode() {
         currentMissionManager.modePublisher.sink { [unowned self] in
+
             createFirstTitle = $0.flightPlanProvider?.createFirstTitle
             newButtonTitle = $0.flightPlanProvider?.newButtonTitle
             listenStateMachine(missionMode: $0)
@@ -187,17 +187,21 @@ private extension FlightPlanPanelViewModel {
             .combineLatest(runManager.statePublisher)
             .map { return ($0, $1.isActive) }
             .sink { [unowned self] missionMode, isActive in
-                self.updateExtraViews(missionStatusView: missionMode.missionStatusView, isActive: isActive)
+                self.updateExtraViews(missionStatusView: missionMode.flightPlanProvider?.statusView, isActive: isActive)
             }
             .store(in: &cancellables)
     }
 
-    private typealias State = (machine: FlightPlanStateMachineState, run: FlightPlanRunningState)
+    private typealias State = (machine: FlightPlanStateMachineState,
+                               run: FlightPlanRunningState,
+                               customProgress: CustomFlightPlanProgress?)
 
     func listenStateMachine(missionMode: MissionMode) {
         self.stateMachine = missionMode.stateMachine
-        stateMachineCancellable = missionMode.stateMachine?.state
-            .combineLatest(runManager.statePublisher)
+        let customProgressPublisher: AnyPublisher<CustomFlightPlanProgress?, Never>
+            = missionMode.flightPlanProvider?.customProgressPublisher ?? Just(nil).eraseToAnyPublisher()
+        stateMachineCancellable = missionMode.stateMachine?.statePublisher
+            .combineLatest(runManager.statePublisher, customProgressPublisher)
             .combineLatest(runManager.distancePublisher,
                            runManager.durationPublisher,
                            runManager.progressPublisher)
@@ -234,12 +238,85 @@ private extension FlightPlanPanelViewModel {
                 case .end:
                     break
                 }
-
-                progressModel = FlightPlanPanelProgressModel(runState: state.run,
-                                                             statMachine: state.machine,
-                                                             progress: progress,
-                                                             distance: distance)
+                if let customProgress = state.customProgress {
+                    progressModel = FlightPlanPanelProgressModel(mainText: customProgress.label,
+                                                                 mainColor: customProgress.color,
+                                                                 progress: customProgress.progress)
+                } else {
+                    progressModel = progressModel(runState: state.run,
+                                                  statMachine: state.machine,
+                                                  progress: progress,
+                                                  distance: distance)
+                }
             }
+    }
+
+    func progressModel(runState: FlightPlanRunningState,
+                       statMachine: FlightPlanStateMachineState,
+                       progress: Double,
+                       distance: Double) -> FlightPlanPanelProgressModel {
+        switch statMachine {
+        case .flying:
+            return flyingProgressModel(runState: runState, progress: progress, distance: distance)
+        case .startedNotFlying:
+            return FlightPlanPanelProgressModel(mainText: L10n.flightPlanInfoUploading)
+        case .end:
+            return FlightPlanPanelProgressModel(mainText: "")
+        case let .resumable(_, startAvailability),
+             let .editable(_, startAvailability):
+            switch startAvailability {
+            case .available:
+                return FlightPlanPanelProgressModel(mainText: L10n.flightPlanInfoDroneReady)
+            case let .unavailable(reason):
+                switch reason {
+                case .droneDisconnected:
+                    return FlightPlanPanelProgressModel(mainText: L10n.commonDroneNotConnected,
+                                                        mainColor: ColorName.redTorch.color,
+                                                        hasError: true)
+                case let .pilotingItfUnavailable(reasons):
+                    return FlightPlanPanelProgressModel(mainText: reasons.errorText ?? L10n.error,
+                                                        mainColor: ColorName.redTorch.color,
+                                                        hasError: true)
+                }
+            case .alreadyRunning:
+                return FlightPlanPanelProgressModel(mainText: "")
+            }
+        case .machineStarted, .initialized:
+            return FlightPlanPanelProgressModel(mainText: "")
+        }
+    }
+
+    func flyingProgressModel(runState: FlightPlanRunningState,
+                             progress: Double,
+                             distance: Double) -> FlightPlanPanelProgressModel {
+        let percentString: String = (progress * 100).asPercent(maximumFractionDigits: 0)
+        let distanceString: String = UnitHelper.stringDistanceWithDouble(distance,
+                                                                         spacing: false)
+        switch runState {
+        case let .playing(droneConnected, _, rth):
+            if rth {
+                return FlightPlanPanelProgressModel(mainText: L10n.commonReturnHome,
+                                                    mainColor: ColorName.greySilver.color,
+                                                    subColor: ColorName.whiteAlbescent.color,
+                                                    progress: 1.0)
+            } else {
+                return FlightPlanPanelProgressModel(mainText: String(format: "%@・%@",
+                                                                     percentString,
+                                                                     distanceString),
+                                                    mainColor: droneConnected ? ColorName.highlightColor.color : ColorName.defaultIconColor.color,
+                                                    subColor: ColorName.whiteAlbescent.color,
+                                                    progress: progress)
+            }
+        case .paused:
+            return FlightPlanPanelProgressModel(mainText: L10n.flightPlanAlertStoppedAt(String(format: "%@・%@",
+                                                                                               percentString,
+                                                                                               distanceString)),
+                                                mainColor: ColorName.warningColor.color,
+                                                subColor: ColorName.whiteAlbescent.color,
+                                                progress: progress)
+        default:
+            return FlightPlanPanelProgressModel(mainText: "")
+        }
     }
 
     func updateImageRateInformation(_ machineState: FlightPlanStateMachineState) {
@@ -316,10 +393,6 @@ extension FlightPlanPanelViewModel {
 
         static let defaultInfo = ButtonsInformation(startButtonState: .blockingIssue,
                                                     areEnabled: false)
-    }
-
-    enum ProgressionState {
-        case progress(FlightPlanModel?)
     }
 
     enum ViewState: Equatable {

@@ -134,8 +134,7 @@ extension FlightsViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let flight = flightItems.remove(at: indexPath.row)
-            viewModel.delete(flight: flight)
+            viewModel.askForDeletion(flight: flightItems[indexPath.row])
         }
     }
 }

@@ -38,12 +38,6 @@
                                 <color key="textColor" name="default_text_color"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xES-n8-VMW">
-                                <rect key="frame" x="94" y="48" width="708" height="15"/>
-                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                <color key="textColor" name="default_text_color"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mel-Mj-MUC">
                                 <rect key="frame" x="44" y="75" width="808" height="318"/>
                                 <subviews>
@@ -143,16 +137,13 @@
                         <constraints>
                             <constraint firstItem="qkC-lH-RYK" firstAttribute="centerY" secondItem="4rK-bV-KcZ" secondAttribute="centerY" id="3xb-6Y-4co"/>
                             <constraint firstItem="y5o-Nm-KHy" firstAttribute="bottom" secondItem="mel-Mj-MUC" secondAttribute="bottom" id="84s-l3-9KG"/>
-                            <constraint firstItem="xES-n8-VMW" firstAttribute="leading" secondItem="qkC-lH-RYK" secondAttribute="leading" id="DeJ-bN-PVa"/>
                             <constraint firstItem="4rK-bV-KcZ" firstAttribute="leading" secondItem="y5o-Nm-KHy" secondAttribute="leading" constant="20" id="ECp-w5-Zeo"/>
                             <constraint firstItem="qkC-lH-RYK" firstAttribute="leading" secondItem="y5o-Nm-KHy" secondAttribute="leading" constant="50" id="KhF-FM-oyX"/>
                             <constraint firstItem="y5o-Nm-KHy" firstAttribute="trailing" secondItem="mel-Mj-MUC" secondAttribute="trailing" id="VgM-bv-zvX"/>
                             <constraint firstItem="4rK-bV-KcZ" firstAttribute="top" secondItem="y5o-Nm-KHy" secondAttribute="top" constant="20" id="eBt-AC-o1D"/>
                             <constraint firstItem="y5o-Nm-KHy" firstAttribute="trailing" secondItem="qkC-lH-RYK" secondAttribute="trailing" constant="50" id="hwZ-Me-9r4"/>
-                            <constraint firstItem="xES-n8-VMW" firstAttribute="top" secondItem="qkC-lH-RYK" secondAttribute="bottom" constant="5" id="mnI-OA-NlF"/>
                             <constraint firstItem="mel-Mj-MUC" firstAttribute="leading" secondItem="y5o-Nm-KHy" secondAttribute="leading" id="xzv-sc-YuY"/>
                             <constraint firstItem="mel-Mj-MUC" firstAttribute="top" secondItem="y5o-Nm-KHy" secondAttribute="top" constant="75" id="y0C-ls-MyH"/>
-                            <constraint firstItem="xES-n8-VMW" firstAttribute="trailing" secondItem="qkC-lH-RYK" secondAttribute="trailing" id="zwd-EU-aDp"/>
                         </constraints>
                     </view>
                     <connections>
@@ -160,7 +151,6 @@
                         <outlet property="continueView" destination="hos-PP-v6a" id="ugh-ab-QuG"/>
                         <outlet property="progressView" destination="WJn-A8-WOh" id="7hm-BF-NrK"/>
                         <outlet property="reportView" destination="56f-1Y-5X8" id="n5O-X4-TTT"/>
-                        <outlet property="subtitleLabel" destination="xES-n8-VMW" id="WUP-3H-RGm"/>
                         <outlet property="tableView" destination="FdU-cy-eGF" id="Avy-VG-9Wf"/>
                         <outlet property="titleLabel" destination="qkC-lH-RYK" id="BzX-tM-hwG"/>
                     </connections>

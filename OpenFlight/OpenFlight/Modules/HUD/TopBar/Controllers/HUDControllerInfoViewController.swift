@@ -64,6 +64,20 @@ final class HUDControllerInfoViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         bindToViewModel()
+        setupLayout()
+    }
+
+    private func setupLayout() {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            // Image of device
+            controllerImageView.contentMode = .scaleAspectFit
+
+            // Battery Label
+            batteryLevelLabel.font = ParrotFontStyle.huge.font
+
+            // Image of GPS
+            gpsImageView.contentMode = .scaleAspectFit
+        }
     }
 }
 

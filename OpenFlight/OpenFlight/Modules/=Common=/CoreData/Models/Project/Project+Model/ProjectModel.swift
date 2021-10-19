@@ -85,4 +85,8 @@ public struct ProjectModel {
         self.synchroDate = synchroDate
         self.synchroStatus = synchroStatus
     }
+
+    public var isSimpleFlightPlan: Bool {
+        self.type == FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType
+    }
 }

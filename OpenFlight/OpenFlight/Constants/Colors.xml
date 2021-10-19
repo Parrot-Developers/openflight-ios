@@ -5,6 +5,7 @@
     <color name="default_text_color_20">#3b302a33</color>
     <color name="default_text_color_80">#3b302acc</color>
     <color name="disabled_text_color">#3b302a80</color>
+    <color name="light_shadow_color">#3b302a80</color>
     <color name="green_spring">#00ff8a</color>
     <color name="green_spring_20">#00ff8a33</color>
     <color name="green_haze">#00a157</color>
@@ -35,6 +36,7 @@
     <color name="grey_dark_60">#48494B99</color>
     <color name="blue_dodger">#00b7ff</color>
     <color name="blue_dodger_50">#00b7ff80</color>
+    <color name="blue_navy">#146ed8</color>
     <color name="red_torch">#ff1d45</color>
     <color name="red_torch_50">#ff1d4580</color>
     <color name="red_torch_25">#ff1d4540</color>

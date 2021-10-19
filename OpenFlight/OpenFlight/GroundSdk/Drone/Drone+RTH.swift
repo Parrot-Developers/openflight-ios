@@ -42,6 +42,11 @@ public extension Drone {
     /// Triggers RTH.
     @discardableResult
     func performReturnHome() -> Bool? {
+        // deactivate onboard tracker if necessary to stop look at / follow from starting again
+        if let onboard = getPeripheral(Peripherals.onboardTracker), onboard.trackingEngineState == .activated {
+            onboard.removeAllTargets()
+            onboard.stopTrackingEngine()
+        }
         return getPilotingItf(PilotingItfs.returnHome)?.activate()
     }
 

@@ -67,7 +67,7 @@
 				<key>maxYawRotationSpeed</key>
 				<integer>10</integer>
 				<key>motionDetection</key>
-				<false/>
+				<true/>
 			</dict>
 			<key>Antiflicker</key>
 			<dict>
@@ -159,10 +159,20 @@
 				<key>mode</key>
 				<string>cylinder</string>
 			</dict>
+			<key>ObstacleAvoidanceController</key>
+			<dict>
+				<key>preferredMode</key>
+				<string>standard</string>
+			</dict>
 			<key>PreciseHome</key>
 			<dict>
 				<key>mode</key>
 				<string>disabled</string>
+			</dict>
+			<key>DriController</key>
+			<dict>
+				<key>mode</key>
+				<false/>
 			</dict>
 		</dict>
 	</dict>
@@ -6129,6 +6139,11 @@
 						</dict>
 					</dict>
 				</dict>
+			</dict>
+			<key>DriController</key>
+			<dict>
+				<key>mode</key>
+				<true/>
 			</dict>
 			<key>FlightCameraRecorderController</key>
 			<dict>

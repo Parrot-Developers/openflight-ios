@@ -32,86 +32,79 @@ import UIKit
 import Reusable
 
 /// Cell which displays a centered ruler.
-final class CenteredRulerTableViewCell: UITableViewCell, NibReusable, EditionSettingsCellModel {
+public class CenteredRulerTableViewCell: UITableViewCell, NibReusable, EditionSettingsCellModel {
     // MARK: - Outlets
-    @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var settingValueRulerViewContainer: UIView!
+    @IBOutlet private(set) weak var titleLabel: UILabel!
+    @IBOutlet private(set) weak var settingValueRulerViewContainer: UIView!
     @IBOutlet private weak var disableView: UIView!
 
     // MARK: - Internal Properties
-    weak var delegate: EditionSettingsCellModelDelegate?
+    public weak var delegate: EditionSettingsCellModelDelegate?
 
     // MARK: - Private Properties
-    private var settingType: FlightPlanSettingType?
-    private var centeredRulerBarView: SettingValueRulerView?
+    private(set) var settingType: FlightPlanSettingType?
+    private(set) var centeredRulerBarView: SettingValueRulerView!
 
     // MARK: - Override Funcs
-    override func awakeFromNib() {
+    public override func awakeFromNib() {
         super.awakeFromNib()
         initView()
     }
 
-    override func prepareForReuse() {
+    public override func prepareForReuse() {
         super.prepareForReuse()
         resetView()
     }
 
     // MARK: - Internal Funcs
-    func fill(with settingType: FlightPlanSettingType?) {
-        titleLabel.text = settingType?.title
+    public func fill(with settingType: FlightPlanSettingType?) {
+        titleLabel.text = settingType?.title.uppercased()
         self.settingType = settingType
-        addRulerBar()
+        setupRulerModel()
     }
 
-    func disableCell(_ mustDisable: Bool) {
+    public func disableCell(_ mustDisable: Bool) {
         self.disableView.isHidden = !mustDisable
     }
-}
 
-// MARK: - Private Funcs
-private extension CenteredRulerTableViewCell {
     /// Inits the view.
-    func initView() {
-        titleLabel.makeUp(and: .defaultTextColor)
+    public func initView() {
+        titleLabel.makeUp(with: .small, and: .defaultTextColor)
+        let ruler = SettingValueRulerView(orientation: .horizontal)
+        ruler.delegate = self
+        centeredRulerBarView = ruler
+        settingValueRulerViewContainer.addWithConstraints(subview: ruler)
     }
 
     /// Resets view.
-    func resetView() {
+    public func resetView() {
         titleLabel.text = nil
-        centeredRulerBarView?.removeFromSuperview()
     }
 
-    /// Adds ruler bar displaying custom values.
-    func addRulerBar() {
-        centeredRulerBarView?.removeFromSuperview()
-        let ruler = SettingValueRulerView(orientation: .horizontal)
-        let displayType: RulerDisplayType = settingType?.category != .image ? .number : .string
-        let allValues: [Double]
-        let currentValue: Double
-
+    /// Set ruler bar model displaying custom values.
+    public func setupRulerModel() {
+        let displayType: RulerDisplayType = .string
         var divider = 1.0
         if let dividerSetting = settingType?.divider, dividerSetting < 1.0 {
             divider = dividerSetting
         }
-        allValues = settingType?.allValues.map({Double($0) * divider}) ?? []
-        currentValue = Double(settingType?.currentValue ?? 0) * divider
+        let allValues = settingType?.allValues.map({Double($0) * divider}) ?? []
+        let currentValue = Double(settingType?.currentValue ?? 0) * divider
 
-        ruler.model = SettingValueRulerModel(value: Double(currentValue),
-                                             range: allValues,
-                                             rangeDescriptions: settingType?.valueDescriptions ?? [],
-                                             rangeImages: settingType?.valueImages ?? [],
-                                             unit: settingType?.unit ?? .distance,
-                                             orientation: .horizontal,
-                                             displayType: displayType)
-        ruler.delegate = self
-        settingValueRulerViewContainer.addWithConstraints(subview: ruler)
-        centeredRulerBarView = ruler
+        centeredRulerBarView.model =
+            SettingValueRulerModel(value: Double(currentValue),
+                                   range: allValues,
+                                   rangeDescriptions: settingType?.valueDescriptions ?? [],
+                                   rangeImages: settingType?.valueImages ?? [],
+                                   unit: settingType?.unit ?? .distance,
+                                   orientation: .horizontal,
+                                   displayType: displayType)
     }
 }
 
 // MARK: - SettingValueRulerViewDelegate
 extension CenteredRulerTableViewCell: SettingValueRulerViewDelegate {
-    func valueDidChange(_ value: Double) {
+    public func valueDidChange(_ value: Double) {
         var finalValue = Int(value)
         if let divider = settingType?.divider, divider < 1.0 {
             finalValue = Int(value / divider)

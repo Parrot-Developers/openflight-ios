@@ -48,7 +48,6 @@ final class HUDIndicatorViewController: UIViewController {
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
     private var indicatorViewModel: HUDIndicatorViewModel?
-    private var isDroneConnected: Bool = false
 
     // MARK: - Private Enums
     private enum Constants {

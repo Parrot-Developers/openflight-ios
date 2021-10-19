@@ -69,7 +69,6 @@ final class ImagingBarWhiteBalanceBarView: UIView, NibOwnerLoadable, BarItemMode
     // MARK: - Private Enums
     private enum Constants {
         static let selectionDelay: TimeInterval = 0.2
-        static let maxSegmentedItems: Int = 6
         static let animationDuration: TimeInterval = 0.1
     }
 
@@ -117,7 +116,6 @@ private extension ImagingBarWhiteBalanceBarView {
     func addSegmentedBar() {
         segmentedBarView?.removeFromSuperview()
         let segmentedBarView = SegmentedBarView<ImagingBarState>()
-        segmentedBarView.maxItems = Constants.maxSegmentedItems
         segmentedBarView.viewModel = viewModel
         segmentedBarView.delegate = self
         segmentedBarContainer.addWithConstraints(subview: segmentedBarView)

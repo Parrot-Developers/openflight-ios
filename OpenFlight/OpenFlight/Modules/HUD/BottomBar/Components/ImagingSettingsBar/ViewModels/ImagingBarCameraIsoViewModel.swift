@@ -140,18 +140,13 @@ private extension ImagingBarCameraIsoViewModel {
     /// Starts watcher for exposure values.
     func listenExposureValues(drone: Drone) {
         exposureValuesRef = drone.currentCamera?
-            .getComponent(Camera2Components.exposureIndicator,
-                          observer: { [weak self] exposureIndicator in
-                            guard let exposureIndicator = exposureIndicator,
-                                drone.currentCamera?.config.updating == false,
-                                let copy = self?.state.value.copy()
-                                else {
-                                    return
-                            }
+            .getComponent(Camera2Components.exposureIndicator) { [unowned self] exposureIndicator in
+                guard let exposureIndicator = exposureIndicator else { return }
 
-                            copy.mode = exposureIndicator.isoSensitivity
-                            self?.state.set(copy)
-        })
+                let copy = state.value.copy()
+                copy.mode = exposureIndicator.isoSensitivity
+                state.set(copy)
+            }
     }
 
     /// Starts watcher for camera.

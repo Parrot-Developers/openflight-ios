@@ -69,6 +69,25 @@ final class HUDDroneInfoViewController: UIViewController {
         super.viewDidLoad()
 
         setupViewModel()
+        setupLayout()
+    }
+    private func setupLayout() {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            // Drone battery image
+            droneBatteryImageView.contentMode = .scaleAspectFit
+
+            // Drone battery label
+            droneBatteryLabel.font = ParrotFontStyle.huge.font
+
+            // Drone cellulare image
+            droneCellularImageView.contentMode = .scaleAspectFit
+
+            // Drone wifi image
+            droneWifiImageView.contentMode = .scaleAspectFit
+
+            // Drone GPS image
+            droneGpsImageView.contentMode = .scaleAspectFit
+        }
     }
 }
 

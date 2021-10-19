@@ -49,6 +49,9 @@ public protocol ProjectManager {
     /// Loads executed projects, ordered by last execution date desc
     func loadExecutedProjects() -> [ProjectModel]
 
+    /// Loads all projects
+    func loadAllProjects() -> [ProjectModel]
+
     /// Creates new Project.
     ///
     /// - Parameters:
@@ -140,6 +143,7 @@ public class ProjectManagerImpl {
     private let currentUser: UserInformation
     private let filesManager: FlightPlanFilesManager
     private let missionsStore: MissionsStore
+    private let flightPlanManager: FlightPlanManager
 
     /// Publisher of `ProjectModel` array
     public var projectsPublisher: AnyPublisher<[ProjectModel], Never> {
@@ -158,7 +162,8 @@ public class ProjectManagerImpl {
          editionService: FlightPlanEditionService,
          currentMissionManager: CurrentMissionManager,
          currentUser: UserInformation,
-         filesManager: FlightPlanFilesManager) {
+         filesManager: FlightPlanFilesManager,
+         flightPlanManager: FlightPlanManager) {
         self.missionsStore = missionsStore
         self.flightPlanTypeStore = flightPlanTypeStore
         self.persistenceProject = persistenceProject
@@ -167,6 +172,7 @@ public class ProjectManagerImpl {
         self.currentMissionManager = currentMissionManager
         self.currentUser = currentUser
         self.filesManager = filesManager
+        self.flightPlanManager = flightPlanManager
     }
 }
 
@@ -185,6 +191,10 @@ extension ProjectManagerImpl: ProjectManager {
         }
     }
 
+    public func loadAllProjects() -> [ProjectModel] {
+        loadProjects(type: nil)
+    }
+
     public func newProject(flightPlanProvider: FlightPlanProvider) -> ProjectModel {
         let uuid = UUID().uuidString
         let newTitle = titleFromDuplicateTitle(L10n.flightPlanNewProject)
@@ -193,7 +203,7 @@ extension ProjectManagerImpl: ProjectManager {
                                                 settings: flightPlanProvider.settingsProvider?.settings.toLightSettings() ?? [],
                                                 freeSettings: [:],
                                                 polygonPoints: [],
-                                                mavelinkDataFile: nil,
+                                                mavlinkDataFile: nil,
                                                 takeoffActions: [],
                                                 pois: [],
                                                 wayPoints: [],
@@ -266,9 +276,10 @@ extension ProjectManagerImpl: ProjectManager {
 
     public func delete(project: ProjectModel) {
         for flightPlan in flightPlans(for: project) {
-            filesManager.deleteMavlink(of: flightPlan)
+            // There are side effects to manage (delete mavlink,...), let the manager do the job
+            flightPlanManager.delete(flightPlan: flightPlan)
         }
-        persistenceProject.removeProject(project.uuid)
+        persistenceProject.performRemoveProject(project)
         if project.uuid == currentProject?.uuid {
             clearCurrentProject()
             currentMissionManager.mode.stateMachine?.reset()
@@ -301,7 +312,7 @@ extension ProjectManagerImpl: ProjectManager {
         var duplicatedFlightPlans: [FlightPlanModel] = []
 
         if let flightPlan = lastFlightPlan(for: project) {
-            flightPlan.dataSetting?.mavelinkDataFile = nil
+            flightPlan.dataSetting?.mavlinkDataFile = nil
             let thumbnailUUID = UUID().uuidString
 
             var duplicatedFlightPlan = flightPlan
@@ -322,6 +333,7 @@ extension ProjectManagerImpl: ProjectManager {
                                                             thumbnailImage: flightPlan.thumbnail?.thumbnailImage)
             duplicatedFlightPlan.thumbnailUuid = thumbnailUUID
             duplicatedFlightPlan.flightPlanFlights = []
+            duplicatedFlightPlan.dataSetting?.notPropagatedSettings = [:]
 
             duplicatedFlightPlans.append(duplicatedFlightPlan)
             // Duplicate the Mavlink if it exists

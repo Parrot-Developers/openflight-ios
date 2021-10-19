@@ -4,6 +4,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -27,7 +28,7 @@
                                     <size key="itemSize" width="70" height="37"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                    <inset key="sectionInset" minX="10" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells/>
                             </collectionView>
@@ -57,33 +58,70 @@
                         <viewControllerLayoutGuide type="top" id="OTx-MV-rCS"/>
                         <viewControllerLayoutGuide type="bottom" id="edZ-Qv-otA"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="hwi-2y-Z9R">
+                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="hwi-2y-Z9R">
                         <rect key="frame" x="0.0" y="0.0" width="200" height="400"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="5Zc-YD-WUV">
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="-8" translatesAutoresizingMaskIntoConstraints="NO" id="PFY-h4-SbJ">
                                 <rect key="frame" x="0.0" y="0.0" width="200" height="400"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="FAp-aU-yuw">
-                                    <size key="itemSize" width="200" height="200"/>
-                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                </collectionViewFlowLayout>
-                                <cells/>
-                            </collectionView>
+                                <subviews>
+                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="5Zc-YD-WUV">
+                                        <rect key="frame" x="0.0" y="0.0" width="200" height="371.5"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="FAp-aU-yuw">
+                                            <size key="itemSize" width="200" height="200"/>
+                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                        </collectionViewFlowLayout>
+                                        <cells/>
+                                    </collectionView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="s8e-XL-JKx">
+                                        <rect key="frame" x="0.0" y="363.5" width="200" height="36.5"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fSP-fM-JJu">
+                                                <rect key="frame" x="0.0" y="0.0" width="34" height="36.5"/>
+                                                <subviews>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icInternalChip" translatesAutoresizingMaskIntoConstraints="NO" id="8hG-WB-57u">
+                                                        <rect key="frame" x="22" y="11.5" width="12" height="12"/>
+                                                        <color key="tintColor" name="default_text_color"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="12" id="LA8-SI-L18"/>
+                                                            <constraint firstAttribute="width" secondItem="8hG-WB-57u" secondAttribute="height" multiplier="1:1" id="kMP-W5-wdX"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                </subviews>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstItem="8hG-WB-57u" firstAttribute="leading" secondItem="fSP-fM-JJu" secondAttribute="leading" constant="22" id="KPh-5f-Aag"/>
+                                                    <constraint firstAttribute="trailing" secondItem="8hG-WB-57u" secondAttribute="trailing" id="Mac-nO-UcJ"/>
+                                                    <constraint firstItem="8hG-WB-57u" firstAttribute="centerY" secondItem="fSP-fM-JJu" secondAttribute="centerY" constant="-1" id="XoF-7A-sgi"/>
+                                                </constraints>
+                                            </view>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KrU-Ak-lFT">
+                                                <rect key="frame" x="38" y="0.0" width="162" height="36.5"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstAttribute="bottom" secondItem="5Zc-YD-WUV" secondAttribute="bottom" id="GTc-ZA-jVH"/>
-                            <constraint firstItem="5Zc-YD-WUV" firstAttribute="leading" secondItem="hwi-2y-Z9R" secondAttribute="leading" id="hSo-Ew-aFJ"/>
-                            <constraint firstItem="5Zc-YD-WUV" firstAttribute="top" secondItem="hwi-2y-Z9R" secondAttribute="top" id="qVF-w2-wep"/>
-                            <constraint firstAttribute="trailing" secondItem="5Zc-YD-WUV" secondAttribute="trailing" id="vhP-6G-Cxg"/>
+                            <constraint firstAttribute="bottom" secondItem="PFY-h4-SbJ" secondAttribute="bottom" id="Wzd-vW-yD4"/>
+                            <constraint firstItem="PFY-h4-SbJ" firstAttribute="leading" secondItem="hwi-2y-Z9R" secondAttribute="leading" id="lbF-2G-OIb"/>
+                            <constraint firstAttribute="trailing" secondItem="PFY-h4-SbJ" secondAttribute="trailing" id="snl-hr-leJ"/>
+                            <constraint firstItem="PFY-h4-SbJ" firstAttribute="top" secondItem="hwi-2y-Z9R" secondAttribute="top" id="t4t-31-dOH"/>
                         </constraints>
                     </view>
                     <size key="freeformSize" width="200" height="400"/>
                     <connections>
                         <outlet property="collection" destination="5Zc-YD-WUV" id="90J-kw-YsK"/>
+                        <outlet property="internalImageView" destination="8hG-WB-57u" id="hxN-eZ-XnZ"/>
+                        <outlet property="internalLabel" destination="KrU-Ak-lFT" id="x09-dD-tgG"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="XUi-LK-0v8" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -105,11 +143,11 @@
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="H0f-g5-iEa">
                                 <rect key="frame" x="0.0" y="0.0" width="400" height="300"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="p9V-O9-BdE">
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="2" minimumInteritemSpacing="2" id="p9V-O9-BdE">
                                     <size key="itemSize" width="200" height="58"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                    <inset key="sectionInset" minX="10" minY="10" maxX="10" maxY="10"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="10"/>
                                 </collectionViewFlowLayout>
                                 <cells/>
                             </collectionView>
@@ -141,6 +179,11 @@
                             <constraint firstAttribute="bottom" secondItem="aZV-dx-5NI" secondAttribute="bottom" id="sxw-oX-7vp"/>
                             <constraint firstAttribute="bottom" secondItem="H0f-g5-iEa" secondAttribute="bottom" id="zlA-y3-YFd"/>
                         </constraints>
+                        <variation key="default">
+                            <mask key="subviews">
+                                <exclude reference="aZV-dx-5NI"/>
+                            </mask>
+                        </variation>
                     </view>
                     <size key="freeformSize" width="400" height="300"/>
                     <connections>
@@ -155,6 +198,10 @@
         </scene>
     </scenes>
     <resources>
+        <image name="icInternalChip" width="10" height="9"/>
+        <namedColor name="default_text_color">
+            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

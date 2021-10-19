@@ -51,7 +51,7 @@ extension Camera2PhotoResolution: BarItemMode, Sortable {
     }
 
     public static var allValues: [BarItemMode] {
-        return self.allCases.sorted()
+        return allCases.sorted()
     }
 
     public var subModes: [BarItemSubMode]? {
@@ -75,9 +75,9 @@ extension Camera2PhotoResolution: BarItemMode, Sortable {
 
     /// Returns resolution for an index, based on all resolutions available.
     public static func resolutionForIndex(_ index: Int) -> Camera2PhotoResolution {
-        guard index < self.availableResolutions.count else { return defaultResolution }
+        guard index < availableResolutions.count else { return defaultResolution }
 
-        return self.availableResolutions[index]
+        return availableResolutions[index]
     }
 
     // MARK: - Sortable

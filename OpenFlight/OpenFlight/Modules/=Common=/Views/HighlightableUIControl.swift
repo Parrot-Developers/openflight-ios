@@ -40,3 +40,12 @@ open class HighlightableUIControl: UIControl {
         }
     }
 }
+
+extension HighlightableUIControl {
+    func animateIsEnabled(_ isEnabled: Bool, duration: TimeInterval = 0.3) {
+        UIView.animate(withDuration: duration, delay: 0, options: .curveEaseOut) {
+            self.isEnabled = isEnabled
+            self.alphaWithEnabledState(isEnabled)
+        }
+    }
+}

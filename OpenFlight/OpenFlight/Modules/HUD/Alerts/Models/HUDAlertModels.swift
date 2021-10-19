@@ -66,15 +66,6 @@ public extension HUDAlertType {
     }
 }
 
-/// Protocol that defines an alert for HUD's left panel.
-public protocol AlertPanelType {
-    /// Alert title.
-    var title: String? { get }
-    /// Alert button title.
-    var buttonTitle: String? { get }
-    // TODO: add generic actions/properties for new proactive alerts when implemented.
-}
-
 // MARK: - Public Enums
 /// Category for HUD alert.
 public enum AlertCategoryType {
@@ -89,6 +80,7 @@ public enum AlertCategoryType {
     case geofence
     case obstacleAvoidance
     case sdCard
+    case takeoff
     case wifi
     case flightMode
 }

@@ -148,21 +148,6 @@ private extension SettingsCameraViewModel {
         }
     }
 
-    /// Returns zoom setting model.
-    var zoomModel: DroneSettingModel? {
-        let zoomAllowance = drone?.currentCamera?.config[Camera2Params.zoomVelocityControlQualityMode]?.value
-        return DroneSettingModel(allValues: Camera2ZoomVelocityControlQualityMode.allValues,
-                                 supportedValues: Camera2ZoomVelocityControlQualityMode.allValues,
-                                 currentValue: zoomAllowance) { [weak self] mode in
-                                    guard let mode = mode as? Camera2ZoomVelocityControlQualityMode else { return }
-
-                                    let currentEditor = self?.drone?.currentCamera?.currentEditor
-                                    let currentConfig = self?.drone?.currentCamera?.config
-                                    currentEditor?[Camera2Params.zoomVelocityControlQualityMode]?.value = mode
-                                    currentEditor?.saveSettings(currentConfig: currentConfig)
-        }
-    }
-
     /// Returns auto record setting model.
     var autoRecordModel: DroneSettingModel? {
         let autoRecord = drone?.currentCamera?.config[Camera2Params.autoRecordMode]?.value
