@@ -1,3 +1,5 @@
+![OpenFlight](https://developer.parrot.com/img/openflight@2x.png "OpenFlight")
+
 # **Install with pods**
 
 _CocoaPods is a dependency manager for Swift and Objective-C Cocoa projects. It has over 30 thousand libraries and is used in over 1.9 million apps. CocoaPods can help you scale your projects elegantly._ [https://cocoapods.org](https://cocoapods.org/)
