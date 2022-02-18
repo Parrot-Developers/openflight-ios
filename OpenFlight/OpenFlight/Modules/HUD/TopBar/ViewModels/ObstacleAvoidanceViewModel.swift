@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,7 +33,7 @@ import Combine
 /// View model for obstacle avoidance indicator
 public class ObstacleAvoidanceViewModel {
 
-    /// State for OA display
+    /// State for obstacle avoidance display.
     public enum State: Equatable {
         case disconnected
         case unwanted
@@ -48,15 +47,16 @@ public class ObstacleAvoidanceViewModel {
     private var cancellables = Set<AnyCancellable>()
     private var obstacleAvoidanceRef: Ref<ObstacleAvoidance>?
 
-    /// Init
+    /// Constructor.
+    ///
     /// - Parameter connectedDroneHolder: the connected drone holder
     init(connectedDroneHolder: ConnectedDroneHolder) {
         connectedDroneHolder.dronePublisher.sink { [unowned self] in
             if let drone = $0 {
-                // If there's a connected drone, directly listen its OA state
+                // if there's a connected drone, directly listen its OA state
                 listenObstacleAvoidanceState(drone: drone)
             } else {
-                // Stop listening for OA on previously connected drone if any
+                // stop listening for OA on previously connected drone if any
                 obstacleAvoidanceRef = nil
                 state = .disconnected
             }
@@ -68,11 +68,11 @@ public class ObstacleAvoidanceViewModel {
 // MARK: - Private Funcs
 private extension ObstacleAvoidanceViewModel {
 
-    /// Listen to OA on drone
+    /// Listens to obstacle avoidance on drone.
     func listenObstacleAvoidanceState(drone: Drone) {
         obstacleAvoidanceRef = drone.getPeripheral(Peripherals.obstacleAvoidance) { [unowned self] in
             guard let obstacleAvoidance = $0 else {
-                // Not having access to the peripheral is like being disconnected from the OA indicator point of view
+                // not having access to the peripheral is like being disconnected from the OA indicator point of view
                 state = .disconnected
                 return
             }

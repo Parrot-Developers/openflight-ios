@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -133,7 +132,7 @@ extension GalleryMediaViewModel: GalleryVideoCompatible {
         return getCurrentViewModel()?.videoIsPlaying() ?? false
     }
 
-    func videoUpdatePosition(position: TimeInterval) -> Bool {
+    @discardableResult func videoUpdatePosition(position: TimeInterval) -> Bool {
         return getCurrentViewModel()?.videoUpdatePosition(position: position) ?? false
     }
 
@@ -170,18 +169,21 @@ extension GalleryMediaViewModel {
     ///
     /// - Parameters:
     ///    - index: Media index in the gallery media array page
-    ///    - completion: completion block
-    func videoSetVideo(index: Int, completion: @escaping (_ layer: AVPlayerLayer?) -> Void) {
+    func videoSetVideo(index: Int) {
         guard let media = getMedia(index: index),
-            let mediaUrl = media.url else {
-                return
-        }
-
-        deviceViewModel?.videoPlayer = AVPlayer(url: mediaUrl)
-        let layer = AVPlayerLayer(player: deviceViewModel?.videoPlayer)
-        completion(layer)
+            let mediaUrl = media.url else { return }
+        videoSetVideo(with: mediaUrl)
     }
 
+    /// Setup the video player with for a media's url.
+    ///
+    /// - Parameters:
+    ///    - url: The media's URL.
+    func videoSetVideo(with url: URL) {
+        deviceViewModel?.videoPlayer = AVPlayer(url: url)
+    }
+
+    // TODO: Remove all unnecessary completion blocks for synchronous methods.
     /// Setup the video player for streaming.
     ///
     /// - Parameters:
@@ -190,20 +192,17 @@ extension GalleryMediaViewModel {
     func videoSetStream(index: Int, completion: @escaping (_ replay: Replay?) -> Void) {
         guard let media = getMedia(index: index),
               let firstResource = media.mediaResources?.first else {
-            return
-        }
+                  completion(nil)
+                  return
+              }
 
         switch sourceType {
         case .droneSdCard:
-            sdCardViewModel?.setStreamFromResource(firstResource) { replay in
-                completion(replay)
-            }
+            sdCardViewModel?.setStreamFromResource(firstResource, completion: completion)
         case .droneInternal:
-            internalViewModel?.setStreamFromResource(firstResource) { replay in
-                completion(replay)
-            }
+            internalViewModel?.setStreamFromResource(firstResource, completion: completion)
         default:
-            return
+            completion(nil)
         }
     }
 }

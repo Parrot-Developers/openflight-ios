@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,6 +33,8 @@ import Reusable
 /// Custom View used to show medias and infos about storage.
 final class DashboardMediasCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
+    @IBOutlet private weak var sdCardFormatNeededIcon: UIImageView!
+    @IBOutlet private weak var sdCardErrorLabel: UILabel!
     @IBOutlet private weak var storageIcon: UIImageView!
     @IBOutlet private weak var freeStorageLabel: UILabel!
     @IBOutlet private weak var collectionView: UICollectionView!
@@ -41,8 +43,7 @@ final class DashboardMediasCell: UICollectionViewCell, NibReusable {
 
     // MARK: - Private Properties
     private enum Constants {
-        static let cellSize: CGFloat = 60.0
-        static let cellSpacing: CGFloat = 8.0
+        static let cellSpacing: CGFloat = 5.0
         static let maximumNumberOfItems: Int = 3
     }
 
@@ -53,6 +54,7 @@ final class DashboardMediasCell: UICollectionViewCell, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
         initCollectionView()
+        initSdCardFormatNeededIcon()
         updateView()
     }
 }
@@ -88,7 +90,11 @@ extension DashboardMediasCell: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: Constants.cellSize, height: Constants.cellSize)
+        let maxNumberItems = CGFloat(Constants.maximumNumberOfItems)
+        let cellWidth = (collectionView.frame.width
+                         - Constants.cellSpacing * (maxNumberItems - 1))
+                         / maxNumberItems
+        return CGSize(width: cellWidth, height: collectionView.frame.height)
     }
 
     func collectionView(_ collectionView: UICollectionView,
@@ -117,12 +123,31 @@ private extension DashboardMediasCell {
         collectionView.collectionViewLayout = flowLayout
     }
 
+    /// Inits the SD card format needed icon.
+    func initSdCardFormatNeededIcon() {
+        sdCardFormatNeededIcon.tintColor = ColorName.errorColor.color
+        sdCardErrorLabel.makeUp(with: .mode, color: .errorColor)
+        sdCardErrorLabel.text = L10n.alertNoSdcardErrorTitle.localizedUppercase
+    }
+
     /// Update the view of the cell.
     func updateView() {
         guard let viewModel = viewModel else { return }
 
-        storageIcon.image = viewModel.sourceType?.image?.withTintColor(ColorName.highlightColor.color)
+        storageIcon.image = viewModel.sourceType.image?.withTintColor(ColorName.highlightColor.color)
         freeStorageLabel.attributedText = NSMutableAttributedString(withAvailableSpace: viewModel.getAvailableSpace())
         titleLabel.text = L10n.dashboardMediasTitle
+
+        updateSdCardFormatNeededView()
+    }
+
+    /// Updates the SD card format needed view.
+    func updateSdCardFormatNeededView() {
+        guard let viewModel = viewModel else { return }
+        let formatNeeded = viewModel.state.value.isFormatNeeded
+        let needIcon = formatNeeded || viewModel.isSdCardMissing
+        let needMessage = formatNeeded || !viewModel.isSdCardMissing
+        sdCardFormatNeededIcon.animateIsHiddenInStackView(!needIcon)
+        sdCardErrorLabel.animateIsHiddenInStackView(needMessage)
     }
 }

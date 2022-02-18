@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -76,8 +75,7 @@ final class DroneCalibrationViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.droneCalibration,
-                             logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.droneCalibration))
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -87,8 +85,8 @@ final class DroneCalibrationViewController: UIViewController {
                        delay: Style.shortAnimationDuration,
                        options: .allowUserInteraction,
                        animations: {
-                        self.view.backgroundColor = ColorName.nightRider80.color
-                       })
+            self.view.backgroundColor = ColorName.nightRider80.color
+        })
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -101,10 +99,6 @@ final class DroneCalibrationViewController: UIViewController {
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -127,7 +121,7 @@ private extension DroneCalibrationViewController {
         } else if view == obstacleDetectionChoiceView {
             logEvent(with: LogEvent.LogKeyDroneDetailsCalibrationButton.sensorCalibrationTutorial)
             if let firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel {
-                if firmwareAndMissionToUpdateModel.needFirmwareUpdate {
+                if firmwareAndMissionToUpdateModel.updateRequired {
                     self.coordinator?.displayCriticalAlert()
                 } else {
                     viewModel.updateIsStereoCalibrationLaunched(isLaunched: true)
@@ -155,6 +149,7 @@ private extension DroneCalibrationViewController {
     /// Initializes all the UI for the view controller.
     func initUI() {
         titleLabel.text = L10n.remoteDetailsCalibration
+        titleLabel.font = FontStyle.title.font(isRegularSizeClass)
         mainView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
     }
 
@@ -206,11 +201,11 @@ private extension DroneCalibrationViewController {
     /// Updates the gimbal choice view
     func bindGimbal() {
         viewModel.$frontStereoGimbalState
-            .combineLatest(viewModel.$frontStereoGimbalCalibrationState,
+            .combineLatest(viewModel.$frontStereoGimbalCalibrationProcessState,
                            viewModel.$gimbalCalibrationDescription)
-            .sink { [unowned self]  (gimbalState, calibrationState, calibrationDescription) in
+            .sink { [unowned self]  (gimbalState, _, calibrationDescription) in
                 if gimbalState == .needed {
-                    gimbalCalibrationChoiceView.viewModel?.subtitle = calibrationState?.description ?? ""
+                    gimbalCalibrationChoiceView.viewModel?.subtitle = gimbalState?.description ?? ""
                     gimbalCalibrationChoiceView.viewModel?.titleColor = ColorName.white.color
                     gimbalCalibrationChoiceView.viewModel?.subtitleColor = .white
                     gimbalCalibrationChoiceView.viewModel?.backgroundColor = .errorColor
@@ -278,9 +273,7 @@ private extension DroneCalibrationViewController {
     /// - Parameters:
     ///     - itemName: Button name
     func logEvent(with itemName: String) {
-        LogEvent.logAppEvent(itemName: itemName,
-                             newValue: nil,
-                             logType: .button)
+        LogEvent.log(.simpleButton(itemName))
     }
 
     func listenFirmwareUpdate() {

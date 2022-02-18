@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,35 +30,15 @@
 import GroundSdk
 
 // MARK: - Private Enums
-private enum Constants {
-    static let roundPrecision: Int = 2
-}
 
 /// Gimbal full calibration state.
 enum CalibratableGimbalState {
     case calibrated
-    case recommended
     case needed
-    case error
-    case unavailable
 
-    /// User interaction state for calibration view.
-    var isUserInteractionEnabled: Bool {
-        return self == .needed || self == .recommended
-    }
-
-    /// Image calibration according to gimbal and front stereo calibration state.
-    var calibrationImage: UIImage {
-        switch self {
-        case .calibrated,
-             .unavailable:
-            return Asset.Drone.icGimbalOk.image
-        case .recommended:
-            return Asset.Drone.icGimbalWarning.image
-        case .needed,
-             .error:
-            return Asset.Drone.icGimbalError.image
-        }
+    /// String describing gimbal calibration state.
+    var description: String {
+        self == .needed ? L10n.commonRequired : ""
     }
 }
 
@@ -67,50 +46,22 @@ enum CalibratableGimbalState {
 extension CalibratableGimbal {
     /// Gimbal calibration state.
     var state: CalibratableGimbalState {
-        switch (calibrated, currentErrors.isEmpty) {
-        case (false, true):
-            return .recommended
-        case (_, false):
-            return .needed
-        default:
-            return .calibrated
-        }
+        calibrated ? .calibrated : .needed
     }
 
     /// Color for gimbal calibration title.
     var titleColor: ColorName {
-        switch state {
-        case .calibrated,
-             .unavailable:
-            return .defaultTextColor
-        default:
-            return .white
-        }
+        state == .needed ? .white : .defaultTextColor
     }
 
     /// Color for gimbal calibration subtitle.
     var subtitleColor: ColorName {
-        switch state {
-        case .calibrated,
-             .unavailable:
-            return .highlightColor
-        default:
-            return .white
-        }
+        state == .needed ? .white : .highlightColor
     }
 
     /// Color for gimbal calibration background.
     var backgroundColor: ColorName {
-        switch state {
-        case .calibrated,
-             .unavailable:
-            return .white
-        case .recommended:
-            return .warningColor
-        case .needed,
-             .error:
-            return .errorColor
-        }
+        state == .needed ? .errorColor : .white
     }
 }
 
@@ -122,17 +73,10 @@ extension Gimbal {
             : [HUDBannerCriticalAlertType.cameraError]
     }
 
-    /// String describing gimbal calibration state.
-    var calibrationStateDescription: String? {
-        switch state {
-        case .calibrated,
-             .unavailable:
-            return nil
-        case .needed,
-             .error:
-            return L10n.commonRequired
-        case .recommended:
-            return L10n.commonRecommended
-        }
+    /// Image error according to gimbal and front stereo calibration state.
+    var errorImage: UIImage {
+        return currentErrors.isEmpty
+        ? Asset.Drone.icGimbalOk.image
+        : Asset.Drone.icGimbalError.image
     }
 }

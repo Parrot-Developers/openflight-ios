@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,19 +37,18 @@ final class FlightDetailsIconLabelView: UIView, NibOwnerLoadable {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
 
-        self.loadNibContent()
+        loadNibContent()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        self.loadNibContent()
+        loadNibContent()
     }
 
     override func awakeFromNib() {
         super.awakeFromNib()
-
-        label.makeUp(with: .largeMedium, and: .disabledTextColor)
+        label.makeUp(with: .current, color: .defaultTextColor)
         icon.tintColor = ColorName.defaultTextColor.color
     }
 }

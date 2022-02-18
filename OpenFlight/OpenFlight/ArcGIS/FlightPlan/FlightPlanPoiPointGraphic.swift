@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,7 +40,7 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
 
     // MARK: - Public Properties
     /// Associated point of interest.
-    private(set) weak var poiPoint: PoiPoint?
+    private(set) var poiPoint: PoiPoint?
 
     // MARK: - Override Properties
     override var itemType: FlightPlanGraphicItemType {
@@ -54,7 +53,7 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     // MARK: - Private Enums
     private enum Constants {
         static let outlineColor: UIColor = ColorName.white.color
-        static let selectedColor: UIColor = ColorName.greenSpring.color
+        static let selectedColor: UIColor = ColorName.highlightColor.color
         static let diamondSize: CGFloat = 54.0
         static let outlineWidth: CGFloat = 1.0
         static let textColor: UIColor = ColorName.black.color
@@ -173,7 +172,7 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     ///
     /// - Parameters:
     ///     - heading: camera heading
-    func update(heading newHeading: Double) {
+    public func update(heading newHeading: Double) {
         if heading != Int(newHeading) {
             heading = Int(newHeading)
             applyRotation()

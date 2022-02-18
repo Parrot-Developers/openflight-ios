@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -82,6 +81,7 @@ final class MediaVideoBottomBarView: UIView, NibOwnerLoadable {
     ///    - position: Current position
     ///    - duration: Media duration
     func updateSlider(position: TimeInterval, duration: TimeInterval) {
+        guard !slider.isTracking else { return }
         slider.maximumValue = Float(duration)
         durationLabel.text = duration.formattedString
         positionLabel.text = position.formattedString
@@ -105,7 +105,12 @@ private extension MediaVideoBottomBarView {
 // MARK: - Private Funcs
 private extension MediaVideoBottomBarView {
     func commonInit() {
-        self.loadNibContent()
+        loadNibContent()
+
+        // Use .compact font size for all size classes.
+        let font = FontStyle.big.font(false, monospacedDigits: true)
+        positionLabel.font = font
+        durationLabel.font = font
 
         // Prevents gesture conflicts, especially when placed in UIPageViewController.
         let panGesture = UIPanGestureRecognizer()

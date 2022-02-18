@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -67,6 +66,7 @@ enum FlightPlanGraphicItemType: Int, CaseIterable {
     case waypointArrow
     case lineWayPoint
     case lineWayPointToPoi
+    case location
     case none
 
     /// Returns true if graphical object can be dragged on the map.

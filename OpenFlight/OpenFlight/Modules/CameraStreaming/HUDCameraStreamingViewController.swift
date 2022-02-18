@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -69,8 +69,8 @@ public final class HUDCameraStreamingViewController: UIViewController {
     private let cameraStreamingViewModel = HUDCameraStreamingViewModel()
     private var trackingViewModel: TrackingViewModel? {
         didSet {
-            guard self.trackingViewModel == nil else { return }
-            self.clearTrackingAndProposalsView()
+            guard trackingViewModel == nil else { return }
+            clearTrackingAndProposalsView()
         }
     }
 
@@ -95,7 +95,7 @@ public final class HUDCameraStreamingViewController: UIViewController {
         super.viewDidLoad()
 
         if !Platform.isSimulator {
-            self.setupViewModels()
+            setupViewModels()
         }
     }
 
@@ -182,7 +182,7 @@ private extension HUDCameraStreamingViewController {
         listenMissionMode()
     }
 
-    /// Listen current mission mode
+    /// Listens current mission mode.
     func listenMissionMode() {
         currentMissionManager.modePublisher.sink { [unowned self] in
             if $0.isTrackingMode {
@@ -197,17 +197,17 @@ private extension HUDCameraStreamingViewController {
     /// Sets up tracking view model.
     func setupTrackingViewModel() {
         if trackingViewModel == nil {
-            self.trackingViewModel = TrackingViewModel()
-            self.trackingViewModel?.enableMonitoring(true)
+            trackingViewModel = TrackingViewModel()
+            trackingViewModel?.enableMonitoring(true)
         }
 
         if proposalAndTrackingView == nil {
-            self.proposalAndTrackingView = ProposalAndTrackingView(frame: CGRect.zero,
-                                                               delegate: self)
-            self.proposalAndTrackingView?.updateFrame(self.contentZone)
-            self.view.addSubview(self.proposalAndTrackingView)
+            proposalAndTrackingView = ProposalAndTrackingView(frame: CGRect.zero,
+                                                              delegate: self)
+            proposalAndTrackingView?.updateFrame(contentZone)
+            view.addSubview(proposalAndTrackingView)
         }
-        self.trackingViewModel?.state.valueChanged = { [weak self] state in
+        trackingViewModel?.state.valueChanged = { [weak self] state in
             if let currentTilt = state.tilt {
                 self?.proposalAndTrackingView?.updateTilt(currentTilt)
             }
@@ -215,13 +215,17 @@ private extension HUDCameraStreamingViewController {
             if let trackingInfo = state.trackingInfo {
                 self?.proposalAndTrackingView?.trackInfoDidChange(trackingInfo)
             }
+
+            if state.droneNotConnected == true {
+                self?.proposalAndTrackingView?.clearTrackingAndProposals()
+            }
         }
     }
 
-    /// Enable or disable monitoring for all view models.
+    /// Enables or disables monitoring for all view models.
     ///
     /// - Parameters:
-    ///    - enabled: boolean that enable or disable monitoring.
+    ///    - enabled: whether monitoring is enabled
     func enableMonitoring(_ enabled: Bool) {
         cameraStreamingViewModel.enableMonitoring(enabled)
         trackingViewModel?.enableMonitoring(enabled)
@@ -230,14 +234,14 @@ private extension HUDCameraStreamingViewController {
     /// Called when streaming state is updated.
     ///
     /// - Parameters:
-    ///    - state: state from HUDCameraStreamingViewModel.
+    ///    - state: state from HUDCameraStreamingViewModel
     func onStateUpdate(_ state: HUDCameraStreamingState) {
         if !state.streamEnabled {
-            self.clearTracking()
+            clearTracking()
         } else if currentMissionManager.mode.isTrackingMode,
-            self.trackingViewModel == nil {
-            self.setupTrackingViewModel()
-            self.proposalAndTrackingView?.updateFrame(self.contentZone)
+            trackingViewModel == nil {
+            setupTrackingViewModel()
+            proposalAndTrackingView?.updateFrame(contentZone)
         }
         updateOverexposure()
     }
@@ -245,7 +249,7 @@ private extension HUDCameraStreamingViewController {
     /// Called when camera live is updated.
     ///
     /// - Parameters:
-    ///    - cameraLive: camera live from drone.
+    ///    - cameraLive: camera live from drone
     func onCameraLiveUpdate(_ cameraLive: CameraLive?) {
         streamView.setStream(stream: cameraLive)
     }
@@ -259,7 +263,7 @@ private extension HUDCameraStreamingViewController {
     /// Updates the content zone of the stream.
     ///
     /// - Parameters:
-    ///    - zone: new size to update.
+    ///    - zone: new size to update
     func updateContentZone(to zone: CGRect) {
         guard let scale = view.window?.screen.nativeScale else {
             return
@@ -267,22 +271,22 @@ private extension HUDCameraStreamingViewController {
 
         let frame = zone.reduce(by: scale)
 
-        self.delegate?.didUpdate(contentZone: frame)
-        self.proposalAndTrackingView?.updateFrame(frame)
-        self.contentZone = frame
+        delegate?.didUpdate(contentZone: frame)
+        proposalAndTrackingView?.updateFrame(frame)
+        contentZone = frame
     }
 
     /// Removes all traces from tracking functionnality.
     func clearTracking() {
-        self.trackingViewModel?.enableMonitoring(false)
-        self.trackingViewModel = nil
+        trackingViewModel?.enableMonitoring(false)
+        trackingViewModel = nil
     }
 
     /// Removes tracking and proposals view.
     func clearTrackingAndProposalsView() {
-        self.proposalAndTrackingView?.clearTrackingAndProposals(clearDrawView: true)
-        self.proposalAndTrackingView?.removeFromSuperview()
-        self.proposalAndTrackingView = nil
+        proposalAndTrackingView?.clearTrackingAndProposals(clearDrawView: true)
+        proposalAndTrackingView?.removeFromSuperview()
+        proposalAndTrackingView = nil
     }
 
     /// Deinit stream.
@@ -294,23 +298,23 @@ private extension HUDCameraStreamingViewController {
 // MARK: - ProposalAndTracking Delegate
 extension HUDCameraStreamingViewController: ProposalAndTrackingDelegate {
     func didDrawSelection(_ frame: CGRect) {
-        guard let strongProposalAndTrackingView = self.proposalAndTrackingView else {
+        guard let proposalAndTrackingView = proposalAndTrackingView else {
             return
         }
 
-        let frameSelected = CGRect(x: CGFloat(frame.minX / strongProposalAndTrackingView.frame.width),
-                                   y: CGFloat(frame.minY / strongProposalAndTrackingView.frame.height),
-                                   width: CGFloat(frame.width / strongProposalAndTrackingView.frame.width),
-                                   height: CGFloat(frame.height / strongProposalAndTrackingView.frame.height))
+        let frameSelected = CGRect(x: CGFloat(frame.minX / proposalAndTrackingView.frame.width),
+                                   y: CGFloat(frame.minY / proposalAndTrackingView.frame.height),
+                                   width: CGFloat(frame.width / proposalAndTrackingView.frame.width),
+                                   height: CGFloat(frame.height / proposalAndTrackingView.frame.height))
 
-        self.trackingViewModel?.sendSelectionToDrone(frame: frameSelected)
+        trackingViewModel?.sendSelectionToDrone(frame: frameSelected)
     }
 
     func didSelect(proposalId: UInt) {
-        self.trackingViewModel?.sendProposalToDrone(proposalId: proposalId)
+        trackingViewModel?.sendProposalToDrone(proposalId: proposalId)
     }
 
     func didDeselectTarget() {
-        self.trackingViewModel?.removeAllTargets()
+        trackingViewModel?.removeAllTargets()
     }
 }

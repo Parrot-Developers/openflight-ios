@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "iconGeofence.png",
+      "filename" : "iconSettingsGeofence.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "iconGeofence@2x.png",
+      "filename" : "iconSettingsGeofence@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "iconGeofence@3x.png",
+      "filename" : "iconSettingsGeofence@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

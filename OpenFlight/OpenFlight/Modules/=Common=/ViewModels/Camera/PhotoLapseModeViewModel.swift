@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -99,7 +98,7 @@ final class PhotoLapseState: DeviceConnectionState {
 final class PhotoLapseModeViewModel: DroneStateViewModel<PhotoLapseState> {
     // MARK: - Private Properties
     private var photoCaptureRef: Ref<Camera2PhotoCapture>?
-    private var photoProgressIndicatorRef: Ref<PhotoProgressIndicator>?
+    private var photoProgressIndicatorRef: Ref<Camera2PhotoProgressIndicator>?
     private var cameraRef: Ref<MainCamera2>?
     private var camera: Camera2? {
         return drone?.currentCamera
@@ -109,44 +108,59 @@ final class PhotoLapseModeViewModel: DroneStateViewModel<PhotoLapseState> {
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
         listenCamera(drone: drone)
-        listenProgressIndicator(drone: drone)
-        listenPhotoCapture(drone: drone)
     }
 }
 
 // MARK: - Private Funcs
 private extension PhotoLapseModeViewModel {
-    /// Starts watcher for photo progress.
-    func listenProgressIndicator(drone: Drone) {
-        photoProgressIndicatorRef = drone.getInstrument(Instruments.photoProgressIndicator) { [weak self] photoProgressIndicator in
-            guard let photoProgressIndicator = photoProgressIndicator else { return }
-
-            self?.updateProgress(photoProgressIndicator: photoProgressIndicator)
-        }
-    }
-
     /// Starts watcher for camera.
+    ///
+    /// - Parameters:
+    ///   - drone: the current drone
     func listenCamera(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
-            guard let camera = camera else { return }
+        // reset capture and progress references on drone change
+        photoCaptureRef = nil
+        photoProgressIndicatorRef = nil
 
-            self?.updateMode(withCamera: camera)
-            self?.updateSelectedValue(withCamera: camera)
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
+            guard let camera = camera else { return }
+            // update camera mode
+            updateMode(withCamera: camera)
+            updateSelectedValue(withCamera: camera)
+
+            // listen to capture and progress components
+            listenPhotoCapture(camera: camera)
+            listenProgressIndicator(camera: camera)
         }
     }
 
-    /// Starts watcher for photo capture.
-    func listenPhotoCapture(drone: Drone) {
-        photoCaptureRef = drone.currentCamera?.getComponent(Camera2Components.photoCapture) { [weak self] photoCapture in
-            guard let photoCaptureState = photoCapture?.state else { return }
+    /// Listens to photo capture component.
+    ///
+    /// - Parameters:
+    ///    - camera: the camera
+    func listenPhotoCapture(camera: Camera2) {
+        // do not register photo capture observer if not needed
+        guard photoCaptureRef?.value == nil else { return }
 
-            if let camera = drone.currentCamera {
-                self?.updateMode(withCamera: camera)
-            }
+        photoCaptureRef = camera.getComponent(Camera2Components.photoCapture) { [unowned self] photoCapture in
+            updateMode(withCamera: camera)
+            guard let photoCaptureState = photoCapture?.state,
+                  case .started(_, let photoCount, _) = photoCaptureState else { return }
+            updatePhotoCount(photoCount: photoCount)
+        }
+    }
 
-            if case .started(_, let photoCount, _) = photoCaptureState {
-                self?.updatePhotoCount(photoCount: photoCount)
-            }
+    /// Listens to photo progress indicator component.
+    ///
+    /// - Parameters:
+    ///    - camera: the camera
+    func listenProgressIndicator(camera: Camera2) {
+        // do not register progress indicator observer if not needed
+        guard photoProgressIndicatorRef?.value == nil else { return }
+
+        photoProgressIndicatorRef = camera.getComponent(Camera2Components.photoProgressIndicator) { [unowned self] photoProgressIndicator in
+            guard let photoProgressIndicator = photoProgressIndicator else { return }
+            updateProgress(photoProgressIndicator: photoProgressIndicator)
         }
     }
 
@@ -200,7 +214,7 @@ private extension PhotoLapseModeViewModel {
     ///
     /// - Parameters:
     ///     - photoProgressIndicator: current photo progress indicator
-    func updateProgress(photoProgressIndicator: PhotoProgressIndicator) {
+    func updateProgress(photoProgressIndicator: Camera2PhotoProgressIndicator) {
         let copy = state.value.copy()
 
         if copy.isGpslapseInProgress {
@@ -209,16 +223,6 @@ private extension PhotoLapseModeViewModel {
             copy.currentProgress = photoProgressIndicator.remainingTime ?? 0.0
         }
 
-        state.set(copy)
-    }
-
-    /// Cancels timelapse or gpslapse progress.
-    func photoLapseCanceled() {
-        let copy = state.value.copy()
-        copy.isTimelapseInProgress = false
-        copy.isGpslapseInProgress = false
-        copy.photosNumber = 0
-        copy.currentProgress = 0.0
         state.set(copy)
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,30 +34,12 @@ final class SettingsControlsViewController: SettingsContentViewController {
     // MARK: - Private Properties
     private let controlsViewModel = ControlsViewModel()
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let defaultTopBarHeight: CGFloat = 55.0
-        static let regularTopBarHeight: CGFloat = 70.0
-    }
-
-    private var topBarHeight: CGFloat {
-        return isRegularSizeClass ? Constants.regularTopBarHeight : Constants.defaultTopBarHeight
-    }
-
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Setup view model.
-        controlsViewModel.state.valueChanged = { [weak self] state in
-            self?.updateDataSource(state)
-        }
-        // Inital data source update.
-        self.updateDataSource(controlsViewModel.state.value)
-
-        // Disable estimated row height
-        settingsTableView.estimatedRowHeight = 0
-        settingsTableView.rowHeight = self.view.frame.size.height - topBarHeight
+        initView()
+        setupViewModel()
     }
 }
 
@@ -83,6 +64,23 @@ internal extension SettingsControlsViewController {
 
 // MARK: - Private Funcs
 private extension SettingsControlsViewController {
+    /// Inits view.
+    func initView() {
+        // Disable estimated row height
+        settingsTableView.estimatedRowHeight = 0
+        settingsTableView.rowHeight = view.frame.height - Layout.fileNavigationBarHeight(isRegularSizeClass)
+    }
+
+    /// Sets up view model.
+    func setupViewModel() {
+        // Setup view model.
+        controlsViewModel.state.valueChanged = { [weak self] state in
+            self?.updateDataSource(state)
+        }
+        // Inital data source update.
+        updateDataSource(controlsViewModel.state.value)
+    }
+
     /// Configure Control Mode Cell.
     ///
     /// - Parameters:

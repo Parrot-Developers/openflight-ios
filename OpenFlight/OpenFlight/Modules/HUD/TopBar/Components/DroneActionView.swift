@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,7 +31,6 @@ import UIKit
 import Reusable
 
 /// Drone action custom view used in the top bar.
-
 final class DroneActionView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var returnHomeButton: UIButton! {
@@ -43,7 +41,7 @@ final class DroneActionView: UIView, NibOwnerLoadable {
     }
     @IBOutlet private weak var actionButton: UIButton! {
         didSet {
-            actionButton.cornerRadiusedWith(backgroundColor: UIColor(named: .greenSpring20),
+            actionButton.cornerRadiusedWith(backgroundColor: UIColor(named: .takeoffIndicatorColor),
                                             radius: Style.mediumCornerRadius)
         }
     }
@@ -54,12 +52,12 @@ final class DroneActionView: UIView, NibOwnerLoadable {
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitDroneActionView()
+        commonInitDroneActionView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitDroneActionView()
+        commonInitDroneActionView()
     }
 }
 
@@ -77,7 +75,7 @@ private extension DroneActionView {
 // MARK: - Private Funcs
 private extension DroneActionView {
     func commonInitDroneActionView() {
-        self.loadNibContent()
+        loadNibContent()
         observeViewModel()
         updateDroneActionButtons()
     }

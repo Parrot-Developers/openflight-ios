@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,14 +37,26 @@ class ReversibleSettingEntry: SettingEntry {
 }
 
 /// Defines a segment model.
-struct SettingsSegment {
+public struct SettingsSegment {
     let title: String
     let disabled: Bool
     let image: UIImage?
+
+    /// Init.
+    ///
+    /// - Parameters:
+    ///   - title: the title
+    ///   - disabled: boolean describing disabled state
+    ///   - image: the image used
+    public init(title: String, disabled: Bool, image: UIImage?) {
+        self.title = title
+        self.disabled = disabled
+        self.image = image
+    }
 }
 
 /// Defines a group of segment model.
-struct SettingsSegmentModel {
+public struct SettingsSegmentModel {
     let segments: [SettingsSegment]
     let selectedIndex: Int
     let isBoolean: Bool
@@ -57,6 +68,18 @@ struct SettingsSegmentModel {
     var previousIndex: Int {
         let previous = selectedIndex - 1
         return previous >= 0 ? previous : segments.count - 1
+    }
+
+    /// Init.
+    ///
+    /// - Parameters:
+    ///   - segments: the list of segment
+    ///   - selectedIndex: the default selected index
+    ///   - isBoolean: boolean describing the type of segment
+    public init(segments: [SettingsSegment], selectedIndex: Int, isBoolean: Bool) {
+        self.segments = segments
+        self.selectedIndex = selectedIndex
+        self.isBoolean = isBoolean
     }
 }
 
@@ -92,8 +115,6 @@ class SettingEntry: Equatable {
     var savedValue: Float?
     /// Tells if setting is enabled.
     var isEnabled: Bool
-    /// Cell alpha. Used when a specific cell is disabled.
-    var cellAlpha: CGFloat
     /// Subtitle color.
     var subtitleColor: UIColor
     /// Background color.
@@ -106,8 +127,6 @@ class SettingEntry: Equatable {
     var image: UIImage?
     /// Setting disabled image.
     var imageDisabled: UIImage?
-    /// Tells if the current setting is a submode of a setting.
-    var isSubMode: Bool?
     /// Item key for log.
     var itemLogKey: String?
     /// Choice names for boolean setting.
@@ -124,14 +143,12 @@ class SettingEntry: Equatable {
          defaultValue: Float? = nil,
          savedValue: Float? = nil,
          isEnabled: Bool = true,
-         alpha: CGFloat = 1.0,
          subtitleColor: UIColor = ColorName.defaultTextColor.color,
          bgColor: UIColor? = nil,
          showInfo: (() -> Void)? = nil,
          infoText: String? = nil,
          image: UIImage? = nil,
          imageDisabled: UIImage? = nil,
-         isSubMode: Bool? = false,
          itemLogKey: String? = nil,
          settingsBoolChoice: SettingsBoolChoice = SettingsBoolChoice(firstChoiceName: L10n.commonNo, secondChoiceName: L10n.commonYes),
          settingStepperSlider: SettingStepperSlider? = nil
@@ -144,14 +161,12 @@ class SettingEntry: Equatable {
         self.defaultValue = defaultValue
         self.savedValue = savedValue
         self.isEnabled = isEnabled
-        self.cellAlpha = alpha
         self.subtitleColor = subtitleColor
         self.bgColor = bgColor
         self.showInfo = showInfo
         self.infoText = infoText
         self.image = image
         self.imageDisabled = imageDisabled
-        self.isSubMode = isSubMode
         self.itemLogKey = itemLogKey
         self.settingsBoolChoice = settingsBoolChoice
         self.settingStepperSlider = settingStepperSlider
@@ -172,7 +187,7 @@ class SettingEntry: Equatable {
         let selectedIndex: Int
         let isBool: Bool
         // BoolSetting.
-        if let setting = self.setting as? BoolSetting {
+        if let setting = setting as? BoolSetting {
             segments = [SettingsSegment(title: settingsBoolChoice.firstChoiceName, disabled: setting.updating, image: imageDisabled),
                         SettingsSegment(title: settingsBoolChoice.secondChoiceName, disabled: setting.updating, image: image)]
             var boolValue = setting.value
@@ -183,7 +198,7 @@ class SettingEntry: Equatable {
             selectedIndex = boolValue ? 1 : 0
             isBool = true
         } // DefaultsKey<Bool?>.
-        else if let setting = self.setting as? DefaultsKey<Bool?> {
+        else if let setting = setting as? DefaultsKey<Bool?> {
             segments = [SettingsSegment(title: settingsBoolChoice.firstChoiceName,
                                         disabled: false,
                                         image: imageDisabled),
@@ -193,12 +208,12 @@ class SettingEntry: Equatable {
             selectedIndex = (Defaults[key: setting] ?? true) ? 1 : 0
             isBool = true
         } // SettingEnum.Type.
-        else if let setting = self.setting as? SettingEnum.Type {
+        else if let setting = setting as? SettingEnum.Type {
             segments = setting.allValues.map({ SettingsSegment(title: $0.localized, disabled: false, image: $0.image) })
             selectedIndex = setting.selectedIndex
             isBool = false
         } // DroneSettingModel.
-        else if let viewModel = self.setting as? DroneSettingModel {
+        else if let viewModel = setting as? DroneSettingModel {
             selectedIndex = viewModel.selectedIndex
             segments = viewModel.allValues.map { mode in
                 let isModeSupported = viewModel.supportedValues.contains(where: { mode.key == $0.key })
@@ -220,17 +235,17 @@ class SettingEntry: Equatable {
     ///     - settingIndex: setting index
     func save(at settingIndex: Int) {
         // BoolSetting.
-        if let setting = self.setting as? BoolSetting {
+        if let setting = setting as? BoolSetting {
             setting.value = !setting.value
         } // DefaultsKey<Bool?>.
-        else if let setting = self.setting as? DefaultsKey<Bool?> {
+        else if let setting = setting as? DefaultsKey<Bool?> {
             Defaults[key: setting] = settingIndex == 0 ? false : true
         } // SettingEnum.Type.
-        else if let setting = self.setting as? SettingEnum.Type,
+        else if let setting = setting as? SettingEnum.Type,
                 (0...setting.allValues.count - 1).contains(settingIndex) {
             Defaults[key: setting.defaultKey] = setting.allValues[settingIndex].rawValue
         } // DroneSettingModel.
-        else if let setting = self.setting as? DroneSettingModel,
+        else if let setting = setting as? DroneSettingModel,
                 (0...setting.allValues.count - 1).contains(settingIndex) {
             setting.onSelect?(setting.allValues[settingIndex])
         }

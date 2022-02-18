@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,23 +30,13 @@
 import UIKit
 
 /// Stereo Vision blended screen.
-
 final class StereoVisionBlendedViewController: UIViewController {
-    // MARK: - Outlets
-    // MARK: - Public Properties
-    // MARK: - Internal Properties
-    // MARK: - Private Properties
-    private weak var coordinator: Coordinator?
 
-    // MARK: - Internal Enums
-    // MARK: - Private Enums
     // MARK: - Setup
     static func instantiate() -> StereoVisionBlendedViewController {
         return StoryboardScene.StereoVisionBlended.initialScene.instantiate()
     }
 
-    // MARK: - Init
-    // MARK: - Deinit
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,22 +45,4 @@ final class StereoVisionBlendedViewController: UIViewController {
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
-    // MARK: - Public Funcs
-}
-
-// MARK: - Actions
-private extension StereoVisionBlendedViewController {
-}
-
-// MARK: - Internal Funcs
-internal extension StereoVisionBlendedViewController {
-}
-
-// MARK: - Private Funcs
-private extension StereoVisionBlendedViewController {
 }

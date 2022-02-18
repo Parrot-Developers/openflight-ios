@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -119,19 +118,19 @@ final class AutomatableRulerImagingBarState: ImagingBarState {
             return false
         }
         return super.isEqual(to: other)
-            && self.image == other.image
-            && self.enabled == other.enabled
-            && self.title == other.title
-            && self.isAutomatic == other.isAutomatic
+            && image == other.image
+            && enabled == other.enabled
+            && title == other.title
+            && isAutomatic == other.isAutomatic
     }
 
     override func copy() -> AutomatableRulerImagingBarState {
-        let copy = AutomatableRulerImagingBarState(mode: self.mode, supportedModes: self.supportedModes, isSelected: self.isSelected)
-        copy.image = self.image
-        copy.exposureSettingsMode = self.exposureSettingsMode
-        copy.enabled = self.enabled
-        copy.title = self.title
-        copy.isAutomatic = self.isAutomatic
+        let copy = AutomatableRulerImagingBarState(mode: mode, supportedModes: supportedModes, isSelected: isSelected)
+        copy.image = image
+        copy.exposureSettingsMode = exposureSettingsMode
+        copy.enabled = enabled
+        copy.title = title
+        copy.isAutomatic = isAutomatic
         return copy
     }
 }

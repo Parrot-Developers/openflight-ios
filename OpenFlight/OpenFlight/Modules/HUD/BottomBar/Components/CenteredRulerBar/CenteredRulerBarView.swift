@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -62,11 +61,14 @@ final class CenteredRulerBarView<T: BarButtonState>: UIView, NibOwnerLoadable, N
                 self?.updateModels()
                 self?.collectionView.reloadData()
             }
-            self.updateModels()
+            updateModels()
         }
     }
     /// Boolean for current ruler automatic state.
     var isAutomatic: Bool = true
+
+    /// Boolean for animated scroll
+    var animated: Bool = false
 
     // MARK: - Private Properties
     private var models = [BarButtonState]()
@@ -89,20 +91,24 @@ final class CenteredRulerBarView<T: BarButtonState>: UIView, NibOwnerLoadable, N
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitCenteredRulerBarView()
+        commonInitCenteredRulerBarView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitCenteredRulerBarView()
+        commonInitCenteredRulerBarView()
     }
 
     override func layoutSublayers(of layer: CALayer) {
         super.layoutSublayers(of: layer)
-        self.collectionView.contentInset = UIEdgeInsets(top: 0.0,
-                                                        left: self.collectionView.frame.size.width/2,
-                                                        bottom: 0.0,
-                                                        right: self.collectionView.frame.size.width/2)
+        collectionView.contentInset = UIEdgeInsets(top: 0.0,
+                                                   left: collectionView.frame.size.width/2,
+                                                   bottom: 0.0,
+                                                   right: collectionView.frame.size.width/2)
+
+        collectionView.scrollToItem(at: indexPathForSelectedMode,
+                                    at: .centeredHorizontally,
+                                    animated: animated)
     }
 
     override func setNeedsLayout() {
@@ -135,9 +141,10 @@ final class CenteredRulerBarView<T: BarButtonState>: UIView, NibOwnerLoadable, N
         }
         // Select closest mode after a drag.
         let indexPath = collectionView.closestInteractiveToHorizontalCenterIndexPath ?? self.indexPathForSelectedMode
-        LogEvent.logAppEvent(itemName: models[indexPath.row].mode?.logKey,
-                             newValue: models[indexPath.row].mode?.key,
-                             logType: .button)
+        if let logItem = models[indexPath.row].mode?.logKey {
+            LogEvent.log(.button(item: logItem,
+                                 value: models[indexPath.row].mode?.key ?? ""))
+        }
         updateMode(indexPath: indexPath)
     }
 
@@ -174,7 +181,7 @@ final class CenteredRulerBarView<T: BarButtonState>: UIView, NibOwnerLoadable, N
 private extension CenteredRulerBarView {
     /// Common init.
     func commonInitCenteredRulerBarView() {
-        self.loadNibContent()
+        loadNibContent()
         collectionView.register(cellType: RulerBarLabelCollectionViewCell.self)
     }
 
@@ -217,9 +224,15 @@ private extension CenteredRulerBarView {
             }
             return itemState
         }
-        self.collectionView.scrollToItem(at: self.indexPathForSelectedMode,
-                                         at: .centeredHorizontally,
-                                         animated: true)
+
+        layoutIfNeeded()
+        layer.layoutSublayers()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.collectionView.scrollToItem(at: self.indexPathForSelectedMode,
+                                             at: .centeredHorizontally,
+                                             animated: self.animated)
+        }
     }
 
     /// Update current mode and scroll to its position.
@@ -228,10 +241,10 @@ private extension CenteredRulerBarView {
     ///    - indexPath: index path for new mode
     func updateMode(indexPath: IndexPath) {
         guard models.count > indexPath.row,
-            let mode = models[indexPath.row].mode
-            else {
-                return
-        }
+              let mode = models[indexPath.row].mode else {
+                  return
+              }
+        animated = true
         viewModel?.update(mode: mode)
         collectionView.scrollToItem(at: indexPath,
                                     at: .centeredHorizontally,

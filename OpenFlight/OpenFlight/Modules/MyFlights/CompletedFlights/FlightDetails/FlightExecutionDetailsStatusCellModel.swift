@@ -1,6 +1,4 @@
-//
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -40,16 +38,19 @@ class FlightExecutionDetailsStatusCellModel {
     // Uploading Photo State
     @Published private(set) var uploadingPhotosCount: Int?
     @Published private(set) var uploadingExtraIcon: UIImage?
+    @Published private(set) var uploadingExtraIconColor: Color?
     @Published private(set) var uploadingProgressText: String?
 
     // Uploading Photo State
     @Published private(set) var uploadPausedText: String?
+    @Published private(set) var uploadPausedTextColor: Color?
     @Published private(set) var uploadPausedProgressText: String?
 
     // Freemium text
     @Published private(set) var freemiumText: String?
 
     // Action Button
+    @Published private(set) var actionButtonIcon: UIImage?
     @Published private(set) var actionButtonText: String?
     @Published private(set) var actionButtonTextColor: UIColor?
     @Published private(set) var actionButtonColor: UIColor?
@@ -59,42 +60,41 @@ class FlightExecutionDetailsStatusCellModel {
 
     private let flightPlan: FlightPlanModel!
     private let flightPlanUiStateProvider: FlightPlanUiStateProvider!
-    let coordinator: DashboardCoordinator?
-
-    private var cancellables = Set<AnyCancellable>()
+    unowned let coordinator: FlightPlanExecutionDetailsCoordinator
 
     init(flightPlan: FlightPlanModel,
          flightPlanUiStateProvider: FlightPlanUiStateProvider,
-         coordinator: DashboardCoordinator?) {
+         coordinator: FlightPlanExecutionDetailsCoordinator) {
         self.flightPlan = flightPlan
         self.flightPlanUiStateProvider = flightPlanUiStateProvider
         self.coordinator = coordinator
-        addSubsribers()
+        updateUiParameters()
     }
 
-    func addSubsribers() {
-        flightPlanUiStateProvider.uiStatePublisher(for: flightPlan)
-            .sink { [unowned self] stateUiParameters in
-                statusText = stateUiParameters.statusText
-                statusTextColor = stateUiParameters.statusTextColor
+    func updateUiParameters() {
+        let stateUiParameters = flightPlanUiStateProvider.uiState(for: flightPlan)
 
-                uploadingPhotosCount = stateUiParameters.uploadingPhotosCount
-                uploadingExtraIcon = stateUiParameters.uploadingExtraIcon
-                uploadingProgressText = stateUiParameters.uploadingProgressText
+        statusTextColor = stateUiParameters.statusTextColor
+        statusText = stateUiParameters.statusText
 
-                uploadPausedText = stateUiParameters.uploadPausedText
-                uploadPausedProgressText = stateUiParameters.uploadPausedProgressText
+        uploadingPhotosCount = stateUiParameters.uploadingPhotosCount
+        uploadingExtraIcon = stateUiParameters.uploadingExtraIcon
+        uploadingExtraIconColor = stateUiParameters.actionButtonProgressColor
+        uploadingProgressText = stateUiParameters.uploadingProgressText
 
-                freemiumText = stateUiParameters.freemiumText
+        uploadPausedTextColor = stateUiParameters.uploadPausedTextColor
+        uploadPausedText = stateUiParameters.uploadPausedText
+        uploadPausedProgressText = stateUiParameters.uploadPausedProgressText
 
-                actionButtonText = stateUiParameters.actionButtonText
-                actionButtonTextColor = stateUiParameters.actionButtonTextColor
-                actionButtonColor = stateUiParameters.actionButtonColor
-                actionButtonProgress = stateUiParameters.actionButtonProgress
-                actionButtonProgressColor = stateUiParameters.actionButtonProgressColor
+        freemiumText = stateUiParameters.freemiumText
 
-                actionButtonAction = stateUiParameters.actionButtonCallback
-            }
-            .store(in: &cancellables)
+        actionButtonTextColor = stateUiParameters.actionButtonTextColor
+        actionButtonColor = stateUiParameters.actionButtonColor
+        actionButtonProgressColor = stateUiParameters.actionButtonProgressColor
+        actionButtonIcon = stateUiParameters.actionButtonIcon
+        actionButtonText = stateUiParameters.actionButtonText
+        actionButtonProgress = stateUiParameters.actionButtonProgress
+
+        actionButtonAction = stateUiParameters.actionButtonCallback
     }
 }

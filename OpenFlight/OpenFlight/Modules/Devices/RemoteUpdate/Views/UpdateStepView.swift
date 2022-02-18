@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,7 +31,7 @@ import Reusable
 
 // MARK: - Internal Enums
 /// Specify the update state of the device.
-enum UpdateState {
+enum UpdateStep {
     case todo
     case doing
     case done
@@ -42,7 +41,7 @@ enum UpdateState {
 // MARK: - Internal Structs
 /// Defines a model for a step of an update.
 struct UpdateStepModel {
-    var state: UpdateState
+    var step: UpdateStep
     var title: String?
 }
 
@@ -78,18 +77,18 @@ private extension UpdateStepView {
     /// - Parameters:
     ///     - model: step of the update
     func fill(with model: UpdateStepModel) {
-        switch model.state {
+        switch model.step {
         case .doing:
             stepIcon.startRotate()
-            updateView(.highlightColor, Asset.Remote.icLoaderMini.image)
+            updateView(.defaultTextColor, .highlightColor, Asset.Remote.icLoaderMini.image)
         case .done:
             stepIcon.stopRotate()
-            updateView(.highlightColor, Asset.Common.Checks.icChecked.image)
+            updateView(.defaultTextColor, .highlightColor, Asset.Common.Checks.icChecked.image)
         case .error:
             stepIcon.stopRotate()
-            updateView(.errorColor, Asset.Remote.icErrorUpdate.image)
+            updateView(.defaultTextColor, .errorColor, Asset.Remote.icErrorUpdate.image)
         default:
-            updateView(.disabledTextColor, nil)
+            updateView(.disabledTextColor, .clear, nil)
         }
     }
 
@@ -98,9 +97,9 @@ private extension UpdateStepView {
     /// - Parameters:
     ///     - color: color of the step according to the state
     ///     - image: image of the step according to the state
-    func updateView(_ color: ColorName, _ image: UIImage?) {
+    func updateView(_ textColor: ColorName, _ imageColor: ColorName, _ image: UIImage?) {
         stepIcon.image = image
-        stepIcon.tintColor = UIColor(named: color)
-        stepLabel.textColor = UIColor(named: color)
+        stepIcon.tintColor = UIColor(named: imageColor)
+        stepLabel.textColor = UIColor(named: textColor)
     }
 }

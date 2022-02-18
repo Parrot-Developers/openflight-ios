@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -72,8 +71,8 @@
                                 <color key="textColor" name="default_text_color"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="MPp-Wg-YWJ">
-                                <rect key="frame" x="20" y="0.0" width="804" height="60"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="MPp-Wg-YWJ" customClass="NavigationStackView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="844" height="60"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ezl-99-3ww">
                                         <rect key="frame" x="0.0" y="5" width="109" height="50"/>
@@ -99,17 +98,16 @@
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZLN-q4-BJw" customClass="GalleryMediaTitleView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="109" y="0.0" width="586" height="60"/>
+                                        <rect key="frame" x="109" y="0.0" width="626" height="60"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wsk-PA-JUg">
-                                        <rect key="frame" x="695" y="5" width="109" height="50"/>
+                                        <rect key="frame" x="735" y="5" width="109" height="50"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </view>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="wsk-PA-JUg" firstAttribute="width" secondItem="ezl-99-3ww" secondAttribute="width" id="KlF-3m-g0l"/>
-                                    <constraint firstAttribute="height" constant="60" id="ydi-xf-Rh8"/>
                                 </constraints>
                             </stackView>
                         </subviews>
@@ -119,11 +117,11 @@
                             <constraint firstItem="8gh-7Z-b1f" firstAttribute="top" secondItem="IU8-XV-asu" secondAttribute="top" id="8FF-6b-KlQ"/>
                             <constraint firstItem="fDL-Rs-mLE" firstAttribute="top" secondItem="IU8-XV-asu" secondAttribute="top" constant="30" id="GBH-kH-AYU"/>
                             <constraint firstItem="MPp-Wg-YWJ" firstAttribute="top" secondItem="IU8-XV-asu" secondAttribute="top" id="Wk1-JY-KAb"/>
-                            <constraint firstItem="MPp-Wg-YWJ" firstAttribute="leading" secondItem="xDz-Rq-DLc" secondAttribute="leading" constant="20" id="Z2g-j5-IJu"/>
+                            <constraint firstItem="MPp-Wg-YWJ" firstAttribute="leading" secondItem="xDz-Rq-DLc" secondAttribute="leading" id="Z2g-j5-IJu"/>
                             <constraint firstItem="fDL-Rs-mLE" firstAttribute="top" secondItem="IU8-XV-asu" secondAttribute="top" constant="120" id="fgg-ls-G8e"/>
                             <constraint firstItem="IU8-XV-asu" firstAttribute="trailing" secondItem="fDL-Rs-mLE" secondAttribute="trailing" id="iWj-Sj-vGh"/>
                             <constraint firstItem="8gh-7Z-b1f" firstAttribute="leading" secondItem="IU8-XV-asu" secondAttribute="leading" id="jGN-mA-fEK"/>
-                            <constraint firstAttribute="trailing" secondItem="MPp-Wg-YWJ" secondAttribute="trailing" constant="20" id="mwd-vL-8L4"/>
+                            <constraint firstAttribute="trailing" secondItem="MPp-Wg-YWJ" secondAttribute="trailing" id="mwd-vL-8L4"/>
                             <constraint firstItem="fDL-Rs-mLE" firstAttribute="leading" secondItem="IU8-XV-asu" secondAttribute="leading" id="nXO-mJ-Zm7"/>
                             <constraint firstItem="IU8-XV-asu" firstAttribute="bottom" secondItem="fDL-Rs-mLE" secondAttribute="bottom" id="njh-fu-jzh"/>
                             <constraint firstItem="IU8-XV-asu" firstAttribute="bottom" secondItem="fDL-Rs-mLE" secondAttribute="bottom" constant="120" id="pgl-3B-OXq"/>
@@ -137,10 +135,10 @@
                         </variation>
                         <variation key="heightClass=regular-widthClass=compact">
                             <mask key="constraints">
-                                <include reference="8FF-6b-KlQ"/>
-                                <include reference="jGN-mA-fEK"/>
                                 <include reference="pgl-3B-OXq"/>
                                 <include reference="yeO-qX-DGO"/>
+                                <include reference="8FF-6b-KlQ"/>
+                                <include reference="jGN-mA-fEK"/>
                                 <include reference="fgg-ls-G8e"/>
                             </mask>
                         </variation>
@@ -164,7 +162,7 @@
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,17 +31,13 @@ import SwiftyUserDefaults
 import Combine
 
 /// Coordinator for HUD part.
-open class HUDCoordinator: Coordinator, HistoryMediasAction {
+open class HUDCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
     public var showMissionLauncherPublisher: AnyPublisher<Bool, Never> { showMissionsLauncherSubject.eraseToAnyPublisher() }
     public var isMissionLauncherShown: Bool { showMissionsLauncherSubject.value }
-    public var canShowCellularPairingViews: Bool { criticalAlertViewModel.state.value.alertStack.isEmpty }
-
-    // MARK: - Internal Properties
-    private let criticalAlertViewModel = HUDCriticalAlertViewModel()
 
     // MARK: - Private Properties
     public private(set) unowned var services: ServiceHub
@@ -61,39 +57,43 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
         let viewController = HUDViewController.instantiate(coordinator: self)
         self.viewController = viewController
         viewController.loadViewIfNeeded()
-        self.navigationController?.viewControllers = [viewController]
+        navigationController?.viewControllers = [viewController]
+        if AppUtils.isLayoutGridAuthorized {
+            // HUD VC is directly affected to navigationController stack.
+            // LayoutGridVC won't be added through any Coordinator's presenting operation.
+            // => Need to directly overlay grid on VC.
+            if let navigationController = navigationController {
+                DispatchQueue.main.async {
+                    LayoutGridView().overlay(on: navigationController)
+                }
+            }
+        }
+        setupIndicator()
         services.currentMissionManager.modePublisher
             .sink { [unowned self] in
                 cleanRightPanel()
                 insertRightPanelIfNeeded(mode: $0)
+                Services.hub.ui.hudTopBarService.allowTopBarDisplay()
             }
             .store(in: &cancellables)
-        services.flight.gutmaWatcher.flightEnded
+
+        services.ui.criticalAlert.alertPublisher
+            .removeDuplicates()
             .sink { [unowned self] in
-                displayFlightReport(flight: $0)
+                displayCriticalAlert(alert: $0)
             }
             .store(in: &cancellables)
 
-        criticalAlertViewModel.state.valueChanged = { [weak self] state in
-            self?.updateCriticalAlertVisibility(with: state)
-        }
+        listenCameraRecordingState()
+        listenCameraPhotoCaptureState()
     }
 
-    /// Changes critical alert modal visibility regarding view model state.
-    ///
-    /// - Parameters:
-    ///     - state: The alert state
-    func updateCriticalAlertVisibility(with state: HUDCriticalAlertState?) {
-        guard state?.canShowAlert == true else {
-            viewController?.showCellularPinCodeIfNeeded()
-            return
-        }
-
-        displayCriticalAlert(alert: state?.currentAlert)
+    open func setupIndicator() {
+        setupCustomIndicator(customIndicatorProvider: nil)
     }
 
-    open func canShowCellularPairing() -> Bool {
-        return criticalAlertViewModel.state.value.alertStack.isEmpty
+    open func setupCustomIndicator(customIndicatorProvider: CustomIndicatorProvider?) {
+        viewController.setupCustomMessageProvider(customMessageProvider: customIndicatorProvider)
     }
 
     func cleanRightPanel() {
@@ -112,7 +112,7 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
               let coordinator = mode.hudRightPanelContentProvider(services, splitControls, rightPanelContainerControls),
               let parentViewController = viewController,
               let childNavigationController = coordinator.navigationController else { return }
-        self.rightPanelCoordinator = coordinator
+        rightPanelCoordinator = coordinator
         coordinator.parentCoordinator = self
 
         childNavigationController.view.frame = rightPanelContainerControls.rightPanelContainerView.bounds
@@ -122,34 +122,69 @@ open class HUDCoordinator: Coordinator, HistoryMediasAction {
         childNavigationController.didMove(toParent: parentViewController)
     }
 
-    open func displayAuthentification() {
-        // To override.
-    }
-
-    open func handleHistoryCellAction(with flightModel: FlightPlanModel, actionType: HistoryMediasActionType) {
-        // To override.
-    }
-
     /// Starts dashboard coordinator.
     open func startDashboard() {
         let dashboardCoordinator = DashboardCoordinator(services: services)
-        self.presentCoordinatorWithAnimation(childCoordinator: dashboardCoordinator, animationDirection: .fromLeft)
+        presentCoordinatorWithAnimator(childCoordinator: dashboardCoordinator, transitionSubtype: .fromLeft)
+        services.ui.navigationStack.add(.dashboard)
     }
 
-    open func startFlightExecutionDetails(_ execution: FlightPlanModel) {
-        let dashboardCoordinator = DashboardCoordinator(services: services)
-        self.presentCoordinatorWithAnimation(childCoordinator: dashboardCoordinator, animationDirection: .fromLeft) {
-            dashboardCoordinator.startFlightExecutionDetails(execution)
+    /// Returns dashboard coordinator.
+    open func dashboardCoordinator() -> Coordinator { DashboardCoordinator(services: services) }
+
+    /// Returns to the previous displayed view according navigation stack service.
+    ///
+    /// - Parameters:
+    ///   - completion: The completion block
+    open func returnToPreviousView(completion: (() -> Void)? = nil) {
+        let coordinators = services.ui.navigationStack.coordinators(services: services, hudCoordinator: self)
+        guard !coordinators.isEmpty else {
+            startDashboard()
+            return
         }
+        presentCoordinatorsStack(coordinators: coordinators, transitionSubtype: .fromLeft) { [weak self] in
+            guard let self = self else { return }
+            // Restore HUD with last opened Mission
+            self.services.currentMissionManager.restoreLastHudSelection()
+            completion?()
+        }
+    }
+
+    /// Listens camera recording state changes
+    func listenCameraRecordingState() {
+        services.drone.cameraRecordingService.statePublisher
+            .sink { [unowned self] state in
+                guard let alertType = state.alertType else { return }
+                displayCriticalAlert(alert: alertType)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Listens camera photo capture state changes.
+    func listenCameraPhotoCaptureState() {
+        services.drone.cameraPhotoCaptureService.statePublisher
+            .sink { [unowned self] state in
+                guard let alertType = state.alertType else { return }
+                displayCriticalAlert(alert: alertType)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Displays top critical alert if present in CriticalAlertService.
+    /// (Used to flush any potential alert that could not be displayed when triggered.)
+    func displayCriticalAlertsIfNeeded() {
+        displayCriticalAlert(alert: services.ui.criticalAlert.alert)
     }
 }
 
-// MARK: - HUDNavigation
+// MARK: - HUD Navigation
 extension HUDCoordinator {
     // MARK: - Internal
 
-    /// Handle camera sliders view controller to manage its coordination
-    /// - Parameter cameraSlidersViewController: the sliders view controller
+    /// Handles camera sliders view controller to manage its coordination.
+    ///
+    /// - Parameters:
+    ///    - cameraSlidersViewController: the sliders view controller
     func handleCameraSlidersViewController(_ cameraSlidersViewController: CameraSlidersViewController) {
         cameraSlidersCoordinator = CameraSlidersCoordinator(services: services, viewController: cameraSlidersViewController)
     }
@@ -157,11 +192,11 @@ extension HUDCoordinator {
     /// Starts settings coordinator.
     ///
     /// - Parameters:
-    ///     - type: settings type
+    ///    - type: settings type
     func startSettings(_ type: SettingsType?) {
         let settingsCoordinator = SettingsCoordinator()
         settingsCoordinator.startSettingType = type
-        self.presentCoordinatorWithAnimation(childCoordinator: settingsCoordinator, animationDirection: .fromRight)
+        presentCoordinatorWithAnimator(childCoordinator: settingsCoordinator)
     }
 
     /// Starts pairing coordinator.
@@ -169,23 +204,23 @@ extension HUDCoordinator {
         let pairingCoordinator = PairingCoordinator(delegate: self)
         pairingCoordinator.parentCoordinator = self
         pairingCoordinator.start()
-        self.present(childCoordinator: pairingCoordinator)
+        present(childCoordinator: pairingCoordinator)
     }
 
-    /// Starts drone infos coordinator.
-    func startDroneInfos() {
+    /// Starts drone details coordinator.
+    func startDroneInformation() {
         let droneCoordinator = DroneCoordinator(services: services)
         droneCoordinator.parentCoordinator = self
         droneCoordinator.start()
-        self.present(childCoordinator: droneCoordinator)
+        present(childCoordinator: droneCoordinator)
     }
 
-    /// Starts remote infos coordinator.
-    func startRemoteInfos() {
+    /// Starts remote details coordinator.
+    func startRemoteInformation() {
         let remoteCoordinator = RemoteCoordinator()
         remoteCoordinator.parentCoordinator = self
         remoteCoordinator.start()
-        self.present(childCoordinator: remoteCoordinator)
+        present(childCoordinator: remoteCoordinator)
     }
 
     /// Starts drone calibration.
@@ -193,33 +228,32 @@ extension HUDCoordinator {
         let droneCoordinator = DroneCalibrationCoordinator(services: services)
         droneCoordinator.parentCoordinator = self
         droneCoordinator.startWithMagnetometerCalibration()
-        self.present(childCoordinator: droneCoordinator)
+        present(childCoordinator: droneCoordinator)
     }
 
     /// Displays remote shutdown alert screen.
     func displayRemoteAlertShutdown() {
-        presentModal(viewController: RemoteShutdownAlertViewController.instantiate(coordinator: self))
+        let remoteShutdown = RemoteShutdownAlertViewController.instantiate()
+        UIApplication.topViewController()?.navigationController?.present(remoteShutdown, animated: true)
     }
 
     /// Displays a critical alert on the screen.
     ///
     /// - Parameters:
-    ///     - alert: the alert to display
+    ///    - alert: the alert to display
     func displayCriticalAlert(alert: HUDCriticalAlertType?) {
-        let criticalAlertVC = HUDCriticalAlertViewController.instantiate(with: alert)
-        criticalAlertVC.delegate = self
-        presentModal(viewController: criticalAlertVC)
-    }
+        // Dismiss currently displayed alert (if any) in order to be able to present new one.
+        if let alertVc = navigationController?.presentedViewController as? HUDCriticalAlertViewController,
+           alertVc.currentAlert != alert {
+            dismiss { self.displayCriticalAlert(alert: alert) }
+            return
+        }
 
-    /// Displays a flight report on the HUD.
-    ///
-    /// - Parameters:
-    ///     - flight: flight
-    func displayFlightReport(flight: FlightModel) {
-        let viewModel = FlightDetailsViewModel(service: services.flight.service,
-                                               flight: flight,
-                                               flightPlanTypeStore: services.flightPlan.typeStore)
-        presentModal(viewController: FlightReportViewController.instantiate(viewModel: viewModel))
+        if let alert = alert {
+            let criticalAlertVC = HUDCriticalAlertViewController.instantiate(with: alert)
+            criticalAlertVC.delegate = self
+            presentModal(viewController: criticalAlertVC)
+        }
     }
 
     /// Displays entry coordinator for current MissionMode.
@@ -231,7 +265,7 @@ extension HUDCoordinator {
 
         entryCoordinator.parentCoordinator = self
         entryCoordinator.start()
-        self.present(childCoordinator: entryCoordinator, overFullScreen: true)
+        present(childCoordinator: entryCoordinator, overFullScreen: true)
     }
 
     /// Displays cellular pin code modal.
@@ -254,8 +288,7 @@ extension HUDCoordinator {
 extension HUDCoordinator: HUDCriticalAlertDelegate {
     func dismissAlert() {
         dismiss()
-        criticalAlertViewModel.onAlertDismissed()
-        viewController?.showCellularPinCodeIfNeeded()
+        services.ui.criticalAlert.dismissCurrentAlert()
     }
 
     func performAlertAction(alert: HUDCriticalAlertType?) {
@@ -263,11 +296,15 @@ extension HUDCoordinator: HUDCriticalAlertDelegate {
         case .droneAndRemoteUpdateRequired,
              .droneUpdateRequired:
             dismiss()
-            criticalAlertViewModel.onAlertDismissed()
-            startDroneInfos()
+            services.ui.criticalAlert.dismissCurrentAlert()
+            startDroneInformation()
+        case .remoteUpdateRequired:
+            dismiss()
+            services.ui.criticalAlert.dismissCurrentAlert()
+            startRemoteInformation()
         case .droneCalibrationRequired:
             dismiss()
-            criticalAlertViewModel.onAlertDismissed()
+            services.ui.criticalAlert.dismissCurrentAlert()
             startDroneCalibration()
         default:
             dismissAlert()

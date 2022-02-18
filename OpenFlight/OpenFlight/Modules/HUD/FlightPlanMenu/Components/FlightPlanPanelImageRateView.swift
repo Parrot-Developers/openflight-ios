@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -50,7 +49,7 @@ public final class FlightPlanPanelImageRateView: UIView, NibOwnerLoadable {
 
     func commonInitImageMenuView() {
         self.loadNibContent()
-        imageLabel.makeUp(and: .defaultTextColor)
+        imageLabel.makeUp(with: .current, color: .defaultTextColor)
         imageLabel.text = Style.dash
     }
 
@@ -71,7 +70,8 @@ public final class FlightPlanPanelImageRateView: UIView, NibOwnerLoadable {
             switch captureMode {
             case .gpsLapse:
                 if let value = provider.gpsLapseDistance {
-                    settingDescription += Style.whiteSpace + UnitHelper.stringDistanceWithDouble(Double(value))
+                    settingDescription += Style.whiteSpace
+                        + UnitHelper.stringDistanceWithDouble(Double(value)/1000, useFractionDigit: true)
                 }
             case .timeLapse:
                 if let value = provider.timeLapseCycle {

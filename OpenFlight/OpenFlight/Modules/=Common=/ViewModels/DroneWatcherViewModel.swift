@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,6 +40,10 @@ open class DroneWatcherViewModel<T: ViewModelState>: BaseViewModel<T> {
     /// Property which provides the current drone using currentDroneWatcher.
     public var drone: Drone? {
         return currentDroneHolder.drone
+    }
+
+    public var hasLastConnectedDrone: Bool {
+        return currentDroneHolder.hasLastConnectedDrone
     }
 
     // MARK: - Init

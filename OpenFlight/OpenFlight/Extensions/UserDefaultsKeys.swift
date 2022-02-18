@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -46,8 +46,6 @@ public extension DefaultsKeys {
 
     // Controls settings
     var userControlModeSetting: DefaultsKey<String?> { .init("key_userControlModeSetting") }
-    var userControlModeArcadeSetting: DefaultsKey<String?> { .init("key_userControlModeArcadeSetting") }
-    var arcadeTiltReversedSetting: DefaultsKey<Bool> { .init("key_arcadeTiltReversedSetting", defaultValue: false) }
     var evTriggerSetting: DefaultsKey<Bool> { .init("key_evTriggerSetting", defaultValue: false) }
 
     // MARK: - Camera
@@ -64,6 +62,7 @@ public extension DefaultsKeys {
     // MARK: - Parrot Debug
     var activatedLog: DefaultsKey<Bool> { .init("key_activatedLog", defaultValue: false) }
     var debugC: DefaultsKey<Bool> { .init("key_checkC", defaultValue: false) }
+    var isThumbnailSyncEnabled: DefaultsKey<Bool> { .init("key_isThumbnailSyncEnabled", defaultValue: false) }
 
     // MARK: - Gallery
     var localMediaCounts: DefaultsKey<[String: Any]?> { .init("key_localMediaCounts") }
@@ -71,15 +70,14 @@ public extension DefaultsKeys {
     var mediasRunUidGallery: DefaultsKey<[String: Any]?> { .init("key_mediasRunUid") }
 
     // MARK: - Cellular Access
-    var networkUsername: DefaultsKey<String?> { DefaultsKeys.networkUsernameKey }
-    var networkPassword: DefaultsKey<String?> { DefaultsKeys.networkPasswordKey }
-    var networkUrl: DefaultsKey<String?> { DefaultsKeys.networkUrlKey }
-    var isManualApnRequested: DefaultsKey<Bool?> { .init("key_isManualApnRequested") }
     /// Defines a drone PI list used for cellular pairing process visibilty.
     /// The user can show or dismiss the process for the connected drone.
     var dronesListPairingProcessHidden: DefaultsKey<[String]> { .init("key_dronesListPairingProcessHidden", defaultValue: []) }
     /// List of already paired drones.
     var cellularPairedDronesList: DefaultsKey<[String]> { .init("key_dronePairedList", defaultValue: []) }
+
+    // MARK: - Projects
+    var isFlightPlanProjectType: DefaultsKey<Bool> { .init("key_isFlightPlanProjectType", defaultValue: true) }
 }
 
 /// Define keys as static let for cases which need direct access to the key, not the defaultKey.
@@ -120,13 +118,42 @@ public extension DefaultsKeys {
     static let lastSyncProcessErrorDate: DefaultsKey<Date?> = DefaultsKey<Date?>("key_lastSyncProcessErrorDate")
     static let isSyncProcessError: DefaultsKey<Bool> = DefaultsKey<Bool>("key_isSyncProcessError", defaultValue: false)
 
-    // MARK: - Cellular Access
-    static let networkUsernameKey: DefaultsKey<String?> = DefaultsKey<String?>("key_networkUsername")
-    static let networkPasswordKey: DefaultsKey<String?> = DefaultsKey<String?>("key_networkPassword")
-    static let networkUrlKey: DefaultsKey<String?> = DefaultsKey<String?>("key_networkUrl")
-
     // MARK: - Terms Of Use
     /// Bool which indicates if terms of use are accepted.
     static let areOFTermsOfUseAccepted: DefaultsKey<Bool> = DefaultsKey<Bool>("key_areOFTermsOfUseAccepted",
                                                                               defaultValue: false)
+}
+
+// MARK: - Synchro Service
+public extension DefaultsKeys {
+    // - Multi Session
+    var latestTriedSynchroMultiSessionDate: DefaultsKey<Date?> {
+        DefaultsKey<Date?>.init("cloudSync.service.latestTriedMultiSession")
+    }
+    var latestSuccessfulSynchroMultiSessionDate: DefaultsKey<Date?> {
+        DefaultsKey<Date?>.init("cloudSync.service.latestSuccessfulMultiSession")
+    }
+}
+
+// MARK: - Cloud Multi-Session Sync.
+public extension DefaultsKeys {
+    var latestGutmaSynchroDate: DefaultsKey<Date> {
+        .init("cloudSync.multisession.latestGutmaSynchroDate", defaultValue: Date.distantPast)
+    }
+    var latestFlightPlanSynchroDate: DefaultsKey<Date> {
+        .init("cloudSync.multisession.latestFlightPlanSynchroDate", defaultValue: Date.distantPast)
+    }
+    var latestProjectSynchroDate: DefaultsKey<Date> {
+        .init("cloudSync.multisession.latestProjectSynchroDate", defaultValue: Date.distantPast)
+    }
+
+    var latestGutmaCloudDeletionDate: DefaultsKey<Date> {
+        .init("cloudSync.multisession.latestGutmaCloudDeletionDate", defaultValue: Date.distantPast)
+    }
+    var latestFlightPlanCloudDeletionDate: DefaultsKey<Date> {
+        .init("cloudSync.multisession.latestFlightPlanCloudDeletionDate", defaultValue: Date.distantPast)
+    }
+    var latestProjectCloudDeletionDate: DefaultsKey<Date> {
+        .init("cloudSync.multisession.latestProjectCloudDeletionDate", defaultValue: Date.distantPast)
+    }
 }

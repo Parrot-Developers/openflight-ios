@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,7 +37,8 @@ extension Animation {
         switch type {
         case .horizontal180PhotoPanorama,
              .vertical180PhotoPanorama,
-             .sphericalPhotoPanorama:
+             .sphericalPhotoPanorama,
+             .superWidePhotoPanorama:
             return true
         default:
             return false

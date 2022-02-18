@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -40,7 +39,8 @@ final class FlightPlanDashboardListViewController: UIViewController {
     @IBOutlet private weak var emptyFlightPlansDescriptionLabel: UILabel!
     @IBOutlet private weak var emptyLabelContainer: UIView!
     @IBOutlet private weak var emptyExecutionLabel: UILabel!
-    @IBOutlet private weak var openProjectButton: UIButton!
+    @IBOutlet private weak var openProjectButton: ActionButton!
+    @IBOutlet private weak var bottomGradientView: BottomGradientView!
 
     typealias ViewModel = (FlightPlansListViewModelUIInput & FlightPlanListHeaderDelegate & FlightPlansListViewModelParentInput)
 
@@ -58,6 +58,8 @@ final class FlightPlanDashboardListViewController: UIViewController {
             tableView.reloadData()
             emptyExecutionLabel.isHidden = selectedProject?.executions.count ?? 0 > 0
             openProjectButton.isHidden = selectedProject == nil
+            bottomGradientView.isHidden = selectedProject == nil
+            updateTableViewBottomInset(isButtonVisible: !openProjectButton.isHidden)
         }
     }
 
@@ -75,7 +77,7 @@ final class FlightPlanDashboardListViewController: UIViewController {
     }
 
     private func bindViewModel() {
-        viewModel.allFlightPlansPublisher
+        viewModel.allProjectsPublisher
             .sink { [unowned self] allFlightPlans in
                 // Keep current selection if project still exist
                 if let project = selectedProject?.project,
@@ -85,64 +87,61 @@ final class FlightPlanDashboardListViewController: UIViewController {
                     didDeselectProject()
                 }
                 collectionView?.reloadData()
-                emptyLabelContainer.isHidden = self.viewModel.modelsCount() > 0
-                emptyExecutionLabel.isHidden = self.selectedProject?.executions.count ?? 0 > 0
+                emptyLabelContainer.isHidden = viewModel.projectsCount() > 0
+                emptyExecutionLabel.isHidden = selectedProject?.executions.count ?? 0 > 0
             }
             .store(in: &cancellables)
 
         viewModel.uuidPublisher
+            .dropFirst() // do not fire on initialization
             .sink { [unowned self] _ in
-                self.collectionView?.reloadData()
+                collectionView?.reloadData()
             }
             .store(in: &cancellables)
-    }
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let nbColumnsLandscapeFull: CGFloat = 4.0
-        static let nbColumnsLandscapeCompact: CGFloat = 3.0
-        static let nbColumnsPortrait: CGFloat = 2.0
-        static let itemSpacing: CGFloat = 10.0
-        static let headerHeight: CGFloat = 50.0
-        static let topTableInset: CGFloat = 5.0
-        static let bottomTableInset: CGFloat = 10.0
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Collection view setup
         collectionView.register(FlightPlanListReusableHeaderView.self,
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
                                 withReuseIdentifier: FlightPlanListReusableHeaderView.identifier)
         collectionView.register(cellType: FlightPlanCollectionViewCell.self)
         collectionView.delegate = self
         collectionView.dataSource = self
+
+        // Add double tap gesture recognizer for flight plan quick open action.
+        collectionView.addDoubleTapRecognizer(target: self, action: #selector(didDoubleTap))
+
+        // Table view setup
         tableView.register(cellType: FlightPlanExecutionCell.self)
         tableView.register(cellType: FlightPlanListExecutionHeaderCell.self)
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.contentInset = UIEdgeInsets(top: Constants.topTableInset,
-                                              left: 0,
-                                              bottom: Constants.bottomTableInset + openProjectButton.bounds.height,
-                                              right: 0)
-        emptyFlightPlansTitleLabel.text = L10n.flightPlanEmptyListTitle
-        emptyFlightPlansDescriptionLabel.text = L10n.flightPlanEmptyListDesc
+        tableView.insetsContentViewsToSafeArea = false
+        tableView.preservesSuperviewLayoutMargins = false
+        updateTableViewBottomInset()
+        emptyFlightPlansTitleLabel.text = L10n.dashboardMyFlightsEmptyProjectExecutionsTitle
+        emptyFlightPlansDescriptionLabel.text = L10n.dashboardMyFlightsEmptyListDesc
         emptyExecutionLabel.text = L10n.dashboardMyFlightsEmptyProjectExecutionsList
 
-        openProjectButton.layer.cornerRadius = Style.largeCornerRadius
-        openProjectButton.titleLabel?.makeUp(with: .large, and: .white)
-        openProjectButton.setTitle(L10n.dashboardMyFlightsProjectExecutionOpenProject,
-                                   for: .normal)
+        // Right panel button button
+        openProjectButton.setup(title: L10n.dashboardMyFlightsProjectExecutionOpenProject,
+                                style: .validate)
         openProjectButton.isHidden = true
+
+        bottomGradientView.shortGradient()
+        bottomGradientView.isHidden = true
+
         bindViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        self.collectionView.reloadData()
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.flightPlanList,
-                             logType: .screen)
+        collectionView.reloadData()
+        LogEvent.log(.screen(LogEvent.Screen.flightPlanList))
     }
 
     override func viewWillLayoutSubviews() {
@@ -156,12 +155,29 @@ final class FlightPlanDashboardListViewController: UIViewController {
         return true
     }
 
+    /// Handles collectionView item selection.
+    ///
+    /// - Parameters:
+    ///    - index: The collectionView's index of selected item.
+    func didSelectItemAt(_ index: Int) {
+        guard let projectProvider = viewModel.projectProvider(at: index) else {
+            return
+        }
+        didSelectProject(projectProvider.project, at: index)
+        viewModel?.updateNavigationStack(with: projectProvider.project)
+    }
+
     func didSelectProject(_ project: ProjectModel, at index: Int) {
         let executions = viewModel.flightPlanExecutions(ofProject: project)
         selectedProject = SelectedProject(project: project,
                                           executions: executions,
                                           index: index)
-        viewModel.selectedProject(project)
+        viewModel.selectProject(project)
+    }
+
+    func didSelectProject(_ project: ProjectModel) {
+        let index = viewModel.indexOfProject(project)
+        didSelectProject(project, at: index)
     }
 
     func didDeselectProject() {
@@ -173,20 +189,30 @@ final class FlightPlanDashboardListViewController: UIViewController {
         guard let selectedProject = selectedProject else { return }
         viewModel.openProject(at: selectedProject.index)
     }
+
+    /// Updates the tableView bottom inset according to bottom button state.
+    ///
+    /// - Parameters:
+    ///    - isButtonVisible: `true` if bottom action button is visible, `false` otherwise
+    private func updateTableViewBottomInset(isButtonVisible: Bool = false) {
+        let bottomPadding = isButtonVisible
+        ? Layout.buttonIntrinsicHeight(isRegularSizeClass) + Layout.mainSpacing(isRegularSizeClass)
+        : 0
+        tableView.contentInset.bottom = Layout.mainContainerInnerMargins(isRegularSizeClass).bottom + bottomPadding
+    }
 }
 
 // MARK: - UICollectionViewDataSource
 extension FlightPlanDashboardListViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel.modelsCount()
+        return viewModel.projectsCount()
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(for: indexPath) as FlightPlanCollectionViewCell
-        guard let cellProvider = viewModel.getFlightPlan(at: indexPath.row) else { return cell }
+        guard let cellProvider = viewModel.projectProvider(at: indexPath.row) else { return cell }
         cell.configureCell(project: cellProvider.project,
-                           isSelected: cellProvider.isSelected,
-                           index: indexPath.row)
+                           isSelected: cellProvider.isSelected)
         return cell
     }
 
@@ -198,7 +224,7 @@ extension FlightPlanDashboardListViewController: UICollectionViewDataSource {
                                                   withReuseIdentifier: FlightPlanListReusableHeaderView.identifier,
                                                   for: indexPath) as? FlightPlanListReusableHeaderView
         else { return UICollectionReusableView() }
-        header.configure(provider: viewModel.getHeaderProvider(), delegate: viewModel)
+        header.configure(provider: viewModel.headerCellProvider(), delegate: viewModel)
         return header
     }
 
@@ -207,21 +233,19 @@ extension FlightPlanDashboardListViewController: UICollectionViewDataSource {
 // MARK: - UICollectionViewDelegate
 extension FlightPlanDashboardListViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let projectProvider = viewModel.getFlightPlan(at: indexPath.row) else {
-            return
-        }
-        didSelectProject(projectProvider.project, at: indexPath.row)
+        didSelectItemAt(indexPath.item)
     }
 
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         didDeselectProject()
+        viewModel?.updateNavigationStack(with: nil)
     }
 }
 
 // MARK: - UICollectionViewDataSource
 extension FlightPlanDashboardListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let selectedProject = self.selectedProject else { return 0 }
+        guard let selectedProject = selectedProject else { return 0 }
         // header + executions
         return 1 + selectedProject.executions.count
     }
@@ -250,34 +274,40 @@ extension FlightPlanDashboardListViewController: UITableViewDelegate {
         guard let execution = selectedProject?.executions[indexPath.row - 1] else {
             return
         }
-        viewModel.selectedExecution(execution)
-        tableView.deselectRow(at: indexPath, animated: true)
+        viewModel.selectExecution(execution)
     }
 }
 
 // MARK: - UICollectionViewDelegateFlowLayout
 extension FlightPlanDashboardListViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        // remove left and right insets.
-        let collectionViewWidth = collectionView.frame.width
-            - 2 * Constants.itemSpacing
-            - (collectionView.safeAreaInsets.left + collectionView.safeAreaInsets.right)
-        let nbColumnsLadscape = (viewModel.displayMode == .full || viewModel.displayMode == .dashboard)
-            ? Constants.nbColumnsLandscapeFull : Constants.nbColumnsLandscapeCompact
-        let nbColumns = UIApplication.isLandscape ? nbColumnsLadscape : Constants.nbColumnsPortrait
-        let width = (collectionViewWidth / nbColumns - Constants.itemSpacing).rounded(.down)
-        let size = CGSize(width: width, height: width)
-        return size
+        collectionView.gridItemSize()
     }
 
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         referenceSizeForHeaderInSection section: Int) -> CGSize {
         switch viewModel.displayMode {
-        case .full, .dashboard:
-            return .init(width: self.collectionView.frame.width, height: Constants.headerHeight)
+        case .dashboard:
+            return .init(width: collectionView.bounds.width,
+                         height: Layout.fileFilterCollectionViewCellHeight(isRegularSizeClass) +
+                         Layout.mainBottomMargin(isRegularSizeClass))
         default:
             return .zero
         }
+    }
+}
+
+extension FlightPlanDashboardListViewController {
+    /// Collectionview's double tap action.
+    /// Opens a filght plan if a double tap is detected on corresponding cell.
+    ///
+    /// - Parameters:
+    ///    - sender: The double tap gesture recognizer.
+    @objc func didDoubleTap(_ sender: UIGestureRecognizer) {
+        // Get cell's index.
+        guard let index = collectionView.indexPathForItem(at: sender.location(in: collectionView))?.item else { return }
+        didSelectItemAt(index)
+        viewModel.openProject(at: index)
     }
 }

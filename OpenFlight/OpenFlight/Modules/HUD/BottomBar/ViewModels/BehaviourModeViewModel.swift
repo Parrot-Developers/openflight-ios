@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,7 +40,7 @@ final class BehaviourModeButtonState: BarButtonState, EquatableState, Copying {
         return mode?.title
     }
     var image: UIImage? {
-        return nil
+        return mode?.image
     }
     var mode: BarItemMode?
     var supportedModes: [BarItemMode]?
@@ -74,15 +73,15 @@ final class BehaviourModeButtonState: BarButtonState, EquatableState, Copying {
 
     // MARK: - Internal Funcs
     func isEqual(to other: BehaviourModeButtonState) -> Bool {
-        return self.mode?.key == other.mode?.key
+        return mode?.key == other.mode?.key
     }
 
     /// Returns a copy of the object.
     func copy() -> BehaviourModeButtonState {
-        let copy = BehaviourModeButtonState(title: self.title,
-                                      mode: self.mode,
-                                      enabled: self.enabled,
-                                      isSelected: self.isSelected)
+        let copy = BehaviourModeButtonState(title: title,
+                                            mode: mode,
+                                            enabled: enabled,
+                                            isSelected: isSelected)
         return copy
     }
 }
@@ -97,7 +96,7 @@ final class BehaviourModeViewModel: BarButtonViewModel<BehaviourModeButtonState>
     init() {
         super.init(barId: "BehaviourMode")
 
-        state.value.title = L10n.commonSpeed.uppercased()
+        state.value.title = L10n.commonPreset.uppercased()
         listenBehaviourModeDefault()
         updateState()
     }
@@ -139,8 +138,8 @@ private extension BehaviourModeViewModel {
 
     /// Update state with current behaviour mode.
     func updateState() {
-        let copy = self.state.value.copy()
+        let copy = state.value.copy()
         copy.mode = SettingsBehavioursMode.current
-        self.state.set(copy)
+        state.set(copy)
     }
 }

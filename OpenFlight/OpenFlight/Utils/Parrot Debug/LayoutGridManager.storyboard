@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Y6W-OH-hqX">
+    <device id="ipad10_2" orientation="landscape" layout="fullscreen" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Layout Grid Manager View Controller-->
+        <scene sceneID="s0d-6b-0kx">
+            <objects>
+                <viewController id="Y6W-OH-hqX" customClass="LayoutGridManagerViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="HM3-7X-3UO"/>
+                        <viewControllerLayoutGuide type="bottom" id="KGq-Zb-vlD"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
+                        <rect key="frame" x="0.0" y="0.0" width="1080" height="810"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="dhF-Xj-Sww">
+                                <rect key="frame" x="0.0" y="0.0" width="1080" height="810"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ml3-2R-7ii" customClass="FileNavigationView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="1080" height="50"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Qk6-ck-Ngf" customClass="NavBarButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="8" y="3" width="44" height="44"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" secondItem="Qk6-ck-Ngf" secondAttribute="height" id="IE1-LI-Y0X"/>
+                                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="44" id="pNX-9j-zT7"/>
+                                                </constraints>
+                                                <color key="tintColor" name="default_text_color"/>
+                                                <state key="normal" image="ic_back"/>
+                                                <connections>
+                                                    <action selector="closeButtonTouchedUpInside:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="55L-wL-kMF"/>
+                                                </connections>
+                                            </button>
+                                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="1" translatesAutoresizingMaskIntoConstraints="NO" id="qUR-Q1-SN1">
+                                                <rect key="frame" x="453.5" y="28" width="173" height="15"/>
+                                                <segments>
+                                                    <segment title="Segment 0"/>
+                                                    <segment title="Segment 1"/>
+                                                </segments>
+                                                <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </segmentedControl>
+                                        </subviews>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstItem="Qk6-ck-Ngf" firstAttribute="top" secondItem="Ml3-2R-7ii" secondAttribute="top" priority="750" id="0Wd-up-fqg"/>
+                                            <constraint firstAttribute="bottom" secondItem="Qk6-ck-Ngf" secondAttribute="bottom" priority="750" id="Ehw-WR-R9Z"/>
+                                            <constraint firstItem="qUR-Q1-SN1" firstAttribute="centerX" secondItem="Ml3-2R-7ii" secondAttribute="centerX" id="EjM-kZ-kgk"/>
+                                            <constraint firstItem="qUR-Q1-SN1" firstAttribute="top" secondItem="Ml3-2R-7ii" secondAttribute="topMargin" id="J8F-Rl-tRV"/>
+                                            <constraint firstItem="Qk6-ck-Ngf" firstAttribute="centerY" secondItem="Ml3-2R-7ii" secondAttribute="centerY" id="awC-yj-vbu"/>
+                                            <constraint firstAttribute="bottomMargin" secondItem="qUR-Q1-SN1" secondAttribute="bottom" id="gHc-sH-Gyz"/>
+                                            <constraint firstItem="Qk6-ck-Ngf" firstAttribute="leading" secondItem="Ml3-2R-7ii" secondAttribute="leadingMargin" id="zg3-jo-trE"/>
+                                        </constraints>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2YY-y1-1xU">
+                                        <rect key="frame" x="0.0" y="50" width="1080" height="760"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="FEj-gg-mC5" customClass="LeftSidePanelStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="240" height="760"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Zf-8v-lbA" customClass="SideNavigationBarView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="240" height="50"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wqk-yx-bbw">
+                                                                <rect key="frame" x="0.0" y="0.0" width="240" height="50"/>
+                                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                                <nil key="textColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstItem="Wqk-yx-bbw" firstAttribute="leading" secondItem="6Zf-8v-lbA" secondAttribute="leading" id="FiN-TF-WXn"/>
+                                                            <constraint firstAttribute="trailing" secondItem="Wqk-yx-bbw" secondAttribute="trailing" id="OrX-hf-0Bx"/>
+                                                            <constraint firstAttribute="bottom" secondItem="Wqk-yx-bbw" secondAttribute="bottom" id="SIf-Ho-2HF"/>
+                                                            <constraint firstItem="Wqk-yx-bbw" firstAttribute="top" secondItem="6Zf-8v-lbA" secondAttribute="top" id="aBh-ns-lKj"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mOd-Yy-t8I">
+                                                        <rect key="frame" x="0.0" y="50" width="240" height="710"/>
+                                                        <subviews>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="wln-XS-g1Z" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="240" height="150"/>
+                                                                <subviews>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="o09-nO-Y3u" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="240" height="30"/>
+                                                                        <state key="normal" title="Button"/>
+                                                                    </button>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3dS-Vy-4EL" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="40" width="240" height="30"/>
+                                                                        <state key="normal" title="Button"/>
+                                                                    </button>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QdA-oi-ak1" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="80" width="240" height="30"/>
+                                                                        <state key="normal" title="Button"/>
+                                                                    </button>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SfD-7v-0pa" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="120" width="240" height="30"/>
+                                                                        <state key="normal" title="Button"/>
+                                                                    </button>
+                                                                </subviews>
+                                                            </stackView>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="wln-XS-g1Z" secondAttribute="bottom" id="GBP-KX-3SA"/>
+                                                            <constraint firstItem="wln-XS-g1Z" firstAttribute="leading" secondItem="mOd-Yy-t8I" secondAttribute="leading" id="ODG-Bh-pqo"/>
+                                                            <constraint firstAttribute="trailing" secondItem="wln-XS-g1Z" secondAttribute="trailing" id="iBx-GV-Gbs"/>
+                                                            <constraint firstItem="wln-XS-g1Z" firstAttribute="top" secondItem="mOd-Yy-t8I" secondAttribute="top" id="pSA-gC-sIl"/>
+                                                        </constraints>
+                                                    </view>
+                                                </subviews>
+                                            </stackView>
+                                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="300" placeholderIntrinsicHeight="760" translatesAutoresizingMaskIntoConstraints="NO" id="0va-ea-i9C">
+                                                <rect key="frame" x="240" y="0.0" width="300" height="760"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Flexible View" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8Ol-rL-U66">
+                                                        <rect key="frame" x="0.0" y="0.0" width="99" height="760"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <color key="textColor" name="default_text_color"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Uzf-Nq-VoJ" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="51.5" y="281.5" width="197" height="197"/>
+                                                        <subviews>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gs5-Lg-0dp" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="75.5" y="0.0" width="46" height="46"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" secondItem="gs5-Lg-0dp" secondAttribute="height" id="8go-hZ-fwI"/>
+                                                                </constraints>
+                                                                <state key="normal" title="Button"/>
+                                                                <connections>
+                                                                    <action selector="gridEnablingButtonTouchedUpInside:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="ZhU-dK-DT3"/>
+                                                                </connections>
+                                                            </button>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="jLQ-kw-NcS" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="46" width="197" height="71"/>
+                                                                <subviews>
+                                                                    <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="DRn-ZL-sOi">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="197" height="32"/>
+                                                                        <segments>
+                                                                            <segment title="HUD"/>
+                                                                            <segment title="File Manager"/>
+                                                                        </segments>
+                                                                        <connections>
+                                                                            <action selector="segmentedControlValueChanged:" destination="Y6W-OH-hqX" eventType="valueChanged" id="UYb-oG-p22"/>
+                                                                        </connections>
+                                                                    </segmentedControl>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Veh-dN-QRe" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="75.5" y="31" width="46" height="40"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="height" constant="40" id="7EE-YR-dKd"/>
+                                                                        </constraints>
+                                                                        <state key="normal" title="Button"/>
+                                                                        <connections>
+                                                                            <action selector="topAreaButtonTouchedUpInside:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="59d-aA-hw5"/>
+                                                                        </connections>
+                                                                    </button>
+                                                                </subviews>
+                                                            </stackView>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pbg-EP-S07" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="29.5" y="117" width="138" height="40"/>
+                                                                <subviews>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YKC-ME-Qyd" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="46" height="40"/>
+                                                                        <state key="normal" title="Button"/>
+                                                                        <connections>
+                                                                            <action selector="leftPanelButtonTouchedUpInside:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="N3F-dl-3Pd"/>
+                                                                        </connections>
+                                                                    </button>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YXV-cs-0aX" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="46" y="0.0" width="46" height="40"/>
+                                                                        <state key="normal" title="Button"/>
+                                                                        <connections>
+                                                                            <action selector="centerGuidesButtonTouchedUpInside:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="a5O-2H-8u3"/>
+                                                                        </connections>
+                                                                    </button>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="i3W-SI-Cvm" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="92" y="0.0" width="46" height="40"/>
+                                                                        <state key="normal" title="Button"/>
+                                                                        <connections>
+                                                                            <action selector="rightPanelButtonTouchedUpInside:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="48q-k1-30c"/>
+                                                                        </connections>
+                                                                    </button>
+                                                                </subviews>
+                                                            </stackView>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rCv-zP-pvR" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="75.5" y="157" width="46" height="40"/>
+                                                                <state key="normal" title="Button"/>
+                                                                <connections>
+                                                                    <action selector="bottomAreaButtonTouchedUpInside:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="1Ub-UV-mkP"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                        <constraints>
+                                                            <constraint firstItem="rCv-zP-pvR" firstAttribute="height" secondItem="Veh-dN-QRe" secondAttribute="height" id="tjC-4W-aR1"/>
+                                                            <constraint firstItem="YKC-ME-Qyd" firstAttribute="height" secondItem="Veh-dN-QRe" secondAttribute="height" id="yWx-0n-Rjb"/>
+                                                        </constraints>
+                                                    </stackView>
+                                                </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstItem="Uzf-Nq-VoJ" firstAttribute="centerY" secondItem="0va-ea-i9C" secondAttribute="centerY" id="EzU-LG-bki"/>
+                                                    <constraint firstAttribute="trailing" secondItem="8Ol-rL-U66" secondAttribute="trailing" id="GLw-Zn-L9r"/>
+                                                    <constraint firstItem="8Ol-rL-U66" firstAttribute="top" secondItem="0va-ea-i9C" secondAttribute="top" id="PGO-tp-ddW"/>
+                                                    <constraint firstItem="8Ol-rL-U66" firstAttribute="leading" secondItem="0va-ea-i9C" secondAttribute="leading" id="jVe-oI-do0"/>
+                                                    <constraint firstItem="Uzf-Nq-VoJ" firstAttribute="centerX" secondItem="0va-ea-i9C" secondAttribute="centerX" id="kCQ-lI-ZJd"/>
+                                                    <constraint firstAttribute="bottom" secondItem="8Ol-rL-U66" secondAttribute="bottom" id="zo1-xJ-Yjc"/>
+                                                </constraints>
+                                                <variation key="default">
+                                                    <mask key="subviews">
+                                                        <exclude reference="8Ol-rL-U66"/>
+                                                    </mask>
+                                                </variation>
+                                            </view>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="4aQ-t1-3Fg" customClass="RightSidePanelStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="540" y="0.0" width="540" height="760"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oCG-XQ-eW1">
+                                                        <rect key="frame" x="0.0" y="0.0" width="540" height="760"/>
+                                                        <subviews>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="0Jg-Ms-mvF" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="610" width="540" height="150"/>
+                                                                <subviews>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IHS-CE-qkj" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="540" height="30"/>
+                                                                        <state key="normal" title="Button"/>
+                                                                    </button>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cdM-xR-6XQ" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="40" width="540" height="30"/>
+                                                                        <state key="normal" title="Button"/>
+                                                                    </button>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vpt-hA-PVv" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="80" width="540" height="30"/>
+                                                                        <state key="normal" title="Button"/>
+                                                                    </button>
+                                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="CWl-sd-aUc" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="120" width="540" height="30"/>
+                                                                        <subviews>
+                                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gTc-gc-UYw" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                                <rect key="frame" x="0.0" y="0.0" width="173.5" height="30"/>
+                                                                                <state key="normal" title="Button"/>
+                                                                            </button>
+                                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IEg-5d-Ltw" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                                <rect key="frame" x="183.5" y="0.0" width="173" height="30"/>
+                                                                                <state key="normal" title="Button"/>
+                                                                            </button>
+                                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jdO-hB-fKL" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                                <rect key="frame" x="366.5" y="0.0" width="173.5" height="30"/>
+                                                                                <state key="normal" title="Button"/>
+                                                                            </button>
+                                                                        </subviews>
+                                                                    </stackView>
+                                                                </subviews>
+                                                            </stackView>
+                                                        </subviews>
+                                                        <color key="backgroundColor" name="default_bgcolor"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="trailing" secondItem="0Jg-Ms-mvF" secondAttribute="trailing" id="9Bx-dZ-aNk"/>
+                                                            <constraint firstItem="0Jg-Ms-mvF" firstAttribute="leading" secondItem="oCG-XQ-eW1" secondAttribute="leading" id="F0Y-Zf-qk6"/>
+                                                            <constraint firstItem="0Jg-Ms-mvF" firstAttribute="top" relation="greaterThanOrEqual" secondItem="oCG-XQ-eW1" secondAttribute="top" id="UhK-nc-hvs"/>
+                                                            <constraint firstAttribute="bottom" secondItem="0Jg-Ms-mvF" secondAttribute="bottom" id="p0d-Ow-L7o"/>
+                                                        </constraints>
+                                                    </view>
+                                                </subviews>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" name="default_bgcolor"/>
+                        <constraints>
+                            <constraint firstItem="dhF-Xj-Sww" firstAttribute="top" secondItem="5EZ-qb-Rvc" secondAttribute="top" id="4dZ-JN-683"/>
+                            <constraint firstAttribute="bottom" secondItem="dhF-Xj-Sww" secondAttribute="bottom" id="OeV-pN-LeE"/>
+                            <constraint firstAttribute="trailing" secondItem="dhF-Xj-Sww" secondAttribute="trailing" id="Tpq-NG-QoS"/>
+                            <constraint firstItem="dhF-Xj-Sww" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" id="zLy-3B-Geo"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="bottomPanelButton" destination="rCv-zP-pvR" id="e8v-bc-OUQ"/>
+                        <outlet property="centerGuidesButton" destination="YXV-cs-0aX" id="4p1-FH-4S6"/>
+                        <outlet property="gridEnablingButton" destination="gs5-Lg-0dp" id="Vw1-YH-yQT"/>
+                        <outlet property="leftPanelButton" destination="YKC-ME-Qyd" id="hI0-EH-1vJ"/>
+                        <outlet property="leftPanelButton1" destination="o09-nO-Y3u" id="aED-C6-lcP"/>
+                        <outlet property="leftPanelButton2" destination="3dS-Vy-4EL" id="7x7-fk-B9w"/>
+                        <outlet property="leftPanelButton3" destination="QdA-oi-ak1" id="YoU-4e-JKP"/>
+                        <outlet property="leftPanelButton4" destination="SfD-7v-0pa" id="hfm-pc-ZFQ"/>
+                        <outlet property="leftPanelTitle" destination="Wqk-yx-bbw" id="LDU-q4-DWP"/>
+                        <outlet property="rightPanelButton" destination="i3W-SI-Cvm" id="0BJ-ck-cz2"/>
+                        <outlet property="rightPanelButton1" destination="IHS-CE-qkj" id="yhq-Ly-HaA"/>
+                        <outlet property="rightPanelButton2" destination="cdM-xR-6XQ" id="XjO-tG-fgu"/>
+                        <outlet property="rightPanelButton3" destination="Vpt-hA-PVv" id="0z1-zP-lue"/>
+                        <outlet property="rightPanelButton4" destination="gTc-gc-UYw" id="2fv-dG-8pa"/>
+                        <outlet property="rightPanelButton5" destination="IEg-5d-Ltw" id="5hM-2Q-mJc"/>
+                        <outlet property="rightPanelButton6" destination="jdO-hB-fKL" id="0Lj-AQ-uwd"/>
+                        <outlet property="segmentedControl" destination="qUR-Q1-SN1" id="FFh-qh-omX"/>
+                        <outlet property="topAreaButton" destination="Veh-dN-QRe" id="GrL-s4-D5E"/>
+                        <outlet property="topBarModeSegmentedControl" destination="DRn-ZL-sOi" id="e1O-Pv-gbf"/>
+                        <outletCollection property="gridControls" destination="jLQ-kw-NcS" collectionClass="NSMutableArray" id="ufE-6C-o91"/>
+                        <outletCollection property="gridControls" destination="pbg-EP-S07" collectionClass="NSMutableArray" id="lDq-HF-6Z7"/>
+                        <outletCollection property="gridControls" destination="rCv-zP-pvR" collectionClass="NSMutableArray" id="KHz-Wm-zTe"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="138.61607142857142" y="124.6376811594203"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="ic_back" width="21" height="21"/>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

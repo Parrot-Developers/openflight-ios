@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -50,8 +49,7 @@ final class FlightTagHeaderView: UIView, NibOwnerLoadable {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-
-        label.makeUp(with: .small)
+        label.makeUp(with: .caps, color: .white)
     }
 
     override var intrinsicContentSize: CGSize {

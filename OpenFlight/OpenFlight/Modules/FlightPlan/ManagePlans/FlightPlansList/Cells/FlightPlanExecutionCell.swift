@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,13 +31,20 @@ import UIKit
 import Reusable
 import Combine
 
-final class FlightPlanExecutionCell: UITableViewCell, NibReusable {
+final class FlightPlanExecutionCell: MainTableViewCell, NibReusable {
+    @IBOutlet private weak var cellBackgroundView: UIView!
+    @IBOutlet private weak var topConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var bottomConstraint: NSLayoutConstraint!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var statusLabel: UILabel!
     @IBOutlet private weak var disclosureIndicator: UIImageView!
     @IBOutlet private weak var extraIcon: UIImageView!
 
     private var cancellables = Set<AnyCancellable>()
+
+    private enum Constants {
+        static let selectedBackgroundAlpha: CGFloat = 0.2
+    }
 
     override var isHighlighted: Bool {
         didSet {
@@ -47,18 +53,36 @@ final class FlightPlanExecutionCell: UITableViewCell, NibReusable {
         }
     }
 
+    // Configure selection style
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+        let color: UIColor
+        if selected {
+            color = ColorName.highlightColor.color.withAlphaComponent(Constants.selectedBackgroundAlpha)
+        } else {
+            color = ColorName.white.color
+        }
+        cellBackgroundView.backgroundColor = color
+    }
+
     override func awakeFromNib() {
         super.awakeFromNib()
 
+        contentView.backgroundColor = .clear
+        cellBackgroundView.backgroundColor = ColorName.white.color
+
         titleLabel.makeUp(with: .large, and: .defaultTextColor)
         statusLabel.makeUp(with: .small, and: .highlightColor)
-        disclosureIndicator.image = Asset.Common.Icons.icGreyChevron.image
-        disclosureIndicator.tintColor = ColorName.defaultIconColor.color
+        disclosureIndicator.tintColor = ColorName.greySilver.color
+
+        // Disable the default selection style
+        selectionStyle = .none
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
         cancellables.forEach { $0.cancel() }
+        cancellables.removeAll()
         extraIcon.isHidden = true
     }
 

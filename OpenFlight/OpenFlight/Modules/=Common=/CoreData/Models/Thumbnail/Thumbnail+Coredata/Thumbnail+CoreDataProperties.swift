@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -42,43 +42,19 @@ extension Thumbnail {
     @NSManaged public var uuid: String!
     @NSManaged public var thumbnailData: Data?
     @NSManaged public var lastUpdate: Date?
-    @NSManaged public var parrotCloudId: Int64
+    @NSManaged public var cloudId: Int64
     @NSManaged public var fileSynchroDate: Date?
     @NSManaged public var synchroStatus: Int16
-    @NSManaged public var synchroDate: Date?
+    @NSManaged public var latestSynchroStatusDate: Date?
     @NSManaged public var fileSynchroStatus: Int16
-    @NSManaged public var cloudLastUpdate: Date?
-    @NSManaged public var parrotCloudToBeDeleted: Bool
+    @NSManaged public var latestCloudModificationDate: Date?
+    @NSManaged public var isLocalDeleted: Bool
+    @NSManaged public var latestLocalModificationDate: Date?
+    @NSManaged public var synchroError: Int16
 
     // MARK: - Relationship
 
     @NSManaged public var ofUserParrot: UserParrot?
     @NSManaged public var ofFlightPlan: FlightPlan?
     @NSManaged public var ofFlight: Flight?
-}
-
-// MARK: - Utils
-extension Thumbnail {
-
-    /// Return ThumbnailModel from Thumbnail type of NSManagedObject
-    func model() -> ThumbnailModel {
-
-        /// Load UIImage from Data if exist
-        var thumbnailImage: UIImage?
-        if let thumbnailData = thumbnailData {
-            thumbnailImage = UIImage(data: thumbnailData)
-        }
-        return ThumbnailModel(apcId: apcId,
-                              uuid: uuid,
-                              thumbnailImage: thumbnailImage,
-                              lastUpdate: lastUpdate,
-                              synchroStatus: synchroStatus,
-                              fileSynchroStatus: fileSynchroStatus,
-                              fileSynchroDate: fileSynchroDate,
-                              cloudLastUpdate: cloudLastUpdate,
-                              synchroDate: synchroDate,
-                              parrotCloudId: parrotCloudId,
-                              parrotCloudToBeDeleted: parrotCloudToBeDeleted,
-                              flightUuid: ofFlight?.uuid)
-    }
 }

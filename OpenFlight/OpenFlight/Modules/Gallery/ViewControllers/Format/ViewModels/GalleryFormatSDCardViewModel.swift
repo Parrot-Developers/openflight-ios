@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -139,5 +138,6 @@ extension GalleryFormatSDCardViewModel {
     /// Called when format process is completed.
     func formatCompleted() {
         galleryViewModel?.sdCardViewModel?.formatCompleted()
+        galleryViewModel?.sdCardViewModel?.refreshMedias()
     }
 }

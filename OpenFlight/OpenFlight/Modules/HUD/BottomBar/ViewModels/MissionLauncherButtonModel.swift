@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -50,14 +49,27 @@ class MissionLauncherButtonModel {
     @Published private(set) var selected = false
     /// The mission's image
     @Published private(set) var image: UIImage!
+    /// Is the mission launcher button enabled
+    @Published private(set) var isEnabled = true
+    /// Is the mission launcher button hidden
+    @Published private(set) var isHidden = false
 
     /// Init
-    /// - Parameter currentMissionManager: the current mission manager
-    init(currentMissionManager: CurrentMissionManager) {
+    /// - Parameters:
+    ///   - currentMissionManager: the current mission manager
+    ///   - navigationStackService: Navigation stack service needed to handle the button state according current stack.
+    init(currentMissionManager: CurrentMissionManager,
+         navigationStackService: NavigationStackService) {
         currentMissionManager.modePublisher.sink { [unowned self] mode in
             image = mode.icon
         }
         .store(in: &cancellables)
+        // Hide mission button when we coming from another view than Dashboard
+        navigationStackService.stackPublisher
+            .sink { [unowned self] in
+                isHidden = $0.count > 1
+            }
+            .store(in: &cancellables)
     }
 }
 

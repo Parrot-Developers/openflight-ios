@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +33,7 @@ import CoreData
 extension Flight {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<Flight> {
-        return NSFetchRequest<Flight>(entityName: "Flight")
+        return NSFetchRequest<Flight>(entityName: Self.entityName)
     }
 
     // MARK: - Properties
@@ -51,16 +51,18 @@ extension Flight {
     @NSManaged public var startLatitude: Double
     @NSManaged public var startLongitude: Double
     @NSManaged public var startTime: Date?
-    @NSManaged public var parrotCloudId: Int64
-    @NSManaged public var parrotCloudToBeDeleted: Bool
+    @NSManaged public var cloudId: Int64
+    @NSManaged public var isLocalDeleted: Bool
     @NSManaged public var parrotCloudUploadUrl: String?
-    @NSManaged public var synchroDate: Date?
+    @NSManaged public var latestSynchroStatusDate: Date?
     @NSManaged public var synchroStatus: Int16
     @NSManaged public var fileSynchroStatus: Int16
     @NSManaged public var fileSynchroDate: Date?
-    @NSManaged public var cloudLastUpdate: Date?
+    @NSManaged public var latestCloudModificationDate: Date?
     @NSManaged public var externalSynchroStatus: Int16
     @NSManaged public var externalSynchroDate: Date?
+    @NSManaged public var latestLocalModificationDate: Date?
+    @NSManaged public var synchroError: Int16
 
     // MARK: - Relationship
 
@@ -85,35 +87,4 @@ extension Flight {
     @objc(removeFlightPlanFlights:)
     @NSManaged public func removeFromFlightPlanFlights(_ values: NSSet)
 
-}
-
-// MARK: - Utils
-extension Flight {
-
-    /// Return FlightModel from Flight type of NSManagedObject
-    func model() -> FlightModel {
-        return FlightModel(apcId: apcId,
-                           title: title,
-                           uuid: uuid,
-                           version: version,
-                           photoCount: photoCount,
-                           videoCount: videoCount,
-                           startLatitude: startLatitude,
-                           startLongitude: startLongitude,
-                           startTime: startTime,
-                           batteryConsumption: batteryConsumption,
-                           distance: distance,
-                           duration: duration,
-                           gutmaFile: String(decoding: gutmaFile, as: UTF8.self),
-                           parrotCloudId: parrotCloudId,
-                           parrotCloudToBeDeleted: parrotCloudToBeDeleted,
-                           parrotCloudUploadUrl: parrotCloudUploadUrl,
-                           synchroDate: synchroDate,
-                           synchroStatus: synchroStatus,
-                           cloudLastUpdate: cloudLastUpdate,
-                           fileSynchroStatus: fileSynchroStatus,
-                           fileSynchroDate: fileSynchroDate,
-                           externalSynchroStatus: externalSynchroStatus,
-                           externalSynchroDate: externalSynchroDate)
-    }
 }

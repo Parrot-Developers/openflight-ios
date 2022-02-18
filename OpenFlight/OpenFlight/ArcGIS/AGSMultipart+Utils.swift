@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,21 +38,16 @@ extension AGSGeometry {
     ///
     /// - Returns: AGSEnvelope.
     func envelopeWithMargin(_ marginFactor: Double = ArcGISStyle.envelopMarginFactor) -> AGSEnvelope {
-        let geodeticLength = AGSGeometryEngine.geodeticLength(of: self,
-                                                              lengthUnit: .meters(),
-                                                              curveType: .geodesic)
-        // Prevent from short flights display issue.
-        guard geodeticLength > ArcGISStyle.minimumFlightLineLength else {
-            // Provide minimum envolope size to prevent from display issue.
-            return AGSEnvelope(center: extent.center,
-                               width: ArcGISStyle.defaultEnvelopWidth,
-                               height: ArcGISStyle.defaultEnvelopWidth)
-        }
-        let envelopeBuilder = AGSEnvelopeBuilder(spatialReference: .wgs84())
-        envelopeBuilder.union(with: extent)
+        let envelopeBuilder = AGSEnvelopeBuilder(envelope: extent)
         envelopeBuilder.expand(byFactor: marginFactor)
-
-        return envelopeBuilder.extent
+        var envelope = envelopeBuilder.extent
+        if envelope.width < ArcGISStyle.minEnvelopeWidth || envelope.height < ArcGISStyle.minEnvelopeWidth {
+            // minimal envelope, workaround for display issue with small flights
+            envelope = AGSEnvelope(center: envelope.center,
+                                   width: ArcGISStyle.minEnvelopeWidth,
+                                   height: ArcGISStyle.minEnvelopeWidth)
+        }
+        return envelope
     }
 
     /// Makes polygon from geometry with margins in meter.

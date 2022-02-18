@@ -223,7 +223,7 @@ message DroneMetadata {
 	 * axis is guaranteed to point down.
 	 * The position is initialized at first take off. This position is
 	 * guaranteed not to jump, even when a new absolute position (usually
-	 * GPS) is avaiable. Instead, the origin of the local frame jumps in
+	 * GPS) is available. Instead, the origin of the local frame jumps in
 	 * order to ensure the continuity of the local position.
 	 */
 	Vector3 local_position = 10;
@@ -254,6 +254,18 @@ message CameraMetadata {
 
 	/* Frame view quaternion */
 	Quaternion quat = 3;
+
+	/* Estimated position of the camera in the local frame (m).
+	 * The local frame is not NED: X and Y axis are arbitrary, but the Z
+	 * axis is guaranteed to point down.
+	 * The position is initialized at first take off. This position is
+	 * guaranteed not to jump, even when a new absolute position (usually
+	 * GPS) is available. Instead, the origin of the local frame jumps in
+	 * order to ensure the continuity of the local position.
+	 * This position is not available on all cameras. If not available,
+	 * the Drone.local_position metadata should be used instead.
+	 */
+	Vector3 local_position = 12;
 
 	/* Frame exposure time (ms) */
 	float exposure_time = 4;

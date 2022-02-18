@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,6 +38,7 @@ open class EditableState: GKState {
 
     private weak var delegate: EditableStateDelegate?
     private let flightPlanManager: FlightPlanManager
+    private let projectManager: ProjectManager
     private let startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher
     private let edition: FlightPlanEditionService
     private var cancellables = Set<AnyCancellable>()
@@ -47,11 +47,13 @@ open class EditableState: GKState {
 
     required public init(delegate: EditableStateDelegate,
                          flightPlanManager: FlightPlanManager,
+                         projectManager: ProjectManager,
                          startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher,
                          edition: FlightPlanEditionService) {
         self.delegate = delegate
         self.flightPlanManager = flightPlanManager
         self.startAvailabilityWatcher = startAvailabilityWatcher
+        self.projectManager = projectManager
         self.edition = edition
         super.init()
     }
@@ -82,7 +84,9 @@ open class EditableState: GKState {
         }
 
         // duplicate the flightplan to edit it
-        flightPlan = flightPlanManager.duplicate(flightPlan: flightPlan)
+        flightPlan = flightPlanManager.newFlightPlan(basedOn: flightPlan, save: true)
+        // Reset, if needed, the customTitle to the project title.
+        flightPlan = projectManager.resetExecutionCustomTitle(for: flightPlan)
     }
 
     open func flightPlanWasUpdated(_ flightPlan: FlightPlanModel) {
@@ -92,6 +96,7 @@ open class EditableState: GKState {
 
     public override func isValidNextState(_ stateClass: AnyClass) -> Bool {
         return stateClass is StartedNotFlyingState.Type
+            || stateClass is IdleState.Type
     }
 
     public override func willExit(to nextState: GKState) {

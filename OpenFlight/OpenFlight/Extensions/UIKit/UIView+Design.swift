@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -109,11 +109,16 @@ public extension UIView {
     /// Applies corner radius so the view's corners are custom defined, with custom background and border.
     ///
     /// - Parameters:
-    ///     - corners: The corners to modify
-    ///     - radius: The radius to apply
-    ///     - backgroundColor: The background color
-    ///     - borderColor: The border color
-    func customCornered(corners: UIRectCorner, radius: CGFloat, backgroundColor: UIColor, borderColor: UIColor, borderWidth: CGFloat = 1.0) {
+    ///     - corners: The corners to modify.
+    ///     - radius: The radius to apply.
+    ///     - backgroundColor: The background color.
+    ///     - borderColor: The border color.
+    ///     - borderWidth: The border width.
+    func customCornered(corners: UIRectCorner,
+                        radius: CGFloat,
+                        backgroundColor: UIColor,
+                        borderColor: UIColor,
+                        borderWidth: CGFloat = Style.mediumBorderWidth) {
         self.backgroundColor = backgroundColor
         self.setBorder(borderColor: borderColor, borderWidth: borderWidth)
         customCornered(corners: corners, radius: radius)
@@ -134,14 +139,6 @@ public extension UIView {
         layer.cornerRadius = toValue
     }
 
-    /// Apply shadow to view.
-    func addShadow(shadowColor: UIColor = .black) {
-        self.layer.shadowColor = shadowColor.cgColor
-        self.layer.shadowOffset = CGSize(width: 0, height: 1)
-        self.layer.shadowOpacity = 1
-        self.layer.shadowRadius = 2.0
-    }
-
     /// Applies a shadow to the view. Allows full parameters customization.
     ///
     /// - Parameters:
@@ -150,10 +147,10 @@ public extension UIView {
     ///    - shadowOpacity: The opacity of the shadow.
     ///    - shadowRadius: The radius of the shadow.
     ///    - condition: Apply shadow only if `condition` is `true`.
-    func addShadow(shadowColor: UIColor = .systemGray,
-                   shadowOffset: CGSize = .init(width: 0, height: 2),
-                   shadowOpacity: Float = 0.5,
-                   shadowRadius: CGFloat = 3.0,
+    func addShadow(shadowColor: UIColor = ColorName.shadowColor.color,
+                   shadowOffset: CGSize = Style.shadowOffset,
+                   shadowOpacity: Float = Style.shadowOpacity,
+                   shadowRadius: CGFloat = Style.shadowRadius,
                    condition: Bool = true) {
         guard condition else {
             layer.shadowColor = UIColor.clear.cgColor
@@ -205,22 +202,20 @@ public extension UIView {
     ///
     /// - Parameters:
     ///    - isEnabled: boolean describing enabled state
-    func alphaWithEnabledState(_ isEnabled: Bool) {
-        self.alpha = isEnabled ? 1.0 : 0.5
+    ///    - withAlpha: View's opacity value when enabled (1 by default).
+    func alphaWithEnabledState(_ isEnabled: Bool, withAlpha alpha: CGFloat = 1) {
+        self.alpha = isEnabled ? alpha : Style.disabledAlpha
     }
 
     /// Hides/shows the view using alpha and removes user interaction.
     ///
     /// - Parameters:
     ///    - isHidden: whether view should be hidden (default: true)
-    func alphaHidden(_ isHidden: Bool = true) {
-        self.alpha = isHidden ? 0.0 : 1.0
+    ///    - withAlpha: View's opacity value when visible (1 by default).
+    func alphaHidden(_ isHidden: Bool = true, withAlpha alpha: CGFloat = 1) {
+        self.alpha = isHidden ? 0.0 : alpha
         self.isUserInteractionEnabled = !isHidden
     }
-}
-
-/// Custom class used to identify custom layers created by customCornered that needs to be removed.
-class CustomShapeLayer: CAShapeLayer {
 }
 
 /// Custom class used to identify custom layers created by `addGradient` that needs to be removed.

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -60,8 +59,8 @@ public class MavlinkDroneSenderImpl {
 
     public func cleanup() {
         waitUploadTimer?.invalidate()
-        self.waitUploadTimer = nil
-        self.uploadCompletion = nil
+        waitUploadTimer = nil
+        uploadCompletion = nil
     }
 }
 
@@ -71,10 +70,13 @@ extension MavlinkDroneSenderImpl: MavlinkDroneSender {
             completion(.failure(.noPilotingItf))
             return
         }
-        self.uploadCompletion = completion
-        self.waitUploadTimer = Timer.scheduledTimer(withTimeInterval: Constants.maxUploadWaitingTime, repeats: false) { _ in
-            completion(.failure(.uploadTimeout))
+        uploadCompletion = completion
+        waitUploadTimer = Timer.scheduledTimer(withTimeInterval: Constants.maxUploadWaitingTime, repeats: false) { [unowned self] _ in
+            guard let uploadCompletion = uploadCompletion else { return }
+            pilotingItf.cancelPendingUpload()
+            uploadCompletion(.failure(.uploadTimeout))
         }
+        waitUploadTimer?.tolerance = FlightPlanConstants.timerTolerance
         pilotingItf.uploadFlightPlan(filepath: path, customFlightPlanId: customFlightPlanId)
     }
 }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina6_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -22,75 +22,49 @@
                 <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bVM-6r-b4d">
-                        <rect key="frame" x="6" y="78" width="98" height="22"/>
-                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                        <color key="textColor" name="default_text_color"/>
-                        <nil key="highlightedColor"/>
-                    </label>
-                    <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="u4Y-wo-ZTw">
-                        <rect key="frame" x="0.0" y="95" width="110" height="15"/>
-                        <constraints>
-                            <constraint firstAttribute="height" constant="15" id="1Fp-nU-Ugh"/>
-                        </constraints>
-                        <color key="pageIndicatorTintColor" name="default_text_color"/>
-                        <color key="currentPageIndicatorTintColor" name="highlight_color"/>
-                    </pageControl>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wUH-HP-yng">
-                        <rect key="frame" x="10" y="10" width="90" height="68"/>
+                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="MjR-lv-HBV">
+                        <rect key="frame" x="30" y="15" width="50" height="80"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconAvoidanceInactive" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AaL-Pk-LAS">
-                                <rect key="frame" x="24.333333333333332" y="13.333333333333332" width="41.333333333333343" height="41.333333333333343"/>
-                                <color key="tintColor" name="default_text_color"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="AaL-Pk-LAS" secondAttribute="height" multiplier="1:1" id="25b-J5-Vo3"/>
-                                    <constraint firstAttribute="height" constant="23" id="ukk-Gy-pYu">
-                                        <variation key="heightClass=regular-widthClass=regular" constant="45"/>
-                                    </constraint>
-                                </constraints>
-                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="30" scale="default"/>
-                                <variation key="default">
-                                    <mask key="constraints">
-                                        <exclude reference="ukk-Gy-pYu"/>
-                                    </mask>
-                                </variation>
-                                <variation key="heightClass=regular-widthClass=regular">
-                                    <mask key="constraints">
-                                        <include reference="ukk-Gy-pYu"/>
-                                    </mask>
-                                </variation>
-                            </imageView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="dt3-h6-jW9">
+                                <rect key="frame" x="0.0" y="0.0" width="50" height="80"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconAvoidanceInactive" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AaL-Pk-LAS">
+                                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                        <color key="tintColor" name="default_text_color"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="5Xu-d7-WQ5"/>
+                                            <constraint firstAttribute="width" secondItem="AaL-Pk-LAS" secondAttribute="height" multiplier="1:1" id="oXB-v2-JXC"/>
+                                        </constraints>
+                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="30" scale="default"/>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bVM-6r-b4d">
+                                        <rect key="frame" x="10.666666666666664" y="50" width="29" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="Zj4-7H-aVQ"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                        <color key="textColor" name="default_text_color"/>
+                                        <nil key="highlightedColor"/>
+                                        <variation key="heightClass=regular-widthClass=regular">
+                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                        </variation>
+                                    </label>
+                                </subviews>
+                            </stackView>
                         </subviews>
-                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <constraints>
-                            <constraint firstItem="AaL-Pk-LAS" firstAttribute="centerY" secondItem="wUH-HP-yng" secondAttribute="centerY" id="AI8-yF-Byh"/>
-                            <constraint firstItem="AaL-Pk-LAS" firstAttribute="centerX" secondItem="wUH-HP-yng" secondAttribute="centerX" id="Bbe-0Q-Fgc"/>
-                            <constraint firstItem="AaL-Pk-LAS" firstAttribute="width" secondItem="wUH-HP-yng" secondAttribute="width" multiplier="0.45" constant="1" id="gUA-Jr-SFF"/>
-                        </constraints>
-                    </view>
+                    </stackView>
                 </subviews>
             </view>
             <color key="backgroundColor" name="white_albescent"/>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="u4Y-wo-ZTw" secondAttribute="trailing" id="3PU-sg-6et"/>
-                <constraint firstItem="bVM-6r-b4d" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="6" id="9MG-f0-PCQ"/>
-                <constraint firstAttribute="trailing" secondItem="bVM-6r-b4d" secondAttribute="trailing" constant="6" id="Cyj-IM-Tah"/>
-                <constraint firstItem="bVM-6r-b4d" firstAttribute="height" relation="greaterThanOrEqual" secondItem="gTV-IL-0wX" secondAttribute="height" multiplier="0.2" id="EUj-SJ-vjx"/>
-                <constraint firstAttribute="bottom" secondItem="u4Y-wo-ZTw" secondAttribute="bottom" id="F5a-Pd-GcE"/>
-                <constraint firstAttribute="trailing" secondItem="wUH-HP-yng" secondAttribute="trailing" constant="10" id="Im3-Ji-ni5"/>
-                <constraint firstAttribute="bottom" secondItem="bVM-6r-b4d" secondAttribute="bottom" constant="10" id="MMw-2W-PPO"/>
-                <constraint firstItem="u4Y-wo-ZTw" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="ctw-0w-YuW"/>
-                <constraint firstItem="wUH-HP-yng" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="10" id="i3L-ZY-naU"/>
-                <constraint firstItem="wUH-HP-yng" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" constant="10" id="pJN-0W-9o1"/>
-                <constraint firstItem="bVM-6r-b4d" firstAttribute="top" secondItem="wUH-HP-yng" secondAttribute="bottom" id="tgr-s5-iJc"/>
+                <constraint firstItem="MjR-lv-HBV" firstAttribute="centerX" secondItem="gTV-IL-0wX" secondAttribute="centerX" id="9CB-tV-nTX"/>
+                <constraint firstItem="MjR-lv-HBV" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="9Qd-0C-Mll"/>
+                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="MjR-lv-HBV" secondAttribute="trailing" id="Cjw-sJ-PkN"/>
+                <constraint firstItem="MjR-lv-HBV" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="gTV-IL-0wX" secondAttribute="leading" id="FgQ-RD-zfh"/>
+                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="MjR-lv-HBV" secondAttribute="bottom" id="nfY-En-Txc"/>
+                <constraint firstItem="MjR-lv-HBV" firstAttribute="top" relation="greaterThanOrEqual" secondItem="gTV-IL-0wX" secondAttribute="top" id="pfH-Vh-K05"/>
             </constraints>
-            <variation key="default">
-                <mask key="subviews">
-                    <exclude reference="u4Y-wo-ZTw"/>
-                </mask>
-            </variation>
             <connections>
-                <outlet property="pageControl" destination="u4Y-wo-ZTw" id="Svr-aS-DAz"/>
                 <outlet property="settingImage" destination="AaL-Pk-LAS" id="9pB-Ts-gHQ"/>
                 <outlet property="settingTitle" destination="bVM-6r-b4d" id="NVm-H3-bjq"/>
             </connections>
@@ -98,12 +72,9 @@
         </collectionViewCell>
     </objects>
     <resources>
-        <image name="iconAvoidanceInactive" width="34" height="34"/>
+        <image name="iconAvoidanceInactive" width="50" height="50"/>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="highlight_color">
-            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="white_albescent">
             <color red="0.87450980392156863" green="0.84705882352941175" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

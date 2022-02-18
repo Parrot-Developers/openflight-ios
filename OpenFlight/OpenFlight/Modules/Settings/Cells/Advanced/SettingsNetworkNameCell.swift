@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,31 +37,12 @@ protocol SettingsNetworkNameDelegate: AnyObject {
 }
 
 /// Settings network name cell. Used to choose a Wifi network.
-final class SettingsNetworkNameCell: UITableViewCell, NibReusable {
+final class SettingsNetworkNameCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
-    @IBOutlet private weak var bgView: UIView! {
-        didSet {
-            bgView.applyCornerRadius(Style.largeCornerRadius)
-        }
-    }
-    @IBOutlet private weak var cellTitle: UILabel! {
-        didSet {
-            cellTitle.text = L10n.settingsConnectionNetworkName
-        }
-    }
+    @IBOutlet private weak var bgView: UIView!
+    @IBOutlet private weak var cellTitle: UILabel!
     @IBOutlet private weak var textfield: UITextField!
-    @IBOutlet private weak var passwordButton: UIButton! {
-        didSet {
-            passwordButton.makeup(with: .small, color: .defaultTextColor)
-            passwordButton.makeup(with: .small, color: .defaultTextColor80, and: .disabled)
-            passwordButton.setTitle(L10n.commonPassword.uppercased(), for: .normal)
-            passwordButton.cornerRadiusedWith(backgroundColor: .white,
-                                              borderColor: ColorName.defaultBgcolor.color,
-                                              radius: Style.mediumCornerRadius,
-                                              borderWidth: Style.mediumBorderWidth)
-            passwordButton.addShadow(shadowColor: ColorName.whiteAlbescent.color)
-        }
-    }
+    @IBOutlet private weak var passwordButton: ActionButton!
 
     // MARK: - Internal Properties
     weak var delegate: SettingsNetworkNameDelegate?
@@ -75,7 +55,7 @@ final class SettingsNetworkNameCell: UITableViewCell, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        self.textfield.delegate = self
+        initView()
     }
 
     // MARK: - Internal Funcs
@@ -87,8 +67,8 @@ final class SettingsNetworkNameCell: UITableViewCell, NibReusable {
     func configureCell(viewModel: SettingsNetworkViewModel, showInfo: (() -> Void)? = nil) {
         self.showInfo = showInfo
         self.viewModel = viewModel
-        self.textfield.text = viewModel.state.value.ssidName
-        self.enableCell(viewModel.state.value.isEnabled)
+        textfield.text = viewModel.state.value.ssidName
+        enableCell(viewModel.state.value.ssidNameIsEnabled)
     }
 }
 
@@ -96,25 +76,31 @@ final class SettingsNetworkNameCell: UITableViewCell, NibReusable {
 private extension SettingsNetworkNameCell {
     /// Password button touched.
     @IBAction func passwordTouchedUpInside(sender: AnyObject) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyAdvancedSettings.networkPassword,
-                             newValue: nil,
-                             logType: .button)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyAdvancedSettings.networkPassword))
         showInfo?()
     }
 }
 
 // MARK: - Private Funcs
 private extension SettingsNetworkNameCell {
+
+    /// Inits view.
+    func initView() {
+        textfield.delegate = self
+        bgView.applyCornerRadius(Style.largeCornerRadius)
+        cellTitle.text = L10n.settingsConnectionNetworkName
+        passwordButton.setup(title: L10n.commonPassword.uppercased(), style: ActionButtonStyle.default1)
+    }
+
     /// Enable cell.
     ///
     /// - Parameters:
-    ///     - isEnable: tells if we need to enable the cell
-    func enableCell(_ isEnable: Bool) {
-        isUserInteractionEnabled = isEnable
-        textfield.isEnabled = isEnable
-        passwordButton.isEnabled = isEnable
-        textfield.alphaWithEnabledState(isEnable)
-        passwordButton.alphaWithEnabledState(isEnable)
+    ///     - isEnabled: tells if we need to enable the cell
+    func enableCell(_ isEnabled: Bool) {
+        isUserInteractionEnabled = isEnabled
+        cellTitle.isEnabled = isEnabled
+        textfield.alphaWithEnabledState(isEnabled)
+        passwordButton.isEnabled = isEnabled
     }
 }
 

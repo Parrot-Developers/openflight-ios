@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,7 +33,11 @@ import UIKit
 
 final class MissionControls: NSObject {
     // MARK: - Outlets
-    @IBOutlet private weak var missionLauncherView: UIView!
+    @IBOutlet private weak var missionLauncherView: UIView! {
+        didSet {
+            missionLauncherView.backgroundColor = .clear
+        }
+    }
 
     // MARK: - Private Properties
     private var missionLauncherDisplayed: Bool = false {
@@ -49,28 +52,19 @@ final class MissionControls: NSObject {
         }
     }
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let animationDuration: TimeInterval = 0.2
-    }
-
     // MARK: - Internal Funcs
     /// Show mission launcher view controller with given viewModel.
     func showMissionLauncher(completion: ((Bool) -> Void)? = nil) {
         missionLauncherDisplayed = true
         guard missionLauncherView.isHidden == true else { return }
-        UIView.animate(withDuration: Constants.animationDuration, animations: {
-            self.missionLauncherView.isHidden = false
-        }, completion: completion)
+        missionLauncherView.animateIsHiddenInStackView(false, withAlpha: nil, duration: Style.fastAnimationDuration, completion: completion)
     }
 
     /// Hides mission launcher view controller.
     func hideMissionLauncher() {
         guard missionLauncherView.isHidden == false else { return }
-        UIView.animate(withDuration: Constants.animationDuration, animations: {
-            self.missionLauncherView.isHidden = true
-        }, completion: { _ in
+        missionLauncherView.animateIsHiddenInStackView(true, withAlpha: nil, duration: Style.fastAnimationDuration) { _ in
             self.missionLauncherDisplayed = false
-        })
+        }
     }
 }

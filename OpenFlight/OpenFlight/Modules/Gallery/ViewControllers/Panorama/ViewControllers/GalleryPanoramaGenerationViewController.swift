@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -115,6 +114,7 @@ private extension GalleryPanoramaGenerationViewController {
 
         mediaTitleView.model = currentMedia
         progressLabel.makeUp(with: .huge, and: ColorName.defaultTextColor)
+        progressLabel.font = FontStyle.title.font(isRegularSizeClass, monospacedDigits: true)
         titleLabel.makeUp(with: .large, and: ColorName.defaultTextColor)
         titleLabel.attributedText = currentMedia.titleAttributedString
 
@@ -138,7 +138,10 @@ private extension GalleryPanoramaGenerationViewController {
 private extension GalleryPanoramaGenerationViewController {
     func updateProgressView(_ progress: Float) {
         circleProgressView.setProgress(progress, duration: Style.mediumAnimationDuration)
-        progressLabel.text = String(format: "%d%%", Int((progress) * 100))
+        // Delay progressLabel update in order to sync it with circleProgress animation end.
+        DispatchQueue.main.asyncAfter(deadline: .now() + Style.mediumAnimationDuration) {
+            self.progressLabel.text = String(format: "%d%%", Int((progress) * 100))
+        }
     }
 
     func updateSteps(_ models: [GalleryPanoramaStepModel]) {

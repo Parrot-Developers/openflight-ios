@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,15 +32,15 @@ public final class RemoteCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
 
     // MARK: - Public Funcs
     public func start() {
         let viewController = RemoteDetailsViewController.instantiate(coordinator: self)
         // Prevents not fullscreen presentation style since iOS 13.
-        self.navigationController = NavigationController(rootViewController: viewController)
-        self.navigationController?.isNavigationBarHidden = true
-        self.navigationController?.modalPresentationStyle = .fullScreen
+        navigationController = NavigationController(rootViewController: viewController)
+        navigationController?.isNavigationBarHidden = true
+        navigationController?.modalPresentationStyle = .fullScreen
     }
 }
 
@@ -51,21 +50,21 @@ extension RemoteCoordinator {
     func startDronesList() {
         let pairingCoordinator = PairingCoordinator(delegate: self)
         pairingCoordinator.parentCoordinator = self
-        pairingCoordinator.navigationController = self.navigationController
-        self.childCoordinators.append(pairingCoordinator)
+        pairingCoordinator.navigationController = navigationController
+        childCoordinators.append(pairingCoordinator)
         pairingCoordinator.startRemoteConnectDrone()
     }
 
     /// Starts calibration screen.
     func startCalibration() {
         let viewController = RemoteCalibrationViewController.instantiate(coordinator: self)
-        self.push(viewController)
+        push(viewController)
     }
 
     /// Starts update coordinator.
     func startUpdate() {
         let viewController = RemoteUpdateViewController.instantiate(coordinator: self)
-        self.push(viewController)
+        push(viewController)
     }
 }
 

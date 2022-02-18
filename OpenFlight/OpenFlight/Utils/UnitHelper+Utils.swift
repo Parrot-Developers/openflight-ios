@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -51,7 +51,6 @@ public final class UnitHelper: NSObject {
     private enum Constants {
         // Basic conversion factors.
         static let meterToFeet: Double = 3.2808399
-        static let meterToMile: Double = 0.000621371192
         static let mileToFeet: Double = 5280.0
         static let kilometerToMeter: Double = 1000.0
 
@@ -177,8 +176,12 @@ public final class UnitHelper: NSObject {
     /// - Parameters:
     ///    - distance: distance in meter (Double)
     ///    - spacing: boolean to add or remove spacing between value and unit
+    ///    - useFractionDigit: `true` to allow 1 fraction digit, `false` to disable fraction digit,
+    ///    `nil` to automatically enable or disable fraction digit
     /// - Returns: a string containing the value and the unit, seperated by a whitespace
-    public static func stringDistanceWithDouble(_ distance: Double, spacing: Bool = true) -> String {
+    public static func stringDistanceWithDouble(_ distance: Double,
+                                                spacing: Bool = true,
+                                                useFractionDigit: Bool? = nil) -> String {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .decimal
         switch unitSetting {
@@ -189,7 +192,7 @@ public final class UnitHelper: NSObject {
         case .imperial:
             numberFormatter.groupingSeparator = Style.comma
         }
-        if DistanceType.type(for: distance).useFractionDigit {
+        if useFractionDigit ?? DistanceType.type(for: distance).useFractionDigit {
             numberFormatter.decimalSeparator = Style.dot
             numberFormatter.maximumFractionDigits = 1
         } else {
@@ -229,33 +232,6 @@ public final class UnitHelper: NSObject {
         return numberFormatter.string(from: NSNumber(value: doubleDistanceWithDouble(distance))) ?? Style.dash
     }
 
-    /// Converts a distance value from meter to current display unit and displays its unit.
-    ///
-    /// - Parameters:
-    ///    - distance: distance in meter
-    /// - Returns: a string containing the value and the unit without whiespace and formatting
-    static func concatenedStringDistanceWithDouble(_ distance: Double) -> String {
-        return String(format: "%0.0f", doubleDistanceWithDouble(distance)) + stringDistanceUnitWithDouble(distance)
-    }
-
-    /// Converts a distance value from meter to current display unit.
-    ///
-    /// - Parameters:
-    ///    - distance: distance in meter (NSNumber)
-    /// - Returns: NSNumber containing the value for current display unit
-    static func numberDistanceWithNumber(_ distance: NSNumber) -> NSNumber {
-        return NSNumber(value: doubleDistanceWithDouble(distance.doubleValue))
-    }
-
-    /// Converts a distance value from meter to current display unit.
-    ///
-    /// - Parameters:
-    ///    - distance: distance in meter (Float)
-    /// - Returns: Float containing the value for current display unit
-    static func floatDistanceWithFloat(_ distance: Float) -> Float {
-        return Float(doubleDistanceWithDouble(Double(distance)))
-    }
-
     /// Converts a distance value from meter to current display unit.
     ///
     /// - Parameters:
@@ -281,61 +257,7 @@ public final class UnitHelper: NSObject {
         return isMetric ? "m": "f"
     }
 
-    /// Converts a distance value from current display unit to meter.
-    ///
-    /// - Parameters:
-    ///    - distance: distance in current display unit (NSNumber)
-    /// - Returns: NSNumber containing the converted value in meter
-    static func numberToMeters(_ distance: NSNumber) -> NSNumber {
-        return NSNumber(value: doubleToMeters(distance.doubleValue))
-    }
-
-    /// Converts a distance value from current display unit to meter.
-    ///
-    /// - Parameters:
-    ///    - distance: distance in current display unit (Float)
-    /// - Returns: Float containing the converted value in meter
-    static func floatToMeters(_ distance: Float) -> Float {
-        return Float(doubleToMeters(Double(distance)))
-    }
-
-    /// Converts a distance value from current display unit to meter.
-    ///
-    /// - Parameters:
-    ///    - distance: distance in current display unit (Double)
-    /// - Returns: Double containing the converted value in meter
-    public static func doubleToMeters(_ distance: Double) -> Double {
-        return isMetric ? distance: distance / Constants.meterToFeet
-    }
-
-    /// Converts a distance value from meter to common display unit (can only pe meter or feet).
-    ///
-    /// - Parameters:
-    ///    - distance: distance in current display unit (NSNumber)
-    /// - Returns: NSNumber containing the converted value in meter
-    static func metersToFloat(_ distance: Float) -> Float {
-        return isMetric ? distance: distance * Float(Constants.meterToFeet)
-    }
-
     // MARK: - Speed Funcs
-    /// Converts a speed value from meter per second to current display unit.
-    ///
-    /// - Parameters:
-    ///    - speed: speed in meter per second (Float)
-    /// - Returns: Float containing the result value
-    static func floatSpeedWithFloat(_ speed: Float) -> Float {
-        return Float(doubleSpeedWithDouble(Double(speed)))
-    }
-
-    /// Converts a speed value from meter per second to current display unit.
-    ///
-    /// - Parameters:
-    ///    - speed: speed in meter per second (NSNumber)
-    /// - Returns: NSNumber containing the result value
-    static func numberSpeedWithNumber(_ speed: NSNumber) -> NSNumber {
-        return NSNumber(value: doubleSpeedWithDouble(speed.doubleValue))
-    }
-
     /// Converts a speed value from meter per second to current display unit.
     ///
     /// - Parameters:
@@ -396,24 +318,6 @@ public final class UnitHelper: NSObject {
     /// - Returns: string containing unit
     public static func stringSpeedUnit() -> String {
         return SpeedType.type().stringUnit
-    }
-
-    /// Converts a speed value from current display unit to meter per second.
-    ///
-    /// - Parameters:
-    ///    - speed: speed in current display unit (Float)
-    /// - Returns: Float containing the converted value in meter per second
-    static func floatToSpeed(_ speed: Float) -> Float {
-        return speed / Float(SpeedType.type().conversionFactor)
-    }
-
-    /// Converts a speed value from meter per second to current display unit.
-    ///
-    /// - Parameters:
-    ///    - speed: speed in meter per second (Float)
-    /// - Returns: Float containing the converted value in current display unit
-    static func speedToFloat(_ speed: Float) -> Float {
-        return Float(doubleSpeedWithDouble(Double(speed)))
     }
 
     /// Creates a string to display a time duration in seconds.

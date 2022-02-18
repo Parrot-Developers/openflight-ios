@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,13 +37,13 @@ public final class FlightPlanOriginGraphic: FlightPlanGraphic {
         static let height: CGFloat = 35
         static let offSetY: CGFloat = 13
         static let borderSize: CGFloat = 5.0
-        static let defaultColor: UIColor = ColorName.greenSpring.color
+        static let defaultColor: UIColor = ColorName.highlightColor.color
         static let selectedColor: UIColor = ColorName.blueDodger.color
     }
 
     // MARK: - Internal Properties
     /// Associated waypoint.
-    private(set) weak var originWayPoint: WayPoint?
+    private(set) var originWayPoint: WayPoint?
     /// Symbol
     private var arrow: AGSPictureMarkerSymbol?
     /// Heading

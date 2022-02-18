@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,7 +35,7 @@ enum RthPreset {
     static let rthType: ReturnHomeTarget = .takeOffPosition
     static let maxAltitude: Double = 150.0
     static let minAltitude: Double = 20.0
-    static let defaultAltitude: Double = 30.0
+    static let defaultAltitude: Double = 60.0
     static let defaultHoveringAltitude: Double = 2.0
     static let defaultEndingBehavior: ReturnHomeEndingBehavior = .hovering
 }

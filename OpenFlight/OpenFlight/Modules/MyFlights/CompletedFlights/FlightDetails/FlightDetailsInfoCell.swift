@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,13 +32,10 @@ import Reusable
 import Combine
 import CoreLocation
 
-final class FlightDetailsInfoCell: UITableViewCell, NibReusable {
+final class FlightDetailsInfoCell: MainTableViewCell, NibReusable {
     @IBOutlet private weak var tagHeaderView: FlightTagHeaderView!
     @IBOutlet private weak var nameLabel: UILabel!
-    @IBOutlet weak var nameStackView: UIStackView!
     @IBOutlet private weak var nameTextField: UITextField!
-    @IBOutlet private weak var editNameButton: UIButton!
-    @IBOutlet private weak var locationView: FlightDetailsIconLabelView!
     @IBOutlet private weak var dateView: FlightDetailsIconLabelView!
     @IBOutlet private weak var summaryView: FlightDetailsSummaryView!
 
@@ -47,7 +43,7 @@ final class FlightDetailsInfoCell: UITableViewCell, NibReusable {
 
     private var isEditingName = false {
         didSet {
-            nameStackView.isHidden = isEditingName
+            nameLabel.isHidden = isEditingName
             nameTextField.isHidden = !isEditingName
             if isEditingName {
                 nameTextField.becomeFirstResponder()
@@ -61,9 +57,14 @@ final class FlightDetailsInfoCell: UITableViewCell, NibReusable {
 
     override func awakeFromNib() {
         super.awakeFromNib()
+        nameLabel.makeUp(with: .title, color: .defaultTextColor)
+        nameTextField.makeUp(style: .title, textColor: .defaultTextColor, bgColor: .defaultBgcolor)
+    }
 
-        dateView.label.makeUp(with: .large, and: .defaultIconColor)
-        locationView.label.makeUp(with: .large, and: .defaultIconColor)
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cancellables.forEach { $0.cancel() }
+        cancellables = []
     }
 }
 
@@ -96,8 +97,8 @@ extension FlightDetailsInfoCell {
     func configure(with provider: FlightPlanExecutionInfoCellProvider) {
         // disable editing
         isEditingName = false
-        editNameButton.isHidden = true
 
+        nameLabel.attributedText = nil
         nameLabel.text = provider.title
         tagHeaderView.text = provider.executionTitle
         tagHeaderView.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
@@ -107,12 +108,8 @@ extension FlightDetailsInfoCell {
         dateView.icon.image = Asset.MyFlights.calendar.image
         dateView.isHidden = provider.date == Date.distantPast
 
-        locationView.label.text = provider.location.coordinatesDescription
-        locationView.icon.image = Asset.MyFlights.poi.image
-
-        /// TODO: TFF7-135 summary
         if !provider.flights.isEmpty {
-            summaryView.fill(provider: FlightSummaryProvider(flights: provider.flights))
+            summaryView.fill(provider: provider.summaryProvider)
         } else {
             summaryView.isHidden = true
         }
@@ -134,10 +131,6 @@ extension FlightDetailsInfoCell {
         dateView.label.text = model.flight.startTime?.formattedString(dateStyle: .medium, timeStyle: .short)
         dateView.icon.image = Asset.MyFlights.calendar.image
 
-        // Location
-        locationView.label.text = model.flight.coordinateDescription
-        locationView.icon.image = Asset.MyFlights.poi.image
-
         // Summary
         summaryView.fill(provider: FlightSummaryProvider(flight: model.flight))
 
@@ -145,6 +138,24 @@ extension FlightDetailsInfoCell {
         listenNameTextFieldSubscribers()
         listenEditNameButtonSubscribers()
         listenFlightName()
+    }
+
+    private var title: String {
+        get {
+            nameLabel.attributedText?.string ?? ""
+        }
+        set {
+            let font = nameLabel.font ?? ParrotFontStyle.huge.font
+            let image = Asset.Common.Icons.iconEdit.image
+            let attachement = NSTextAttachment(image: image)
+            attachement.bounds = CGRect(x: 0,
+                                        y: (font.capHeight - image.size.height).rounded() / 2,
+                                        width: image.size.width,
+                                        height: image.size.height)
+            let text = NSMutableAttributedString(string: newValue + " ")
+            text.append(NSAttributedString(attachment: attachement))
+            nameLabel.attributedText = text
+        }
     }
 }
 
@@ -158,7 +169,7 @@ private extension FlightDetailsInfoCell {
             .sink { [unowned self] in
                 // Exit editing mode
                 isEditingName = false
-                nameLabel.text = nameTextField.text ?? L10n.dashboardMyFlightUnknownLocation
+                flightDetailsViewModel?.set(name: nameTextField.text ?? L10n.dashboardMyFlightUnknownLocation)
             }
             .store(in: &cancellables)
 
@@ -166,21 +177,21 @@ private extension FlightDetailsInfoCell {
         nameTextField.editingDidEndPublisher
             .sink { [unowned self] in
                 // Update flight name
-                flightDetailsViewModel?.set(name: nameTextField.text ?? "")
+                isEditingName = false
+                flightDetailsViewModel?.set(name: nameTextField.text ?? L10n.dashboardMyFlightUnknownLocation)
             }
             .store(in: &cancellables)
     }
 
     /// Listen Button states
     func listenEditNameButtonSubscribers() {
-        /// Button tapped Publisher
-        editNameButton.onTapPublisher
-            .sink { [unowned self] in
-                // Enter editing mode
+        nameLabel.tapGesturePublisher
+            .sink { [unowned self] _ in
                 isEditingName = true
-                nameTextField.text = nameLabel.text
+                nameTextField.text = title
             }
             .store(in: &cancellables)
+        nameLabel.isUserInteractionEnabled = true
     }
 
     /// Listen Flight name changes
@@ -188,7 +199,7 @@ private extension FlightDetailsInfoCell {
         flightDetailsViewModel?.$name
             .map { $0 ?? L10n.dashboardMyFlightUnknownLocation }
             .map { $0.isEmpty ? L10n.dashboardMyFlightUnknownLocation : $0 }
-            .assign(to: \.text, on: nameLabel)
+            .assign(to: \.title, on: self)
             .store(in: &cancellables)
     }
 }

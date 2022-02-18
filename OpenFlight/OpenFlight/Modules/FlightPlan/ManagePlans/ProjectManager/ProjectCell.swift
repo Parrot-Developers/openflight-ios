@@ -1,6 +1,4 @@
-//
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,17 +34,15 @@ import Combine
 class ProjectCell: UICollectionViewCell, NibReusable {
 
     @IBOutlet private weak var backgroundImageView: UIImageView!
-    @IBOutlet weak var gradientView: UIView!
+    @IBOutlet private weak var gradientView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var descriptionLabel: UILabel!
     @IBOutlet private weak var typeImage: UIImageView!
     @IBOutlet private weak var selectedView: UIView!
     @IBOutlet private weak var projectExecutedIcon: UIImageView!
 
-    private var cancellables = Set<AnyCancellable>()
-
     enum Constants {
-        static let selectedItemBorderWidth = Style.largeBorderWidth * 1.5
+        static let selectedItemBorderWidth = Style.selectedItemBorderWidth
         static let gradientStartAlpha: CGFloat = 0.0
         static let gradientEndAlpha: CGFloat = 0.65
     }
@@ -67,7 +63,6 @@ class ProjectCell: UICollectionViewCell, NibReusable {
         super.prepareForReuse()
         selectedView.isHidden = true
         projectExecutedIcon.isHidden = true
-        cancellables.forEach { $0.cancel() }
     }
 
     func setupUI() {

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,15 +36,9 @@ protocol SettingsResetAllButtonCellDelegate: AnyObject {
 }
 
 /// Settings Reset All Button Cell.
-final class SettingsResetAllButtonCell: UITableViewCell, NibReusable {
+final class SettingsResetAllButtonCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
-    @IBOutlet private weak var resetButton: UIButton! {
-        didSet {
-            resetButton.roundCornered()
-            resetButton.setTitleColor(ColorName.defaultTextColor.color, for: .normal)
-            resetButton.setTitleColor(ColorName.defaultTextColor80.color, for: .disabled)
-        }
-    }
+    @IBOutlet private weak var resetButton: ActionButton!
 
     // MARK: - Internal Properties
     weak var delegate: SettingsResetAllButtonCellDelegate?
@@ -57,10 +50,8 @@ final class SettingsResetAllButtonCell: UITableViewCell, NibReusable {
     ///    - title: cell title
     ///    - isEnabled: whether reset button is enabled
     func configureCell(title: String, isEnabled: Bool) {
-        resetButton.setTitle(title, for: .normal)
-        resetButton.setTitle(title, for: .highlighted)
-        resetButton.setTitle(title, for: .disabled)
-        resetButton.setTitle(title, for: .selected)
+        resetButton.setup(title: title, style: ActionButtonStyle.default2)
+        resetButton.roundCornered()
         resetButton.isEnabled = isEnabled
     }
 }

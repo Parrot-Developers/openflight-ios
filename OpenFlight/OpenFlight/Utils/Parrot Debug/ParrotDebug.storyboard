@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1UJ-SD-ecA">
-    <device id="retina5_9" orientation="landscape" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1UJ-SD-ecA">
+    <device id="retina4_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -25,11 +26,11 @@
             <objects>
                 <viewController storyboardIdentifier="ParrotDebugViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="1UJ-SD-ecA" customClass="ParrotDebugViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="wlx-zk-Hvx">
-                        <rect key="frame" x="0.0" y="0.0" width="812" height="375"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iMv-rA-qgl">
-                                <rect key="frame" x="702" y="14" width="42" height="28"/>
+                                <rect key="frame" x="498" y="14" width="42" height="28"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="28" id="bcj-tD-bIP"/>
                                 </constraints>
@@ -45,7 +46,7 @@
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PARROT DEBUG" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tm9-1p-lAd">
-                                <rect key="frame" x="339.33333333333331" y="17" width="133.33333333333331" height="22"/>
+                                <rect key="frame" x="217.5" y="17" width="133.5" height="22"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="22" id="hrH-j1-Ino"/>
                                 </constraints>
@@ -54,10 +55,10 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="Efy-Eh-zJ4" userLabel="Vertical Stack View">
-                                <rect key="frame" x="68" y="49" width="676" height="300"/>
+                                <rect key="frame" x="28" y="49" width="512" height="266"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="informations" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ihn-4O-EJ6">
-                                        <rect key="frame" x="0.0" y="0.0" width="676" height="17"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="512" height="17"/>
                                         <constraints>
                                             <constraint firstAttribute="width" relation="greaterThanOrEqual" id="7ZR-uf-kM7"/>
                                         </constraints>
@@ -66,22 +67,22 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="9He-g4-Ikd" userLabel="Table and buttons Stack View">
-                                        <rect key="frame" x="0.0" y="29" width="676" height="271"/>
+                                        <rect key="frame" x="0.0" y="29" width="512" height="237"/>
                                         <subviews>
                                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="QtU-FA-YFk">
-                                                <rect key="frame" x="0.0" y="0.0" width="270.33333333333331" height="271"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="205" height="237"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <color key="tintColor" red="0.28536473159999998" green="1" blue="0.24004633680000001" alpha="1" colorSpace="calibratedRGB"/>
                                                 <prototypes>
                                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="FileCell" id="Ksm-JP-BRV" customClass="ParrotLogFileCell" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="24.333333969116211" width="270.33333333333331" height="43.666667938232422"/>
+                                                        <rect key="frame" x="0.0" y="44.5" width="205" height="43.5"/>
                                                         <autoresizingMask key="autoresizingMask"/>
                                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Ksm-JP-BRV" id="rDw-aq-kzy">
-                                                            <rect key="frame" x="0.0" y="0.0" width="270.33333333333331" height="43.666667938232422"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="205" height="43.5"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <subviews>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="File Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0bD-DI-M1N">
-                                                                    <rect key="frame" x="16" y="11.666666666666666" width="75.666666666666671" height="20.333333333333336"/>
+                                                                    <rect key="frame" x="16" y="11.5" width="75.5" height="20.5"/>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                                     <color key="textColor" red="0.28536473159999998" green="1" blue="0.24004633680000001" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <color key="highlightedColor" red="1" green="0.39627434299999997" blue="0.00074388167699999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -101,18 +102,19 @@
                                                     </tableViewCell>
                                                 </prototypes>
                                             </tableView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalCentering" alignment="center" spacing="32" translatesAutoresizingMaskIntoConstraints="NO" id="PWK-JL-I2n">
-                                                <rect key="frame" x="270.33333333333326" y="0.0" width="405.66666666666674" height="271"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="PWK-JL-I2n">
+                                                <rect key="frame" x="205" y="0.0" width="307" height="237"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="hCt-zJ-CKN">
-                                                        <rect key="frame" x="55" y="0.0" width="296" height="34"/>
+                                                        <rect key="frame" x="5.5" y="0.0" width="296" height="34"/>
                                                         <subviews>
-                                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Debug tag..." textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="BNv-Hd-hA8">
+                                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Debug tag..." textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="BNv-Hd-hA8" customClass="POFTextField" customModule="OpenFlight" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="250" height="34"/>
                                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="250" id="GdA-aa-z4y"/>
                                                                 </constraints>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                                 <textInputTraits key="textInputTraits" returnKeyType="done"/>
                                                                 <connections>
@@ -120,7 +122,7 @@
                                                                 </connections>
                                                             </textField>
                                                             <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TcC-lw-z5W">
-                                                                <rect key="frame" x="260.00000000000006" y="0.0" width="36" height="34"/>
+                                                                <rect key="frame" x="260" y="0.0" width="36" height="34"/>
                                                                 <state key="normal" title="Send">
                                                                     <color key="titleColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="calibratedRGB"/>
                                                                 </state>
@@ -134,16 +136,16 @@
                                                         </subviews>
                                                     </stackView>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="f3T-eY-kRn">
-                                                        <rect key="frame" x="132.66666666666669" y="66" width="140.33333333333331" height="26"/>
+                                                        <rect key="frame" x="83" y="44" width="140.5" height="31"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Active Log" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mrz-ox-D1m">
-                                                                <rect key="frame" x="0.0" y="0.0" width="71.333333333333329" height="26"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="71.5" height="31"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eBS-hZ-5JW">
-                                                                <rect key="frame" x="91.333333333333371" y="0.0" width="51" height="26"/>
+                                                                <rect key="frame" x="91.5" y="0.0" width="51" height="31"/>
                                                                 <connections>
                                                                     <action selector="switchLogOnOff:" destination="1UJ-SD-ecA" eventType="valueChanged" id="Lct-f1-bKp"/>
                                                                 </connections>
@@ -151,7 +153,7 @@
                                                         </subviews>
                                                     </stackView>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GPA-T6-ekH">
-                                                        <rect key="frame" x="127" y="124" width="152" height="30"/>
+                                                        <rect key="frame" x="77.5" y="85" width="152" height="30"/>
                                                         <state key="normal" title="Enable Stream Record">
                                                             <color key="titleColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="calibratedRGB"/>
                                                         </state>
@@ -163,7 +165,7 @@
                                                         </connections>
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="047-To-Apc" userLabel="videofull">
-                                                        <rect key="frame" x="143" y="186" width="120" height="30"/>
+                                                        <rect key="frame" x="93.5" y="125" width="120" height="30"/>
                                                         <state key="normal" title="Video Full Screen">
                                                             <color key="titleColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="calibratedRGB"/>
                                                         </state>
@@ -175,18 +177,36 @@
                                                         </connections>
                                                     </button>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Fa4-n9-dh6">
-                                                        <rect key="frame" x="112" y="248" width="182" height="23"/>
+                                                        <rect key="frame" x="62.5" y="165" width="182" height="31"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Record disparity" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DB7-Rg-anL">
-                                                                <rect key="frame" x="0.0" y="0.0" width="113" height="23"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="113" height="31"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rQe-Ru-bKM">
-                                                                <rect key="frame" x="133.00000000000006" y="0.0" width="51" height="23"/>
+                                                                <rect key="frame" x="133" y="0.0" width="51" height="31"/>
                                                                 <connections>
                                                                     <action selector="recordDisparityTouchedUpInside:" destination="1UJ-SD-ecA" eventType="valueChanged" id="JpD-dF-duK"/>
+                                                                </connections>
+                                                            </switch>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="YSe-et-gY0">
+                                                        <rect key="frame" x="42.5" y="206" width="222" height="31"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Thumbnail Cloud Sync" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Krw-TL-hT5">
+                                                                <rect key="frame" x="0.0" y="0.0" width="153" height="31"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
+                                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EZP-zM-1tU">
+                                                                <rect key="frame" x="173" y="0.0" width="51" height="31"/>
+                                                                <color key="onTintColor" systemColor="systemTealColor"/>
+                                                                <connections>
+                                                                    <action selector="thumbnailSyncSwitchChanged:" destination="1UJ-SD-ecA" eventType="valueChanged" id="YMd-LE-ZSS"/>
                                                                 </connections>
                                                             </switch>
                                                         </subviews>
@@ -203,7 +223,7 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DRv-9U-Hk4" customClass="SecretView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="362" y="0.0" width="406" height="375"/>
+                                <rect key="frame" x="284" y="0.0" width="284" height="320"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="string" keyPath="secretCode" value="11224433"/>
@@ -215,21 +235,24 @@
                                     <action selector="debugCheckCOn:" destination="1UJ-SD-ecA" eventType="valueChanged" id="awC-6X-L8A"/>
                                 </connections>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jrj-Ag-IPT" customClass="SecretView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="362" y="0.0" width="406" height="375"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="secretCode" value="11334422"/>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="delayMax">
-                                        <real key="value" value="2"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ccD-sN-wiL" userLabel="PGY">
+                                <rect key="frame" x="107" y="14" width="32" height="28"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="28" id="csj-fW-7jD"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="20"/>
+                                <state key="normal" title="PGY">
+                                    <color key="titleColor" red="0.0" green="1" blue="0.54117647059999996" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <state key="disabled">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
                                 <connections>
-                                    <action selector="debugCheckCOff:" destination="1UJ-SD-ecA" eventType="valueChanged" id="1yB-4P-K8l"/>
+                                    <action selector="showPGYDebug:" destination="1UJ-SD-ecA" eventType="touchUpInside" id="nSx-sp-Y9V"/>
                                 </connections>
-                            </view>
+                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yLa-Qb-dpq">
-                                <rect key="frame" x="68" y="14" width="63" height="28"/>
+                                <rect key="frame" x="24" y="14" width="63" height="28"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="28" id="6df-jD-4hE"/>
                                 </constraints>
@@ -244,6 +267,19 @@
                                     <action selector="toolBoxButtonTouchedUpInside:" destination="1UJ-SD-ecA" eventType="touchUpInside" id="JGh-Zy-1ej"/>
                                 </connections>
                             </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jrj-Ag-IPT" customClass="SecretView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="284" y="0.0" width="284" height="320"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="secretCode" value="11334422"/>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="delayMax">
+                                        <real key="value" value="2"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="debugCheckCOff:" destination="1UJ-SD-ecA" eventType="valueChanged" id="1yB-4P-K8l"/>
+                                </connections>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="3AP-nE-TqN"/>
                         <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
@@ -263,8 +299,10 @@
                             <constraint firstItem="3AP-nE-TqN" firstAttribute="bottom" secondItem="Efy-Eh-zJ4" secondAttribute="bottom" constant="5" id="guU-YW-B0Q"/>
                             <constraint firstItem="yLa-Qb-dpq" firstAttribute="top" secondItem="3AP-nE-TqN" secondAttribute="top" constant="14" id="iv5-uJ-sYJ"/>
                             <constraint firstAttribute="trailingMargin" secondItem="Efy-Eh-zJ4" secondAttribute="trailing" constant="8" id="nMx-nv-WWe"/>
+                            <constraint firstItem="ccD-sN-wiL" firstAttribute="leading" secondItem="yLa-Qb-dpq" secondAttribute="trailing" constant="20" id="ot4-iq-vf5"/>
                             <constraint firstItem="DRv-9U-Hk4" firstAttribute="centerY" secondItem="wlx-zk-Hvx" secondAttribute="centerY" id="qFp-xl-TZZ"/>
                             <constraint firstItem="DRv-9U-Hk4" firstAttribute="width" secondItem="wlx-zk-Hvx" secondAttribute="width" multiplier="0.5" id="rf3-lH-ifj"/>
+                            <constraint firstItem="ccD-sN-wiL" firstAttribute="centerY" secondItem="yLa-Qb-dpq" secondAttribute="centerY" id="sdU-Vy-G5e"/>
                             <constraint firstItem="3AP-nE-TqN" firstAttribute="trailing" secondItem="DRv-9U-Hk4" secondAttribute="trailing" id="x8Y-3A-zNZ"/>
                         </constraints>
                     </view>
@@ -277,6 +315,7 @@
                         <outlet property="sendDebugTagButton" destination="TcC-lw-z5W" id="qcR-er-hRG"/>
                         <outlet property="sendDebugTagTextField" destination="BNv-Hd-hA8" id="dfY-sW-2Gs"/>
                         <outlet property="switchLog" destination="eBS-hZ-5JW" id="4JA-iM-h7r"/>
+                        <outlet property="thumbnailSyncSwitch" destination="EZP-zM-1tU" id="ahQ-g8-Kzc"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="b22-Aw-FRZ" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -288,11 +327,11 @@
             <objects>
                 <viewController id="1w5-Qk-Zho" customClass="ParrotDebugStreamVC" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="3bk-NR-OzL">
-                        <rect key="frame" x="0.0" y="0.0" width="812" height="375"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9t1-Gs-4kY" customClass="GSStreamView">
-                                <rect key="frame" x="0.0" y="0.0" width="812" height="375"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <gestureRecognizers/>
                                 <connections>
@@ -326,11 +365,17 @@
         </scene>
     </scenes>
     <resources>
+        <namedColor name="default_text_color">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <systemColor name="lightTextColor">
             <color white="1" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemTealColor">
+            <color red="0.18823529411764706" green="0.69019607843137254" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="viewFlipsideBackgroundColor">
             <color red="0.1215686274509804" green="0.12941176470588239" blue="0.14117647058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

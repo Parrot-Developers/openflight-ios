@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DroneFirmwaresStartView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="startUpdateButton" destination="9ul-DN-rr3" id="Az0-GV-8rK"/>
+                <outlet property="upToDateImageView" destination="JfG-61-Tjd" id="kXJ-cj-1cE"/>
+                <outlet property="upToDateLabel" destination="yma-a2-ucU" id="kx0-e8-n7c"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="401" height="107"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9ul-DN-rr3" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="0.0" width="401" height="107"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                    <connections>
+                        <action selector="startUpdateButtonTouchedUpInside:" destination="-1" eventType="touchUpInside" id="XMr-AJ-1ZV"/>
+                    </connections>
+                </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yma-a2-ucU">
+                    <rect key="frame" x="186" y="0.0" width="29" height="107"/>
+                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                    <color key="textColor" name="default_text_color"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icChecked" translatesAutoresizingMaskIntoConstraints="NO" id="JfG-61-Tjd">
+                    <rect key="frame" x="154" y="47.5" width="12" height="12"/>
+                    <color key="tintColor" name="highlight_color"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="12" id="tMx-uu-i7R"/>
+                        <constraint firstAttribute="width" constant="12" id="zT8-uH-jPB"/>
+                    </constraints>
+                </imageView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="yma-a2-ucU" firstAttribute="leading" secondItem="JfG-61-Tjd" secondAttribute="trailing" constant="20" id="CJP-ko-57i"/>
+                <constraint firstAttribute="bottom" secondItem="yma-a2-ucU" secondAttribute="bottom" id="ReU-jH-jQU"/>
+                <constraint firstAttribute="bottom" secondItem="9ul-DN-rr3" secondAttribute="bottom" id="UJ1-47-gcH"/>
+                <constraint firstItem="9ul-DN-rr3" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="WaY-bN-Xvc"/>
+                <constraint firstItem="yma-a2-ucU" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="csP-Az-vIN"/>
+                <constraint firstItem="JfG-61-Tjd" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="gfK-RM-bxA"/>
+                <constraint firstAttribute="trailing" secondItem="9ul-DN-rr3" secondAttribute="trailing" id="h38-Wq-0nY"/>
+                <constraint firstItem="9ul-DN-rr3" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="xcA-AO-Yxd"/>
+                <constraint firstItem="yma-a2-ucU" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="z9q-Im-5BQ"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="-21.600000000000001" y="-111.0944527736132"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icChecked" width="20" height="20"/>
+        <namedColor name="default_text_color">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="highlight_color">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
+    </resources>
+</document>

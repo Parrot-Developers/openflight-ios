@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -47,23 +46,18 @@ public final class HUDAlertPanelActionButton: HighlightableUIControl, NibOwnerLo
 
     // MARK: - Public Properties
     public weak var delegate: HUDAlertPanelActionButtonDelegate?
+    public var rthAlertType: RthAlertType?
 
     // MARK: - Private Properties
     private var isBlinking: Bool = false
     private var timer: Timer?
-    private var initialCountdown: TimeInterval = Constants.animationDuration // Used for non-continuous progress animation.
-    private var countdown: TimeInterval = Constants.animationDuration {
-        didSet {
-            guard !isCountdownStarted else { return }
-            // Store initial value in order to be able to compute potential non-continuous progress.
-            initialCountdown = countdown
-        }
-    }
+    private var initialCountdown: TimeInterval? // Used for non-continuous progress animation.
+    private var countdown: TimeInterval = Constants.animationDuration
     private var startProgress: Float {
-        min(1, Float(countdown) / Float(initialCountdown))
+        min(1, Float(countdown) / Float(initialCountdown ?? 1))
     }
     private var isCountdownStarted: Bool {
-        return timer != nil
+        initialCountdown != nil
     }
 
     // MARK: - Private Enums
@@ -78,7 +72,6 @@ public final class HUDAlertPanelActionButton: HighlightableUIControl, NibOwnerLo
         super.init(coder: aDecoder)
         self.commonInitHUDAlertPanelActionButton()
     }
-
     public override init(frame: CGRect) {
         super.init(frame: frame)
         self.commonInitHUDAlertPanelActionButton()
@@ -116,6 +109,7 @@ public extension HUDAlertPanelActionButton {
     /// - Parameters:
     ///     - state: current alert panel type
     func startAnimation(state: AlertPanelState) {
+        circleProgressView.isHidden = true
         guard let animationImages = state.animationImages else {
             alertImageView.image = state.icon
             return
@@ -136,14 +130,25 @@ public extension HUDAlertPanelActionButton {
     /// Starts progress animation.
     ///
     /// - Parameters:
-    ///     - delay: delay used for the timer and the progress
-    ///     - countdownMessage: func which provides a countdown message for the alert
-    func startProgressAnimation(delay: TimeInterval, countdownMessage: ((Int) -> String)?) {
-        initProgressAnimation(delay: delay, countdownMessage: countdownMessage)
+    ///    - initialCountdown: countdown initial value
+    ///    - delay: delay used for the timer and the progress
+    ///    - countdownMessage: func which provides a countdown message for the alert
+    func startProgressAnimation(initialCountdown: TimeInterval?, delay: TimeInterval, countdownMessage: ((Int) -> String)?) {
+        initProgressAnimation(initialCountdown: initialCountdown, delay: delay, countdownMessage: countdownMessage)
+        startCountdown(delay: delay, countdownMessage: countdownMessage)
+    }
+
+    /// Launches automatic countdown animation.
+    ///
+    /// - Parameters:
+    ///    - delay: countdown duration (`Constants.animationDuration` if nil)
+    ///    - countdownMessage: countdown message displayed below progressView (inactive for now)
+    func launchCountdownAnimation(delay: TimeInterval? = nil, countdownMessage: ((Int) -> String)? = nil) {
+        initProgressAnimation(delay: delay ?? Constants.animationDuration, countdownMessage: countdownMessage)
 
         // Delay countdown as progressView first needs to be rendered at 100 % before being animated.
         DispatchQueue.main.asyncAfter(deadline: .now() + Style.shortAnimationDuration) {
-            self.animateProgress(delay: delay, countdownMessage: countdownMessage)
+            self.animateProgress(delay: delay ?? Constants.animationDuration, countdownMessage: countdownMessage)
         }
     }
 
@@ -153,15 +158,18 @@ public extension HUDAlertPanelActionButton {
     ///     - delay: delay user for the timer
     ///     - countdownMessage: func which provides a countdown message for the alert
     func startCountdown(delay: TimeInterval, countdownMessage: ((Int) -> String)?) {
-        guard !isCountdownStarted else { return }
-
-        timer = Timer.scheduledTimer(withTimeInterval: Values.oneSecond, repeats: true) { [weak self] _ in
-            self?.updateTimerLabel(with: countdownMessage)
-        }
+        // Update progress view only if countdown is actually decreasing.
+        // (Avoids erratic progress behavior in case of delay re-calculations.)
+        guard delay <= countdown else { return }
+        countdown = delay
+        circleProgressView.setProgress(Float(startProgress))
     }
 
     /// Stops progress animation.
     func stopProgress() {
+        guard isCountdownStarted else { return }
+
+        initialCountdown = nil
         circleProgressView.resetProgress()
         circleProgressView.isHidden = true
         actionLabel.alphaHidden(actionLabel.isHidden)
@@ -207,25 +215,50 @@ private extension HUDAlertPanelActionButton {
     /// - Parameters:
     ///     - countdownMessage: Func which provides a countdown message for the alert.
     func refreshCountdownLabel(with countdownMessage: ((Int) -> String)?) {
-        actionLabel.text = countdownMessage?(Int(countdown))
+        guard let countdownMessage = countdownMessage else {
+            actionLabel.alphaHidden(true)
+            return
+        }
+
+        actionLabel.text = countdownMessage(Int(countdown))
         actionLabel.alphaHidden(countdown == 0)
+        layoutIfNeeded()
     }
 
     /// Inits countdown animation by setting initial counter value and UI states.
     ///
     /// - Parameters:
-    ///     - delay: Delay used for the timer and the progress.
-    ///     - countdownMessage: Func which provides a countdown message for the alert.
-    func initProgressAnimation(delay: TimeInterval, countdownMessage: ((Int) -> String)?) {
+    ///    - initialCountdown: countdown initial value
+    ///    - delay: delay used for the timer and the progress
+    ///    - countdownMessage: func which provides a countdown message for the alert
+    func initProgressAnimation(initialCountdown: TimeInterval? = nil, delay: TimeInterval, countdownMessage: ((Int) -> String)?) {
+        guard !isCountdownStarted else {
+            // Update initial value even if countdown is started in case current update
+            // overrides a previously on-going alert.
+            updateInitialCountdown(initialCountdown, delay: delay)
+            return
+        }
+
         stopProgress()
-        countdown = delay == 0.0 ? Constants.animationDuration : delay
         circleProgressView.isHidden = false
         circleProgressView.delegate = self
+
+        countdown = delay
+        updateInitialCountdown(initialCountdown, delay: delay)
 
         DispatchQueue.main.async {
             self.refreshCountdownLabel(with: countdownMessage)
             self.circleProgressView.setProgress(self.startProgress)
         }
+    }
+
+    /// Updates initial countdown value.
+    ///
+    /// - Parameters:
+    ///    - countdown: countdown initial value (if provided)
+    ///    - delay: current countdown value
+    func updateInitialCountdown(_ countdown: TimeInterval?, delay: TimeInterval) {
+        initialCountdown = countdown ?? delay
     }
 
     /// Launches actual countdown animation.

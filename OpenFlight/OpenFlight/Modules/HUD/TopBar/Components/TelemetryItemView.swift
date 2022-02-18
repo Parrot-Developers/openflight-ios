@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,10 +38,11 @@ struct TelemetryItemModel {
     var label: String
     /// Background color of the item (used for warnings/alerts display).
     var backgroundColor: UIColor
+    /// Border color of the item.
+    var borderColor: UIColor
 }
 
 /// View displaying a specific metric inside TelemetryBar.
-
 final class TelemetryItemView: HighlightableUIControl, NibOwnerLoadable {
 
     // MARK: - Outlets
@@ -49,7 +50,10 @@ final class TelemetryItemView: HighlightableUIControl, NibOwnerLoadable {
     @IBOutlet private weak var itemLabel: UILabel!
     @IBOutlet private weak var alertBackgroundView: UIView! {
         didSet {
-            alertBackgroundView.applyCornerRadius(Style.mediumCornerRadius)
+            alertBackgroundView.customCornered(corners: [.allCorners],
+                                               radius: Style.mediumCornerRadius,
+                                               backgroundColor: .clear,
+                                               borderColor: .clear)
         }
     }
 
@@ -63,12 +67,12 @@ final class TelemetryItemView: HighlightableUIControl, NibOwnerLoadable {
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.loadNibContent()
+        loadNibContent()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.loadNibContent()
+        loadNibContent()
     }
 }
 
@@ -79,28 +83,15 @@ private extension TelemetryItemView {
     /// - Parameters:
     ///    - viewModel: model representing the contents
     func fill(with model: TelemetryItemModel?) {
+        let valueFont: UIFont = FontStyle.topBar.font(isRegularSizeClass, monospacedDigits: true)
+        let unitFont: UIFont = FontStyle.caps.font(isRegularSizeClass)
+        let attributedString = NSMutableAttributedString(string: model?.label ?? Style.dash)
+        attributedString.valueUnitFormatted(valueFont: valueFont, unitFont: unitFont)
+        itemLabel.attributedText = attributedString
 
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            let valueFont: UIFont = ParrotFontStyle.huge.font
-            let unitFont: UIFont = ParrotFontStyle.big.font
-
-            let attributedString = NSMutableAttributedString(string: model?.label ?? Style.dash)
-            attributedString.valueUnitFormatted(valueFont: valueFont, unitFont: unitFont)
-            itemLabel.attributedText = attributedString
-            itemImageView.image = model?.image
-            itemImageView.contentMode = .scaleAspectFit
-
-            alertBackgroundView.backgroundColor = model?.backgroundColor
-        } else {
-            let valueFont: UIFont = ParrotFontStyle.regular.font
-            let unitFont: UIFont = ParrotFontStyle.tiny.font
-
-            let attributedString = NSMutableAttributedString(string: model?.label ?? Style.dash)
-            attributedString.valueUnitFormatted(valueFont: valueFont, unitFont: unitFont)
-            itemLabel.attributedText = attributedString
-            itemImageView.image = model?.image
-            itemImageView.contentMode = .center
-            alertBackgroundView.backgroundColor = model?.backgroundColor
-        }
+        itemLabel.isHidden = model?.label.isEmpty == true
+        itemImageView.image = model?.image
+        alertBackgroundView.backgroundColor = model?.backgroundColor
+        alertBackgroundView.layer.borderColor = model?.borderColor.cgColor
     }
 }

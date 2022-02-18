@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -43,14 +42,21 @@ public struct FlightPlanMission: MissionProvider {
                        name: L10n.commonFlightPlan,
                        icon: FlightPlanMissionMode.standard.icon,
                        logName: LogEvent.LogKeyHUDMissionProviderSelectorButton.flightPlan,
-                       modes: FlightPlanMissionMode.allMissionItems,
-                       defaultMode: FlightPlanMissionMode.standard.missionMode)
+                       mode: FlightPlanMissionMode.standard.missionMode)
     }
-    public var signature: ProtobufMissionSignature = DefaultMissionSignature()
+    public var signature: AirSdkMissionSignature = OFMissionSignatures.defaultMission
 }
 
 public class FlightPlanActivationModel: MissionActivationModel {
+
+    private var airSdkMissionsManager: AirSdkMissionsManager {
+        Services.hub.drone.airsdkMissionsManager
+    }
+
     public func startMission() {
+        airSdkMissionsManager.activate(mission: FlightPlanMission().signature)
+
+        // start default mission
         guard let projectType = FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType else { return }
         let projectManager = Services.hub.flightPlan.projectManager
         projectManager.setLastOpenedProjectAsCurrent(type: projectType)
@@ -64,15 +70,39 @@ public class FlightPlanActivationModel: MissionActivationModel {
         Services.hub.flightPlan.projectManager.clearCurrentProject()
         Services.hub.flightPlan.edition.resetFlightPlan()
     }
+
+    /// Whether the mission can be stop.
+    public func canStopMission() -> Bool {
+        return true
+    }
+
+    /// Whether the mission can be start.
+    public func canStartMission() -> Bool {
+        return true
+    }
+
+    public func showFailedActivationMessage() {
+        // Nothing to do
+    }
+
+    public func showFailedDectivationMessage() {
+        // Nothing to do
+    }
+
+    public func isActive() -> Bool {
+        let missionStore = Services.hub.missionsStore
+        return missionStore.currentFlightPlanMission == FlightPlanMission().mission
+    }
+
+    public func getPriority() -> MissionPriority {
+        .middle
+    }
 }
 
 // MARK: - Internal Enums
 /// Enum for FlightPlan mission modes.
 enum FlightPlanMissionMode: String, CaseIterable {
     case standard = "flight_plan_standard_mode"
-
-    // MARK: - Internal Properties
-    static var allMissionItems: [MissionMode] = FlightPlanMissionMode.allCases.map({$0.missionMode})
 
     func createFlightPlanPanelCoordinator(services: ServiceHub,
                                           splitControls: SplitControls,
@@ -91,7 +121,10 @@ enum FlightPlanMissionMode: String, CaseIterable {
                                                    preferredSplitMode: self.preferredSplitMode,
                                                    isMapRequired: true,
                                                    isRightPanelRequired: self.isRightPanelRequired,
-                                                   isTrackingMode: false)
+                                                   isTrackingMode: false,
+                                                   isAeLockEnabled: false,
+                                                   isInstallationRequired: true,
+                                                   isCameraShutterButtonEnabled: false)
         return MissionMode(configurator: configurator,
                            flightPlanProvider: self.flightPlanProvider,
                            missionActivationModel: FlightPlanActivationModel(),

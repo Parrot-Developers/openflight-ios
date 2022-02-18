@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -80,7 +79,7 @@ struct DeviceDetailsButtonModel {
 }
 
 /// Displays a custom button for drone or remote details.
-final class DeviceDetailsButtonView: HighlightableUIControl, NibOwnerLoadable {
+final class DeviceDetailsButtonView: ActionControl, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var mainImageView: UIImageView!
     @IBOutlet private weak var titleLabel: UILabel!

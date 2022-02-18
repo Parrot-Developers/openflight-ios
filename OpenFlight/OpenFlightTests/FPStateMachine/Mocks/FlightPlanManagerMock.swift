@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -56,7 +55,6 @@ class FlightPlanManagerMock: FlightPlanManager {
                                               dataStringType: "",
                                               dataString: "",
                                               pgyProjectId: nil,
-                                              mediaCustomId: nil,
                                               state: .editable,
                                               lastMissionItemExecuted: 0,
                                               recoveryId: nil,
@@ -74,7 +72,6 @@ class FlightPlanManagerMock: FlightPlanManager {
                                        dataStringType: "",
                                        dataString: "",
                                        pgyProjectId: nil,
-                                       mediaCustomId: nil,
                                        state: .flying,
                                        lastMissionItemExecuted: 0,
                                        recoveryId: nil,
@@ -115,7 +112,6 @@ class FlightPlanManagerMock: FlightPlanManager {
                                        dataStringType: "",
                                        dataString: "",
                                        pgyProjectId: nil,
-                                       mediaCustomId: nil,
                                        state: .editable,
                                        lastMissionItemExecuted: flightPlan.lastMissionItemExecuted,
                                        recoveryId: nil,
@@ -142,12 +138,6 @@ class FlightPlanManagerMock: FlightPlanManager {
         var copy = flightplan
         copy.state = state
         return copy
-    }
-
-    func saveExecutionProgress(for flightPlan: FlightPlanModell, at waypoint: Int) -> FlightPlanModell {
-        var updatedFlightPlan = flightPlan
-        updatedFlightPlan.lastMissionItemExecuted = Int64(waypoint)
-        return updatedFlightPlan
     }
 
     func appendUndoStack(with flightPlan: FlightPlanModell?) {

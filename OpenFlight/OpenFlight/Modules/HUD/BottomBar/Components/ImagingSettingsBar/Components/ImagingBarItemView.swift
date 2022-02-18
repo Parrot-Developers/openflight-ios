@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -90,12 +89,12 @@ final class ImagingBarItemView: UIControl, NibOwnerLoadable {
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitImagingBarItemView()
+        commonInitImagingBarItemView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitImagingBarItemView()
+        commonInitImagingBarItemView()
     }
 }
 
@@ -103,7 +102,8 @@ final class ImagingBarItemView: UIControl, NibOwnerLoadable {
 private extension ImagingBarItemView {
     /// Common init.
     func commonInitImagingBarItemView() {
-        self.loadNibContent()
+        loadNibContent()
+        itemLabel.makeUp(with: .current, color: .defaultTextColor)
     }
 
     /// Updates the view with its current model.

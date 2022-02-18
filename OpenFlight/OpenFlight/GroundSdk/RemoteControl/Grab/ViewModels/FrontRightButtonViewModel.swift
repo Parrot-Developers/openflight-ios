@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,8 +31,6 @@ import GroundSdk
 
 /// ViewModel which manages takeOff or Land remote control button.
 final class FrontRightButtonViewModel: DroneStateViewModel<DeviceConnectionState> {
-    // MARK: - Private Properties
-    private var criticalAlertViewModel: HUDCriticalAlertViewModel = HUDCriticalAlertViewModel()
 
     // MARK: - Internal Funcs
     /// Called when front right button is touched up.
@@ -54,7 +51,7 @@ private extension FrontRightButtonViewModel {
     func performDroneAction() {
         guard let drone = drone else { return }
 
-        if drone.isStateFlying {
+        if drone.isStateFlying || drone.isHandLaunchReady {
             takeOffOrLandDrone()
         } else {
             // Notifies that takeOff is requested.
@@ -62,28 +59,41 @@ private extension FrontRightButtonViewModel {
                                             object: nil,
                                             userInfo: [HUDCriticalAlertConstants.takeOffRequestedNotificationKey: true])
             // Checks is there are no critical alerts.
-            guard criticalAlertViewModel.state.value.canTakeOff else { return }
+            guard Services.hub.ui.criticalAlert.canTakeOff else { return }
 
-            if drone.isHandLaunchAvailable || drone.isHandLaunchReady {
-                drone.startHandLaunch()
-            } else {
-                takeOffOrLandDrone()
-            }
+            takeOffOrLandDrone()
         }
     }
 
     /// Starts Take Off or Landing action.
     func takeOffOrLandDrone() {
-        guard let drone = drone else { return }
+        guard let drone = drone,
+              let manualPilotingItf = drone.getPilotingItf(PilotingItfs.manualCopter) else {
+                  return
+              }
 
         if !drone.isManualPilotingActive {
             // Deactivates RTH if it is the current pilotingItf.
             if drone.getPilotingItf(PilotingItfs.returnHome)?.state == .active {
                 _ = drone.getPilotingItf(PilotingItfs.returnHome)?.deactivate()
             } else {
-                _ = drone.getPilotingItf(PilotingItfs.manualCopter)?.activate()
+                _ = manualPilotingItf.activate()
             }
         }
-        drone.getPilotingItf(PilotingItfs.manualCopter)?.smartTakeOffLand()
+
+        switch manualPilotingItf.smartTakeOffLandAction {
+        case .thrownTakeOff:
+            if Services.hub.drone.handLaunchService.canStart {
+                manualPilotingItf.thrownTakeOff()
+            } else {
+                manualPilotingItf.takeOff()
+            }
+        case .takeOff:
+            manualPilotingItf.takeOff()
+        case .land:
+            manualPilotingItf.land()
+        default:
+            break
+        }
     }
 }

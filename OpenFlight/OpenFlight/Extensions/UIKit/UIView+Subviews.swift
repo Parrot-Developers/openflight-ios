@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,10 +36,19 @@ extension UIView {
     ///
     /// - Parameters:
     ///    - subview: Subview to add to current view
-    public func addWithConstraints(subview: UIView) {
+    ///    - relativeToMargin: Subview should be added relative to margin
+    public func addWithConstraints(subview: UIView, relativeToMargin: Bool = false) {
         subview.translatesAutoresizingMaskIntoConstraints = false
         self.addSubview(subview)
-        let layoutAttributes: [NSLayoutConstraint.Attribute] = [.top, .leading, .bottom, .trailing]
+
+        let layoutAttributes: [NSLayoutConstraint.Attribute]
+
+        if relativeToMargin {
+            layoutAttributes = [.topMargin, .leadingMargin, .bottomMargin, .trailingMargin]
+        } else {
+            layoutAttributes = [.top, .leading, .bottom, .trailing]
+        }
+
         layoutAttributes.forEach { [weak self] attribute in
             self?.addConstraint(NSLayoutConstraint(item: subview,
                                                    attribute: attribute,

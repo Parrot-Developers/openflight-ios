@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="ipad9_7" orientation="landscape" layout="fullscreen" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="HUDRadarView" customModule="OpenFlight" customModuleProvider="target">
             <connections>
+                <outlet property="cardinalContentHeightConstraint" destination="ulg-Kh-LSD" id="J9f-Kz-ECg"/>
                 <outlet property="cardinalContentView" destination="SnH-uR-jO8" id="5PR-R6-lcP"/>
+                <outlet property="cardinalDirectionsBkgView" destination="8Kh-5J-Xkp" id="1Re-gk-1T8"/>
                 <outlet property="cardinalDirectionsView" destination="dnk-w6-jrF" id="Jge-Xb-WAv"/>
                 <outlet property="droneBackgroundView" destination="6Pq-LI-Xxg" id="pyS-mt-1PL"/>
                 <outlet property="droneImageView" destination="8pz-Hm-DLP" id="GdO-3q-iPH"/>
@@ -22,35 +24,36 @@
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view contentMode="scaleToFill" id="AwT-70-Uyf">
-            <rect key="frame" x="0.0" y="0.0" width="736" height="40"/>
+            <rect key="frame" x="0.0" y="0.0" width="254" height="53"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
+                <view alpha="0.29999999999999999" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8Kh-5J-Xkp" customClass="LDGradientView" customModule="OpenFlight" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="19.5" width="254" height="14"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                </view>
                 <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SnH-uR-jO8">
-                    <rect key="frame" x="0.0" y="12" width="736" height="26"/>
+                    <rect key="frame" x="0.0" y="19.5" width="254" height="14"/>
                     <subviews>
                         <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dnk-w6-jrF" customClass="CardinalDirectionsView" customModule="OpenFlight" customModuleProvider="target">
-                            <rect key="frame" x="188" y="0.0" width="360" height="26"/>
-                            <color key="backgroundColor" white="1" alpha="0.10000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            <constraints>
-                                <constraint firstAttribute="width" constant="360" id="9K6-Ur-Gel"/>
-                            </constraints>
+                            <rect key="frame" x="0.0" y="0.0" width="254" height="14"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </view>
                     </subviews>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
                         <constraint firstAttribute="bottom" secondItem="dnk-w6-jrF" secondAttribute="bottom" id="dlV-fa-rPT"/>
+                        <constraint firstAttribute="trailing" secondItem="dnk-w6-jrF" secondAttribute="trailing" id="ewZ-be-UzA"/>
                         <constraint firstItem="dnk-w6-jrF" firstAttribute="top" secondItem="SnH-uR-jO8" secondAttribute="top" id="f1J-Af-XYr"/>
+                        <constraint firstItem="dnk-w6-jrF" firstAttribute="leading" secondItem="SnH-uR-jO8" secondAttribute="leading" id="jPx-Uj-9ev"/>
                         <constraint firstItem="dnk-w6-jrF" firstAttribute="centerX" secondItem="SnH-uR-jO8" secondAttribute="centerX" id="plq-e8-fIx"/>
-                        <constraint firstAttribute="height" constant="14" id="ulg-Kh-LSD">
-                            <variation key="heightClass=regular-widthClass=regular" constant="26"/>
-                        </constraint>
+                        <constraint firstAttribute="height" constant="14" id="ulg-Kh-LSD"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Pq-LI-Xxg">
-                    <rect key="frame" x="343" y="12" width="50" height="26"/>
+                    <rect key="frame" x="102" y="19.5" width="50" height="14"/>
                     <subviews>
                         <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4tS-aj-ggi" customClass="SimpleArrowView" customModule="OpenFlight" customModuleProvider="target">
-                            <rect key="frame" x="4" y="9.5" width="6" height="7.5"/>
+                            <rect key="frame" x="4" y="3.5" width="6" height="7.5"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="4tS-aj-ggi" secondAttribute="height" multiplier="4/5" id="9Be-wd-L5u"/>
@@ -58,10 +61,10 @@
                             </constraints>
                         </view>
                         <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icDroneRadar" translatesAutoresizingMaskIntoConstraints="NO" id="8pz-Hm-DLP">
-                            <rect key="frame" x="12" y="7" width="26" height="12"/>
+                            <rect key="frame" x="12" y="1" width="26" height="12"/>
                         </imageView>
                         <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ATC-80-kEj" customClass="SimpleArrowView" customModule="OpenFlight" customModuleProvider="target">
-                            <rect key="frame" x="40" y="9.5" width="6" height="7.5"/>
+                            <rect key="frame" x="40" y="3.5" width="6" height="7.5"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="6" id="Fwa-sa-hTx"/>
@@ -81,7 +84,7 @@
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="008-fh-pbp">
-                    <rect key="frame" x="365.5" y="2" width="5" height="4"/>
+                    <rect key="frame" x="124.5" y="9.5" width="5" height="4"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="5" id="AMC-4q-RoI"/>
@@ -89,7 +92,7 @@
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iqN-rr-msT" customClass="SimpleArrowView" customModule="OpenFlight" customModuleProvider="target">
-                    <rect key="frame" x="365.5" y="6" width="5" height="4"/>
+                    <rect key="frame" x="124.5" y="13.5" width="5" height="4"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="4" id="EJr-zg-FR4"/>
@@ -102,11 +105,13 @@
             <constraints>
                 <constraint firstItem="6Pq-LI-Xxg" firstAttribute="bottom" secondItem="SnH-uR-jO8" secondAttribute="bottom" id="03K-1S-D7G"/>
                 <constraint firstItem="SnH-uR-jO8" firstAttribute="top" secondItem="iqN-rr-msT" secondAttribute="bottom" constant="2" id="2VV-nr-dVp"/>
-                <constraint firstItem="SnH-uR-jO8" firstAttribute="centerY" secondItem="AwT-70-Uyf" secondAttribute="centerY" id="JCX-Ty-g6u">
-                    <variation key="heightClass=regular-widthClass=regular" constant="5"/>
-                </constraint>
+                <constraint firstItem="8Kh-5J-Xkp" firstAttribute="leading" secondItem="SnH-uR-jO8" secondAttribute="leading" id="Huw-HC-31m"/>
+                <constraint firstItem="SnH-uR-jO8" firstAttribute="centerY" secondItem="AwT-70-Uyf" secondAttribute="centerY" id="JCX-Ty-g6u"/>
                 <constraint firstAttribute="trailing" secondItem="SnH-uR-jO8" secondAttribute="trailing" id="MBG-ES-OFa"/>
+                <constraint firstItem="8Kh-5J-Xkp" firstAttribute="bottom" secondItem="SnH-uR-jO8" secondAttribute="bottom" id="Q94-gn-w19"/>
+                <constraint firstItem="8Kh-5J-Xkp" firstAttribute="top" secondItem="SnH-uR-jO8" secondAttribute="top" id="RDF-I9-OLx"/>
                 <constraint firstItem="6Pq-LI-Xxg" firstAttribute="top" secondItem="SnH-uR-jO8" secondAttribute="top" id="UKq-2s-4ob"/>
+                <constraint firstItem="8Kh-5J-Xkp" firstAttribute="trailing" secondItem="SnH-uR-jO8" secondAttribute="trailing" id="V8E-jG-wES"/>
                 <constraint firstItem="008-fh-pbp" firstAttribute="centerX" secondItem="SnH-uR-jO8" secondAttribute="centerX" id="XiK-pD-Ubd"/>
                 <constraint firstItem="iqN-rr-msT" firstAttribute="centerX" secondItem="SnH-uR-jO8" secondAttribute="centerX" id="ds7-iG-lF8"/>
                 <constraint firstItem="6Pq-LI-Xxg" firstAttribute="centerX" secondItem="AwT-70-Uyf" secondAttribute="centerX" id="hiY-s6-p5Z"/>
@@ -116,7 +121,7 @@
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <point key="canvasLocation" x="-217.66304347826087" y="-481.15942028985512"/>
+            <point key="canvasLocation" x="-359.1796875" y="-476.171875"/>
         </view>
     </objects>
     <resources>

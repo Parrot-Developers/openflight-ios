@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -57,20 +56,4 @@ enum SplitControlsConstants {
 protocol SplitControlsDelegate: AnyObject {
     /// Informs delegate about stream width change.
     func streamSizeDidChange(width: CGFloat)
-}
-
-/// Protocol used to restore the map view.
-///
-/// Note: this is needed because, when entering Flight Plan edition,
-/// map view is transferred to the new view controller. This protocol
-/// is used to restore it back to its original container.
-public protocol MapViewRestorer: AnyObject {
-    /// Adds map view controller in view
-    ///
-    /// - Parameters:
-    ///     - map: map view controller
-    ///     - parent: parent view controller
-    func addMap(_ map: MapViewController, parent: UIViewController)
-    /// Restores map view if needed.
-    func restoreMapIfNeeded()
 }

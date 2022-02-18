@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -53,6 +52,8 @@ struct FlightPlanListHeaderCellProvider: Equatable {
 /// Cell of `FlightPlanListHeaderViewController` to display type of available kind of project.
 class FlightPlanListHeaderCell: UICollectionViewCell, NibReusable {
 
+    @IBOutlet weak var heightConstraint: NSLayoutConstraint!
+
     // MARK: - Outlets
     @IBOutlet weak var countLabel: UILabel! {
         didSet {
@@ -71,6 +72,7 @@ class FlightPlanListHeaderCell: UICollectionViewCell, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
         setupSelection(false)
+        heightConstraint.constant = Layout.fileFilterCollectionViewCellHeight(isRegularSizeClass)
     }
 
     // MARK: - Private Funcs

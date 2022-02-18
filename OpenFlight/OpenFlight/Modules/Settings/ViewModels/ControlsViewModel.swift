@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,55 +33,25 @@ import SwiftyUserDefaults
 /// State for `ControlsViewModel`.
 final class ControlsState: DevicesConnectionState {
     // MARK: - Internal Properties
-    var currentPilotingStyle: PilotingStyle = ControlsSettingsMode.defaultPilotingMode
-    var isArcadeModeAvailable: Bool = false
     var isVirtualJogsAvailable: Bool = false
     var isLanded: Bool?
     var isTakingOff: Bool?
     var isLanding: Bool?
     var isReturningHome: Bool?
-    var isArcadeTiltReversed: Bool? = Defaults.arcadeTiltReversedSetting
     var isEvTriggerActivated: Bool? = Defaults.evTriggerSetting
     var controlMode: ControlsSettingsMode = ControlsSettingsMode.defaultMode
-    /// Compute remote control and drone states to allows or not arcade mode.
-    var arcadeUnavailabilityIssues: [ArcadeUnavailabilityIssues] {
-        var issues = [ArcadeUnavailabilityIssues]()
-        if remoteControlConnectionState?.isConnected() != true {
-            issues.append(.remoteDisconnected)
-        }
-        if droneConnectionState?.isConnected() != true {
-            issues.append(.droneDisconnected)
-        }
-        if isLanded == true {
-            issues.append(.droneLanded)
-        }
-        if isTakingOff == true {
-            issues.append(.droneTakingOff)
-        }
-        if isLanding == true {
-            issues.append(.droneLanding)
-        }
-        if isReturningHome == true {
-            issues.append(.rthInProgress)
-        }
-
-        return issues
-    }
 
     // MARK: - Override Funcs
     override func copy() -> ControlsState {
-        let copy = ControlsState(droneConnectionState: self.droneConnectionState,
-                                 remoteControlConnectionState: self.remoteControlConnectionState)
-        copy.currentPilotingStyle = self.currentPilotingStyle
-        copy.isArcadeModeAvailable = self.isArcadeModeAvailable
-        copy.isVirtualJogsAvailable = self.isVirtualJogsAvailable
-        copy.isLanded = self.isLanded
-        copy.isTakingOff = self.isTakingOff
-        copy.isLanding = self.isLanding
-        copy.isReturningHome = self.isReturningHome
-        copy.controlMode = self.controlMode
-        copy.isArcadeTiltReversed = self.isArcadeTiltReversed
-        copy.isEvTriggerActivated = self.isEvTriggerActivated
+        let copy = ControlsState(droneConnectionState: droneConnectionState,
+                                 remoteControlConnectionState: remoteControlConnectionState)
+        copy.isVirtualJogsAvailable = isVirtualJogsAvailable
+        copy.isLanded = isLanded
+        copy.isTakingOff = isTakingOff
+        copy.isLanding = isLanding
+        copy.isReturningHome = isReturningHome
+        copy.controlMode = controlMode
+        copy.isEvTriggerActivated = isEvTriggerActivated
 
         return copy
     }
@@ -91,16 +60,13 @@ final class ControlsState: DevicesConnectionState {
         guard let other = other as? ControlsState else { return false }
 
         return super.isEqual(to: other)
-            && self.currentPilotingStyle == other.currentPilotingStyle
-            && self.isArcadeModeAvailable == other.isArcadeModeAvailable
-            && self.isVirtualJogsAvailable == other.isVirtualJogsAvailable
-            && self.isLanded == other.isLanded
-            && self.isTakingOff == other.isTakingOff
-            && self.isLanding == other.isLanding
-            && self.isReturningHome == other.isReturningHome
-            && self.controlMode == other.controlMode
-            && self.isArcadeTiltReversed == other.isArcadeTiltReversed
-            && self.isEvTriggerActivated == other.isEvTriggerActivated
+            && isVirtualJogsAvailable == other.isVirtualJogsAvailable
+            && isLanded == other.isLanded
+            && isTakingOff == other.isTakingOff
+            && isLanding == other.isLanding
+            && isReturningHome == other.isReturningHome
+            && controlMode == other.controlMode
+            && isEvTriggerActivated == other.isEvTriggerActivated
     }
 }
 
@@ -117,18 +83,9 @@ final class ControlsViewModel: DevicesStateViewModel<ControlsState> {
         return [SettingEntry(setting: SettingsCellType.controlMode)]
     }
     var currentControlMode: ControlsSettingsMode {
-        let pilotingStyle = self.state.value.currentPilotingStyle
-        var mode: ControlsSettingsMode = PilotingPreset.controlMode
-        var rawUserMode: String?
-        switch pilotingStyle {
-        case .arcade:
-            rawUserMode = Defaults.userControlModeArcadeSetting
-        case .classical:
-            rawUserMode = Defaults.userControlModeSetting
-        }
-
-        if let rawUserMode = rawUserMode,
-           let userMode = ControlsSettingsMode(value: rawUserMode, mode: pilotingStyle) {
+        var mode: ControlsSettingsMode = ControlsSettingsMode.defaultMode
+        if let rawUserMode = Defaults.userControlModeSetting,
+           let userMode = ControlsSettingsMode(value: rawUserMode) {
             mode = userMode
         }
 
@@ -143,94 +100,59 @@ final class ControlsViewModel: DevicesStateViewModel<ControlsState> {
         if !Defaults.hasKey(\.userControlModeSetting) {
             resetSettings()
         }
-
-        if !Defaults.hasKey(\.userControlModeArcadeSetting) {
-            Defaults.userControlModeArcadeSetting = PilotingPreset.controlMode.value
-        }
     }
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
         /// Listen Piloting Control.
-        pilotingControlRef = drone.getPeripheral(Peripherals.pilotingControl, observer: { [weak self] control in
-            let pilotingStyle: PilotingStyle = control?.behaviourSetting.value == .cameraOperated
-                ? .arcade
-                : .classical
-            // Update piloting style state.
-            self?.updateControlState(style: pilotingStyle)
+        pilotingControlRef = drone.getPeripheral(Peripherals.pilotingControl, observer: { [unowned self] control in
+            if control?.behaviourSetting.value == .cameraOperated {
+                resetBehaviourSettings()
+            }
             // Update remote control mapping to apply changes.
-            self?.updateRemoteMapping(withMode: self?.currentControlMode ?? PilotingPreset.controlMode)
+            updateRemoteMapping(withMode: currentControlMode)
         })
         /// Listen Manual Piloting Interface.
-        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [weak self] _ in
-            self?.updateState()
+        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [unowned self] _ in
+            updateState()
         }
         /// Listen gimbal.
-        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] _ in
-            self?.updateState()
+        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [unowned self] _ in
+            updateState()
         }
         /// Listen flying indicators.
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
-            self?.updateState()
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] _ in
+            updateState()
         }
     }
 
     override func listenRemoteControl(remoteControl: RemoteControl) {
         super.listenRemoteControl(remoteControl: remoteControl)
 
-        self.updateState()
+        updateState()
     }
 
     // MARK: - Internal Funcs
     /// Reset settings to default values.
     func resetSettings() {
-        Defaults.arcadeTiltReversedSetting = false
         Defaults.evTriggerSetting = false
-        updateRemoteMapping(withMode: ControlsSettingsMode.defaultMode(for: self.state.value.currentPilotingStyle))
+        updateRemoteMapping(withMode: ControlsSettingsMode.defaultMode)
         drone?.getPilotingItf(PilotingItfs.manualCopter)?.thrownTakeOffSettings?.value = PilotingPreset.thrownTakeOff
     }
 
-    /// Manage piloting control change.
-    ///
-    /// - Parameters:
-    ///     - style: current piloting style
-    func switchToPilotingStyle(_ style: PilotingStyle) {
-        guard state.value.currentPilotingStyle != style else { return }
-
-        guard let pilotingControl = drone?.getPeripheral(Peripherals.pilotingControl) else {
-            self.resetControlState()
-            return
-        }
-
-        switch style {
-        case .classical:
-            pilotingControl.behaviourSetting.value = .standard
-        case .arcade:
-            pilotingControl.behaviourSetting.value = .cameraOperated
-        }
-    }
-
-    // swiftlint:disable function_body_length
     /// Update remote mapping regarding controls settings mode.
     /// This has direct effect on remote control mapping.
     ///
     /// - Parameters:
     ///     - controlMode: controls settings mode
     func updateRemoteMapping(withMode controlMode: ControlsSettingsMode) {
-        let copy = self.state.value.copy()
+        let copy = state.value.copy()
         copy.controlMode = controlMode
-        copy.isArcadeTiltReversed = Defaults.arcadeTiltReversedSetting
         copy.isEvTriggerActivated = Defaults.evTriggerSetting
-        self.state.set(copy)
+        state.set(copy)
 
-        let pilotingStyle = controlMode.pilotingStyle
-        switch pilotingStyle {
-        case .arcade:
-            Defaults.userControlModeArcadeSetting = controlMode.value
-        case .classical:
-            Defaults.userControlModeSetting = controlMode.value
-        }
+        Defaults.userControlModeSetting = controlMode.value
 
         guard let remote = remoteControl,
               let skyCtrl4 = remote.getPeripheral(Peripherals.skyCtrl4Gamepad),
@@ -238,11 +160,10 @@ final class ControlsViewModel: DevicesStateViewModel<ControlsState> {
             return
         }
 
-        let tiltReversedSetting = Defaults.arcadeTiltReversedSetting
-        skyCtrl4.volatileMappingSetting?.value = pilotingStyle == .arcade
+        skyCtrl4.volatileMappingSetting?.value = false
 
-        switch (controlMode, pilotingStyle) {
-        case (.mode1, .classical):
+        switch controlMode {
+        case .mode1:
             skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
                                                                      axisEvent: .leftStickVertical, buttonEvents: []))
             skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
@@ -254,70 +175,7 @@ final class ControlsViewModel: DevicesStateViewModel<ControlsState> {
             skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
                                                                      axisEvent: .leftSlider, buttonEvents: []))
             reverseAxes([.leftSlider])
-        case (.mode1, .arcade):
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
-                                                                     axisEvent: .leftStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
-                                                                     axisEvent: .leftStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
-                                                                     axisEvent: .rightStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
-                                                                     axisEvent: .rightStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
-                                                                     axisEvent: .leftSlider, buttonEvents: []))
-            let axes: Set<SkyCtrl4Axis> = tiltReversedSetting ? [] : [.rightStickVertical]
-            reverseAxes(axes)
-        case (.mode2, .classical):
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
-                                                                     axisEvent: .leftStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
-                                                                     axisEvent: .leftStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
-                                                                     axisEvent: .rightStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
-                                                                     axisEvent: .rightStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
-                                                                     axisEvent: .leftSlider, buttonEvents: []))
-            reverseAxes([.leftSlider])
-        case (.mode2, .arcade):
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
-                                                                     axisEvent: .leftStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
-                                                                     axisEvent: .leftStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
-                                                                     axisEvent: .rightStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
-                                                                     axisEvent: .rightStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
-                                                                     axisEvent: .leftSlider, buttonEvents: []))
-            let axes: Set<SkyCtrl4Axis> = tiltReversedSetting ? [] : [.leftStickVertical]
-            reverseAxes(axes)
-        case (.mode3, .classical):
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
-                                                                     axisEvent: .leftStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
-                                                                     axisEvent: .leftStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
-                                                                     axisEvent: .rightStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
-                                                                     axisEvent: .rightStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
-                                                                     axisEvent: .leftSlider, buttonEvents: []))
-            reverseAxes([.leftSlider])
-        case (.mode3, .arcade):
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
-                                                                     axisEvent: .leftStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
-                                                                     axisEvent: .leftStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
-                                                                     axisEvent: .rightStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
-                                                                     axisEvent: .rightStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
-                                                                     axisEvent: .leftSlider, buttonEvents: []))
-            let axes: Set<SkyCtrl4Axis> = tiltReversedSetting ? [] : [.rightStickVertical]
-            reverseAxes(axes)
-        case (.mode4, .classical):
+        case .mode1Inversed:
             skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
                                                                      axisEvent: .leftStickVertical, buttonEvents: []))
             skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
@@ -329,22 +187,32 @@ final class ControlsViewModel: DevicesStateViewModel<ControlsState> {
             skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
                                                                      axisEvent: .leftSlider, buttonEvents: []))
             reverseAxes([.leftSlider])
-        case (.mode4, .arcade):
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
+        case .mode2:
+            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
                                                                      axisEvent: .leftStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
+            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
                                                                      axisEvent: .leftStickHorizontal, buttonEvents: []))
             skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
                                                                      axisEvent: .rightStickVertical, buttonEvents: []))
+            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
+                                                                     axisEvent: .rightStickHorizontal, buttonEvents: []))
+            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
+                                                                     axisEvent: .leftSlider, buttonEvents: []))
+            reverseAxes([.leftSlider])
+        case .mode2Inversed:
+            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
+                                                                     axisEvent: .leftStickVertical, buttonEvents: []))
+            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
+                                                                     axisEvent: .leftStickHorizontal, buttonEvents: []))
+            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
+                                                                     axisEvent: .rightStickVertical, buttonEvents: []))
             skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
                                                                      axisEvent: .rightStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
+            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
                                                                      axisEvent: .leftSlider, buttonEvents: []))
-            let axes: Set<SkyCtrl4Axis> = tiltReversedSetting ? [] : [.leftStickVertical]
-            reverseAxes(axes)
+            reverseAxes([.leftSlider])
         }
     }
-    // swiftlint:enable function_body_length
 }
 
 // MARK: - Private Funcs
@@ -368,35 +236,20 @@ private extension ControlsViewModel {
         }
     }
 
-    /// Update state dedicated to current control mode.
-    ///
-    /// - Parameters:
-    ///     - style: current piloting style
-    func updateControlState(style: PilotingStyle) {
-        let copy = self.state.value.copy()
-        copy.currentPilotingStyle = style
-        self.state.set(copy)
-    }
-
     /// Update state for drone and remote states.
     func updateState() {
-        let copy = self.state.value.copy()
+        let copy = state.value.copy()
         copy.isLanding = drone?.isLanding
         copy.isLanded = drone?.isStateLanded
         copy.isTakingOff = drone?.isTakingOff
         copy.isReturningHome = drone?.isReturningHome
-        copy.isArcadeModeAvailable = copy.arcadeUnavailabilityIssues.isEmpty
         copy.isVirtualJogsAvailable = copy.droneConnectionState?.isConnected() ?? false
             && !(copy.remoteControlConnectionState?.isConnected() ?? false)
-        self.state.set(copy)
+        state.set(copy)
     }
 
-    /// Reset control state provide fake state change to for refresh display.
-    func resetControlState() {
-        let copy = self.state.value.copy()
-        copy.currentPilotingStyle = .arcade
-        self.state.set(copy)
-        copy.currentPilotingStyle = .classical
-        self.state.set(copy)
+    /// Resets behaviour settings.
+    func resetBehaviourSettings() {
+        drone?.getPeripheral(Peripherals.pilotingControl)?.behaviourSetting.value = .standard
     }
 }

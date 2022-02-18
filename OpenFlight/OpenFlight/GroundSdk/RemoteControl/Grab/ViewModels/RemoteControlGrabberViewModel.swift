@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,7 +34,7 @@ public final class RemoteControlGrabberViewModel {
     // MARK: - Private Properties
     /// ViewModels.
     private var rightSliderViewModel: RightSliderViewModel
-    private var leftSliderViewModel: LeftSliderViewModel = LeftSliderViewModel()
+    private var leftSliderViewModel: LeftSliderViewModel
     private var rearLeftButtonViewModel: RearLeftButtonViewModel
     private var rearRightButtonViewModel: RearRightButtonViewModel = RearRightButtonViewModel()
     private var frontBottomButtonViewModel: FrontRightButtonViewModel = FrontRightButtonViewModel()
@@ -65,8 +64,10 @@ public final class RemoteControlGrabberViewModel {
     ///
     /// - Parameters:
     ///    - zoomService: the zoom service
-    public init(zoomService: ZoomService) {
+    ///    - gimbalTiltService: gimbal tilt service
+    public init(zoomService: ZoomService, gimbalTiltService: GimbalTiltService) {
         rightSliderViewModel = RightSliderViewModel(zoomService: zoomService)
+        leftSliderViewModel = LeftSliderViewModel(gimbalTiltService: gimbalTiltService)
         rearLeftButtonViewModel = RearLeftButtonViewModel(zoomService: zoomService)
 
         // Right slider related grab.

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +32,6 @@ import SwiftyUserDefaults
 import GroundSdk
 
 /// State for HUDCameraStreamingViewModel.
-
 final class HUDCameraStreamingState: ViewModelState, EquatableState, Copying {
     // MARK: - Internal Properties
     /// Current stream server enabled state.
@@ -46,7 +44,7 @@ final class HUDCameraStreamingState: ViewModelState, EquatableState, Copying {
     // MARK: - Init
     required init() { }
 
-    /// Init.
+    /// Constructor.
     ///
     /// - Parameters:
     ///    - streamEnabled: stream server enable state
@@ -69,15 +67,14 @@ final class HUDCameraStreamingState: ViewModelState, EquatableState, Copying {
 
     /// Returns a copy of the object.
     func copy() -> HUDCameraStreamingState {
-        let copy = HUDCameraStreamingState(streamEnabled: self.streamEnabled,
-                                           secondaryScreenSetting: self.secondaryScreenSetting,
-                                           overexposureSetting: self.overexposureSetting)
+        let copy = HUDCameraStreamingState(streamEnabled: streamEnabled,
+                                           secondaryScreenSetting: secondaryScreenSetting,
+                                           overexposureSetting: overexposureSetting)
         return copy
     }
 }
 
 /// ViewModel for HUDCameraStreaming, notifies on stream server, camera live and secondary screen setting changes.
-
 final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamingState> {
     // MARK: - Internal Properties
     /// Front camera stream.
@@ -116,7 +113,7 @@ final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamin
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
-        /// If monitoring is already enabled, reset it for drone change.
+        // if monitoring is already enabled, reset it for drone change
         if isMonitoring {
             enableMonitoring(false)
             enableMonitoring(true)
@@ -178,7 +175,7 @@ private extension HUDCameraStreamingViewModel {
 
     /// Starts watchers for defaults.
     func listenDefaults() {
-        // Start overexposure setting observer.
+        // start overexposure setting observer
         overexposureSettingObserver = Defaults.observe(\.overexposureSetting, options: [.new]) { [weak self] _ in
             DispatchQueue.userDefaults.async {
                 let copy = self?.state.value.copy()
@@ -194,10 +191,10 @@ private extension HUDCameraStreamingViewModel {
               cameraLive.playState != .playing else {
             return
         }
-        // Play live stream.
+        // play live stream
         _ = cameraLive.play()
 
-        // Retry later to recover from potential playing error (for instance when connection quality is low).
+        // retry later to recover from potential playing error (for instance when connection quality is low)
         playStreamRetryTimer?.invalidate()
         playStreamRetryTimer = Timer.scheduledTimer(withTimeInterval: Constants.playStreamRetryDelay, repeats: false) { [weak self] _ in
             if let cameraLive = self?.cameraLiveRef?.value {

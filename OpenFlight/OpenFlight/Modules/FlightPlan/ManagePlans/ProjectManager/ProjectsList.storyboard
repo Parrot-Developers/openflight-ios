@@ -25,12 +25,12 @@
                         <viewControllerLayoutGuide type="top" id="mBQ-Fq-eA5"/>
                         <viewControllerLayoutGuide type="bottom" id="Swi-8C-9Sy"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
+                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="5EZ-qb-Rvc">
                         <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="W0U-aZ-piy">
-                                <rect key="frame" x="10" y="0.0" width="876" height="414"/>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="W0U-aZ-piy" customClass="FileManagerCollectionView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" sectionInsetReference="safeArea" id="NZj-V0-Xjj">
                                     <size key="itemSize" width="128" height="128"/>
@@ -39,8 +39,8 @@
                                     <inset key="sectionInset" minX="10" minY="20" maxX="10" maxY="10"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="T60-YF-LHl">
-                                        <rect key="frame" x="44" y="20" width="128" height="128"/>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="T60-YF-LHl">
+                                        <rect key="frame" x="54" y="20" width="128" height="128"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="5ic-j5-JBp">
                                             <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
@@ -50,16 +50,16 @@
                                 </cells>
                             </collectionView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="CY6-3i-Yxe">
-                                <rect key="frame" x="60" y="190" width="776" height="34"/>
+                                <rect key="frame" x="16" y="187" width="864" height="40"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ciU-Na-fYL">
-                                        <rect key="frame" x="0.0" y="0.0" width="776" height="17"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="864" height="20"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="17"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GH6-qN-6AW">
-                                        <rect key="frame" x="0.0" y="17" width="776" height="17"/>
+                                        <rect key="frame" x="0.0" y="20" width="864" height="20"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
@@ -74,8 +74,8 @@
                             <constraint firstItem="W0U-aZ-piy" firstAttribute="top" secondItem="5EZ-qb-Rvc" secondAttribute="top" id="SmA-i9-Z7L"/>
                             <constraint firstItem="CY6-3i-Yxe" firstAttribute="centerY" secondItem="5EZ-qb-Rvc" secondAttribute="centerY" id="W1Y-P0-qI5"/>
                             <constraint firstAttribute="trailingMargin" secondItem="CY6-3i-Yxe" secondAttribute="trailing" id="WLx-L3-z3m"/>
-                            <constraint firstItem="W0U-aZ-piy" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" constant="10" id="cg0-jc-u4m"/>
-                            <constraint firstAttribute="trailing" secondItem="W0U-aZ-piy" secondAttribute="trailing" constant="10" id="te2-TQ-8Zi"/>
+                            <constraint firstItem="W0U-aZ-piy" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" id="cg0-jc-u4m"/>
+                            <constraint firstAttribute="trailing" secondItem="W0U-aZ-piy" secondAttribute="trailing" id="te2-TQ-8Zi"/>
                         </constraints>
                     </view>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
@@ -93,7 +93,7 @@
     </scenes>
     <resources>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

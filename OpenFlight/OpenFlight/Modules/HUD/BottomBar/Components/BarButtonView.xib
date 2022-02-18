@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -47,36 +47,40 @@
                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XQO-eX-ILx">
                                     <rect key="frame" x="26" y="0.0" width="112" height="42"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="FWm-UR-Y7o">
-                                            <rect key="frame" x="0.0" y="18" width="112" height="0.0"/>
-                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="11"/>
-                                            <color key="textColor" name="default_text_color"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="oh8-xp-Wct">
-                                            <rect key="frame" x="0.0" y="21" width="107" height="0.0"/>
-                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                            <color key="textColor" name="default_text_color"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="0N1-zE-nmL">
-                                            <rect key="frame" x="112" y="21" width="0.0" height="0.0"/>
-                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
-                                            <color key="textColor" name="default_text_color"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
+                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="dFs-8k-u7L">
+                                            <rect key="frame" x="0.0" y="7.5" width="112" height="27"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="title" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FWm-UR-Y7o">
+                                                    <rect key="frame" x="0.0" y="0.0" width="112" height="11"/>
+                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="11"/>
+                                                    <color key="textColor" name="default_text_color"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="04C-Rs-DPq">
+                                                    <rect key="frame" x="0.0" y="14" width="112" height="13"/>
+                                                    <subviews>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="mode" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oh8-xp-Wct">
+                                                            <rect key="frame" x="0.0" y="0.0" width="67" height="13"/>
+                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                            <color key="textColor" name="default_text_color"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="subtitle" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="0N1-zE-nmL">
+                                                            <rect key="frame" x="72" y="0.0" width="40" height="13"/>
+                                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
+                                                            <color key="textColor" name="default_text_color"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                    </subviews>
+                                                </stackView>
+                                            </subviews>
+                                        </stackView>
                                     </subviews>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <constraints>
-                                        <constraint firstItem="FWm-UR-Y7o" firstAttribute="leading" secondItem="XQO-eX-ILx" secondAttribute="leading" id="9E6-yd-uZR"/>
-                                        <constraint firstAttribute="trailing" secondItem="FWm-UR-Y7o" secondAttribute="trailing" id="ERc-lw-c47"/>
-                                        <constraint firstAttribute="trailing" secondItem="0N1-zE-nmL" secondAttribute="trailing" id="TXC-70-nlt"/>
-                                        <constraint firstItem="0N1-zE-nmL" firstAttribute="leading" secondItem="oh8-xp-Wct" secondAttribute="trailing" constant="5" id="a13-wU-H2h"/>
-                                        <constraint firstItem="oh8-xp-Wct" firstAttribute="leading" secondItem="XQO-eX-ILx" secondAttribute="leading" id="bx0-My-TXi"/>
-                                        <constraint firstAttribute="centerY" secondItem="FWm-UR-Y7o" secondAttribute="bottom" constant="3" id="fIn-xY-AIb"/>
-                                        <constraint firstItem="oh8-xp-Wct" firstAttribute="top" secondItem="FWm-UR-Y7o" secondAttribute="bottom" constant="3" id="ij1-is-F2Y"/>
-                                        <constraint firstItem="FWm-UR-Y7o" firstAttribute="centerX" secondItem="XQO-eX-ILx" secondAttribute="centerX" id="nfx-qE-5EM"/>
-                                        <constraint firstItem="0N1-zE-nmL" firstAttribute="centerY" secondItem="oh8-xp-Wct" secondAttribute="centerY" id="tjd-Bq-paz"/>
+                                        <constraint firstAttribute="trailing" secondItem="dFs-8k-u7L" secondAttribute="trailing" id="1CW-vW-3Ta"/>
+                                        <constraint firstItem="dFs-8k-u7L" firstAttribute="leading" secondItem="XQO-eX-ILx" secondAttribute="leading" id="aF6-4e-aKf"/>
+                                        <constraint firstItem="dFs-8k-u7L" firstAttribute="centerY" secondItem="XQO-eX-ILx" secondAttribute="centerY" id="qwW-ty-Qiy"/>
                                     </constraints>
                                 </view>
                             </subviews>
@@ -106,7 +110,7 @@
     <resources>
         <image name="icCameraModeVideo" width="20" height="13"/>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

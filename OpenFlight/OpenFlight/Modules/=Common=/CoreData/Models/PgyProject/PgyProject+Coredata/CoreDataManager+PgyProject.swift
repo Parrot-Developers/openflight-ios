@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,192 +30,365 @@
 import Foundation
 import CoreData
 import GroundSdk
+import Combine
 
+// MARK: - Repository Protocol
 public protocol PgyProjectRepository: AnyObject {
+    /// Publisher notify changes
+    var pgyProjectsDidChangePublisher: AnyPublisher<Void, Never> { get }
 
-    /// Persist or update pgyProjects into CoreData
+    // MARK: __ Save Or Update
+    /// Save or update PgyProject into CoreData from PgyProjectModel
     /// - Parameters:
-    ///     - pgyProject: PgyProjectModel to persist
-    ///     - byUserUpdate: Bool to indicate in case of modifications, if those are made by User or by synchro process.
-    func persist(_ pgyProject: PgyProjectModel, _ byUserUpdate: Bool)
+    ///    - pgyProjectModel: PgyProjectModel to save or update
+    ///    - byUserUpdate: Boolean if updated by user interaction
+    ///    - toSynchro: Boolean if should be synchro
+    func saveOrUpdatePgyProject(_ pgyProjectModel: PgyProjectModel, byUserUpdate: Bool, toSynchro: Bool)
 
-    /// Persist or update pgyProjects list into CoreData
+    /// Save or update PgyProject into CoreData from PgyProjectModel
     /// - Parameters:
-    ///     - pgyProjectList: PgyProjectModel list to persist
-    ///     - byUserUpdate: Bool to indicate in case of modifications, if those are made by User or by synchro process.
-    func persist(_ pgyProjectList: [PgyProjectModel], _ byUserUpdate: Bool)
+    ///    - pgyProjectModel: PgyProjectModel to save or update
+    ///    - byUserUpdate: Boolean if updated by user interaction
+    ///    - toSynchro: Boolean if should be synchro
+    ///    - completion: The callback returning the status.
+    func saveOrUpdatePgyProject(_ pgyProjectModel: PgyProjectModel,
+                                byUserUpdate: Bool,
+                                toSynchro: Bool,
+                                completion: ((_ status: Bool) -> Void)?)
 
-    /// Load PgyProject by pgyProjectsId from CoreData
-    /// return PgyProjectModel if exist
+    /// Save or update PgyProjects into CoreData from list of PgyProjectModels
     /// - Parameters:
-    ///     - pgyProjectId: identifier to load
-    func loadPgyProject(_ pgyProjectsId: Int64) -> PgyProjectModel?
+    ///    - pgyProjectModels: List of PgyProjectModels to save or update
+    ///    - byUserUpdate: Boolean if updated by user interaction
+    ///    - toSynchro: Boolean if should be synchro
+    func saveOrUpdatePgyProjects(_ pgyProjectModels: [PgyProjectModel], byUserUpdate: Bool, toSynchro: Bool)
 
-    /// Load all PgyProject from CoreData
-    /// return PgyProjectModel list if exist
-    func loadAllPgyProject() -> [PgyProjectModel]
-
-    /// Load PgyProject flagged tobeDeleted from CoreData
-    /// - return: PgyProjectModel list
-    func loadPgyProjectToRemove() -> [PgyProjectModel]
-
-    /// Load PgyProject by Key and Value from CoreData
+    /// Save or update PgyProjects into CoreData from list of PgyProjectModels
     /// - Parameters:
-    ///     - key: Key of PgyProject to load
-    ///     - value: Value of PgyProject to load
-    /// - return: PgyProjectModel list
-    func loadPgyProject(_ key: String, _ value: String) -> [PgyProjectModel]
+    ///    - pgyProjectModels: List of PgyProjectModels to save or update
+    ///    - byUserUpdate: Boolean if updated by user interaction
+    ///    - toSynchro: Boolean if should be synchro
+    ///    - completion: The callback returning the status.
+    func saveOrUpdatePgyProjects(_ pgyProjectModels: [PgyProjectModel],
+                                 byUserUpdate: Bool,
+                                 toSynchro: Bool,
+                                 completion: ((_ status: Bool) -> Void)?)
 
-    /// Remove PgyProject by pgyProjectsId from CoreData
-    /// - Parameters:
-    ///     - pgyProjectId: pgyProjectIdProject identifier to remove
-    func removePgyProject(_ pgyProjectId: Int64)
+    /// Update PgyProject CoreData object to be deleted
+    /// - Parameter projectId: project ID to be updated
+    func updatePgyProjectToBeDeleted(withProjectId projectId: Int64)
 
-    /// Perform remove PgyProject by pgyProjectsId from CoreData
+    // MARK: __ Get
+    /// Get PgyProjectModel with project ID
+    /// - Parameter projectId: PgyProject's ID to search
+    /// - Returns PgyProjectModel object if not found
+    func getPgyProject(withProjectId projectId: Int64) -> PgyProjectModel?
+
+    /// Get all PgyProjectModels from anonymous user
+    /// - Returns List of PgyProjectModels
+    func getAllAnonymousPgyProjects(anonymousId: String?) -> [PgyProjectModel]
+
+    /// Get count of all PgyProjects
+    /// - Returns: Count of all PgyProjects
+    func getAllPgyProjectsCount() -> Int
+
+    /// Get all PgyProjectModels from all PgyProjects in CoreData
+    /// - Returns List of PgyProjectModels
+    func getAllPgyProjects() -> [PgyProjectModel]
+
+    /// Get all PgyProjectModels to be deleted from PgyProjects in CoreData
+    /// - Returns List of PgyProjectModels
+    func getAllPgyProjectsToBeDeleted() -> [PgyProjectModel]
+
+    // MARK: __ Delete
+    /// Delete PgyProject in CoreData with a specified list of project IDs
+    /// - Parameter projectIds: List of project IDs to search
+    func deletePgyProjects(withProjectIds projectIds: [Int64])
+
+    /// Delete PgyProject in CoreData withproject ID
     /// - Parameters:
-    ///     - pgyProjectId: pgyProjectIdProject identifier to remove
-    func performRemovePgyProject(_ pgyProjectId: Int64)
+    ///     - projectId: project ID to remove
+    ///     - updateRelatedFlightPlan: update related FlightPlan if it exist
+    func deletePgyProject(withProjectId projectId: Int64, updateRelatedFlightPlan: Bool)
 }
 
 extension CoreDataServiceImpl: PgyProjectRepository {
+    public var pgyProjectsDidChangePublisher: AnyPublisher<Void, Never> {
+        return pgyProjectsDidChangeSubject.eraseToAnyPublisher()
+    }
 
-    public func persist(_ pgyProject: PgyProjectModel, _ byUserUpdate: Bool = true) {
-        // Prepare content to save.
-        guard let managedContext = currentContext else { return }
+    // MARK: __ Save Or Update
+    public func saveOrUpdatePgyProject(_ pgyProjectModel: PgyProjectModel,
+                                       byUserUpdate: Bool,
+                                       toSynchro: Bool,
+                                       completion: ((_ status: Bool) -> Void)?) {
+        var modifDate: Date?
 
-        // Prepare new CoreData entity
-        let pgyProjectObject: NSManagedObject?
-
-        // Check object if exists.
-        if let object = self.pgyProjects("pgyProjectId", "\(pgyProject.pgyProjectId)", false).first {
-            // Use persisted object.
-            pgyProjectObject = object
-        } else {
-            // Create new object.
-            let fetchRequest: NSFetchRequest<PgyProject> = PgyProject.fetchRequest()
-            guard let name = fetchRequest.entityName else {
-                return
+        performAndSave({ [unowned self] _ in
+            var pgyProjectObj: PgyProject?
+            if let existingPgyProject = getPgyProjectCD(withProjectId: pgyProjectModel.pgyProjectId) {
+                pgyProjectObj = existingPgyProject
+            } else if let newPgyProject = insertNewObject(entityName: PgyProject.entityName) as? PgyProject {
+                pgyProjectObj = newPgyProject
             }
-            pgyProjectObject = NSEntityDescription.insertNewObject(forEntityName: name, into: managedContext)
-        }
 
-        guard let pgyProjectObj = pgyProjectObject as? PgyProject else { return }
-
-        // To ensure synchronisation
-        // reset `synchroStatus´ when the modifications made by User
-        pgyProjectObj.synchroStatus = ((byUserUpdate) ? 0 : pgyProject.synchroStatus) ?? 0
-        pgyProjectObj.apcId = pgyProject.apcId
-        pgyProjectObj.cloudToBeDeleted = pgyProject.cloudToBeDeleted
-        pgyProjectObj.pgyProjectId = pgyProject.pgyProjectId
-        pgyProjectObj.name = pgyProject.name
-        pgyProjectObj.processingCalled = pgyProject.processingCalled
-        pgyProjectObj.projectDate = pgyProject.projectDate
-        pgyProjectObj.synchroDate = pgyProject.synchroDate
-
-        managedContext.perform {
-            do {
-                try managedContext.save()
-            } catch let error {
-                ULog.e(.dataModelTag, "Error during persist PgyProject into Coredata: \(error.localizedDescription)")
+            guard let pgyProject = pgyProjectObj else {
+                completion?(false)
+                return false
             }
+
+            var pgyProjectModel = pgyProjectModel
+
+            if byUserUpdate {
+                modifDate = Date()
+                pgyProjectModel.latestLocalModificationDate = modifDate
+            }
+
+            let logMessage = """
+                🗂⬇️ saveOrUpdatePgyProject: \(pgyProject), \
+                byUserUpdate: \(byUserUpdate), toSynchro: \(toSynchro), \
+                projectModel: \(pgyProjectModel)
+                """
+            ULog.d(.dataModelTag, logMessage)
+
+            pgyProject.update(fromPgyProjectModel: pgyProjectModel)
+
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                if let modifDate = modifDate, toSynchro {
+                    latestPgyProjectLocalModificationDate.send(modifDate)
+                }
+
+                pgyProjectsDidChangeSubject.send()
+
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag,
+                        "Error Core Data saveOrUpdatePgyProject projectId: \(pgyProjectModel.pgyProjectId) - error: \(error.localizedDescription)")
+                completion?(false)
+            }
+        })
+    }
+
+    public func saveOrUpdatePgyProject(_ pgyProjectModel: PgyProjectModel,
+                                       byUserUpdate: Bool,
+                                       toSynchro: Bool) {
+        saveOrUpdatePgyProject(pgyProjectModel, byUserUpdate: byUserUpdate, toSynchro: toSynchro, completion: nil)
+    }
+
+    public func saveOrUpdatePgyProjects(_ pgyProjectModels: [PgyProjectModel], byUserUpdate: Bool, toSynchro: Bool) {
+        for pgyProjectModel in pgyProjectModels {
+            saveOrUpdatePgyProject(pgyProjectModel, byUserUpdate: byUserUpdate, toSynchro: toSynchro)
         }
     }
 
-    public func persist(_ pgyProjectList: [PgyProjectModel], _ byUserUpdate: Bool = true) {
-        for pgyProject in pgyProjectList {
-            self.persist(pgyProject, byUserUpdate)
+    public func saveOrUpdatePgyProjects(_ pgyProjectModels: [PgyProjectModel],
+                                        byUserUpdate: Bool,
+                                        toSynchro: Bool,
+                                        completion: ((_ status: Bool) -> Void)?) {
+        var status = true
+        pgyProjectModels.enumerated()
+            .forEach { (index, pgyProject) in
+                saveOrUpdatePgyProject(pgyProject,
+                                       byUserUpdate: byUserUpdate,
+                                       toSynchro: toSynchro) {
+                    status = $0 && status
+                    if index == pgyProjectModels.endIndex-1 {
+                        completion?(status)
+                    }
+                }
+            }
+    }
+
+    public func updatePgyProjectToBeDeleted(withProjectId projectId: Int64) {
+        guard let currentContext = currentContext,
+              let pgyProject = getPgyProjectCD(withProjectId: projectId) else {
+                  return
+              }
+
+        pgyProject.isLocalDeleted = true
+        let currentDate = Date()
+        pgyProject.latestLocalModificationDate = currentDate
+
+        do {
+            try currentContext.save()
+        } catch let error {
+            ULog.e(.dataModelTag, "Error deletePgyProject with projectId: \(projectId) - error: \(error.localizedDescription)")
         }
     }
 
-    public func loadPgyProject(_ pgyProjectId: Int64) -> PgyProjectModel? {
-        return pgyProjects("pgyProjectId", "\(pgyProjectId)")
-            .first?.model()
+    // MARK: __ Get
+    public func getPgyProject(withProjectId projectId: Int64) -> PgyProjectModel? {
+        if let pgyProject = getPgyProjectCD(withProjectId: projectId) {
+            return pgyProject.model()
+        }
+        return nil
     }
 
-    public func loadPgyProject(_ key: String, _ value: String) -> [PgyProjectModel] {
-        return pgyProjects(key, value)
-            .compactMap({ $0.model() })
+    public func getAllAnonymousPgyProjects(anonymousId: String?) -> [PgyProjectModel] {
+        return getAllAnonymousPgyProjectsCD(anonymousId: anonymousId, toBeDeleted: false).map({ $0.model() })
     }
 
-    public func loadAllPgyProject() -> [PgyProjectModel] {
-        return pgyProjects("apcId", userInformation.apcId)
-            .compactMap({ $0.model() })
+    public func getAllPgyProjectsCount() -> Int {
+        return getAllPgyProjectsCountCD(toBeDeleted: false)
     }
 
-    public func loadPgyProjectToRemove() -> [PgyProjectModel] {
-        return pgyProjects("apcId", userInformation.apcId, false)
-            .filter({ $0.cloudToBeDeleted })
-            .compactMap({ $0.model() })
+    public func getAllPgyProjects() -> [PgyProjectModel] {
+        return getAllPgyProjectsCD(toBeDeleted: false).map({ $0.model() })
     }
 
-    public func performRemovePgyProject(_ pgyProjectId: Int64) {
-        guard let managedContext = currentContext,
-              let pgyProject = pgyProjects("pgyProjectId", "\(pgyProjectId)", false).first else {
+    public func getAllPgyProjectsToBeDeleted() -> [PgyProjectModel] {
+        return getAllPgyProjectsCD(toBeDeleted: true).map({ $0.model() })
+    }
+
+    // MARK: __ Delete
+    public func deletePgyProjects(withProjectIds projectIds: [Int64]) {
+        if projectIds.isEmpty {
             return
         }
 
-        pgyProject.cloudToBeDeleted = true
-        objectToRemove.send(pgyProject.model())
+        performAndSave({ [unowned self] _ in
+            let pgyProjects = getPgyProjectsCD(withProjectIds: projectIds)
+            deletePgyProjectsCD(pgyProjects)
 
-        do {
-            try managedContext.save()
-        } catch let error {
-            ULog.e(.dataModelTag, "Error perform removing PgyProject with pgyProjectId : \(pgyProjectId) from CoreData : \(error.localizedDescription)")
-        }
+            return false
+        })
     }
 
-    public func removePgyProject(_ pgyProjectId: Int64) {
-        guard let managedContext = currentContext,
-              let pgyProject = pgyProjects("pgyProjectId", "\(pgyProjectId)", false).first else {
-            return
-        }
+    public func deletePgyProject(withProjectId projectId: Int64, updateRelatedFlightPlan: Bool) {
+        performAndSave({ [unowned self] context in
+            guard let pgyProject = getPgyProjectCD(withProjectId: projectId) else {
+                return false
+            }
 
-        managedContext.delete(pgyProject)
+            if updateRelatedFlightPlan, let flightPlan = getFlightPlanCD(withPgyProjectId: projectId)?.model() {
+                flightPlan.dataSetting?.pgyProjectDeleted = true
+                saveOrUpdateFlightPlan(flightPlan,
+                                       byUserUpdate: true,
+                                       toSynchro: true,
+                                       withFileUploadNeeded: true)
+            }
 
-        do {
-            try managedContext.save()
-        } catch let error {
-            ULog.e(.dataModelTag, "Error removing PgyProject with pgyProjectId : \(pgyProjectId) from CoreData : \(error.localizedDescription)")
-        }
+            context.delete(pgyProject)
+
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                pgyProjectsDidChangeSubject.send()
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error deletePgyProject with projectId: \(projectId) - error: \(error.localizedDescription)")
+            }
+        })
     }
 }
 
-// MARK: - Utils
-private extension CoreDataServiceImpl {
-    /// Return List of PgyProjects type of NSManagedObject by Key and Value if needed
-    /// - Parameters:
-    ///     - key: key to search
-    ///     - value: value of the key to search
-    ///     - onlyNotDeleted: flag to filter on flagged deleted object
-    func pgyProjects(_ key: String? = nil,
-                     _ value: String? = nil,
-                     _ onlyNotDeleted: Bool = true) -> [PgyProject] {
-        guard let managedContext = currentContext else {
-            return []
-        }
-
-        var predicates: [NSPredicate] = []
-
-        /// Fetch PgyProjects
+// MARK: - Internal
+internal extension CoreDataServiceImpl {
+    func getAllPgyProjectsCountCD(toBeDeleted: Bool?) -> Int {
         let fetchRequest: NSFetchRequest<PgyProject> = PgyProject.fetchRequest()
-        if let key = key,
-           let value = value {
-            let predicate = NSPredicate(format: "%K == %@", key, value)
-            predicates.append(predicate)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+
+        if let toBeDeleted = toBeDeleted {
+            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+
+            let subPredicateList: [NSPredicate] = [apcIdPredicate, parrotToBeDeletedPredicate]
+            let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+            fetchRequest.predicate = compoundPredicates
+        } else {
+            fetchRequest.predicate = apcIdPredicate
         }
 
-        if onlyNotDeleted {
-            let predicate = NSPredicate(format: "cloudToBeDeleted == %@", NSNumber(value: false))
-            predicates.append(predicate)
+        let projectDateSortDesc = NSSortDescriptor.init(key: "projectDate", ascending: false)
+        fetchRequest.sortDescriptors = [projectDateSortDesc]
+
+        return fetchCount(request: fetchRequest)
+    }
+
+    func getAllPgyProjectsCD(toBeDeleted: Bool?) -> [PgyProject] {
+        let fetchRequest: NSFetchRequest<PgyProject> = PgyProject.fetchRequest()
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+
+        if let toBeDeleted = toBeDeleted {
+            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+
+            let subPredicateList: [NSPredicate] = [apcIdPredicate, parrotToBeDeletedPredicate]
+            let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+            fetchRequest.predicate = compoundPredicates
+        } else {
+            fetchRequest.predicate = apcIdPredicate
         }
 
-        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
+        let projectDateSortDesc = NSSortDescriptor.init(key: "projectDate", ascending: false)
+        fetchRequest.sortDescriptors = [projectDateSortDesc]
 
-        do {
-            return try (managedContext.fetch(fetchRequest))
-        } catch let error {
-            ULog.e(.dataModelTag, "No PgyProjects found with \(key ?? ""): \(value ?? "") in CoreData : \(error.localizedDescription)")
+        return fetch(request: fetchRequest)
+    }
+
+    func getAllAnonymousPgyProjectsCD(anonymousId: String?, toBeDeleted: Bool?) -> [PgyProject] {
+        let fetchRequest: NSFetchRequest<PgyProject> = PgyProject.fetchRequest()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", anonymousId ?? User.anonymousId)
+
+        if let toBeDeleted = toBeDeleted {
+            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+
+            let subPredicateList: [NSPredicate] = [apcIdPredicate, parrotToBeDeletedPredicate]
+            let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+            fetchRequest.predicate = compoundPredicates
+        } else {
+            fetchRequest.predicate = apcIdPredicate
+        }
+
+        let projectDateSortDesc = NSSortDescriptor.init(key: "projectDate", ascending: false)
+        fetchRequest.sortDescriptors = [projectDateSortDesc]
+
+        return fetch(request: fetchRequest)
+    }
+
+    func getPgyProjectCD(withProjectId projectId: Int64) -> PgyProject? {
+        let fetchRequest: NSFetchRequest<PgyProject> = PgyProject.fetchRequest()
+        let uuidPredicate = NSPredicate(format: "pgyProjectId == %@", "\(projectId)")
+
+        fetchRequest.predicate = uuidPredicate
+
+        let projectDateSortDesc = NSSortDescriptor.init(key: "projectDate", ascending: false)
+        fetchRequest.sortDescriptors = [projectDateSortDesc]
+        fetchRequest.fetchLimit = 1
+
+        return fetch(request: fetchRequest).first
+    }
+
+    func getPgyProjectsCD(withProjectIds projectIds: [Int64]) -> [PgyProject] {
+        if projectIds.isEmpty {
             return []
+        }
+
+        let fetchRequest = PgyProject.fetchRequest()
+        let projectIdPredicate = NSPredicate(format: "pgyProjectId IN %i", projectIds)
+
+        fetchRequest.predicate = projectIdPredicate
+
+        let projectDateSortDesc = NSSortDescriptor.init(key: "projectDate", ascending: false)
+        fetchRequest.sortDescriptors = [projectDateSortDesc]
+
+        return fetch(request: fetchRequest)
+    }
+
+    func deletePgyProjectsCD(_ pgyProjects: [PgyProject]) {
+        if pgyProjects.isEmpty {
+            return
+        }
+        delete(pgyProjects) { error in
+            var projectIdsStr = "[ "
+            pgyProjects.forEach({
+                projectIdsStr += "\($0.pgyProjectId), "
+            })
+            projectIdsStr += "]"
+
+            ULog.e(.dataModelTag, "Error deletePgyProjectsCD with \(projectIdsStr): \(error.localizedDescription)")
         }
     }
 }

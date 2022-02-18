@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,7 +40,7 @@ public protocol StartedNotFlyingStateDelegate: AnyObject {
 
     func handleMavlinkSendingError(flightPlan: FlightPlanModel, _ error: MavlinkDroneSenderError)
 
-    func handleMavlinkManagementSuccess(flightPlan: FlightPlanModel, commands: [MavlinkStandard.MavlinkCommand])
+    func handleMavlinkSendingSuccess(flightPlan: FlightPlanModel, commands: [MavlinkStandard.MavlinkCommand])
 }
 
 open class StartedNotFlyingState: GKState {
@@ -75,7 +74,7 @@ open class StartedNotFlyingState: GKState {
                     guard !stopped else { return }
                     switch $0 {
                     case .success:
-                        delegate?.handleMavlinkManagementSuccess(flightPlan: flightPlan, commands: result.commands)
+                        delegate?.handleMavlinkSendingSuccess(flightPlan: flightPlan, commands: result.commands)
                     case .failure(let error):
                         guard !stopped else { return }
                         delegate?.handleMavlinkSendingError(flightPlan: flightPlan, error)
@@ -92,7 +91,9 @@ open class StartedNotFlyingState: GKState {
     }
 
     open override func isValidNextState(_ stateClass: AnyClass) -> Bool {
-        return stateClass is StartedFlyingState.Type || stateClass is EditableState.Type
+        return stateClass is StartedFlyingState.Type
+            || stateClass is EditableState.Type
+            || stateClass is IdleState.Type
     }
 
     open override func willExit(to nextState: GKState) {

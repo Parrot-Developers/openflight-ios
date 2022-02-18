@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -80,12 +79,6 @@ enum PairingState {
     case done
 }
 
-/// Enum which specify each model.
-enum PairingCellModel {
-    case remote
-    case drone
-}
-
 /// Remote pairing model.
 class RemotePairingModel: PairingModel {
     // MARK: - Internal Properties
@@ -93,7 +86,7 @@ class RemotePairingModel: PairingModel {
     var image: UIImage = Asset.Pairing.icRemotePhoneMediumPairing.image
     var imageTintColor: UIColor = UIColor(named: .defaultTextColor)
     var title: String = L10n.pairingConnectToTheController
-    var actionTitle: String? = L10n.pairingWithoutController
+    var actionTitle: String?
 
     var errorMessage: String = L10n.pairingControllerNotRecognized
 
@@ -161,9 +154,6 @@ class DroneWithoutRemotePairingModel: PairingModel {
     var actionTitle: String? = L10n.pairingWithController
 
     var errorMessage: String = L10n.commonDone
-    var errorBackgroundColor: UIColor = UIColor(named: .highlightColor)
-    var errorBorderColor: UIColor = .clear
-    var errorTextColor: UIColor = .white
 
     // MARK: - Init
     /// Init.

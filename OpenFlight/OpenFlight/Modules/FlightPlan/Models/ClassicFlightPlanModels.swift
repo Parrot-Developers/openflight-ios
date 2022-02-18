@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -80,7 +79,11 @@ struct ClassicFlightPlanProvider: FlightPlanProvider {
         return type == typeKey
     }
 
+    // Classic Flight Plan has no specific status view.
     var statusView: UIView? { nil }
+
+    // Classic Flight Plan shows the video recording time if needed.
+    var canShowVideoRecordingIndicator: Bool { true }
 
     var customProgressPublisher: AnyPublisher<CustomFlightPlanProgress?, Never> {
         Just<CustomFlightPlanProgress?>(nil)

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="aMY-dt-cXO">
-    <device id="retina4_7" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="aMY-dt-cXO">
+    <device id="retina4_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -12,12 +11,16 @@
         <scene sceneID="Vyf-Bm-Dno">
             <objects>
                 <viewController storyboardIdentifier="SettingsControlsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="aMY-dt-cXO" customClass="SettingsControlsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" opaque="NO" contentMode="scaleToFill" id="TVo-6I-yBb">
-                        <rect key="frame" x="0.0" y="0.0" width="601" height="330"/>
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="GXu-rO-eb5"/>
+                        <viewControllerLayoutGuide type="bottom" id="mEF-wf-YuA"/>
+                    </layoutGuides>
+                    <view key="view" opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="TVo-6I-yBb">
+                        <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" indicatorStyle="white" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" sectionHeaderHeight="-1" sectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="Wnv-aR-5G7">
-                                <rect key="frame" x="0.0" y="0.0" width="601" height="330"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" indicatorStyle="white" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" sectionHeaderHeight="-1" sectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wnv-aR-5G7">
+                                <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <connections>
                                     <outlet property="dataSource" destination="aMY-dt-cXO" id="ift-4A-pWn"/>
@@ -25,16 +28,14 @@
                                 </connections>
                             </tableView>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="opc-Nl-UiC"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="Wnv-aR-5G7" firstAttribute="top" secondItem="opc-Nl-UiC" secondAttribute="top" id="doB-2X-55A"/>
-                            <constraint firstItem="Wnv-aR-5G7" firstAttribute="bottom" secondItem="TVo-6I-yBb" secondAttribute="bottom" id="g4m-Ur-0iE"/>
-                            <constraint firstItem="Wnv-aR-5G7" firstAttribute="leading" secondItem="opc-Nl-UiC" secondAttribute="leading" id="kwy-zy-JPG"/>
-                            <constraint firstItem="Wnv-aR-5G7" firstAttribute="trailing" secondItem="opc-Nl-UiC" secondAttribute="trailing" id="zIx-Pr-JBm"/>
+                            <constraint firstItem="Wnv-aR-5G7" firstAttribute="top" secondItem="TVo-6I-yBb" secondAttribute="top" id="doB-2X-55A"/>
+                            <constraint firstItem="Wnv-aR-5G7" firstAttribute="bottom" secondItem="TVo-6I-yBb" secondAttribute="bottomMargin" id="g4m-Ur-0iE"/>
+                            <constraint firstItem="Wnv-aR-5G7" firstAttribute="leading" secondItem="TVo-6I-yBb" secondAttribute="leading" id="kwy-zy-JPG"/>
+                            <constraint firstItem="Wnv-aR-5G7" firstAttribute="trailing" secondItem="TVo-6I-yBb" secondAttribute="trailing" id="zIx-Pr-JBm"/>
                         </constraints>
                     </view>
-                    <size key="freeformSize" width="601" height="330"/>
                     <connections>
                         <outlet property="settingsTableView" destination="Wnv-aR-5G7" id="wr7-cS-Y9S"/>
                     </connections>

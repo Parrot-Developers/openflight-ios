@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -108,7 +107,7 @@ private extension CameraSlidersViewController {
         zoomButton.setTitleColor(Constants.zoomDisabledTitleColor, for: .disabled)
         // joysticksButton
         joysticksButton.roundCornered()
-        joysticksButton.tintColor = ColorName.defaultIconColor.color
+        joysticksButton.tintColor = ColorName.defaultTextColor.color
         // overzoomLabel
         overzoomLabel.applyCornerRadius(Style.largeCornerRadius)
         overzoomLabel.text = L10n.zoomMaxReached
@@ -120,7 +119,7 @@ private extension CameraSlidersViewController {
         // infoTiltLabel
         infoTiltLabel.applyCornerRadius(Style.largeCornerRadius)
         infoTiltLabel.text = ""
-        infoTiltLabel.textColor = ColorName.defaultIconColor.color
+        infoTiltLabel.textColor = ColorName.defaultTextColor.color
         infoTiltLabel.backgroundColor = ColorName.white90.color
     }
 

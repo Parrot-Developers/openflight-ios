@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -110,13 +109,18 @@ public extension ParrotDebug {
     /// - Parameters:
     ///     - fileUrl: url of the file
     ///     - completionOK: callback called when file is deleted
-    static func removeLogUrl(fileURL: URL, completionOK: () -> Void) {
-        do {
-            try FileManager.default.removeItem(at: fileURL)
-            completionOK()
-        } catch {
-            print("ERROR delete file \(fileURL.lastPathComponent) - \(error)" )
-        }
+    static func removeLogUrl(fileURL: URL, srcVC: UIViewController, completionOK: @escaping () -> Void) {
+        let alertController = UIAlertController(title: L10n.commonConfirmation, message: L10n.debugLogConfirmDelete, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: L10n.commonDelete, style: .destructive, handler: { _ in
+            do {
+                try FileManager.default.removeItem(at: fileURL)
+                completionOK()
+            } catch {
+                ULog.e(debugTag, "Failed to delete file \(fileURL.lastPathComponent) - \(error)" )
+            }
+        }))
+        alertController.addAction(UIAlertAction(title: L10n.cancel, style: .cancel, handler: nil))
+        srcVC.present(alertController, animated: true, completion: nil)
     }
 
     /// Rename a log file.

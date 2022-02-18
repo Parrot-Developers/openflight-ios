@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +32,7 @@ import Reusable
 import GroundSdk
 
 /// Cell used to display Return Home end hovering setting.
-final class SettingsEndHoveringCell: UITableViewCell, NibReusable {
+final class SettingsEndHoveringCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var bgView: UIView!
     @IBOutlet private weak var stackView: UIStackView!
@@ -66,7 +65,6 @@ private extension SettingsEndHoveringCell {
         viewModel.state.valueChanged = { [weak self] _ in
             self?.updateView()
         }
-
         updateView()
     }
 
@@ -88,12 +86,11 @@ private extension SettingsEndHoveringCell {
                                         segmentModel: settingSliderSegment,
                                         subtitle: settingSegmentedEntry.subtitle,
                                         isEnabled: settingSegmentedEntry.isEnabled,
-                                        alpha: settingSegmentedEntry.cellAlpha,
                                         subtitleColor: settingSegmentedEntry.subtitleColor,
                                         showInfo: settingSegmentedEntry.showInfo,
                                         atIndexPath: IndexPath(),
-                                        isSubmode: settingSegmentedEntry.isSubMode,
                                         shouldShowBackground: false)
+            segmentedCell.enabledMargins = []
         }
     }
 
@@ -103,6 +100,7 @@ private extension SettingsEndHoveringCell {
         sliderCell.configureCell(settingEntry: settingSliderEntry,
                                  atIndexPath: IndexPath(),
                                  shouldShowBackground: false)
+        sliderCell.enabledMargins = []
     }
 }
 

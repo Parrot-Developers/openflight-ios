@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,11 +33,10 @@ import Reusable
 /// Cell which displays a centered ruler.
 final class WarningCenteredRulerTableViewCell: CenteredRulerTableViewCell {
 
-    @IBOutlet private(set) weak var subtitleLabel: UILabel!
-
     override func initView() {
         super.initView()
-        subtitleLabel.makeUp(with: .regular, and: .warningColor)
+        titleLabel.makeUp(with: .regular, and: .warningColor)
+        self.selectionStyle = .none
     }
 
     override func setupRulerModel() {

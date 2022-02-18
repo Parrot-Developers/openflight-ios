@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,13 +32,18 @@ import GroundSdk
 /// Settings content sub class dedicated to return to home settings.
 final class SettingsRTHViewController: SettingsContentViewController {
     // MARK: - Private Properties
-    private var maxGridHeight: CGFloat = 200.0
+    private var maxGridHeight: CGFloat {
+        let height = view.bounds.height
+                        - Layout.buttonIntrinsicHeight(isRegularSizeClass)
+                        - view.directionalLayoutMargins.bottom
+                        - view.directionalLayoutMargins.top
+        return height * Constants.gridHeightCoefficient
+    }
 
     // MARK: - Private Enums
     private enum Constants {
-        static let firstCellIndex: Int = 0
         static let gridIndex: Int = 1
-        static let minimumCellsCount: Int = 2
+        static let gridHeightCoefficient = 0.5
     }
 
     // MARK: - Override Funcs
@@ -47,28 +51,12 @@ final class SettingsRTHViewController: SettingsContentViewController {
         super.viewDidLoad()
 
         initView()
-        initViewModel()
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        // Target iphone
-        if !isRegularSizeClass {
-            // Dedicated treatment with the right frame size.
-                maxGridHeight = self.view.bounds.height
-                    - self.settingsTableView.visibleCells[Constants.firstCellIndex].frame.size.height
-                    - view.safeAreaInsets.bottom
-        }
-
-        settingsTableView.reloadData()
+        setupViewModel()
     }
 
     /// Reset to default settings.
     override func resetSettings() {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyAdvancedSettings.resetRTHSettings,
-                             newValue: nil,
-                             logType: LogEvent.LogType.button)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyAdvancedSettings.resetRTHSettings))
 
         viewModel?.resetSettings()
     }
@@ -100,21 +88,22 @@ extension SettingsRTHViewController {
 
 // MARK: - Private Funcs
 private extension SettingsRTHViewController {
+
     /// Inits the view.
     func initView() {
+        view.directionalLayoutMargins = Layout.mainContainerInnerMargins(isRegularSizeClass,
+                                                                         screenBorders: [.top, .bottom])
         resetCellLabel = L10n.settingsRthReset
     }
 
-    /// Inits the view model.
-    func initViewModel() {
+    /// Sets up the view model.
+    func setupViewModel() {
         viewModel = SettingsRthViewModel()
         viewModel?.state.valueChanged = { [weak self] state in
             self?.updateDataSource(state)
         }
-
-        if let state = viewModel?.state.value {
-            updateDataSource(state)
-        }
+        // Inital data source update.
+        updateDataSource()
     }
 
     /// Configures Control Mode Cell.

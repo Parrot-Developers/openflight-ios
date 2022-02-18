@@ -1,6 +1,4 @@
-//
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -57,27 +55,21 @@ final class ProjectsListViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.$filteredProjects
-            .sink { [unowned self] projects in
-                collectionView?.reloadData()
-                emptyLabelStack.isHidden = !projects.isEmpty
+            .receive(on: RunLoop.main)
+            .sink { [weak self] projects in
+                self?.collectionView?.reloadData()
+                self?.emptyLabelStack.isHidden = !projects.isEmpty
             }
             .store(in: &cancellables)
 
         viewModel.$selectedProject
-            .sink { [unowned self] _  in
-                collectionView?.reloadData()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _  in
+                self?.collectionView?.reloadData()
             }
             .store(in: &cancellables)
 
       }
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let nbColumnsLandscapeFull: CGFloat = 4.0
-        static let nbColumnsLandscapeCompact: CGFloat = 3.0
-        static let nbColumnsPortrait: CGFloat = 2.0
-        static let itemSpacing: CGFloat = 10.0
-    }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
@@ -88,6 +80,9 @@ final class ProjectsListViewController: UIViewController {
         emptyProjectsTitleLabel.text = L10n.flightPlanEmptyListTitle
         emptyProjectsDescriptionLabel.text = L10n.flightPlanEmptyListDesc
         bindViewModel()
+
+        // Add double tap gesture recognizer for project quick open action.
+        collectionView.addDoubleTapRecognizer(target: self, action: #selector(didDoubleTap))
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -127,20 +122,27 @@ extension ProjectsListViewController: UICollectionViewDataSource {
 extension ProjectsListViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let project = viewModel.filteredProjects[indexPath.row]
-        viewModel.isProjectSelected(project) ?   viewModel.didDeselectProject() : viewModel.didSelect(project: project)
+        viewModel.isProjectSelected(project) ? viewModel.didDeselectProject() : viewModel.didSelect(project: project)
     }
 }
 
 // MARK: - UICollectionViewDelegateFlowLayout
 extension ProjectsListViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let collectionViewWidth = collectionView.frame.width
-            - 4 * Constants.itemSpacing
-            - (collectionView.safeAreaInsets.left + collectionView.safeAreaInsets.right)
-        let nbColumnsLadscape = Constants.nbColumnsLandscapeCompact
-        let nbColumns = UIApplication.isLandscape ? nbColumnsLadscape : Constants.nbColumnsPortrait
-        let width = (collectionViewWidth / nbColumns - Constants.itemSpacing).rounded(.down)
-        let size = CGSize(width: width, height: width)
-        return size
+        collectionView.gridItemSize()
+    }
+}
+
+extension ProjectsListViewController {
+    /// Collectionview's double tap action.
+    /// Opens a project if a double tap is detected on corresponding cell.
+    ///
+    /// - Parameters:
+    ///    - sender: The double tap gesture recognizer.
+    @objc func didDoubleTap(_ sender: UIGestureRecognizer) {
+        // Get cell's index.
+        guard let index = collectionView.indexPathForItem(at: sender.location(in: collectionView))?.item else { return }
+        // Update VM with double tap event.
+        viewModel.didDoubleTap(project: viewModel.filteredProjects[index])
     }
 }

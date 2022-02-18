@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -109,12 +108,11 @@ open class GutmaWatcherImpl {
 
     private func toFlight(gutmaUrl: URL) -> Gutma.Model? {
         guard let data = try? Data(contentsOf: gutmaUrl),
-              let gutmaFile = String(data: data, encoding: .utf8),
-              let gutma = data.asGutma() else {
+              let gutma = service.gutma(data: data) else {
             ULog.e(.tag, "Failed to parse gutma file at \(gutmaUrl)")
             return nil
         }
-        return gutma.toFlight(apcId: userInfo.apcId, gutmaFile: gutmaFile)
+        return gutma.toFlight(apcId: userInfo.apcId, gutmaFile: data)
     }
 }
 

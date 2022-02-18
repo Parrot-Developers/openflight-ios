@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nnz-5N-GYs">
-    <device id="retina6_1" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nnz-5N-GYs">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -13,31 +13,33 @@
             <objects>
                 <viewController storyboardIdentifier="RemoteDetailsButtons" id="nnz-5N-GYs" customClass="RemoteDetailsButtonsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="sLO-kH-5zP">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="cIi-if-hIQ">
-                                <rect key="frame" x="0.0" y="348" width="414" height="200"/>
+                                <rect key="frame" x="0.0" y="107" width="896" height="200"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zBX-Da-tCs" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="896" height="60"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="60" id="1CQ-PJ-8YA"/>
+                                            <constraint firstAttribute="height" constant="60" id="1CQ-PJ-8YA">
+                                                <variation key="heightClass=regular-widthClass=regular" constant="66"/>
+                                            </constraint>
                                         </constraints>
                                         <connections>
                                             <action selector="droneButtonTouchedUpInside:" destination="nnz-5N-GYs" eventType="touchUpInside" id="SNw-ms-amx"/>
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nuo-jJ-2vi" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="70" width="414" height="60"/>
+                                        <rect key="frame" x="0.0" y="70" width="896" height="60"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <action selector="calibrationButtonTouchedUpInside:" destination="nnz-5N-GYs" eventType="touchUpInside" id="hOk-jx-kxs"/>
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tHM-SM-dwd" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="140" width="414" height="60"/>
+                                        <rect key="frame" x="0.0" y="140" width="896" height="60"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <action selector="softwareVersionButtonTouchedUpInside:" destination="nnz-5N-GYs" eventType="touchUpInside" id="h4P-Tt-fRa"/>
@@ -55,8 +57,8 @@
                         <constraints>
                             <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="cIi-if-hIQ" secondAttribute="bottom" id="2Ka-Kg-C0w"/>
                             <constraint firstItem="cIi-if-hIQ" firstAttribute="top" relation="greaterThanOrEqual" secondItem="sLO-kH-5zP" secondAttribute="top" id="E33-x6-IMF"/>
+                            <constraint firstItem="cIi-if-hIQ" firstAttribute="leading" secondItem="sLO-kH-5zP" secondAttribute="leading" id="GCH-FM-VVh"/>
                             <constraint firstAttribute="trailing" secondItem="cIi-if-hIQ" secondAttribute="trailing" id="Lev-CW-GhH"/>
-                            <constraint firstItem="cIi-if-hIQ" firstAttribute="width" secondItem="sLO-kH-5zP" secondAttribute="width" multiplier="0.9" id="X0Q-Pe-oN6"/>
                             <constraint firstItem="cIi-if-hIQ" firstAttribute="centerY" secondItem="sLO-kH-5zP" secondAttribute="centerY" id="lR6-I7-vop"/>
                             <constraint firstItem="cIi-if-hIQ" firstAttribute="leading" secondItem="sLO-kH-5zP" secondAttribute="leading" id="zP3-g3-9aa"/>
                         </constraints>
@@ -67,7 +69,6 @@
                         </variation>
                         <variation key="heightClass=regular-widthClass=compact">
                             <mask key="constraints">
-                                <exclude reference="X0Q-Pe-oN6"/>
                                 <include reference="zP3-g3-9aa"/>
                             </mask>
                         </variation>

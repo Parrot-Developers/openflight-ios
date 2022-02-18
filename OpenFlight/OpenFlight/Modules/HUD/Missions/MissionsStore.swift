@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -28,18 +27,33 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
+import Foundation
+import Combine
+import GroundSdk
 
 /// Stores and exposes all mission providers
 public protocol MissionsStore: AnyObject {
 
     /// All available missions
     var allMissions: [MissionProvider] { get }
+
+    /// All available mission publisher.
+    var allMissionsPublisher: AnyPublisher<[MissionProvider], Never> { get }
+
+    /// Presentable missions
+    var presentableMissions: [MissionProvider] { get }
+
+    /// Presentable missions
+    var currentFlightPlanMission: Mission? { get }
+
+    /// All presentable mission publisher.
+    var presentableMissionsPublisher: AnyPublisher<[MissionProvider], Never> { get }
+
     /// Default mission
     var defaultMission: MissionProvider { get }
 
     /// Add missions to the store
-    func addMissions(_ missions: [MissionProvider])
+    func add(missions: [MissionProvider])
 
     func missionFor(flightPlan: FlightPlanModel) -> (provider: MissionProvider, mission: MissionMode)?
 }
@@ -47,24 +61,62 @@ public protocol MissionsStore: AnyObject {
 public final class MissionsStoreImpl: MissionsStore {
 
     // MARK: - Internal Properties
-    /// Add all MissionProviders to allMissions array.
-    private(set) public var allMissions: [MissionProvider] = []
+    /// All available missions
+    @Published public private(set) var allMissions: [MissionProvider] = []
+
+    /// Presentable missions
+    @Published public private(set) var presentableMissions: [MissionProvider] = []
+
+    /// Presentable missions
+    @Published public private(set) var currentFlightPlanMission: Mission?
 
     /// Default mission
     public let defaultMission: MissionProvider
 
     // MARK: - Private Properties
-    private var classicMission = ClassicMission(mission: Mission(key: String(describing: ClassicMission.self),
-                                                                 name: L10n.missionClassic,
-                                                                 icon: Asset.MissionModes.icClassicMissionMode.image,
-                                                                 logName: LogEvent.LogKeyHUDMissionProviderSelectorButton.classic,
-                                                                 modes: [ClassicMission.manualMode],
-                                                                 defaultMode: ClassicMission.manualMode))
+    private var cancellables: Set<AnyCancellable> = []
+    private let missionsManager: AirSdkMissionsManager
+    private let connectedDroneHolder: ConnectedDroneHolder
+    private var missionManagerRef: Ref<MissionManager>?
 
     // MARK: - Init
-    init() {
-        defaultMission = classicMission
+    init(connectedDroneHolder: ConnectedDroneHolder,
+         missionsManager: AirSdkMissionsManager) {
+        self.connectedDroneHolder = connectedDroneHolder
+        self.missionsManager = missionsManager
+        let classicMission = ClassicMission(mission: Mission(key: String(describing: ClassicMission.self),
+                                                             name: L10n.missionClassic,
+                                                             icon: Asset.MissionModes.icClassicMissionMode.image,
+                                                             logName: LogEvent.LogKeyHUDMissionProviderSelectorButton.classic,
+                                                             mode: ClassicMission.manualMode))
+        self.defaultMission = classicMission
         self.allMissions.insert(classicMission, at: 0)
+        bind()
+
+    }
+
+    private func bind() {
+        $allMissions.sink { [unowned self] missions in
+            updatePresentableMissions(missions)
+        }
+        .store(in: &cancellables)
+        connectedDroneHolder.dronePublisher
+            .removeDuplicates()
+            .sink { [unowned self] drone in
+                listenMissionState(drone: drone)
+            }
+            .store(in: &cancellables)
+    }
+
+    func listenMissionState(drone: Drone?) {
+        missionManagerRef = drone?.getPeripheral(Peripherals.missionManager) { [unowned self] _ in
+            updatePresentableMissions(allMissions)
+        }
+        updatePresentableMissions(allMissions)
+    }
+
+    private func updatePresentableMissions(_ missions: [MissionProvider]) {
+        presentableMissions = missions.filter { missionsManager.isPresentable($0) }
     }
 
     // MARK: - Public Funcs
@@ -72,23 +124,30 @@ public final class MissionsStoreImpl: MissionsStore {
     ///
     /// - Parameters:
     ///    - missions: List of MissionProviders objects to add.
-    public func addMissions(_ missions: [MissionProvider]) {
-        allMissions.append(contentsOf: missions)
+    public func add(missions: [MissionProvider]) {
+        // use += to trigger publisher
+        allMissions += missions
     }
 
     public func missionFor(flightPlan: FlightPlanModel) -> (provider: MissionProvider, mission: MissionMode)? {
         // Get mission matching flightPlan
         var missionProvider: MissionProvider?
         var missionMode: MissionMode?
-        for provider in self.allMissions {
-            for mode in provider.mission.modes {
-                if mode.flightPlanProvider?.hasFlightPlanType(flightPlan.type) ?? false {
-                    missionProvider = provider
-                    missionMode = mode
-                }
+        for provider in allMissions {
+            if provider.mission.defaultMode.flightPlanProvider?.hasFlightPlanType(flightPlan.type) ?? false {
+                missionProvider = provider
+                missionMode = provider.mission.defaultMode
             }
         }
         guard let mProvider = missionProvider, let mMode = missionMode else { return nil }
         return (mProvider, mMode)
+    }
+
+    public var allMissionsPublisher: AnyPublisher<[MissionProvider], Never> {
+        return $allMissions.eraseToAnyPublisher()
+    }
+
+    public var presentableMissionsPublisher: AnyPublisher<[MissionProvider], Never> {
+        return $presentableMissions.eraseToAnyPublisher()
     }
 }

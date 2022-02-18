@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -49,14 +48,16 @@ class CurrentRemoteControlHolderImpl: CurrentRemoteControlHolder {
 
     private var cancellables = Set<AnyCancellable>()
 
-    @Published private(set) var remoteControl: RemoteControl?
+    private var remoteControlSubject: CurrentValueSubject<RemoteControl?, Never>
 
-    var remoteControlPublisher: AnyPublisher<RemoteControl?, Never> { $remoteControl.eraseToAnyPublisher() }
+    var remoteControlPublisher: AnyPublisher<RemoteControl?, Never> { remoteControlSubject.eraseToAnyPublisher() }
+
+    var remoteControl: RemoteControl? { remoteControlSubject.value }
 
     init(connectedRemoteControlHolder: ConnectedRemoteControlHolder) {
         let groundSdk = GroundSdk()
         let uid = Defaults[\.lastConnectedRcUID] ?? String()
-        remoteControl = groundSdk.getRemoteControl(uid: uid)
+        remoteControlSubject = CurrentValueSubject(groundSdk.getRemoteControl(uid: uid))
         setupListening(connectedRemoteControlHolder: connectedRemoteControlHolder)
     }
 
@@ -66,7 +67,7 @@ class CurrentRemoteControlHolderImpl: CurrentRemoteControlHolder {
             guard let remoteControl = $0,
                   remoteControl.uid != self.remoteControl?.uid else { return }
             Defaults.lastConnectedRcUID = remoteControl.uid
-            self.remoteControl = remoteControl
+            remoteControlSubject.value = remoteControl
         }
         .store(in: &cancellables)
     }

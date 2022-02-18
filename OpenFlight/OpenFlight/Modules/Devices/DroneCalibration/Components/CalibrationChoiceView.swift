@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import Reusable
+import UIKit
 
 /// Custom view for calibration choice.
 final class CalibrationChoiceView: UIControl, NibOwnerLoadable {
@@ -76,9 +76,11 @@ private extension CalibrationChoiceView {
 
     /// Basic init.
     func commonInit() {
-        self.loadNibContent()
-        self.applyCornerRadius(Style.largeCornerRadius)
-        self.addShadow(shadowColor: ColorName.whiteAlbescent.color)
+        loadNibContent()
+        applyCornerRadius(Style.largeCornerRadius)
+        addShadow(shadowColor: ColorName.whiteAlbescent.color)
+        titleLabel.font = FontStyle.caps.font(isRegularSizeClass)
+        subtitleLabel.font = FontStyle.caps.font(isRegularSizeClass)
     }
 
     /// Update the UI for a specific view model.
@@ -86,11 +88,11 @@ private extension CalibrationChoiceView {
     /// - Parameters:
     ///    - viewModel: view model for the view.
     func update(with viewModel: CalibrationChoiceModel?) {
-        self.imageView.image = viewModel?.image
-        self.titleLabel.text = viewModel?.title
-        self.titleLabel.textColor = viewModel?.titleColor
+        imageView.image = viewModel?.image
+        titleLabel.text = viewModel?.title
+        titleLabel.textColor = viewModel?.titleColor
         backgroundColor = viewModel?.backgroundColor.color
-        self.subtitleLabel.text = viewModel?.subtitle
-        self.subtitleLabel.textColor = viewModel?.subtitleColor.color
+        subtitleLabel.text = viewModel?.subtitle
+        subtitleLabel.textColor = viewModel?.subtitleColor.color
     }
 }

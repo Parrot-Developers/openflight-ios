@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -71,7 +70,7 @@ extension Array {
     ///
     /// - Parameters:
     ///     - element: array element to compare
-    public func contains<T>(_ element: T) -> Bool where T: Equatable {
+    public func customContains<T>(_ element: T) -> Bool where T: Equatable {
         return !self.filter({$0 as? T == element}).isEmpty
     }
 }

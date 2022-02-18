@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -126,6 +126,8 @@ public protocol MapViewEditionControllerDelegate: AnyObject {
 
     /// Comes back to previous modifications
     func undoAction()
+
+    func displayFlightPlan(_ flightPlan: FlightPlanModel, shouldReloadCamera: Bool)
 }
 
 // MARK: - Protocols
@@ -142,6 +144,8 @@ public protocol FlightEditionDelegate: AnyObject {
 
     /// Notifys change course on view.
     func didChangeCourse()
+
+    func reset()
 }
 
 // MARK: - FlightPlanEditionViewModel
@@ -149,8 +153,8 @@ class FlightPlanEditionViewModel {
 
     // MARK: - Private Properties
     private var edition: FlightPlanEditionService!
+    private var projectManager: ProjectManager!
     private let topBarService: HudTopBarService
-    private var flightPlanProject: ProjectManager
     private var settingsDisplayed: Bool = false
     private var flightPlanEditionMenuViewModel: FlightPlanEditionMenuViewModel?
     private(set) var editionSettingsViewModel: EditionSettingsViewModel?
@@ -159,7 +163,6 @@ class FlightPlanEditionViewModel {
     private var cancellables = [AnyCancellable]()
 
     @Published private(set) var viewState: ViewState?
-    var showTopBarPublisher: AnyPublisher<Bool, Never> { topBarService.showTopBarPublisher }
 
     // MARK: - Public Properties
     weak var mapDelegate: MapViewEditionControllerDelegate?
@@ -190,13 +193,12 @@ class FlightPlanEditionViewModel {
 
     init(settingsProvider: FlightPlanSettingsProvider?,
          edition: FlightPlanEditionService,
-         flightPlanProject: ProjectManager,
+         projectManager: ProjectManager,
          topBarService: HudTopBarService) {
         self.globalSettingsProvider = settingsProvider
         self.edition = edition
-        self.flightPlanProject = flightPlanProject
+        self.projectManager = projectManager
         self.topBarService = topBarService
-        edition.resetUndoStack()
         edition.currentFlightPlanPublisher
             .compactMap({ $0 })
             .sink(receiveValue: { [unowned self] flightPlan in
@@ -216,6 +218,11 @@ class FlightPlanEditionViewModel {
         selectedGraphic = graphic
         viewState = .showItemEdition
     }
+
+    private func updateUndoStack() {
+        edition.appendCurrentStateToUndoStack()
+        refreshMenuViewModel()
+    }
 }
 
 // MARK: - FlightPlanEditionViewModel
@@ -223,23 +230,23 @@ class FlightPlanEditionViewModel {
 extension FlightPlanEditionViewModel {
 
     func updateSettingViewModel() -> EditionSettingsViewModel? {
-        self.editionSettingsViewModel = EditionSettingsViewModel()
-        return self.editionSettingsViewModel
+        editionSettingsViewModel = EditionSettingsViewModel()
+        return editionSettingsViewModel
     }
 
     func refreshContentSettings(categoryFilter: FlightPlanSettingCategory?) {
-        self.editionSettingsViewModel?.refreshContent(categoryFilter: categoryFilter)
+        editionSettingsViewModel?.refreshContent(categoryFilter: categoryFilter)
 
         guard !settingsDisplayed else { return }
 
-        self.settingsDisplayed = true
+        settingsDisplayed = true
         viewState = .updateConstraint
     }
 
     func updateSettingsDataSource() {
-        self.editionSettingsViewModel?.updateDataSource(with: settingsProvider,
-                                                        savedFlightPlan: nil,
-                                                        selectedGraphic: selectedGraphic)
+        editionSettingsViewModel?.updateDataSource(with: settingsProvider,
+                                                   savedFlightPlan: nil,
+                                                   selectedGraphic: selectedGraphic)
     }
 
     public func updateSettingValue(for key: String?, value: Int) {
@@ -266,12 +273,16 @@ extension FlightPlanEditionViewModel {
         settingsProvider?.updateSettingValue(for: strongKey, value: value)
         mapDelegate?.updateSettingsValue(for: strongKey, value: value)
 
-        editionSettingsViewModel?.updateDataSource(with: self.settingsProvider,
+        editionSettingsViewModel?.updateDataSource(with: settingsProvider,
                                                    savedFlightPlan: edition.currentFlightPlanValue,
                                                    selectedGraphic: selectedGraphic)
 
+        // do not propagate settings updates in the undo stack for other types of FPs.
+        guard currentFlightPlanModel()?.type == ClassicFlightPlanType.standard.key else {
+            return
+        }
         if selectedGraphic != nil {
-            edition.appendUndoStack(with: edition.currentFlightPlanValue?.dataSetting)
+            edition.appendCurrentStateToUndoStack()
         } else {
             edition.updateGlobalSettings(with: edition.currentFlightPlanValue?.dataSetting)
         }
@@ -283,12 +294,16 @@ extension FlightPlanEditionViewModel {
         settingsProvider?.updateChoiceSetting(for: strongKey, value: value)
         mapDelegate?.updateChoiceSettings(for: strongKey, value: value)
 
-        editionSettingsViewModel?.updateDataSource(with: self.settingsProvider,
+        editionSettingsViewModel?.updateDataSource(with: settingsProvider,
                                                    savedFlightPlan: edition.currentFlightPlanValue,
                                                    selectedGraphic: selectedGraphic)
 
+        // do not propagate settings updates in the undo stack for other types of FPs.
+        guard currentFlightPlanModel()?.type == ClassicFlightPlanType.standard.key else {
+            return
+        }
         if selectedGraphic != nil {
-            edition.appendUndoStack(with: edition.currentFlightPlanValue?.dataSetting)
+            edition.appendCurrentStateToUndoStack()
         } else {
             edition.updateGlobalSettings(with: edition.currentFlightPlanValue?.dataSetting)
         }
@@ -304,15 +319,15 @@ extension FlightPlanEditionViewModel {
 extension FlightPlanEditionViewModel {
 
     func updateEditionMenuViewModel() -> FlightPlanEditionMenuViewModel? {
-        if self.flightPlanEditionMenuViewModel == nil {
-            self.flightPlanEditionMenuViewModel = FlightPlanEditionMenuViewModel(manager: flightPlanProject)
+        if flightPlanEditionMenuViewModel == nil {
+            flightPlanEditionMenuViewModel = FlightPlanEditionMenuViewModel(editionService: edition)
         }
-        self.flightPlanEditionMenuViewModel?.updateModel(currentFlightPlanModel())
+        flightPlanEditionMenuViewModel?.updateModel(currentFlightPlanModel())
         return flightPlanEditionMenuViewModel
     }
 
     func refreshMenuViewModel() {
-        self.flightPlanEditionMenuViewModel?.refreshContent()
+        flightPlanEditionMenuViewModel?.refreshContent()
     }
 
     /// Show custom graphic item edition.
@@ -331,13 +346,26 @@ extension FlightPlanEditionViewModel {
 
     func undoAction() {
         mapDelegate?.undoAction()
-        editionSettingsViewModel?.updateDataSource(with: self.settingsProvider,
+        editionSettingsViewModel?.updateDataSource(with: settingsProvider,
                                                    savedFlightPlan: currentFlightPlanModel(),
                                                    selectedGraphic: selectedGraphic)
+        flightPlanEditionMenuViewModel?.refreshContent()
     }
 
     public func resetUndoStack() {
         edition.resetUndoStack()
+    }
+
+    public func reset() {
+        // reload last state of flightPlan that contains no modifications.
+        if let project = projectManager.currentProject,
+           let flightPlan = projectManager.lastFlightPlan(for: project) {
+            edition.setupFlightPlan(flightPlan)
+            edition.resetUndoStack()
+            mapDelegate?.displayFlightPlan(flightPlan, shouldReloadCamera: false)
+        }
+        // Restore map back to its original container, then dismiss.
+        mapDelegate?.restoreMapToOriginalContainer()
     }
 
     public func didTapDeleteButton() {
@@ -347,11 +375,11 @@ extension FlightPlanEditionViewModel {
             switch selectedGraphic {
             case let wayPointGraphic as FlightPlanWayPointGraphic:
                 if let index = wayPointGraphic.wayPointIndex {
-                    self.mapDelegate?.removeWayPointAt(index)
+                    mapDelegate?.removeWayPointAt(index)
                 }
             case let poiPointGraphic as FlightPlanPoiPointGraphic:
                 if let index = poiPointGraphic.poiIndex {
-                    self.mapDelegate?.removePOIAt(index)
+                    mapDelegate?.removePOIAt(index)
                 }
             default:
                 break
@@ -371,7 +399,7 @@ extension FlightPlanEditionViewModel {
             mapDelegate?.updateGraphicSelection(graphic,
                                                 isSelected: false)
         }
-        
+
         selectedGraphic = nil
         editionSettingsViewModel?.updateDataSource(with: globalSettingsProvider,
                                                    savedFlightPlan: edition.currentFlightPlanValue,
@@ -385,7 +413,7 @@ extension FlightPlanEditionViewModel {
                                                    savedFlightPlan: edition.currentFlightPlanValue,
                                                    selectedGraphic: selectedGraphic)
 
-        flightPlanEditionMenuViewModel?.refreshContent()
+        refreshMenuViewModel()
     }
 
     /// Handles selection of a new item from map.
@@ -399,14 +427,13 @@ extension FlightPlanEditionViewModel {
             mapDelegate?.toggleRelation(between: wayPointGraphic,
                                         and: selectedPoiPointGraphic)
             mapDelegate?.updateVisibility()
-            edition.appendUndoStack(with: edition.currentFlightPlanValue?.dataSetting)
+            edition.appendCurrentStateToUndoStack()
         } else if graphic == selectedGraphic {
             // Tap on current selection removes it and closes settings.
             viewState = .closeSettings
         } else if let insertWayPointGraphic = graphic as? FlightPlanInsertWayPointGraphic {
             insertWayPoint(with: insertWayPointGraphic)
-            edition.appendUndoStack(with: edition.currentFlightPlanValue?.dataSetting)
-            refreshMenuViewModel()
+            updateUndoStack()
         } else if let graphic = graphic, graphic.itemType.selectable {
             deselectCurrentGraphic()
             selecteGraphic(graphic)
@@ -423,7 +450,8 @@ extension FlightPlanEditionViewModel {
         guard let mapPoint = graphic.mapPoint,
               let index = graphic.targetIndex,
               let wayPoint = edition?.insertWayPoint(with: mapPoint,
-                                                             at: index) else {
+                                                     at: index)
+        else {
             return
         }
 
@@ -436,7 +464,7 @@ extension FlightPlanEditionViewModel {
 
         // Close settings.
         if let wpGraphic = wayPointGraphic {
-            self.handleFlightPlanItemSelection(wpGraphic)
+            handleFlightPlanItemSelection(wpGraphic)
         } else {
             viewState = .closeSettings
         }
@@ -446,15 +474,14 @@ extension FlightPlanEditionViewModel {
     func endEdition() {
         // Update flight plan informations.
         edition?.updatePolygonPoints(points: mapDelegate?.polygonPointsValue ?? [])
-        didChangeCourse()
-
-        edition?.resetThumbnail { [weak self] _ in
+        refreshMenuViewModel()
+        if settingsDisplayed {
+            editionSettingsViewModel?.refreshContent()
+        }
+        edition?.endEdition { [weak self] in
             // Restore map back to its original container, then dismiss.
             self?.mapDelegate?.restoreMapToOriginalContainer()
         }
-
-        mapDelegate?.endEdition()
-        edition?.endEdition()
     }
 
     func closeSettings() {
@@ -488,17 +515,15 @@ extension FlightPlanEditionViewModel: FlightEditionDelegate {
     }
 
     func didChangePointOfView() {
-        edition.appendUndoStack(with: edition.currentFlightPlanValue?.dataSetting)
-        flightPlanEditionMenuViewModel?.refreshContent()
+        updateUndoStack()
     }
 
     func didChangeCourse() {
         /// TODO update estimation
-//        self.estimations = edition.currentFlightPlanValue?.dataSetting?.estimations ?? FlightPlanEstimationsModel()
-        edition.appendUndoStack(with: edition.currentFlightPlanValue?.dataSetting)
-        flightPlanEditionMenuViewModel?.refreshContent()
-        if self.settingsDisplayed == true {
-            self.editionSettingsViewModel?.refreshContent()
+        //        self.estimations = edition.currentFlightPlanValue?.dataSetting?.estimations ?? FlightPlanEstimationsModel()
+        updateUndoStack()
+        if settingsDisplayed {
+            editionSettingsViewModel?.refreshContent()
         }
     }
 }

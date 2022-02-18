@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,21 +33,39 @@ import Combine
 public class DashboardMyFlightsCellModel {
 
     public let service: FlightService
+    public let cloudSynchroWatcher: CloudSynchroWatcher?
 
-    public var summary: AnyPublisher<AllFlightsSummary, Never> { service.allFlightsSummary }
     public var lastFlight: AnyPublisher<FlightModel?, Never> { service.lastFlight }
     private var isSynchronizingSubject = CurrentValueSubject<Bool, Never>(false)
+    private var summarySubject = PassthroughSubject<AllFlightsSummary, Never>()
     private var cancellable = Set<AnyCancellable>()
 
-    init(service: FlightService) {
+    init(service: FlightService,
+         cloudSynchroWatcher: CloudSynchroWatcher?) {
         self.service = service
+        self.cloudSynchroWatcher = cloudSynchroWatcher
         self.service.updateFlights()
-        Services.hub.cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { [unowned self] isSynch in
-            isSynchronizingSubject.value = isSynch
-        }.store(in: &cancellable)
+        cloudSynchroWatcher?.isSynchronizingDataPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isSynch in
+                self?.isSynchronizingSubject.value = isSynch
+            }.store(in: &cancellable)
+
+        service.allFlightsSummary
+            .receive(on: RunLoop.main)
+            .sink { [weak self] flightsSummary in
+                self?.summarySubject.send(flightsSummary)
+            }.store(in: &cancellable)
+    }
+
+    func reloadAllFlights() {
+        service.updateFlights()
     }
 
     var isSynchronizingData: AnyPublisher<Bool, Never> {
         isSynchronizingSubject.eraseToAnyPublisher()
     }
+
+    public var summary: AnyPublisher<AllFlightsSummary, Never> { summarySubject.eraseToAnyPublisher()  }
+
 }

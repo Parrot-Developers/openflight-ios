@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -57,10 +56,17 @@ extension Drone {
             alerts.append(HUDBannerCriticalAlertType.forceLandingLowBattery)
         }
         if flyingIndicators.state == .flying,
-           returnHome.homeReachability == .notReachable,
-           returnHome.state == .idle {
+           returnHome.homeReachability == .notReachable {
             alerts.append(HUDBannerCriticalAlertType.wontReachHome)
         }
         return alerts
+    }
+
+    /// Whether a forceLanding alert is active. Used to be able to ignore RTH events during autoLanding.
+    /// (Can not simply check `autoLandingAlerts.isEmpty` or `HUDBannerCriticalAlertType.category`,
+    /// as `.wontReachHome` is considered as an autoLanding alert.)
+    var isForceLandingInProgress: Bool {
+        autoLandingAlerts.first?.isSameAlert(as: HUDBannerCriticalAlertType.forceLandingTemperature) == true ||
+        autoLandingAlerts.first?.isSameAlert(as: HUDBannerCriticalAlertType.forceLandingLowBattery) == true
     }
 }

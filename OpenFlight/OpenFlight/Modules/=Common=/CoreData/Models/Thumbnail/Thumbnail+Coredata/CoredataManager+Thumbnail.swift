@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,59 +30,80 @@
 import Foundation
 import CoreData
 import GroundSdk
+import Combine
 
+// MARK: - Repository Protocol
 public protocol ThumbnailRepository: AnyObject {
+    // MARK: __ Publisher
+    /// Publisher notify changes
+    var thumbnailsDidChangePublisher: AnyPublisher<Void, Never> { get }
 
-    /// Persist or update thumbnail into CoreData
+    // MARK: __ Save Or Update
+    /// Save or update Thumbnail into CoreData from ThumbnailModel
     /// - Parameters:
-    ///     - thumbnail: ThumbnailModel to persist
-    ///     - byUserUpdate: Bool to indicate in case of modifications, if those are made by User or by synchro process.
-    func persist(_ thumbnail: ThumbnailModel, _ byUserUpdate: Bool)
+    ///    - thumbnailModel: ThumbnailModel to save or update
+    ///    - byUserUpdate: Boolean if updated by user interaction
+    ///    - toSynchro: Boolean if should be synchro
+    func saveOrUpdateThumbnail(_ thumbnailModel: ThumbnailModel, byUserUpdate: Bool, toSynchro: Bool)
 
-    /// Persist or update thumbnails list into CoreData
+    /// Save or update Thumbnail into CoreData from ThumbnailModel
     /// - Parameters:
-    ///     - thumbnailsList: ThumbnailModel list to persist
-    ///     - byUserUpdate: Bool to indicate in case of modifications, if those are made by User or by synchro process.
-    func persist(_ thumbnailsList: [ThumbnailModel], _ byUserUpdate: Bool)
+    ///    - thumbnailModel: ThumbnailModel to save or update
+    ///    - byUserUpdate: Boolean if updated by user interaction
+    ///    - toSynchro: Boolean if should be synchro
+    ///    - completion: The callback returning the status.
+    func saveOrUpdateThumbnail(_ thumbnailModel: ThumbnailModel,
+                               byUserUpdate: Bool,
+                               toSynchro: Bool,
+                               completion: ((_ status: Bool) -> Void)?)
 
-    /// Load Thumbnail from CoreData by key and value:
-    /// example:
-    ///     key   = "uuid"
-    ///     value = "1234"
+    // MARK: __ Get
+    /// Get ThumbnailModel with uuid
+    /// - Parameter uuid: Thumbnail's uuid to search
+    /// - Returns ThumbnailModel object if not found
+    func getThumbnail(withUuid uuid: String) -> ThumbnailModel?
+
+    /// Get ThumbnailModel with flightt UUID
+    /// - Parameter flightUuid: Flight's uuid to search
+    /// - Returns ThumbnailModel object if not found
+    func getThumbnail(withFlightUuid flightUuid: String) -> ThumbnailModel?
+
+    /// Get ThumbnailModel with cloudId
     /// - Parameters:
-    ///     - key       : key of predicate
-    ///     - value  : value of predicate
-    ///
-    func loadThumbnail(_ key: String, _ value: String) -> ThumbnailModel?
+    ///    - cloudId: Thumbnail's cloudId to search
+    /// - Returns ThumbnailModel object if found
+    func getThumbnail(withCloudId cloudId: Int) -> ThumbnailModel?
 
-    /// Load Thumbnail from CoreData by ParrotCloudId:
+    /// Get count of all Thumbnails
+    /// - Returns: Count of all Thumbnails
+    func getAllThumbnailsCount() -> Int
+
+    /// Get all ThumbnailModels from all Thumbnails in CoreData
+    /// - Returns List of ThumbnailModels
+    func getAllThumbnails() -> [ThumbnailModel]
+
+    /// Get all ThumbnailModels to be deleted from Thumbnail in CoreData
+    /// - Returns List of ThumbnailModels
+    func getAllThumbnailsToBeDeleted() -> [ThumbnailModel]
+
+    /// Get all ThumbnailModels locally modified from Thumbnails in CoreData
+    /// - Returns:  List of ThumbnailModels
+    func getAllModifiedThumbnails() -> [ThumbnailModel]
+
+    // MARK: __ Delete
+    /// Delete Thumbnail if parrotCloudId is 0 (doesn't exist on server)
+    ///  If ParrotCloudId is other than 0, then it is flagged to be deleted later on
+    /// - Parameters uuid: Thumbnail's UUID to delete
+    func deleteOrFlagToDeleteThumbnail(withUuid uuid: String)
+
+    /// Delete Thumbnail in CoreData with a specified list of uuids
     /// - Parameters:
-    ///     - parrotCloudId : int64 value of parrotCloudId
-    ///
-    func loadThumbnail(parrotCloudId: Int64?) -> ThumbnailModel?
+    ///    - uuids: List of serials to search
+    func deleteThumbnails(withUuids uuids: [String])
+    func deleteThumbnails(withUuids uuids: [String],
+                          completion: ((_ status: Bool) -> Void)?)
 
-    /// Load Thumbnails flagged tobeDeleted from CoreData
-    /// - return: ThumbnailsList
-    func loadThumbnailsToRemove() -> [ThumbnailModel]
-
-    /// Load all thumbnail from CoreData
-    /// return ThumbnailModel list if exist
-    func loadAllThumbnails() -> [ThumbnailModel]
-
-    /// Remove Thumbnail by Uuid from CoreData
-    /// - Parameters:
-    ///     - thumbnailUuid: Thumbnail identifier to remove
-    func removeThumbnail(_ thumbnailUuid: String)
-
-    /// Perform remove Thumbnail with Flag
-    /// - Parameters:
-    ///     - thumbnail: ThumbnailModel to remove
-    func performRemoveThumbnail(_ thumbnail: ThumbnailModel)
-
-    /// Retrieve any thumbnail associated with a flight
-    /// - Parameter flight: the flight
-    func thumbnail(for flight: FlightModel) -> ThumbnailModel?
-
+    // MARK: __ Related
     /// Migrate Thumbnails made by Anonymous user to current logged user
     /// - Parameter completion: empty block indicates when process is finished
     func migrateThumbnailToLoggedUser(_ completion: @escaping () -> Void)
@@ -92,139 +113,185 @@ public protocol ThumbnailRepository: AnyObject {
     func migrateThumbnailToAnonymous(_ completion: @escaping () -> Void)
 }
 
+// MARK: - Implementation
 extension CoreDataServiceImpl: ThumbnailRepository {
+    // MARK: __ Publisher
+    public var thumbnailsDidChangePublisher: AnyPublisher<Void, Never> {
+        return thumbnailsDidChangeSubject.eraseToAnyPublisher()
+    }
 
-    public func persist(_ thumbnail: ThumbnailModel, _ byUserUpdate: Bool = true) {
-        // Prepare content to save.
-        guard let managedContext = currentContext else { return }
+    // MARK: __ Save Or Update
+    public func saveOrUpdateThumbnail(_ thumbnailModel: ThumbnailModel,
+                                      byUserUpdate: Bool,
+                                      toSynchro: Bool,
+                                      completion: ((_ status: Bool) -> Void)?) {
+        var modifDate: Date?
 
-        var flight: Flight?
-        if let flightUuid = thumbnail.flightUuid,
-           let foundFlight = self.flight(flightUuid) {
-            flight = foundFlight
-        }
-
-        // Prepare new CoreData entity
-        let thumbnailObject: NSManagedObject?
-
-        // Check object if exists.
-        if let object = self.loadThumbnails("uuid", thumbnail.uuid, false).first {
-            // Use persisted object.
-            thumbnailObject = object
-        } else {
-            // Create new object.
-            let fetchRequest: NSFetchRequest<Thumbnail> = Thumbnail.fetchRequest()
-            guard let name = fetchRequest.entityName else {
-                return
+        performAndSave({ [unowned self] _ in
+            var thumbnailObj: Thumbnail?
+            if let existingThumbnail = getThumbnailCD(withUuid: thumbnailModel.uuid) {
+                thumbnailObj = existingThumbnail
+            } else if let newThumbnail = insertNewObject(entityName: Thumbnail.entityName) as? Thumbnail {
+                thumbnailObj = newThumbnail
             }
-            thumbnailObject = NSEntityDescription.insertNewObject(forEntityName: name, into: managedContext)
-        }
 
-        guard let thumbnailObj = thumbnailObject as? Thumbnail else { return }
+            guard let thumbnail = thumbnailObj else {
+                completion?(false)
+                return false
+            }
 
-        // To ensure synchronisation
-        // reset `synchroStatus´ when the modifications made by User
-        thumbnailObj.synchroStatus = ((byUserUpdate) ? 0 : thumbnail.synchroStatus) ?? 0
-        thumbnailObj.fileSynchroStatus = ((byUserUpdate) ? 0 : thumbnail.fileSynchroStatus) ?? 0
-        thumbnailObj.apcId = thumbnail.apcId
-        thumbnailObj.uuid = thumbnail.uuid
-        thumbnailObj.thumbnailData = thumbnail.thumbnailImageData
-        thumbnailObj.lastUpdate = thumbnail.lastUpdate
-        thumbnailObj.synchroDate = thumbnail.synchroDate
-        thumbnailObj.fileSynchroDate = thumbnail.fileSynchroDate
-        thumbnailObj.cloudLastUpdate = thumbnail.cloudLastUpdate
-        thumbnailObj.parrotCloudId = thumbnail.parrotCloudId
-        thumbnailObj.parrotCloudToBeDeleted = thumbnail.parrotCloudToBeDeleted
-        if let flight = flight {
-            thumbnailObj.ofFlight = flight
-        }
+            var thumbnailModel = thumbnailModel
 
-        managedContext.perform {
-            do {
-                try managedContext.save()
-                if byUserUpdate {
-                    self.objectToUpload.send(thumbnail)
+            if byUserUpdate {
+                modifDate = Date()
+                thumbnailModel.latestLocalModificationDate = modifDate
+                thumbnailModel.synchroStatus = .notSync
+            }
+
+            var flight: Flight?
+            if let flightUuid = thumbnailModel.flightUuid, let foundFlight = getFlightCD(withUuid: flightUuid) {
+                flight = foundFlight
+            }
+
+            let logMessage = """
+                🌉⬇️ saveOrUpdateThumbnail: \(thumbnail), \
+                byUserUpdate: \(byUserUpdate), toSynchro: \(toSynchro), \
+                thumbnailModel: \(thumbnailModel)
+                """
+            ULog.d(.dataModelTag, logMessage)
+
+            thumbnail.update(fromThumbnailModel: thumbnailModel, withFlight: flight)
+
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                if let modifDate = modifDate, toSynchro {
+                    latestThumbnailLocalModificationDate.send(modifDate)
                 }
-            } catch let error as NSError {
-                ULog.e(.dataModelTag, "Error during persist Thumbnail uuid: \(thumbnail.uuid) into Coredata: \(error.localizedDescription)")
+
+                thumbnailsDidChangeSubject.send()
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag,
+                       "Error saveOrUpdateThumbnail with uuid: \(thumbnailModel.uuid) - error: \(error)")
+                completion?(false)
             }
+        })
+    }
+
+    public func saveOrUpdateThumbnail(_ thumbnailModel: ThumbnailModel, byUserUpdate: Bool, toSynchro: Bool) {
+        saveOrUpdateThumbnail(thumbnailModel, byUserUpdate: byUserUpdate, toSynchro: toSynchro, completion: nil)
+    }
+
+    // MARK: __ Get
+    public func getThumbnail(withUuid uuid: String) -> ThumbnailModel? {
+        if let thumbnail = getThumbnailCD(withUuid: uuid) {
+            return thumbnail.model()
         }
+        return nil
     }
 
-    public func persist(_ thumbnailsList: [ThumbnailModel], _ byUserUpdate: Bool = true) {
-        for thumbnail in thumbnailsList {
-            persist(thumbnail, byUserUpdate)
+    public func getThumbnail(withFlightUuid flightUuid: String) -> ThumbnailModel? {
+        if let thumbnail = getThumbnailCD(withFlightUuid: flightUuid) {
+            return thumbnail.model()
         }
+        return nil
     }
 
-    public func loadThumbnail(_ key: String, _ value: String) -> ThumbnailModel? {
-        return loadThumbnails(key, value)
-            .first?.model()
+    public func getThumbnail(withCloudId cloudId: Int) -> ThumbnailModel? {
+        getThumbnailsCD(filteredBy: "cloudId", [cloudId])
+            .compactMap { $0.model() }
+            .first
     }
 
-    public func loadThumbnail(parrotCloudId: Int64?) -> ThumbnailModel? {
-        guard let parrotCloudId = parrotCloudId else {
-            return nil
-        }
-        return loadThumbnails("parrotCloudId", "\(parrotCloudId)")
-            .first?.model()
+    public func getAllThumbnailsCount() -> Int {
+        return getAllThumbnailsCountCD(toBeDeleted: false)
     }
 
-    public func loadThumbnailsToRemove() -> [ThumbnailModel] {
-        return loadThumbnails("apcId", userInformation.apcId, false)
-            .filter({ $0.parrotCloudToBeDeleted })
-            .compactMap({ $0.model() })
+    public func getAllThumbnails() -> [ThumbnailModel] {
+        return getAllThumbnailsCD(toBeDeleted: false).compactMap({ $0.model() })
     }
 
-    public func loadAllThumbnails() -> [ThumbnailModel] {
-        return loadThumbnails("apcId", userInformation.apcId)
-            .compactMap({ $0.model() })
+    public func getAllThumbnailsToBeDeleted() -> [ThumbnailModel] {
+        return getAllThumbnailsCD(toBeDeleted: true).compactMap({ $0.model() })
     }
 
-    public func performRemoveThumbnail(_ thumbnail: ThumbnailModel) {
-        guard let managedContext = currentContext,
-              let thumbnailObject = self.loadThumbnails("uuid", thumbnail.uuid, false).first else {
+    public func getAllModifiedThumbnails() -> [ThumbnailModel] {
+        return getThumbnailsCD(withQuery: "latestLocalModificationDate != nil").map({ $0.model() })
+    }
+
+    // MARK: __ Delete
+    public func deleteOrFlagToDeleteThumbnail(withUuid uuid: String) {
+        var modifDate: Date?
+
+        performAndSave({ [unowned self] context in
+            guard let thumbnail = getThumbnailCD(withUuid: uuid) else {
+                return false
+            }
+
+            if thumbnail.cloudId == 0 {
+                context.delete(thumbnail)
+            } else {
+                modifDate = Date()
+                thumbnail.latestLocalModificationDate = modifDate
+                thumbnail.isLocalDeleted = true
+            }
+
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                if let modifDate = modifDate {
+                    latestThumbnailLocalModificationDate.send(modifDate)
+                }
+
+                thumbnailsDidChangeSubject.send()
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error deleteThumbnail(fromThumbnailModel:) with UUID: \(uuid) - error: \(error.localizedDescription)")
+            }
+        })
+    }
+
+    public func deleteThumbnails(withUuids uuids: [String]) {
+        deleteThumbnails(withUuids: uuids, completion: nil)
+    }
+
+    public func deleteThumbnails(withUuids uuids: [String],
+                                 completion: ((_ status: Bool) -> Void)?) {
+        guard !uuids.isEmpty else {
+            completion?(true)
             return
         }
 
-        if thumbnailObject.parrotCloudId == 0 {
-            managedContext.delete(thumbnailObject)
-        } else {
-            thumbnailObject.parrotCloudToBeDeleted = true
-            objectToRemove.send(thumbnail)
-        }
+        performAndSave({ context in
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Thumbnail.entityName)
+            let uuidPredicate = NSPredicate(format: "uuid IN %@", uuids)
+            fetchRequest.predicate = uuidPredicate
 
-        managedContext.perform {
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+
             do {
-                try managedContext.save()
+                try context.execute(deleteRequest)
+                return true
             } catch let error {
-                ULog.e(.dataModelTag, "Error perform deletion of Thumbnail with UUID : \(thumbnail.uuid) from CoreData : \(error.localizedDescription)")
+                ULog.e(.dataModelTag, "An error is occured when batch delete Thumbnail in CoreData : \(error.localizedDescription)")
+                completion?(false)
+                return false
             }
-        }
-    }
-
-    public func removeThumbnail(_ thumbnailUuid: String) {
-        guard let managedContext = currentContext,
-              let thumbnail = self.loadThumbnails("uuid", thumbnailUuid, false).first else {
-            return
-        }
-
-        managedContext.delete(thumbnail)
-
-        managedContext.perform {
-            do {
-                try managedContext.save()
-            } catch let error {
-                ULog.e(.dataModelTag, "Error removing Thumbnail with uuid: \(thumbnailUuid) from CoreData: \(error.localizedDescription)")
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                thumbnailsDidChangeSubject.send()
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error deleteThumbnail with UUIDs error: \(error.localizedDescription)")
+                completion?(false)
             }
-        }
+        })
     }
 
-    public func thumbnail(for flight: FlightModel) -> ThumbnailModel? {
-        loadThumbnails("ofFlight.uuid", flight.uuid)
-            .first?.model()
-    }
-
+    // MARK: __ Related
     public func migrateThumbnailToLoggedUser(_ completion: @escaping () -> Void) {
         let fetchRequest: NSFetchRequest<Thumbnail> = Thumbnail.fetchRequest()
         guard let entityName = fetchRequest.entityName else {
@@ -246,43 +313,110 @@ extension CoreDataServiceImpl: ThumbnailRepository {
     }
 }
 
-// MARK: - Utils
+// MARK: - Internal
 internal extension CoreDataServiceImpl {
-    /// Returns list of Thumbnails type of NSManagedObject by key and Value if needed
-    /// - Parameters:
-    ///     - key: Key of value to search
-    ///     - value: Value to search
-    ///     - onlyNotDeleted: flag to filter on flagged deleted object
-    func loadThumbnails(_ key: String? = nil,
-                        _ value: String? = nil,
-                        _ onlyNotDeleted: Bool = true) -> [Thumbnail] {
-        guard let managedContext = currentContext else {
+    func getAllThumbnailsCountCD(toBeDeleted: Bool?) -> Int {
+        let fetchRequest = Thumbnail.fetchRequest()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+
+        if let toBeDeleted = toBeDeleted {
+            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+
+            let subPredicateList: [NSPredicate] = [apcIdPredicate, parrotToBeDeletedPredicate]
+            let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+            fetchRequest.predicate = compoundPredicates
+        } else {
+            fetchRequest.predicate = apcIdPredicate
+        }
+
+        return fetchCount(request: fetchRequest)
+    }
+
+    func getAllThumbnailsCD(toBeDeleted: Bool?) -> [Thumbnail] {
+        let fetchRequest = Thumbnail.fetchRequest()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+
+        if let toBeDeleted = toBeDeleted {
+            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+
+            let subPredicateList: [NSPredicate] = [apcIdPredicate, parrotToBeDeletedPredicate]
+            let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+            fetchRequest.predicate = compoundPredicates
+        } else {
+            fetchRequest.predicate = apcIdPredicate
+        }
+
+        return fetch(request: fetchRequest)
+    }
+
+    func getThumbnailCD(withUuid uuid: String) -> Thumbnail? {
+        let fetchRequest = Thumbnail.fetchRequest()
+        let uuidPredicate = NSPredicate(format: "uuid == %@", uuid)
+
+        fetchRequest.predicate = uuidPredicate
+        fetchRequest.fetchLimit = 1
+
+        return fetch(request: fetchRequest).first
+    }
+
+    func getThumbnailCD(withParrotCloudId parrotCloudId: Int64) -> Thumbnail? {
+        let fetchRequest = Thumbnail.fetchRequest()
+        let uuidPredicate = NSPredicate(format: "cloudId == %@", "\(parrotCloudId)")
+
+        fetchRequest.predicate = uuidPredicate
+        fetchRequest.fetchLimit = 1
+
+        return fetch(request: fetchRequest).first
+    }
+
+    func getThumbnailCD(withFlightUuid flightUuid: String) -> Thumbnail? {
+        let fetchRequest = Thumbnail.fetchRequest()
+        let flightUuidPredicate = NSPredicate(format: "ofFlight.uuid == %@", flightUuid)
+
+        fetchRequest.predicate = flightUuidPredicate
+        fetchRequest.fetchLimit = 1
+
+        return fetch(request: fetchRequest).first
+    }
+
+    func getThumbnailsCD(withUuids uuids: [String]) -> [Thumbnail] {
+        guard !uuids.isEmpty else {
             return []
         }
 
-        var predicates: [NSPredicate] = []
+        let fetchRequest = Thumbnail.fetchRequest()
+        let uuidPredicate = NSPredicate(format: "uuid IN %@", uuids)
+        fetchRequest.predicate = uuidPredicate
 
-        let fetchRequest: NSFetchRequest<Thumbnail> = Thumbnail.fetchRequest()
+        let lastUpdateSortDesc = NSSortDescriptor(key: "lastUpdate", ascending: false)
+        fetchRequest.sortDescriptors = [lastUpdateSortDesc]
 
-        /// fetch Thumbnails by Key Value
-        if let key = key,
-           let value = value {
-            let predicate = NSPredicate(format: "%K == %@", key, value)
-            predicates.append(predicate)
+        return fetch(request: fetchRequest)
+    }
+
+    func deleteThumbnailsCD(_ thumbnails: [Thumbnail]) {
+        guard !thumbnails.isEmpty else {
+            return
         }
+        delete(thumbnails) { error in
+            var uuidsStr = "[ "
+            thumbnails.forEach({
+                uuidsStr += "\($0.uuid ?? "-"), "
+            })
+            uuidsStr += "]"
 
-        if onlyNotDeleted {
-            let predicate = NSPredicate(format: "parrotCloudToBeDeleted == %@", NSNumber(value: false))
-            predicates.append(predicate)
+            ULog.e(.dataModelTag, "Error deleteThumbnailsCD with \(uuidsStr): \(error.localizedDescription)")
         }
+    }
 
-        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
+    func getThumbnailsCD(filteredBy field: String? = nil,
+                         _ values: [Any]? = nil) -> [Thumbnail] {
+        objects(filteredBy: field, values)
+    }
 
-        do {
-            return try managedContext.fetch(fetchRequest)
-        } catch let error {
-            ULog.e(.dataModelTag, "No Thumbnail found with \(key ?? ""): \(value ?? "") in CoreData: \(error.localizedDescription)")
-            return []
-        }
+    func getThumbnailsCD(withQuery query: String) -> [Thumbnail] {
+        objects(withQuery: query)
     }
 }

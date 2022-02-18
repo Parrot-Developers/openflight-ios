@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,19 +31,19 @@ import UIKit
 import Reusable
 import Combine
 
-class FlightExecutionDetailsSettingsCell: UITableViewCell, NibReusable {
-
-    enum Constants {
-        static let numberOfSettingsPerRow: Int = 2
-    }
+class FlightExecutionDetailsSettingsCell: MainTableViewCell, NibReusable {
 
     @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet private weak var containerStackView: SubContainerStackView!
     @IBOutlet private weak var contentStackView: UIStackView!
 
     override func awakeFromNib() {
         super.awakeFromNib()
+        setupUI()
+    }
 
-        titleLabel.makeUp(with: .regular, and: .defaultTextColor80)
+    private func setupUI() {
+        titleLabel.makeUp(with: .caps, color: .defaultTextColor80)
     }
 
     override func prepareForReuse() {
@@ -53,14 +52,12 @@ class FlightExecutionDetailsSettingsCell: UITableViewCell, NibReusable {
     }
 
     func fill(provider: FlightExecutionDetailsSettingsCellProvider) {
-        titleLabel.text = L10n.dashboardMyFlightsProjectExecutionSettingsTitle
-        let settings = provider.settings
-        for pairOfSettings in settings.unfoldSubSequences(limitedTo: Constants.numberOfSettingsPerRow) {
-            let settingsViews = pairOfSettings.map(settingView(forSetting:))
-            let horizontalStackView = UIStackView(arrangedSubviews: settingsViews)
-            horizontalStackView.distribution = .fillEqually
-            contentStackView.addArrangedSubview(horizontalStackView)
+        titleLabel.text = L10n.dashboardMyFlightsProjectExecutionSettingsTitle.uppercased()
+        for setting in provider.settings {
+            let settingView = settingView(forSetting: setting)
+            contentStackView.addArrangedSubview(settingView)
         }
+        containerStackView.enabledMargins = [.left, .right]
     }
 
     private func settingView(forSetting setting: FlightPlanExecutionViewModel.ExecutionSetting) -> UIView {

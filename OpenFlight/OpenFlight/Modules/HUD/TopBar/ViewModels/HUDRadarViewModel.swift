@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,8 +32,7 @@ import CoreLocation
 import CoreMotion
 
 // MARK: - HUDRadarState
-/// State for HUDRadarViewModel
-
+/// State for HUDRadarViewModel.
 final class HUDRadarState: DevicesConnectionState {
     // MARK: - Internal Properties
     /// User heading, as returned by remote compass instrument when connected.
@@ -52,7 +50,7 @@ final class HUDRadarState: DevicesConnectionState {
         super.init()
     }
 
-    /// Init.
+    /// Constructor.
     ///
     /// - Parameters:
     ///    - droneConnectionState: drone connection state
@@ -80,25 +78,24 @@ final class HUDRadarState: DevicesConnectionState {
             return false
         }
         return super.isEqual(to: other)
-            && self.userHeading == other.userHeading
-            && self.droneHeading == other.droneHeading
-            && self.droneLocation == other.droneLocation
-            && self.userLocation == other.userLocation
+            && userHeading == other.userHeading
+            && droneHeading == other.droneHeading
+            && droneLocation == other.droneLocation
+            && userLocation == other.userLocation
     }
 
     override func copy() -> HUDRadarState {
-        let copy = HUDRadarState(droneConnectionState: self.droneConnectionState,
-                                 remoteControlConnectionState: self.remoteControlConnectionState,
-                                 userHeading: self.userHeading,
-                                 droneHeading: self.droneHeading,
-                                 droneLocation: self.droneLocation,
-                                 userLocation: self.userLocation)
+        let copy = HUDRadarState(droneConnectionState: droneConnectionState,
+                                 remoteControlConnectionState: remoteControlConnectionState,
+                                 userHeading: userHeading,
+                                 droneHeading: droneHeading,
+                                 droneLocation: droneLocation,
+                                 userLocation: userLocation)
         return copy
     }
 }
 
-/// ViewModel for HUDRadar, notifies on remote/drone heading and gps location changes.
-
+/// ViewModel for HUDRadarView, notifies on remote/drone heading and gps location changes.
 final class HUDRadarViewModel: DevicesStateViewModel<HUDRadarState> {
 
     // MARK: - Private Enums
@@ -156,8 +153,8 @@ private extension HUDRadarViewModel {
     /// Starts DeviceMotion tracking when remoteControl is not connected.
     func startDeviceMotionIfNeeded() {
         #if DEBUG
-        // Disable device motion updates due to CoreMotion's
-        // thread issues with iPhones XR/XS running iOS 12.
+        // disable device motion updates due to CoreMotion's
+        // thread issues with iPhones XR/XS running iOS 12
         guard #available(iOS 13, *) else {
             return
         }
@@ -184,37 +181,37 @@ private extension HUDRadarViewModel {
 
     /// Starts watcher for user location.
     func listenUserLocation() {
-        userLocationRef = groundSdk.getFacility(Facilities.userLocation) { [weak self] userLocation in
-            let copy = self?.state.value.copy()
-            copy?.userLocation = userLocation?.location
-            self?.state.set(copy)
+        userLocationRef = groundSdk.getFacility(Facilities.userLocation) { [unowned self] userLocation in
+            let copy = state.value.copy()
+            copy.userLocation = userLocation?.location
+            state.set(copy)
         }
     }
 
     /// Starts watcher for drone compass.
     func listenCompass(drone: Drone) {
-        droneCompassRef = drone.getInstrument(Instruments.compass) { [weak self] compass in
-            let copy = self?.state.value.copy()
-            copy?.droneHeading = compass?.heading
-            self?.state.set(copy)
+        droneCompassRef = drone.getInstrument(Instruments.compass) { [unowned self] compass in
+            let copy = state.value.copy()
+            copy.droneHeading = compass?.heading
+            state.set(copy)
         }
     }
 
     /// Starts watcher for drone gps.
     func listenGps(drone: Drone) {
-        droneGpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
-            let copy = self?.state.value.copy()
-            copy?.droneLocation = gps?.lastKnownLocation
-            self?.state.set(copy)
+        droneGpsRef = drone.getInstrument(Instruments.gps) { [unowned self] gps in
+            let copy = state.value.copy()
+            copy.droneLocation = gps?.lastKnownLocation
+            state.set(copy)
         }
     }
 
     /// Starts watcher for remote control compass.
     func listenCompass(remoteControl: RemoteControl) {
-        remoteControlCompassRef = remoteControl.getInstrument(Instruments.compass) { [weak self] compass in
-            let copy = self?.state.value.copy()
-            copy?.userHeading = compass?.heading
-            self?.state.set(copy)
+        remoteControlCompassRef = remoteControl.getInstrument(Instruments.compass) { [unowned self] compass in
+            let copy = state.value.copy()
+            copy.userHeading = compass?.heading
+            state.set(copy)
         }
     }
 }

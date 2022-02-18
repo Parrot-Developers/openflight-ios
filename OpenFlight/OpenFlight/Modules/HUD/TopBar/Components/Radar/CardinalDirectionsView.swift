@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,7 +38,6 @@ struct CardinalDirectionsModel {
 }
 
 /// Class that adds labels for cardinal directions seperated by graduated views inside HUDRadarView.
-
 final class CardinalDirectionsView: UIScrollView, NibOwnerLoadable {
     // MARK: - Internal Properties
     var model = CardinalDirectionsModel() {
@@ -112,7 +110,7 @@ final class CardinalDirectionsView: UIScrollView, NibOwnerLoadable {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.loadNibContent()
+        loadNibContent()
     }
 
     // MARK: - Override Funcs
@@ -206,7 +204,7 @@ private extension CardinalDirectionsView {
             text = CardinalDirections.allCases[lastIndex + 1].symbol
         }
         let label = insertLabel(text: text)
-        // Add rightmost label at the end of the array.
+        // add rightmost label at the end of the array
         visibleLabels.append(label)
 
         label.frame.origin.x = rightEdge
@@ -227,7 +225,7 @@ private extension CardinalDirectionsView {
             text = CardinalDirections.allCases[firstIndex - 1].symbol
         }
         let label = insertLabel(text: text)
-        // Add leftmost label at the beginning of the array.
+        // add leftmost label at the beginning of the array
         visibleLabels.insert(label, at: 0)
 
         label.frame.origin.x = leftEdge - label.frame.size.width
@@ -240,23 +238,23 @@ private extension CardinalDirectionsView {
     ///
     /// - Parameters:
     ///    - minimumVisibleX: minimum position for a label to be visible.
-    ///    - maximumPositionX: maximum position for a label to be visible.
+    ///    - maximumVisibleX: maximum position for a label to be visible.
     func tileLabelsFromMinX(minimumVisibleX: CGFloat, toMaxX maximumVisibleX: CGFloat) {
-        // The upcoming tiling logic depends on already having at least one label in the visibleLabels array, so
-        // to kick off the tiling we need to make sure there's at least one label.
+        // the upcoming tiling logic depends on already having at least one label in the visibleLabels array, so
+        // to kick off the tiling we need to make sure there's at least one label
         if visibleLabels.isEmpty {
             patternOffset = minimumVisibleX.truncatingRemainder(dividingBy: Constants.labelWidth)
             _ = placeNewLabelOnRight(rightEdge: minimumVisibleX - patternOffset)
         }
 
-        // Add labels that are missing on right side.
+        // add labels that are missing on right side
         if let lastLabel = visibleLabels.last {
             var rightEdge = lastLabel.frame.maxX
             while rightEdge < maximumVisibleX {
                 rightEdge = placeNewLabelOnRight(rightEdge: rightEdge)
             }
         }
-        // Add labels that are missing on left side.
+        // add labels that are missing on left side
         if let firstLabel = visibleLabels.first {
             var leftEdge = firstLabel.frame.minX
             while leftEdge > minimumVisibleX {
@@ -264,7 +262,7 @@ private extension CardinalDirectionsView {
             }
         }
 
-        // Remove labels that have fallen off right edge.
+        // remove labels that have fallen off right edge
         var lastLabel = visibleLabels.last
         while lastLabel != nil, lastLabel?.frame.origin.x ?? 0 > maximumVisibleX {
             lastLabel?.removeFromSuperview()
@@ -272,7 +270,7 @@ private extension CardinalDirectionsView {
             lastLabel = visibleLabels.last
         }
 
-        // Remove labels that have fallen off left edge.
+        // remove labels that have fallen off left edge
         var firstLabel = visibleLabels.first
         while firstLabel != nil, firstLabel?.frame.maxX ?? 0 < minimumVisibleX {
             firstLabel?.removeFromSuperview()

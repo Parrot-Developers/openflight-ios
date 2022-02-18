@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +32,9 @@ import UIKit
 /// View Controller used to display details about Remote.
 final class RemoteDetailsViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var stackView: UIStackView!
+    @IBOutlet private weak var stackView: MainContainerStackView!
+    @IBOutlet private weak var modelLabel: UILabel!
+    @IBOutlet weak var nameLabel: UILabel!
 
     // MARK: - Private Properties
     private weak var coordinator: RemoteCoordinator?
@@ -59,27 +60,26 @@ final class RemoteDetailsViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.remoteControlDetails,
-                             logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.remoteControlDetails))
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
 // MARK: - Actions
 private extension RemoteDetailsViewController {
     @IBAction func backButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .simpleButton)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyCommonButton.back))
         coordinator?.dismissChildCoordinator()
     }
 }
@@ -88,6 +88,8 @@ private extension RemoteDetailsViewController {
 private extension RemoteDetailsViewController {
     /// Inits the view.
     func initView() {
+        stackView.margins = Layout.infoContainerInnerMargins(isRegularSizeClass)
+        modelLabel.text = L10n.remoteDetailsControllerInfos
         setupViewControllers()
         updateStackView()
     }
@@ -112,7 +114,6 @@ private extension RemoteDetailsViewController {
                                                                                         viewModel: remoteInfosViewModel)
         [buttonsViewController, deviceViewController, informationViewController].forEach { viewController in
             guard let strongViewController = viewController else { return }
-
             addChild(strongViewController)
         }
 
@@ -120,26 +121,15 @@ private extension RemoteDetailsViewController {
 
     /// Updates stack view.
     @objc func updateStackView() {
-        stackView.removeSubViews()
-
         guard let infoView = informationViewController?.view,
               let buttonView = buttonsViewController?.view,
               let deviceView = deviceViewController?.view else {
-            return
-        }
+                  return
+              }
 
-        if self.isRegularSizeClass || UIApplication.isLandscape {
-            [infoView,
-             deviceView,
-             buttonView].forEach { view in
-                stackView.addArrangedSubview(view)
-             }
-        } else {
-            [deviceView,
-             infoView,
-             buttonView].forEach { view in
-                stackView.addArrangedSubview(view)
-             }
+        for (index, view) in [infoView, deviceView, buttonView].enumerated() {
+            guard let container = stackView.arrangedSubviews[index] as? UIStackView else { continue }
+            container.addArrangedSubview(view)
         }
     }
 }

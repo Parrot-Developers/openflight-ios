@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -23,7 +23,7 @@
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mOb-3x-yF8">
-                        <rect key="frame" x="44" y="52.5" width="32" height="15.5"/>
+                        <rect key="frame" x="48.5" y="53.5" width="29" height="13"/>
                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                         <color key="textColor" name="default_text_color"/>
                         <nil key="highlightedColor"/>
@@ -32,7 +32,7 @@
             </view>
             <constraints>
                 <constraint firstItem="mOb-3x-yF8" firstAttribute="centerY" secondItem="uiR-MK-SQF" secondAttribute="centerY" id="AeW-np-ACK"/>
-                <constraint firstItem="mOb-3x-yF8" firstAttribute="centerX" secondItem="uiR-MK-SQF" secondAttribute="centerX" id="gRf-oJ-yCb"/>
+                <constraint firstItem="mOb-3x-yF8" firstAttribute="centerX" secondItem="uiR-MK-SQF" secondAttribute="centerX" multiplier="1.05" id="gRf-oJ-yCb"/>
             </constraints>
             <connections>
                 <outlet property="valueLabel" destination="mOb-3x-yF8" id="5yX-gA-bYh"/>
@@ -42,7 +42,7 @@
     </objects>
     <resources>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

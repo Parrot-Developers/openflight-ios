@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
-    <device id="retina6_1" orientation="landscape" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="ipad12_9rounded" orientation="landscape" layout="fullscreen" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -12,37 +12,43 @@
         <scene sceneID="gAF-Wg-Bhz">
             <objects>
                 <viewController storyboardIdentifier="DashboardViewController" modalPresentationStyle="fullScreen" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="DashboardViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xds-vG-0gg">
-                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                    <view key="view" opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xds-vG-0gg">
+                        <rect key="frame" x="0.0" y="0.0" width="1366" height="1024"/>
                         <subviews>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" indicatorStyle="white" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="64E-0f-39c">
-                                <rect key="frame" x="54" y="10" width="788" height="394"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" sectionInsetReference="safeArea" id="HOe-Cs-UyD">
-                                    <size key="itemSize" width="128" height="128"/>
-                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                </collectionViewFlowLayout>
-                                <cells/>
-                                <connections>
-                                    <outlet property="dataSource" destination="om2-Bk-pxl" id="n2T-pG-9Ux"/>
-                                    <outlet property="delegate" destination="om2-Bk-pxl" id="GSR-Se-Yrt"/>
-                                </connections>
-                            </collectionView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="ol5-qz-TZL" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="1366" height="1024"/>
+                                <subviews>
+                                    <collectionView multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" indicatorStyle="white" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="64E-0f-39c">
+                                        <rect key="frame" x="0.0" y="0.0" width="1366" height="1024"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" sectionInsetReference="safeArea" id="HOe-Cs-UyD">
+                                            <size key="itemSize" width="128" height="128"/>
+                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                        </collectionViewFlowLayout>
+                                        <cells/>
+                                        <connections>
+                                            <outlet property="dataSource" destination="om2-Bk-pxl" id="n2T-pG-9Ux"/>
+                                            <outlet property="delegate" destination="om2-Bk-pxl" id="GSR-Se-Yrt"/>
+                                        </connections>
+                                    </collectionView>
+                                </subviews>
+                            </stackView>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="pxc-RV-TXU"/>
+                        <viewLayoutGuide key="safeArea" id="xNr-li-gLJ"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="pxc-RV-TXU" firstAttribute="trailing" secondItem="64E-0f-39c" secondAttribute="trailing" constant="10" id="jan-UN-xnv"/>
-                            <constraint firstItem="64E-0f-39c" firstAttribute="leading" secondItem="pxc-RV-TXU" secondAttribute="leading" constant="10" id="tEq-ds-j2X"/>
-                            <constraint firstAttribute="bottom" secondItem="64E-0f-39c" secondAttribute="bottom" constant="10" id="udB-qJ-RF9"/>
-                            <constraint firstItem="64E-0f-39c" firstAttribute="top" secondItem="pxc-RV-TXU" secondAttribute="top" constant="10" id="x1C-JW-0xh"/>
+                            <constraint firstItem="ol5-qz-TZL" firstAttribute="leading" secondItem="xds-vG-0gg" secondAttribute="leading" id="9ou-9I-3Hg"/>
+                            <constraint firstAttribute="bottom" secondItem="ol5-qz-TZL" secondAttribute="bottom" id="FGf-Ei-m4e"/>
+                            <constraint firstAttribute="top" secondItem="ol5-qz-TZL" secondAttribute="top" id="ndv-gg-srq"/>
+                            <constraint firstAttribute="trailing" secondItem="ol5-qz-TZL" secondAttribute="trailing" id="zdM-6T-uzE"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="collectionView" destination="64E-0f-39c" id="BPA-6M-qpG"/>
+                        <outlet property="stackViewContainer" destination="ol5-qz-TZL" id="sfP-aQ-zaT"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>

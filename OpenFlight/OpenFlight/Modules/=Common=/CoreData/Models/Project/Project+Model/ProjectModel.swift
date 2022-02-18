@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,63 +30,115 @@
 import Foundation
 
 public struct ProjectModel {
+    // MARK: __ User's ID
+    public var apcId: String
 
-    // MARK: - Properties
-
+    // MARK: __ Academy
+    public var cloudId: Int
     public var uuid: String
     public var title: String?
     public var type: String
+    public var latestCloudModificationDate: Date?
 
-    // MARK: - Synchro Properties
-
-    /// - To identify data user
-    public var apcId: String
-
-    /// - Local modification date
+    // MARK: __ Local
     public var lastUpdated: Date
 
-    /// - Remote modification date
-    public var cloudLastUpdate: Date?
+    // MARK: __ Synchronization
+    ///  Boolean to know if it delete locally but needs to be deleted on server
+    public var isLocalDeleted: Bool
+    ///  Synchro status
+    public var synchroStatus: SynchroStatus?
+    ///  Synchro error
+    public var synchroError: SynchroError?
+    ///  Date of last tried synchro
+    public var latestSynchroStatusDate: Date?
+    ///  Date of local modification
+    public var latestLocalModificationDate: Date?
 
-    /// - Id of project on server: Set only if synchronized
-    public var parrotCloudId: Int64
-
-    /// - True if a Delete Request was triguerred without success
-    public var parrotCloudToBeDeleted: Bool
-
-    /// - Contains the Date of last synchro trying if is not succeeded
-    public var synchroDate: Date?
-
-    /// - Contains 0 if not yet synchronized, 1 if yes
-        /// statusCode if sync failed
-    public var synchroStatus: Int16?
+    // MARK: __ Easy access
+    public var isSimpleFlightPlan: Bool {
+        self.type == FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType
+    }
 
     // MARK: - Public init
-
     public init(apcId: String,
+                cloudId: Int,
                 uuid: String,
                 title: String?,
                 type: String,
+                latestCloudModificationDate: Date?,
                 lastUpdated: Date,
-                parrotCloudId: Int64 = 0,
-                cloudLastUpdate: Date? = nil,
-                parrotCloudToBeDeleted: Bool = false,
-                synchroDate: Date? = nil,
-                synchroStatus: Int16? = 0) {
-
+                isLocalDeleted: Bool,
+                synchroStatus: SynchroStatus?,
+                synchroError: SynchroError?,
+                latestSynchroStatusDate: Date?,
+                latestLocalModificationDate: Date?) {
         self.apcId = apcId
+
+        self.cloudId = cloudId
         self.uuid = uuid
         self.title = title
         self.type = type
+        self.latestCloudModificationDate = latestCloudModificationDate
+
         self.lastUpdated = lastUpdated
-        self.cloudLastUpdate = cloudLastUpdate
-        self.parrotCloudId = parrotCloudId
-        self.parrotCloudToBeDeleted = parrotCloudToBeDeleted
-        self.synchroDate = synchroDate
+
+        self.isLocalDeleted = isLocalDeleted
+        self.latestSynchroStatusDate = latestSynchroStatusDate
         self.synchroStatus = synchroStatus
+        self.latestLocalModificationDate = latestLocalModificationDate
+        self.synchroError = synchroError
+    }
+}
+
+extension ProjectModel {
+    public init(apcId: String, uuid: String, title: String?, type: String) {
+        self.init(apcId: apcId,
+                  cloudId: 0,
+                  uuid: uuid,
+                  title: title,
+                  type: type,
+                  latestCloudModificationDate: nil,
+                  lastUpdated: Date(),
+                  isLocalDeleted: false,
+                  synchroStatus: .notSync,
+                  synchroError: .noError,
+                  latestSynchroStatusDate: nil,
+                  latestLocalModificationDate: nil)
     }
 
-    public var isSimpleFlightPlan: Bool {
-        self.type == FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType
+    public init(apcId: String,
+                cloudId: Int,
+                uuid: String,
+                title: String?,
+                type: String,
+                latestCloudModificationDate: Date?) {
+        self.init(apcId: apcId,
+                  cloudId: cloudId,
+                  uuid: uuid,
+                  title: title,
+                  type: type,
+                  latestCloudModificationDate: latestCloudModificationDate,
+                  lastUpdated: latestCloudModificationDate ?? Date(),
+                  isLocalDeleted: false,
+                  synchroStatus: .synced,
+                  synchroError: .noError,
+                  latestSynchroStatusDate: Date(),
+                  latestLocalModificationDate: nil)
+    }
+
+    public init(duplicateProject project: ProjectModel, withApcId: String, uuid: String, title: String?) {
+        self.init(apcId: withApcId,
+                  cloudId: project.cloudId,
+                  uuid: uuid,
+                  title: title,
+                  type: project.type,
+                  latestCloudModificationDate: Date(),
+                  lastUpdated: Date(),
+                  isLocalDeleted: project.isLocalDeleted,
+                  synchroStatus: .notSync,
+                  synchroError: .noError,
+                  latestSynchroStatusDate: nil,
+                  latestLocalModificationDate: nil)
     }
 }

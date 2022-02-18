@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -68,26 +67,27 @@ final class PairingWhereIsWifiViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        updateView()
+        initView()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingHowToConnectPhoneToDrone,
-                             logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.pairingHowToConnectPhoneToDrone))
         UIView.animate(withDuration: Style.shortAnimationDuration,
                        delay: Style.shortAnimationDuration,
                        animations: {
-                        self.view.backgroundColor = ColorName.nightRider.color
-                       })
+            self.view.backgroundColor = ColorName.nightRider80.color
+        })
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        view.backgroundColor = .clear
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -109,10 +109,12 @@ private extension PairingWhereIsWifiViewController {
 
 // MARK: - Private Funcs
 private extension PairingWhereIsWifiViewController {
-    /// Update the view.
-    func updateView() {
+    /// Init the view.
+    func initView() {
         titleLabel.text = L10n.pairingWhereIsWifiPassword
+        titleLabel.font = FontStyle.title.font(isRegularSizeClass)
         descriptionLabel.text = L10n.pairingScanQrCode
+        descriptionLabel.font = FontStyle.readingText.font(isRegularSizeClass)
         descriptionWarningLabel.text = L10n.pairingScanQrCodeWarning
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -145,25 +144,24 @@ class ManagePlansViewModel {
     }
 
     func setupFlightPlanListviewModel(viewModel: FlightPlansListViewModelParentInput) {
-        self.flightPlanListviewModel = viewModel
-        self.flightPlanListviewModel.setupDelegate(with: self)
+        flightPlanListviewModel = viewModel
+        flightPlanListviewModel.setupDelegate(with: self)
 
         selectedProject
-            .sink { [weak self] project in
-                guard let self = self else { return }
+            .dropFirst() // do not trigger on initialization
+            .sink { [unowned self] project in
                 if let project = project {
-                    self.state = .project(name: project)
-                    self.flightPlanListviewModel.updateUUID(with: project.uuid)
+                    state = .project(name: project)
                 } else {
-                    self.state = .none
-                    self.flightPlanListviewModel.updateUUID(with: nil)
+                    state = .none
                 }
+                flightPlanListviewModel.updateUUID(with: project?.uuid)
             }
             .store(in: &cancellables)
 
         if manager.currentProject == nil,
-           let project = self.manager.loadProjects(type: currentMission.mode.flightPlanProvider?.projectType).first {
-            self.manager.setCurrent(project)
+           let project = manager.loadProjects(type: currentMission.mode.flightPlanProvider?.projectType).first {
+            manager.setCurrent(project)
         }
 
         manager.currentProjectPublisher.sink { [unowned self] in
@@ -171,13 +169,7 @@ class ManagePlansViewModel {
         }
         .store(in: &cancellables)
 
-        self.manager.projectsPublisher
-            .sink { [weak self] updatedProjects in
-                self?.flightPlanListviewModel.setupProjects(with: updatedProjects)
-            }
-            .store(in: &cancellables)
-
-        self.stateMachine.statePublisher
+        stateMachine.statePublisher
             .sink(receiveValue: { [unowned self] state in
                 switch state {
                 case let .flying(flightPlan):
@@ -234,6 +226,7 @@ extension ManagePlansViewModel: ManagePlansViewModelInput {
     func duplicateSelectedFlightPlan() {
         guard let project = selectedProject.value else { return }
         manager.duplicate(project: project)
+        openSelectedFlightPlan()
     }
 
     func deleteFlightPlan() {
@@ -245,31 +238,23 @@ extension ManagePlansViewModel: ManagePlansViewModelInput {
     }
 
     func canDeleteProject() -> Bool {
-        guard
-            let project = selectedProject.value,
-            project.uuid != idFlyingProject else {
-            return false
-        }
+        guard let project = selectedProject.value,
+              project.uuid != idFlyingProject else {
+                  return false
+              }
         return true
     }
 
     func performDeleteSelectedFlightPlan() {
-        guard
-            let project = selectedProject.value else { return }
-        if project.uuid == manager.currentProject?.uuid {
-            didDeleteCurrent = true
-        }
-        selectedProject.value = nil
+        guard let project = selectedProject.value else { return }
+        didDeleteCurrent = project.uuid == manager.currentProject?.uuid
         manager.delete(project: project)
-        selectedProject.value = manager.currentProject
-        if selectedProject.value == nil {
-            selectedProject.value = manager.loadProjects(type: project.type).first
-        }
+        setSelectedProject(manager.currentProject)
     }
 
     func newFlightPlan() {
-        let newProject = manager.newProject(flightPlanProvider: self.flightPlanProvider)
-        manager.loadEverythingAndOpen(project: newProject)
+        let newProject = manager.newProject(flightPlanProvider: flightPlanProvider)
+        manager.loadEverythingAndOpenWhileNotSettingAsLastUsed(project: newProject)
         delegate?.endManagePlans(editionPreference: .start, shouldCenter: true)
     }
 
@@ -284,6 +269,12 @@ extension ManagePlansViewModel: ManagePlansViewModelInput {
             manager.rename(project, title: text)
         }
     }
+
+    private func setSelectedProject(_ project: ProjectModel?) {
+        if project?.uuid != selectedProject.value?.uuid {
+            selectedProject.value = project
+        }
+    }
 }
 
 // MARK: - FlightPlansListViewControllerDelegate
@@ -293,7 +284,7 @@ extension ManagePlansViewModel: FlightPlansListViewModelDelegate {
     }
 
     func didSelect(project: ProjectModel) {
-        selectedProject.value = project
+        setSelectedProject(project)
     }
 
     func didDoubleTap(on project: ProjectModel) {

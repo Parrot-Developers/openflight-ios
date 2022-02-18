@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +32,7 @@ import Reusable
 import GroundSdk
 
 /// Settings choose channel cell.
-final class SettingsChooseChannelCell: UITableViewCell, NibReusable {
+final class SettingsChooseChannelCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var channelView: WifiChannelsOccupationGraphView!
     @IBOutlet private weak var gridView: WifiChannelsOccupationGridView!
@@ -51,13 +50,12 @@ final class SettingsChooseChannelCell: UITableViewCell, NibReusable {
         channelView.channelsOccupations = viewModel.state.value.channelsOccupations
         channelView.setNeedsDisplay()
         gridView.channelsOccupations = viewModel.state.value.channelsOccupations
-        let isAuto = viewModel.state.value.channelSelectionMode == .auto
-        gridView.alpha = isAuto ? 0.5 : 1.0
+        gridView.alphaWithEnabledState(viewModel.state.value.channelsOccupationIsEnabled)
         gridView.currentChannel = viewModel.state.value.currentChannel
         gridView.currentChannelUpdating = viewModel.state.value.channelUpdating
+        gridView.isUserInteractionEnabled = viewModel.state.value.channelsOccupationIsEnabled
         gridView.delegate = self
         gridView.setNeedsDisplay()
-        gridView.isUserInteractionEnabled = !viewModel.state.value.channelUpdating
     }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -40,7 +40,6 @@ class DevToolboxCell: UITableViewCell, NibReusable {
     @IBOutlet private weak var sliderView: UISlider!
 
     // MARK: - Private Properties
-    private var devToolbox: Ref<DevToolbox>?
     private var entry: DebugSetting?
 
     // MARK: - Public Funcs

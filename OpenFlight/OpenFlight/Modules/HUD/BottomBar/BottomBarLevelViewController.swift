@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +32,14 @@ import UIKit
 /// HUD Bottom bar level view.
 /// Can display level one views like SegmentedBar.
 
+/// A settings type that can be displayed in bottom bar level view.
+private enum BottomBarSettingsType { case levelOne, imaging }
+
 final class BottomBarLevelViewController: UIViewController {
+    @IBOutlet private weak var levelOneSettingsView: ActionView!
+    @IBOutlet private weak var imagingSettingsView: UIView!
+    @IBOutlet private weak var imagingSettingsHeightConstraint: NSLayoutConstraint!
+
     // MARK: - Private Properties
     private var levelView: UIView?
     private var imagingSettingsBarViewController: ImagingSettingsBarViewController?
@@ -57,11 +63,11 @@ extension BottomBarLevelViewController {
     /// - Parameters:
     ///     - viewModel: model representing the contents
     func addSegmentedBar<T: BarButtonState>(viewModel: BarButtonViewModel<T>) {
-        removeLevelView()
-        removeImagingSettingsBar()
+        showSettingsContainer(.levelOne)
+
         let segmentedBarView = SegmentedBarView<T>()
         segmentedBarView.viewModel = viewModel
-        view.addWithConstraints(subview: segmentedBarView)
+        levelOneSettingsView.addWithConstraints(subview: segmentedBarView)
         levelView = segmentedBarView
     }
 
@@ -70,11 +76,11 @@ extension BottomBarLevelViewController {
     /// - Parameters:
     ///     - delegate: Bar container delegate
     func addImagingSettingsBar(delegate: BottomBarContainerDelegate? = nil) {
-        removeLevelView()
-        removeImagingSettingsBar()
+        showSettingsContainer(.imaging)
+
         let imagingSettingsBarVC = ImagingSettingsBarViewController.instantiate(delegate: delegate)
         imagingSettingsBarViewController = imagingSettingsBarVC
-        self.add(imagingSettingsBarVC)
+        add(imagingSettingsBarVC, in: imagingSettingsView)
     }
 
     /// Check if current segmented bar view is of the same type as given view model type.
@@ -103,8 +109,22 @@ extension BottomBarLevelViewController {
 private extension BottomBarLevelViewController {
     /// Initializes interfaces.
     func initUI() {
-        self.view.translatesAutoresizingMaskIntoConstraints = false
+        view.translatesAutoresizingMaskIntoConstraints = false
         // Sets up corners
-        self.view.customCornered(corners: [.allCorners], radius: Style.fitExtraLargeCornerRadius)
+        view.customCornered(corners: [.allCorners], radius: Style.fitExtraLargeCornerRadius)
+        imagingSettingsHeightConstraint.constant = Layout.smallBottomBarHeight(isRegularSizeClass)
+    }
+
+    /// Shows `type` settings container and prepare for content addition.
+    ///
+    /// - Parameters:
+    ///    - type: The type of the settings container to display.
+    func showSettingsContainer(_ type: BottomBarSettingsType) {
+        levelOneSettingsView.animateIsHiddenInStackView(type == .imaging, duration: Style.fastAnimationDuration)
+        imagingSettingsView.animateIsHiddenInStackView(type == .levelOne, duration: Style.fastAnimationDuration)
+
+        // Remove existing content in order to prepare new addition.
+        removeLevelView()
+        removeImagingSettingsBar()
     }
 }

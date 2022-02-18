@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -51,12 +50,12 @@ final class MissionLauncherButton: UIControl, NibOwnerLoadable {
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.loadNibContent()
+        loadNibContent()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.loadNibContent()
+        loadNibContent()
     }
 
     // MARK: - Override Funcs
@@ -78,7 +77,18 @@ private extension MissionLauncherButton {
                 updateView(selected: selected, image: image)
             }
             .store(in: &cancellables)
-    }
+        model.$isEnabled
+            .sink { [unowned self] in
+                alphaWithEnabledState($0)
+                isUserInteractionEnabled = $0
+            }
+            .store(in: &cancellables)
+        model.$isHidden
+            .sink { [unowned self] in
+                isHidden = $0
+            }
+            .store(in: &cancellables)
+   }
 
     func updateView(selected: Bool? = nil, image: UIImage? = nil) {
         let isSelected = selected ?? model.selected

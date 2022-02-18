@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,7 +36,7 @@ public struct FlightPlanPanelProgressModel {
     var mainText: String
     var mainColor: UIColor
     var subColor: UIColor
-    var progress: Double
+    var progress: Double?
     var hasError: Bool
 
     /// Init.
@@ -51,7 +50,7 @@ public struct FlightPlanPanelProgressModel {
     public init(mainText: String = "-",
                 mainColor: UIColor = ColorName.highlightColor.color,
                 subColor: UIColor = ColorName.whiteAlbescent.color,
-                progress: Double = 0.0,
+                progress: Double? = 0.0,
                 hasError: Bool = false) {
         self.mainText = mainText
         self.mainColor = mainColor
@@ -65,7 +64,7 @@ public struct FlightPlanPanelProgressModel {
 public final class FlightPlanPanelProgressView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var topLeftLabel: UILabel!
-    @IBOutlet private weak var progressView: UIProgressView!
+    @IBOutlet private weak var progressView: ActivityProgressView!
     @IBOutlet private weak var extraViewsStackView: UIStackView!
 
     // MARK: - Public Properties
@@ -102,11 +101,17 @@ public final class FlightPlanPanelProgressView: UIView, NibOwnerLoadable {
 
 // MARK: - Private Funcs
 private extension FlightPlanPanelProgressView {
+
+    /// Private Constants.
+    private enum Constants {
+        static let indeterminateProgressViewMinimumWidths: (compact: CGFloat, regular: CGFloat) = (200, 300)
+    }
+
     /// Common init.
     func commonInitFlightPlanPanelProgressView() {
         self.loadNibContent()
         self.isHidden = true
-        topLeftLabel.makeUp()
+        topLeftLabel.makeUp(with: .current, color: .defaultTextColor)
     }
 
     /// Fills up the view with given model.
@@ -114,12 +119,27 @@ private extension FlightPlanPanelProgressView {
     /// - Parameters:
     ///    - model: model for view
     func fill(with model: FlightPlanPanelProgressModel) {
+        progressView.setNeedsLayout()
         topLeftLabel.text = model.mainText
-        topLeftLabel.textColor = model.mainColor
         progressView.tintColor = model.mainColor
         progressView.trackTintColor = model.subColor
-        progressView.progress = Float(model.progress)
+        if let progress = model.progress {
+            topLeftLabel.textColor = model.mainColor
+            progressView.type = .determinate
+            progressView.progress = Float(progress)
+        } else {
+            topLeftLabel.textColor = ColorName.defaultTextColor.color
+            progressView.type = .indeterminate
+            progressView.indeterminateProgressViewMinimumWidth
+            = UIViewController().isRegularSizeClass
+            ? Constants.indeterminateProgressViewMinimumWidths.regular
+            : Constants.indeterminateProgressViewMinimumWidths.compact
+            progressView.startAnimating()
+        }
         progressView.isHidden = model.hasError
-        extraViewsStackView.isHidden = model.hasError
+        // ExtraViews' stackView (e.g. photo upload status) should be hidden:
+        //  1 - In case of error (e.g. Drone not connected).
+        //  2 - If an indeterminate progress view is displayed (e.g. RTH, navigate to starting point).
+        extraViewsStackView.isHidden = model.hasError || model.progress == nil
     }
 }

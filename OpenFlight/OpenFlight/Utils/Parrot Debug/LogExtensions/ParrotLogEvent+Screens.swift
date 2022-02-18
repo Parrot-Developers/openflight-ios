@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,7 +30,7 @@
 /// LogEvent for all screen in the app.
 public extension LogEvent {
     /// Enum which stores all screen name for log message.
-    enum EventLoggerScreenConstants {
+    enum Screen {
         /// Settings screens.
         static let settings: String = "Settings"
         static let quick: String = "Settings/Quick"

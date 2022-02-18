@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -59,29 +58,29 @@ class QuickSettingsViewModel: DroneWatcherViewModel<DeviceConnectionState>, Sett
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         // Listen Manual Piloting Interface.
-        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [weak self] _ in
-            self?.notifyChange()
+        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [unowned self] _ in
+            notifyChange()
         }
         // Listen geofence.
-        geofenceRef = drone.getPeripheral(Peripherals.geofence) { [weak self] _ in
-            self?.notifyChange()
+        geofenceRef = drone.getPeripheral(Peripherals.geofence) { [unowned self] _ in
+            notifyChange()
         }
         // Listen obstacle avoidance.
-        obstacleAvoidanceRef = drone.getPeripheral(Peripherals.obstacleAvoidance) { [weak self] _ in
-            self?.notifyChange()
+        obstacleAvoidanceRef = drone.getPeripheral(Peripherals.obstacleAvoidance) { [unowned self] _ in
+            notifyChange()
         }
         // Listen camera.
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] _ in
-            self?.notifyChange()
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] _ in
+            notifyChange()
         }
         // Listen rth.
-        rthRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] _ in
-            self?.notifyChange()
+        rthRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] _ in
+            notifyChange()
         }
     }
 
     func resetSettings() {
-        guard let currentEditor = self.drone?.currentCamera?.currentEditor else { return }
+        guard let currentEditor = drone?.currentCamera?.currentEditor else { return }
 
         currentEditor[Camera2Params.audioRecordingMode]?.value = CameraPreset.startAudio
     }
@@ -91,9 +90,8 @@ class QuickSettingsViewModel: DroneWatcherViewModel<DeviceConnectionState>, Sett
 extension QuickSettingsViewModel {
     /// Returns quick settings entries.
     var settingEntries: [SettingEntry] {
-        let drone = self.drone
         let geofence = drone?.getPeripheral(Peripherals.geofence)
-        let newZoomModel = self.zoomQualityModel
+        let newZoomModel = zoomQualityModel
 
         return [SettingEntry(setting: SecondaryScreenType.self,
                              itemLogKey: LogEvent.LogKeyAdvancedSettings.secondaryScreenType),
@@ -114,7 +112,7 @@ extension QuickSettingsViewModel {
                              image: Asset.Settings.Quick.losslessZoomActive.image,
                              imageDisabled: Asset.Settings.Quick.losslessZoomInactive.image,
                              itemLogKey: LogEvent.LogKeyQuickSettings.extraZoom),
-                SettingEntry(setting: self.autoRecordModel,
+                SettingEntry(setting: autoRecordModel,
                              title: L10n.settingsCameraAutoRecord,
                              image: Asset.Settings.Quick.autorecordActive.image,
                              imageDisabled: Asset.Settings.Quick.autorecordInactive.image)

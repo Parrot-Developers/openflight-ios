@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,7 +35,7 @@ import GroundSdk
 enum CameraPreset {
     static let autoRecord: Camera2AutoRecordMode = .recordFlight
     static let velocityQuality: Camera2ZoomVelocityControlQualityMode = .allowDegrading
-    static let antiflickerMode: AntiflickerMode = .auto
+    static let antiflickerMode: AntiflickerMode = .off
     static let overexposure = SettingsOverexposure.preset
     static let videoencoding: Camera2VideoCodec = .h265
     static let dynamicHdrRange: Camera2DynamicRange = .hdr10
@@ -50,7 +50,7 @@ extension AntiflickerMode: SettingMode {
     var localized: String {
         switch self {
         case .off:
-            return L10n.commonOff.capitalized
+            return L10n.commonOff
         case .auto:
             return L10n.settingsCameraAntiFlickeringAuto
         case .mode50Hz:

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
-    <device id="ipad9_7" orientation="landscape" layout="fullscreen" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -25,49 +25,38 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AEL-se-pMp">
-                    <rect key="frame" x="7.5" y="-5" width="85" height="45"/>
-                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <rect key="frame" x="-3" y="4.5" width="106" height="26"/>
                 </view>
-                <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="yeR-aP-ekI">
-                    <rect key="frame" x="12.5" y="0.0" width="75" height="35"/>
+                <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="yeR-aP-ekI">
+                    <rect key="frame" x="0.0" y="7.5" width="100" height="20"/>
                     <subviews>
-                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icObstacleDetectionOff" translatesAutoresizingMaskIntoConstraints="NO" id="FPo-Sk-d9F">
-                            <rect key="frame" x="0.0" y="0.0" width="20" height="35"/>
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icOAInactive" translatesAutoresizingMaskIntoConstraints="NO" id="FPo-Sk-d9F">
+                            <rect key="frame" x="0.0" y="0.0" width="16" height="20"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
-                                <constraint firstAttribute="width" constant="20" id="N6C-tG-D33"/>
+                                <constraint firstAttribute="height" constant="20" id="9S4-Ir-1ad"/>
                             </constraints>
-                            <variation key="default">
-                                <mask key="constraints">
-                                    <exclude reference="N6C-tG-D33"/>
-                                </mask>
-                            </variation>
-                            <variation key="heightClass=regular-widthClass=regular">
-                                <mask key="constraints">
-                                    <include reference="N6C-tG-D33"/>
-                                </mask>
-                            </variation>
                         </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.59999999999999998" translatesAutoresizingMaskIntoConstraints="NO" id="ha0-io-ZJL">
-                            <rect key="frame" x="25" y="0.0" width="50" height="35"/>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ha0-io-ZJL">
+                            <rect key="frame" x="22" y="0.0" width="78" height="20"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <nil key="highlightedColor"/>
                         </label>
                     </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 </stackView>
             </subviews>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
-                <constraint firstItem="yeR-aP-ekI" firstAttribute="top" relation="greaterThanOrEqual" secondItem="iN0-l3-epB" secondAttribute="top" id="4LA-bV-N3j"/>
-                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="yeR-aP-ekI" secondAttribute="trailing" constant="5" id="9N4-8n-j0U"/>
-                <constraint firstItem="AEL-se-pMp" firstAttribute="bottom" secondItem="FPo-Sk-d9F" secondAttribute="bottom" constant="5" id="C5D-N4-wcD"/>
-                <constraint firstItem="AEL-se-pMp" firstAttribute="trailing" secondItem="ha0-io-ZJL" secondAttribute="trailing" constant="5" id="FYV-Te-euV"/>
-                <constraint firstItem="FPo-Sk-d9F" firstAttribute="leading" secondItem="AEL-se-pMp" secondAttribute="leading" constant="5" id="XkD-GF-k8H"/>
-                <constraint firstItem="yeR-aP-ekI" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="rLN-iN-nTW"/>
+                <constraint firstAttribute="trailing" secondItem="yeR-aP-ekI" secondAttribute="trailing" id="9N4-8n-j0U"/>
+                <constraint firstItem="AEL-se-pMp" firstAttribute="bottom" secondItem="FPo-Sk-d9F" secondAttribute="bottom" constant="3" id="C5D-N4-wcD"/>
+                <constraint firstItem="AEL-se-pMp" firstAttribute="trailing" secondItem="ha0-io-ZJL" secondAttribute="trailing" constant="3" id="FYV-Te-euV"/>
+                <constraint firstItem="FPo-Sk-d9F" firstAttribute="leading" secondItem="AEL-se-pMp" secondAttribute="leading" constant="3" id="XkD-GF-k8H"/>
                 <constraint firstItem="yeR-aP-ekI" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="swu-JW-jYW"/>
-                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="yeR-aP-ekI" secondAttribute="bottom" id="w8w-wq-PEJ"/>
-                <constraint firstItem="yeR-aP-ekI" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="iN0-l3-epB" secondAttribute="leading" constant="5" id="xWA-Q1-bgH"/>
-                <constraint firstItem="FPo-Sk-d9F" firstAttribute="top" secondItem="AEL-se-pMp" secondAttribute="top" constant="5" id="y4n-QZ-sNG"/>
+                <constraint firstItem="yeR-aP-ekI" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="xWA-Q1-bgH"/>
+                <constraint firstItem="FPo-Sk-d9F" firstAttribute="top" secondItem="AEL-se-pMp" secondAttribute="top" constant="3" id="y4n-QZ-sNG"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
@@ -75,6 +64,6 @@
         </view>
     </objects>
     <resources>
-        <image name="icObstacleDetectionOff" width="16" height="18"/>
+        <image name="icOAInactive" width="16" height="20"/>
     </resources>
 </document>

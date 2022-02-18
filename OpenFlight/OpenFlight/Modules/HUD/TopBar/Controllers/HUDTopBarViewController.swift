@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,15 +34,20 @@ import Combine
 protocol HUDTopBarViewControllerNavigation: AnyObject {
     /// Called when dashboard should be opened.
     func openDashboard()
+
     /// Called when settings should be opened.
     ///
     /// - Parameters:
     ///    - type: opens a specific part of the settings (optional)
     func openSettings(_ type: SettingsType?)
+
     /// Called when remote control informations screen should be opened.
     func openRemoteControlInfos()
+
     /// Called when drone informations screen should be opened.
     func openDroneInfos()
+    /// Called when back button is tapped.
+    func back()
 }
 
 // MARK: - Internal Enums
@@ -57,6 +62,9 @@ enum HUDTopBarContext {
 /// Main view controller for HUD's Top Bar.
 final class HUDTopBarViewController: UIViewController {
     // MARK: - Outlets
+    @IBOutlet private weak var stackView: UIStackView!
+    @IBOutlet private weak var hudHeightConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var infoPanelWidthConstraint: NSLayoutConstraint!
     @IBOutlet private weak var radarView: HUDRadarView!
     @IBOutlet private weak var droneActionView: DroneActionView!
     @IBOutlet private weak var dashboardButton: UIButton!
@@ -94,27 +102,30 @@ final class HUDTopBarViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        setupView()
+
         topBarViewModel.showTopBarPublisher
-            .sink { [weak self] show in
+            .sink { [unowned self] show in
                 UIView.animate(withDuration: Constants.defaultAnimationDuration) {
-                    self?.topBarView.alphaHidden(!show)
+                    self.topBarView.alphaHidden(!show)
                 }
             }
             .store(in: &cancellables)
         topBarViewModel.shouldHideRadarPublisher
-            .sink { [weak self] in
-                self?.hideRadarView = $0
-                self?.updateRadarViewVisibility()
+            .sink { [unowned self] in
+                hideRadarView = $0
+                updateRadarViewVisibility()
             }
             .store(in: &cancellables)
         topBarViewModel.shouldHideDroneActionPublisher
-            .sink { [weak self] in
-                self?.droneActionView.isHidden = $0
+            .sink { [unowned self] in
+                droneActionView.isHidden = $0
             }
             .store(in: &cancellables)
-        topBarViewModel.shouldHideTelemetryPublisher
+        topBarViewModel.isBackButtonDisplayedPublisher
             .sink { [weak self] in
-                self?.telemetryBarViewController.isHidden = $0
+                let iconAsset = $0 ? Asset.Common.Icons.icBack : Asset.Common.Icons.icDashboard
+                self?.dashboardButton.setImage(iconAsset.image, for: .normal)
             }
             .store(in: &cancellables)
     }
@@ -124,6 +135,16 @@ final class HUDTopBarViewController: UIViewController {
 
         dashboardButton.isHidden = context == .flightPlanEdition
         settingsButton.isHidden = context == .flightPlanEdition
+
+        // Ensure increased hit area is on top for small buttons.
+        stackView.bringSubviewToFront(dashboardButton)
+        stackView.bringSubviewToFront(settingsButton)
+        // Configure margins.
+        stackView.directionalLayoutMargins = .init(top: 0,
+                                                   leading: Layout.hudTopBarInnerMargins(isRegularSizeClass).leading,
+                                                   bottom: 0,
+                                                   trailing: Layout.hudTopBarInnerMargins(isRegularSizeClass).trailing)
+        stackView.isLayoutMarginsRelativeArrangement = true
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -132,14 +153,6 @@ final class HUDTopBarViewController: UIViewController {
         view.addGradient(startAlpha: Constants.gradientStartAlpha,
                          endAlpha: Constants.gradientEndAlpha,
                          superview: view)
-
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            dashboardButton.contentHorizontalAlignment = .fill
-            dashboardButton.contentVerticalAlignment = .fill
-
-            settingsButton.contentHorizontalAlignment = .fill
-            settingsButton.contentVerticalAlignment = .fill
-        }
     }
 
     override func viewDidLayoutSubviews() {
@@ -153,10 +166,8 @@ final class HUDTopBarViewController: UIViewController {
 
         if let telemetryVC = segue.destination as? TelemetryBarViewController {
             telemetryVC.navigationDelegate = self
-        } else if let droneInfosVC = segue.destination as? HUDDroneInfoViewController {
-            droneInfosVC.navigationDelegate = self
-        } else if let controllerInfosVC = segue.destination as? HUDControllerInfoViewController {
-            controllerInfosVC.navigationDelegate = self
+        } else if let controlsInfoVC = segue.destination as? HUDControlsInfoViewController {
+            controlsInfoVC.navigationDelegate = self
         }
     }
 
@@ -169,19 +180,31 @@ final class HUDTopBarViewController: UIViewController {
 private extension HUDTopBarViewController {
     /// Called when user taps the Dashboard button.
     @IBAction func dashboardButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDTopBarButton.dashboard, logType: .simpleButton)
-        navigationDelegate?.openDashboard()
+        LogEvent.log(.simpleButton(LogEvent.LogKeyHUDTopBarButton.dashboard))
+        if topBarViewModel.isBackButtonDisplayed {
+            navigationDelegate?.back()
+        } else {
+            navigationDelegate?.openDashboard()
+        }
     }
 
     /// Called when user taps the settings button.
     @IBAction func settingsButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDTopBarButton.settings, logType: .simpleButton)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyHUDTopBarButton.settings))
         navigationDelegate?.openSettings(SettingsType.defaultType)
     }
 }
 
 // MARK: - Private Funcs
 private extension HUDTopBarViewController {
+    /// Sets up view.
+    func setupView() {
+        dashboardButton.tintColor = .white
+        hudHeightConstraint.constant = Layout.hudTopBarHeight(isRegularSizeClass)
+        infoPanelWidthConstraint.constant = Layout.hudTopBarPanelWidth(isRegularSizeClass)
+        infoPanelWidthConstraint.isActive = view.bounds.width > Constants.minimumViewWidthForRadar
+    }
+
     /// Starts view model and shows radar view if size is sufficient.
     /// Removes it otherwise.
     func updateRadarViewVisibility() {
@@ -189,7 +212,7 @@ private extension HUDTopBarViewController {
             radarViewModel.state.valueChanged = { [weak self] state in
                 self?.radarView.state = state
             }
-            // Set initial state.
+            // set initial state
             radarView.state = radarViewModel.state.value
             radarView.isHidden = hideRadarView
         } else {
@@ -211,15 +234,12 @@ extension HUDTopBarViewController: TelemetryBarViewControllerNavigation {
 }
 
 // MARK: - HUDDroneInfoViewControllerNavigation
-extension HUDTopBarViewController: HUDDroneInfoViewControllerNavigation {
-    func openDroneInfos() {
-        navigationDelegate?.openDroneInfos()
-    }
-}
-
-// MARK: - HUDControllerInfoViewControllerNavigation
-extension HUDTopBarViewController: HUDControllerInfoViewControllerNavigation {
+extension HUDTopBarViewController: HUDControlsInfoViewControllerNavigation {
     func openRemoteControlInfos() {
         navigationDelegate?.openRemoteControlInfos()
+    }
+
+    func openDroneInfos() {
+        navigationDelegate?.openDroneInfos()
     }
 }

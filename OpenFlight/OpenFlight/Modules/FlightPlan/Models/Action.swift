@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,6 +29,10 @@
 
 import UIKit
 import GroundSdk
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "FlightPlanAction")
+}
 
 // MARK: - Public Enums
 enum ActionType: String, Codable {
@@ -252,46 +255,17 @@ public final class Action: Codable, Equatable {
         case let command as MavlinkStandard.SetStillCaptureModeCommand:
             self.init(type: .stillCapture)
             self.captureMode = command.mode
+        case let command as MavlinkStandard.ReturnToLaunchCommand:
+            ULog.w(.tag, "No action for: \(command)")
+            return nil
         default:
             // FIXME: Remove this print when all MavLink commands management will be approved.
-            print("Unknown mavlink command : \(mavLinkCommand)")
+            ULog.e(.tag, "Unknown mavlink command : \(mavLinkCommand)")
             return nil
         }
     }
 
     // MARK: - Public Funcs
-    /// Instantiate a new action with to start video.
-    ///
-    /// - Parameters:
-    ///    - cameraId: camera to start
-    ///    - resolution: video recording resolution
-    ///    - fps: video frames per second
-    ///
-    /// - Returns: An action of type `videoStartCapture`
-    static func videoStartAction(cameraId: Int, resolution: CameraRecordingResolution, fps: Int) -> Action {
-        let action = Action(type: .videoStartCapture)
-        action.cameraId = cameraId
-        action.recordingResolution = resolution
-        action.fps = fps
-        return action
-    }
-
-    /// Instantiate a new action with to take photos.
-    ///
-    /// - Parameters:
-    ///    - period: time between two photos
-    ///    - photoFormat: photo format mode
-    ///    - nbOfPictures: number of pictures to take
-    ///
-    /// - Returns: An action of type `imageStartCapture`
-    static func imageStartAction(period: Double, photoFormat: PhotoFormatMode, nbOfPictures: Int) -> Action {
-        let action = Action(type: .imageStartCapture)
-        action.period = period
-        action.photoFormat = photoFormat
-        action.nbOfPictures = nbOfPictures
-        return action
-    }
-
     /// Instantiate a new action to modify camera tilt.
     ///
     /// - Parameters:
@@ -315,20 +289,6 @@ public final class Action: Codable, Equatable {
     static func delayAction(delay: Double) -> Action {
         let action = Action(type: .delay)
         action.delay = delay
-        return action
-    }
-
-    /// Instantiate a new action to start a panorama.
-    ///
-    /// - Parameters:
-    ///    - angle: angle of rotation for panorama
-    ///    - speed: angular speed of rotation
-    ///
-    /// - Returns: An action of type `panorama`
-    static func panoramaAction(angle: Double, speed: Double) -> Action {
-        let action = Action(type: .panorama)
-        action.angle = angle
-        action.speed = speed
         return action
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,128 +31,144 @@ import Foundation
 import GroundSdk
 import CoreData
 
+// MARK: - Repository protocol
 public protocol UserRepository: AnyObject {
-    /// Persist or update User into CoreData
-    /// - Parameters
-    ///    - user to persist
-    func persist(_ user: User)
-
-    /// Load current logged User from CoreData
-    /// return User
-    func loadCurrentUser() -> User?
-
-    /// Load Anonymous User from CoreData
-    /// return User
-    func loadAnonymousUser() -> User?
+    // MARK: __ Save or update
+    /// Save or update User into CoreData
+    /// - Parameters:
+    ///    - user: User to save or update
+    ///    - completion: The callback returning the status.
+    func saveOrUpdateUser(_ user: User, completion: ((_ status: Bool) -> Void)?)
+    func saveOrUpdateUser(_ user: User)
 
     /// Set new Token for AnonymousUser
     func updateTokenForAnonymousUser(_ token: String)
+
+    // MARK: __ Get
+    /// Get current logged User from CoreData
+    /// - Returns
+    ///     - Current logged user
+    func getCurrentUser() -> User?
+
+    /// Load Anonymous User from CoreData
+    /// - Returns
+    ///     - Anonymous user
+    func getAnonymousUser() -> User?
+
+    /// Boolean to know if user in core data is new from previous logged one
+    /// - Parameters:
+    ///     - apcId: ApcId of new user to check
+    /// - Returns
+    ///     - Boolean to know if logged user ApcId is different than previous one
+    func isNewUserFromPrevious(withApcId apcId: String) -> Bool
+
+    /// Delete all users except for anonymous user
+    func deleteAllUsersExceptAnonymous()
 }
 
+// MARK: - Implementation
 extension CoreDataServiceImpl: UserRepository {
+    // MARK: __ Save or update
+    public func saveOrUpdateUser(_ user: User, completion: ((_ status: Bool) -> Void)?) {
+        performAndSave({ [unowned self] _ in
+            var userParrotObj: UserParrot?
+            if let existingUserParrot = getUserCD(fromEmail: user.email) {
+                userParrotObj = existingUserParrot
+            } else if let newUserParrot = insertNewObject(entityName: UserParrot.entityName) as? UserParrot {
+                userParrotObj = newUserParrot
+            }
 
-    public func persist(_ user: User) {
-        // Prepare content to save.
-        guard let managedContext = currentContext else { return }
+            guard let userParrot = userParrotObj else {
+                completion?(false)
+                return false
+            }
 
-        // Prepare new CoreData entity
-        let fetchRequest: NSFetchRequest<UserParrot> = UserParrot.fetchRequest()
-        guard let name = fetchRequest.entityName,
-              let entity = NSEntityDescription.entity(forEntityName: name, in: managedContext)
-        else {
+            userParrot.update(fromUser: user)
+
+            return true
+        }, { result in
+            switch result {
+            case .success:
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error saveOrUpdateUser with apcId \(user.apcId): \(error.localizedDescription)")
+                completion?(false)
+            }
+        })
+    }
+
+    public func saveOrUpdateUser(_ user: User) {
+        saveOrUpdateUser(user, completion: nil)
+    }
+
+    public func updateTokenForAnonymousUser(_ token: String) {
+        guard var anonymousUser = getAnonymousUser() else {
             return
         }
-
-        let userParrot: NSManagedObject?
-
-        // Check object if exists.
-        if let object = self.loadUser("email", user.email) {
-            // Use persisted object.
-            userParrot = object
-        } else {
-            // Create new object.
-            userParrot = NSManagedObject(entity: entity, insertInto: managedContext)
-        }
-
-        guard let userParrotObject = userParrot as? UserParrot else { return }
-
-        userParrotObject.firstName = user.firstName
-        userParrotObject.lastName = user.lastName
-        userParrotObject.birthday = user.birthday
-        userParrotObject.lang = user.lang
-        userParrotObject.email = user.email
-        userParrotObject.apcId = user.apcId
-        userParrotObject.apcToken = user.apcToken
-        userParrotObject.tmpApcUser = user.tmpApcUser
-        userParrotObject.userInfoChanged = user.userInfoChanged
-        userParrotObject.syncWithCloud = user.syncWithCloud
-        userParrotObject.agreementChanged = user.agreementChanged
-        userParrotObject.newsletterOption = user.newsletterOption
-        userParrotObject.shareDataOption = user.shareDataOption
-        userParrotObject.freemiumProjectCounter = user.freemiumProjectCounter
-
-        managedContext.perform {
-            do {
-                try managedContext.save()
-            } catch let error {
-                ULog.e(.dataModelTag, "Error during persist UserParrot : \(error.localizedDescription)")
-            }
-        }
+        anonymousUser.apcToken = token
+        saveOrUpdateUser(anonymousUser)
     }
 
-    public func loadCurrentUser() -> User? {
-        return self.loadUser( "apcId", userInformation.apcId)?.model()
+    // MARK: __ Get
+    public func getCurrentUser() -> User? {
+        getUserCD(fromApcId: userInformation.apcId)?.model()
     }
 
-    public func loadAnonymousUser() -> User? {
-        var anonymousUser = self.loadUser("email", userInformation.anonymousString)?.model()
+    public func getAnonymousUser() -> User? {
+        var anonymousUser = getUserCD(fromApcId: User.anonymousId)?.model()
 
-        // Create an Anonymous user if doesn't exist yet
         if anonymousUser == nil {
-            let anonymousString = userInformation.anonymousString
-            anonymousUser = User(firstName: nil,
-                                 lastName: nil,
-                                 birthday: nil,
-                                 lang: nil,
-                                 email: anonymousString,
-                                 apcId: anonymousString,
-                                 apcToken: nil,
-                                 tmpApcUser: true,
-                                 userInfoChanged: nil,
-                                 syncWithCloud: true,
-                                 agreementChanged: nil,
-                                 newsletterOption: nil,
-                                 shareDataOption: nil,
-                                 freemiumProjectCounter: nil)
-
+            anonymousUser = User.createAnonymous(withToken: nil)
             if let anonymousUser = anonymousUser {
-                persist(anonymousUser)
+                saveOrUpdateUser(anonymousUser)
             }
         }
         return anonymousUser
     }
 
-    public func updateTokenForAnonymousUser(_ token: String) {
-        guard var anonymousUser = loadAnonymousUser() else { return }
-        anonymousUser.apcToken = token
-        persist(anonymousUser)
+    public func isNewUserFromPrevious(withApcId apcId: String) -> Bool {
+        let fetchRequest = UserParrot.fetchRequest()
+        let apcIdPredicate = NSPredicate(format: "apcId != %@", apcId)
+        let anonymousPredicate = NSPredicate(format: "apcId != %@", User.anonymousId)
+
+        let subPredicateList: [NSPredicate] = [apcIdPredicate, anonymousPredicate]
+        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+        fetchRequest.predicate = compoundPredicates
+
+        let usersCount = fetchCount(request: fetchRequest)
+        return (usersCount > 0)
+    }
+
+    // MARK: __ Delete
+    public func deleteAllUsersExceptAnonymous() {
+        let fetchRequest = UserParrot.fetchRequest()
+        let anonymousPredicate = NSPredicate(format: "apcId != %@", User.anonymousId)
+        fetchRequest.predicate = anonymousPredicate
+
+        let users = fetch(request: fetchRequest)
+        delete(users) { error in
+            ULog.e(.dataModelTag, "Error deleteAllUsersExceptAnonymous: \(error.localizedDescription)")
+        }
     }
 }
 
-// MARK: - Utils
-private extension CoreDataServiceImpl {
+// MARK: - Internal
+internal extension CoreDataServiceImpl {
+    func getUserCD(fromApcId apcId: String) -> UserParrot? {
+        let fetchRequest = UserParrot.fetchRequest()
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", apcId)
+        fetchRequest.predicate = apcIdPredicate
+        fetchRequest.fetchLimit = 1
 
-    private func loadUser(_ key: String, _ value: String) -> UserParrot? {
-        guard let managedContext = currentContext else { return nil }
+        return fetch(request: fetchRequest).first
+    }
 
-        let fetchRequest: NSFetchRequest<UserParrot> = UserParrot.fetchRequest()
-        let predicate = NSPredicate(format: "%K == %@", key, value)
-        fetchRequest.predicate = predicate
-        do {
-            return try (managedContext.fetch(fetchRequest)).first
-        } catch let error {
-            ULog.e(.dataModelTag, "No User found in Coredata : \(error.localizedDescription)")
-            return nil
-        }
+    func getUserCD(fromEmail email: String) -> UserParrot? {
+        let fetchRequest = UserParrot.fetchRequest()
+        let apcIdPredicate = NSPredicate(format: "email == %@", email)
+        fetchRequest.predicate = apcIdPredicate
+        fetchRequest.fetchLimit = 1
+
+        return fetch(request: fetchRequest).first
     }
 }

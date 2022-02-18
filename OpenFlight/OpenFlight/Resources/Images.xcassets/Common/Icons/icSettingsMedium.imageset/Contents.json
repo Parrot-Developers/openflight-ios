@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Settings.png",
+      "filename" : "icSettingsMedium.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Settings@2x.png",
+      "filename" : "icSettingsMedium@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Settings@3x.png",
+      "filename" : "icSettingsMedium@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

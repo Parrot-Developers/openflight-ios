@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,9 +31,7 @@ import Combine
 
 public struct FlightPlanStateUiParameters {
 
-    public enum ButtonAction {
-        case resumeFlight, resumeUpload, openProjectWebView
-    }
+    public typealias ButtonAction = ((Coordinator?) -> Void)
 
     public init(statusText: String? = nil,
                 statusTextColor: Color? = nil,
@@ -42,15 +39,16 @@ public struct FlightPlanStateUiParameters {
                 uploadingExtraIcon: UIImage? = nil,
                 uploadingProgressText: String? = nil,
                 uploadPausedText: String? = nil,
+                uploadPausedTextColor: Color? = nil,
                 uploadPausedProgressText: String? = nil,
                 freemiumText: String? = nil,
+                actionButtonIcon: UIImage? = nil,
                 actionButtonText: String? = nil,
                 actionButtonTextColor: UIColor? = nil,
                 actionButtonColor: UIColor? = nil,
                 actionButtonProgress: Double? = nil,
                 actionButtonProgressColor: UIColor? = nil,
-                actionButtonAction: ButtonAction? = nil,
-                actionButtonCallback: ((Coordinator?) -> Void)? = nil,
+                actionButtonCallback: ButtonAction? = nil,
                 historyStatusText: String? = nil,
                 historyStatusTextColor: Color? = nil,
                 historyExtraIcon: UIImage? = nil,
@@ -61,14 +59,15 @@ public struct FlightPlanStateUiParameters {
         self.uploadingExtraIcon = uploadingExtraIcon
         self.uploadingProgressText = uploadingProgressText
         self.uploadPausedText = uploadPausedText
+        self.uploadPausedTextColor = uploadPausedTextColor
         self.uploadPausedProgressText = uploadPausedProgressText
         self.freemiumText = freemiumText
+        self.actionButtonIcon = actionButtonIcon
         self.actionButtonText = actionButtonText
         self.actionButtonTextColor = actionButtonTextColor
         self.actionButtonColor = actionButtonColor
         self.actionButtonProgress = actionButtonProgress
         self.actionButtonProgressColor = actionButtonProgressColor
-        self.actionButtonAction = actionButtonAction
         self.historyStatusText = historyStatusText
         self.historyStatusTextColor = historyStatusTextColor
         self.historyExtraIcon = historyExtraIcon
@@ -81,38 +80,40 @@ public struct FlightPlanStateUiParameters {
     // ----
 
     // FlightPlan completion Status
-    let statusText: String?
-    let statusTextColor: Color?
+    public var statusText: String?
+    public var statusTextColor: Color?
 
     // Pix4D upload
     // Uploading Photo State
-    var uploadingPhotosCount: Int?
-    var uploadingExtraIcon: UIImage?
-    var uploadingProgressText: String?
+    public var uploadingPhotosCount: Int?
+    public var uploadingExtraIcon: UIImage?
+    public var uploadingProgressText: String?
     // Uploading Photo State
-    var uploadPausedText: String?
-    var uploadPausedProgressText: String?
+    public var uploadPausedText: String?
+    public var uploadPausedTextColor: Color?
+    public var uploadPausedProgressText: String?
 
     // freemium account info
-    var freemiumText: String?
+    public var freemiumText: String?
 
     // Action Button (used in FP Details view)
-    let actionButtonText: String?
-    let actionButtonTextColor: UIColor?
-    let actionButtonColor: UIColor?
-    let actionButtonProgress: Double?
-    let actionButtonProgressColor: UIColor?
-    let actionButtonAction: ButtonAction?
-    let actionButtonCallback: ((Coordinator?) -> Void)?
+    public var actionButtonIcon: UIImage?
+    public var actionButtonText: String?
+    public var actionButtonTextColor: UIColor?
+    public var actionButtonColor: UIColor?
+    public var actionButtonProgress: Double?
+    public var actionButtonProgressColor: UIColor?
+    public var actionButtonAction: ButtonAction?
+    public var actionButtonCallback: ((Coordinator?) -> Void)?
 
     // ----
     // FP/PGY History cells
     // ----
 
-    let historyStatusText: String?
-    let historyStatusTextColor: Color?
-    let historyExtraIcon: UIImage?
-    let historyExtraIconColor: Color?
+    public var historyStatusText: String?
+    public var historyStatusTextColor: Color?
+    public var historyExtraIcon: UIImage?
+    public var historyExtraIconColor: Color?
 }
 
 public protocol FlightPlanOptionalUiStateProvider {
@@ -149,22 +150,15 @@ extension FlightPlanUiStateProviderImpl: FlightPlanUiStateProvider {
             return result
         }
 
-        var buttonAction: ((Coordinator?) -> Void)?
-
         let state = flightPlan.state
-
-        if case .resumeFlight = state.buttonAction {
-            buttonAction = { [unowned self] coordinator in
-                resumeFlight(for: flightPlan, coordinator: coordinator)
-            }
-        }
 
         return FlightPlanStateUiParameters(statusText: state.labelText(for: flightPlan),
                                            statusTextColor: state.labelColor,
+                                           actionButtonIcon: state.buttonIcon,
                                            actionButtonText: state.buttonText,
                                            actionButtonTextColor: state.buttonTextColor,
                                            actionButtonColor: state.buttonColor,
-                                           actionButtonCallback: buttonAction,
+                                           actionButtonCallback: buttonAction(for: flightPlan),
                                            historyStatusText: state.historyStatusText,
                                            historyStatusTextColor: state.historyStatusTextColor)
     }
@@ -185,10 +179,23 @@ extension FlightPlanUiStateProviderImpl: FlightPlanUiStateProvider {
         }
         return statePublisher
     }
+}
+
+extension FlightPlanUiStateProviderImpl {
+
+    typealias ButtonAction = FlightPlanStateUiParameters.ButtonAction
 
     func resumeFlight(for flightPlan: FlightPlanModel, coordinator: Coordinator?) {
-        guard let coordinator = coordinator as? DashboardCoordinator else { return }
+        guard let coordinator = coordinator as? FlightPlanExecutionDetailsCoordinator else { return }
         coordinator.open(flightPlan: flightPlan)
+    }
+
+    func buttonAction(for flightPlan: FlightPlanModel) -> ButtonAction? {
+        guard [.stopped, .flying].contains(flightPlan.state) else { return nil }
+        let buttonAction: ButtonAction = { [unowned self] coordinator in
+            resumeFlight(for: flightPlan, coordinator: coordinator)
+        }
+        return buttonAction
     }
 }
 
@@ -198,10 +205,10 @@ private extension FlightPlanModel.FlightPlanState {
     func labelText(for flightPlan: FlightPlanModel) -> String? {
         switch self {
         case .stopped, .flying:
-            return L10n.flightPlanAlertStoppedAt(flightPlan.percentCompleted.asPercent())
+            return L10n.flightPlanAlertStoppedAt(flightPlan.percentCompleted.asPercent(maximumFractionDigits: 0))
         case .completed:
             return L10n.flightPlanRunCompleted
-        // If we falling back here when state = .uplaoding, we handle it as "completed"
+        // If we falling back here when state = .uploading, we handle it as "completed"
         case .uploading:
             return L10n.flightPlanRunCompleted
         default:
@@ -215,9 +222,18 @@ private extension FlightPlanModel.FlightPlanState {
             return ColorName.warningColor.color
         case .completed:
             return ColorName.highlightColor.color
-        // If we falling back here when state = .uplaoding, we handle it as "completed"
+        // If we falling back here when state = .uploading, we handle it as "completed"
         case .uploading:
             return ColorName.highlightColor.color
+        default:
+            return nil
+        }
+    }
+
+    var buttonIcon: UIImage? {
+        switch self {
+        case .stopped, .flying:
+            return Asset.Common.Icons.icResume.image
         default:
             return nil
         }
@@ -244,16 +260,7 @@ private extension FlightPlanModel.FlightPlanState {
     var buttonColor: Color? {
         switch self {
         case .stopped, .flying:
-            return ColorName.warningColor.color
-        default:
-            return nil
-        }
-    }
-
-    var buttonAction: FlightPlanStateUiParameters.ButtonAction? {
-        switch self {
-        case .stopped, .flying:
-            return .resumeFlight
+            return ColorName.highlightColor.color
         default:
             return nil
         }
@@ -265,7 +272,7 @@ private extension FlightPlanModel.FlightPlanState {
             return L10n.flightPlanHistoryExecutionIncompleteDescription
         case .completed:
             return L10n.flightPlanHistoryExecutionCompletedDescription
-        // If we falling back here when state = .uplaoding, we handle it as "completed"
+        // If we falling back here when state = .uploading, we handle it as "completed"
         case .uploading:
             return L10n.flightPlanHistoryExecutionCompletedDescription
         default:
@@ -279,7 +286,7 @@ private extension FlightPlanModel.FlightPlanState {
             return ColorName.warningColor.color
         case .completed:
             return ColorName.highlightColor.color
-        // If we falling back here when state = .uplaoding, we handle it as "completed"
+        // If we falling back here when state = .uploading, we handle it as "completed"
         case .uploading:
             return ColorName.highlightColor.color
         default:

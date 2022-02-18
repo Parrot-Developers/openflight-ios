@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,5 +35,14 @@ public extension LogEvent {
         public static let back: String = "Back"
         static let close: String = "Close"
         static let tapToDismiss: String = "TapToDismiss"
+    }
+
+    /// Operation results log statuses.
+    enum OperationResult {
+        public static let key: String = "status"
+        /// The status for a successful operation.
+        public static let successStatus: String = "success"
+        /// The status for a failed operation.
+        public static let failureStatus: String = "failure"
     }
 }

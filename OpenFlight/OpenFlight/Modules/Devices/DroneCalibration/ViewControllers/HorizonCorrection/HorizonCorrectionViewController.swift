@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -74,10 +73,6 @@ final class HorizonCorrectionViewController: UIViewController {
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
     }
@@ -97,23 +92,27 @@ private extension HorizonCorrectionViewController {
     ///
     /// - Parameters:
     ///     - offset: Correction gimbal offset.
-    func updateRulerBar(offset: GimbalOffsetsCorrectionProcess?) {
-        if let correctionProcess = offset, let roll = correctionProcess.offsetsCorrection[.roll] {
-            let minValue = roll.min
-            let maxValue = roll.max
-            let value = roll.value
-            centeredRulerBarView?.model = CorrectionRulerModel(value: value,
-                                                               minValue: minValue,
-                                                               maxValue: maxValue,
-                                                               step: 0.1,
-                                                               unit: .degree,
-                                                               orientation: .horizontal)
-        }
+    /// - Returns: Correction ruler model.
+    func getRulerBarModel(offset: GimbalOffsetsCorrectionProcess) -> CorrectionRulerModel {
+        guard let roll = offset.offsetsCorrection[.roll] else { return CorrectionRulerModel() }
+        let minValue = roll.min
+        let maxValue = roll.max
+        let value = roll.value
+        return CorrectionRulerModel(value: value,
+                                    minValue: minValue,
+                                    maxValue: maxValue,
+                                    step: 0.1,
+                                    unit: .degree,
+                                    orientation: .horizontal)
     }
 
     /// Adds ruler bar to view controller.
-    func createRulerBar() {
-        let ruler = CorrectionRulerView(orientation: .horizontal)
+    ///
+    /// - Parameters:
+    ///     - offset: Correction gimbal offset.
+    func createRulerBar(offset: GimbalOffsetsCorrectionProcess) {
+        let model = getRulerBarModel(offset: offset)
+        let ruler = CorrectionRulerView(orientation: .horizontal, model: model)
         ruler.delegate = self
         rulerBarView.addWithConstraints(subview: ruler)
         centeredRulerBarView = ruler
@@ -121,10 +120,10 @@ private extension HorizonCorrectionViewController {
 
     /// Initializes all the UI for the view controller.
     func initUI() {
-        createRulerBar()
-        backButton.addShadow()
+        backButton.addShadow(shadowOpacity: 1.0)
         horizonCorrectionTitle.text = L10n.droneHorizonCalibration
-        horizonCorrectionTitle.addShadow()
+        horizonCorrectionTitle.font = FontStyle.title.font(isRegularSizeClass)
+        horizonCorrectionTitle.addShadow(shadowOpacity: 1.0)
         horizonLevels.forEach { $0.layer.cornerRadius = $0.frame.size.height / 2.0 }
 
         if !UIApplication.isLandscape {
@@ -135,10 +134,12 @@ private extension HorizonCorrectionViewController {
 
     /// Observe view model associated to the view controller.
     func observeViewModel() {
-        self.viewModel.$offsetsCorrectionProcess
+        viewModel.$offsetsCorrectionProcess
             .removeDuplicates()
+            .compactMap { $0 }
+            .first()
             .sink { [unowned self] offset in
-                updateRulerBar(offset: offset)
+                createRulerBar(offset: offset)
             }
             .store(in: &cancellables)
     }

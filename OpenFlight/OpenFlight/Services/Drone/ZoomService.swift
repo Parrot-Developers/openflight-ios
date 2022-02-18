@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -82,7 +81,6 @@ class ZoomServiceImpl {
     private enum Constants {
         static let roundPrecision: Int = 2
         static let minZoom: Double = 1.0
-        static let defaultZoomLevel: Double = 1.0
         static let defaultZoomInVelocity: Double = 1.0
         static let defaultZoomOutVelocity: Double = -1.0
     }
@@ -100,8 +98,6 @@ class ZoomServiceImpl {
     private var lossyZoomAllowedSubject = CurrentValueSubject<Bool, Never>(false)
     private var overzoomingEventSubject = PassthroughSubject<Bool, Never>()
     private var overzoomingSubject = CurrentValueSubject<Bool, Never>(false)
-
-    private var flightPlanLocksZoom = CurrentValueSubject<Bool, Never>(false)
 
     // MARK: - Internal properties
     let minZoom = Constants.minZoom

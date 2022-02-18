@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -62,17 +61,11 @@ class SettingsContentViewController: UIViewController, StoryboardBased {
     /// Tells if a settings slider is editing.
     private var isSliderEditing: Bool = false
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let estimatedRowHeight: CGFloat = 50.0
-        static let tableViewTopInset: CGFloat = 8.0
-    }
-
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.view.backgroundColor = .clear
+        view.backgroundColor = .clear
 
         setupTableView()
 
@@ -118,8 +111,8 @@ class SettingsContentViewController: UIViewController, StoryboardBased {
     func updateDataSource(_ state: DeviceConnectionState = DeviceConnectionState()) {
         guard !isSliderEditing,
               let updatedSettings = settingEntries() else {
-            return
-        }
+                  return
+              }
 
         settings = updatedSettings
     }
@@ -132,7 +125,7 @@ private extension SettingsContentViewController {
     /// - Parameters:
     ///     - state: device connection state
     func updateInputViews(_ state: DeviceConnectionState = DeviceConnectionState()) {
-        self.reloadInputViews()
+        reloadInputViews()
     }
 
     /// Sets up table view.
@@ -143,16 +136,13 @@ private extension SettingsContentViewController {
         settingsTableView.register(cellType: SettingsSegmentedCell.self)
         settingsTableView.register(cellType: SettingsResetAllButtonCell.self)
         settingsTableView.register(cellType: SettingsSliderCell.self)
-        settingsTableView.register(cellType: SettingsButtonCell.self)
         settingsTableView.register(cellType: SettingsRthCell.self)
         settingsTableView.register(cellType: SettingsTitleCell.self)
         settingsTableView.register(cellType: SettingsGridTableViewCell.self)
         settingsTableView.register(cellType: SettingsCellularDataCell.self)
         settingsTableView.register(cellType: SettingsEndHoveringCell.self)
-        settingsTableView.estimatedRowHeight = Constants.estimatedRowHeight
+        settingsTableView.estimatedRowHeight = Layout.buttonIntrinsicHeight(isRegularSizeClass)
         settingsTableView.delaysContentTouches = false
-        settingsTableView.contentInset.top = Constants.tableViewTopInset
-        settingsTableView.contentInset.bottom = Constants.tableViewTopInset
     }
 
     /// Builds cells regarding there type.
@@ -189,8 +179,7 @@ private extension SettingsContentViewController {
 
         let settingEntry = filteredSettings[indexPath.row]
 
-        cell.configureCell(settingEntry: settingEntry,
-                           atIndexPath: indexPath)
+        cell.configureCell(settingEntry: settingEntry, atIndexPath: indexPath)
         cell.delegate = self
         cell.backgroundColor = settingEntry.bgColor
 
@@ -212,12 +201,10 @@ private extension SettingsContentViewController {
                                segmentModel: settingSegments,
                                subtitle: settingEntry.subtitle,
                                isEnabled: settingEntry.isEnabled,
-                               alpha: settingEntry.cellAlpha,
                                subtitleColor: settingEntry.subtitleColor,
                                showInfo: settingEntry.showInfo,
                                infoText: settingEntry.infoText,
-                               atIndexPath: indexPath,
-                               isSubmode: settingEntry.isSubMode)
+                               atIndexPath: indexPath)
         }
 
         cell.backgroundColor = settingEntry.bgColor
@@ -234,8 +221,7 @@ private extension SettingsContentViewController {
         let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsTitleCell
         let settingEntry = filteredSettings[indexPath.row]
         cell.configureCell(cellTitle: settingEntry.title,
-                           cellImage: settingEntry.setting as? UIImage,
-                           isFirst: indexPath.row == 0)
+                           cellImage: settingEntry.setting as? UIImage)
 
         return cell
     }
@@ -315,7 +301,7 @@ extension SettingsContentViewController: SettingsResetAllButtonCellDelegate {
 // MARK: - Settings Segmented Cell Delegate
 extension SettingsContentViewController: SettingsSegmentedCellDelegate {
     @objc func settingsSegmentedCellDidChange(selectedSegmentIndex: Int, atIndexPath indexPath: IndexPath) {
-         guard selectedSegmentIndex >= 0 else {
+        guard selectedSegmentIndex >= 0 else {
             // invalid parameter
             return
         }
@@ -330,11 +316,9 @@ extension SettingsContentViewController: SettingsSegmentedCellDelegate {
             newValue = LogEvent.formatNewValue(settingEntry: settingEntry,
                                                index: selectedSegmentIndex)
         }
-
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced,
-                             itemName: settingEntry.itemLogKey,
-                             newValue: newValue,
-                             logType: LogEvent.LogType.button)
+        if let logItem = settingEntry.itemLogKey {
+            LogEvent.log(.button(item: logItem, value: newValue))
+        }
 
         viewModel?.saveSettingsEntry(settingEntry, at: selectedSegmentIndex)
 

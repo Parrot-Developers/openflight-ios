@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -63,6 +62,7 @@ public enum ImagingStackElement {
 final class BottomBarViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var bottomBarView: UIView!
+    @IBOutlet private weak var mainStackView: MainStackView!
     @IBOutlet private weak var behaviorStackView: UIStackView!
     @IBOutlet private weak var subBehaviorStackView: UIStackView!
     @IBOutlet private weak var missionLauncherButton: MissionLauncherButton!
@@ -83,19 +83,20 @@ final class BottomBarViewController: UIViewController {
         didSet {
             guard let coordinator = coordinator else { return }
             missionLauncherButtonModel.coordinator = coordinator
-            coordinator.showMissionLauncherPublisher.sink { [unowned self] in
+            showMissionLauncherCancellable = coordinator.showMissionLauncherPublisher.sink { [unowned self] in
                 if $0 {
                     deselectAllViewModels(except: type(of: missionLauncherButtonModel))
                 }
+                hideElementsIfNeeded(isMissionLauncherShown: $0)
             }
-            .store(in: &cancellables)
         }
     }
 
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
     // TODO: wrong injection
-    private let missionLauncherButtonModel = MissionLauncherButtonModel(currentMissionManager: Services.hub.currentMissionManager)
+    private let missionLauncherButtonModel = MissionLauncherButtonModel(currentMissionManager: Services.hub.currentMissionManager,
+                                                                        navigationStackService: Services.hub.ui.navigationStack)
     private let cameraWidgetViewModel = CameraWidgetViewModel(exposureLockService: Services.hub.drone.exposureLockService)
     private let cameraCaptureModeViewModel = CameraCaptureModeViewModel(
         panoramaService: Services.hub.panoramaService, currentMissionManager: Services.hub.currentMissionManager)
@@ -103,10 +104,17 @@ final class BottomBarViewController: UIViewController {
     private let bottomBarViewModel = BottomBarViewModel()
     private let landingStates = HUDLandingViewModel()
     private var deselectableViewModels = [Deselectable]()
+    private let currentMissionManager: CurrentMissionManager = Services.hub.currentMissionManager
+    private let runManager: FlightPlanRunManager = Services.hub.flightPlan.run
+    private var runningState: FlightPlanRunningState?
+    private var isMissionLauncherShown: Bool = false
+    private var stateMachineCancellable: AnyCancellable?
+    private var showMissionLauncherCancellable: AnyCancellable?
+
     // MARK: - Private Enums
     private enum Constants {
         static let defaultAnimationDuration: TimeInterval = 0.35
-        static let collapseAnimationDuration: TimeInterval = 0.2
+        static let fadeValue: CGFloat = 0.9
     }
 
     // MARK: - Override Funcs
@@ -178,7 +186,7 @@ private extension BottomBarViewController {
     ///     - missionMode: update the UI for this mission mode.
     func updateView(for missionMode: MissionMode?) {
         behaviorStackView(for: missionMode)
-        loadRightStack(for: missionMode?.bottomBarRightStack)
+        loadRightStack(for: missionMode)
     }
 
     /// Load views in left stackview.
@@ -190,27 +198,19 @@ private extension BottomBarViewController {
         behaviorStackView.safelyRemoveArrangedSubviews()
         subBehaviorStackView.safelyRemoveArrangedSubviews()
 
-        let isReturningToHome = landingStates.state.value.isReturnHomeActive == true
+        let isReturnHomeActive = landingStates.isReturHomeActiveValue == true
 
-        if isReturningToHome {
+        if isReturnHomeActive {
             let view = ReturnHomeBottomBarView()
             view.addBlurEffect()
             subBehaviorStackView.addArrangedSubview(view)
         }
 
         // Add views for a specific mission.
-        var views: [UIView] = missionMode?.bottomBarLeftStack?() ?? []
-
         // If RTH is enabled, add only mandatory views.
-        if isReturningToHome {
-            views = views.filter({ $0 is MandatoryBottomBarView })
-            // get the view for return home
-            if !views.isEmpty {
-                let separator = SeparatorView(size: Style.bottomBarSeparatorWidth,
-                                              backColor: .clear)
-                subBehaviorStackView.addArrangedSubview(separator)
-            }
-        }
+        let views = missionMode?.bottomBarLeftStack?()
+            .filter { isReturnHomeActive ? $0 is MandatoryBottomBarView : true } ?? []
+
         addMissionViews(views)
     }
 
@@ -225,38 +225,71 @@ private extension BottomBarViewController {
                 barButtonView.delegate = delegate
                 barButtonView.deselectAllViewModelsDelegate = self
                 deselectableViewModels.append(barButtonView.viewModel)
-            }
 
-            if view is BehaviourModeView {
-                behaviorStackView.addArrangedSubview(view)
-            }
-            if !(view is SeparatorView) && !(view is BehaviourModeView) {
+                behaviorStackView.addArrangedSubview(barButtonView)
+            } else {
                 subBehaviorStackView.addArrangedSubview(view)
             }
         }
 
-        // Prevents the BehaviourModeView to be hidden when the drone is connecting in some case.
-        behaviorStackView.layoutIfNeeded()
-        subBehaviorStackView.layoutIfNeeded()
+        // Hide empty behaviorStackView in order to avoid extra spacing.
+        behaviorStackView.hideIfEmpty()
     }
 
     /// Displays views in right stackview.
     ///
     /// - Parameters:
-    ///     - stackElements: updates the UI with the imaging stack to display
-    func loadRightStack(for stackElements: [ImagingStackElement]?) {
-        guard let rightStack = stackElements else {
-            cameraModeView.isHidden = true
-            cameraWidgetView.isHidden = true
-            shutterButtonView.isHidden = true
+    ///     - missionMode: updates the UI for this mission mode.
+    func loadRightStack(for missionMode: MissionMode?) {
+        guard let missionMode = missionMode else {
+            [cameraModeView, cameraWidgetView, shutterButtonView].forEach { $0?.alpha = Constants.fadeValue }
+            cameraShutterButton.isEnabled = false
             return
         }
 
-        cameraModeView.isHidden = !rightStack.contains(.cameraMode)
-        cameraWidgetView.isHidden = !rightStack.contains(.cameraSettings)
-        shutterButtonView.isHidden = !rightStack.contains(.shutterButton)
+        if let _ = missionMode.flightPlanProvider {
+            switch runningState {
+            case .playing(droneConnected: _, flightPlan: _, rth: _),
+                 .paused(flightPlan: _, startAvailability: _):
+                if !isMissionLauncherShown {
+                    rightStackView.isHidden = false
+                    shutterButtonView.isHidden = false
+                }
+            default:
+                rightStackView.isHidden = true
+                shutterButtonView.isHidden = true
+                return
+            }
+        }
 
-        rightStackView.updateSeparators()
+        let rightStack = missionMode.bottomBarRightStack
+        cameraModeView.alpha = rightStack.contains(.cameraMode) ? 1 : Constants.fadeValue
+        cameraModeView.isEnabled = rightStack.contains(.cameraMode)
+        cameraWidgetView.alpha = rightStack.contains(.cameraSettings) ? 1 : Constants.fadeValue
+        cameraWidgetView.isEnabled = rightStack.contains(.cameraSettings)
+        shutterButtonView.alpha = rightStack.contains(.shutterButton) ? 1 : Constants.fadeValue
+        cameraShutterButton.isEnabled = missionMode.isCameraShutterButtonEnabled
+
+        let removeSeparators = !cameraModeView.isEnabled && !cameraWidgetView.isEnabled
+        removeSeparators
+            ? rightStackView.removeSeparators()
+            : rightStackView.updateSeparators()
+    }
+
+    /// Hides stack elements if mission panel is open.
+    ///
+    /// - Parameters:
+    ///    - isMissionLauncherShown: Mission launcher opening state.
+    func hideElementsIfNeeded(isMissionLauncherShown: Bool = false) {
+        self.isMissionLauncherShown = isMissionLauncherShown
+        rightStackView?.isHidden = isMissionLauncherShown
+        behaviorStackView?.isHidden = isMissionLauncherShown || behaviorStackView.subviews.isEmpty
+        shutterButtonView?.isHidden = isMissionLauncherShown
+
+        let missionMode = bottomBarViewModel.state.value.missionMode
+        if let _ = missionMode.flightPlanProvider {
+            updateView(for: missionMode)
+        }
     }
 
     /// Observes View Models state changes.
@@ -265,8 +298,8 @@ private extension BottomBarViewController {
             UIView.animate(withDuration: Constants.defaultAnimationDuration) {
                 self?.bottomBarView.alphaHidden(state.shouldHide)
             }
-
             self?.updateView(for: state.missionMode)
+            self?.listenStateMachine(missionMode: state.missionMode)
         }
         cameraWidgetViewModel.state.valueChanged = { [weak self] state in
             self?.cameraWidgetView.model = state
@@ -281,9 +314,13 @@ private extension BottomBarViewController {
             deselectAllViewModels(except: nil)
         }
         .store(in: &cancellables)
-        landingStates.state.valueChanged = { [weak self] _ in
-            self?.updateView(for: self?.bottomBarViewModel.state.value.missionMode)
-        }
+
+        landingStates.isReturnHomeActive
+            .removeDuplicates()
+            .sink { [unowned self] _ in
+                updateView(for: bottomBarViewModel.state.value.missionMode)
+            }
+            .store(in: &cancellables)
     }
 
     /// Inits View Models state.
@@ -313,15 +350,27 @@ private extension BottomBarViewController {
         }
     }
 
+    /// Listen state machine and running state
+    ///
+    /// - Parameters:
+    ///     - missionMode: The current mission mode
+    func listenStateMachine(missionMode: MissionMode) {
+        stateMachineCancellable = missionMode.stateMachine?.statePublisher
+            .combineLatest(runManager.statePublisher)
+            .sink(receiveValue: { [weak self] (stateMachineState, runningState) in
+                guard let self = self else { return }
+                self.runningState = runningState
+                self.loadRightStack(for: missionMode)
+            })
+    }
+
     /// Calls log event.
     ///
     /// - Parameters:
     ///     - itemName: Button name
     ///     - newValue: New value
     func logEvent(with itemName: String, and newValue: String?) {
-        LogEvent.logAppEvent(itemName: itemName,
-                             newValue: newValue,
-                             logType: .button)
+        LogEvent.log(.button(item: itemName, value: newValue ?? ""))
     }
 }
 

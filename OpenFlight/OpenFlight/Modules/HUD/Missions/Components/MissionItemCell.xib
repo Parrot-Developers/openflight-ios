@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -16,19 +16,22 @@
                 <rect key="frame" x="0.0" y="0.0" width="197" height="65"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5wo-RS-r1O">
-                        <rect key="frame" x="5" y="5" width="182" height="55"/>
+                    <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5wo-RS-r1O" customClass="ActionControl" customModule="OpenFlight" customModuleProvider="target">
+                        <rect key="frame" x="16" y="0.0" width="165" height="54"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <accessibility key="accessibilityConfiguration">
+                            <accessibilityTraits key="traits" notEnabled="YES"/>
+                        </accessibility>
                     </view>
                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icClassicMissionMode" translatesAutoresizingMaskIntoConstraints="NO" id="Dfc-8z-bIP">
-                        <rect key="frame" x="10" y="18.5" width="28" height="28"/>
+                        <rect key="frame" x="26" y="13" width="28" height="28"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="28" id="6GQ-So-rRm"/>
                             <constraint firstAttribute="height" constant="28" id="A0H-N0-Sib"/>
                         </constraints>
                     </imageView>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PCC-SN-ayU">
-                        <rect key="frame" x="43" y="22" width="42" height="21"/>
+                        <rect key="frame" x="59" y="16.5" width="117" height="21"/>
                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
@@ -36,16 +39,15 @@
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="Dfc-8z-bIP" firstAttribute="centerY" secondItem="ean-Bh-hu5" secondAttribute="centerY" id="4SI-of-jwG"/>
+                    <constraint firstItem="PCC-SN-ayU" firstAttribute="trailing" secondItem="5wo-RS-r1O" secondAttribute="trailing" constant="-5" id="7nV-sa-BjW"/>
                     <constraint firstItem="PCC-SN-ayU" firstAttribute="leading" secondItem="Dfc-8z-bIP" secondAttribute="trailing" constant="5" id="8Sg-yx-pjh"/>
-                    <constraint firstItem="PCC-SN-ayU" firstAttribute="centerY" secondItem="ean-Bh-hu5" secondAttribute="centerY" id="Fdq-mm-Tpi"/>
-                    <constraint firstItem="5wo-RS-r1O" firstAttribute="leading" secondItem="ean-Bh-hu5" secondAttribute="leading" constant="5" id="Ng1-WN-bwz"/>
-                    <constraint firstItem="Dfc-8z-bIP" firstAttribute="top" relation="greaterThanOrEqual" secondItem="ean-Bh-hu5" secondAttribute="top" constant="18" id="Std-XH-sPA"/>
-                    <constraint firstAttribute="trailing" secondItem="5wo-RS-r1O" secondAttribute="trailing" constant="10" id="X8u-52-lKT"/>
-                    <constraint firstItem="Dfc-8z-bIP" firstAttribute="leading" secondItem="ean-Bh-hu5" secondAttribute="leading" constant="10" id="fEk-oC-fne"/>
-                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="PCC-SN-ayU" secondAttribute="trailing" id="q0I-R5-gTs"/>
-                    <constraint firstAttribute="bottom" secondItem="5wo-RS-r1O" secondAttribute="bottom" constant="5" id="ueu-c5-ZWK"/>
-                    <constraint firstItem="5wo-RS-r1O" firstAttribute="top" secondItem="ean-Bh-hu5" secondAttribute="top" constant="5" id="xQQ-Rd-IAj"/>
+                    <constraint firstItem="5wo-RS-r1O" firstAttribute="leading" secondItem="ean-Bh-hu5" secondAttribute="leadingMargin" id="Ng1-WN-bwz"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="5wo-RS-r1O" secondAttribute="trailing" id="X8u-52-lKT"/>
+                    <constraint firstItem="PCC-SN-ayU" firstAttribute="centerY" secondItem="5wo-RS-r1O" secondAttribute="centerY" id="cII-gR-mud"/>
+                    <constraint firstItem="Dfc-8z-bIP" firstAttribute="leading" secondItem="5wo-RS-r1O" secondAttribute="leading" constant="10" id="dWl-V4-ncF"/>
+                    <constraint firstItem="Dfc-8z-bIP" firstAttribute="centerY" secondItem="PCC-SN-ayU" secondAttribute="centerY" id="sua-f6-Y9d"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="5wo-RS-r1O" secondAttribute="bottom" id="ueu-c5-ZWK"/>
+                    <constraint firstItem="5wo-RS-r1O" firstAttribute="top" secondItem="ean-Bh-hu5" secondAttribute="top" id="xQQ-Rd-IAj"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

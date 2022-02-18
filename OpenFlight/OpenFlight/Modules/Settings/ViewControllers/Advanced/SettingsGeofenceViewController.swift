@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,8 +33,13 @@ import UIKit
 
 final class SettingsGeofenceViewController: SettingsContentViewController {
     // MARK: - Private Properties
-    private var maxGridHeight: CGFloat = 200.0
-    private let geofenceViewModel = GeofenceViewModel()
+    private var geofenceViewModel: GeofenceViewModel?
+    private var maxGridHeight: CGFloat {
+        return view.bounds.height
+        - Layout.buttonIntrinsicHeight(isRegularSizeClass)
+        - view.directionalLayoutMargins.bottom
+        - view.directionalLayoutMargins.top
+    }
 
     // MARK: - Private Enums
     private enum Constants {
@@ -46,29 +50,8 @@ final class SettingsGeofenceViewController: SettingsContentViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        resetCellLabel = L10n.settingsGeofenceReset
-
-        // Setup view model.
-        geofenceViewModel.state.valueChanged = { [weak self] state in
-            self?.updateDataSource(state)
-        }
-
-        // Inital data source update.
-        updateDataSource()
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        // Target iphone
-        if !isRegularSizeClass {
-            // Dedicated treatment with the right frame size.
-            maxGridHeight = self.view.bounds.height
-                - (self.settingsTableView.visibleCells.first?.frame.size.height ?? 0)
-                - view.safeAreaInsets.bottom
-        }
-
-        settingsTableView.reloadData()
+        initView()
+        setupViewModel()
     }
 
     override func settingsSegmentedCellDidChange(selectedSegmentIndex: Int, atIndexPath indexPath: IndexPath) {
@@ -78,11 +61,13 @@ final class SettingsGeofenceViewController: SettingsContentViewController {
 
     /// Reset to default settings.
     override func resetSettings() {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyAdvancedSettings.resetGeofenceSettings,
-                             newValue: nil,
-                             logType: .button)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyAdvancedSettings.resetGeofenceSettings))
 
-        geofenceViewModel.resetSettings()
+        geofenceViewModel?.resetSettings()
+    }
+
+    override func settingEntries() -> [SettingEntry]? {
+        return geofenceViewModel?.settingEntries
     }
 }
 
@@ -110,6 +95,25 @@ internal extension SettingsGeofenceViewController {
 
 // MARK: - Private Funcs
 private extension SettingsGeofenceViewController {
+
+    /// Initializes view.
+    func initView() {
+        view.directionalLayoutMargins = Layout.mainContainerInnerMargins(isRegularSizeClass,
+                                                                         screenBorders: [.top, .bottom])
+        resetCellLabel = L10n.settingsGeofenceReset
+    }
+
+    /// Sets up view model.
+    func setupViewModel() {
+        // Setup view model.
+        geofenceViewModel = GeofenceViewModel()
+        geofenceViewModel?.state.valueChanged = { [weak self] state in
+            self?.updateDataSource(state)
+        }
+        // Inital data source update.
+        updateDataSource(GeofenceState())
+    }
+
     /// Configure Grid Mode Cell.
     ///
     /// - Parameters:
@@ -117,23 +121,8 @@ private extension SettingsGeofenceViewController {
     /// - Returns: UITableViewCell
     func configureGridCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsGridTableViewCell
-        cell.configureCell(viewModel: geofenceViewModel, maxGridHeight: maxGridHeight, delegate: self)
+        cell.configureCell(maxGridHeight: maxGridHeight)
 
         return cell
-    }
-
-    /// Update data source.
-    ///
-    /// - Parameters:
-    ///     - state: Geofence state
-    func updateDataSource(_ state: GeofenceState = GeofenceState()) {
-        settings = geofenceViewModel.settingEntries
-    }
-}
-
-// MARK: - Settings Grid Action View Delegate
-extension SettingsGeofenceViewController: SettingsGridActionViewDelegate {
-    func userIsDragging(_ isDragging: Bool) {
-        self.settingsTableView.isScrollEnabled = !isDragging
     }
 }

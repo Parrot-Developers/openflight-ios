@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina5_9" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -15,77 +15,84 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="SettingsSliderCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsSliderCell" rowHeight="69" id="oyA-hu-LIV" customClass="SettingsSliderCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="607" height="62"/>
+        <tableViewCell opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="SettingsSliderCell" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsSliderCell" rowHeight="65" id="oyA-hu-LIV" customClass="SettingsSliderCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="829" height="58"/>
             <autoresizingMask key="autoresizingMask"/>
-            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="oyA-hu-LIV" id="zi0-Nr-yNC">
-                <rect key="frame" x="0.0" y="0.0" width="607" height="62"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="oyA-hu-LIV" id="zi0-Nr-yNC">
+                <rect key="frame" x="0.0" y="0.0" width="829" height="58"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cR8-HG-kGi">
-                        <rect key="frame" x="0.0" y="5" width="607" height="54"/>
+                    <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cR8-HG-kGi" customClass="TableViewCellContainerView" customModule="OpenFlight" customModuleProvider="target">
+                        <rect key="frame" x="16" y="0.0" width="797" height="47"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="eH4-cL-dm7">
-                                <rect key="frame" x="0.0" y="0.0" width="130" height="54"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="sku-Pa-rw8">
+                                <rect key="frame" x="8" y="8" width="781" height="31"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="GVS-un-nE7">
-                                        <rect key="frame" x="0.0" y="0.0" width="27" height="54"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="27" height="31"/>
                                         <color key="tintColor" name="default_text_color"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="27" id="CoT-rt-BtE"/>
                                         </constraints>
                                     </imageView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JLs-kp-kBU">
-                                        <rect key="frame" x="35" y="0.0" width="95" height="54"/>
-                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                        <color key="textColor" name="default_text_color"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="kuH-C5-ByI">
+                                        <rect key="frame" x="37" y="8" width="374" height="15"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JLs-kp-kBU">
+                                                <rect key="frame" x="0.0" y="0.0" width="330.66666666666669" height="15"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <color key="textColor" name="default_text_color"/>
+                                                <nil key="highlightedColor"/>
+                                                <variation key="heightClass=regular-widthClass=regular">
+                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="18"/>
+                                                </variation>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="760" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WED-5b-whT">
+                                                <rect key="frame" x="340.66666666666669" y="0.0" width="33.333333333333314" height="15"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <color key="textColor" name="highlight_color"/>
+                                                <nil key="highlightedColor"/>
+                                                <variation key="heightClass=regular-widthClass=regular">
+                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="18"/>
+                                                </variation>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <slider opaque="NO" contentMode="scaleToFill" restorationIdentifier="SettingsSlider" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="7sh-MM-ORn" customClass="SettingsSlider" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="419" y="0.6666666666666643" width="364" height="31"/>
+                                        <color key="tintColor" name="highlight_color"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="360" id="rtH-ee-7Qw">
+                                                <variation key="heightClass=compact-widthClass=compact" constant="270"/>
+                                                <variation key="heightClass=regular-widthClass=regular" constant="460"/>
+                                            </constraint>
+                                        </constraints>
+                                        <color key="thumbTintColor" name="highlight_color"/>
+                                        <connections>
+                                            <action selector="didFinishEditing:" destination="oyA-hu-LIV" eventType="touchUpOutside" id="zDe-bI-5Ab"/>
+                                            <action selector="didFinishEditing:" destination="oyA-hu-LIV" eventType="touchUpInside" id="zr4-z7-Efn"/>
+                                            <action selector="sliderTouchCancelled:" destination="oyA-hu-LIV" eventType="touchCancel" id="MX3-qR-dgt"/>
+                                            <action selector="sliderValueChanged:" destination="oyA-hu-LIV" eventType="valueChanged" id="bos-fG-IoT"/>
+                                        </connections>
+                                    </slider>
                                 </subviews>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="130" id="Z3G-wS-urj"/>
-                                </constraints>
                             </stackView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="WED-5b-whT">
-                                <rect key="frame" x="138" y="20.5" width="111" height="13"/>
-                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                <color key="textColor" name="highlight_color"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <slider opaque="NO" contentMode="scaleToFill" restorationIdentifier="SettingsSlider" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="7sh-MM-ORn" customClass="SettingsSlider" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="255" y="10.5" width="338" height="34"/>
-                                <color key="tintColor" name="highlight_color"/>
-                                <color key="thumbTintColor" name="highlight_color"/>
-                                <connections>
-                                    <action selector="didFinishEditing:" destination="oyA-hu-LIV" eventType="touchUpOutside" id="zDe-bI-5Ab"/>
-                                    <action selector="didFinishEditing:" destination="oyA-hu-LIV" eventType="touchUpInside" id="zr4-z7-Efn"/>
-                                    <action selector="sliderTouchCancelled:" destination="oyA-hu-LIV" eventType="touchCancel" id="MX3-qR-dgt"/>
-                                    <action selector="sliderValueChanged:" destination="oyA-hu-LIV" eventType="valueChanged" id="bos-fG-IoT"/>
-                                </connections>
-                            </slider>
                         </subviews>
-                        <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" name="highlight_text_color"/>
                         <constraints>
-                            <constraint firstItem="7sh-MM-ORn" firstAttribute="width" secondItem="cR8-HG-kGi" secondAttribute="width" multiplier="0.55" id="0aw-vj-1D0"/>
-                            <constraint firstItem="eH4-cL-dm7" firstAttribute="top" secondItem="cR8-HG-kGi" secondAttribute="top" id="99S-51-tO3"/>
-                            <constraint firstItem="7sh-MM-ORn" firstAttribute="leading" secondItem="WED-5b-whT" secondAttribute="trailing" constant="8" id="9Qb-wb-2OQ"/>
-                            <constraint firstItem="eH4-cL-dm7" firstAttribute="leading" secondItem="cR8-HG-kGi" secondAttribute="leading" id="Bhp-ny-HBc"/>
-                            <constraint firstAttribute="bottom" secondItem="eH4-cL-dm7" secondAttribute="bottom" id="O4D-Dg-eTY"/>
-                            <constraint firstAttribute="trailing" secondItem="7sh-MM-ORn" secondAttribute="trailing" constant="16" id="Qbk-gx-w2u"/>
-                            <constraint firstItem="eH4-cL-dm7" firstAttribute="centerY" secondItem="cR8-HG-kGi" secondAttribute="centerY" id="lsT-Jz-rpA"/>
-                            <constraint firstAttribute="height" constant="54" id="m4M-q0-85z"/>
-                            <constraint firstItem="7sh-MM-ORn" firstAttribute="centerY" secondItem="cR8-HG-kGi" secondAttribute="centerY" id="nJD-dW-a4e"/>
-                            <constraint firstItem="WED-5b-whT" firstAttribute="leading" secondItem="eH4-cL-dm7" secondAttribute="trailing" constant="8" id="sDY-FJ-m8o"/>
-                            <constraint firstItem="WED-5b-whT" firstAttribute="centerY" secondItem="cR8-HG-kGi" secondAttribute="centerY" id="vKd-sR-vd8"/>
+                            <constraint firstItem="sku-Pa-rw8" firstAttribute="top" secondItem="cR8-HG-kGi" secondAttribute="topMargin" id="IrR-J4-n6I"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="sku-Pa-rw8" secondAttribute="bottom" id="g9H-je-2jT"/>
+                            <constraint firstItem="sku-Pa-rw8" firstAttribute="leading" secondItem="cR8-HG-kGi" secondAttribute="leadingMargin" id="qNz-8R-aSA"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="sku-Pa-rw8" secondAttribute="trailing" id="v9D-zb-nwL"/>
                         </constraints>
                     </view>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="cR8-HG-kGi" firstAttribute="top" secondItem="zi0-Nr-yNC" secondAttribute="top" constant="5" id="1N3-qg-gbx"/>
-                    <constraint firstAttribute="trailing" secondItem="cR8-HG-kGi" secondAttribute="trailing" id="N9T-89-lI6"/>
-                    <constraint firstItem="cR8-HG-kGi" firstAttribute="leading" secondItem="zi0-Nr-yNC" secondAttribute="leading" id="jsQ-go-YU3"/>
-                    <constraint firstAttribute="bottom" secondItem="cR8-HG-kGi" secondAttribute="bottom" constant="5" id="wd2-15-TaX"/>
+                    <constraint firstItem="cR8-HG-kGi" firstAttribute="top" secondItem="zi0-Nr-yNC" secondAttribute="top" id="1N3-qg-gbx"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="cR8-HG-kGi" secondAttribute="trailing" id="N9T-89-lI6"/>
+                    <constraint firstItem="cR8-HG-kGi" firstAttribute="leading" secondItem="zi0-Nr-yNC" secondAttribute="leadingMargin" id="jsQ-go-YU3"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="cR8-HG-kGi" secondAttribute="bottom" id="wd2-15-TaX"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -94,11 +101,9 @@
                 <outlet property="percentLabel" destination="WED-5b-whT" id="V4N-hw-tnF"/>
                 <outlet property="settingImage" destination="GVS-un-nE7" id="rPg-aq-emm"/>
                 <outlet property="slider" destination="7sh-MM-ORn" id="ogo-Am-RKl"/>
-                <outlet property="sliderTrailingConstraint" destination="Qbk-gx-w2u" id="bY9-nc-YHr"/>
-                <outlet property="stackViewLeadingConstraint" destination="Bhp-ny-HBc" id="vWa-45-Gos"/>
                 <outlet property="titleLabel" destination="JLs-kp-kBU" id="OKn-nK-BE5"/>
             </connections>
-            <point key="canvasLocation" x="55.200000000000003" y="125.93703148425789"/>
+            <point key="canvasLocation" x="199.25037481259372" y="123.2"/>
         </tableViewCell>
     </objects>
     <designables>
@@ -108,10 +113,13 @@
     </designables>
     <resources>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
+        <namedColor name="highlight_text_color">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

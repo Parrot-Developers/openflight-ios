@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,6 +34,10 @@ import Reusable
 protocol GalleryMediaFullScreenCellDelegate: AnyObject {
     func fullScreenCellDidTapShowImmersivePanorama()
     func fullScreenCellDidTapGeneratePanorama()
+    func fullScreenCellDidStartLoading()
+    func fullScreenCellDidStopLoading()
+    func fullScreenCellDidStartZooming()
+    func fullScreenCellDidStopZooming()
 }
 
 /// A model for the GalleryMediaFullScreenCollectionViewCell
@@ -57,12 +60,22 @@ final class GalleryMediaFullScreenCollectionViewCell: UICollectionViewCell, NibR
     weak var delegate: GalleryMediaFullScreenCellDelegate?
 
     // MARK: - Outlets
-    @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
-    @IBOutlet weak var imageView: UIImageView! // Exposed for zooming capability.
+    @IBOutlet private weak var loadingImageView: UIImageView!
+    @IBOutlet private weak var scrollView: UIScrollView!
+    @IBOutlet private weak var imageView: UIImageView!
+    @IBOutlet private weak var zoomableImageWidthConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var zoomableImageHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var generatePanoramaButton: ActionButton!
     @IBOutlet private weak var showImmersivePanoramaButton: UIButton!
 
+    // MARK: - Private Enums
+    private enum Constants {
+        static let minZoom: CGFloat = 1.0
+        static let maxZoom: CGFloat = 5.0
+    }
+
     // MARK: - Private Properties
+    private var previousUrl: String?
     private var canGeneratePanorama: Bool {
         model?.hasGeneratePanoramaButton == true && !isLoading
     }
@@ -71,25 +84,26 @@ final class GalleryMediaFullScreenCollectionViewCell: UICollectionViewCell, NibR
     }
     private var isLoading: Bool = true {
         didSet {
+            loadingImageView.isHidden = !isLoading
             if isLoading {
-                activityIndicator.startAnimating()
+                loadingImageView.startRotate()
+                delegate?.fullScreenCellDidStartLoading()
             } else {
-                activityIndicator.stopAnimating()
+                loadingImageView.stopRotate()
+                delegate?.fullScreenCellDidStopLoading()
             }
             updateState()
         }
     }
 
-    // MARK: - Override Funcs
-    override func prepareForReuse() {
-        super.prepareForReuse()
+    func updateZoomLevel(_ level: GalleryMediaBrowsingViewModel.ZoomLevel) {
+        guard level != .custom else { return }
 
-        imageView.image = nil
-        generatePanoramaButton.isHidden = true
-        showImmersivePanoramaButton.isHidden = true
-        model = nil
-        isLoading = true
-        imageView.removeBlurEffect()
+        UIView.animate(withDuration: Style.shortAnimationDuration) {
+            let zoom = level == .maximum ? Constants.maxZoom : Constants.minZoom
+            self.scrollView.zoomScale = zoom
+            self.centerZoomableView(animated: false, zoom: zoom)
+        }
     }
 }
 
@@ -108,20 +122,29 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
 internal extension GalleryMediaFullScreenCollectionViewCell {
     /// Updates view content according to model.
     func update() {
+        if let previousUrl = previousUrl, previousUrl != model?.url?.absoluteString {
+            imageView.image = nil
+        }
         setupView()
 
         displayImage(with: model?.url) { [weak self] image in
-            self?.imageView.image = image
-            self?.isLoading = false
+            guard let self = self else { return }
+            self.previousUrl = self.model?.url?.absoluteString
+            self.imageView.image = image
+            self.centerZoomableView(animated: false)
+            self.isLoading = false
         }
     }
 
     /// Sets up UI.
     func setupView() {
+        let zoomable = model?.hasGeneratePanoramaButton != true
+        scrollView.minimumZoomScale = Constants.minZoom
+        scrollView.maximumZoomScale = zoomable ? Constants.maxZoom : Constants.minZoom
+        scrollView.contentInsetAdjustmentBehavior = .never
         generatePanoramaButton.model = ActionButtonModel(title: L10n.galleryGeneratePanorama,
-                                             titleColor: .white,
-                                             fontStyle: .big,
-                                             backgroundColor: .warningColor)
+                                                         fontStyle: .big,
+                                                         style: .action1)
 
         showImmersivePanoramaButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
 
@@ -129,13 +152,36 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
         updateState()
     }
 
+    func centerZoomableView(animated: Bool, zoom: CGFloat? = nil) {
+        guard let image = imageView.image else { return }
+        let zoomScale = zoom ?? scrollView.zoomScale
+        let imageScale = min(scrollView.bounds.width / image.size.width,
+                             scrollView.bounds.height / image.size.height)
+        let imageContentSize = CGSize(width: image.size.width * imageScale * zoomScale,
+                                      height: image.size.height * imageScale * zoomScale)
+        let offsetX = max(scrollView.bounds.size.width - imageContentSize.width, 0.0)
+        let offsetY = max(scrollView.bounds.size.height - imageContentSize.height, 0.0)
+        zoomableImageWidthConstraint.constant = image.size.width * imageScale + offsetX / zoomScale
+        zoomableImageHeightConstraint.constant = image.size.height * imageScale + offsetY / zoomScale
+        if animated {
+            UIView.animate(withDuration: Style.shortAnimationDuration) {
+                self.scrollView.layoutIfNeeded()
+            }
+        } else {
+            scrollView.layoutIfNeeded()
+        }
+    }
+
     /// Updates buttons state according to model.
     func updateState() {
         generatePanoramaButton.isHidden = !canGeneratePanorama
+        imageView.contentMode = canGeneratePanorama ? .scaleAspectFill : .scaleAspectFit
 
         showImmersivePanoramaButton.isHidden = !canShowImmersivePanorama
         if canGeneratePanorama {
-            imageView.addBlurEffect()
+            imageView.addBlurEffect(with: .systemThinMaterialDark)
+        } else {
+            imageView.removeBlurEffect()
         }
     }
 
@@ -156,5 +202,32 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
         loadImage(url) { image in
             completion(image)
         }
+    }
+}
+
+// MARK: - ScrollViewDelegate
+extension GalleryMediaFullScreenCollectionViewCell: UIScrollViewDelegate {
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return imageView
+    }
+
+    func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
+        delegate?.fullScreenCellDidStartZooming()
+    }
+
+    func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+        centerZoomableView(animated: true)
+        delegate?.fullScreenCellDidStopZooming()
+    }
+}
+
+public class ZoomOnlyScrollView: UIScrollView {
+    public override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if zoomScale == 1
+            || gestureRecognizer.view == self
+            || gestureRecognizer is UITapGestureRecognizer {
+            return super.gestureRecognizerShouldBegin(gestureRecognizer)
+        }
+        return false
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -131,11 +130,6 @@ extension Camera2ExposureMode {
 /// Utility extension for `Camera2Enum`.
 extension Camera2ImmutableParam where T == Camera2ExposureMode {
     // MARK: - Internal Properties
-    /// Returns true if manual iso sensitivities monitoring is available.
-    var manualIsoSensitivityAvailable: Bool {
-        return !currentSupportedValues.intersection([.manual, .manualIsoSensitivity]).isEmpty
-    }
-
     /// Returns true if manual shutter speed monitoring is available.
     var manualShutterSpeedAvailable: Bool {
         return !currentSupportedValues.intersection([.manual, .manualShutterSpeed]).isEmpty

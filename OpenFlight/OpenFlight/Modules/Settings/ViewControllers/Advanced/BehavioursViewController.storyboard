@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="ipad9_7" orientation="landscape" layout="fullscreen" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -24,53 +24,31 @@
                                     <constraint firstAttribute="height" constant="52" id="plx-R5-0b8"/>
                                 </constraints>
                             </view>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" indicatorStyle="white" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="anV-7r-OMB">
-                                <rect key="frame" x="15" y="52" width="994" height="716"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" contentInsetAdjustmentBehavior="never" indicatorStyle="white" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="anV-7r-OMB">
+                                <rect key="frame" x="0.0" y="52" width="1024" height="716"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="600" id="iwe-io-a8b">
-                                        <variation key="heightClass=compact-widthClass=compact" constant="480"/>
-                                    </constraint>
-                                </constraints>
-                                <variation key="heightClass=regular-widthClass=regular">
-                                    <mask key="constraints">
-                                        <exclude reference="iwe-io-a8b"/>
-                                    </mask>
-                                </variation>
                                 <connections>
                                     <outlet property="dataSource" destination="om2-Bk-pxl" id="jkE-p9-ebK"/>
                                     <outlet property="delegate" destination="om2-Bk-pxl" id="vir-Nl-Dop"/>
                                 </connections>
                             </tableView>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="Lqg-f8-6pU"/>
+                        <viewLayoutGuide key="safeArea" id="sVk-Cb-t7K"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="6l6-RB-8nY" firstAttribute="leading" secondItem="Lqg-f8-6pU" secondAttribute="leading" id="09y-ex-7Ta"/>
-                            <constraint firstItem="Lqg-f8-6pU" firstAttribute="trailing" secondItem="anV-7r-OMB" secondAttribute="trailing" constant="15" id="1pk-iZ-CKb"/>
-                            <constraint firstItem="anV-7r-OMB" firstAttribute="leading" secondItem="Lqg-f8-6pU" secondAttribute="leading" constant="15" id="6BV-De-yNi"/>
-                            <constraint firstItem="anV-7r-OMB" firstAttribute="centerX" secondItem="Lqg-f8-6pU" secondAttribute="centerX" id="KBL-B7-7hF"/>
-                            <constraint firstItem="6l6-RB-8nY" firstAttribute="top" secondItem="Lqg-f8-6pU" secondAttribute="top" id="R5y-jd-3eD"/>
-                            <constraint firstItem="anV-7r-OMB" firstAttribute="top" secondItem="6l6-RB-8nY" secondAttribute="bottom" id="V1P-JE-E0v"/>
-                            <constraint firstAttribute="bottom" secondItem="anV-7r-OMB" secondAttribute="bottom" id="oP7-My-BSx"/>
+                            <constraint firstItem="6l6-RB-8nY" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="09y-ex-7Ta"/>
+                            <constraint firstAttribute="bottom" secondItem="anV-7r-OMB" secondAttribute="bottom" id="43j-lH-bhw"/>
+                            <constraint firstAttribute="trailing" secondItem="anV-7r-OMB" secondAttribute="trailing" id="5Fn-83-Sfs"/>
+                            <constraint firstItem="6l6-RB-8nY" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="R5y-jd-3eD"/>
+                            <constraint firstItem="anV-7r-OMB" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="bTq-Xd-OMh"/>
+                            <constraint firstItem="anV-7r-OMB" firstAttribute="top" secondItem="6l6-RB-8nY" secondAttribute="bottom" id="opU-Ph-94q"/>
                             <constraint firstAttribute="trailing" secondItem="6l6-RB-8nY" secondAttribute="trailing" id="tnQ-bl-lQR"/>
                         </constraints>
-                        <variation key="default">
-                            <mask key="constraints">
-                                <exclude reference="1pk-iZ-CKb"/>
-                                <exclude reference="6BV-De-yNi"/>
-                            </mask>
-                        </variation>
-                        <variation key="heightClass=regular-widthClass=regular">
-                            <mask key="constraints">
-                                <include reference="1pk-iZ-CKb"/>
-                                <include reference="6BV-De-yNi"/>
-                            </mask>
-                        </variation>
                     </view>
                     <connections>
                         <outlet property="presetView" destination="6l6-RB-8nY" id="G3U-Bw-TUP"/>
+                        <outlet property="presetViewHeightConstraint" destination="plx-R5-0b8" id="JWf-pj-AZy"/>
                         <outlet property="settingsTableView" destination="anV-7r-OMB" id="ckA-3q-Z3V"/>
                     </connections>
                 </viewController>

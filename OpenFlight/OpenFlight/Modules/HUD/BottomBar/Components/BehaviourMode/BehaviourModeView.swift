@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,17 +40,17 @@ public final class BehaviourModeView: BarButtonView {
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.initBehaviourMode()
+        initBehaviourMode()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.initBehaviourMode()
+        initBehaviourMode()
     }
 
     // MARK: - Deinit
     deinit {
-        self.removeTarget()
+        removeTarget()
     }
 }
 
@@ -59,37 +58,37 @@ public final class BehaviourModeView: BarButtonView {
 private extension BehaviourModeView {
     /// Basic init.
     func initBehaviourMode() {
-        self.model = self.viewModel.state.value
-        self.addTarget()
-        self.observeViewModels()
+        model = viewModel.state.value
+        addTarget()
+        observeViewModels()
     }
 
     /// Add a target when user touch the view.
     func addTarget() {
-        self.addTarget(self, action: #selector(viewTouchedUpInside), for: .touchUpInside)
+        addTarget(self, action: #selector(viewTouchedUpInside), for: .touchUpInside)
     }
 
     /// Removes the target when user touch the view.
     func removeTarget() {
-        self.removeTarget(self, action: #selector(viewTouchedUpInside), for: .touchUpInside)
+        removeTarget(self, action: #selector(viewTouchedUpInside), for: .touchUpInside)
     }
 
     /// Setup all view models.
     func observeViewModels() {
-        self.viewModel.state.valueChanged = { [weak self] state in
+        viewModel.state.valueChanged = { [weak self] state in
             self?.model = state
         }
 
-        self.viewModel.state.value.isSelected.valueChanged = { [weak self] isSelected in
-            guard let strongViewModel = self?.viewModel else { return }
+        viewModel.state.value.isSelected.valueChanged = { [weak self] isSelected in
+            guard let viewModel = self?.viewModel else { return }
 
             if isSelected {
-                self?.delegate?.showLevelOne(viewModel: strongViewModel)
-                self?.model = strongViewModel.state.value
-                self?.deselectAllViewModelsDelegate?.deselectAllViewModels(except: type(of: strongViewModel))
+                self?.delegate?.showLevelOne(viewModel: viewModel)
+                self?.model = viewModel.state.value
+                self?.deselectAllViewModelsDelegate?.deselectAllViewModels(except: type(of: viewModel))
             } else {
-                self?.delegate?.hideLevelOne(viewModel: strongViewModel)
-                self?.model = strongViewModel.state.value
+                self?.delegate?.hideLevelOne(viewModel: viewModel)
+                self?.model = viewModel.state.value
             }
         }
     }
@@ -98,9 +97,8 @@ private extension BehaviourModeView {
 // MARK: - Actions
 private extension BehaviourModeView {
     @objc func viewTouchedUpInside() {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDBottomBarButton.speedMode.name,
-                             newValue: (!self.viewModel.state.value.isSelected.value).logValue,
-                             logType: .button)
-        self.viewModel.toggleSelectionState()
+        LogEvent.log(.button(item: LogEvent.LogKeyHUDBottomBarButton.speedMode.name,
+                             value: (!viewModel.state.value.isSelected.value).logValue))
+        viewModel.toggleSelectionState()
     }
 }

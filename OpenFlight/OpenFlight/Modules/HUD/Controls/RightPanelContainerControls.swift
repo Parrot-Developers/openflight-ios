@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,6 +37,8 @@ public class RightPanelContainerControls: NSObject {
     @IBOutlet private weak var stackView: UIView!
     @IBOutlet private weak var rightPanelContainerWidthConstraint: NSLayoutConstraint!
 
+    public var splitControls: SplitControls?
+
     // MARK: - Internal Properties
     let viewModel = RightPanelContainerControlsViewModel()
 
@@ -45,13 +46,6 @@ public class RightPanelContainerControls: NSObject {
     // TODO wrong injection
     private var currentMissionManager = Services.hub.currentMissionManager
     private var cancellables = Set<AnyCancellable>()
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let animationDuration: TimeInterval = 0.1
-        // Flight plan panel takes 30% of the screen.
-        static let openedPanelWidth: CGFloat = UIScreen.main.bounds.width * 0.30
-    }
 
     // MARK: - Internal Funcs
     /// Sets up view model's callback.
@@ -84,10 +78,11 @@ public class RightPanelContainerControls: NSObject {
 private extension RightPanelContainerControls {
     /// Shows HUD's flight plan right panel.
     func showFlightPlanPanel() {
-        UIView.animate(withDuration: Constants.animationDuration, animations: {
-            self.rightPanelContainerWidthConstraint.constant = Constants.openedPanelWidth
-            self.stackView.layoutIfNeeded()
-        })
+
+        let isRegularSizeClass = UIViewController().isRegularSizeClass
+        splitControls?.adaptSecondaryContainerTrailing(width: Layout.sidePanelWidth(isRegularSizeClass))
+        rightPanelContainerWidthConstraint.constant = Layout.sidePanelWidth(isRegularSizeClass)
+        stackView.layoutIfNeeded()
     }
 
     /// Hides HUD's flight plan right panel.
@@ -95,9 +90,8 @@ private extension RightPanelContainerControls {
     /// - Parameters:
     ///    - completion: optional completion block
     func hideFlightPlanPanel(completion: (() -> Void)? = nil) {
-        UIView.animate(withDuration: Constants.animationDuration, animations: {
-            self.rightPanelContainerWidthConstraint.constant = 0.0
-            self.stackView.layoutIfNeeded()
-        })
+        splitControls?.adaptSecondaryContainerTrailing(width: 0)
+        rightPanelContainerWidthConstraint.constant = 0.0
+        stackView.layoutIfNeeded()
     }
 }

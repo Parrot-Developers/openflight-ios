@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,32 +34,30 @@ import Combine
 /// My flights cell for dashboard collection view.
 final class DashboardMyFlightsCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
+    @IBOutlet private weak var tileView: MainTileView!
+    @IBOutlet private weak var gradientView: LDGradientView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var totalDistanceLabel: UILabel!
     @IBOutlet private weak var totalTimeLabel: UILabel!
     @IBOutlet private weak var numberOfFlightLabel: UILabel!
     @IBOutlet private weak var syncLoaderImageView: UIImageView!
 
-    // MARK: - Private vars
-
+    // MARK: - Private
     private var cancellables = Set<AnyCancellable>()
-
-    // MARK: - Private Enums
     private enum Constants {
-        static let defaultTime: String = "0:00"
-        static let defaultDistance: String = UnitHelper.formattedStringDistanceWithDouble(0.0)
+        static let gradientStartColor = ColorName(rgbaValue: 0x41cf82ff).color
+        static let gradientEndColor = ColorName(rgbaValue: 0x22916fff).color
     }
 
     // MARK: - Override Funcs
     override func prepareForReuse() {
         super.prepareForReuse()
-
-        numberOfFlightLabel.text = nil
+        cancellables.removeAll()
+        resetLabels()
     }
 
     override func awakeFromNib() {
         super.awakeFromNib()
-
         initView()
     }
 
@@ -81,15 +78,13 @@ final class DashboardMyFlightsCell: UICollectionViewCell, NibReusable {
             .store(in: &cancellables)
 
         viewModel.isSynchronizingData
-            .sink { [unowned self] isSync in
-                if !isSync {
-                    viewModel.service.updateFlights()
-                }
+            .sink { [weak self] isSync in
+                guard let self = self else { return }
+                // The cell needs to be updated at every synchronizing state changes
+                viewModel.reloadAllFlights()
 
-                DispatchQueue.main.async {
-                    isSync ? self.syncLoaderImageView.startRotate() : self.syncLoaderImageView.stopRotate()
-                    self.syncLoaderImageView.isHidden = !isSync
-                }
+                isSync ? self.syncLoaderImageView.startRotate() : self.syncLoaderImageView.stopRotate()
+                self.syncLoaderImageView.isHidden = !isSync
             }
             .store(in: &cancellables)
     }
@@ -99,9 +94,19 @@ final class DashboardMyFlightsCell: UICollectionViewCell, NibReusable {
 private extension DashboardMyFlightsCell {
     /// Instantiate text for version number and buttons.
     func initView() {
-        self.cornerRadiusedWith(backgroundColor: ColorName.clear.color,
-                                radius: Style.largeCornerRadius)
+        gradientView.layer.cornerRadius = tileView.layer.cornerRadius
+        gradientView.startColor = Constants.gradientStartColor
+        gradientView.endColor = Constants.gradientEndColor
+        gradientView.clipsToBounds = true
         totalDistanceLabel.makeUp()
         totalTimeLabel.makeUp()
+        resetLabels()
+    }
+
+    func resetLabels() {
+        let defaultValues = AllFlightsSummary.defaultValues
+        totalDistanceLabel.text = defaultValues.totalFlightsDistance
+        totalTimeLabel.text = defaultValues.totalFlightsDuration
+        numberOfFlightLabel.text = String(defaultValues.numberOfFlights)
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,7 +35,30 @@ final class SettingsInterfaceViewController: SettingsContentViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        initView()
+        setupViewModel()
+    }
+
+    /// Reset to default settings.
+    override func resetSettings() {
+        LogEvent.log(.simpleButton(LogEvent.LogKeyAdvancedSettings.resetInterfaceSettings))
+
+        viewModel?.resetSettings()
+    }
+}
+
+// MARK: - Private Funcs
+private extension SettingsInterfaceViewController {
+
+    /// Initializes view.
+    func initView() {
+        view.directionalLayoutMargins = Layout.mainContainerInnerMargins(isRegularSizeClass,
+                                                                         screenBorders: [.top, .bottom])
         resetCellLabel = L10n.settingsInterfaceReset
+    }
+
+    /// Sets up view model.
+    func setupViewModel() {
         // Setup view model.
         viewModel = InterfaceViewModel()
         viewModel?.state.valueChanged = { [weak self] state in
@@ -44,15 +66,5 @@ final class SettingsInterfaceViewController: SettingsContentViewController {
         }
         // Inital data source update.
         updateDataSource()
-    }
-
-    /// Reset to default settings.
-    override func resetSettings() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced,
-                             itemName: LogEvent.LogKeyAdvancedSettings.resetInterfaceSettings,
-                             newValue: nil,
-                             logType: LogEvent.LogType.button)
-
-        viewModel?.resetSettings()
     }
 }

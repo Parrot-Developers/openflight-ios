@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -73,7 +72,7 @@ final class ImagingBarCameraIsoViewModel: AutomatableBarButtonViewModel<Automata
 
     override func listenDrone(drone: Drone) {
         if !drone.isConnected {
-            let copy = self.state.value.copy()
+            let copy = state.value.copy()
             // If drone is not connected, last used camera iso value
             // should be displayed (dashed string if none).
             if let cameraIsoKey = Defaults.lastCameraIsoValue {
@@ -82,7 +81,7 @@ final class ImagingBarCameraIsoViewModel: AutomatableBarButtonViewModel<Automata
             } else {
                 copy.title = L10n.unitIso.dashPrefixed
             }
-            self.state.set(copy)
+            state.set(copy)
         }
         listenState(drone: drone)
         listenExposureValues(drone: drone)
@@ -109,11 +108,19 @@ final class ImagingBarCameraIsoViewModel: AutomatableBarButtonViewModel<Automata
             return
         }
 
-        let currentEditor = camera.currentEditor
-        currentEditor[Camera2Params.exposureMode]?.value = exposureMode.automaticIsoSensitivity ?
-            exposureMode.toManualIsoSensitivity() :
-            exposureMode.toAutomaticIsoSensitivity()
-        currentEditor.saveSettings(currentConfig: camera.config)
+        let editor = camera.currentEditor
+        if exposureMode.automaticIsoSensitivity {
+            // switch to manual iso sensitivity mode
+            editor[Camera2Params.exposureMode]?.value = exposureMode.toManualIsoSensitivity()
+            if let exposureIndicator = camera.getComponent(Camera2Components.exposureIndicator) {
+                // apply current iso sensitivity value to manual iso sensitivity setting
+                editor[Camera2Params.isoSensitivity]?.value = exposureIndicator.isoSensitivity
+            }
+        } else {
+            // switch to automatic iso sensitivity
+            editor[Camera2Params.exposureMode]?.value = exposureMode.toAutomaticIsoSensitivity()
+        }
+        editor.saveSettings(currentConfig: camera.config)
     }
 
     override func copy() -> ImagingBarCameraIsoViewModel {
@@ -125,14 +132,14 @@ final class ImagingBarCameraIsoViewModel: AutomatableBarButtonViewModel<Automata
 private extension ImagingBarCameraIsoViewModel {
     /// Starts watcher for drone state.
     func listenState(drone: Drone) {
-        droneStateRef = drone.getState { [weak self] state in
-            guard let state = state else {
+        droneStateRef = drone.getState { [unowned self] droneState in
+            guard let droneState = droneState else {
                 return
             }
 
-            if state.connectionState == .disconnected {
+            if droneState.connectionState == .disconnected {
                 // Autoclose if needed.
-                self?.state.value.isSelected.set(false)
+                state.value.isSelected.set(false)
             }
         }
     }
@@ -160,6 +167,7 @@ private extension ImagingBarCameraIsoViewModel {
 
             let copy = state.value.copy()
             copy.supportedModes = isoSensitivity.currentSupportedValues.sorted()
+            copy.mode = isoSensitivity.value
             copy.image = exposureMode.value == .manualShutterSpeed ? Asset.BottomBar.Icons.iconAuto.image : nil
             copy.isAutomatic = exposureMode.value.automaticIsoSensitivity
             state.set(copy)

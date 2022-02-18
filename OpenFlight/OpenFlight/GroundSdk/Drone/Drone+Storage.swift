@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,11 +31,14 @@ import GroundSdk
 
 /// Utility extension for `Drone` storage.
 extension Drone {
-    /// Returns total available storage space on both removable and internal user storages.
-    var availableStorageSpace: Int64 {
-        let removableUserStorageSpace = getPeripheral(Peripherals.removableUserStorage)?.availableSpace ?? 0
-        let internalUserStorageSpace = getPeripheral(Peripherals.internalUserStorage)?.availableSpace ?? 0
-
-        return removableUserStorageSpace + internalUserStorageSpace
+    /// Gets available space on drone user storage.
+    ///
+    /// - Parameter mediaStorage: drone media storage
+    /// - Returns: available space in bytes if available, `nil` otherwise
+    func availableStorageSpace(mediaStorage: StorageType) -> Int64? {
+        let userStorage = mediaStorage == .internal ?
+        getPeripheral(Peripherals.internalUserStorage) :
+        getPeripheral(Peripherals.removableUserStorage)
+        return userStorage?.availableSpace
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -78,12 +77,8 @@ open class AlertBannerSorter {
         // Conditions_Wind    Too much wind    Strong winds
         .strongImuVibration,
         // Components_IMU    Strong IMU Vibration    Strong vibrations detected . Check that propellers are tightly screwed.
-        .internalMemoryFull,
-        // SD card    Internal memory full    Internal memory full
         .sdError,
         // SD card    SD error    SD Error - Switching to internal memory
-        .sdFull,
-        // SD card    SD full     SD Full - Switching to internal memory
         .sdTooSlow,
         // SD card    SD too slow    SD too slow - Switching to internal memory
         .geofenceAltitudeAndDistance,
@@ -114,18 +109,15 @@ open class AlertBannerSorter {
         .unauthorizedFlightZone,
         .unauthorizedFlightZoneWithMission]
 
-    /// Returns only tutorial related alerts.
-    public var sortedTutorialAlerts: [HUDBannerTutorialAlertType] = [
-        .takeOff,
-        .takeOffWaypoint,
-        .takeOffPoi,
-        .selectSubject]
+    /// Returns only advices related alerts.
+    public var sortedAdvicesAlerts: [HUDBannerAdviceslertType] = [
+        .takeOff]
 
     // MARK: - Init
     public init() {
         self.sortedAlerts = sortedCriticalAlerts
             + sortedWarningAlerts
-            + sortedTutorialAlerts
+            + sortedAdvicesAlerts
     }
 
     // MARK: - Public Funcs
@@ -136,11 +128,11 @@ open class AlertBannerSorter {
     open func highestPriority(in currentAlerts: [HUDAlertType]) -> HUDAlertType? {
         return sortedAlerts?.first(where: { sortedAlert in
             if let criticalType = sortedAlert as? HUDBannerCriticalAlertType {
-                return currentAlerts.contains(criticalType)
+                return currentAlerts.customContains(criticalType)
             } else if let warningType = sortedAlert as? HUDBannerWarningAlertType {
-                return currentAlerts.contains(warningType)
-            } else if let tutorialType = sortedAlert as? HUDBannerTutorialAlertType {
-                return currentAlerts.contains(tutorialType)
+                return currentAlerts.customContains(warningType)
+            } else if let adviceType = sortedAlert as? HUDBannerAdviceslertType {
+                return currentAlerts.customContains(adviceType)
             } else {
                 return false
             }

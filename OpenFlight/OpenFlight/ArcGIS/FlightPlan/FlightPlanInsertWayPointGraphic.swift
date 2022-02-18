@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -49,7 +48,7 @@ final class FlightPlanInsertWayPointGraphic: FlightPlanPointGraphic {
         static let fillSize: CGFloat = 12.0
         static let crossSize: CGFloat = 9.0
         static let circleSizeTouchArea: CGFloat = 35.0
-        static let mainColor: UIColor = ColorName.greenSpring.color
+        static let mainColor: UIColor = ColorName.highlightColor.color
         static let fillColor: UIColor = ColorName.white.color
         static let touchAreaColor: UIColor = .clear
     }

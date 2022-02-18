@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,9 +28,9 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Class responsible of connection between the remote and a selected drone.
-
 final class PairingConnectDroneDetailViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
@@ -49,14 +48,16 @@ final class PairingConnectDroneDetailViewController: UIViewController {
     // MARK: - Private Properties
     private weak var coordinator: PairingCoordinator?
     private var password: String = String()
-    private let viewModel = PairingConnectDroneViewModel()
-    private var droneModel: RemoteConnectDroneModel?
+    private var viewModel: PairingConnectDroneDetailViewModel!
+    private var cancellables = Set<AnyCancellable>()
     private var isBadPwd: Bool = false
 
     // MARK: - Setup
-    static func instantiate(coordinator: Coordinator, droneModel: RemoteConnectDroneModel) -> PairingConnectDroneDetailViewController {
+    static func instantiate(coordinator: Coordinator,
+                            viewModel: PairingConnectDroneDetailViewModel
+    ) -> PairingConnectDroneDetailViewController {
         let viewController = StoryboardScene.PairingConnectDroneDetails.initialScene.instantiate()
-        viewController.droneModel = droneModel
+        viewController.viewModel = viewModel
         viewController.coordinator = coordinator as? PairingCoordinator
         return viewController
     }
@@ -65,27 +66,18 @@ final class PairingConnectDroneDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Listen state from the view model.
-        viewModel.state.valueChanged = {[weak self] state in
-            self?.updatePairingConnectDroneState(state)
-        }
-
         initView()
-        updatePairingConnectDroneState(viewModel.state.value)
+        setupViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingDroneFinderConnection, logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.pairingDroneFinderConnection))
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     /// Change button style when orientation changed.
@@ -104,22 +96,18 @@ final class PairingConnectDroneDetailViewController: UIViewController {
 private extension PairingConnectDroneDetailViewController {
     @IBAction func backButtonTouchedUpInside(_ sender: Any) {
         coordinator?.back()
-        // Stop connection if we come back to the list.
-        viewModel.resetDroneConnectionStateRef()
     }
 
     @IBAction func passwordSecurityButtonTouchedUpInside(_ sender: Any) {
         passwordField.toggleVisibility()
         passwordSecurityButton.setImage(passwordField.isSecureTextEntry ?
-            Asset.Common.Icons.icPasswordShow.image :
-            Asset.Common.Icons.icPasswordHide.image, for: .normal)
+                                        Asset.Common.Icons.icPasswordShow.image :
+                                            Asset.Common.Icons.icPasswordHide.image, for: .normal)
     }
 
     @IBAction func connectButtonTouchedUpInside(_ sender: Any) {
-        viewModel.connectDrone(uid: droneModel?.droneUid ?? "", password: self.password)
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyPairingButton.connectToDroneUsingPassword.name,
-                             newValue: nil,
-                             logType: .button)
+        viewModel.connect(password: self.password)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyPairingButton.connectToDroneUsingPassword.name))
     }
 }
 
@@ -136,7 +124,7 @@ private extension PairingConnectDroneDetailViewController {
         passwordField.delegate = self
         passwordDescriptionLabel.text = L10n.pairingRemoteDroneForgotPassword
         passwordErrorLabel.text = L10n.pairingRemoteDronePasswordIncorrect
-        titleLabel.text = L10n.pairingRemoteDroneConnectTo(droneModel?.droneName ?? "")
+        titleLabel.text = L10n.pairingRemoteDroneConnectTo(viewModel.droneModel?.droneName ?? "")
 
         // Connection state visibility.
         connectButton.setTitle(L10n.pairingRemoteDroneConnect, for: .normal)
@@ -148,22 +136,25 @@ private extension PairingConnectDroneDetailViewController {
         enabledButtonInteraction()
     }
 
-    /// Update with pairing connect drone state.
-    ///
-    /// - Parameters:
-    ///    - state: pairing connect drone state
-    func updatePairingConnectDroneState(_ state: PairingConnectDroneState) {
-        // Come back to pairing menu if the remote is disconnected or if the remote is connected to a drone.
-        if state.remoteControlConnectionState?.isConnected() == false ||
-            state.droneConnectionState?.isConnected() == true {
-            coordinator?.dismissRemoteConnectDrone()
-        } else {
-            updateConnectionView()
-        }
+    /// Sets up view models.
+    func setupViewModel() {
+        viewModel.$remoteControlConnectionState
+            .combineLatest(viewModel.$pairingConnectionState)
+            .sink { [unowned self] (remoteConnectionState, pairingConnectionState) in
+                if remoteConnectionState != .connected {
+                    coordinator?.dismissRemoteConnectDrone()
+                } else {
+                    updateConnectionView(state: pairingConnectionState)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     /// Update connection view with label error and connection state.
-    func updateConnectionView() {
+    ///
+    /// - Parameters:
+    ///    - state: pairing connection state
+    func updateConnectionView(state: PairingDroneConnectionState) {
         connectButton.isHidden = true
         connectionStateLabel.text = nil
         connectionStateLabel.isHidden = true
@@ -172,20 +163,20 @@ private extension PairingConnectDroneDetailViewController {
         connectionStateImageView.stopRotate()
         isBadPwd = false
 
-        if viewModel.state.value.connectionState == PairingDroneConnectionState.connecting {
+        switch state {
+        case .connecting:
             connectionStateLabel.isHidden = false
             connectionStateImageView.isHidden = false
             connectionStateLabel.text = L10n.connecting
             // Launch connection indicator animation.
             connectionStateImageView.startRotate()
-        } else if viewModel.state.value.connectionState == PairingDroneConnectionState.incorrectPassword {
-            viewModel.resetDroneConnectionStateRef()
+        case .incorrectPassword:
             passwordErrorView.isHidden = false
             connectButton.isHidden = false
-        } else if viewModel.state.value.connectionState == PairingDroneConnectionState.connected {
+        case .connected:
             // Come back to pairing menu when drone is connected.
             coordinator?.dismissRemoteConnectDrone()
-        } else {
+        default:
             connectButton.isHidden = false
         }
     }

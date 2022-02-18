@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -67,9 +66,7 @@ final class GalleryDeviceMediaState: GalleryContentState {
     ///    - connectionState: drone connection state
     ///    - availableSpace: available space, in giga bytes
     ///    - capacity: capacity, in giga bytes
-    ///    - downloadingItem: downloading item
-    ///    - downloadStatus: download status
-    ///    - downloadProgress: download progress
+    ///    - isFormatNeeded: format needed status
     ///    - isRemoving: ViewModel is removing
     ///    - medias: media list
     ///    - sourceType: source type
@@ -80,9 +77,7 @@ final class GalleryDeviceMediaState: GalleryContentState {
     required init(connectionState: DeviceState.ConnectionState,
                   availableSpace: Double,
                   capacity: Double,
-                  downloadingItem: MediaItem?,
-                  downloadStatus: MediaTaskStatus,
-                  downloadProgress: Float,
+                  isFormatNeeded: Bool,
                   isRemoving: Bool,
                   medias: [GalleryMedia],
                   sourceType: GallerySourceType,
@@ -93,9 +88,7 @@ final class GalleryDeviceMediaState: GalleryContentState {
         super.init(connectionState: connectionState,
                    availableSpace: availableSpace,
                    capacity: capacity,
-                   downloadingItem: downloadingItem,
-                   downloadStatus: downloadStatus,
-                   downloadProgress: downloadProgress,
+                   isFormatNeeded: isFormatNeeded,
                    isRemoving: isRemoving,
                    medias: medias,
                    sourceType: sourceType,
@@ -114,9 +107,7 @@ final class GalleryDeviceMediaState: GalleryContentState {
         return GalleryDeviceMediaState(connectionState: self.connectionState,
                                        availableSpace: self.availableSpace,
                                        capacity: self.capacity,
-                                       downloadingItem: self.downloadingItem,
-                                       downloadStatus: self.downloadStatus,
-                                       downloadProgress: self.downloadProgress,
+                                       isFormatNeeded: self.isFormatNeeded,
                                        isRemoving: self.isRemoving,
                                        medias: self.medias,
                                        sourceType: self.sourceType,
@@ -147,7 +138,10 @@ final class GalleryDeviceMediaViewModel: DroneStateViewModel<GalleryDeviceMediaS
     var storageUsed: Double {
         return self.state.value.storageUsed
     }
-    var videoPlayer: AVPlayer?
+    var videoPlayer: AVPlayer? {
+        didSet { videoPlayerLayer = AVPlayerLayer(player: videoPlayer) }
+    }
+    var videoPlayerLayer: AVPlayerLayer?
 
     // MARK: - Init
     private override init() {
@@ -233,6 +227,9 @@ extension GalleryDeviceMediaViewModel {
     ///    - uid: uid
     /// - Returns: a gallery media
     func getMediaFromUid(_ uid: String) -> GalleryMedia? {
-        return self.state.value.medias.first { $0.uid == uid.prefix(AssetUtils.Constants.prefixLength) }
+        state.value.medias
+            // Get connected drone medias only (several drones may share same media UID).
+            .filter { $0.url?.relativeString.contains(drone?.uid ?? "") ?? false }
+            .first { $0.uid == uid }
     }
 }

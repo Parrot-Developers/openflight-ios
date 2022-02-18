@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,64 +29,28 @@
 
 import GroundSdk
 
-// MARK: - Private Enums
-private enum Constants {
-    /// Distance to geofence limit from which an alert should be displayed (meters).
-    static let geofenceDistanceAlertThreshold: Double = 2.0
-}
-
 /// Utility extension for Drone's geofence-related functions.
 extension Drone {
     // MARK: - Internal Properties
-    /// Returns true if drone current altitude is closer
-    /// from geofence limit than threshold.
-    var isAltitudeCloseToGeofenceLimit: Bool {
-        guard let altitude = getInstrument(Instruments.altimeter)?.takeoffRelativeAltitude,
-            let geofenceMaxAltitude = getPeripheral(Peripherals.geofence)?.maxAltitude.value
-            else {
-                return false
+    /// Returns true if current geofence altitude is reached.
+    var isAltitudeGeofenceReached: Bool {
+        guard let alarm = getInstrument(Instruments.alarms)?.getAlarm(kind: .verticalGeofenceReached) else {
+            return false
         }
-        return altitude > geofenceMaxAltitude - Constants.geofenceDistanceAlertThreshold
+        return alarm.hasError
     }
 
-    /// Returns true if drone current distance to geofence center
-    /// is closer from geofence limit than threshold.
-    var isDistanceCloseToGeofenceLimit: Bool {
-        guard let droneLocation = getInstrument(Instruments.gps)?.lastKnownLocation,
-            let geofence = getPeripheral(Peripherals.geofence),
-            let distance = geofence.center?.distance(from: droneLocation),
-            !distance.isNaN
-            else {
-                return false
+    /// Returns true if current geofence distance is reached.
+    var isDistanceGeofenceReached: Bool {
+        guard let alarm = getInstrument(Instruments.alarms)?.getAlarm(kind: .horizontalGeofenceReached) else {
+            return false
         }
-        return distance > geofence.maxDistance.value - Constants.geofenceDistanceAlertThreshold
+        return alarm.hasError
     }
 
     /// Returns alert level associated with current geofence distance state.
     var alertLevelForGeofenceDistanceState: AlertLevel {
         let isHorizontalGeofenceActive = getPeripheral(Peripherals.geofence)?.mode.value == .cylinder
-        return isDistanceCloseToGeofenceLimit && isHorizontalGeofenceActive ? .warning : .none
-    }
-
-    /// Returns current geofence alerts.
-    var geofenceAlerts: [HUDAlertType] {
-        guard getInstrument(Instruments.gps)?.fixed == true,
-            isStateFlying
-            else {
-                return []
-        }
-        let hasDistanceAlert = alertLevelForGeofenceDistanceState == .warning
-        switch (hasDistanceAlert, isAltitudeCloseToGeofenceLimit) {
-        case (true, true):
-            return [HUDBannerCriticalAlertType.geofenceAltitudeAndDistance,
-                    HUDBannerCriticalAlertType.geofenceAltitude,
-                    HUDBannerCriticalAlertType.geofenceDistance]
-        case (true, false):
-            return [HUDBannerCriticalAlertType.geofenceDistance]
-        case (false, true):
-            return [HUDBannerCriticalAlertType.geofenceAltitude]
-        default:
-            return []
-        }
+        return isDistanceGeofenceReached && isHorizontalGeofenceActive ? .warning : .none
     }
 }

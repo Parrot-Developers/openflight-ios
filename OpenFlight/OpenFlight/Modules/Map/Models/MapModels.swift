@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -61,6 +60,16 @@ extension MapMode {
     var isAllowingPitch: Bool {
         switch self {
         case .flightPlanEdition:
+            return false
+        default:
+            return true
+        }
+    }
+
+    /// Whether user and drone locations display is enabled in this mode.
+    var userAndDroneLocationsEnabled: Bool {
+        switch self {
+        case .mapOnly, .myFlights:
             return false
         default:
             return true

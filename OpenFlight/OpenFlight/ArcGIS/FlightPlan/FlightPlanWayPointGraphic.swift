@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,7 +33,7 @@ import ArcGIS
 public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRelatedGraphic, PoiPointRelatedGraphic {
     // MARK: - Public Properties
     /// Associated waypoint.
-    private(set) weak var wayPoint: WayPoint?
+    private(set) var wayPoint: WayPoint?
 
     // MARK: - Private Properties
     private var mainLabel: AGSPictureMarkerSymbol?
@@ -59,9 +58,9 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     // MARK: - Private Constants
     private enum Constants {
         static let defaultColor: UIColor = ColorName.black.color
-        static let selectedColor: UIColor = ColorName.greenSpring.color
+        static let selectedColor: UIColor = ColorName.highlightColor.color
         static let secondaryColor: UIColor = ColorName.white.color
-        static let customSecondaryColor: UIColor = ColorName.greenSpring.color
+        static let customSecondaryColor: UIColor = ColorName.highlightColor.color
         static let largeCircleSize: CGFloat = 42.0
         static let largeCircleOutlineWidth: CGFloat = 1.0
         static let smallCircleSize: CGFloat = 14.0
@@ -220,7 +219,7 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     ///
     /// - Parameters:
     ///     - heading: camera heading
-    func update(heading newHeading: Double) {
+    public func update(heading newHeading: Double) {
         if heading != Int(newHeading) {
             heading = Int(newHeading)
             applyRotation()

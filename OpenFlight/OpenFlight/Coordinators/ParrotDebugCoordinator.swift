@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,29 +28,36 @@
 //    SUCH DAMAGE.
 
 /// Coordinator for Parrot Debug part.
-final class ParrotDebugCoordinator: Coordinator {
+final public class ParrotDebugCoordinator: Coordinator {
     // MARK: - Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
 
     // MARK: - Public Funcs
     public func start() {
         let viewController = ParrotDebugViewController.instantiate(coordinator: self)
         // Prevents not fullscreen presentation style since iOS 13.
         viewController.modalPresentationStyle = .fullScreen
-        self.navigationController = NavigationController(rootViewController: viewController)
-        self.navigationController?.isNavigationBarHidden = true
-        self.navigationController?.modalPresentationStyle = .fullScreen
+        navigationController = NavigationController(rootViewController: viewController)
+        navigationController?.isNavigationBarHidden = true
+        navigationController?.modalPresentationStyle = .fullScreen
     }
 }
 
 // MARK: - Parrot Debug Navigation
 extension ParrotDebugCoordinator {
-    /// Show DevToolbox screen.
+    /// Shows DevToolbox screen.
     func showDevToolbox() {
         let controller = StoryboardScene.DevToolbox.devToolboxViewController.instantiate()
-        self.navigationController?.isNavigationBarHidden = false
-        self.push(controller)
+        navigationController?.isNavigationBarHidden = false
+        push(controller)
+    }
+
+    /// Shows photogrammetry debug screen.
+    func showPhotogrammetryDebug() {
+        if let dashboardCoordinator = self.parentCoordinator as? DashboardCoordinator {
+            dashboardCoordinator.startPhotogrammetryDebug()
+        }
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -46,6 +45,39 @@ final class SettingsNetworkViewController: SettingsContentViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        initView()
+        setupViewModel()
+    }
+
+    /// Reset to default settings.
+    override func resetSettings() {
+        LogEvent.log(.simpleButton(LogEvent.LogKeyAdvancedSettings.resetNetworkSettings))
+
+        networkViewModel.resetSettings()
+    }
+
+    override func settingsSegmentedCellDidChange(selectedSegmentIndex: Int, atIndexPath indexPath: IndexPath) {
+        let settingEntry = filteredSettings[indexPath.row]
+        if let logItem = settingEntry.itemLogKey {
+            LogEvent.log(.button(item: logItem,
+                                 value: LogEvent.formatNewValue(settingEntry: settingEntry,
+                                                                index: selectedSegmentIndex)))
+        }
+        settingEntry.save(at: selectedSegmentIndex)
+    }
+}
+
+// MARK: - UITableViewDataSource
+extension SettingsNetworkViewController {
+    /// Initializes view.
+    func initView() {
+        view.directionalLayoutMargins = Layout.mainContainerInnerMargins(isRegularSizeClass,
+                                                                         screenBorders: [.top, .bottom])
+        // Add tap observer to dismiss keyboard
+        let touchGesture = UITapGestureRecognizer(target: self,
+                                                  action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(touchGesture)
+
         // Add keyboard observers.
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(keyboardWillShow(sender:)),
@@ -55,6 +87,10 @@ final class SettingsNetworkViewController: SettingsContentViewController {
                                                selector: #selector(keyboardWillHide(sender:)),
                                                name: UIResponder.keyboardWillHideNotification,
                                                object: nil)
+    }
+
+    /// Sets up view model.
+    func setupViewModel() {
         // Setup view model.
         networkViewModel.state.valueChanged = { [weak self] state in
             // Lock refresh display while editing network name,
@@ -63,40 +99,13 @@ final class SettingsNetworkViewController: SettingsContentViewController {
                 self?.updateDataSource(state)
             }
         }
-        networkViewModel.infoHandler = { _ in
-            self.coordinator?.startDriInfoScreen()
+        networkViewModel.infoHandler = { [weak self] _ in
+            self?.coordinator?.startDriInfoScreen()
         }
         // Inital data source update.
         updateDataSource(SettingsNetworkState())
     }
 
-    /// Reset to default settings.
-    override func resetSettings() {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyAdvancedSettings.resetNetworkSettings,
-                             newValue: nil,
-                             logType: LogEvent.LogType.button)
-
-        networkViewModel.resetSettings()
-    }
-
-    override func settingsSegmentedCellDidChange(selectedSegmentIndex: Int, atIndexPath indexPath: IndexPath) {
-        let settingEntry = filteredSettings[indexPath.row]
-        LogEvent.logAppEvent(itemName: settingEntry.itemLogKey,
-                             newValue: LogEvent.formatNewValue(settingEntry: settingEntry,
-                                                               index: selectedSegmentIndex),
-                             logType: .button)
-        settingEntry.save(at: selectedSegmentIndex)
-    }
-
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        /// Update apn configuration when user change it.
-        networkViewModel.updateApnConfigurationIfNeeded()
-    }
-}
-
-// MARK: - UITableViewDataSource
-extension SettingsNetworkViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: UITableViewCell
         let cellType = cells[indexPath.row]
@@ -130,11 +139,10 @@ private extension SettingsNetworkViewController {
     /// - Returns: A table view cell.
     func configureNetworkNameCell(atIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsNetworkNameCell
+        cell.delegate = self
         cell.configureCell(viewModel: networkViewModel, showInfo: { [weak self] in
             self?.showPasswordEdition()
         })
-        cell.delegate = self
-
         return cell
     }
 
@@ -164,7 +172,7 @@ private extension SettingsNetworkViewController {
 
     /// Show password edition view controller.
     func showPasswordEdition() {
-        self.coordinator?.startSettingDronePasswordEdition(viewModel: self.networkViewModel)
+        coordinator?.startSettingDronePasswordEdition(viewModel: networkViewModel)
     }
 
     /// Update data source.
@@ -172,7 +180,7 @@ private extension SettingsNetworkViewController {
     /// - Parameters:
     ///     - state: Network state
     func updateDataSource(_ state: SettingsNetworkState) {
-        resetCellLabel = state.isEnabled ? L10n.settingsConnectionReset : nil
+        resetCellLabel = state.isNotFlying ? L10n.settingsConnectionReset : nil
         settings = networkViewModel.settingEntries
     }
 }
@@ -188,12 +196,17 @@ private extension SettingsNetworkViewController {
     @objc func keyboardWillHide(sender: NSNotification) {
         networkViewModel.isEditing(false)
     }
+
+    /// Force the keyboard to dismiss.
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+    }
 }
 
 // MARK: - SettingsCellularDataDelegate
 extension SettingsNetworkViewController: SettingsCellularDataDelegate {
     func cellularDataDidChange() {
-        self.updateDataSource(networkViewModel.state.value)
+        updateDataSource(networkViewModel.state.value)
         settingsTableView?.reloadData()
     }
 

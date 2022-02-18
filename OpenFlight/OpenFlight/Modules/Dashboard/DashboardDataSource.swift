@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -69,8 +69,6 @@ struct DashboardDataSource {
                     .content(.myFlights),
                     .content(.projectManager),
                     .content(.galleryMedia)
-//                    Uncomment to display PGY debug cell
-//                    .content(.photogrammetryDebug)
                 ]
             }
         }
@@ -90,7 +88,6 @@ struct DashboardDataSource {
         case droneInfos
         case myFlights
         case galleryMedia
-        case photogrammetryDebug
         case settings
         case projectManager
     }
@@ -99,103 +96,93 @@ struct DashboardDataSource {
 extension DashboardDataSource {
     // MARK: - Private Enums
     fileprivate enum SizeConstants {
-        static let topInset: CGFloat = 0.0
-        static let commonCellSpacing: CGFloat = 10.0
         static let headerHeight: CGFloat = 44.0
         static let footerHeight: CGFloat = 35.0
-        static let horizontalCellSpacing: CGFloat = 10.0
+        static let commonCellSpacing: CGFloat = 10.0
     }
 
     fileprivate enum RegularSizeConstants {
         static let headerHeight: CGFloat = 55.0
-        static let footerHeight: CGFloat = 35.0
-        static let horizontalCellSpacing: CGFloat = 15.0
-    }
-
-    fileprivate enum LandscapeRegularSizeConstants {
-        static let topInset: CGFloat = 61.0
-        static let cellHeight: CGFloat = 230.0
-        static let cellWidth: CGFloat = 230.0
-    }
-
-    fileprivate enum PortraitRegularSizeConstants {
-        static let topInset: CGFloat = 10.0
-        static let cellHeight: CGFloat = 204.0
-        static let cellWidth: CGFloat = 316.0
-    }
-
-    fileprivate enum LandscapeSizeConstants {
-        static let cellHeight: CGFloat = 140.0
-        static let cellCompactWidth: CGFloat = 152.0
-        static let cellRegularWidth: CGFloat = 164.0
-        static let regularScreenSizeLimit: CGFloat = 685.0
-    }
-
-    fileprivate enum PortraitSizeConstants {
-        static let cellCompactHeight: CGFloat = 141.0
-        static let cellRegularHeight: CGFloat = 158.0
-        static let cellWidth: CGFloat = 162.0
+        static let footerHeight: CGFloat = 55.0
+        static let commonCellSpacing: CGFloat = 15.0
+        static let headerFooterHeightPercentage: CGFloat = 0.2
+        static let contentHeightPercentage: CGFloat = 0.6
+        static let bottomInset: CGFloat = 20.0
     }
 
     fileprivate enum Constants {
         static let halfScreen: CGFloat = 2.0
         static let thirdScreen: CGFloat = 3.0
         static let quarterScreen: CGFloat = 4.0
+        static let numberOfContentRows: CGFloat = 2.0
+        static let numberOfVerticalMargins: CGFloat = 2.0
+        static let heightLimit: CGFloat = 390
     }
 }
 
 // MARK: - Extension Section
 extension DashboardDataSource.Section {
-    /// minimumInteritemSpacing of each section
-    var minimumInteritemSpacing: CGFloat {
-        return DashboardDataSource.SizeConstants.commonCellSpacing
-    }
-
-    /// minimumLineSpacing of each section
-    var minimumLineSpacing: CGFloat {
-        return DashboardDataSource.SizeConstants.commonCellSpacing
+    /// Minimum space between cells
+    func getMinimumCellSpacing(_ isRegularSizeClass: Bool) -> CGFloat {
+        return isRegularSizeClass
+            ? DashboardDataSource.RegularSizeConstants.commonCellSpacing
+            : DashboardDataSource.SizeConstants.commonCellSpacing
     }
 
     /// Get size of each insets from given width
-    func getComputedInsets(width: CGFloat, height: CGFloat, isRegularSizeClass: Bool) -> UIEdgeInsets {
-        /// Width of one cell.
-        var cellWidth: CGFloat {
-            if isRegularSizeClass {
-                return UIApplication.isLandscape
-                    ? DashboardDataSource.LandscapeRegularSizeConstants.cellWidth
-                    : DashboardDataSource.PortraitRegularSizeConstants.cellWidth
-            } else {
-                return UIApplication.isLandscape
-                    ? (width > DashboardDataSource.LandscapeSizeConstants.regularScreenSizeLimit
-                        ? DashboardDataSource.LandscapeSizeConstants.cellRegularWidth
-                        : DashboardDataSource.LandscapeSizeConstants.cellCompactWidth)
-                    : DashboardDataSource.PortraitSizeConstants.cellWidth
-            }
-        }
+    func getComputedInsets(width: CGFloat, height: CGFloat, isRegularSizeClass: Bool, section: DashboardDataSource.Section) -> UIEdgeInsets {
 
-        var horizontalCellSpacing: CGFloat {
+        var cellSpacing: CGFloat {
             return isRegularSizeClass
-                ? DashboardDataSource.RegularSizeConstants.horizontalCellSpacing
-                : DashboardDataSource.SizeConstants.horizontalCellSpacing
+                ? DashboardDataSource.RegularSizeConstants.commonCellSpacing
+                : DashboardDataSource.SizeConstants.commonCellSpacing
         }
 
         var topInset: CGFloat {
-            return isRegularSizeClass
-                ? (UIApplication.isLandscape
-                    ? DashboardDataSource.LandscapeRegularSizeConstants.topInset
-                    : DashboardDataSource.PortraitRegularSizeConstants.topInset)
-                : DashboardDataSource.SizeConstants.topInset
+            if isRegularSizeClass {
+                switch section {
+                case .header:
+                    let nbItems = DashboardDataSource.Constants.halfScreen
+                    let heightPercentage = DashboardDataSource.RegularSizeConstants.headerFooterHeightPercentage
+                    let headerContentHeight = DashboardDataSource.RegularSizeConstants.headerHeight
+                    return ((height * heightPercentage) - (cellSpacing * nbItems)) - headerContentHeight
+                default:
+                    return 0
+                }
+            } else {
+                switch section {
+                case .header:
+                    return Layout.mainPadding(false)
+                default:
+                    return 0
+                }
+            }
         }
 
-        let nbColumns = UIApplication.isLandscape
-            ? DashboardDataSource.Constants.quarterScreen
-            : DashboardDataSource.Constants.halfScreen
-        let collectionWidth = (nbColumns * cellWidth) + ((nbColumns - 1) * horizontalCellSpacing)
-        let insets = (width - collectionWidth) / DashboardDataSource.Constants.halfScreen
+        var bottomInset: CGFloat {
+            if isRegularSizeClass {
+                switch section {
+                case .header,
+                     .content:
+                    return DashboardDataSource.RegularSizeConstants.commonCellSpacing
+                case .footer:
+                    return 0
+                }
+            } else {
+                switch section {
+                case .content,
+                     .footer:
+                    return Layout.mainPadding(isRegularSizeClass)
+                default:
+                    return DashboardDataSource.SizeConstants.commonCellSpacing
+                }
+            }
+        }
+
         return UIEdgeInsets(top: topInset,
-                            left: insets,
-                            bottom: DashboardDataSource.SizeConstants.commonCellSpacing,
-                            right: insets)
+                            left: 0,
+                            bottom: bottomInset,
+                            right: 0)
     }
 }
 
@@ -210,95 +197,56 @@ extension DashboardDataSource.Item {
         var computedWidth: CGFloat
 
         /// Spacing of the horizontal cell.
-        var horizontalCellSpacing: CGFloat {
+        var cellSpacing: CGFloat {
             return isRegularSizeClass
-                ? DashboardDataSource.RegularSizeConstants.horizontalCellSpacing
-                : DashboardDataSource.SizeConstants.horizontalCellSpacing
+                ? DashboardDataSource.RegularSizeConstants.commonCellSpacing
+                : DashboardDataSource.SizeConstants.commonCellSpacing
         }
 
-        /// Width of one cell.
-        var cellWidth: CGFloat {
+        switch self {
+        case .header:
+            computedHeight = isRegularSizeClass
+                ? DashboardDataSource.RegularSizeConstants.headerHeight
+                : DashboardDataSource.SizeConstants.headerHeight
+            computedWidth = (width - (cellSpacing)) / DashboardDataSource.Constants.halfScreen
+
+        case .footer:
+            let bottomInset = DashboardDataSource.RegularSizeConstants.bottomInset
+            let heightPercentage = DashboardDataSource.RegularSizeConstants.headerFooterHeightPercentage
+            computedHeight = isRegularSizeClass
+                ? height * heightPercentage - bottomInset
+                : DashboardDataSource.SizeConstants.footerHeight
+            computedWidth = width
+
+        case let .content(contentType):
+            let heightPercentage = DashboardDataSource.RegularSizeConstants.contentHeightPercentage
             if isRegularSizeClass {
-                return UIApplication.isLandscape
-                    ? DashboardDataSource.LandscapeRegularSizeConstants.cellWidth
-                    : DashboardDataSource.PortraitRegularSizeConstants.cellWidth
+                computedHeight = (height * heightPercentage - cellSpacing) / DashboardDataSource.Constants.numberOfContentRows
             } else {
-                return UIApplication.isLandscape
-                    ? (width > DashboardDataSource.LandscapeSizeConstants.regularScreenSizeLimit
-                        ? DashboardDataSource.LandscapeSizeConstants.cellRegularWidth
-                        : DashboardDataSource.LandscapeSizeConstants.cellCompactWidth)
-                    : DashboardDataSource.PortraitSizeConstants.cellWidth
+                let footerTotalHeight = height > DashboardDataSource.Constants.heightLimit
+                ? DashboardDataSource.SizeConstants.footerHeight + Layout.mainPadding(false)
+                : Layout.mainSpacing(isRegularSizeClass)
+
+                computedHeight = (height
+                                  - DashboardDataSource.SizeConstants.headerHeight
+                                  - footerTotalHeight
+                                  - Layout.mainPadding(false)
+                                  - Layout.mainSpacing(false) * DashboardDataSource.Constants.numberOfVerticalMargins
+                                  - Layout.mainPadding(false))
+                                  / DashboardDataSource.Constants.numberOfContentRows
+            }
+            switch contentType {
+            case .galleryMedia,
+                 .myFlights,
+                 .projectManager:
+                let nbItemsOnRow = DashboardDataSource.Constants.thirdScreen
+                let cellWidth = (width - cellSpacing * (nbItemsOnRow - 1)) / nbItemsOnRow
+                computedWidth = contentType == .myFlights ? cellWidth.rounded(.up) : cellWidth.rounded(.down)
+            default:
+                let nbItemsOnRow = DashboardDataSource.Constants.quarterScreen
+                computedWidth = (width - cellSpacing * (nbItemsOnRow - 1)) / nbItemsOnRow
             }
         }
-
-        /// Width of one cell.
-        var cellHeight: CGFloat {
-            if isRegularSizeClass {
-                return UIApplication.isLandscape
-                    ? DashboardDataSource.LandscapeRegularSizeConstants.cellHeight
-                    : DashboardDataSource.PortraitRegularSizeConstants.cellHeight
-            } else {
-                return UIApplication.isLandscape
-                    ? DashboardDataSource.LandscapeSizeConstants.cellHeight
-                    : (width > DashboardDataSource.LandscapeSizeConstants.regularScreenSizeLimit
-                        ? DashboardDataSource.PortraitSizeConstants.cellRegularHeight
-                        : DashboardDataSource.PortraitSizeConstants.cellCompactHeight)
-            }
-        }
-
-        if UIApplication.isLandscape {
-            let nbColumns = DashboardDataSource.Constants.quarterScreen
-            let collectionWidth = (nbColumns * cellWidth) + ((nbColumns - 1) * horizontalCellSpacing)
-            switch self {
-            case .header:
-                computedHeight = DashboardDataSource.SizeConstants.headerHeight
-                computedWidth = (collectionWidth - horizontalCellSpacing) / DashboardDataSource.Constants.thirdScreen
-            case .footer:
-                computedHeight = DashboardDataSource.SizeConstants.footerHeight
-                computedWidth = collectionWidth
-            case let .content(contentType):
-                computedHeight = cellHeight
-                switch contentType {
-                case .galleryMedia,
-                     .myFlights,
-                     .projectManager:
-                    let nbItemsOnRow = DashboardDataSource.Constants.thirdScreen
-                    computedWidth = (collectionWidth - horizontalCellSpacing * (nbItemsOnRow - 1)) / nbItemsOnRow
-                default:
-                    computedWidth = cellWidth
-                }
-            }
-        } else {
-            let nbColumns = DashboardDataSource.Constants.halfScreen
-            let collectionWidth = (nbColumns * cellWidth) + ((nbColumns - 1) * horizontalCellSpacing)
-            switch self {
-            case let .header(headerType):
-                computedHeight = DashboardDataSource.SizeConstants.headerHeight
-                switch headerType {
-                case .logo:
-                    computedWidth = (collectionWidth - horizontalCellSpacing)
-                        * DashboardDataSource.Constants.thirdScreen / DashboardDataSource.Constants.quarterScreen
-                case .header:
-                    computedWidth = (collectionWidth - horizontalCellSpacing)
-                        / DashboardDataSource.Constants.quarterScreen
-                }
-            case .footer:
-                computedHeight = DashboardDataSource.SizeConstants.footerHeight
-                computedWidth = collectionWidth
-            case let .content(contentType):
-                computedHeight = cellHeight
-                switch contentType {
-                case .myFlights,
-                     .galleryMedia,
-                     .projectManager:
-                    // Set content width to the whole screen.
-                    computedWidth = collectionWidth
-                default:
-                    computedWidth = cellWidth
-                }
-            }
-        }
-
         return CGSize(width: computedWidth, height: computedHeight)
     }
 }

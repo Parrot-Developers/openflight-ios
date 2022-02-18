@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,5 +40,15 @@ extension GalleryDeviceMediaViewModel {
     ///    - completion: provides success after delete
     func deleteMedias(_ medias: [GalleryMedia], completion: @escaping (Bool) -> Void) {
         completion(AssetUtils.shared.removeMedias(medias: medias))
+    }
+
+    /// Deletes a resource from a media.
+    ///
+    /// - Parameters:
+    ///    - index: Index of the resource to delete.
+    ///    - media: Media containing the resource to delete.
+    ///    - completion: Completion block called after deletion.
+    func deleteResourceAt(_ index: Int, of media: GalleryMedia, completion: @escaping (Bool) -> Void) {
+        completion(AssetUtils.shared.removeResourceAt(index, of: media))
     }
 }

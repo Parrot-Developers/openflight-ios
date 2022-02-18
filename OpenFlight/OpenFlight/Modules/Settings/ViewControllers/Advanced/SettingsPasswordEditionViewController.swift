@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,49 +34,13 @@ import GroundSdk
 /// Dedicated view controller to edit drone wifi password.
 final class SettingsPasswordEditionViewController: UIViewController, StoryboardBased {
     // MARK: _ Outlets
-    @IBOutlet private weak var titleLabel: UILabel! {
-        didSet {
-            titleLabel.text = L10n.settingsEditPasswordTitle
-        }
-    }
-    @IBOutlet private weak var warningLabel: UILabel! {
-        didSet {
-            warningLabel.text = L10n.settingsEditPasswordWarning
-        }
-    }
-    @IBOutlet private weak var passwordTextField: POFTextField! {
-        didSet {
-            passwordTextField.setPlaceholderTitle(L10n.settingsEditPasswordTitle)
-        }
-    }
-    @IBOutlet private weak var confirmPasswordTextField: POFTextField! {
-        didSet {
-            confirmPasswordTextField.setPlaceholderTitle(L10n.settingsEditPasswordConfirmPassword)
-        }
-    }
-    @IBOutlet private weak var passwordWarningLabel: UILabel! {
-        didSet {
-            passwordWarningLabel.text = L10n.settingsEditPasswordSecurityDescription
-        }
-    }
-    @IBOutlet private weak var changePasswordButton: UIButton! {
-        didSet {
-            changePasswordButton.addShadow(shadowColor: ColorName.whiteAlbescent.color)
-            changePasswordButton.cornerRadiusedWith(backgroundColor: ColorName.warningColor.color,
-                                                    borderColor: .clear,
-                                                    radius: Style.mediumCornerRadius)
-            changePasswordButton.setTitle(L10n.settingsEditPasswordChangePassword, for: .normal)
-        }
-    }
-    @IBOutlet private weak var cancelButton: UIButton! {
-        didSet {
-            cancelButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
-                                            borderColor: .clear,
-                                            radius: Style.mediumCornerRadius,
-                                            borderWidth: Style.noBorderWidth)
-            cancelButton.setTitle(L10n.cancel, for: .normal)
-        }
-    }
+    @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet private weak var warningLabel: UILabel!
+    @IBOutlet private weak var passwordTextField: POFTextField!
+    @IBOutlet private weak var confirmPasswordTextField: POFTextField!
+    @IBOutlet private weak var passwordWarningLabel: UILabel!
+    @IBOutlet private weak var changePasswordButton: ActionButton!
+    @IBOutlet private weak var cancelButton: ActionButton!
     @IBOutlet private weak var backgroundView: UIView!
     @IBOutlet private weak var contentScrollView: UIScrollView!
     @IBOutlet private weak var textfieldsContainer: UIView!
@@ -88,8 +51,17 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     private var viewModel: SettingsNetworkViewModel?
     private var isValidPassword: Bool {
         var isValid = false
-        if let password = passwordTextField.text, WifiPasswordUtil.isValid(password) {
-            isValid = true
+        if let password = passwordTextField.text,
+           WifiPasswordUtil.isValid(password),
+           password.count >= 10 {
+            let patterns = ["[a-z]", "[A-Z]", "[0-9]", "[!@#$%&/=?_.,:;\\-]"]
+            var count = 0
+            for pattern in patterns {
+                if password.range(of: pattern, options: .regularExpression) != nil {
+                    count += 1
+                }
+            }
+            isValid = count >= 3
         }
         passwordWarningLabel.text = L10n.settingsEditPasswordSecurityDescription
         passwordWarningLabel.textColor = isValid ? ColorName.defaultTextColor.color : ColorName.errorColor.color
@@ -152,10 +124,6 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return orientation
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
     }
@@ -163,6 +131,11 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     // MARK: - UI
     /// Setup UI
     private func setupUI() {
+        // Labels
+        titleLabel.text = L10n.settingsEditPasswordTitle
+        warningLabel.text = L10n.settingsEditPasswordWarning
+        passwordWarningLabel.text = L10n.settingsEditPasswordSecurityDescription
+
         // Colors
         view.backgroundColor = ColorName.clear.color
         backgroundView.backgroundColor = ColorName.clear.color
@@ -178,11 +151,17 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
         // Setup textfields
         passwordTextField.delegate = self
         passwordTextField.secureEntryDelegate = self
+        passwordTextField.setPlaceholderTitle(L10n.settingsEditPasswordTitle)
         confirmPasswordTextField.delegate = self
         confirmPasswordTextField.secureEntryDelegate = self
+        confirmPasswordTextField.setPlaceholderTitle(L10n.settingsEditPasswordConfirmPassword)
 
         // Buttons
-        cancelButton.setBorder(borderColor: ColorName.defaultTextColor20.color, borderWidth: 1.0)
+        changePasswordButton.model = ActionButtonModel(title: L10n.settingsEditPasswordChangePassword,
+                                                       style: .action1)
+
+        cancelButton.model = ActionButtonModel(title: L10n.cancel,
+                                               style: .default2)
     }
 
     /// Register for keyboard notifications display
@@ -222,7 +201,7 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
     /// Dismiss view controller
     private func dismissVC() {
         view.backgroundColor = ColorName.clear.color
-        self.coordinator?.dismiss()
+        coordinator?.dismiss()
     }
 
     /// Handle dismiss tap backgroundView
@@ -268,32 +247,29 @@ final class SettingsPasswordEditionViewController: UIViewController, StoryboardB
 private extension SettingsPasswordEditionViewController {
     /// Close action.
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.cancel,
-                             newValue: nil,
-                             logType: .button)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyCommonButton.cancel))
         dismissVC()
     }
 
     /// Change password action.
     @IBAction func changeButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyWifiPasswordEdition.changePassword,
-                             newValue: isValidPassword.description,
-                             logType: .button)
+        LogEvent.log(.button(item: LogEvent.LogKeyWifiPasswordEdition.changePassword,
+                             value: isValidPassword.description))
         guard isValidPassword,
               isValidConfirmPassword,
               let password = passwordTextField.text else {
-            return
-        }
+                  return
+              }
 
-        self.view.endEditing(true)
+        view.endEditing(true)
         let validateAction = AlertAction(title: L10n.settingsEditPasswordValidateChange, actionHandler: { [weak self] in
             if self?.viewModel?.changePassword(password) ?? false {
                 self?.dismissVC()
             }
         })
-        self.showAlert(title: L10n.commonWarning,
-                       message: L10n.settingsEditPasswordDescription,
-                       validateAction: validateAction)
+        showAlert(title: L10n.commonWarning,
+                  message: L10n.settingsEditPasswordDescription,
+                  validateAction: validateAction)
     }
 }
 

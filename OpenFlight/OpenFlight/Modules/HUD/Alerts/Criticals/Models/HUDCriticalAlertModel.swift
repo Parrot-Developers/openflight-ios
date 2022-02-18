@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -50,20 +49,25 @@ protocol CriticalAlertModel {
     var mainDescription: String? { get }
     /// Tells if cancel button need to be shown.
     var showCancelButton: Bool? { get }
+    /// Action button shadow.
+    var addCancelButtonShadow: Bool? { get }
     /// Action button title.
     var actionButtonTitle: String? { get }
     /// Action button title color.
     var actionButtonTitleColor: ColorName? { get }
     /// Action button background color.
     var actionButtonBackgroundColor: ColorName? { get }
+    /// Action button shadow.
+    var addActionButtonShadow: Bool? { get }
 }
 
 // MARK: - Internal Enums
 /// Model used to store each major/critical alert.
-enum HUDCriticalAlertType: Comparable {
+public enum HUDCriticalAlertType: Comparable {
     case sensorFailure([TakeoffAlarm.Kind])
     case droneAndRemoteUpdateRequired
     case droneUpdateRequired
+    case remoteUpdateRequired
     case droneCalibrationRequired
     case droneInclination
     case updateOngoing
@@ -72,6 +76,10 @@ enum HUDCriticalAlertType: Comparable {
     case lowTemperature
     case batteryUsbPortConnection
     case cellularModemFirmwareUpdate
+    case insufficientStorageSpace
+    case insufficientStorageSpeed
+    case sdCardNotDetected
+    case sdCardNeedsFormat
 
     var isSensorAlarm: Bool {
         switch self {
@@ -83,7 +91,7 @@ enum HUDCriticalAlertType: Comparable {
     }
 
     var isUpdateRequired: Bool {
-        return self == .droneUpdateRequired || self == .droneAndRemoteUpdateRequired
+        return self == .droneUpdateRequired || self == .remoteUpdateRequired || self == .droneAndRemoteUpdateRequired
     }
 
     var priority: Int {
@@ -91,14 +99,19 @@ enum HUDCriticalAlertType: Comparable {
         case .sensorFailure:                return 1
         case .droneAndRemoteUpdateRequired: return 2
         case .droneUpdateRequired:          return 3
-        case .droneCalibrationRequired:     return 4
-        case .droneInclination:             return 5
-        case .updateOngoing:                return 6
-        case .batteryLevel:                 return 7
-        case .highTemperature:              return 8
-        case .lowTemperature:               return 9
-        case .batteryUsbPortConnection:     return 10
-        case .cellularModemFirmwareUpdate:  return 11
+        case .remoteUpdateRequired:         return 4
+        case .droneCalibrationRequired:     return 5
+        case .droneInclination:             return 6
+        case .updateOngoing:                return 7
+        case .batteryLevel:                 return 8
+        case .highTemperature:              return 9
+        case .lowTemperature:               return 10
+        case .batteryUsbPortConnection:     return 11
+        case .cellularModemFirmwareUpdate:  return 12
+        case .insufficientStorageSpace:     return 13
+        case .insufficientStorageSpeed:     return 14
+        case .sdCardNeedsFormat:            return 15
+        case .sdCardNotDetected:            return 16
         }
     }
 
@@ -141,7 +154,7 @@ enum HUDCriticalAlertType: Comparable {
 }
 
 extension HUDCriticalAlertType: Hashable {
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         switch self {
         case .sensorFailure(let kind):
             hasher.combine(kind)
@@ -174,6 +187,8 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return L10n.takeoffAlertDroneRemoteUpdateTitle
         case .droneUpdateRequired:
             return L10n.takeoffAlertDroneUpdateTitle
+        case .remoteUpdateRequired:
+            return L10n.takeoffAlertRemoteUpdateTitle
         case .droneCalibrationRequired:
             return L10n.droneDetailsCalibrationRequired
         case .droneInclination:
@@ -190,12 +205,21 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return L10n.takeoffAlertUsbConnectionTitle
         case .cellularModemFirmwareUpdate:
             return L10n.takeoffAlertModemUpdatingTitle
+        case .insufficientStorageSpace:
+            return L10n.alertMemoryFullTitle
+        case .insufficientStorageSpeed:
+            return L10n.alertSdcardErrorTitle
+        case .sdCardNotDetected:
+            return L10n.alertNoSdcardErrorTitle
+        case .sdCardNeedsFormat:
+            return L10n.alertSdcardFormatErrorTitle
         }
     }
 
     var topIcon: UIImage? {
         switch self {
         case .droneUpdateRequired,
+             .remoteUpdateRequired,
              .droneAndRemoteUpdateRequired:
             return Asset.Alertes.TakeOff.icDownloadAlert.image
         case .droneCalibrationRequired:
@@ -205,6 +229,12 @@ extension HUDCriticalAlertType: CriticalAlertModel {
              .lowTemperature,
              .batteryUsbPortConnection:
             return Asset.Common.Icons.icBattery.image
+        case .insufficientStorageSpace:
+            return Asset.Gallery.droneSd.image
+        case .insufficientStorageSpeed,
+             .sdCardNotDetected,
+             .sdCardNeedsFormat:
+            return Asset.Common.Icons.icSdCardErrorSmall.image
         default:
             return nil
         }
@@ -213,6 +243,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
     var topIconTintColor: ColorName? {
         switch self {
         case .droneUpdateRequired,
+             .remoteUpdateRequired,
              .droneAndRemoteUpdateRequired:
             return .defaultTextColor
         case .droneCalibrationRequired:
@@ -220,7 +251,11 @@ extension HUDCriticalAlertType: CriticalAlertModel {
         case .batteryLevel,
              .highTemperature,
              .lowTemperature,
-             .batteryUsbPortConnection:
+             .batteryUsbPortConnection,
+             .insufficientStorageSpace,
+             .insufficientStorageSpeed,
+             .sdCardNotDetected,
+             .sdCardNeedsFormat:
             return .white
         default:
             return nil
@@ -230,6 +265,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
     var topTitleColor: ColorName? {
         switch self {
         case .droneUpdateRequired,
+             .remoteUpdateRequired,
              .droneAndRemoteUpdateRequired,
              .droneCalibrationRequired:
             return .defaultTextColor
@@ -241,6 +277,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
     var topBackgroundColor: ColorName? {
         switch self {
         case .droneUpdateRequired,
+             .remoteUpdateRequired,
              .droneAndRemoteUpdateRequired,
              .droneCalibrationRequired:
             return .white
@@ -255,12 +292,14 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return Asset.Alertes.TakeOff.icDroneSensorAlert.image
         case .droneUpdateRequired:
             return Asset.Alertes.TakeOff.icDroneUpdateAlert.image
+        case .remoteUpdateRequired:
+            return Asset.Alertes.TakeOff.icRemoteUpdateAlert.image
         case .droneAndRemoteUpdateRequired:
             return Asset.Alertes.TakeOff.icDroneRemoteUpdateAlert.image
         case .droneCalibrationRequired:
             return Asset.Alertes.TakeOff.icDroneCalibrationNeeded.image
         case .droneInclination:
-            return Asset.Alertes.TooMuchAngle.icDroneOpenYourDrone.image
+            return nil
         case .updateOngoing:
             return Asset.Alertes.TakeOff.icDroneUpdating.image
         case .batteryLevel:
@@ -273,6 +312,12 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return Asset.Alertes.TakeOff.icDroneUSB.image
         case .cellularModemFirmwareUpdate:
             return Asset.Alertes.TakeOff.icModemInitializing.image
+        case .insufficientStorageSpace:
+            return Asset.Drone.icDroneStorageFull.image
+        case .insufficientStorageSpeed,
+             .sdCardNotDetected,
+             .sdCardNeedsFormat:
+            return Asset.Common.Icons.icSdCardError.image
         }
     }
 
@@ -282,6 +327,8 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return L10n.takeoffAlertSensorDescription
         case .droneUpdateRequired:
             return L10n.takeoffAlertDroneUpdateDescription
+        case .remoteUpdateRequired:
+            return L10n.takeoffAlertRemoteUpdateDescription
         case .droneAndRemoteUpdateRequired:
             return L10n.takeoffAlertDroneRemoteUpdateDescription
         case .droneCalibrationRequired:
@@ -300,12 +347,21 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return L10n.takeoffAlertUsbConnectionDescription
         case .cellularModemFirmwareUpdate:
             return L10n.takeoffAlertModemUpdatingDescription
-        }
+        case .insufficientStorageSpace:
+            return L10n.alertMemoryFullDescription
+        case .insufficientStorageSpeed:
+            return L10n.alertSdcardInsufficientSpeedErrorDesc
+        case .sdCardNotDetected:
+            return L10n.alertNoSdcardErrorDesc
+        case .sdCardNeedsFormat:
+            return L10n.alertSdcardFormatErrorDesc
+       }
     }
 
     var showCancelButton: Bool? {
         switch self {
         case .droneUpdateRequired,
+             .remoteUpdateRequired,
              .droneAndRemoteUpdateRequired,
              .droneCalibrationRequired:
             return true
@@ -314,9 +370,14 @@ extension HUDCriticalAlertType: CriticalAlertModel {
         }
     }
 
+    var addCancelButtonShadow: Bool? {
+        return false
+    }
+
     var actionButtonTitle: String? {
         switch self {
         case .droneUpdateRequired,
+             .remoteUpdateRequired,
              .droneAndRemoteUpdateRequired:
             return L10n.dashboardUpdate
         case .droneCalibrationRequired:
@@ -331,7 +392,11 @@ extension HUDCriticalAlertType: CriticalAlertModel {
         case .droneInclination,
              .updateOngoing,
              .batteryUsbPortConnection,
-             .cellularModemFirmwareUpdate:
+             .cellularModemFirmwareUpdate,
+             .insufficientStorageSpace,
+             .insufficientStorageSpeed,
+             .sdCardNotDetected,
+             .sdCardNeedsFormat:
             return .defaultTextColor
         default:
             return .white
@@ -351,9 +416,25 @@ extension HUDCriticalAlertType: CriticalAlertModel {
              .cellularModemFirmwareUpdate:
             return .whiteAlbescent
         case .droneUpdateRequired,
+             .remoteUpdateRequired,
              .droneAndRemoteUpdateRequired,
              .droneCalibrationRequired:
             return .highlightColor
+        case .insufficientStorageSpace,
+             .insufficientStorageSpeed,
+             .sdCardNotDetected,
+             .sdCardNeedsFormat:
+            return .defaultBgcolor
+        }
+    }
+
+    var addActionButtonShadow: Bool? {
+        switch self {
+        case .insufficientStorageSpace,
+             .insufficientStorageSpeed:
+            return true
+        default:
+            return false
         }
     }
 }

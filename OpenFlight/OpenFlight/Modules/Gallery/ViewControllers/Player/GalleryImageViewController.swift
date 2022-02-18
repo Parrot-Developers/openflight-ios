@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,9 +38,6 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Outlets
-    @IBOutlet private weak var scrollView: UIScrollView!
-    @IBOutlet private weak var zoomableImageView: UIImageView!
-    @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet private weak var generateButton: UIButton!
     @IBOutlet private weak var itemsCollectionView: UICollectionView!
 
@@ -51,18 +47,13 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
     // MARK: - Private Properties
     private weak var coordinator: GalleryCoordinator?
     private var imageIndex: Int = 0
-    private var mediaListener: GalleryMediaListener?
 
     // Convenience Computed Properties
     private var media: GalleryMedia? {
         viewModel?.getMedia(index: index)
     }
     private var hasAdditionalPanoramaGenerationImage: Bool {
-        guard let viewModel = viewModel,
-              let media = media else { return false }
-        // Currently checking if device's panorama can be generated.
-        // Will need to check from current source (drone or device) when panorama upload is available.
-        return viewModel.canGeneratePanorama(media: media)
+        media?.canGeneratePanorama ?? false
     }
     /// The offset used for collectionView items handling in case of an additional blurred panorama image.
     private var additionalImageIndexOffset: Int {
@@ -82,15 +73,6 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
             return nil
         }
         return cell
-    }
-    private var isCurrentCellZoomable: Bool {
-        currentZoomableCell != nil
-    }
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let minZoom: CGFloat = 1.0
-        static let maxZoom: CGFloat = 5.0
     }
 
     // MARK: - Setup
@@ -128,8 +110,13 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
         setupDefaultImageIndex()
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // Reset VM loading state, as next VC may not be a `GalleryImageViewController`.
+        viewModel?.mediaBrowsingViewModel.didUpdateLoadingState(isLoading: false)
+    }
+
     override var prefersHomeIndicatorAutoHidden: Bool { true }
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .landscape }
     override var prefersStatusBarHidden: Bool { true }
 
     /// Observe panorama VM updates.
@@ -144,18 +131,27 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
 
         viewModel?.mediaBrowsingViewModel.$zoomLevel
             .sink { [weak self] zoomLevel in
-                self?.updateZoomLevel(zoomLevel)
+                self?.currentZoomableCell?.updateZoomLevel(zoomLevel)
             }
             .store(in: &cancellables)
+    }
+
+    /// Reloads collectionView content and fetch current image.
+    func reloadContent() {
+        itemsCollectionView.reloadData()
+        fetchImage(at: urlIndex(visibleIndex ?? imageIndex))
+
+        // Content is reloaded based on current state => do not reset VM urls.
+        viewModel?.mediaBrowsingViewModel.didDisplayMedia(media,
+                                                          index: index,
+                                                          count: resourcesCount,
+                                                          resetUrls: false)
     }
 }
 
 private extension GalleryImageViewController {
     /// Sets up UI elements.
     func setupUI() {
-        scrollView.minimumZoomScale = Constants.minZoom
-        scrollView.maximumZoomScale = Constants.maxZoom
-
         setupCollectionView()
     }
 
@@ -187,8 +183,9 @@ private extension GalleryImageViewController {
               index < viewModel?.mediaBrowsingViewModel.mediaUrls.count ?? 0,
               viewModel?.mediaBrowsingViewModel.mediaUrls[index] == nil, // Fetch only if URL not known yet.
               let media = media else {
-            return
-        }
+                  didCompleteImageFetch()
+                  return
+              }
 
         viewModel?.getMediaPreviewImageUrl(media,
                                            index) { [weak self] url in
@@ -203,27 +200,20 @@ private extension GalleryImageViewController {
               visibleIndex < resourcesCount else { return }
         itemsCollectionView.reloadItems(at: [IndexPath(item: visibleIndex, section: 0)])
     }
+
+    /// Updates VM after image fetch is completed.
+    func didCompleteImageFetch() {
+        // Force isLoading to `true` if currently displayed image is fake blurred pano.
+        // (Need to ignore autohide timer and keep controls visible in this case.)
+        // Set isLoading to `false` otherwise, as image fetch has been completed.
+        let isLoading = hasAdditionalPanoramaGenerationImage && visibleIndex == 0
+        viewModel?.mediaBrowsingViewModel.didUpdateLoadingState(isLoading: isLoading)
+    }
+
 }
 
 // MARK: - Actions
 private extension GalleryImageViewController {
-    func updateZoomLevel(_ level: GalleryMediaBrowsingViewModel.ZoomLevel) {
-        guard level != .custom else { return }
-
-        if level == .maximum {
-            // Immediately hide itemsCollectionView if we are about to zoom in.
-            itemsCollectionView.isHidden = level == .maximum
-        }
-
-        UIView.animate(withDuration: Style.shortAnimationDuration) {
-            self.scrollView.zoomScale = level == .maximum
-                ? Constants.maxZoom
-                : Constants.minZoom
-        } completion: { _ in
-            // Unhide itemsCollectionView if we just zoomed out.
-            self.itemsCollectionView.isHidden = self.scrollView.zoomScale != Constants.minZoom
-        }
-    }
 
     /// Shows panorama generation view.
     func generatePanorama() {
@@ -237,14 +227,14 @@ private extension GalleryImageViewController {
 
     /// Shows immersive panorama view.
     func showImmersivePanorama() {
-        guard let viewModel = viewModel,
-              let media = media,
-              let mediaUrls = media.urls,
-              mediaUrls.count > imageIndex else {
+        guard let viewModel = viewModel else { return }
+        let mediaUrls = viewModel.mediaBrowsingViewModel.mediaUrls
+        guard mediaUrls.count > imageIndex,
+              let url = mediaUrls[imageIndex] else {
             return
         }
 
-        coordinator?.showPanoramaVisualisationScreen(viewModel: viewModel, url: mediaUrls[imageIndex])
+        coordinator?.showPanoramaVisualisationScreen(viewModel: viewModel, url: url)
     }
 }
 
@@ -294,24 +284,6 @@ private extension GalleryImageViewController {
 
 // MARK: - UIScrollView Delegate
 extension GalleryImageViewController: UIScrollViewDelegate {
-    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        guard let currentZoomableCell = currentZoomableCell else { return nil }
-
-        zoomableImageView.image = currentZoomableCell.imageView.image
-        return zoomableImageView
-    }
-
-    func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
-        guard isCurrentCellZoomable else { return }
-        viewModel?.mediaBrowsingViewModel.didInteractForControlsDisplay(false)
-        itemsCollectionView.isHidden = true
-    }
-
-    func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
-        viewModel?.mediaBrowsingViewModel.didUpdateZoomLevel(.custom)
-        guard scale == Constants.minZoom else { return }
-        itemsCollectionView.isHidden = false
-    }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView == itemsCollectionView,
@@ -333,7 +305,7 @@ extension GalleryImageViewController: UIScrollViewDelegate {
 }
 
 // MARK: - UICollectionView DataSource
-extension GalleryImageViewController: UICollectionViewDataSource {
+extension GalleryImageViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         resourcesCount
     }
@@ -357,15 +329,35 @@ extension GalleryImageViewController: UICollectionViewDataSource {
 
         return cell
     }
+
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        (cell as? GalleryMediaFullScreenCollectionViewCell)?.centerZoomableView(animated: false)
+    }
 }
 
 // MARK: - GalleryMediaFullScreenCell Delegate
 extension GalleryImageViewController: GalleryMediaFullScreenCellDelegate {
+    func fullScreenCellDidStartLoading() {
+        viewModel?.mediaBrowsingViewModel.didUpdateLoadingState(isLoading: true)
+    }
+
+    func fullScreenCellDidStopLoading() {
+        didCompleteImageFetch()
+    }
+
     func fullScreenCellDidTapGeneratePanorama() {
         generatePanorama()
     }
 
     func fullScreenCellDidTapShowImmersivePanorama() {
         showImmersivePanorama()
+    }
+
+    func fullScreenCellDidStartZooming() {
+        viewModel?.mediaBrowsingViewModel.didInteractForControlsDisplay(false)
+    }
+
+    func fullScreenCellDidStopZooming() {
+        viewModel?.mediaBrowsingViewModel.didUpdateZoomLevel(.custom)
     }
 }

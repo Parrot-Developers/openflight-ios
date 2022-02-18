@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -43,6 +42,16 @@ public extension UILabel {
         font = UIFont.font(with: style)
         textColor = color.color
     }
+
+    /// Making up label using style and color.
+    ///
+    /// - Parameters:
+    ///     - style: font style
+    ///     - color: color of the text
+    final func makeUp(with style: FontStyle, color: ColorName) {
+        font = UIFont.font(isRegularSizeClass, with: style)
+        textColor = color.color
+    }
 }
 
 // MARK: - UIButton
@@ -57,6 +66,19 @@ public extension UIButton {
                       color: ColorName = .white,
                       and state: UIControl.State = UIControl.State.normal) {
         titleLabel?.font = UIFont.font(with: style)
+        setTitleColor(color.color, for: state)
+    }
+
+    /// Making up UIButton using style and color.
+    ///
+    /// - Parameters:
+    ///     - style: font style
+    ///     - color: color of the button text
+    ///     - state: text state
+    final func makeup(with style: FontStyle,
+                      color: ColorName,
+                      and state: UIControl.State = UIControl.State.normal) {
+        titleLabel?.font = UIFont.font(isRegularSizeClass, with: style)
         setTitleColor(color.color, for: state)
     }
 }
@@ -74,9 +96,9 @@ public extension UISegmentedControl {
                             selectedBackgroundColor: ColorName = ColorName.highlightColor,
                             normalFontColor: ColorName = ColorName.defaultTextColor,
                             selectedFontColor: ColorName = ColorName.white) {
-        setBackgroundImage(normalBackgroundColor.color.withAlphaComponent(0.8).asImage(), for: [.normal, .disabled], barMetrics: .default)
+        setBackgroundImage(normalBackgroundColor.color.withAlphaComponent(Style.disabledAlpha).asImage(), for: [.normal, .disabled], barMetrics: .default)
         setBackgroundImage(normalBackgroundColor.color.asImage(), for: .normal, barMetrics: .default)
-        setBackgroundImage(selectedBackgroundColor.color.withAlphaComponent(0.8).asImage(), for: [.selected, .disabled], barMetrics: .default)
+        setBackgroundImage(selectedBackgroundColor.color.withAlphaComponent(Style.disabledAlpha).asImage(), for: [.selected, .disabled], barMetrics: .default)
         setBackgroundImage(selectedBackgroundColor.color.asImage(), for: .selected, barMetrics: .default)
 
         backgroundColor = .clear
@@ -124,27 +146,6 @@ public extension UIView {
         sendSubviewToBack(blurredEffectView)
     }
 
-    /// Add blur effect to the view with two rounded corners.
-    ///
-    /// - Parameters:
-    ///     - style: blur effect
-    ///     - firstCorner: first corner to round
-    ///     - secondCorner: second corner to round
-    final func addBlurEffectWithTwoCorners(with style: UIBlurEffect.Style = .dark,
-                                           firstCorner: CACornerMask,
-                                           secondCorner: CACornerMask) {
-        // Remove old visual effect views first.
-        removeBlurEffect()
-        let blurEffect = UIBlurEffect(style: style)
-        let blurredEffectView = UIVisualEffectView(effect: blurEffect)
-        blurredEffectView.isUserInteractionEnabled = false
-        blurredEffectView.layer.cornerRadius = Style.mediumCornerRadius
-        blurredEffectView.layer.maskedCorners = [firstCorner, secondCorner]
-        blurredEffectView.clipsToBounds = true
-        addWithConstraints(subview: blurredEffectView)
-        sendSubviewToBack(blurredEffectView)
-    }
-
     /// Remove blur effect to the view.
     func removeBlurEffect() {
         subviews.forEach {
@@ -152,11 +153,6 @@ public extension UIView {
                 $0.removeFromSuperview()
             }
         }
-    }
-
-    func addLightShadow(condition: Bool = true) {
-        addShadow(shadowColor: ColorName.lightShadowColor.color,
-                  condition: condition)
     }
 }
 
@@ -173,6 +169,21 @@ public extension UITextField {
                 bgColor: ColorName = .black60) {
         backgroundColor = bgColor.color
         font = style.font
+        self.textColor = textColor.color
+        layer.borderColor = bgColor.color.cgColor
+    }
+
+    /// Makingup UITextField using style and color.
+    ///
+    /// - Parameters:
+    ///     - style: font style
+    ///     - textColor: color of the text
+    ///     - bgColor: background color
+    func makeUp(style: FontStyle,
+                textColor: ColorName = .white,
+                bgColor: ColorName = .black60) {
+        backgroundColor = bgColor.color
+        font = UIFont.font(isRegularSizeClass, with: style)
         self.textColor = textColor.color
         layer.borderColor = bgColor.color.cgColor
     }

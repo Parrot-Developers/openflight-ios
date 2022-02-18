@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -28,67 +27,78 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
+import Reusable
 
 /// Dedicated Button with download style.
 
-final class DownloadButton: UIButton {
-    // MARK: - Private Enums
-    private enum Constants {
-        static let contentEdgeInsets = UIEdgeInsets(top: 0.0, left: 12.0, bottom: 0.0, right: 6.0)
-        static let imageEdgeInsets = UIEdgeInsets(top: 0.0, left: -8.0, bottom: 0.0, right: 0.0)
-    }
-
-    // MARK: - Internal Funcs
-    /// Setup display.
-    func setup() {
-        self.makeup()
-        self.applyCornerRadius(Style.mediumCornerRadius)
-        self.backgroundColor = ColorName.highlightColor.color
-        self.tintColor = .white
-        self.contentEdgeInsets = Constants.contentEdgeInsets
-        self.imageEdgeInsets = Constants.imageEdgeInsets
-        self.setImage(Asset.Gallery.mediaDownload.image, for: .normal)
-        self.setTitle(L10n.commonDownload, for: .normal)
-    }
-
-    /// Update display retarding state.
-    ///
-    /// - Parameters:
-    ///     - state: Gallery Media Download State
-    ///     - title: button title
-    func updateState(_ state: GalleryMediaDownloadState?,
-                     title: String?) {
-        self.setImage(state?.icon, for: .normal)
-        self.backgroundColor = state?.backgroundColor
-        self.tintColor = state?.tintColor
-        self.isHidden = state == nil
-        let filteredTitle: String?
-        switch state {
-        case .downloading,
-             .downloaded:
-            filteredTitle = nil
-        default:
-            filteredTitle = title ?? L10n.commonDownload
-        }
-        self.setTitle(filteredTitle, for: .normal)
-        self.isUserInteractionEnabled = state != .downloading
-    }
-
-    override var isHighlighted: Bool {
+final class DownloadButton: HighlightableUIControl, NibOwnerLoadable {
+    var model: DownloadButtonModel? {
         didSet {
-            setHighlightedStyle(isHighlighted)
+            updateLayout()
         }
+    }
+
+    @IBOutlet private weak var imageView: UIImageView!
+    @IBOutlet private weak var titleLabel: UILabel!
+
+    // MARK: - Init
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+
+        self.commonInit()
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+
+        self.commonInit()
     }
 }
 
 // MARK: - Private Funcs
 private extension DownloadButton {
-    /// Set specific highlighted style.
-    ///
-    /// - Parameters:
-    ///    - isHighlighted: is highlighted
-    func setHighlightedStyle(_ isHighlighted: Bool) {
-        self.alpha = isHighlighted ? 0.5 : 1.0
+    func commonInit() {
+        loadNibContent()
+
+        titleLabel.makeUp()
+        updateLayout()
+    }
+
+    func updateLayout() {
+        isHidden = model == nil
+
+        guard let state = model?.state else { return }
+
+        isUserInteractionEnabled = state != .downloading
+        backgroundColor = state.backgroundColor
+        layer.cornerRadius = Style.mediumCornerRadius
+
+        imageView.image = state.icon
+        imageView.tintColor = state.tintColor
+
+        let title = state.title(model?.title)
+        titleLabel.text = title
+        titleLabel.isHiddenInStackView = title == nil
+        titleLabel.textColor = state.tintColor
+
+        if state == .downloading {
+            imageView?.startRotate()
+        } else {
+            imageView?.stopRotate()
+        }
+    }
+}
+
+/// A model for generic download buttons.
+class DownloadButtonModel {
+    /// The title of the button.
+    var title: String?
+    /// The download state of the button.
+    var state: GalleryMediaDownloadState?
+
+    init(title: String? = nil,
+         state: GalleryMediaDownloadState? = nil) {
+        self.title = title
+        self.state = state
     }
 }

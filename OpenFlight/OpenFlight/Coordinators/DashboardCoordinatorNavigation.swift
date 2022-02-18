@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -28,20 +27,21 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-/// Defines DashboardCoordinator navigation Protocol.
+/// Defines DashboardCoordinator navigation protocol.
 protocol DashboardCoordinatorNavigation: AnyObject {
     func startParrotDebug()
-    func startDroneInfos()
-    func startRemoteInfos()
+    func startDroneInformation()
+    func startRemoteInformation()
     func startUpdate(model: DeviceUpdateModel)
     func startMedias()
-    func startMyFlights()
-    func startFlightExecutionDetails(_ execution: FlightPlanModel)
-    func startFlightDetails(flight: FlightModel)
-    func startConfidentiality()
+    func startMyFlights(selectedProject: ProjectModel?,
+                        selectedFlight: FlightModel?,
+                        completion: (() -> Void)?)
+    func startProjectManager(selectedProject: ProjectModel?, completion: (() -> Void)?)
     func startMyAccount()
     func startMapPreloading()
     func dismissDashboard(completion: (() -> Void)?)
     func startPhotogrammetryDebug()
     func startSettings()
+    func startLayoutGridManagerScreen()
 }

@@ -1,6 +1,4 @@
-//
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,29 +29,23 @@
 
 import Foundation
 import Combine
+import SwiftyUserDefaults
 
 public class ProjectsListViewModel {
 
     @Published private(set) var filteredProjects: [ProjectModel] = [ProjectModel]()
-    @Published private(set) var selectedProject: ProjectModel? {
-        didSet {
-            guard let project = selectedProject else {
-                manager.clearCurrentProject()
-                return
-            }
-            manager.setCurrent(project)
-        }
-    }
+    @Published private(set) var selectedProject: ProjectModel?
+
     private var allProjects: [ProjectModel] = [ProjectModel]()
 
     let manager: ProjectManager
     private let projectManagerViewModel: ProjectManagerViewModel?
     private let cloudSynchroWatcher: CloudSynchroWatcher?
-    private let coordinator: DashboardCoordinator?
-    private var isFlightPlanProjectType: Bool = true
+    private let coordinator: ProjectManagerCoordinator?
+    private var isFlightPlanProjectType: Bool = Defaults.isFlightPlanProjectType
     private var cancellables = Set<AnyCancellable>()
 
-    init(coordinator: DashboardCoordinator?,
+    init(coordinator: ProjectManagerCoordinator?,
          manager: ProjectManager,
          cloudSynchroWatcher: CloudSynchroWatcher?,
          projectManagerViewModel: ProjectManagerViewModel) {
@@ -65,7 +57,7 @@ public class ProjectsListViewModel {
         updateProjects()
         selectedProject = nil
         listenProjectTypeChange()
-        listenCloudSynchroWatcherChange()
+        listenProjectsPublisher()
         listenProjectsChange()
     }
 
@@ -80,12 +72,14 @@ public class ProjectsListViewModel {
             .store(in: &cancellables)
     }
 
-    private func listenCloudSynchroWatcherChange() {
-        cloudSynchroWatcher?.isSynchronizingDataPublisher.sink(receiveValue: { [unowned self] isSynchronizingData in
-            if !isSynchronizingData {
-                updateProjects()
+    private func listenProjectsPublisher() {
+        manager.projectsDidChangePublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.updateProjects()
             }
-        }).store(in: &cancellables)
+            .store(in: &cancellables)
     }
 
     private func listenProjectsChange() {
@@ -99,7 +93,7 @@ public class ProjectsListViewModel {
         projectManagerViewModel?.projectAdded
             .sink { [unowned self] projectAdded in
                 updateProjects()
-                selectedProject =  project(with: projectAdded?.uuid)
+                selectedProject = project(with: projectAdded?.uuid)
            }
             .store(in: &cancellables)
     }
@@ -119,6 +113,11 @@ public class ProjectsListViewModel {
     private func getAllProjects() -> [ProjectModel] { manager.loadProjects(type: nil) }
 
     // MARK: - Public funcs
+    func didDoubleTap(project: ProjectModel) {
+        selectedProject = project
+        projectManagerViewModel?.openProject(project)
+    }
+
     func didSelect(project: ProjectModel) {
         selectedProject = project
     }

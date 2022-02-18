@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -142,14 +141,14 @@ class CameraWidgetState: BarButtonState, EquatableState, Copying {
 
     // MARK: - Internal Funcs
     func isEqual(to other: CameraWidgetState) -> Bool {
-        return self.labelCameraSpecificProperty1 == other.labelCameraSpecificProperty1
-            && self.labelCameraSpecificProperty2 == other.labelCameraSpecificProperty2
-            && self.labelShutterSpeed == other.labelShutterSpeed
-            && self.labelExposureCompensation == other.labelExposureCompensation
-            && self.exposureTextColor == other.exposureTextColor
-            && self.exposureBackgroundColor == other.exposureBackgroundColor
-            && self.isPhotoMode == other.isPhotoMode
-            && self.isPhotoSignatureEnabled == other.isPhotoSignatureEnabled
+        return labelCameraSpecificProperty1 == other.labelCameraSpecificProperty1
+            && labelCameraSpecificProperty2 == other.labelCameraSpecificProperty2
+            && labelShutterSpeed == other.labelShutterSpeed
+            && labelExposureCompensation == other.labelExposureCompensation
+            && exposureTextColor == other.exposureTextColor
+            && exposureBackgroundColor == other.exposureBackgroundColor
+            && isPhotoMode == other.isPhotoMode
+            && isPhotoSignatureEnabled == other.isPhotoSignatureEnabled
     }
 
     /// Returns a copy of the object.
@@ -233,23 +232,23 @@ final class CameraWidgetViewModel: BarButtonViewModel<CameraWidgetState> {
 private extension CameraWidgetViewModel {
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
-        mainCameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] _ in
-            self?.updateState(drone: drone)
+        mainCameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] _ in
+            updateState(drone: drone)
         }
     }
 
     /// Starts watcher for exposure values (ShutterSpeed).
     func listenExposureValues(drone: Drone) {
-        exposureValuesRef = drone.getPeripheral(Peripherals.mainCamera2)?.getComponent(Camera2Components.exposureIndicator,
-                                                                                       observer: { [weak self] exposureIndicator in
+        exposureValuesRef = drone.getPeripheral(Peripherals.mainCamera2)?
+            .getComponent(Camera2Components.exposureIndicator) { [unowned self] exposureIndicator in
                 if let rawShutterSpeedValue = exposureIndicator?.shutterSpeed.rawValue {
                     Defaults.lastShutterSpeedValue = rawShutterSpeedValue
                 }
                 if let rawCameraIsoValue = exposureIndicator?.isoSensitivity.rawValue {
                     Defaults.lastCameraIsoValue = rawCameraIsoValue
                 }
-                self?.updateState(drone: drone)
-        })
+                updateState(drone: drone)
+            }
     }
 
     /// Updates state from camera and exposure values.

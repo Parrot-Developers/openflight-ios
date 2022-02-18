@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,10 +31,10 @@ import UIKit
 import Reusable
 
 /// Cell which gives value choices for updating the setting.
-final class SettingValuesChoiceTableViewCell: UITableViewCell, NibReusable, EditionSettingsCellModel {
+final class SettingValuesChoiceTableViewCell: SidePanelSettingTableViewCell, NibReusable, EditionSettingsCellModel {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var settingValuesStackView: UIStackView!
+    @IBOutlet private weak var settingValuesStackView: SidePanelSettingContainerStackView!
     @IBOutlet private weak var disableView: UIView!
 
     // MARK: - Internal Properties
@@ -57,6 +56,10 @@ final class SettingValuesChoiceTableViewCell: UITableViewCell, NibReusable, Edit
 
     // MARK: - Internal Funcs
     func fill(with settingType: FlightPlanSettingType?) {
+
+        setCellType(with: settingType)
+        setSettingControlType(with: settingType)
+
         self.settingType = settingType
         titleLabel.text = settingType?.valueToDisplay().uppercased()
 
@@ -96,6 +99,20 @@ final class SettingValuesChoiceTableViewCell: UITableViewCell, NibReusable, Edit
 
     func disableCell(_ mustDisable: Bool) {
         self.disableView.isHidden = !mustDisable
+    }
+
+    func setCellType(with settingType: FlightPlanSettingType?) {
+        cellSettingType = .textSegments
+        guard let settingType = settingType,
+              !(settingType.valueImages?.isEmpty ?? true) else { return }
+        cellSettingType = settingType.allValues.count > 3
+        ? .textAndIconSegmentsLarge
+        : .textAndIconSegments
+    }
+
+    func setSettingControlType(with settingType: FlightPlanSettingType?) {
+        settingValuesStackView
+            .isTwoSegmentsSegmentedControl = settingType?.allValues.count ?? 0 == 2
     }
 }
 
@@ -145,7 +162,7 @@ private extension SettingValuesChoiceTableViewCell {
         settingValuesStackView?.arrangedSubviews
             .compactMap { $0 as? UIButton}
             .forEach { button in
-            let isSelected = settingValuesStackView?.arrangedSubviews.firstIndex(of: button) == tag
+                let isSelected = settingValuesStackView?.arrangedSubviews.firstIndex(of: button) == tag
                 var backgroundColor = UIColor.clear
                 if isSelected {
                     let buttonTitle = button.titleLabel?.text ?? ""
@@ -155,11 +172,12 @@ private extension SettingValuesChoiceTableViewCell {
                         backgroundColor = ColorName.highlightColor.color
                     }
                 }
-            button.cornerRadiusedWith(backgroundColor: backgroundColor,
-                                      radius: Style.largeCornerRadius,
-                                      borderWidth: Style.largeBorderWidth)
-            button.isSelected = isSelected
-            button.tintColor = button.isSelected ? .white : ColorName.defaultTextColor.color
+                button.cornerRadiusedWith(backgroundColor: backgroundColor,
+                                          radius: Style.largeCornerRadius,
+                                          borderWidth: Style.largeBorderWidth)
+                button.addShadow()
+                button.isSelected = isSelected
+                button.tintColor = button.isSelected ? .white : ColorName.defaultTextColor.color
         }
     }
 }

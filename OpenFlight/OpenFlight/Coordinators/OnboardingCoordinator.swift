@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,16 +35,16 @@ open class OnboardingCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
 
-    private var hudCoordinatorProvider: () -> HUDCoordinator
+    public let hudCoordinatorProvider: () -> HUDCoordinator
 
     // MARK: - Init
     /// Initializes coordinator.
     ///
     /// - Parameters:
-    ///     - navigationController: the navigation controller to use
-    ///     - hudCoordinatorProvider: the provider used to get HUD coordinator
+    ///    - navigationController: the navigation controller to use
+    ///    - hudCoordinatorProvider: the provider used to get HUD coordinator
     public init(navigationController: NavigationController? = nil,
                 hudCoordinatorProvider: @escaping () -> HUDCoordinator) {
         self.hudCoordinatorProvider = hudCoordinatorProvider
@@ -60,52 +59,31 @@ open class OnboardingCoordinator: Coordinator {
         showOnBoardingThirdScreen()
     }
 
-    /// Used to show terms of use screen.
+    /// Shows terms of use screen.
     ///
     /// - Parameters:
-    ///     - filename: Terms of use file name
-    ///     - termsOfUseKey: Terms of use key that refers to default bool.
+    ///    - filename: Terms of use file name
+    ///    - termsOfUseKey: Terms of use key that refers to default bool.
     open func showTermsOfUseScreen(filename: String,
                                    termsOfUseKey: DefaultsKey<Bool>) {
         let viewController = OnboardingTermsOfUseViewController.instantiate(coordinator: self,
                                                                             fileName: filename,
                                                                             termsOfUseKey: termsOfUseKey)
-        self.navigationController?.viewControllers = [viewController]
+        navigationController?.viewControllers = [viewController]
     }
 
-    /// Used to show screen after localization access.
+    /// Shows screen after localization access.
     open func showOnBoardingThirdScreen() {
-        showConfigureDroneScreen()
-    }
-
-    /// Used to show configure drone screen.
-    open func showConfigureDroneScreen() {
-        let viewController = OnboardingPairingViewController.instantiate(coordinator: self)
-        push(viewController)
+        showHUDScreen()
     }
 }
 
-// MARK: - OnboardingNavigation
+// MARK: - Onboarding Navigation
 extension OnboardingCoordinator {
-    /// Used to show HUD from onboarding.
+    /// Shows HUD from onboarding.
     func showHUDScreen() {
         let hudCoordinator = hudCoordinatorProvider()
         hudCoordinator.parentCoordinator = self
-        self.start(childCoordinator: hudCoordinator)
-    }
-
-    /// Used to show pairing process from onboarding.
-    func showPairingProcess() {
-        let pairingCoordinator = PairingCoordinator(navigationController: self.navigationController, delegate: self)
-        pairingCoordinator.parentCoordinator = self
-        self.childCoordinators.append(pairingCoordinator)
-        pairingCoordinator.startFromOnboarding()
-    }
-}
-
-extension OnboardingCoordinator: PairingCoordinatorDelegate {
-    public func pairingDidFinish() {
-        self.childCoordinators.removeLast()
-        showHUDScreen()
+        start(childCoordinator: hudCoordinator)
     }
 }

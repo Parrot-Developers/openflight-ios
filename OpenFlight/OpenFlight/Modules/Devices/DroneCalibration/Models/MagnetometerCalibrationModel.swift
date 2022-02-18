@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -52,11 +51,6 @@ enum DroneMagnetometerCalibrationState {
     /// Background color for magnetometer calibration cell.
     var backgroundColor: ColorName {
         return self == .needed ? .errorColor : .white
-    }
-
-    /// Text for magnetometer calibration cell.
-    var calibrationText: String {
-        return self == .needed ? self.description : ""
     }
 
     /// User interaction state for calibration view.

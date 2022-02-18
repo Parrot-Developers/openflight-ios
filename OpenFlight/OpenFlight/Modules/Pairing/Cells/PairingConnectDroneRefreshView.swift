@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,11 +37,9 @@ protocol DroneListDelegate: AnyObject {
 }
 
 /// Cell used to refresh drones table view.
-
 final class PairingConnectDroneRefreshView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
-    @IBOutlet private weak var refreshView: UIView!
-    @IBOutlet private weak var refreshButton: UIButton!
+    @IBOutlet private weak var refreshButton: ActionButton!
 
     // MARK: - Internal Properties
     weak var navDelegate: DroneListDelegate?
@@ -71,10 +68,6 @@ private extension PairingConnectDroneRefreshView {
     /// Init the view.
     func initView() {
         loadNibContent()
-        refreshButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
-                                         borderColor: .clear,
-                                         radius: Style.largeCornerRadius,
-                                         borderWidth: Style.noBorderWidth)
-        refreshButton.setTitle(L10n.pairingRefreshDroneList, for: .normal)
+        refreshButton.setup(title: L10n.pairingRefreshDroneList, style: .default2)
     }
 }

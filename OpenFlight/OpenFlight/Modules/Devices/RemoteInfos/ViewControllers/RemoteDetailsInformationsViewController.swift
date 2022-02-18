@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,7 +35,7 @@ final class RemoteDetailsInformationsViewController: UIViewController {
     @IBOutlet private weak var serialNumberView: DeviceInformationsView!
     @IBOutlet private weak var hardwareVersionView: DeviceInformationsView!
     @IBOutlet private weak var firmwareVersionView: DeviceInformationsView!
-    @IBOutlet private weak var resetButton: UIButton!
+    @IBOutlet private weak var resetButton: ActionButton!
 
     // MARK: - Private Properties
     private var viewModel: RemoteDetailsInformationsViewModel!
@@ -70,10 +69,6 @@ final class RemoteDetailsInformationsViewController: UIViewController {
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
     }
@@ -84,9 +79,7 @@ private extension RemoteDetailsInformationsViewController {
     @IBAction func resetButtonTouchedUpInside(_ sender: Any) {
         let validateAction = AlertAction(title: L10n.remoteDetailsReset, actionHandler: { [weak self] in
             self?.viewModel.resetRemote()
-            LogEvent.logAppEvent(itemName: LogEvent.LogKeyRemoteInfosButton.remoteReset.name,
-                                 newValue: nil,
-                                 logType: .button)
+            LogEvent.log(.simpleButton(LogEvent.LogKeyRemoteInfosButton.remoteReset.name))
         })
 
         self.showAlert(title: L10n.remoteDetailsResetTitle,
@@ -99,9 +92,7 @@ private extension RemoteDetailsInformationsViewController {
 private extension RemoteDetailsInformationsViewController {
     /// Inits the view.
     func initView() {
-        resetButton.cornerRadiusedWith(backgroundColor: UIColor(named: .whiteAlbescent),
-                                       radius: Style.largeCornerRadius)
-        resetButton.setTitle(L10n.commonReset, for: .normal)
+        resetButton.setup(title: L10n.commonReset, style: .default2)
     }
 
     /// Inits the remote information view model.

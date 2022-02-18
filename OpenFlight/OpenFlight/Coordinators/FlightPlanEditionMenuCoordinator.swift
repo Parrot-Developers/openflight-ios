@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +32,7 @@ public final class FlightPlanEditionMenuCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
 
     // MARK: - Public Funcs
     public func start() {

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -52,13 +51,13 @@ final class GlobalBottomBarState: ViewModelState, EquatableState, Copying {
 
     // MARK: - Equatable Implementation
     func isEqual(to other: GlobalBottomBarState) -> Bool {
-        return self.shouldHide == other.shouldHide
-            && self.missionMode.key == other.missionMode.key
+        return shouldHide == other.shouldHide
+            && missionMode.key == other.missionMode.key
     }
 
     // MARK: - Copying Implementation
     func copy() -> GlobalBottomBarState {
-        let copy = GlobalBottomBarState(shouldHide: self.shouldHide)
+        let copy = GlobalBottomBarState(shouldHide: shouldHide)
         copy.missionMode = missionMode
         return copy
     }
@@ -85,10 +84,10 @@ private extension BottomBarViewModel {
     /// Starts watcher for modal presentation.
     func observeModalPresentation() {
         Services.hub.ui.uiComponentsDisplayReporter.isModalPresentedPublisher
-            .sink { [weak self] in
-                let copy = self?.state.value.copy()
-                copy?.shouldHide = $0
-                self?.state.set(copy)
+            .sink { [unowned self] in
+                let copy = state.value.copy()
+                copy.shouldHide = $0
+                state.set(copy)
             }
             .store(in: &cancellables)
     }
@@ -96,9 +95,9 @@ private extension BottomBarViewModel {
     /// Listen for mission mode
     func listenMissionMode() {
         currentMissionManager.modePublisher.sink { [unowned self] in
-            let copy = self.state.value.copy()
+            let copy = state.value.copy()
             copy.missionMode = $0
-            self.state.set(copy)
+            state.set(copy)
         }
         .store(in: &cancellables)
     }

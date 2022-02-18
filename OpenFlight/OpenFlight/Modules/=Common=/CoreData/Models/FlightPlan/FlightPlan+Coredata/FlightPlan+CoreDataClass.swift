@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,4 +33,78 @@ import CoreData
 @objc(FlightPlan)
 public class FlightPlan: NSManagedObject {
 
+    // MARK: - Utils
+    /// Return FlightPlanModel from FlightPlan type of NSManagedObject
+    func model() -> FlightPlanModel {
+        var flightPlanSettings: String?
+        if let dataString = dataString {
+            flightPlanSettings = String(decoding: dataString, as: UTF8.self)
+        }
+        return FlightPlanModel(apcId: apcId,
+                               type: type,
+                               uuid: uuid,
+                               version: version,
+                               customTitle: customTitle,
+                               thumbnailUuid: thumbnailUuid,
+                               projectUuid: projectUuid,
+                               dataStringType: dataStringType,
+                               dataString: flightPlanSettings,
+                               pgyProjectId: pgyProjectId,
+                               state: FlightPlanModel.FlightPlanState(rawString: state) ?? .editable,
+                               lastMissionItemExecuted: lastMissionItemExecuted,
+                               mediaCount: mediaCount,
+                               uploadedMediaCount: uploadedMediaCount,
+                               lastUpdate: lastUpdate,
+                               synchroStatus: SynchroStatus(status: synchroStatus),
+                               fileSynchroStatus: fileSynchroStatus,
+                               fileSynchroDate: fileSynchroDate,
+                               latestSynchroStatusDate: latestSynchroStatusDate,
+                               cloudId: Int(cloudId),
+                               parrotCloudUploadUrl: parrotCloudUploadUrl,
+                               isLocalDeleted: isLocalDeleted,
+                               latestCloudModificationDate: latestCloudModificationDate,
+                               uploadAttemptCount: uploadAttemptCount,
+                               lastUploadAttempt: lastUploadAttempt,
+                               thumbnail: thumbnail?.model(),
+                               flightPlanFlights: flightPlanFlights?.toArray().map({ $0.model() }),
+                               latestLocalModificationDate: latestLocalModificationDate,
+                               synchroError: SynchroError(error: synchroError))
+    }
+
+    func update(fromFlightPlanModel flightPlanModel: FlightPlanModel, withProject: Project?, withThumbnail: Thumbnail?) {
+        apcId = flightPlanModel.apcId
+        type = flightPlanModel.type
+        cloudId = Int64(flightPlanModel.cloudId)
+        isLocalDeleted = flightPlanModel.isLocalDeleted
+        parrotCloudUploadUrl = flightPlanModel.parrotCloudUploadUrl
+        projectUuid = flightPlanModel.projectUuid
+        latestSynchroStatusDate = flightPlanModel.latestSynchroStatusDate
+        fileSynchroDate = flightPlanModel.fileSynchroDate
+        dataStringType = flightPlanModel.dataStringType
+        uuid = flightPlanModel.uuid
+        version = flightPlanModel.version
+        customTitle = flightPlanModel.customTitle
+        thumbnailUuid = flightPlanModel.thumbnailUuid
+        pgyProjectId = flightPlanModel.pgyProjectId
+        dataString = flightPlanModel.dataSetting?.asData
+        state = flightPlanModel.state.rawValue
+        lastMissionItemExecuted = flightPlanModel.lastMissionItemExecuted
+        mediaCount = flightPlanModel.mediaCount
+        uploadedMediaCount = flightPlanModel.uploadedMediaCount
+        lastUpdate = flightPlanModel.lastUpdate
+        latestCloudModificationDate = flightPlanModel.latestCloudModificationDate
+        lastUploadAttempt = flightPlanModel.lastUploadAttempt
+        uploadAttemptCount = flightPlanModel.uploadAttemptCount
+        latestLocalModificationDate = flightPlanModel.latestLocalModificationDate
+        synchroStatus = flightPlanModel.synchroStatus?.rawValue ?? 0
+        synchroError = flightPlanModel.synchroError?.rawValue ?? 0
+        fileSynchroStatus = flightPlanModel.fileSynchroStatus ?? 0
+
+        if let withProject = withProject {
+            ofProject = withProject
+        }
+
+        thumbnail = withThumbnail
+        thumbnailUuid = withThumbnail?.uuid
+    }
 }

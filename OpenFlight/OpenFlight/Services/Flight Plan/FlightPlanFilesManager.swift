@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,12 +37,7 @@ public protocol FlightPlanFilesManager {
     /// - Parameter flightPlan: the flight plan
     func defaultUrl(flightPlan: FlightPlanModel) -> URL
 
-    /// Copies Mavlink file to Flight Plan's Mavlink dedicated Url.
-    ///
-    /// - Parameters:
-    ///    - flightPlan: flight plan
-    ///    - sourceUrl: source Url.
-    func copyMavlink(of flightPlan: FlightPlanModel, from sourceUrl: URL)
+    func isMavlinkUrl(_ url: URL?) -> Bool
 
     /// Writes mavlink file to FP's default URL if any
     /// - Parameter flightPlan: flight plan
@@ -102,18 +96,8 @@ extension FlightPlanFilesManagerImpl: FlightPlanFilesManager {
             .appendingPathExtension(Constants.mavlinkExtension)
     }
 
-    public func copyMavlink(of flightPlan: FlightPlanModel, from sourceUrl: URL) {
-        let destination = defaultUrl(flightPlan: flightPlan)
-        do {
-            if FileManager.default.fileExists(atPath: destination.path) {
-                try FileManager.default.removeItem(at: destination)
-            }
-            try FileManager.default.copyItem(atPath: sourceUrl.path, toPath: destination.path)
-        } catch {
-            ULog.e(.tag,
-                   "Could not copy mavlink file to intended destination: "
-                    + error.localizedDescription)
-        }
+    public func isMavlinkUrl(_ url: URL?) -> Bool {
+        url?.pathExtension == Constants.mavlinkExtension
     }
 
     public func writeFile(of flightPlan: FlightPlanModel) {

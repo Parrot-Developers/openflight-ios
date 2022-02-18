@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -50,16 +50,42 @@ class EditionSettingsViewModel {
         }
     }
 
+    enum Setting {
+        case separator
+        case setting(FlightPlanSetting)
+    }
+
     // MARK: - Private Properties
     private var fpSettings: [FlightPlanSetting]?
     private(set) var settingsCategoryFilter: FlightPlanSettingCategory?
-    var dataSource: [FlightPlanSetting] {
+    var dataSource: [Setting] {
         let settings = self.fpSettings ?? self.settingsProvider?.settings ?? []
+        let actualSettings: [Setting]
         if let filter = settingsCategoryFilter {
-            return settings.filter({ $0.category == filter && $0.type != .fixed })
+            actualSettings = settings
+                .filter { $0.category == filter && $0.type != .fixed }
+                .map { Setting.setting($0) }
         } else {
-            return settings.filter({ $0.type != .fixed })
+            actualSettings = settings
+                .filter { $0.type != .fixed }
+                .map { Setting.setting($0) }
         }
+        let separators = settings.map { _ in Setting.separator }
+        // interleave the two equal sized arrays (settings + separators)
+        // result: put a separator after each setting
+        let finalSettings = zip(actualSettings, separators)
+            .map { [$0, $1] } // setting + separator
+            .map { settingNseparator -> [Setting] in
+                let setting = settingNseparator[0]
+                if case let Setting.setting(flightPlanSetting) = setting,
+                   flightPlanSetting.key == "buildingHeight" {
+                    return [setting] // remove separator for buildingHeight
+                }
+                return settingNseparator
+            }
+            .flatMap { $0 }
+            .dropLast() // remove final separator
+        return Array(finalSettings)
     }
 
     /// Refreshes view data.

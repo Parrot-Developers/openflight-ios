@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,10 +31,10 @@ import GroundSdk
 
 // MARK: - Internal enums
 enum GeofencePreset {
-    static let geofence: GeofenceMode = .cylinder
+    static let geofenceMode: GeofenceMode = .cylinder
     static let maxAltitude: Double = 150.0
     static let minAltitude: Double = 1.0
-    static let defaultAltitude: Double = 30.0
+    static let defaultAltitude: Double = 100.0
     static let maxDistance: Double = 4000.0
     static let minDistance: Double = 10.0
     static let defaultDistance: Double = 100.0

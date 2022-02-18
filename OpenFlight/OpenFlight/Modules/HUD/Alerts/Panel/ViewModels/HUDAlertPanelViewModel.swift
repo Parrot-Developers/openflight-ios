@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -61,15 +60,16 @@ open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
 
     /// Returns alert to display by priority.
     open var currentAlert: AlertPanelState? {
+        if handLandState.shouldShowAlertPanel {
+            return handLandState
+        }
         if returnHomeState.shouldShowAlertPanel {
             return returnHomeState
-        } else if handLaunchState.shouldShowAlertPanel {
-            return handLaunchState
-        } else if handLandState.shouldShowAlertPanel {
-            return handLandState
-        } else {
-            return nil
         }
+        if handLaunchState.shouldShowAlertPanel {
+            return handLaunchState
+        }
+        return nil
     }
 
     // MARK: - Init
@@ -121,14 +121,15 @@ open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
 /// View model for HUD's left alert panel.
 open class HUDAlertPanelViewModel<T: HUDAlertPanelState>: BaseViewModel<T> {
     // MARK: - Private Properties
-    private var handLaunchViewModel: HUDAlertPanelHandLaunchViewModel = HUDAlertPanelHandLaunchViewModel()
+    private var handLaunchViewModel: HUDAlertPanelHandLaunchViewModel
     private var handLandViewModel: HUDAlertPanelHandLandViewModel = HUDAlertPanelHandLandViewModel()
     private var returnHomeViewModel: HUDAlertPanelReturnHomeViewModel = HUDAlertPanelReturnHomeViewModel()
-    private var missionLauncherModeObserver: Any?
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
-    public override init() {
+    public init(services: ServiceHub) {
+        handLaunchViewModel = HUDAlertPanelHandLaunchViewModel(handLaunchService: services.drone.handLaunchService)
+
         super.init()
 
         listenHandLaunch()
@@ -136,12 +137,6 @@ open class HUDAlertPanelViewModel<T: HUDAlertPanelState>: BaseViewModel<T> {
         listenReturnHome()
         listenMissionMenuDisplayedChanges()
         observeModalPresentation()
-    }
-
-    // MARK: - Deinit
-    deinit {
-        NotificationCenter.default.remove(observer: missionLauncherModeObserver)
-        missionLauncherModeObserver = nil
     }
 
     // MARK: - Public Funcs

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -55,19 +54,19 @@ final class DynamicRangeItemView: UIControl, NibOwnerLoadable {
     // MARK: - Override Properties
     override var isHighlighted: Bool {
         didSet {
-            self.alpha = isHighlighted ? 0.7 : 1.0
+            alpha = isHighlighted ? 0.7 : 1.0
         }
     }
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitDynamicRangeItemView()
+        commonInitDynamicRangeItemView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitDynamicRangeItemView()
+        commonInitDynamicRangeItemView()
     }
 }
 
@@ -75,13 +74,14 @@ final class DynamicRangeItemView: UIControl, NibOwnerLoadable {
 private extension DynamicRangeItemView {
     /// Common init.
     func commonInitDynamicRangeItemView() {
-        self.loadNibContent()
+        loadNibContent()
+        dynamicRangeLabel.makeUp(with: .current, color: .defaultTextColor)
     }
 
     /// Updates the view with its current model.
     func fill() {
         guard let model = model,
-            let dynamicRange = model.mode as? DynamicRange else {
+              let dynamicRange = model.mode as? DynamicRange else {
                 return
         }
         dynamicRangeLabel.text = dynamicRange.title

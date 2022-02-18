@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -28,6 +27,7 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Combine
 import GroundSdk
 
 /// State for `HUDAlertBannerViewModel`.
@@ -91,13 +91,14 @@ final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var alertList = AlertList()
     private var lastVibrationTimestamps = [AlertCategoryType: TimeInterval]()
-    private let geofenceViewModel = HUDAlertBannerGeofenceViewModel()
     private let autoLandingViewModel = HUDAlertBannerAutoLandingViewModel()
     private let userStorageViewModel = HUDAlertBannerUserStorageViewModel()
     private let commonAlertViewModel = HUDAlertBannerProvider.shared.alertBannerCommonViewModel
 
     /// Latest received gimbal errors, `nil` if unavailable.
     private var gimbalErrors: Set<GimbalError>?
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
@@ -111,10 +112,10 @@ final class HUDAlertBannerViewModel: DroneStateViewModel<HUDAlertBannerState> {
         listenNetworkControl(drone: drone)
         listenGps(drone: drone)
         listenFlyingIndicators(drone: drone)
-        listenGeofence()
         listenAutoLanding()
         listenUserStorage()
         listenCommonAlertViewModel()
+        listenPanoramaService()
     }
 }
 
@@ -128,6 +129,7 @@ private extension HUDAlertBannerViewModel {
             self?.updateConditionsAlerts(drone)
             self?.updateImuSaturationAlerts(drone)
             self?.updateObstacleAvoidanceAlerts(drone)
+            self?.updateGeofenceAlerts(drone)
             self?.updateState()
         }
     }
@@ -205,15 +207,6 @@ private extension HUDAlertBannerViewModel {
         }
     }
 
-    /// Starts watcher for geofence alerts.
-    func listenGeofence() {
-        geofenceViewModel.state.valueChanged = { [weak self] state in
-            self?.alertList.cleanAlerts(withCategories: [.geofence])
-            self?.alertList.addAlerts(state.alerts)
-            self?.updateState()
-        }
-    }
-
     /// Starts watcher for auto landing alerts.
     func listenAutoLanding() {
         autoLandingViewModel.state.valueChanged = { [weak self] state in
@@ -239,6 +232,17 @@ private extension HUDAlertBannerViewModel {
             self?.alertList.addAlerts(state.alerts)
             self?.updateState()
         }
+    }
+
+    /// Listens alerts emitted by panorama service.
+    func listenPanoramaService() {
+        Services.hub.panoramaService.alertsPublisher
+            .sink { [unowned self] alerts in
+                alertList.cleanAlerts(withCategories: [.animations])
+                alertList.addAlerts(alerts)
+                updateState()
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -272,6 +276,14 @@ private extension HUDAlertBannerViewModel {
     func updateImuSaturationAlerts(_ drone: Drone) {
         alertList.cleanAlerts(withCategories: [.componentsImu])
         if let alert = drone.getInstrument(Instruments.alarms)?.imuSaturationAlerts(drone: drone) {
+            alertList.addAlerts([alert])
+        }
+    }
+
+    /// Updates alerts for geofence.
+    func updateGeofenceAlerts(_ drone: Drone) {
+        alertList.cleanAlerts(withCategories: [.geofence])
+        if let alert = drone.getInstrument(Instruments.alarms)?.geofenceAlert() {
             alertList.addAlerts([alert])
         }
     }

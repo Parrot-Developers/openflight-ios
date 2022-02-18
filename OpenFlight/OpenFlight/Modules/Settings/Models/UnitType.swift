@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -67,7 +66,7 @@ public enum UnitType {
     func value(withFloat value: Float) -> String {
         guard !value.isNaN
             else {
-                return "0.0 \(self.unit)"
+                return "0.0 \(unit)"
         }
         switch self {
         case .distance:
@@ -75,9 +74,9 @@ public enum UnitType {
         case .speed:
             return UnitHelper.stringSpeedWithFloat(value)
         case .degree, .degreePerSecond, .percent:
-            return String(format: "%.0f", value) + " \(self.unit)"
+            return String(format: "%.0f", value) + " \(unit)"
         default:
-            return String(format: "%.1f", value) + " \(self.unit)"
+            return String(format: "%.1f", value) + " \(unit)"
         }
     }
     /// Convert a float value with 2 decimal to string regarding type.
@@ -87,7 +86,7 @@ public enum UnitType {
     func value2f(withFloat value: Float) -> String {
         guard !value.isNaN
         else {
-            return "0.0 \(self.unit)"
+            return "0.0 \(unit)"
         }
         switch self {
         case .distance:
@@ -95,9 +94,9 @@ public enum UnitType {
         case .speed:
             return UnitHelper.stringSpeedWithFloat2f(value)
         case .degree, .degreePerSecond, .percent:
-            return String(format: "%.2f", value) + " \(self.unit)"
+            return String(format: "%.2f", value) + " \(unit)"
         default:
-            return String(format: "%.2f", value) + " \(self.unit)"
+            return String(format: "%.2f", value) + " \(unit)"
         }
     }
 }

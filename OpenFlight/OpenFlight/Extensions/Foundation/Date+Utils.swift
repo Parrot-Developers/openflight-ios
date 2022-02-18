@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,7 +31,7 @@ import Foundation
 
 /// Utility extension for `Date`.
 
-extension Date {
+public extension Date {
     /// Returns date's month as string.
     var month: String {
         return DateFormatter.month.string(from: self)
@@ -78,25 +77,35 @@ extension Date {
         return formatter.string(from: self)
     }
 
-    /// Short formatted date.
-    var shortFormattedString: String? {
+    /// Returns short formatted date.
+    ///
+    /// - Parameters:
+    ///    - timeStyle: Date formatter style
+    ///
+    /// - Returns: Date as string
+    func shortFormattedString(timeStyle: DateFormatter.Style) -> String? {
         if self.isToday {
             return L10n.commonToday
         } else if self.isYesterday {
             return L10n.commonYesterday
         } else {
-            return self.formattedString(dateStyle: .short, timeStyle: .medium)
+            return self.formattedString(dateStyle: .short, timeStyle: timeStyle)
         }
     }
 
-    /// Short formatted date, always show time.
-    var shortWithTimeFormattedString: String? {
+    /// Returns short formatted date, always with time.
+    ///
+    /// - Parameters:
+    ///    - timeStyle: Date formatter style
+    ///
+    /// - Returns: Date as string
+    func shortWithTimeFormattedString(timeStyle: DateFormatter.Style) -> String? {
         if self.isToday {
             return addTimeTo(stringDate: L10n.commonToday)
         } else if self.isYesterday {
             return addTimeTo(stringDate: L10n.commonYesterday)
         } else {
-            return self.formattedString(dateStyle: .short, timeStyle: .medium)
+            return self.formattedString(dateStyle: .short, timeStyle: timeStyle)
         }
     }
 

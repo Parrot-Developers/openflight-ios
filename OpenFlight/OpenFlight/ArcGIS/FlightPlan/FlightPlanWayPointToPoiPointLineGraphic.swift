@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,9 +38,9 @@ final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, WayPointRelat
 
     // MARK: - Internal Properties
     /// Associated waypoint.
-    private(set) weak var wayPoint: WayPoint?
+    private(set) var wayPoint: WayPoint?
     /// Associated point of interest.
-    private(set) weak var poiPoint: PoiPoint?
+    private(set) var poiPoint: PoiPoint?
 
     // MARK: - Override Properties
     override var itemType: FlightPlanGraphicItemType {
@@ -50,7 +49,7 @@ final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, WayPointRelat
 
     // MARK: - Private Enums
     private enum Constants {
-        static let selectedColor: UIColor = ColorName.greenSpring.color
+        static let selectedColor: UIColor = ColorName.highlightColor.color
         static let lineWidth: CGFloat = 3.0
     }
 

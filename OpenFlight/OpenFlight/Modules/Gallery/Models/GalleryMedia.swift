@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -44,7 +43,7 @@ enum GalleryMediaDownloadState: CaseIterable {
     var icon: UIImage {
         switch self {
         case .downloading:
-            return Asset.Gallery.mediaDownloading.image
+            return Asset.Pairing.icloading.image
         case .toDownload:
             return Asset.Gallery.mediaDownload.image
         case .downloaded:
@@ -58,10 +57,9 @@ enum GalleryMediaDownloadState: CaseIterable {
         switch self {
         case .toDownload:
             return ColorName.highlightColor.color
-        case .downloaded:
+        case .downloaded,
+             .downloading:
             return .white
-        case .downloading:
-            return ColorName.greenSpring20.color
         case .error:
             return .clear
         }
@@ -71,9 +69,8 @@ enum GalleryMediaDownloadState: CaseIterable {
         switch self {
         case .toDownload:
             return .white
-        case .downloading:
-            return ColorName.greenSpring.color
-        case .downloaded,
+        case .downloading,
+             .downloaded,
              .error:
             return ColorName.highlightColor.color
         }
@@ -92,6 +89,16 @@ enum GalleryMediaDownloadState: CaseIterable {
 
     var isShareActionInfoShown: Bool {
         !isDownloadActionInfoShown
+    }
+
+    func title(_ text: String?) -> String? {
+        switch self {
+        case .downloading,
+             .downloaded:
+            return nil
+        default:
+            return text ?? L10n.commonDownload
+        }
     }
 }
 
@@ -129,7 +136,7 @@ struct GalleryMedia: Equatable {
     var mediaResources: [MediaItem.Resource]? {
         guard let mediaItems = mediaItems else { return nil }
 
-        return mediaItems.reduce([]) { $0 + $1.resources }
+        return mediaItems.reduce([]) { $0 + sortedResources($1.resources) }
     }
 
     /// Returns the media resource for a reduced resource index (from `mediaResources` array).
@@ -166,6 +173,7 @@ struct GalleryMedia: Equatable {
             && lhs.date == rhs.date
             && lhs.url == rhs.url
             && lhs.urls == rhs.urls
+            && lhs.mediaResources?.count == rhs.mediaResources?.count
     }
 
     /// Whether an immersive panorama can be shown for the media.
@@ -176,20 +184,22 @@ struct GalleryMedia: Equatable {
             return false
         }
 
-        guard let urls = urls else { return false }
-        return urls.contains(where: { $0.lastPathComponent.contains(panoramaType.rawValue) })
+        return mediaResources?.first(where: { $0.type == .panorama }) != nil
+            || urls?.contains(where: { $0.lastPathComponent.contains(panoramaType.rawValue) }) ?? false
     }
 
     /// Whether a panorama can be generated for the media.
     /// `false` if not a panorama media type or if panorama has already been generated, `true` else.
     var canGeneratePanorama: Bool {
-        guard let panoramaType = type.toPanoramaType else {
-            // Not a panorama media type.
+        switch source {
+        case .droneSdCard,
+             .droneInternal:
+            return canGenerateDronePanorama
+        case .mobileDevice:
+            return canGenerateDevicePanorama
+        default:
             return false
         }
-
-        guard let urls = urls else { return false }
-        return !urls.contains(where: { $0.lastPathComponent.contains(panoramaType.rawValue) })
     }
 
     var displayTitle: String? {
@@ -200,5 +210,41 @@ struct GalleryMedia: Equatable {
         return customTitle?.isEmpty ?? true
             ? date.formattedString(dateStyle: .long, timeStyle: .short)
             : customTitle
+    }
+
+    // MARK: - Private
+
+    /// Whether a panorama can be generated for the drone media.
+    /// `false` if not a panorama media type or if panorama has already been generated, `true` else.
+    private var canGenerateDronePanorama: Bool {
+        guard type.toPanoramaType != nil, let resources = mediaResources else { return false }
+
+        // Check whether a .panorama resource already exists.
+        return resources.first(where: { $0.type == .panorama }) == nil
+    }
+
+    /// Whether a panorama can be generated for the device media.
+    /// `false` if not a panorama media type or if panorama has already been generated, `true` else.
+    private var canGenerateDevicePanorama: Bool {
+        guard let panoramaType = type.toPanoramaType, let urls = urls else { return false }
+
+        // Check whether a .panorama resource already exists.
+        return !urls.contains(where: { $0.lastPathComponent.contains(panoramaType.rawValue) })
+            && mediaResources?.first(where: { $0.type == .panorama }) == nil
+    }
+
+    /// Returns sorted resources array (has no effect if initial array does not contain any .panorama resource).
+    ///
+    /// - Parameters:
+    ///    - resources: The initial resources array.
+    /// - Returns: Same array with .panorama resource (if any) being moved at first position in order to be correctly displayed in gallery.
+    private func sortedResources(_ resources: [MediaItem.Resource]) -> [MediaItem.Resource] {
+        guard let index = resources.firstIndex(where: { $0.type == .panorama }) else { return resources }
+
+        var sortedResources = resources
+        let resource = sortedResources.remove(at: index)
+        sortedResources.insert(resource, at: 0)
+
+        return sortedResources
     }
 }

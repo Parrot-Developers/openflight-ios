@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "iconSettingsCameraCopy.png",
+      "filename" : "iconSettingsCamera.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "iconSettingsCameraCopy@2x.png",
+      "filename" : "iconSettingsCamera@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "iconSettingsCameraCopy@3x.png",
+      "filename" : "iconSettingsCamera@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

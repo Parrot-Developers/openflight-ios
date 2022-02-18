@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,7 +30,6 @@
 import Reusable
 
 /// The view to supperpose to video view when any drone is connected.
-
 @IBDesignable
 final class SnowView: UIView, NibOwnerLoadable {
 
@@ -38,22 +37,22 @@ final class SnowView: UIView, NibOwnerLoadable {
     @IBOutlet private weak var imageView: UIImageView!
 
     // MARK: - Override Properties
-    /// isHidden: Overriden to add stop / restart snow animation.
+    /// Overriden to add stop / restart snow animation.
     override var isHidden: Bool {
         didSet {
-            self.animate(isHidden: isHidden)
+            animate(isHidden: isHidden)
         }
     }
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.loadNibContent()
+        loadNibContent()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.loadNibContent()
+        loadNibContent()
     }
 
     override func draw(_ rect: CGRect) {
@@ -64,10 +63,10 @@ final class SnowView: UIView, NibOwnerLoadable {
     // MARK: - Funcs
     /// Create animation image if necessary.
     func createImageIfNecessary() {
-        if self.imageView.image == nil {
+        if imageView.image == nil {
             let animationImages = Asset.SnowView.allValues.compactMap { $0.image }
-            self.imageView.image = UIImage.animatedImage(with: animationImages,
-                                                         duration: Style.mediumAnimationDuration)
+            imageView.image = UIImage.animatedImage(with: animationImages,
+                                                    duration: Style.mediumAnimationDuration)
         }
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -52,12 +51,12 @@ final class DynamicRangeBarView: UIView, NibOwnerLoadable, BarItemModeDisplayer 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitDynamicRangeBarView()
+        commonInitDynamicRangeBarView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitDynamicRangeBarView()
+        commonInitDynamicRangeBarView()
     }
 }
 
@@ -65,7 +64,7 @@ final class DynamicRangeBarView: UIView, NibOwnerLoadable, BarItemModeDisplayer 
 private extension DynamicRangeBarView {
     /// Common init.
     func commonInitDynamicRangeBarView() {
-        self.loadNibContent()
+        loadNibContent()
     }
 
     /// Adds segmented bar to view.

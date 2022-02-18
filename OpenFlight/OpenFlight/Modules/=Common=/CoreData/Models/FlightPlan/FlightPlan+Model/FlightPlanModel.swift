@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,38 +30,24 @@
 import Foundation
 import GroundSdk
 import ArcGIS
+import CoreLocation
 
 public struct FlightPlanModel {
-
-    // MARK: Constants
+    // MARK: __ Constants
     private enum Constants {
         static let dateTimeIntervalDivider: TimeInterval = 1000.0
+        static let progressRoundPrecision: Int = 4
     }
-    // MARK: - Properties
-
-    public var type: String
-    public var uuid: String
-    public var customTitle: String
-    public var thumbnailUuid: String?
-    public var projectUuid: String
-    public var dataStringType: String
-    public var version: String
-    public var pgyProjectId: Int64
-    public var mediaCustomId: String?
-    public var state: FlightPlanState
-    public var lastMissionItemExecuted: Int64
-    public var mediaCount: Int16
-    public var uploadedMediaCount: Int16
-    public var uploadAttemptCount: Int16
-    public var lastUploadAttempt: Date?
-
+    // MARK: __ Private
     private var lastModified: Int
-    // MARK: - Synchro Properties
 
-    /// - To identify data user
+    // MARK: __ User's Id
     public var apcId: String
 
-    /// - lastUpdated: Last modification date
+    // MARK: __ Academy
+    public var cloudId: Int
+    public var uuid: String
+    public var customTitle: String
     public var lastUpdate: Date {
         get {
             return Date(timeIntervalSince1970: TimeInterval(lastModified) / Constants.dateTimeIntervalDivider)
@@ -70,52 +56,64 @@ public struct FlightPlanModel {
             lastModified = Int(newValue.timeIntervalSince1970 * Constants.dateTimeIntervalDivider)
         }
     }
+    public var latestCloudModificationDate: Date?
+    public var version: String
+    public var type: String
+    public var projectUuid: String
+    public var thumbnailUuid: String?
+    public var dataStringType: String
+    public var state: FlightPlanState
+    public var lastMissionItemExecuted: Int64
+    public var mediaCount: Int16
+    public var uploadedMediaCount: Int16
 
-    /// - dataSetting: object that saved as JSON to data base
+    // MARK: __ Local
+    ///  dataSetting: object that saved as JSON to data base
     public var dataSetting: FlightPlanDataSetting?
-
-    /// - Id of FlightPlan on server: Set only if synchronized
-    public var parrotCloudId: Int64
-
-    /// - Set True if a Delete Request was triguerred without success
-    public var parrotCloudToBeDeleted: Bool
-
-    /// - Contains the Date of last synchro trying if is not succeeded
-    public var synchroDate: Date?
-
-    /// - Contains 0 if not yet synchronized, 1 if yes
-        /// statusCode if sync failed
-    public var synchroStatus: Int16?
-
-    /// - Contains 0 if not yet synchronized, 1 if yes,
-    ///     statusCode if an error has occured during upload
-    public var fileSynchroStatus: Int16?
-
-    /// - fileSynchroDate: Date of synchro file
-    public var fileSynchroDate: Date?
-
-    /// - parrotCloudUploadUrl: Contains S3 Upload URL of FlightPlan
+    /// PGY
+    public var pgyProjectId: Int64 {
+        get { dataSetting?.pgyProjectId ?? 0 }
+        set { dataSetting?.pgyProjectId = newValue }
+    }
+    public var uploadAttemptCount: Int16 {
+        get { dataSetting?.uploadAttemptCount ?? 0 }
+        set { dataSetting?.uploadAttemptCount = newValue }
+    }
+    public var lastUploadAttempt: Date? {
+        get { dataSetting?.lastUploadAttempt }
+        set { dataSetting?.lastUploadAttempt = newValue }
+    }
+    /// Identifier of first media resource captured after the drone has passed the `lastMissionItemExecuted`.
+    public var recoveryResourceId: String? {
+        get { dataSetting?.recoveryResourceId }
+        set { dataSetting?.recoveryResourceId = newValue }
+    }
+    ///  parrotCloudUploadUrl: Contains S3 Upload URL of FlightPlan
     public var parrotCloudUploadUrl: String?
+    public var mediaCustomId: String? // UNUSED
 
-    /// - Last modification date of FlightPlan
-    public var cloudLastUpdate: Date?
-
-    /// - Type of flight plan
-    public var flightPlanType: FlightPlanType?
-
-    // MARK: - Relationship
-
+    // MARK: __ Relationship
     public var thumbnail: ThumbnailModel?
-
     public var flightPlanFlights: [FlightPlanFlightsModel]?
 
-    /// - Return dataString data type
-    public var dataStringData: Data? {
-        return dataSetting?.asData
-    }
+    // MARK: __ Synchronization
+    ///  Boolean to know if it delete locally but needs to be deleted on server
+    public var isLocalDeleted: Bool
+    ///  Synchro status
+    public var synchroStatus: SynchroStatus?
+    ///  Synchro error
+    public var synchroError: SynchroError?
+    ///  Date of last tried synchro
+    public var latestSynchroStatusDate: Date?
+    ///  Date of local modification
+    public var latestLocalModificationDate: Date?
+    ///  Contains 0 if not yet synchronized, 1 if yes,
+    ///     statusCode if an error has occured during upload
+    public var fileSynchroStatus: Int16?
+    ///  fileSynchroDate: Date of synchro file
+    public var fileSynchroDate: Date?
 
     // MARK: - Public init
-
     public init(apcId: String,
                 type: String,
                 uuid: String,
@@ -126,25 +124,27 @@ public struct FlightPlanModel {
                 dataStringType: String,
                 dataString: String?,
                 pgyProjectId: Int64?,
-                mediaCustomId: String?,
                 state: FlightPlanState,
                 lastMissionItemExecuted: Int64?,
                 mediaCount: Int16?,
                 uploadedMediaCount: Int16?,
                 lastUpdate: Date = Date(),
-                synchroStatus: Int16 = 0,
+                synchroStatus: SynchroStatus? = .notSync,
                 fileSynchroStatus: Int16 = 0,
                 fileSynchroDate: Date? = nil,
-                synchroDate: Date? = nil,
-                parrotCloudId: Int64? = 0,
+                latestSynchroStatusDate: Date? = nil,
+                cloudId: Int? = 0,
                 parrotCloudUploadUrl: String? = nil,
-                parrotCloudToBeDeleted: Bool = false,
-                cloudLastUpdate: Date? = nil,
+                isLocalDeleted: Bool = false,
+                latestCloudModificationDate: Date? = nil,
                 uploadAttemptCount: Int16? = 0,
                 lastUploadAttempt: Date? = nil,
                 thumbnail: ThumbnailModel?,
-                flightPlanFlights: [FlightPlanFlightsModel]? = nil) {
+                flightPlanFlights: [FlightPlanFlightsModel]? = nil,
+                latestLocalModificationDate: Date? = nil,
+                synchroError: SynchroError? = .noError) {
 
+        self.dataSetting = FlightPlanDataSetting.instantiate(with: dataString)
         self.apcId = apcId
         self.type = type
         self.dataStringType = dataStringType
@@ -154,25 +154,27 @@ public struct FlightPlanModel {
         self.customTitle = customTitle
         self.lastModified = Int(lastUpdate.timeIntervalSince1970 * Constants.dateTimeIntervalDivider)
         self.mediaCount = mediaCount ?? 0
-        self.dataSetting = FlightPlanDataSetting.instantiate(with: dataString)
-        self.mediaCustomId = mediaCustomId
-        self.lastMissionItemExecuted = lastMissionItemExecuted ?? -1
+        self.lastMissionItemExecuted = lastMissionItemExecuted ?? 0
         self.projectUuid = projectUuid
         self.thumbnailUuid = thumbnailUuid
-        self.pgyProjectId = pgyProjectId ?? 0
         self.uploadedMediaCount = uploadedMediaCount ?? 0
-        self.parrotCloudId = parrotCloudId ?? 0
-        self.parrotCloudToBeDeleted = parrotCloudToBeDeleted
+        self.cloudId = cloudId ?? 0
+        self.isLocalDeleted = isLocalDeleted
         self.parrotCloudUploadUrl = parrotCloudUploadUrl
-        self.synchroDate = synchroDate
+        self.latestSynchroStatusDate = latestSynchroStatusDate
         self.synchroStatus = synchroStatus
         self.fileSynchroDate = fileSynchroDate
         self.fileSynchroStatus = fileSynchroStatus
-        self.cloudLastUpdate = cloudLastUpdate
-        self.uploadAttemptCount = uploadAttemptCount ?? 0
-        self.lastUploadAttempt = lastUploadAttempt
+        self.latestCloudModificationDate = latestCloudModificationDate
         self.thumbnail = thumbnail
         self.flightPlanFlights = flightPlanFlights
+        self.latestLocalModificationDate = latestLocalModificationDate
+        self.synchroError = synchroError
+
+        self.pgyProjectId = pgyProjectId ?? 0
+        self.uploadAttemptCount = uploadAttemptCount ?? 0
+        self.lastUploadAttempt = lastUploadAttempt
+        self.recoveryResourceId = dataSetting?.recoveryResourceId
     }
 
     /// Update the polygon points for the current flight plan.
@@ -189,7 +191,7 @@ public struct FlightPlanModel {
 }
 
 extension FlightPlanModel {
-    public enum FlightPlanState: String, CaseIterable {
+    public enum FlightPlanState: String, CaseIterable, CustomStringConvertible {
 
         /// Flight Plan States Enum.
         case editable, stopped, flying, completed, uploading, processing, processed, unknown
@@ -197,6 +199,27 @@ extension FlightPlanModel {
         public init?(rawString: String?) {
             guard let rawValue = rawString else { return nil }
             self.init(rawValue: rawValue)
+        }
+
+        public var description: String {
+            switch self {
+            case .editable:
+                return ".editable"
+            case .stopped:
+                return ".stopped"
+            case .flying:
+                return ".flying"
+            case .completed:
+                return ".completed"
+            case .uploading:
+                return ".uploading"
+            case .processing:
+                return ".processing"
+            case .processed:
+                return ".processed"
+            case .unknown:
+                return ".unknown"
+            }
         }
     }
 
@@ -207,19 +230,8 @@ extension FlightPlanModel {
     /// - Returns: fomatted execution date or dash if formatting failed.
     public func fomattedDate(isShort: Bool) -> String {
         let fomattedDate = isShort ?
-            self.flightPlanFlights?.first?.dateExecutionFlight.shortFormattedString :
-            self.flightPlanFlights?.first?.dateExecutionFlight.shortWithTimeFormattedString
-        return fomattedDate ?? Style.dash
-    }
-
-    /// Returns fomatted execution date.
-    ///
-    /// - Parameters:
-    ///     - isShort: result string should be short
-    /// - Returns: fomatted execution date or dash if formatting failed.
-    func fomattedExecutionDate(isShort: Bool) -> String {
-        // TODO start date ?? 
-        let fomattedDate = isShort ? self.lastUpdate.shortFormattedString : self.lastUpdate.shortWithTimeFormattedString
+            self.flightPlanFlights?.first?.dateExecutionFlight.shortFormattedString(timeStyle: .short) :
+            self.flightPlanFlights?.first?.dateExecutionFlight.shortWithTimeFormattedString(timeStyle: .short)
         return fomattedDate ?? Style.dash
     }
 
@@ -232,13 +244,6 @@ extension FlightPlanModel {
 
 // MARK: - `FlightPlanModel` helpers
 extension FlightPlanModel {
-    var shouldRequestThumbnail: Bool {
-        return true
-    }
-
-    var shouldRequestPlacemark: Bool {
-        return true
-    }
 
     var points: [CLLocationCoordinate2D] {
         dataSetting?.wayPoints.compactMap({ $0.coordinate }) ?? []
@@ -262,9 +267,39 @@ extension FlightPlanModel {
         return lastMissionItemExecuted >= lastWayPointIndex
     }
 
-    var percentCompleted: Double {
-        guard let commands = dataSetting?.mavlinkCommands else { return 0 }
-        return Double(lastMissionItemExecuted) / Double(commands.count) * 100
+    /// Returns last passed waypoint index.
+    var lastPassedWayPointIndex: Int? {
+        // Ensure we can access Mavlink commands
+        guard let commands = dataSetting?.mavlinkCommands else { return nil }
+        // Check if the first Way Point reached
+        guard hasReachedFirstWayPoint else { return nil }
+        // Calculate the number of NavigateToWaypointCommand commands executed until the lastMissionItemExecuted
+        return commands
+            .prefix(Int(lastMissionItemExecuted) + 1)
+            .filter { $0 is MavlinkStandard.NavigateToWaypointCommand }
+            .count - 1
+    }
+
+    public var percentCompleted: Double {
+        // Get the last drone location for the FP run.
+        // This location is updated by the `FlightPlanRunManager`during the flight.
+        guard let droneLocation = dataSetting?.lastDroneLocation else {
+            // Handle the backward compatibility.
+            // Calculate an estimated progress with the number of executed Mavlink commands.
+            if let commands = dataSetting?.mavlinkCommands,
+               !commands.isEmpty {
+                return Double(lastMissionItemExecuted) / Double(commands.count) * 100
+            }
+            return 0
+        }
+
+        // Ensure a `lastPassedWayPointIndex` exists
+        guard let lastPassedWayPointIndex = lastPassedWayPointIndex else { return 0 }
+
+        // Calculate the progress
+        let progress = dataSetting?.completionProgress(with: droneLocation.agsPoint,
+                                                       lastWayPointIndex: lastPassedWayPointIndex) ?? 0
+        return progress.rounded(toPlaces: Constants.progressRoundPrecision) * 100.0
     }
 
     var lastFlightExecutionDate: Date? {

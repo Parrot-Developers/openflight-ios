@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -89,6 +88,6 @@ struct DroneSettingModel {
     var forceDisabling = false
     var onSelect: ((SettingMode) -> Void )?
     var selectedIndex: Int {
-        return self.allValues.firstIndex(where: {$0.key == self.currentValue?.key}) ?? -1
+        return allValues.firstIndex(where: {$0.key == currentValue?.key}) ?? -1
     }
 }

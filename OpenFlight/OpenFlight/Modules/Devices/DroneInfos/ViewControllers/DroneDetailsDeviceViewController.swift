@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,8 +34,6 @@ import Combine
 final class DroneDetailsDeviceViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var componentsStatusView: DroneComponentsStatusView!
-    @IBOutlet private weak var modelLabel: UILabel!
-    @IBOutlet private weak var nameLabel: UILabel!
     @IBOutlet private weak var nbSatelliteLabel: UILabel!
     @IBOutlet private weak var batteryLabel: UILabel!
     @IBOutlet private weak var gpsImageView: UIImageView!
@@ -60,16 +57,11 @@ final class DroneDetailsDeviceViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         bindToViewModel()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -79,7 +71,6 @@ final class DroneDetailsDeviceViewController: UIViewController {
 
 // MARK: - Private Funcs
 private extension DroneDetailsDeviceViewController {
-
     /// Binds the UI element to their counterpart in the view model
     ///
     /// If a value is updated in the view model the UI will be updated too automaticaly
@@ -87,10 +78,9 @@ private extension DroneDetailsDeviceViewController {
         bindBattery()
         bindGpsStrength()
         bindDroneName()
-        bindDroneModelName()
         bindCellularStrength()
-        bindGimbalStatus()
-        bindFrontStereoGimbalStatus()
+        bindGimbalErrorImage()
+        bindFrontStereoGimbalErrorImage()
         bindStereoVisionStatus()
         bindCopterMotorsErrors()
         bindConnectionState()
@@ -122,17 +112,10 @@ private extension DroneDetailsDeviceViewController {
     func bindDroneName() {
         droneInfoViewModel.$droneName
             .sink { [unowned self] name in
-                nameLabel.text = name
-                nameLabel.isHidden = name.isEmpty
-            }
-            .store(in: &cancellables)
-    }
-
-    /// Binds the drone's model name from the view model to the modelLabel
-    func bindDroneModelName() {
-        droneInfoViewModel.$droneModelName
-            .sink { [unowned self] modelName in
-                modelLabel.text = modelName ?? L10n.droneDetailsDroneInfo
+                if let parent = self.parent as? DroneDetailsViewController {
+                    parent.nameLabel.text = name
+                    parent.nameLabel.isHidden = name.isEmpty
+                }
             }
             .store(in: &cancellables)
     }
@@ -141,26 +124,25 @@ private extension DroneDetailsDeviceViewController {
     func bindCellularStrength() {
         droneInfoViewModel.$cellularStrength
             .sink { [unowned self] cellularStrength in
-                let isCellularActive = droneInfoViewModel.currentLink == .cellular
-                networkImageView.image = cellularStrength.signalIcon(isLinkActive: isCellularActive)
+                networkImageView.image = cellularStrength.signalIcon
             }
             .store(in: &cancellables)
     }
 
-    /// Binds the gimbal status from the view model to the componentStatusView model
-    func bindGimbalStatus() {
-        droneInfoViewModel.$gimbalStatus
-            .sink { [unowned self] status in
-                componentsStatusView.model.droneGimbalStatus = status
+    /// Binds the gimbal error image from the view model to the componentStatusView model
+    func bindGimbalErrorImage() {
+        droneInfoViewModel.$gimbalErrorImage
+            .sink { [unowned self] errorImage in
+                componentsStatusView.model.gimbalErrorImage = errorImage
             }
             .store(in: &cancellables)
     }
 
-    /// Binds the front stereo gimbal status from the view model to the componentStatusView model
-    func bindFrontStereoGimbalStatus() {
-        droneInfoViewModel.$frontStereoGimbalStatus
-            .sink { [unowned self] frontStereoGimbalStatus in
-                componentsStatusView.model.frontStereoGimbalStatus = frontStereoGimbalStatus
+    /// Binds the front stereo gimbal error image from the view model to the componentStatusView model
+    func bindFrontStereoGimbalErrorImage() {
+        droneInfoViewModel.$frontStereoGimbalErrorImage
+            .sink { [unowned self] errorImage in
+                componentsStatusView.model.frontStereoGimbalErrorImage = errorImage
             }
             .store(in: &cancellables)
     }

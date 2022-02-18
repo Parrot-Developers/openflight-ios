@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -42,16 +41,8 @@ final class GallerySourceCollectionViewCell: UICollectionViewCell, NibReusable {
         }
     }
     @IBOutlet fileprivate weak var iconImageView: UIImageView!
-    @IBOutlet fileprivate weak var titleLabel: UILabel! {
-        didSet {
-            titleLabel.adjustsFontSizeToFitWidth = true
-        }
-    }
-    @IBOutlet fileprivate weak var storageLabel: UILabel! {
-        didSet {
-            storageLabel.adjustsFontSizeToFitWidth = true
-        }
-    }
+    @IBOutlet fileprivate weak var titleLabel: UILabel!
+    @IBOutlet fileprivate weak var storageLabel: UILabel!
     @IBOutlet fileprivate weak var circleProgressView: CircleProgressView!
 
     // MARK: - Private Properties
@@ -96,13 +87,8 @@ internal extension GallerySourceCollectionViewCell {
         let isStorageWarningLimitReached: Bool = storageRatio > Constants.warningStorageLimit
         let isStorageCriticalLimitReached: Bool = storageRatio > Constants.criticalStorageLimit
         // Setup labels display.
-        if isCompact {
-            titleLabel.makeUp(and: .defaultTextColor)
-            storageLabel.makeUp(and: .defaultTextColor)
-        } else {
-            titleLabel.makeUp(with: .large, and: .defaultTextColor)
-            storageLabel.makeUp(and: .defaultTextColor)
-        }
+        titleLabel.font = FontStyle.big.font(isRegularSizeClass)
+        storageLabel.font = FontStyle.current.font(isRegularSizeClass)
         titleLabel.textAlignment = isCompact ? .center : .left
         storageLabel.textAlignment = isCompact ? .center : .left
 

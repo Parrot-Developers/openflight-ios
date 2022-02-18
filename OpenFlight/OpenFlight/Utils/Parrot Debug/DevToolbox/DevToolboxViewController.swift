@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,7 +36,6 @@ import Combine
 class DevToolboxViewController: UITableViewController {
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
-    private let groundSdk = GroundSdk()
     private var drone: Drone?
     private var devToolboxRef: Ref<DevToolbox>?
     private var dataSource: [DebugSetting] = []

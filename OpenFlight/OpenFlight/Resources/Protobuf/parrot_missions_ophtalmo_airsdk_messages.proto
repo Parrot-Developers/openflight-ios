@@ -48,6 +48,7 @@ message State {
     CalibrationStatus calibration_status = 1;
     CalibrationStep calibration_step = 2;
     uint32 completion_percent = 3;
+    Config config = 4;
 };
 
 // Union of all possible commands of this package.

@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -40,10 +40,9 @@ extension NSMutableAttributedString {
     ///    - level: battery level
     convenience init(withBatteryLevel level: Int?) {
         self.init()
-        append(NSAttributedString(string: level?.description ?? Style.doubledash,
-                                  attributes: [NSAttributedString.Key.font: ParrotFontStyle.regular.font]))
-        append(NSAttributedString(string: "%",
-                                  attributes: [NSAttributedString.Key.font: ParrotFontStyle.tiny.font]))
+
+        append(NSAttributedString(string: level?.description ?? Style.doubledash))
+        append(NSAttributedString(string: "%"))
     }
 
     /// Convenience init: creates an attributed string for given available space.

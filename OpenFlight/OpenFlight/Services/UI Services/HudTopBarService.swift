@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,44 +32,45 @@ import Combine
 
 public protocol HudTopBarService: AnyObject {
 
-    func forbidTopBarDisplay(hiderIdentifier: String)
-    func allowTopBarDisplay(hiderIdentifier: String)
+    func forbidTopBarDisplay()
+    func allowTopBarDisplay()
 
     var showTopBarPublisher: AnyPublisher<Bool, Never> { get }
+
+    var isBackButtonDisplayed: Bool { get }
+    var isBackButtonDisplayedPublisher: AnyPublisher<Bool, Never> { get }
+
 }
 
 open class HudTopBarServiceImpl {
 
-    private var cancellables = Set<AnyCancellable>()
+    private let status = CurrentValueSubject<Bool, Never>(true)
+    private let navigationStackService: NavigationStackService
 
-    private let hiders = CurrentValueSubject<Set<String>, Never>(Set())
-
-    init(uiComponentsDisplayReporter: UIComponentsDisplayReporter) {
-        let modalPresentationHiderIdentifier = "ModalPresentationHiderId"
-        uiComponentsDisplayReporter.isModalPresentedPublisher
-            .sink { [unowned self] in
-                if $0 {
-                    forbidTopBarDisplay(hiderIdentifier: modalPresentationHiderIdentifier)
-                } else {
-                    allowTopBarDisplay(hiderIdentifier: modalPresentationHiderIdentifier)
-                }
-            }
-            .store(in: &cancellables)
+    init(navigationStackService: NavigationStackService) {
+        self.navigationStackService = navigationStackService
     }
 
 }
 
 extension HudTopBarServiceImpl: HudTopBarService {
 
-    public func forbidTopBarDisplay(hiderIdentifier: String) {
-        hiders.value.insert(hiderIdentifier)
+    public func forbidTopBarDisplay() {
+        status.value = false
     }
 
-    public func allowTopBarDisplay(hiderIdentifier: String) {
-        hiders.value.remove(hiderIdentifier)
+    public func allowTopBarDisplay() {
+        status.value = true
     }
 
     public var showTopBarPublisher: AnyPublisher<Bool, Never> {
-        hiders.map { $0.isEmpty }.eraseToAnyPublisher()
+        status.eraseToAnyPublisher()
+    }
+
+    public var isBackButtonDisplayed: Bool { navigationStackService.startedToNavigate }
+
+    public var isBackButtonDisplayedPublisher: AnyPublisher<Bool, Never> {
+        navigationStackService.startedToNavigatePublisher
+            .eraseToAnyPublisher()
     }
 }

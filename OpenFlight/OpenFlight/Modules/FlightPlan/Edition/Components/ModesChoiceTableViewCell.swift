@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -42,7 +41,7 @@ protocol ModesChoiceTableViewCellDelegate: AnyObject {
 
 /// Cell which manage flight plan modes.
 
-final class ModesChoiceTableViewCell: UITableViewCell, NibReusable {
+final class ModesChoiceTableViewCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var modesStackView: UIStackView!
     @IBOutlet private weak var modeLabel: UILabel!
@@ -82,8 +81,8 @@ private extension ModesChoiceTableViewCell {
     /// Inits the view.
     func initView() {
         backgroundColor = .clear
-        modeLabel.makeUp(and: .defaultTextColor)
-        titleLabel.makeUp(with: .small, and: .defaultTextColor)
+        modeLabel.makeUp(and: .highlightColor)
+        titleLabel.makeUp(with: .small, and: .disabledTextColor)
         titleLabel.text = L10n.commonMode.uppercased()
         modesBackgroundView.layer.cornerRadius = Style.largeCornerRadius
     }
@@ -108,6 +107,7 @@ private extension ModesChoiceTableViewCell {
                                     borderColor: borderColor,
                                     radius: Style.largeCornerRadius,
                                     borderWidth: Style.mediumBorderWidth)
+            view.addShadow()
             let colorText = isSelected ? ColorName.white.color : ColorName.defaultTextColor.color
             view.tintColor = colorText
         }

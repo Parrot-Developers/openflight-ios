@@ -1,6 +1,4 @@
-//
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,12 +30,31 @@
 
 import Foundation
 
+/// Model for flight details action cell.
 struct FlightDetailsActionCellModel {
     enum Action: Int, CaseIterable {
         case share
         case delete
     }
 
+    /// Button title.
     let buttonTitle: String
+
+    /// Button action.
     let action: Action
+
+    /// Button style, depending on button action.
+    private var buttonStyle: ActionButtonStyle {
+        switch action {
+        case .share:
+            return .default2
+        case .delete:
+            return .destructive
+        }
+    }
+
+    /// Model for action button.
+    var buttonModel: ActionButtonModel {
+        ActionButtonModel(title: buttonTitle, fontStyle: .current, style: buttonStyle)
+    }
 }

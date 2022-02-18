@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -58,17 +57,12 @@ final class RemoteDetailsDeviceViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         observeViewModel()
         observeUserDeviceViewModel()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -113,13 +107,9 @@ private extension RemoteDetailsDeviceViewController {
     /// - Parameters:
     ///     - name: current remote name
     func nameChanged(_ name: String?) {
-        if let strongName = name, !strongName.isEmpty {
-            nameLabel.text = strongName
-            nameLabel.isHidden = false
-            modelLabel.text = viewModel?.remoteModel
-        } else {
-            nameLabel.isHidden = true
-            modelLabel.text = L10n.remoteDetailsControllerInfos
+        if let parent = self.parent as? RemoteDetailsViewController {
+            parent.nameLabel.text = name
+            parent.nameLabel.isHidden = name?.isEmpty ?? true
         }
     }
 

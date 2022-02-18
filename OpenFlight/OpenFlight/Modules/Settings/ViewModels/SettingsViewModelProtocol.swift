@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -46,7 +45,7 @@ protocol SettingsViewModelProtocol: BaseViewModel<DeviceConnectionState> {
 extension SettingsViewModelProtocol {
     /// Helper to update state with default value.
     func notifyChange() {
-        self.state.valueChanged?(self.state.value)
+        state.valueChanged?(state.value)
     }
 
     /// Save settings entries.

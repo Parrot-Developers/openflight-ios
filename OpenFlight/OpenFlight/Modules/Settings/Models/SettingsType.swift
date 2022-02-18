@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -63,7 +63,7 @@ extension SettingsType {
             section = SettingsSection(title: L10n.settingsCategoryControls,
                                       icon: UIImage()) // no image requied
         case .behaviour:
-            section = SettingsSection(title: L10n.settingsAdvancedCategoryBehaviour,
+            section = SettingsSection(title: L10n.commonPresets,
                                       icon: Asset.Settings.iconSettingsBehaviour.image.withRenderingMode(.alwaysTemplate))
         case .geofence:
             section = SettingsSection(title: L10n.settingsAdvancedCategoryGeofence,
@@ -76,7 +76,7 @@ extension SettingsType {
                                       icon: Asset.Settings.iconSettingsCamera.image.withRenderingMode(.alwaysTemplate))
         case .network:
             section = SettingsSection(title: L10n.settingsAdvancedCategoryConnection,
-                                      icon: Asset.Common.Icons.icWifi.image.withRenderingMode(.alwaysTemplate))
+                                      icon: Asset.Settings.iconSettingsNetwork.image.withRenderingMode(.alwaysTemplate))
         case .quick:
             section = SettingsSection(title: L10n.settingsCategoryQuick,
                                       icon: UIImage()) // no image requied

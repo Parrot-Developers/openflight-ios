@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,30 +30,29 @@
 import Foundation
 import CoreLocation
 import MapKit
+import SdkCore
 
-class FlightPlanThumbnailRequester {
+private extension ULogTag {
+    static let tag = ULogTag(name: "FPThumbnailRequester")
+}
 
-    func requestPlacemark(flightPlan: FlightPlanModel, completion: @escaping (CLPlacemark?) -> Void) {
-        guard
-            flightPlan.shouldRequestPlacemark,
-            let location = flightPlan.dataSetting?.coordinate
-            else {
-                return
-        }
-        let center = CLLocation(latitude: location.latitude, longitude: location.longitude)
-        CLGeocoder().reverseGeocodeLocation(center) { (placemarks: [CLPlacemark]?, error: Error?) in
-            guard let place = placemarks?.first,
-                  error == nil else { completion(nil) ; return }
-            completion(place)
-        }
-    }
+enum FlightPlanThumbnailRequesterConstants {
+    static let coordinateSpan: CLLocationDegrees = 0.005
+    static let lineWidth: CGFloat = 5.0
+    static let thumbnailMarginRatio: Double = 0.2
+    static let thumbnailSize: CGSize = CGSize(width: 180.0, height: 160.0)
+}
 
-    func requestThumbnail(flightPlan: FlightPlanModel,
-                          thumbnailSize: CGSize? = nil,
-                          completion: @escaping (UIImage?) -> Void) {
-        guard flightPlan.shouldRequestThumbnail,
-              let center = flightPlan.dataSetting?.coordinate
-            else {
+public class FlightPlanThumbnailRequester {
+
+    public init() {}
+
+    public func requestThumbnail(flightPlan: FlightPlanModel,
+                                 thumbnailSize: CGSize? = nil,
+                                 completion: @escaping (UIImage?) -> Void) {
+        guard let center = flightPlan.dataSetting?.coordinate else {
+                ULog.d(.tag, "Clearing thumbnail of flightPlan '\(flightPlan.uuid)'. No coordinate available.")
+                completion(nil) // clear thumbnail
                 return
         }
         var polyline: MKPolyline?
@@ -62,35 +60,37 @@ class FlightPlanThumbnailRequester {
         let mapSnapshotterOptions = MKMapSnapshotter.Options()
         if flightPlan.points.isEmpty {
             let region = MKCoordinateRegion(center: center,
-                                            span: MKCoordinateSpan(latitudeDelta: FlightViewModelConstants.coordinateSpan,
-                                                                   longitudeDelta: FlightViewModelConstants.coordinateSpan))
+                                            span: MKCoordinateSpan(latitudeDelta: FlightPlanThumbnailRequesterConstants.coordinateSpan,
+                                                                   longitudeDelta: FlightPlanThumbnailRequesterConstants.coordinateSpan))
             mapSnapshotterOptions.region = region
         } else {
             let poly = MKPolyline(coordinates: flightPlan.points, count: flightPlan.points.count)
             polyline = poly
             var mapRect = poly.boundingMapRect
-            let xOffset = mapRect.width * FlightViewModelConstants.thumbnailMarginRatio
-            let yOffset = mapRect.height * FlightViewModelConstants.thumbnailMarginRatio
+            let xOffset = mapRect.width * FlightPlanThumbnailRequesterConstants.thumbnailMarginRatio
+            let yOffset = mapRect.height * FlightPlanThumbnailRequesterConstants.thumbnailMarginRatio
             mapRect = mapRect.insetBy(dx: -xOffset, dy: -yOffset)
             // Do not set x offet to add bottom margin to the screenshot.
             mapRect = mapRect.offsetBy(dx: 0.0, dy: yOffset)
             mapSnapshotterOptions.mapRect = mapRect
         }
         mapSnapshotterOptions.mapType = .satellite
-        mapSnapshotterOptions.size = thumbnailSize ?? FlightViewModelConstants.thumbnailSize
+        mapSnapshotterOptions.size = thumbnailSize ?? FlightPlanThumbnailRequesterConstants.thumbnailSize
 
         let snapShotter = MKMapSnapshotter(options: mapSnapshotterOptions)
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .userInteractive).async {
             snapShotter.start { (snapshot: MKMapSnapshotter.Snapshot?, _) in
+                guard let snapshot = snapshot else { return completion(nil) }
+                let image: UIImage
                 if let polyline = polyline {
-                    completion(
-                        snapshot?.drawPolyline(polyline,
-                                               color: ColorName.blueDodger.color,
-                                               lineWidth: FlightViewModelConstants.lineWidth)
-                        )
+                    image = snapshot.drawPolyline(polyline,
+                                                  color: ColorName.blueDodger.color,
+                                                  lineWidth: FlightPlanThumbnailRequesterConstants.lineWidth)
                 } else {
-                    completion(snapshot?.image)
+                    image = snapshot.image
                 }
+                ULog.d(.tag, "Generated thumbnail of flightPlan '\(flightPlan.uuid)'")
+                completion(image)
             }
         }
     }

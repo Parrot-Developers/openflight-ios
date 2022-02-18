@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,6 +32,7 @@ import Foundation
 public struct User {
 
     // MARK: - Properties
+    public static let anonymousId: String = "ANONYMOUS"
 
     /// Default values.
     public enum DefaultValues {
@@ -45,6 +46,7 @@ public struct User {
         static let freemiumProjectCounterDefault = 3
     }
 
+    public var academyId: String?
     public var firstName: String?
     public var lastName: String?
     public var birthday: String?
@@ -52,31 +54,35 @@ public struct User {
     public var email: String
     public var apcId: String
     public var apcToken: String?
+    public var avatar: String?
     public var tmpApcUser: Bool
     public var userInfoChanged: Bool
     public var syncWithCloud: Bool
     public var agreementChanged: Bool
-    public var newsletterOption: Bool
-    public var shareDataOption: Bool
+    public var isSynchronizeFlightDataExtended: Bool
     public var freemiumProjectCounter: Int16
+    public var pilotNumber: String?
 
     // MARK: - Public init
 
-    public init(firstName: String?,
+    public init(academyId: String?,
+                firstName: String?,
                 lastName: String?,
                 birthday: String?,
                 lang: String?,
                 email: String,
                 apcId: String,
                 apcToken: String?,
+                avatar: String?,
+                pilotNumber: String?,
                 tmpApcUser: Bool?,
                 userInfoChanged: Bool?,
                 syncWithCloud: Bool?,
                 agreementChanged: Bool?,
-                newsletterOption: Bool?,
-                shareDataOption: Bool?,
+                isSynchronizeFlightDataExtended: Bool?,
                 freemiumProjectCounter: Int?) {
 
+        self.academyId = academyId
         self.firstName = firstName
         self.lastName = lastName
         self.birthday = birthday
@@ -84,12 +90,32 @@ public struct User {
         self.email = email
         self.apcId = apcId
         self.apcToken = apcToken
+        self.avatar = avatar
+        self.pilotNumber = pilotNumber
         self.tmpApcUser = tmpApcUser ?? DefaultValues.tempApcUserDefault
         self.userInfoChanged = userInfoChanged ?? DefaultValues.userInfoChangedDefault
         self.syncWithCloud = syncWithCloud ?? DefaultValues.syncWithCloudDefault
         self.agreementChanged = agreementChanged ?? DefaultValues.agreementChangedDefault
-        self.newsletterOption = newsletterOption ?? DefaultValues.newsletterOptionDefault
-        self.shareDataOption = shareDataOption ?? DefaultValues.shareDataOptionDefault
+        self.isSynchronizeFlightDataExtended = isSynchronizeFlightDataExtended ?? DefaultValues.shareDataOptionDefault
         self.freemiumProjectCounter = Int16(freemiumProjectCounter ?? DefaultValues.freemiumProjectCounterDefault)
+    }
+
+    public static func createAnonymous(withToken: String?) -> User {
+        return User(academyId: nil,
+                    firstName: nil,
+                    lastName: nil,
+                    birthday: nil,
+                    lang: nil,
+                    email: anonymousId,
+                    apcId: anonymousId,
+                    apcToken: withToken,
+                    avatar: nil,
+                    pilotNumber: nil,
+                    tmpApcUser: true,
+                    userInfoChanged: nil,
+                    syncWithCloud: true,
+                    agreementChanged: nil,
+                    isSynchronizeFlightDataExtended: true,
+                    freemiumProjectCounter: nil)
     }
 }

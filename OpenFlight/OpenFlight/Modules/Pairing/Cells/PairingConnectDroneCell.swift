@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,7 +40,7 @@ protocol PairingConnectDroneCellDelegate: AnyObject {
 }
 
 /// Custom cell used to show a drone in the discovered drones list.
-final class PairingConnectDroneCell: UITableViewCell, NibReusable {
+final class PairingConnectDroneCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var droneView: UIView!
     @IBOutlet private weak var nameLabel: UILabel!
@@ -95,11 +94,13 @@ final class PairingConnectDroneCell: UITableViewCell, NibReusable {
 
         let textColor = droneModel.isDroneConnected ? .white : ColorName.defaultTextColor.color
         forgetButton.isHidden = !droneModel.isKnown
-        cellularAvailableImageView.isHidden = !droneModel.isDronePaired
-        cellularAvailableImageView.tintColor = textColor
         nameLabel.text = droneModel.droneName
         nameLabel.textColor = textColor
-        wifiImageView.image = droneModel.rssiImage
+        cellularAvailableImageView.isHidden = !droneModel.cellularImageVisible
+        cellularAvailableImageView.image = droneModel.cellularImage
+        cellularAvailableImageView.tintColor = textColor
+        wifiImageView.isHidden = !droneModel.wifiImageVisible
+        wifiImageView.image = droneModel.wifiSignalQualityImage
         wifiImageView.tintColor = textColor
         droneView.cornerRadiusedWith(backgroundColor: droneModel.isDroneConnected ? ColorName.highlightColor.color : .white,
                                      borderColor: .clear,
@@ -119,7 +120,7 @@ private extension PairingConnectDroneCell {
 private extension PairingConnectDroneCell {
     /// Inits view.
     func initView() {
-        droneView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
+        droneView.addShadow()
         forgetButton.setTitle(L10n.commonForget, for: .normal)
     }
 

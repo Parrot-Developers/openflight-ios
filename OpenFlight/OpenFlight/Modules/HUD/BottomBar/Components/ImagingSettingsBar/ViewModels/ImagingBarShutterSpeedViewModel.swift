@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -74,7 +73,7 @@ final class ImagingBarShutterSpeedViewModel: AutomatableBarButtonViewModel<Autom
 
     override func listenDrone(drone: Drone) {
         if !drone.isConnected {
-            let copy = self.state.value.copy()
+            let copy = state.value.copy()
             // If drone is not connected, last used shutter speed value
             // should be displayed (dashed string if none).
             if let shutterSpeedKey = Defaults.lastShutterSpeedValue {
@@ -83,7 +82,7 @@ final class ImagingBarShutterSpeedViewModel: AutomatableBarButtonViewModel<Autom
             } else {
                 copy.title = L10n.unitSecond.dashPrefixed
             }
-            self.state.set(copy)
+            state.set(copy)
         }
         listenState(drone: drone)
         listenExposureValues(drone: drone)
@@ -109,11 +108,19 @@ final class ImagingBarShutterSpeedViewModel: AutomatableBarButtonViewModel<Autom
             return
         }
 
-        let currentEditor = camera.currentEditor
-        currentEditor[Camera2Params.exposureMode]?.value = exposureMode.automaticShutterSpeed ?
-            exposureMode.toManualShutterSpeed() :
-            exposureMode.toAutomaticShutterSpeed()
-        currentEditor.saveSettings(currentConfig: camera.config)
+        let editor = camera.currentEditor
+        if exposureMode.automaticShutterSpeed {
+            // switch to manual shutter speed mode
+            editor[Camera2Params.exposureMode]?.value = exposureMode.toManualShutterSpeed()
+            if let exposureIndicator = camera.getComponent(Camera2Components.exposureIndicator) {
+                // apply current shutter speed to manual shutter speed setting
+                editor[Camera2Params.shutterSpeed]?.value = exposureIndicator.shutterSpeed
+            }
+        } else {
+            // switch to automatic shutter speed
+            editor[Camera2Params.exposureMode]?.value = exposureMode.toAutomaticShutterSpeed()
+        }
+        editor.saveSettings(currentConfig: camera.config)
     }
 
     override func copy() -> ImagingBarShutterSpeedViewModel {
@@ -125,14 +132,14 @@ final class ImagingBarShutterSpeedViewModel: AutomatableBarButtonViewModel<Autom
 private extension ImagingBarShutterSpeedViewModel {
     /// Starts watcher for drone state.
     func listenState(drone: Drone) {
-        droneStateRef = drone.getState { [weak self] state in
-            guard let state = state else {
+        droneStateRef = drone.getState { [unowned self] droneState in
+            guard let droneState = droneState else {
                 return
             }
 
-            if state.connectionState == .disconnected {
+            if droneState.connectionState == .disconnected {
                 // Autoclose if needed.
-                self?.state.value.isSelected.set(false)
+                state.value.isSelected.set(false)
             }
         }
     }
@@ -141,11 +148,11 @@ private extension ImagingBarShutterSpeedViewModel {
     func listenExposureValues(drone: Drone) {
         exposureIndicatorRef = drone.currentCamera?
             .getComponent(Camera2Components.exposureIndicator,
-                          observer: { [weak self] exposureIndicator in
-                            guard let copy = self?.state.value.copy() else { return }
-                            copy.mode = exposureIndicator?.shutterSpeed
-                            self?.state.set(copy)
-        })
+                          observer: { [unowned self] exposureIndicator in
+                let copy = state.value.copy()
+                copy.mode = exposureIndicator?.shutterSpeed
+                state.set(copy)
+            })
     }
 
     /// Starts watcher for camera.

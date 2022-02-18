@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,8 +38,6 @@ enum HUDTopBannerHomeState {
     case none
     /// RTH position has just been set. Transient state.
     case homePositionSet
-    /// Precise home has just been set. Transient state.
-    case preciseHomeSet
     /// Precise RTH in progress.
     case preciseRthInProgress
     /// Precise landing in progress.
@@ -51,8 +48,6 @@ enum HUDTopBannerHomeState {
         switch self {
         case .none:
             return nil
-        case .preciseHomeSet:
-            return L10n.preciseHome
         case .homePositionSet:
             return L10n.rthPositionSet
         case .preciseRthInProgress:
@@ -63,82 +58,32 @@ enum HUDTopBannerHomeState {
     }
 }
 
-/// State for `HUDTopBannerViewModel`.
-
-final class HUDTopBannerState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    /// Boolean for HDR state.
-    fileprivate(set) var hdrOn: Bool = false
-    /// Lock AE mode.
-    fileprivate(set) var lockAeMode: ExposureLockState = .unavailable
-    /// State for home info.
-    fileprivate(set) var homeState: HUDTopBannerHomeState = .none
-    /// Boolean describing if an alert is currently shown.
-    fileprivate(set) var isDisplayingAlert = false
-    /// Boolean describing if we should display lockAE.
-    fileprivate(set) var shouldDisplayAutoExposureLock = false
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - connectionState: drone connection state
-    ///    - hdrOn: boolean for HDR state
-    ///    - lockAeMode: lock AE mode
-    ///    - homeState: state for home info
-    ///    - isDisplayingAlert: whether an alert is currently shown
-    ///    - shouldDisplayLockAE: whether we should display lockAE
-    init(connectionState: DeviceState.ConnectionState,
-         hdrOn: Bool,
-         lockAeMode: ExposureLockState,
-         homeState: HUDTopBannerHomeState,
-         isDisplayingAlert: Bool,
-         shouldDisplayLockAE: Bool) {
-        super.init(connectionState: connectionState)
-        self.hdrOn = hdrOn
-        self.lockAeMode = lockAeMode
-        self.homeState = homeState
-        self.isDisplayingAlert = isDisplayingAlert
-        self.shouldDisplayAutoExposureLock = shouldDisplayLockAE
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? HUDTopBannerState else {
-            return false
-        }
-        return super.isEqual(to: other)
-            && self.hdrOn == other.hdrOn
-            && self.lockAeMode == other.lockAeMode
-            && self.homeState == other.homeState
-            && self.isDisplayingAlert == other.isDisplayingAlert
-            && self.shouldDisplayAutoExposureLock == other.shouldDisplayAutoExposureLock
-    }
-
-    override func copy() -> HUDTopBannerState {
-        return HUDTopBannerState(connectionState: self.connectionState,
-                                 hdrOn: self.hdrOn,
-                                 lockAeMode: self.lockAeMode,
-                                 homeState: self.homeState,
-                                 isDisplayingAlert: self.isDisplayingAlert,
-                                 shouldDisplayLockAE: self.shouldDisplayAutoExposureLock)
-    }
-}
-
 /// View model for HUD's top banner.
 
-final class HUDTopBannerViewModel: DroneStateViewModel<HUDTopBannerState> {
+final class HUDTopBannerViewModel {
+
+    /// Boolean for HDR state.
+    @Published private(set) var hdrOn: Bool = false
+    /// Lock AE mode.
+    @Published private(set) var lockAeMode: ExposureLockState = .unavailable
+    /// State for home info.
+    @Published private(set) var homeState: HUDTopBannerHomeState = .none
+    /// Boolean describing if an alert is currently shown.
+    @Published private(set) var isDisplayingAlert = false
+    /// Boolean describing if we should display lockAE.
+    @Published private(set) var shouldDisplayAutoExposureLock = false
+    /// Connection state of the drone
+    @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
+    /// Boolean describing if the drone is landed
+    @Published private(set) var isLanded: Bool = true
+
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
+    private var droneStateRef: Ref<DeviceState>?
     private var preciseHomeRef: Ref<PreciseHome>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
     private let alertBannerViewModel = HUDAlertBannerViewModel()
-    private var lastPreciseHomeState: PreciseHomeState?
     private var shouldShowHomeSetInfo: Bool = true
     private var isAutoModeActive: Bool = false
     private let autoModeViewModel: ImagingBarAutoModeViewModel
@@ -146,57 +91,69 @@ final class HUDTopBannerViewModel: DroneStateViewModel<HUDTopBannerState> {
     private var cancellables = Set<AnyCancellable>()
     /// Camera exposure lock service.
     private unowned var exposureLockService: ExposureLockService
+    private unowned var currentDroneHolder: CurrentDroneHolder
 
-    // MARK: - Override Funcs
-    override init() {
+    init() {
         // TODO injection
         exposureLockService = Services.hub.drone.exposureLockService
         autoModeViewModel = ImagingBarAutoModeViewModel(exposureLockService: exposureLockService)
-
-        super.init()
-
+        currentDroneHolder = Services.hub.currentDroneHolder
         listenAlertBannerViewModel()
+
+        currentDroneHolder.dronePublisher
+            .sink { [unowned self] drone in
+                if drone.isStateFlying {
+                    shouldShowHomeSetInfo = false
+                }
+                listenAutoModeViewModel(drone: drone)
+                listenCamera(drone: drone)
+                listenPreciseHome(drone: drone)
+                listenFlyingIndicators(drone: drone)
+                listenReturnHome(drone: drone)
+                listenExposureLock(drone: drone)
+                listenConnectionState(drone: drone)
+            }
+            .store(in: &cancellables)
     }
 
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-        // Avoid notifying on home set if drone is already flying.
-        if drone.isStateFlying {
-            shouldShowHomeSetInfo = false
-        }
-        listenAutoModeViewModel()
-        listenCamera(drone: drone)
-        listenPreciseHome(drone: drone)
-        listenFlyingIndicators(drone: drone)
-        listenReturnHome(drone: drone)
-        listenExposureLock()
+    /// Updates the top banner home state
+    /// - Parameter state: Top banner home state
+    func updateHomeState(with state: HUDTopBannerHomeState) {
+        homeState = state
     }
 }
 
 // MARK: - Private Funcs
 private extension HUDTopBannerViewModel {
 
+    /// Starts watcher for connection state
+    func listenConnectionState(drone: Drone) {
+        droneStateRef = drone.getState { [unowned self] deviceState in
+            connectionState = deviceState?.connectionState ?? .disconnected
+        }
+    }
+
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
         cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] _ in
-            updateState()
+            updateState(drone: drone)
         }
     }
 
     /// Starts watcher for exposure lock.
-    func listenExposureLock() {
+    func listenExposureLock(drone: Drone) {
         exposureLockService.statePublisher.sink { [unowned self] _ in
-            updateState()
+            updateState(drone: drone)
         }
         .store(in: &cancellables)
     }
 
     /// Starts watcher for autoModeViewModel.
-    func listenAutoModeViewModel() {
+    func listenAutoModeViewModel(drone: Drone) {
         autoModeViewModel.$autoExposure
             .sink { [unowned self] autoExposure in
                 isAutoModeActive = autoExposure
-                updateState()
+                updateState(drone: drone)
             }
             .store(in: &cancellables)
     }
@@ -204,7 +161,7 @@ private extension HUDTopBannerViewModel {
     /// Starts watcher for precise home.
     func listenPreciseHome(drone: Drone) {
         preciseHomeRef = drone.getPeripheral(Peripherals.preciseHome) { [weak self] _ in
-            self?.updateHomeStates()
+            self?.updateHomeStates(drone: drone)
         }
     }
 
@@ -214,15 +171,19 @@ private extension HUDTopBannerViewModel {
             if flyingIndicators?.state == .landed {
                 // Reset home info on land.
                 self?.shouldShowHomeSetInfo = true
+                self?.isLanded = true
+            } else {
+                self?.isLanded = false
             }
-            self?.updateHomeStates()
+
+            self?.updateHomeStates(drone: drone)
         }
     }
 
     /// Starts watcher for return home.
     func listenReturnHome(drone: Drone) {
         returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] _ in
-            self?.updateHomeStates()
+            self?.updateHomeStates(drone: drone)
         }
     }
 
@@ -239,93 +200,57 @@ private extension HUDTopBannerViewModel {
     /// - Parameters:
     ///    - alertBannerState: current alert banner state
     func updateAlertDisplay(_ alertBannerState: HUDAlertBannerState) {
-        let copy = self.state.value.copy()
-        copy.isDisplayingAlert = alertBannerState.alert != nil
-        self.state.set(copy)
+        isDisplayingAlert = alertBannerState.alert != nil
     }
 
     /// Updates auto mode state.
-    func updateState() {
-        guard let camera = drone?.getPeripheral(Peripherals.mainCamera2) else {
+    func updateState(drone: Drone) {
+        guard let camera = drone.getPeripheral(Peripherals.mainCamera2) else {
             return
         }
 
-        let copy = state.value.copy()
-        copy.hdrOn = camera.isHdrOn == true
-        copy.lockAeMode = exposureLockService.stateValue
-        copy.shouldDisplayAutoExposureLock = copy.lockAeMode.locked
+        hdrOn = camera.isHdrOn == true
+        lockAeMode = exposureLockService.stateValue
+        shouldDisplayAutoExposureLock = lockAeMode.locked
             && camera.isHdrOn == false
             && isAutoModeActive == true
-        state.set(copy)
     }
 
     /// Updates state for home.
-    func updateHomeStates() {
-        checkPreciseHomeState()
-        checkHomePositionSet()
-        checkPreciseRthOrLanding()
-    }
-
-    /// Checks for precise home.
-    func checkPreciseHomeState() {
-        guard let drone = drone,
-              let preciseHome = drone.getPeripheral(Peripherals.preciseHome) else {
-            return
-        }
-
-        if preciseHome.state == .available
-            && lastPreciseHomeState == .unavailable
-            && drone.isStateFlying {
-            shouldShowHomeSetInfo = false
-            let copy = state.value.copy()
-            copy.homeState = .preciseHomeSet
-            state.set(copy)
-            DispatchQueue.main.async { [weak self] in
-                let copy = self?.state.value.copy()
-                copy?.homeState = .none
-                self?.state.set(copy)
-            }
-        }
-        lastPreciseHomeState = preciseHome.state
+    func updateHomeStates(drone: Drone) {
+        checkHomePositionSet(drone: drone)
+        checkPreciseRthOrLanding(drone: drone)
     }
 
     /// Checks for home position set.
-    func checkHomePositionSet() {
+    func checkHomePositionSet(drone: Drone) {
         guard shouldShowHomeSetInfo,
-              let drone = drone,
-              drone.getPeripheral(Peripherals.preciseHome)?.state == .unavailable,
               drone.getInstrument(Instruments.gps)?.fixed == true,
               drone.getInstrument(Instruments.flyingIndicators)?.flyingState.isFlyingOrWaiting == true else {
-            return
-        }
+                  return
+              }
 
         shouldShowHomeSetInfo = false
-        let copy = state.value.copy()
-        copy.homeState = .homePositionSet
-        state.set(copy)
-        DispatchQueue.main.async { [weak self] in
-            let copy = self?.state.value.copy()
-            copy?.homeState = .none
-            self?.state.set(copy)
-        }
+        homeState = .homePositionSet
     }
 
     /// Checks for precise RTH or landing in progress.
-    func checkPreciseRthOrLanding() {
-        guard let drone = drone,
-              let returnHome = drone.getPilotingItf(PilotingItfs.returnHome),
+    func checkPreciseRthOrLanding(drone: Drone) {
+        guard let returnHome = drone.getPilotingItf(PilotingItfs.returnHome),
               drone.getPeripheral(Peripherals.preciseHome)?.state == .active,
-              let flyingIndicators = drone.getInstrument(Instruments.flyingIndicators) else { return
-        }
+              let flyingIndicators = drone.getInstrument(Instruments.flyingIndicators) else {
+                  if homeState != .homePositionSet {
+                      homeState = .none
+                  }
+                  return
+              }
 
-        let copy = state.value.copy()
         if returnHome.state == .active {
-            copy.homeState = .preciseRthInProgress
+            homeState = .preciseRthInProgress
         } else if flyingIndicators.flyingState == .landing {
-            copy.homeState = .preciseLandingInProgress
+            homeState = .preciseLandingInProgress
         } else {
-            copy.homeState = .none
+            homeState = .none
         }
-        state.set(copy)
     }
 }

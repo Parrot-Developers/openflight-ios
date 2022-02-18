@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
-    <device id="retina6_1" orientation="landscape" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina4_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -25,76 +25,130 @@
                         <viewControllerLayoutGuide type="bottom" id="zGs-At-gSm"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="Wf3-fd-o0X">
-                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uye-IR-SVa">
-                                <rect key="frame" x="0.0" y="0.0" width="896" height="236"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <connections>
                                     <action selector="backgroundButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="4uM-yK-hhg"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TaX-5s-bHd">
-                                <rect key="frame" x="60" y="236" width="776" height="178"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TaX-5s-bHd" customClass="MainContainerView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="37" y="81.5" width="494" height="238.5"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="TA2-sV-n0q">
-                                        <rect key="frame" x="119" y="20" width="538" height="126"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalCentering" alignment="center" spacing="26" translatesAutoresizingMaskIntoConstraints="NO" id="TA2-sV-n0q">
+                                        <rect key="frame" x="17" y="15" width="460" height="193.5"/>
                                         <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="9Hz-QJ-zLc">
-                                                <rect key="frame" x="0.0" y="0.0" width="538" height="19"/>
-                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
-                                                <color key="textColor" name="default_text_color"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.40000000000000002" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Dm-B6-qHz">
-                                                <rect key="frame" x="0.0" y="39" width="538" height="17"/>
-                                                <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="17"/>
-                                                <color key="textColor" name="default_text_color"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="40" translatesAutoresizingMaskIntoConstraints="NO" id="TnN-l7-kSR">
-                                                <rect key="frame" x="0.0" y="76" width="538" height="50"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="18" translatesAutoresizingMaskIntoConstraints="NO" id="MdF-8h-FIb">
+                                                <rect key="frame" x="209" y="0.0" width="42" height="55.5"/>
                                                 <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="XpA-IC-AVo">
-                                                        <rect key="frame" x="0.0" y="0.0" width="249" height="50"/>
-                                                        <color key="backgroundColor" name="error_color"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="50" id="Pof-uo-2hn"/>
-                                                        </constraints>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                        <state key="normal" title="Button">
-                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        </state>
-                                                        <connections>
-                                                            <action selector="cancelButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="qzr-yK-Hxe"/>
-                                                        </connections>
-                                                    </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="Cgn-cf-gWb">
-                                                        <rect key="frame" x="289" y="0.0" width="249" height="50"/>
-                                                        <color key="backgroundColor" name="highlight_color"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                        <state key="normal" title="Button">
-                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        </state>
-                                                        <connections>
-                                                            <action selector="confirmButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="VkA-sY-4nz"/>
-                                                        </connections>
-                                                    </button>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="9Hz-QJ-zLc">
+                                                        <rect key="frame" x="0.0" y="0.0" width="42" height="20"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
+                                                        <color key="textColor" name="default_text_color"/>
+                                                        <nil key="highlightedColor"/>
+                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="25"/>
+                                                        </variation>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.40000000000000002" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Dm-B6-qHz">
+                                                        <rect key="frame" x="2.5" y="38" width="37" height="17.5"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="15"/>
+                                                        <color key="textColor" name="default_text_color"/>
+                                                        <nil key="highlightedColor"/>
+                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                            <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="19"/>
+                                                        </variation>
+                                                    </label>
                                                 </subviews>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="40" translatesAutoresizingMaskIntoConstraints="NO" id="TnN-l7-kSR" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="81.5" width="460" height="112"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OFt-fZ-mKw">
+                                                        <rect key="frame" x="0.0" y="0.0" width="210" height="112"/>
+                                                        <subviews>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="XpA-IC-AVo" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="31" width="210" height="50"/>
+                                                                <color key="backgroundColor" name="error_color"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="50" id="Pof-uo-2hn"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                                <state key="normal" title="Button">
+                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                </state>
+                                                                <connections>
+                                                                    <action selector="cancelButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="qzr-yK-Hxe"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="trailing" secondItem="XpA-IC-AVo" secondAttribute="trailing" id="7ZS-gu-MOp"/>
+                                                            <constraint firstItem="XpA-IC-AVo" firstAttribute="top" secondItem="OFt-fZ-mKw" secondAttribute="top" priority="750" id="9Re-nD-lh5"/>
+                                                            <constraint firstItem="XpA-IC-AVo" firstAttribute="leading" secondItem="OFt-fZ-mKw" secondAttribute="leading" id="NbG-mP-J8q"/>
+                                                            <constraint firstItem="XpA-IC-AVo" firstAttribute="centerY" secondItem="OFt-fZ-mKw" secondAttribute="centerY" id="ZIM-Nl-HxF"/>
+                                                            <constraint firstAttribute="bottom" secondItem="XpA-IC-AVo" secondAttribute="bottom" priority="750" id="fxA-vr-6FS"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="yAY-Ms-inL" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="250" y="0.0" width="210" height="112"/>
+                                                        <subviews>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="Cgn-cf-gWb" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="210" height="50"/>
+                                                                <color key="backgroundColor" name="highlight_color"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                                <state key="normal" title="Button">
+                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                </state>
+                                                                <connections>
+                                                                    <action selector="confirmButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="VkA-sY-4nz"/>
+                                                                </connections>
+                                                            </button>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="3Fq-Vi-Bl1" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="62" width="210" height="50"/>
+                                                                <color key="backgroundColor" name="highlight_color"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                                <state key="normal" title="Button">
+                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                </state>
+                                                                <connections>
+                                                                    <action selector="secondaryActionButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="x5Z-6R-Rb2"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstItem="XpA-IC-AVo" firstAttribute="height" secondItem="Cgn-cf-gWb" secondAttribute="height" id="5Re-xw-V01"/>
-                                                    <constraint firstItem="XpA-IC-AVo" firstAttribute="width" secondItem="Cgn-cf-gWb" secondAttribute="width" id="DaB-gI-lIO"/>
+                                                    <constraint firstItem="3Fq-Vi-Bl1" firstAttribute="height" secondItem="XpA-IC-AVo" secondAttribute="height" id="gDD-kb-OIO"/>
+                                                    <constraint firstItem="Cgn-cf-gWb" firstAttribute="height" secondItem="XpA-IC-AVo" secondAttribute="height" id="o5A-yy-5dx"/>
                                                 </constraints>
                                             </stackView>
                                         </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="width" priority="750" constant="460" id="I3y-jC-MVD">
+                                                <variation key="heightClass=regular-widthClass=regular" constant="600"/>
+                                            </constraint>
+                                            <constraint firstItem="Cgn-cf-gWb" firstAttribute="width" relation="greaterThanOrEqual" secondItem="TA2-sV-n0q" secondAttribute="width" multiplier="0.5" priority="750" id="LHn-PJ-vdU"/>
+                                            <constraint firstItem="XpA-IC-AVo" firstAttribute="width" relation="greaterThanOrEqual" secondItem="TA2-sV-n0q" secondAttribute="width" multiplier="0.5" priority="750" id="nMM-8u-0pP"/>
+                                        </constraints>
                                     </stackView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aqZ-ZV-H7Z">
-                                        <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="60" id="AgZ-aD-KMq"/>
+                                            <constraint firstAttribute="width" constant="50" id="AgZ-aD-KMq"/>
                                             <constraint firstAttribute="width" secondItem="aqZ-ZV-H7Z" secondAttribute="height" multiplier="1:1" id="O1H-qE-FOV"/>
                                         </constraints>
                                         <color key="tintColor" name="default_text_color"/>
+                                        <inset key="contentEdgeInsets" minX="-1" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                        <inset key="imageEdgeInsets" minX="-10" minY="-10" maxX="0.0" maxY="0.0"/>
                                         <state key="normal" image="icCloseMedium"/>
                                         <connections>
                                             <action selector="closeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="xtk-zo-TWf"/>
@@ -103,24 +157,37 @@
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstAttribute="bottom" secondItem="TA2-sV-n0q" secondAttribute="bottom" constant="32" id="M2H-DU-p98"/>
+                                    <constraint firstItem="TA2-sV-n0q" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="TaX-5s-bHd" secondAttribute="leading" priority="750" constant="10" id="63A-sa-6eL"/>
+                                    <constraint firstAttribute="bottom" secondItem="TA2-sV-n0q" secondAttribute="bottom" constant="30" id="M2H-DU-p98">
+                                        <variation key="heightClass=regular-widthClass=regular" constant="40"/>
+                                    </constraint>
+                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="TA2-sV-n0q" secondAttribute="trailing" priority="750" constant="10" id="MjA-Tc-Ga4"/>
                                     <constraint firstItem="aqZ-ZV-H7Z" firstAttribute="leading" secondItem="TaX-5s-bHd" secondAttribute="leading" id="d6N-Hi-Ooh"/>
                                     <constraint firstItem="TA2-sV-n0q" firstAttribute="centerX" secondItem="TaX-5s-bHd" secondAttribute="centerX" id="lR2-7E-f2f"/>
-                                    <constraint firstItem="TA2-sV-n0q" firstAttribute="top" secondItem="TaX-5s-bHd" secondAttribute="top" constant="20" id="sEK-zV-OSe"/>
+                                    <constraint firstAttribute="width" relation="lessThanOrEqual" priority="999" constant="738" id="pJu-og-aCe"/>
+                                    <constraint firstItem="TA2-sV-n0q" firstAttribute="top" secondItem="TaX-5s-bHd" secondAttribute="top" constant="15" id="sEK-zV-OSe"/>
                                     <constraint firstItem="aqZ-ZV-H7Z" firstAttribute="top" secondItem="TaX-5s-bHd" secondAttribute="top" id="sTR-Dh-1rB"/>
                                 </constraints>
+                                <variation key="heightClass=regular-widthClass=regular">
+                                    <mask key="constraints">
+                                        <exclude reference="pJu-og-aCe"/>
+                                    </mask>
+                                </variation>
                             </view>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="uye-IR-SVa" firstAttribute="top" secondItem="C1A-cC-ySo" secondAttribute="bottom" id="3kF-SU-Djl"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="TaX-5s-bHd" secondAttribute="trailing" id="521-KJ-8hM"/>
-                            <constraint firstItem="TaX-5s-bHd" firstAttribute="top" secondItem="uye-IR-SVa" secondAttribute="bottom" id="DZ2-b0-rbq"/>
+                            <constraint firstAttribute="right" secondItem="TaX-5s-bHd" secondAttribute="right" constant="37" id="521-KJ-8hM">
+                                <variation key="heightClass=regular-widthClass=regular" constant="30"/>
+                            </constraint>
                             <constraint firstAttribute="trailing" secondItem="uye-IR-SVa" secondAttribute="trailing" id="DmY-VZ-yVW"/>
-                            <constraint firstItem="TA2-sV-n0q" firstAttribute="width" secondItem="Wf3-fd-o0X" secondAttribute="width" multiplier="0.6" id="LMZ-Bp-vej"/>
+                            <constraint firstItem="uye-IR-SVa" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="Fum-XS-yAK"/>
                             <constraint firstAttribute="bottom" secondItem="TaX-5s-bHd" secondAttribute="bottom" id="O28-xo-10g"/>
-                            <constraint firstItem="TaX-5s-bHd" firstAttribute="top" relation="greaterThanOrEqual" secondItem="C1A-cC-ySo" secondAttribute="bottom" constant="16" id="Xxy-tH-6pF"/>
-                            <constraint firstItem="TaX-5s-bHd" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leadingMargin" id="pvq-Uz-Nyq"/>
+                            <constraint firstItem="TaX-5s-bHd" firstAttribute="top" relation="greaterThanOrEqual" secondItem="C1A-cC-ySo" secondAttribute="bottom" constant="30" id="Xxy-tH-6pF"/>
+                            <constraint firstAttribute="bottom" secondItem="uye-IR-SVa" secondAttribute="bottom" id="jj9-WM-asJ"/>
+                            <constraint firstItem="TaX-5s-bHd" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" constant="37" id="pvq-Uz-Nyq">
+                                <variation key="heightClass=regular-widthClass=regular" constant="30"/>
+                            </constraint>
                             <constraint firstItem="uye-IR-SVa" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="vuy-4N-1f2"/>
                         </constraints>
                     </view>
@@ -131,20 +198,23 @@
                         <outlet property="bgContentBottomConstraint" destination="O28-xo-10g" id="3Bu-xE-sW7"/>
                         <outlet property="buttonsStackView" destination="TnN-l7-kSR" id="aKJ-cf-1NX"/>
                         <outlet property="cancelButton" destination="XpA-IC-AVo" id="3bt-cW-UDy"/>
+                        <outlet property="cancelView" destination="OFt-fZ-mKw" id="Cvi-w5-beR"/>
                         <outlet property="closeButton" destination="aqZ-ZV-H7Z" id="Pb8-6t-CAK"/>
                         <outlet property="contentStackViewBottomConstraint" destination="M2H-DU-p98" id="kyJ-We-x9N"/>
+                        <outlet property="secondaryActionButton" destination="3Fq-Vi-Bl1" id="fX4-ph-pHX"/>
                         <outlet property="validateButton" destination="Cgn-cf-gWb" id="Ywg-yq-tEy"/>
+                        <outlet property="validateStackView" destination="yAY-Ms-inL" id="6YL-pb-rbX"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-391.75412293853077" y="159.19999999999999"/>
+            <point key="canvasLocation" x="-392.5" y="157.5"/>
         </scene>
     </scenes>
     <resources>
         <image name="icCloseMedium" width="17" height="17"/>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="error_color">
             <color red="0.8901960784313725" green="0.30980392156862746" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,7 +36,6 @@ final class GalleryFormatSDCardChoiceView: UIControl, NibOwnerLoadable {
     @IBOutlet private weak var backgroundView: UIView!
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var primaryLabel: UILabel!
-    @IBOutlet private weak var secondaryLabel: UILabel!
 
     // MARK: - Internal Properties
     var model: GalleryFormatSDCardChoiceModel? {
@@ -77,7 +75,5 @@ private extension GalleryFormatSDCardChoiceView {
         self.imageView.image = model.image
         self.primaryLabel.makeUp(with: .large, and: model.textColor)
         self.primaryLabel.text = model.text
-        self.secondaryLabel.makeUp(with: .small, and: model.subTextColor)
-        self.secondaryLabel.text = model.subText
     }
 }

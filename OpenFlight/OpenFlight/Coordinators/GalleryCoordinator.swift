@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,15 +32,15 @@ public final class GalleryCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
 
     // MARK: - Public Funcs
     public func start() {
         let viewController = GalleryViewController.instantiate(coordinator: self)
         viewController.modalPresentationStyle = .fullScreen
-        self.navigationController = NavigationController(rootViewController: viewController)
-        self.navigationController?.isNavigationBarHidden = true
-        self.navigationController?.modalPresentationStyle = .fullScreen
+        navigationController = NavigationController(rootViewController: viewController)
+        navigationController?.isNavigationBarHidden = true
+        navigationController?.modalPresentationStyle = .fullScreen
     }
 }
 
@@ -49,71 +48,64 @@ public final class GalleryCoordinator: Coordinator {
 extension GalleryCoordinator {
     /// Dismisses gallery.
     func dismissGallery() {
-        self.parentCoordinator?.dismissChildCoordinator()
+        parentCoordinator?.dismissChildCoordinator()
     }
 
-    /// Show media player.
+    /// Shows media player.
     ///
     /// - Parameters:
-    ///     - viewModel: Gallery view model
-    ///     - index: Media index in the gallery media array
+    ///    - viewModel: Gallery view model
+    ///    - index: Media index in the gallery media array
     func showMediaPlayer(viewModel: GalleryMediaViewModel, index: Int) {
         let playerViewController = GalleryMediaPlayerViewController.instantiate(coordinator: self,
                                                                                 viewModel: viewModel,
                                                                                 index: index)
-        self.push(playerViewController)
+        push(playerViewController)
     }
 
-    /// Show sharing screen.
+    /// Shows sharing screen.
     ///
     /// - Parameters:
-    ///     - view: source view
-    ///     - items: items to share
+    ///    - view: source view
+    ///    - items: items to share
     func showSharingScreen(fromView view: UIView, items: [Any]) {
         let activityViewController = UIActivityViewController(activityItems: items, applicationActivities: nil)
-        activityViewController.popoverPresentationController?.sourceView = view
-        self.navigationController?.present(activityViewController, animated: true, completion: {})
+        navigationController?.presentSheet(viewController: activityViewController, sourceView: view)
     }
 
-    /// Show format sd card screen.
+    /// Shows format SD card screen.
     ///
     /// - Parameters:
-    ///     - viewModel: Gallery view model
+    ///    - viewModel: Gallery view model
     func showFormatSDCardScreen(viewModel: GalleryMediaViewModel) {
         let viewController = GalleryFormatSDCardViewController.instantiate(coordinator: self,
                                                                            viewModel: viewModel)
-        self.navigationController?.present(viewController, animated: true, completion: {})
+        navigationController?.present(viewController, animated: true, completion: {})
     }
 
-    /// Dismiss format sd card screen.
+    /// Dismisses format SD card screen.
     ///
     /// - Parameters:
-    ///     - showToast: boolean to determine if we need to show the formatting toast message
-    ///     - duration: display duration
+    ///    - showToast: boolean to determine if we need to show the formatting toast message
+    ///    - duration: display duration
     func dismissFormatSDCardScreen(showToast: Bool = false, duration: Double = Style.longAnimationDuration) {
-        self.dismiss()
+        dismiss()
         if showToast {
-            self.navigationController?.topViewController?.showToast(message: L10n.galleryFormatComplete,
-                                                                    duration: duration)
+            navigationController?.topViewController?.showToast(message: L10n.galleryFormatComplete,
+                                                               duration: duration)
         }
     }
 
-    /// Dismiss panorama generation screen.
+    /// Dismisses panorama generation screen.
     func dismissPanoramaGenerationScreen() {
         navigationController?.dismiss(animated: true)
     }
 
-    /// Show gallery screen.
-    func showGalleryScreen() {
-        let viewController = GalleryViewController.instantiate(coordinator: self)
-        push(viewController)
-    }
-
-    /// Show panorama visualisation screen.
+    /// Shows panorama visualisation screen.
     ///
     /// - Parameters:
-    ///     - viewModel: Gallery view model
-    ///     - url: panorama url
+    ///    - viewModel: Gallery view model
+    ///    - url: panorama url
     func showPanoramaVisualisationScreen(viewModel: GalleryMediaViewModel, url: URL) {
         let viewController = GalleryPanoramaViewController.instantiate(coordinator: self,
                                                                        viewModel: viewModel,
@@ -124,15 +116,15 @@ extension GalleryCoordinator {
     /// Show panorama generation screen.
     ///
     /// - Parameters:
-    ///     - viewModel: Gallery view model
-    ///     - index: Media index in the gallery media array
+    ///    - viewModel: Gallery view model
+    ///    - index: Media index in the gallery media array
     func showPanoramaGenerationScreen(viewModel: GalleryPanoramaViewModel, index: Int) {
         let viewController = GalleryPanoramaGenerationViewController.instantiate(viewModel: viewModel,
                                                                                  index: index)
         presentModal(viewController: viewController)
     }
 
-    /// Dismiss panorama visualisation screen.
+    /// Dismisses panorama visualisation screen.
     func dismissPanoramaVisualisationScreen() {
         back()
     }

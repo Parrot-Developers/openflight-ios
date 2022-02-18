@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -57,16 +56,11 @@ final class RemoteDetailsButtonsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        initView()
         initViewModel()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -77,9 +71,7 @@ final class RemoteDetailsButtonsViewController: UIViewController {
 // MARK: - Actions
 private extension RemoteDetailsButtonsViewController {
     @IBAction func droneButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyRemoteInfosButton.remoteConnectToDrone.name,
-                             newValue: nil,
-                             logType: .button)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyRemoteInfosButton.remoteConnectToDrone.name))
         coordinator?.startDronesList()
     }
 
@@ -103,16 +95,6 @@ private extension RemoteDetailsButtonsViewController {
 
 // MARK: - Private Funcs
 private extension RemoteDetailsButtonsViewController {
-    /// Inits the view.
-    func initView() {
-        currentDroneButtonView.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
-        currentDroneButtonView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
-        calibrationButtonView.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
-        calibrationButtonView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
-        softwareVersionButtonView.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
-        softwareVersionButtonView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
-    }
-
     /// Inits the view model.
     func initViewModel() {
 
@@ -147,8 +129,8 @@ private extension RemoteDetailsButtonsViewController {
     ///     - state: remote details buttons state
     func updateSoftwareView(state: RemoteDetailsButtonsState) {
         softwareVersionButtonView.model = state.softwareModel
-        softwareVersionButtonView.isEnabled = state.needUpdate
-            && (state.needDownload || state.remoteControlConnectionState?.isConnected() == true)
+        let isConnected = state.remoteControlConnectionState?.isConnected() == true
+        softwareVersionButtonView.isEnabled = (state.updateState.isAvailable && isConnected) || state.needDownload
     }
 
     /// Updates calibration view.

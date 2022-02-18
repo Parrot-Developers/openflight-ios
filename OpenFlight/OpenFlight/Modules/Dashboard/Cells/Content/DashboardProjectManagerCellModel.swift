@@ -1,6 +1,4 @@
-//
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -78,18 +76,20 @@ public class DashboardProjectManagerCellModel {
 
     // MARK: - Private funcs
     private func listenProjectsPublisher() {
-        manager.projectsPublisher
-            .sink { [unowned self] projects in
-                summarySubject.value = projectsSummary(for: projects)
-            }
-            .store(in: &cancellable)
+        manager.projectsDidChangePublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.summarySubject.value = self.projectsSummary(for: self.manager.loadAllProjects())
+        }.store(in: &cancellable)
 
     }
 
     private func listenDataSynchronization() {
         cloudSynchroWatcher?.isSynchronizingDataPublisher
-            .sink { [unowned self] isSynch in
-                isSynchronizingSubject.value = isSynch
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isSynch in
+                self?.isSynchronizingSubject.value = isSynch
             }
             .store(in: &cancellable)
     }

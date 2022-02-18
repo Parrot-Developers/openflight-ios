@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,9 +34,24 @@ import AVFoundation
 
 /// Utility class to manage Assets.
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "AssetUtils")
+}
+
+private extension DefaultsKeys {
+    var mediaResourcesInfo: DefaultsKey<Data?> { .init("key_assetUtilsMediaResourcesInfo") }
+}
+
 final class AssetUtils {
     // MARK: - Internal Properties
     static let shared = AssetUtils()
+
+    /// A struct used to associate some media information with its local URL.
+    struct MediaItemResourceInfo: Codable {
+        var mediaId: String
+        var customId: String?
+        var isPanorama: Bool = false
+    }
 
     // MARK: - Private Properties
     private let mediasDatesSyncronizeQueue = DispatchQueue(label: "mediasDatesSyncronizeQueue")
@@ -54,6 +68,21 @@ final class AssetUtils {
             }
         }
     }
+    // Medias UIDs local list. Allows to sync medias UIDs and resources URLs.
+    private let mediaResourcesInfoSyncronizeQueue = DispatchQueue(label: "mediaResourcesInfoSyncronizeQueue")
+    private var mediaResourcesInfoValues: [String: MediaItemResourceInfo] = [:]
+    private var mediaResourcesInfo: [String: MediaItemResourceInfo] {
+        get {
+            mediaResourcesInfoSyncronizeQueue.sync {
+                mediaResourcesInfoValues
+            }
+        }
+        set(newValue) {
+            mediaResourcesInfoSyncronizeQueue.sync {
+                mediaResourcesInfoValues = newValue
+            }
+        }
+    }
     private var localMediaCounts: [String: [String: UInt64]] = [:]
 
     // MARK: - Internal Enums
@@ -65,6 +94,7 @@ final class AssetUtils {
     // MARK: - Init
     private init() {
         loadMediasDates()
+        loadMediaResourcesInfo()
     }
 }
 
@@ -123,6 +153,72 @@ extension AssetUtils {
         saveLocalMediaCounts()
     }
 
+    /// Adds a media info dictionary entry to local list.
+    ///
+    /// - Parameters:
+    ///    - info: The media information to associate with the local URL (if specified).
+    ///    - media: The full media item to associate with the local URL (if specified, ignored if `info` is not nil).
+    ///    - url: URL of the media resource.
+    func addMediaInfoToLocalList(_ info: MediaItemResourceInfo? = nil, media: MediaItem? = nil, url: URL?) {
+        guard let mediaRelativeUrl = url?.mediaRelativeUrl else { return }
+
+        guard let media = media else {
+            // Default case, no `media` item provided.
+            mediaResourcesInfo[mediaRelativeUrl] = info
+            saveMediaResourcesInfo()
+            return
+        }
+
+        // No `info` provided.
+        // => Gather corresponding resource from `media.resources` array and build its `MediaItemResourceInfo` dictionary value.
+        guard let resId = url?.lastPathComponent,
+              let resource = media.resources.first(where: { $0.uid == resId }) else {
+            return
+        }
+        let mediaInfo = AssetUtils.MediaItemResourceInfo(mediaId: media.uid,
+                                                         customId: media.customId,
+                                                         isPanorama: resource.type == .panorama)
+        mediaResourcesInfo[mediaRelativeUrl] = mediaInfo
+        saveMediaResourcesInfo()
+    }
+
+    /// Removes a media info dictionary entry from local list.
+    ///
+    /// - Parameters:
+    ///    - url: URL of the media resource.
+    func removeMediaInfoFromLocalList(url: URL) {
+        guard let mediaRelativeUrl = url.mediaRelativeUrl else { return }
+
+        mediaResourcesInfo.removeValue(forKey: mediaRelativeUrl)
+        saveMediaResourcesInfo()
+    }
+
+    /// Updates the URL key of a media info dictionary entry.
+    ///
+    /// - Parameters:
+    ///    - srcUrl: Source URL of the media resource.
+    ///    - dstUrl: Destination URL of the media resource.
+    func updateMediaInfoUrlInLocalList(srcUrl: URL, dstUrl: URL) {
+        guard let srcMediaRelativeUrl = srcUrl.mediaRelativeUrl,
+              let info = mediaResourcesInfo[srcMediaRelativeUrl] else {
+            return
+        }
+
+        addMediaInfoToLocalList(info, url: dstUrl)
+        removeMediaInfoFromLocalList(url: srcUrl)
+    }
+
+    /// Returns the local panorama resource URL of a specified media if stored locally.
+    ///
+    /// - Parameters:
+    ///    - uid: Media UID containing the resource to look for.
+    /// - Returns: The local URL of the corresponding panorama resource (if any).
+    func panoramaResourceUrlForMediaId(_ uid: String?) -> URL? {
+        guard var relativeUrlString = mediaResourcesInfo.filter({ $0.value.mediaId == uid && $0.value.isPanorama }).first?.key else { return nil }
+        relativeUrlString.removeFirst() // Remove first '/' character from .mediaRelativeUrl string.
+        return MediaUtils.imgGalleryDirectoryUrl?.appendingPathComponent(relativeUrlString)
+    }
+
     /// Returns all images on smartphone.
     func allLocalImages() -> [GalleryMedia] {
         let directoryName = Paths.mediasDirectory
@@ -156,41 +252,36 @@ extension AssetUtils {
         guard let directoryContents = contentOfDirectory(withName: directoryName) else { return [] }
         var medias: [GalleryMedia] = []
         for content in directoryContents {
-            if content.hasDirectoryPath {
-                if let mediaUrls = try? FileManager.default.contentsOfDirectory(at: content.appendingPathComponent(mediaType.stringValue),
-                                                                                includingPropertiesForKeys: nil,
-                                                                                options: []) {
-                    var mediaDictionary: [String: [URL]] = [:]
-                    let finalMediaUrls = mediaUrls.filter { mediaUrl -> Bool in
-                        switch mediaType {
-                        case .video:
-                            return mediaUrl.pathExtension == MediaItem.Format.mp4.description.uppercased()
-                        default:
-                            return (
-                                mediaUrl.pathExtension == MediaItem.Format.jpg.description.uppercased()
-                                    || mediaUrl.pathExtension == MediaItem.Format.dng.description.uppercased()
-                            )
-                        }
-                    }
-                    for url in finalMediaUrls {
-                        let imgOrigin = String(url.lastPathComponent.prefix(Constants.prefixLength))
-                        if mediaDictionary[imgOrigin] == nil {
-                            mediaDictionary[imgOrigin] = [url]
-                        } else {
-                            mediaDictionary[imgOrigin]?.append(url)
-                        }
-                    }
-                    for entry in mediaDictionary {
-                        guard let galleryMedia = galleryMediaForUrls(urls: entry.value, mediaType: mediaType) else { return medias }
-                        medias.append(galleryMedia)
-                    }
+            guard let mediaUrls = try? FileManager.default.contentsOfDirectory(at: content.appendingPathComponent(mediaType.stringValue),
+                                                                            includingPropertiesForKeys: nil,
+                                                                            options: []) else {
+                continue
+            }
+            let finalMediaUrls = mediaUrls.filter { mediaUrl -> Bool in
+                switch mediaType {
+                case .video:
+                    return mediaUrl.pathExtension == MediaItem.Format.mp4.description.uppercased()
+                default:
+                    return (
+                        mediaUrl.pathExtension == MediaItem.Format.jpg.description.uppercased()
+                        || mediaUrl.pathExtension == MediaItem.Format.dng.description.uppercased()
+                    )
                 }
-            } else {
-                guard let galleryMedia = galleryMediaForUrls(urls: [content], mediaType: mediaType) else { return medias }
+            }
+            var mediaDictionary: [String: [URL]] = [:]
+            for url in finalMediaUrls {
+                let imgOrigin = mediaUidFromUrl(url, urls: finalMediaUrls)
+                if mediaDictionary[imgOrigin] == nil {
+                    mediaDictionary[imgOrigin] = [url]
+                } else {
+                    mediaDictionary[imgOrigin]?.append(url)
+                }
+            }
+            for urls in mediaDictionary.values {
+                guard let galleryMedia = galleryMediaForUrls(urls: urls, mediaType: mediaType) else { continue }
                 medias.append(galleryMedia)
             }
         }
-
         return medias
     }
 
@@ -223,11 +314,34 @@ extension AssetUtils {
             for url in urls {
                 do {
                     try FileManager.default.removeItem(at: url)
+                    // Remove entry from local list if deletion is successful.
+                    removeMediaInfoFromLocalList(url: url)
                 } catch let error as NSError {
-                    print("Error: \(error), \(error.userInfo)")
+                    ULog.e(.tag, "Error: \(error), \(error.userInfo)")
                     success = false
                 }
             }
+        }
+        return success
+    }
+
+    /// Deletes a resource from a media.
+    ///
+    /// - Parameters:
+    ///    - index: Index of the resource to delete.
+    ///    - media: Media containing the resource to delete.
+    /// - Returns: `true` if deletion is successful, `false` otherwise.
+    func removeResourceAt(_ index: Int, of media: GalleryMedia) -> Bool {
+        var success = true
+        guard let urls = media.urls,
+              index < urls.count else { return false }
+        do {
+            try FileManager.default.removeItem(at: urls[index])
+            // Remove entry from local list if deletion is successful.
+            removeMediaInfoFromLocalList(url: urls[index])
+        } catch let error as NSError {
+            ULog.e(.tag, "Error: \(error), \(error.userInfo)")
+            success = false
         }
         return success
     }
@@ -312,6 +426,85 @@ private extension AssetUtils {
         return metadataDateFormatter.date(from: exifDict?[kCGImagePropertyExifDateTimeOriginal] as? String ?? "") ?? Date()
     }
 
+    /// Loads medias resources info from Defaults.
+    func loadMediaResourcesInfo() {
+        guard let data = Defaults[\.mediaResourcesInfo],
+              let info = try? JSONDecoder().decode([String: MediaItemResourceInfo].self, from: data) else {
+            return
+        }
+        mediaResourcesInfo = info
+    }
+
+    /// Saves medias resources info to Defaults.
+    func saveMediaResourcesInfo() {
+        Defaults.mediaResourcesInfo = try? JSONEncoder().encode(mediaResourcesInfo)
+    }
+
+    /// Returns the UID of the media containing the resource stored at a specified URL.
+    ///
+    /// - Parameters:
+    ///     - url: The URL of the resource.
+    ///     - urls: The URLs array containing the URL of the resource (used for legacy corner case only).
+    /// - Returns: The UID of the media containing the resource if found.
+    func mediaUidFromUrl(_ url: URL, urls: [URL]) -> String {
+        guard let mediaRelativeUrl = url.mediaRelativeUrl,
+              let uid = mediaResourcesInfo[mediaRelativeUrl]?.mediaId else {
+            return legacyMediaUidFromUrl(url, urls: urls)
+        }
+        return uid
+    }
+
+    /// Indicates whether a panorama resource is locally stored at a specified URL.
+    ///
+    /// - Parameters:
+    ///    - url: The URL of the resource.
+    /// - Returns: `true` if the corresponding resource is a panorama, `false` otherwise.
+    func isPanoramaResourceFromUrl(_ url: URL) -> Bool {
+        guard let mediaRelativeUrl = url.mediaRelativeUrl else { return false }
+        return mediaResourcesInfo[mediaRelativeUrl]?.isPanorama ?? false
+    }
+
+    /// Returns the UID of the media containing the resource stored at a specified URL in legacy cases.
+    /// Backward compatibility purpose only:
+    /// This function is called if the URL is not found in local `mediasUids` dictionary (media was downloaded before new implementation).
+    /// Calls the UID rebuild function (`rebuiltMediaUidFromUrl(URL)`) on specified URL.
+    /// If rebuild fails, same process is performed on sibling URL (first similar URL found in urls array).
+    /// This is needed for legacy panorama URLs that does not contain all needed information.
+    /// If no sibling is found, falls back to legacy method (url.prefix).
+    ///
+    /// - Parameters:
+    ///     - url: The URL of the resource.
+    ///     - urls: The URLs array containing the URL of the resource.
+    /// - Returns: The UID of the media containing the resource if successfully rebuilt, `Constants.prefixLength` first characters otherwise.
+    func legacyMediaUidFromUrl(_ url: URL, urls: [URL]) -> String {
+        guard let rebuiltUid = rebuiltMediaUidFromUrl(url) else {
+            guard let siblingUrl = urls.first(where: { $0.prefix == url.prefix && $0 != url }) else {
+                return url.prefix
+            }
+            return rebuiltMediaUidFromUrl(siblingUrl) ?? url.prefix
+        }
+
+        return rebuiltUid
+    }
+
+    /// Returns the UID of the media containing the resource stored at a specified URL in legacy cases.
+    /// Backward compatibility purpose only: This function tries to rebuild the UID by extracting needed information from URL.
+    ///
+    /// - Parameters:
+    ///     - url: The URL of the resource.
+    ///     - urls: The URLs array containing the URL of the resource.
+    /// - Returns: The UID of the media containing the resource if successfully rebuilt, `nil` otherwise.
+    func rebuiltMediaUidFromUrl(_ url: URL) -> String? {
+        let components = url.deletingPathExtension().lastPathComponent.split(separator: "_")
+
+        guard components.count > 2,
+              let mediaIdInfo = components.first,
+              let sourceInfo = components.last else {
+            return nil
+        }
+        return mediaIdInfo + "_" + sourceInfo
+    }
+
     /// Returns a gallery media object for specified urls.
     ///
     /// - Parameters:
@@ -319,7 +512,7 @@ private extension AssetUtils {
     ///     - mediaType : type of the media
     /// - Returns: gallery media object
     func galleryMediaForUrls(urls: [URL], mediaType: GalleryMediaType) -> GalleryMedia? {
-        let sortedUrls = urls.sorted(by: { $0.absoluteString < $1.absoluteString })
+        var sortedUrls = urls.sorted(by: { $0.absoluteString < $1.absoluteString })
         guard let mainMediaUrl = sortedUrls.first else { return nil }
         var mediaDate = Date()
         var mediaSize: UInt64 = 0
@@ -335,12 +528,23 @@ private extension AssetUtils {
                 mediaSize += dict.fileSize()
             }
         } catch let error {
-            print(error.localizedDescription)
+            ULog.e(.tag, error.localizedDescription)
         }
 
-        let galleryMedia = GalleryMedia(uid: String(mainMediaUrl.prefix),
+        var mediaItems: [MediaItem]?
+        if let panoResourceIndex = sortedUrls.firstIndex(where: { isPanoramaResourceFromUrl($0) }) {
+            // A panorama resource is locally stored for current mediaItem.
+            // => Need to create a mock panorama item in order to be able to correctly display resources
+            // in gallery.
+            mediaItems = [mockPanoMediaItem()]
+            let panoUrl = sortedUrls[panoResourceIndex]
+            sortedUrls.remove(at: panoResourceIndex)
+            sortedUrls.insert(panoUrl, at: 0)
+        }
+
+        let galleryMedia = GalleryMedia(uid: mediaUidFromUrl(mainMediaUrl, urls: urls),
                                         source: .mobileDevice,
-                                        mediaItems: nil,
+                                        mediaItems: mediaItems,
                                         type: mediaType,
                                         downloadState: .downloaded,
                                         size: mediaSize,
@@ -348,5 +552,37 @@ private extension AssetUtils {
                                         url: mainMediaUrl,
                                         urls: sortedUrls)
         return galleryMedia
+    }
+}
+
+private extension AssetUtils {
+    /// Creates a mock media item containing only 1 panorama resource.
+    /// Useful for local gallery medias. Fullscreen gallery needs indeed to be aware of the type of the displayed resources
+    /// in order to know whether a panorama needs to be displayed/generated. However local medias are directly handled
+    /// via their URLs only => if a panorama has been uploaded to the drone's memory, then the .pano type information is
+    /// lost as upload process creates its own resource UID (without any pano information in its name). Therefore a mock
+    /// pano resource is used for specific panorama cases (only used for resource.type check, no change for regular cases).
+    ///
+    /// - Returns: The mock media item with 1 mock panorama resource.
+    func mockPanoMediaItem() -> MediaItem {
+        let mockPanoResource = MediaItemResourceCore(uid: "",
+                                                     type: .panorama,
+                                                     format: .jpg,
+                                                     size: 0,
+                                                     streamUrl: nil,
+                                                     location: nil,
+                                                     creationDate: Date(),
+                                                     storage: nil)
+        return MediaItemCore(uid: "",
+                             name: "",
+                             type: .photo,
+                             runUid: "",
+                             customId: nil,
+                             customTitle: "",
+                             creationDate: Date(),
+                             expectedCount: nil,
+                             photoMode: .single,
+                             panoramaType: nil,
+                             resources: [mockPanoResource])
     }
 }

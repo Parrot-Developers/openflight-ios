@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,7 +36,7 @@ final class DroneDetailsInformationsViewController: UIViewController {
     @IBOutlet private weak var hardwareVersionContainerView: DeviceInformationsView!
     @IBOutlet private weak var firmwareVersionContainerView: DeviceInformationsView!
     @IBOutlet private weak var imeiContainerView: DeviceInformationsView!
-    @IBOutlet private weak var resetButton: UIButton!
+    @IBOutlet private weak var resetButton: ActionButton!
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
@@ -63,10 +62,6 @@ final class DroneDetailsInformationsViewController: UIViewController {
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
     }
@@ -83,9 +78,7 @@ private extension DroneDetailsInformationsViewController {
     @IBAction func resetButtonTouchedUpInside(_ sender: Any) {
         let validateAction = AlertAction(title: L10n.remoteDetailsReset, actionHandler: { [weak self] in
             self?.viewModel.resetDrone()
-            LogEvent.logAppEvent(itemName: LogEvent.LogKeyDroneDetailsInformationsButton.resetDroneInformations,
-                                 newValue: nil,
-                                 logType: .button)
+            LogEvent.log(.simpleButton(LogEvent.LogKeyDroneDetailsInformationsButton.resetDroneInformations))
         })
 
         self.showAlert(title: L10n.droneDetailsResetTitle,
@@ -98,9 +91,7 @@ private extension DroneDetailsInformationsViewController {
 private extension DroneDetailsInformationsViewController {
     /// Sets up the view.
     func setupView() {
-        resetButton.cornerRadiusedWith(backgroundColor: UIColor(named: .whiteAlbescent),
-                                           radius: Style.largeCornerRadius)
-        resetButton.setTitle(L10n.commonReset, for: .normal)
+        resetButton.setup(title: L10n.commonReset, style: .default2)
     }
 
     /// Sets up view model.

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,15 +40,6 @@ extension CGFloat {
     /// Converts current value in radians to degrees.
     var toDegrees: CGFloat {
         return self * 180 / CGFloat.pi
-    }
-
-    /// Rounds down the CGFloat to nearest value.
-    ///
-    /// - Parameters:
-    ///    - nearest: provided nearest value
-    func floor(nearest: CGFloat) -> CGFloat {
-        let intDiv = CGFloat(Int(self / nearest))
-        return intDiv * nearest
     }
 
     /// Rounds the CGFloat to decimal places value.

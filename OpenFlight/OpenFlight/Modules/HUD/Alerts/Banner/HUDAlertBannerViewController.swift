@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -90,6 +89,7 @@ private extension HUDAlertBannerViewController {
         imageView.isHidden = alert.icon == nil
         imageView.tintColor = alert.level.iconColor
         backgroundView.backgroundColor = alert.level.color
+        mainLabel.textColor = alert.level.textColor
         backgroundView.isHidden = false
         if state.shouldVibrate {
             vibrateNow(withSecondVibration: alert.level == .critical)

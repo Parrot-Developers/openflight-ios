@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,7 +37,7 @@ public final class PairingCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
 
     // MARK: - Private Properties
     private weak var delegate: PairingCoordinatorDelegate?
@@ -55,16 +54,9 @@ public final class PairingCoordinator: Coordinator {
     public func start() {
         let viewController = PairingViewController.instantiate(coordinator: self)
         viewController.modalPresentationStyle = .fullScreen
-        self.navigationController = NavigationController(rootViewController: viewController)
-        self.navigationController?.isNavigationBarHidden = true
-        self.navigationController?.modalPresentationStyle = .fullScreen
-    }
-
-    /// Alternative way to start the coordinator from onboarding.
-    public func startFromOnboarding() {
-        self.duringOnboarding = true
-        let viewController = PairingViewController.instantiate(coordinator: self)
-        self.push(viewController)
+        navigationController = NavigationController(rootViewController: viewController)
+        navigationController?.isNavigationBarHidden = true
+        navigationController?.modalPresentationStyle = .fullScreen
     }
 }
 
@@ -87,8 +79,10 @@ extension PairingCoordinator {
 
     /// Starts drones list.
     func startRemoteConnectDrone() {
-        let viewController = PairingConnectDroneViewController.instantiate(coordinator: self)
-        self.push(viewController)
+        let viewModel = PairingConnectDroneViewModel()
+        let viewController = PairingConnectDroneViewController.instantiate(coordinator: self,
+                                                                           viewModel: viewModel)
+        push(viewController)
     }
 
     /// Starts remote not recognized screen.
@@ -117,7 +111,9 @@ extension PairingCoordinator {
     /// - Parameters:
     ///    - droneModel: selected drone model
     func startRemoteConnectDroneDetail(droneModel: RemoteConnectDroneModel) {
-        let viewController = PairingConnectDroneDetailViewController.instantiate(coordinator: self, droneModel: droneModel)
-        self.push(viewController)
+        let viewModel = PairingConnectDroneDetailViewModel(droneModel: droneModel)
+        let viewController = PairingConnectDroneDetailViewController.instantiate(coordinator: self,
+                                                                                 viewModel: viewModel)
+        push(viewController)
     }
 }

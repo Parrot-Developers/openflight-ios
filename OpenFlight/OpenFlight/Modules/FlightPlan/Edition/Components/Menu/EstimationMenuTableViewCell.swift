@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,7 +31,7 @@ import UIKit
 import Reusable
 
 /// Settings menu table view cell.
-final class EstimationMenuTableViewCell: UITableViewCell, NibReusable {
+final class EstimationMenuTableViewCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet weak var estimationView: FlightPlanPanelEstimationView!
 

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -78,7 +77,7 @@ extension GalleryDeviceMediaViewModel: GalleryVideoCompatible {
         return videoPlayer.rate != 0 && videoPlayer.error == nil
     }
 
-    func videoUpdatePosition(position: TimeInterval) -> Bool {
+    @discardableResult func videoUpdatePosition(position: TimeInterval) -> Bool {
         guard let videoPlayer = videoPlayer,
             let asset = videoPlayer.currentItem?.asset
             else {

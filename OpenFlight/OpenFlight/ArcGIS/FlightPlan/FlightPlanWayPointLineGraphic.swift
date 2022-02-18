@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,9 +37,9 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
         return polyline?.middlePoint
     }
     /// Origin waypoint.
-    private(set) weak var originWayPoint: WayPoint?
+    private(set) var originWayPoint: WayPoint?
     /// Destination waypoint.
-    private(set) weak var destinationWayPoint: WayPoint?
+    private(set) var destinationWayPoint: WayPoint?
 
     // MARK: - Private Properties
     private var lineSymbol: AGSSimpleLineSymbol? {
@@ -62,7 +61,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     // MARK: - Private Enums
     private enum Constants {
         static let defaultColor: UIColor = ColorName.blueDodger.color
-        static let selectedColor: UIColor = ColorName.greenSpring.color
+        static let selectedColor: UIColor = ColorName.highlightColor.color
         static let touchAreaColor: UIColor = .clear
         static let lineWidth: CGFloat = 2.0
         static let lineWidthTouchArea: CGFloat = 20.0

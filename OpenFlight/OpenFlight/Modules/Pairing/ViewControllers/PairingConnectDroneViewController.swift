@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,9 +28,9 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// View controller which manage drones wifi connection.
-
 final class PairingConnectDroneViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
@@ -40,7 +39,8 @@ final class PairingConnectDroneViewController: UIViewController {
 
     // MARK: - Private Properties
     private weak var coordinator: PairingCoordinator?
-    private let viewModel = PairingConnectDroneViewModel()
+    private var viewModel: PairingConnectDroneViewModel!
+    private var cancellables = Set<AnyCancellable>()
     private var items: [RemoteConnectDroneModel]?
     private var failedToConnect: Bool = false
     private var isConnecting: Bool = false
@@ -48,17 +48,22 @@ final class PairingConnectDroneViewController: UIViewController {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let smallCellHeight: CGFloat = 70.0
-        static let highCellHeight: CGFloat = 90.0
-        static let topInset: CGFloat = 24.0
-        static let footerHeight: CGFloat = 80.0
+        static let errorLabelHeight: CGFloat = 20.0
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: Coordinator) -> PairingConnectDroneViewController {
+    /// Instantiates the view controller.
+    ///
+    /// - Parameters:
+    ///     - coordinator: the coordinator
+    ///     - viewModel: the view model
+    /// - Returns: the view controller
+    static func instantiate(coordinator: Coordinator,
+                            viewModel: PairingConnectDroneViewModel
+    ) -> PairingConnectDroneViewController {
         let viewController = StoryboardScene.PairingConnectDrone.initialScene.instantiate()
         viewController.coordinator = coordinator as? PairingCoordinator
-
+        viewController.viewModel = viewModel
         return viewController
     }
 
@@ -67,27 +72,17 @@ final class PairingConnectDroneViewController: UIViewController {
         super.viewDidLoad()
 
         initView()
-
-        // Listen state from the view model.
-        viewModel.state.valueChanged = {[weak self] state in
-            self?.updatePairingConnectDroneState(state)
-        }
-        updatePairingConnectDroneState(viewModel.state.value)
+        setupViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingDroneFinderList,
-                             logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.pairingDroneFinderList))
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -108,7 +103,7 @@ extension PairingConnectDroneViewController: UITableViewDataSource {
         cell.setup(droneModel: item,
                    failedToConnect: failedToConnect && selectedItem == indexPath,
                    isConnecting: isConnecting && selectedItem == indexPath,
-                   unpairStatus: viewModel.state.value.unpairState)
+                   unpairStatus: viewModel.unpairState)
         cell.backgroundColor = .clear
         cell.delegate = self
 
@@ -137,9 +132,10 @@ extension PairingConnectDroneViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         // Expand cell when there is info or error to show.
         let shouldExpand: Bool = (failedToConnect || isConnecting)
-            && selectedItem == indexPath
+        && selectedItem == indexPath
 
-        return shouldExpand ? Constants.highCellHeight : Constants.smallCellHeight
+        let baseHeight = Layout.buttonIntrinsicHeight(isRegularSizeClass) + Layout.mainSpacing(isRegularSizeClass)
+        return shouldExpand ? baseHeight + Constants.errorLabelHeight : baseHeight
     }
 }
 
@@ -154,39 +150,72 @@ private extension PairingConnectDroneViewController {
 private extension PairingConnectDroneViewController {
     /// Init the view.
     func initView() {
-        tableView.contentInset.top = Constants.topInset
+        tableView.contentInset.bottom = Layout.tableViewCellContentInset(isRegularSizeClass, screenBorders: [.bottom]).bottom
         tableView.register(cellType: PairingConnectDroneCell.self)
         titleLabel.text = L10n.pairingLookingForDrone
         // Instantiate the footer.
-        let footerView = PairingConnectDroneRefreshView(frame: CGRect(x: 0, y: 0, width: tableView.frame.width, height: Constants.footerHeight))
+        let footerFrame = CGRect(x: 0, y: 0,
+                                 width: tableView.frame.width,
+                                 height: Layout.buttonIntrinsicHeight(isRegularSizeClass)
+                                 + Layout.mainSpacing(isRegularSizeClass))
+        let footerView = PairingConnectDroneRefreshView(frame: footerFrame)
         footerView.navDelegate = self
         tableView.tableFooterView = footerView
+    }
+
+    /// Sets up view model
+    func setupViewModel() {
+        viewModel.$remoteControlConnectionState
+            .sink { [unowned self] in
+                // Come back to pairing menu if the remote is disconnected.
+                if $0 != .connected {
+                    coordinator?.dismissRemoteConnectDrone()
+                }
+            }
+            .store(in: &cancellables)
+
+        viewModel.$pairingConnectionState
+            .sink { [unowned self] in
+                updatePairingDroneConnectionState($0)
+            }
+            .store(in: &cancellables)
+
+        viewModel.isListUnavailable
+            .sink { [unowned self] in
+                updateLoadingView(isListUnavailable: $0)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$discoveredDronesList
+            .sink { [unowned self] in
+                updateDataSource(discoveredDronesList: $0)
+            }
+            .store(in: &cancellables)
     }
 
     /// Update with current pairing connect drone state.
     ///
     /// - Parameters:
-    ///    - state: pairing connect drone state
-    func updatePairingConnectDroneState(_ state: PairingConnectDroneState) {
-        // Come back to pairing menu if the remote is disconnected.
-        if state.remoteControlConnectionState?.isConnected() == false {
-            coordinator?.dismissRemoteConnectDrone()
-        }
-
-        updateDataSource()
-        updateConnectionState()
-        updateLoadingView()
+    ///    - state: pairing connection state
+    func updatePairingDroneConnectionState(_ state: PairingDroneConnectionState) {
+        updateConnectionState(state: state)
     }
 
     /// Reload discovered drones list with the refresh button.
-    func updateDataSource() {
-        items = viewModel.state.value.discoveredDronesList
+    ///
+    /// - Parameters:
+    ///    - discoveredDroneList: list of the discovered drone
+    func updateDataSource(discoveredDronesList: [RemoteConnectDroneModel]?) {
+        items = discoveredDronesList
         tableView.reloadData()
     }
 
     /// Update the loader.
-    func updateLoadingView() {
-        if viewModel.state.value.isListUnavailable == true {
+    ///
+    /// - Parameters:
+    ///    - isListUnavailable: `true` when the list of the discovered drone is unavailable, `false` otherwise
+    func updateLoadingView(isListUnavailable: Bool) {
+        if isListUnavailable {
             loadingImageView?.isHidden = false
             titleLabel.text = L10n.pairingLookingForDrone
             loadingImageView.startRotate()
@@ -198,22 +227,29 @@ private extension PairingConnectDroneViewController {
     }
 
     /// Update connection view with label error and connection state.
-    func updateConnectionState() {
-        guard let connectionState = viewModel.state.value.connectionState else { return }
-
+    ///
+    /// - Parameters:
+    ///    - state: pairing connection state
+    func updateConnectionState(state: PairingDroneConnectionState) {
         isConnecting = false
         failedToConnect = false
 
-        switch connectionState {
-        case PairingDroneConnectionState.connecting:
+        switch state {
+        case .connecting:
             isConnecting = true
-            // Reload data with a private var like isConnecting.
-            updateDataSource()
-        case PairingDroneConnectionState.disconnected,
-             PairingDroneConnectionState.incorrectPassword:
-            viewModel.resetDroneConnectionStateRef()
+            updateDataSource(discoveredDronesList: viewModel.discoveredDronesList)
+        case .disconnected:
             failedToConnect = true
-            updateDataSource()
+            updateDataSource(discoveredDronesList: viewModel.discoveredDronesList)
+        case .incorrectPassword:
+            guard let selectedItemRow = selectedItem?.row,
+                    let item = items?[selectedItemRow] else {
+                return
+            }
+            logEvent(with: LogEvent.LogKeyPairingButton.connectToDronePasswordNeeded.name)
+            selectedItem = nil
+            // Open detail screen if we need to connect to the drone with a password.
+            coordinator?.startRemoteConnectDroneDetail(droneModel: item)
         default:
             break
         }
@@ -224,9 +260,7 @@ private extension PairingConnectDroneViewController {
     /// - Parameters:
     ///     - itemName: Button name
     func logEvent(with itemName: String) {
-        LogEvent.logAppEvent(itemName: itemName,
-                             newValue: nil,
-                             logType: .button)
+        LogEvent.log(.simpleButton(itemName))
     }
 }
 
@@ -247,10 +281,10 @@ extension PairingConnectDroneViewController: PairingConnectDroneCellDelegate {
         let forgetAction = AlertAction(title: L10n.commonForget,
                                        style: .destructive,
                                        actionHandler: { [weak self] in
-                                        self?.viewModel.forgetDrone(uid: uid)
-                                       })
+            self?.viewModel.forgetDrone(uid: uid)
+        })
         let cancelAction = AlertAction(title: L10n.cancel,
-                                       style: .cancel)
+                                       style: .default2)
         showAlert(title: L10n.cellularPairingForgetDrone,
                   message: L10n.cellularPairingForgetDroneDescription,
                   cancelAction: cancelAction,

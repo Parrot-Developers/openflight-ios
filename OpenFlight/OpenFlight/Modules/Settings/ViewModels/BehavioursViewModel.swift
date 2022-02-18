@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -65,16 +64,16 @@ final class BehavioursViewModel: DroneWatcherViewModel<DeviceConnectionState>, S
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         /// listen Manual Piloting Interface
-        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [weak self] _ in
-            self?.notifyChange()
+        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [unowned self] _ in
+            notifyChange()
         }
         /// listen gimbal
-        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] _ in
-            self?.notifyChange()
+        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [unowned self] _ in
+            notifyChange()
         }
         /// listen target tracker
-        trackerRef = drone.getPeripheral(Peripherals.targetTracker) { [weak self] _ in
-            self?.notifyChange()
+        trackerRef = drone.getPeripheral(Peripherals.targetTracker) { [unowned self] _ in
+            notifyChange()
         }
     }
 
@@ -141,14 +140,14 @@ final class BehavioursViewModel: DroneWatcherViewModel<DeviceConnectionState>, S
     var settingEntries: [SettingEntry] {
         let overlimitPreset = SettingsBehavioursMode.current.maxRecommandedValues
         return [
-            SettingEntry(setting: Asset.Settings.iconSettingsCamera.image,
+            SettingEntry(setting: Asset.Settings.iconSettingsCameraFill.image,
                          title: L10n.settingsBehaviourSectionGimbal),
             SettingEntry(setting: gimbal?.maxSpeedSettings[.pitch],
                          title: L10n.settingsBehaviourCameraTilt,
                          unit: UnitType.degreePerSecond,
                          defaultValue: Float(SettingsBehavioursMode.current.defaultValues.cameraTilt),
                          itemLogKey: LogEvent.LogKeyAdvancedSettings.cameraTiltSpeed.description),
-            SettingEntry(setting: Asset.Settings.Advanced.drone.image,
+            SettingEntry(setting: Asset.Settings.Advanced.iconSettingsDrone.image,
                          title: L10n.settingsBehaviourSectionFlight),
             SettingEntry(setting: bankedTurnModel(),
                          title: L10n.settingsBehaviourBankedTurn,
@@ -184,7 +183,7 @@ final class BehavioursViewModel: DroneWatcherViewModel<DeviceConnectionState>, S
 private extension BehavioursViewModel {
     /// Show banked turn info.
     func showBankedTurnInfo() {
-        self.infoHandler?(BankedTurn.self)
+        infoHandler?(BankedTurn.self)
     }
 
     /// Banked turn model.

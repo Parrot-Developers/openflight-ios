@@ -1,59 +1,133 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
-    <device id="retina6_5" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina6_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
     <scenes>
         <!--Drone Details View Controller-->
         <scene sceneID="gAF-Wg-Bhz">
             <objects>
                 <viewController storyboardIdentifier="DroneDetailsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="DroneDetailsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="T2o-SU-ouv">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="T2o-SU-ouv">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Tcb-9q-528">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                                 <color key="backgroundColor" name="default_bgcolor"/>
                             </view>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="3yV-34-XyG">
-                                <rect key="frame" x="24" y="68" width="366" height="804"/>
-                                <variation key="heightClass=regular-widthClass=compact" axis="vertical" distribution="fillProportionally"/>
-                            </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KBK-UV-BdE">
-                                <rect key="frame" x="0.0" y="44" width="60" height="60"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="L7l-UK-Kbq" customClass="NavigationStackView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="56"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jbd-gv-ece">
+                                        <rect key="frame" x="0.0" y="0.0" width="399.66666666666669" height="56"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="o0S-yS-k6D">
+                                        <rect key="frame" x="399.66666666666669" y="0.0" width="46.666666666666686" height="56"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="qEG-lj-yda">
+                                                <rect key="frame" x="0.0" y="9.3333333333333321" width="46.666666666666664" height="37.666666666666671"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MI7-Xd-gqZ">
+                                                        <rect key="frame" x="0.0" y="0.0" width="46.666666666666664" height="22.333333333333332"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                        <color key="textColor" name="default_text_color"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2n0-vw-j4t">
+                                                        <rect key="frame" x="7.3333333333333144" y="22.333333333333336" width="32" height="15.333333333333336"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                        <color key="textColor" name="user_profil_value"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yrb-vd-1At">
+                                        <rect key="frame" x="446.33333333333326" y="0.0" width="449.66666666666674" height="56"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </view>
+                                </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="60" id="I39-kv-Nz1"/>
-                                    <constraint firstAttribute="width" secondItem="KBK-UV-BdE" secondAttribute="height" multiplier="1:1" id="d0l-e9-Wft"/>
+                                    <constraint firstAttribute="height" constant="56" id="3Cr-N8-Kce"/>
                                 </constraints>
-                                <color key="tintColor" name="default_text_color"/>
-                                <state key="normal" image="ic_back"/>
-                                <connections>
-                                    <action selector="backButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="HQD-k1-Ohe"/>
-                                </connections>
-                            </button>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="3yV-34-XyG" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="N9L-cE-a6Z">
+                                        <rect key="frame" x="0.0" y="0.0" width="160" height="414"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="160" id="itb-P8-lBM">
+                                                <variation key="heightClass=regular-widthClass=regular" constant="220"/>
+                                            </constraint>
+                                        </constraints>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Xyp-gD-Foh">
+                                        <rect key="frame" x="168" y="0.0" width="510" height="414"/>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="gUg-ve-F3N">
+                                        <rect key="frame" x="686" y="0.0" width="210" height="414"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="210" id="dyO-fe-lHF">
+                                                <variation key="heightClass=regular-widthClass=regular" constant="260"/>
+                                            </constraint>
+                                        </constraints>
+                                    </stackView>
+                                </subviews>
+                                <variation key="heightClass=regular-widthClass=compact" axis="vertical"/>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="eSM-Qd-wwW" customClass="NavigationStackView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="22" height="22"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KBK-UV-BdE">
+                                        <rect key="frame" x="0.0" y="0.0" width="22" height="22"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" secondItem="KBK-UV-BdE" secondAttribute="height" multiplier="1:1" id="d0l-e9-Wft"/>
+                                        </constraints>
+                                        <color key="tintColor" name="default_text_color"/>
+                                        <state key="normal" image="ic_back"/>
+                                        <connections>
+                                            <action selector="backButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="HQD-k1-Ohe"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="EF2-dA-vXt"/>
+                        <viewLayoutGuide key="safeArea" id="yhH-Qd-dmj"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstAttribute="bottom" secondItem="3yV-34-XyG" secondAttribute="bottom" constant="24" id="0qH-w7-aoy"/>
-                            <constraint firstAttribute="trailing" secondItem="3yV-34-XyG" secondAttribute="trailing" constant="24" id="2IB-QU-06f"/>
+                            <constraint firstAttribute="bottom" secondItem="3yV-34-XyG" secondAttribute="bottom" id="0qH-w7-aoy"/>
+                            <constraint firstItem="L7l-UK-Kbq" firstAttribute="leading" secondItem="T2o-SU-ouv" secondAttribute="leading" id="1J7-AK-pmu"/>
+                            <constraint firstAttribute="trailing" secondItem="3yV-34-XyG" secondAttribute="trailing" id="2IB-QU-06f"/>
+                            <constraint firstAttribute="leading" secondItem="eSM-Qd-wwW" secondAttribute="leading" id="CQB-9B-oOE"/>
                             <constraint firstAttribute="trailing" secondItem="Tcb-9q-528" secondAttribute="trailing" id="OPi-0I-3ch"/>
-                            <constraint firstItem="KBK-UV-BdE" firstAttribute="top" secondItem="EF2-dA-vXt" secondAttribute="top" id="Q3K-HM-wt0"/>
-                            <constraint firstItem="3yV-34-XyG" firstAttribute="leading" secondItem="EF2-dA-vXt" secondAttribute="leading" constant="24" id="YLF-Ke-97F"/>
-                            <constraint firstItem="3yV-34-XyG" firstAttribute="top" secondItem="EF2-dA-vXt" secondAttribute="top" constant="24" id="Zbd-oa-wG1"/>
-                            <constraint firstItem="KBK-UV-BdE" firstAttribute="leading" secondItem="EF2-dA-vXt" secondAttribute="leading" id="fmF-ML-3VW"/>
+                            <constraint firstItem="L7l-UK-Kbq" firstAttribute="top" secondItem="T2o-SU-ouv" secondAttribute="top" id="Tf4-DG-nMc"/>
+                            <constraint firstItem="o0S-yS-k6D" firstAttribute="centerX" secondItem="Xyp-gD-Foh" secondAttribute="centerX" id="X2I-Mn-REA"/>
+                            <constraint firstItem="3yV-34-XyG" firstAttribute="leading" secondItem="T2o-SU-ouv" secondAttribute="leading" id="YLF-Ke-97F"/>
+                            <constraint firstItem="3yV-34-XyG" firstAttribute="top" secondItem="T2o-SU-ouv" secondAttribute="top" id="Zbd-oa-wG1"/>
+                            <constraint firstItem="eSM-Qd-wwW" firstAttribute="top" secondItem="T2o-SU-ouv" secondAttribute="top" id="eNt-32-0ip"/>
                             <constraint firstAttribute="bottom" secondItem="Tcb-9q-528" secondAttribute="bottom" id="mF6-g3-LUt"/>
+                            <constraint firstAttribute="trailing" secondItem="L7l-UK-Kbq" secondAttribute="trailing" id="wkp-AB-6gN"/>
                             <constraint firstItem="Tcb-9q-528" firstAttribute="top" secondItem="T2o-SU-ouv" secondAttribute="top" id="xR3-Sh-aQO"/>
                             <constraint firstItem="Tcb-9q-528" firstAttribute="leading" secondItem="T2o-SU-ouv" secondAttribute="leading" id="yi4-2q-Hf0"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="modelLabel" destination="MI7-Xd-gqZ" id="vuB-sU-st4"/>
+                        <outlet property="nameLabel" destination="2n0-vw-j4t" id="vun-5R-Rnq"/>
                         <outlet property="stackView" destination="3yV-34-XyG" id="NiN-qS-UeQ"/>
                     </connections>
                 </viewController>
@@ -68,7 +142,10 @@
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="user_profil_value">
+            <color red="0.37254901960784315" green="0.33725490196078434" blue="0.30980392156862746" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

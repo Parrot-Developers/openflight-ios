@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -15,43 +15,43 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="DashboardDroneCell" translatesAutoresizingMaskIntoConstraints="NO" id="gTV-IL-0wX" customClass="DashboardDroneCell" customModule="OpenFlight" customModuleProvider="target">
+        <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="DashboardDroneCell" translatesAutoresizingMaskIntoConstraints="NO" id="gTV-IL-0wX" customClass="DashboardDroneCell" customModule="OpenFlight" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="140" height="140"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                 <rect key="frame" x="0.0" y="0.0" width="140" height="140"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <view multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="emZ-eg-iYF" userLabel="Content view">
+                    <view multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="emZ-eg-iYF" userLabel="Content view" customClass="MainTileView" customModule="OpenFlight" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="140" height="140"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" translatesAutoresizingMaskIntoConstraints="NO" id="yEN-en-3AP">
-                                <rect key="frame" x="9" y="9" width="122" height="122"/>
+                                <rect key="frame" x="5" y="5" width="130" height="130"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="mnY-nl-w85">
-                                        <rect key="frame" x="0.0" y="0.0" width="122" height="14"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" translatesAutoresizingMaskIntoConstraints="NO" id="mnY-nl-w85">
+                                        <rect key="frame" x="0.0" y="0.0" width="130" height="20"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="3UP-9v-u8a">
-                                                <rect key="frame" x="0.0" y="0.0" width="37" height="14"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3UP-9v-u8a">
+                                                <rect key="frame" x="0.0" y="0.0" width="42" height="20"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGpsNone" translatesAutoresizingMaskIntoConstraints="NO" id="hld-fw-Iyj">
-                                                        <rect key="frame" x="0.0" y="0.0" width="16" height="14"/>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic4GOffline" translatesAutoresizingMaskIntoConstraints="NO" id="kjP-6A-mox">
+                                                        <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
                                                     </imageView>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon4GOffline" translatesAutoresizingMaskIntoConstraints="NO" id="kjP-6A-mox">
-                                                        <rect key="frame" x="24" y="0.0" width="13" height="14"/>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icWifiOffline" translatesAutoresizingMaskIntoConstraints="NO" id="mAd-hy-Yos">
+                                                        <rect key="frame" x="20" y="0.0" width="22" height="20"/>
                                                     </imageView>
                                                 </subviews>
                                             </stackView>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icWifiOffline" translatesAutoresizingMaskIntoConstraints="NO" id="mAd-hy-Yos">
-                                                <rect key="frame" x="49.5" y="0.0" width="18" height="14"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGpsNone" translatesAutoresizingMaskIntoConstraints="NO" id="hld-fw-Iyj">
+                                                <rect key="frame" x="57.5" y="0.0" width="20" height="20"/>
                                             </imageView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SGd-z4-3g7">
-                                                <rect key="frame" x="75" y="0.0" width="47" height="14"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="SGd-z4-3g7">
+                                                <rect key="frame" x="98.5" y="0.0" width="31.5" height="20"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryNone" translatesAutoresizingMaskIntoConstraints="NO" id="Mey-k4-q5o">
-                                                        <rect key="frame" x="0.0" y="0.0" width="23.5" height="14"/>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryNone" translatesAutoresizingMaskIntoConstraints="NO" id="Mey-k4-q5o">
+                                                        <rect key="frame" x="0.0" y="0.0" width="5" height="20"/>
                                                     </imageView>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="center" verticalHuggingPriority="251" text="90%" lineBreakMode="characterWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="07t-X8-uhr">
-                                                        <rect key="frame" x="23.5" y="0.0" width="23.5" height="14"/>
+                                                        <rect key="frame" x="8" y="0.0" width="23.5" height="20"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                         <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
@@ -59,34 +59,49 @@
                                                 </subviews>
                                             </stackView>
                                         </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="20" id="Nbj-kM-zca"/>
+                                        </constraints>
                                     </stackView>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icDrone" translatesAutoresizingMaskIntoConstraints="NO" id="vJJ-Cm-IRY">
-                                        <rect key="frame" x="0.0" y="42.5" width="122" height="25"/>
+                                        <rect key="frame" x="0.0" y="34.5" width="130" height="40"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <color key="tintColor" name="default_text_color"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="25" id="KgC-Gw-Tcl">
-                                                <variation key="heightClass=regular-widthClass=regular" constant="40"/>
+                                            <constraint firstAttribute="height" constant="40" id="KgC-Gw-Tcl">
+                                                <variation key="heightClass=regular-widthClass=regular" constant="52"/>
                                             </constraint>
                                         </constraints>
                                     </imageView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="VX1-46-VYr">
-                                        <rect key="frame" x="0.0" y="96" width="122" height="26"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="VX1-46-VYr">
+                                        <rect key="frame" x="0.0" y="89" width="130" height="41"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tK4-XF-c9C">
-                                                <rect key="frame" x="0.0" y="0.0" width="122" height="0.0"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="130" height="17"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="17" id="L7z-zf-QAu">
+                                                        <variation key="heightClass=regular-widthClass=regular" constant="20"/>
+                                                    </constraint>
+                                                </constraints>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
+                                                <variation key="heightClass=regular-widthClass=regular">
+                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="18"/>
+                                                </variation>
                                             </label>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="00p-kb-59f">
-                                                <rect key="frame" x="0.0" y="7" width="122" height="19"/>
+                                                <rect key="frame" x="0.0" y="22" width="130" height="19"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hSZ-wD-AcC" customClass="DeviceStateButton" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="57" y="0.0" width="8" height="19"/>
+                                                        <rect key="frame" x="61" y="0.0" width="8" height="19"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                         <inset key="contentEdgeInsets" minX="4" minY="2" maxX="4" maxY="2"/>
                                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="3" maxY="0.0"/>
+                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                        </variation>
                                                         <connections>
                                                             <action selector="stateDeviceTouchedUpInside:" destination="gTV-IL-0wX" eventType="touchUpInside" id="nzc-Pk-WGb"/>
                                                         </connections>
@@ -94,23 +109,38 @@
                                                 </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="19" id="48i-dM-SgC"/>
+                                                    <constraint firstAttribute="height" constant="19" id="48i-dM-SgC">
+                                                        <variation key="heightClass=regular-widthClass=regular" constant="22"/>
+                                                    </constraint>
                                                     <constraint firstItem="hSZ-wD-AcC" firstAttribute="centerX" secondItem="00p-kb-59f" secondAttribute="centerX" id="5WU-db-OWV"/>
                                                     <constraint firstItem="hSZ-wD-AcC" firstAttribute="top" secondItem="00p-kb-59f" secondAttribute="top" id="WPb-YT-adH"/>
                                                     <constraint firstAttribute="bottom" secondItem="hSZ-wD-AcC" secondAttribute="bottom" id="rJI-Jw-JN2"/>
                                                 </constraints>
                                             </view>
                                         </subviews>
+                                        <variation key="heightClass=regular-widthClass=regular" spacing="7"/>
                                     </stackView>
                                 </subviews>
+                                <constraints>
+                                    <constraint firstItem="mnY-nl-w85" firstAttribute="leading" secondItem="yEN-en-3AP" secondAttribute="leading" id="Nou-mm-FAL"/>
+                                    <constraint firstAttribute="trailing" secondItem="mnY-nl-w85" secondAttribute="trailing" id="fz8-fa-qeo"/>
+                                </constraints>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="yEN-en-3AP" secondAttribute="trailing" constant="9" id="MPS-1Y-PhL"/>
-                            <constraint firstAttribute="bottom" secondItem="yEN-en-3AP" secondAttribute="bottom" constant="9" id="XPO-22-PHw"/>
-                            <constraint firstItem="yEN-en-3AP" firstAttribute="top" secondItem="emZ-eg-iYF" secondAttribute="top" constant="9" id="cri-e4-RRr"/>
-                            <constraint firstItem="yEN-en-3AP" firstAttribute="leading" secondItem="emZ-eg-iYF" secondAttribute="leading" constant="9" id="nys-XF-efY"/>
+                            <constraint firstAttribute="trailing" secondItem="yEN-en-3AP" secondAttribute="trailing" constant="5" id="MPS-1Y-PhL">
+                                <variation key="heightClass=regular-widthClass=regular" constant="10"/>
+                            </constraint>
+                            <constraint firstAttribute="bottom" secondItem="yEN-en-3AP" secondAttribute="bottom" constant="5" id="Yp9-WU-1dl">
+                                <variation key="heightClass=regular-widthClass=regular" constant="10"/>
+                            </constraint>
+                            <constraint firstItem="yEN-en-3AP" firstAttribute="top" secondItem="emZ-eg-iYF" secondAttribute="top" constant="5" id="cri-e4-RRr">
+                                <variation key="heightClass=regular-widthClass=regular" constant="10"/>
+                            </constraint>
+                            <constraint firstItem="yEN-en-3AP" firstAttribute="leading" secondItem="emZ-eg-iYF" secondAttribute="leading" constant="5" id="nys-XF-efY">
+                                <variation key="heightClass=regular-widthClass=regular" constant="10"/>
+                            </constraint>
                         </constraints>
                         <userDefinedRuntimeAttributes>
                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -140,13 +170,13 @@
         </collectionViewCell>
     </objects>
     <resources>
-        <image name="icBatteryNone" width="7" height="14"/>
-        <image name="icDrone" width="28" height="28"/>
-        <image name="icGpsNone" width="16" height="12"/>
-        <image name="icWifiOffline" width="18" height="14"/>
-        <image name="icon4GOffline" width="13" height="14"/>
+        <image name="ic4GOffline" width="20" height="20"/>
+        <image name="icBatteryNone" width="5" height="10"/>
+        <image name="icDrone" width="40" height="40"/>
+        <image name="icGpsNone" width="20" height="20"/>
+        <image name="icWifiOffline" width="22" height="20"/>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

@@ -1,6 +1,4 @@
-//
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -42,7 +40,6 @@ class ProjectCellModel {
     @Published private(set) var hasExecutions: Bool = false
 
     private let project: ProjectModel!
-    private var cancellables = Set<AnyCancellable>()
 
     enum Constants {
         static let defaultThumbnail = Asset.MyFlights.projectPlaceHolder.image
@@ -59,7 +56,7 @@ class ProjectCellModel {
         let lastExecution = projectManager.lastFlightPlan(for: project)
 
         title = project.title ?? lastExecution?.dataSetting?.coordinate?.coordinatesDescription
-        description = project.lastUpdated.shortWithTimeFormattedString
+        description = project.lastUpdated.shortWithTimeFormattedString(timeStyle: .medium)
 
         thumbnail = lastExecution?.thumbnail?.thumbnailImage ??  Constants.defaultThumbnail
 

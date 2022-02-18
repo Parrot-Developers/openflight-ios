@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -61,7 +60,7 @@ final class FlightDetailsSummaryView: UIView, NibOwnerLoadable {
         super.awakeFromNib()
 
         configurelabel(timeLabel, and: timeIcon, with: Asset.MyFlights.time.image)
-        configurelabel(batteryLabel, and: batteryIcon, with: Asset.Common.Icons.icBattery.image)
+        configurelabel(batteryLabel, and: batteryIcon, with: Asset.MyFlights.battery.image)
         configurelabel(distanceLabel, and: distanceIcon, with: Asset.MyFlights.distance.image)
      }
 
@@ -77,10 +76,10 @@ private extension FlightDetailsSummaryView {
 
     /// Configure Detail's label and icon
     func configurelabel(_ label: UILabel, and icon: UIImageView, with image: UIImage) {
-        label.makeUp(with: .largeMedium, and: .defaultIconColor)
+        label.makeUp(with: .current, color: .defaultTextColor)
         label.adjustsFontSizeToFitWidth = true
         icon.image = image
             .withRenderingMode(.alwaysTemplate)
-        icon.tintColor = ColorName.defaultIconColor.color
+        icon.tintColor = ColorName.defaultTextColor.color
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -60,12 +59,8 @@ class GalleryContentState: DeviceConnectionState {
     var availableSpace: Double = 0.0
     /// Capacity, in giga bytes.
     var capacity: Double = 0.0
-    /// Current downloading media item.
-    var downloadingItem: MediaItem?
-    /// Download status.
-    var downloadStatus: MediaTaskStatus = .complete
-    /// Download progress.
-    var downloadProgress: Float = 0.0
+    /// Format needed status.
+    var isFormatNeeded: Bool = false
     /// Is removing medias.
     var isRemoving: Bool = false
     /// Storage used, in giga bytes.
@@ -91,9 +86,7 @@ class GalleryContentState: DeviceConnectionState {
     ///    - connectionState: drone connection state
     ///    - availableSpace: available space, in giga bytes
     ///    - capacity: capacity, in giga bytes
-    ///    - downloadingItem: downloading item
-    ///    - downloadStatus: download status
-    ///    - downloadProgress: download progress
+    ///    - isFormatNeeded: format needed status
     ///    - isRemoving: is removing
     ///    - medias: media list
     ///    - sourceType: source type
@@ -104,9 +97,7 @@ class GalleryContentState: DeviceConnectionState {
     required init(connectionState: DeviceState.ConnectionState,
                   availableSpace: Double,
                   capacity: Double,
-                  downloadingItem: MediaItem?,
-                  downloadStatus: MediaTaskStatus,
-                  downloadProgress: Float,
+                  isFormatNeeded: Bool,
                   isRemoving: Bool,
                   medias: [GalleryMedia],
                   sourceType: GallerySourceType,
@@ -117,9 +108,7 @@ class GalleryContentState: DeviceConnectionState {
         super.init(connectionState: connectionState)
         self.availableSpace = availableSpace
         self.capacity = capacity
-        self.downloadingItem = downloadingItem
-        self.downloadStatus = downloadStatus
-        self.downloadProgress = downloadProgress
+        self.isFormatNeeded = isFormatNeeded
         self.isRemoving = isRemoving
         self.medias = medias
         self.sourceType = sourceType
@@ -137,9 +126,7 @@ class GalleryContentState: DeviceConnectionState {
         return super.isEqual(to: typedOther)
             && self.availableSpace.rounded(toPlaces: 1) == typedOther.availableSpace.rounded(toPlaces: 1)
             && self.capacity.rounded(toPlaces: 1) == typedOther.capacity.rounded(toPlaces: 1)
-            && self.downloadingItem == typedOther.downloadingItem
-            && self.downloadStatus == typedOther.downloadStatus
-            && self.downloadProgress == typedOther.downloadProgress
+            && self.isFormatNeeded == typedOther.isFormatNeeded
             && self.isRemoving == typedOther.isRemoving
             && self.medias == typedOther.medias
             && self.sourceType == typedOther.sourceType
@@ -153,9 +140,7 @@ class GalleryContentState: DeviceConnectionState {
         return Self(connectionState: self.connectionState,
                     availableSpace: self.availableSpace,
                     capacity: self.capacity,
-                    downloadingItem: self.downloadingItem,
-                    downloadStatus: self.downloadStatus,
-                    downloadProgress: self.downloadProgress,
+                    isFormatNeeded: self.isFormatNeeded,
                     isRemoving: self.isRemoving,
                     medias: self.medias,
                     sourceType: self.sourceType,

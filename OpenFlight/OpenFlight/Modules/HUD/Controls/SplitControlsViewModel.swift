@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,13 +36,13 @@ class SplitControlsViewModel {
     // MARK: - Private Properties
     private var bottomBarModeObserver: Any?
     private var cancellables = Set<AnyCancellable>()
-    private var modeSubject = CurrentValueSubject<SplitScreenMode, Never>(.splited)
+    private var modeSubject = CurrentValueSubject<SplitScreenMode?, Never>(nil)
     private var bottomBarModeSubject = CurrentValueSubject<BottomBarMode, Never>(.preset)
     private var isJoysticksVisibleSubject = CurrentValueSubject<Bool, Never>(false)
 
     // MARK: - Internal Properties
     /// Current split screen mode.
-    var mode: SplitScreenMode { modeSubject.value }
+    var mode: SplitScreenMode? { modeSubject.value }
     /// Current bottom bar mode.
     var bottomBarMode: BottomBarMode { bottomBarModeSubject.value }
     /// Tells if joysticks are visible.
@@ -52,14 +51,14 @@ class SplitControlsViewModel {
     var shouldHideSecondary: AnyPublisher<Bool, Never> {
         modeSubject
             .combineLatest(bottomBarModeSubject)
-            .map { (couple: (SplitScreenMode, BottomBarMode)) -> Bool in
+            .map { (couple: (SplitScreenMode?, BottomBarMode)) -> Bool in
                 let (mode, bottomBarMode) = couple
                 return mode == .stream && bottomBarMode != .closed
             }
             .eraseToAnyPublisher()
     }
     /// Current split screen mode.
-    var modePublisher: AnyPublisher<SplitScreenMode, Never> { modeSubject.eraseToAnyPublisher() }
+    var modePublisher: AnyPublisher<SplitScreenMode?, Never> { modeSubject.eraseToAnyPublisher() }
     /// Tells if joysticks are visible.
     var isJoysticksVisiblePublisher: AnyPublisher<Bool, Never> { isJoysticksVisibleSubject.eraseToAnyPublisher() }
     /// Current bottom bar mode.
@@ -84,6 +83,8 @@ class SplitControlsViewModel {
     /// - Parameters:
     ///    - mode: split screen mode to apply
     func setMode(_ mode: SplitScreenMode) {
+        guard mode != self.modeSubject.value else { return }
+
         self.modeSubject.value = mode
         NotificationCenter.default.post(name: .splitModeDidChange,
                                         object: self,

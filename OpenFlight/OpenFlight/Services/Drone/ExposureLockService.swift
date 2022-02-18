@@ -1,4 +1,4 @@
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -76,7 +76,7 @@ public enum ExposureLockState: Equatable {
 }
 
 /// Output of `ExposureLockService`: exposes exposure lock region.
-public struct ExposureLockRegion {
+public struct ExposureLockRegion: Equatable {
     /// Region horizontal center in frame, in linear range [0, 1], where 0 is the left of the frame.
     let centerX: Double
     /// Region vertical center in frame, in linear range [0, 1], where 0 is the bottom of the frame.
@@ -226,12 +226,12 @@ private extension ExposureLockServiceImpl {
     func listenExposureIndicator(camera: MainCamera2) {
         exposureIndicatorRef = camera.getComponent(Camera2Components.exposureIndicator) { [unowned self] indicator in
             if let lockRegion = indicator?.lockRegion {
-                self.lockRegionSubject.value = ExposureLockRegion(centerX: lockRegion.centerX,
-                                                            centerY: lockRegion.centerY,
-                                                            width: lockRegion.width,
-                                                            height: lockRegion.height)
+                lockRegionSubject.value = ExposureLockRegion(centerX: lockRegion.centerX,
+                                                             centerY: lockRegion.centerY,
+                                                             width: lockRegion.width,
+                                                             height: lockRegion.height)
             } else {
-                self.lockRegionSubject.value = nil
+                lockRegionSubject.value = nil
             }
         }
     }
@@ -295,7 +295,8 @@ extension ExposureLockServiceImpl: ExposureLockService {
     }
 
     public var lockRegionPublisher: AnyPublisher<ExposureLockRegion?, Never> {
-        lockRegionSubject.eraseToAnyPublisher()
+        lockRegionSubject.removeDuplicates()
+            .eraseToAnyPublisher()
     }
 
     public var lockRegionValue: ExposureLockRegion? {

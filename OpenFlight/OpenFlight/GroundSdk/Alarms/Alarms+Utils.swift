@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -163,5 +162,27 @@ extension Alarms {
         } else {
             return []
         }
+    }
+
+    /// Computes current geofence alert.
+    ///
+    /// - Returns: current geofence alert if any
+    func geofenceAlert() -> HUDAlertType? {
+        var alertType: HUDAlertType?
+        let verticalGeofenceAlarm = getAlarm(kind: .verticalGeofenceReached).hasError
+        let horizontalGeofenceAlarm = getAlarm(kind: .horizontalGeofenceReached).hasError
+
+        switch (verticalGeofenceAlarm, horizontalGeofenceAlarm) {
+        case (true, true):
+            alertType = HUDBannerCriticalAlertType.geofenceAltitudeAndDistance
+        case (true, false):
+            alertType = HUDBannerCriticalAlertType.geofenceAltitude
+        case (false, true):
+            alertType = HUDBannerCriticalAlertType.geofenceDistance
+        default:
+            break
+        }
+
+        return alertType
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -43,11 +43,13 @@ final class DashboardViewModel {
     var droneInfosViewModel: DroneInfosViewModel!
     var userDeviceViewModel: UserDeviceViewModel!
     var dashboardProjectManagerCellModel: DashboardProjectManagerCellModel!
+    var myFlightsCellModel: DashboardMyFlightsCellModel!
 
     private let service: VariableAssetsService
     private let projectManager: ProjectManager
     private let cloudSynchroWatcher: CloudSynchroWatcher?
     private let projectManagerUiProvider: ProjectManagerUiProvider!
+    private let flightService: FlightService
 
     enum ViewState {
         case initialize
@@ -62,26 +64,30 @@ final class DashboardViewModel {
     init(service: VariableAssetsService,
          projectManager: ProjectManager,
          cloudSynchroWatcher: CloudSynchroWatcher?,
-         projectManagerUiProvider: ProjectManagerUiProvider) {
+         projectManagerUiProvider: ProjectManagerUiProvider,
+         flightService: FlightService) {
         self.service = service
         self.projectManager = projectManager
         self.cloudSynchroWatcher = cloudSynchroWatcher
         self.projectManagerUiProvider = projectManagerUiProvider
+        self.flightService = flightService
     }
 
     func initViewModels() {
-        self.appLogo = service.appLogo
+        appLogo = service.appLogo
 
-        self.galleryMediaViewModel = OpenFlight.GalleryMediaViewModel(onMediaStateUpdate: { [weak self] _ in
+        galleryMediaViewModel = OpenFlight.GalleryMediaViewModel(onMediaStateUpdate: { [weak self] _ in
             self?.viewState = .reloadData
         })
         galleryMediaViewModel.refreshMedias()
 
         // Fill the view model tab with all dashboard view model.
-        self.dashboardMyAccountViewModel =  DashboardMyAccountViewModel()
-        self.remoteInfosViewModel = RemoteInfosViewModel()
-        self.droneInfosViewModel = DroneInfosViewModel()
-        self.userDeviceViewModel = UserDeviceViewModel(userLocationManager: UserLocationManager())
+        dashboardMyAccountViewModel =  DashboardMyAccountViewModel()
+        remoteInfosViewModel = RemoteInfosViewModel()
+        droneInfosViewModel = DroneInfosViewModel()
+        userDeviceViewModel = UserDeviceViewModel(userLocationManager: UserLocationManager())
+        myFlightsCellModel = DashboardMyFlightsCellModel(service: flightService,
+                                                         cloudSynchroWatcher: cloudSynchroWatcher)
         dashboardProjectManagerCellModel = DashboardProjectManagerCellModel(manager: projectManager,
                                                                             cloudSynchroWatcher: cloudSynchroWatcher,
                                                                             projectManagerUiProvider: projectManagerUiProvider)

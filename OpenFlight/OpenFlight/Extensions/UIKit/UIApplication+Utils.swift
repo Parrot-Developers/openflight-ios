@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -42,5 +42,24 @@ public extension UIApplication {
         default:
             return true
         }
+    }
+
+    static var window: UIWindow? {
+        shared
+            .connectedScenes
+            .flatMap { ($0 as? UIWindowScene)?.windows ?? [] }
+            .first { $0.isKeyWindow }
+    }
+
+    /// Gets the current top view controller
+    ///
+    /// - Parameters:
+    ///     - viewController: The view controller to check
+    /// - Returns: The top view controller
+    class func topViewController(_ viewController: UIViewController? = window?.rootViewController) -> UIViewController? {
+        if let nav = viewController as? UINavigationController {
+            return topViewController(nav.visibleViewController)
+        }
+        return viewController
     }
 }

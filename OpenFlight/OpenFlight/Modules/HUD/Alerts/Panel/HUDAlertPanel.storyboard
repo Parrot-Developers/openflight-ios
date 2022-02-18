@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="rRa-mJ-wGh">
-    <device id="retina6_5" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="rRa-mJ-wGh">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -21,122 +21,154 @@
             <objects>
                 <viewController useStoryboardIdentifierAsRestorationIdentifier="YES" id="rRa-mJ-wGh" customClass="HUDAlertPanelViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="GhJ-uh-Boj"/>
-                        <viewControllerLayoutGuide type="bottom" id="tPT-90-8Vm"/>
+                        <viewControllerLayoutGuide type="top" id="T3A-pA-AbT"/>
+                        <viewControllerLayoutGuide type="bottom" id="Of1-AX-2yo"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="4fv-j0-Njy">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                    <view key="view" contentMode="scaleToFill" id="RKy-vb-kC6">
+                        <rect key="frame" x="0.0" y="0.0" width="200" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="fP3-nE-4Hr">
-                                <rect key="frame" x="42" y="30" width="330.33333333333331" height="832"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="1MW-wr-dmK" userLabel="Container-fluid">
+                                <rect key="frame" x="0.0" y="0.0" width="200" height="320"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lEM-GB-RF1">
-                                        <rect key="frame" x="140" y="0.0" width="50" height="203.66666666666666"/>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ekG-yQ-sSm" userLabel="Box spacer" customClass="SideNavigationBarView" customModule="OpenFlight">
+                                        <rect key="frame" x="0.0" y="0.0" width="200" height="40"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="40" placeholder="YES" id="wTj-qt-d5N"/>
+                                        </constraints>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="jBD-e9-C3E" userLabel="Container" customClass="RightSidePanelStackView" customModule="OpenFlight">
+                                        <rect key="frame" x="0.0" y="40" width="200" height="280"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="j5h-Mu-LY3">
-                                                <rect key="frame" x="0.0" y="48.666666666666679" width="50" height="106.33333333333331"/>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="d8E-Qq-N2f" userLabel="Box Alert Image + Label">
+                                                <rect key="frame" x="0.0" y="0.0" width="200" height="230"/>
                                                 <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.45000000000000001" translatesAutoresizingMaskIntoConstraints="NO" id="W12-dr-RXx">
-                                                        <rect key="frame" x="0.0" y="0.0" width="50" height="52.333333333333336"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
-                                                        <color key="textColor" name="default_text_color"/>
-                                                        <nil key="highlightedColor"/>
-                                                    </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.40000000000000002" translatesAutoresizingMaskIntoConstraints="NO" id="Oiq-ke-ujY">
-                                                        <rect key="frame" x="0.0" y="56.333333333333329" width="50" height="50"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="11"/>
-                                                        <color key="textColor" name="navy_blue"/>
-                                                        <nil key="highlightedColor"/>
-                                                    </label>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="vjr-Qb-0zO">
+                                                        <rect key="frame" x="0.0" y="0.0" width="200" height="80"/>
+                                                        <subviews>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="eOb-1d-oDC">
+                                                                <rect key="frame" x="0.0" y="38" width="200" height="4"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.44999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="5Sk-5I-Tid" userLabel="Title Label">
+                                                                        <rect key="frame" x="100" y="0.0" width="0.0" height="0.0"/>
+                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                                        <color key="textColor" name="default_text_color"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="25"/>
+                                                                        </variation>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.40000000596046448" translatesAutoresizingMaskIntoConstraints="NO" id="Twt-nQ-U3h" userLabel="Subtitle Label">
+                                                                        <rect key="frame" x="100" y="4" width="0.0" height="0.0"/>
+                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="11"/>
+                                                                        <color key="textColor" name="navy_blue"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                                            <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="13"/>
+                                                                        </variation>
+                                                                    </label>
+                                                                </subviews>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            </stackView>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="trailing" secondItem="eOb-1d-oDC" secondAttribute="trailing" id="FaG-VJ-ufT"/>
+                                                            <constraint firstItem="eOb-1d-oDC" firstAttribute="leading" secondItem="vjr-Qb-0zO" secondAttribute="leading" id="a9O-FB-yUU"/>
+                                                        </constraints>
+                                                        <variation key="heightClass=regular-widthClass=regular" alignment="top"/>
+                                                    </stackView>
+                                                    <view clipsSubviews="YES" contentMode="scaleToFill" placeholderIntrinsicWidth="437" placeholderIntrinsicHeight="437" translatesAutoresizingMaskIntoConstraints="NO" id="uyz-kq-mVt" userLabel="Action Button" customClass="HUDAlertPanelActionButton" customModule="OpenFlight">
+                                                        <rect key="frame" x="50" y="80" width="100" height="100"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="100" id="9uy-Pa-hmx">
+                                                                <variation key="heightClass=regular-widthClass=regular" constant="100"/>
+                                                            </constraint>
+                                                            <constraint firstAttribute="width" secondItem="uyz-kq-mVt" secondAttribute="height" multiplier="1:1" id="Ian-u2-ztF"/>
+                                                        </constraints>
+                                                        <connections>
+                                                            <action selector="actionButtonTouchedUpInside:" destination="rRa-mJ-wGh" eventType="valueChanged" id="dzg-ub-CEf"/>
+                                                        </connections>
+                                                    </view>
+                                                    <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SEU-5s-ysy" userLabel="Start View">
+                                                        <rect key="frame" x="0.0" y="180" width="200" height="50"/>
+                                                        <subviews>
+                                                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HmF-yl-OIw" userLabel="Go Label">
+                                                                <rect key="frame" x="0.0" y="0.0" width="200" height="50"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="69"/>
+                                                                <color key="textColor" name="default_text_color"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="bottom" secondItem="HmF-yl-OIw" secondAttribute="bottom" id="07K-lL-3pX"/>
+                                                            <constraint firstAttribute="trailing" secondItem="HmF-yl-OIw" secondAttribute="trailing" id="Ul5-jQ-r4i"/>
+                                                            <constraint firstItem="HmF-yl-OIw" firstAttribute="leading" secondItem="SEU-5s-ysy" secondAttribute="leading" id="gjl-E5-w1L"/>
+                                                            <constraint firstItem="HmF-yl-OIw" firstAttribute="top" secondItem="SEU-5s-ysy" secondAttribute="top" id="t97-QB-NVD"/>
+                                                        </constraints>
+                                                    </view>
                                                 </subviews>
-                                            </stackView>
-                                        </subviews>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstItem="j5h-Mu-LY3" firstAttribute="centerX" secondItem="lEM-GB-RF1" secondAttribute="centerX" id="9s6-Gs-oeu"/>
-                                            <constraint firstItem="j5h-Mu-LY3" firstAttribute="centerY" secondItem="lEM-GB-RF1" secondAttribute="centerY" id="j1e-Nt-W1I"/>
-                                        </constraints>
-                                    </view>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jDC-DG-tip">
-                                        <rect key="frame" x="90" y="209.66666666666663" width="150" height="203.33333333333337"/>
-                                        <subviews>
-                                            <progressView hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="5Ld-8i-6aV">
-                                                <rect key="frame" x="30" y="99.666666666666657" width="90" height="4"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" constant="90" id="bes-1v-KXw"/>
+                                                    <constraint firstAttribute="bottom" secondItem="SEU-5s-ysy" secondAttribute="bottom" id="57r-Vh-t6P"/>
+                                                    <constraint firstAttribute="trailing" secondItem="vjr-Qb-0zO" secondAttribute="trailing" id="5VC-Fe-gQA"/>
+                                                    <constraint firstItem="uyz-kq-mVt" firstAttribute="centerY" secondItem="d8E-Qq-N2f" secondAttribute="centerY" priority="750" constant="15" id="EHD-sv-dbQ"/>
+                                                    <constraint firstItem="uyz-kq-mVt" firstAttribute="top" secondItem="vjr-Qb-0zO" secondAttribute="bottom" id="G7h-tD-Seb"/>
+                                                    <constraint firstItem="SEU-5s-ysy" firstAttribute="leading" secondItem="d8E-Qq-N2f" secondAttribute="leading" id="Glk-YN-011"/>
+                                                    <constraint firstItem="SEU-5s-ysy" firstAttribute="top" secondItem="uyz-kq-mVt" secondAttribute="bottom" id="KzF-ba-bQD"/>
+                                                    <constraint firstItem="vjr-Qb-0zO" firstAttribute="top" secondItem="d8E-Qq-N2f" secondAttribute="top" id="Rwu-aO-qYt"/>
+                                                    <constraint firstItem="uyz-kq-mVt" firstAttribute="centerX" secondItem="d8E-Qq-N2f" secondAttribute="centerX" id="nZS-qV-oaW"/>
+                                                    <constraint firstAttribute="trailing" secondItem="SEU-5s-ysy" secondAttribute="trailing" id="vOB-4S-y8T"/>
+                                                    <constraint firstItem="vjr-Qb-0zO" firstAttribute="leading" secondItem="d8E-Qq-N2f" secondAttribute="leading" id="w2y-k7-eI6"/>
                                                 </constraints>
-                                                <color key="progressTintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                            </progressView>
-                                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KVb-r9-dOG">
-                                                <rect key="frame" x="40" y="0.0" width="70" height="203.33333333333334"/>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hlu-9H-pKd" userLabel="Box button" customClass="ActionView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="230" width="200" height="50"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5Tp-Wr-h3j" customClass="StopView" customModule="OpenFlight">
+                                                        <rect key="frame" x="75" y="0.0" width="50" height="50"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" secondItem="5Tp-Wr-h3j" secondAttribute="height" multiplier="1:1" id="Joc-BE-9AY"/>
+                                                        </constraints>
+                                                    </view>
+                                                </subviews>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" constant="70" id="UhU-FB-3ft"/>
+                                                    <constraint firstItem="5Tp-Wr-h3j" firstAttribute="centerX" secondItem="hlu-9H-pKd" secondAttribute="centerX" id="FfV-eI-p6N"/>
+                                                    <constraint firstItem="5Tp-Wr-h3j" firstAttribute="centerY" secondItem="hlu-9H-pKd" secondAttribute="centerY" id="P9a-yC-po2"/>
+                                                    <constraint firstItem="5Tp-Wr-h3j" firstAttribute="height" secondItem="hlu-9H-pKd" secondAttribute="height" id="wmX-Y9-hM6"/>
                                                 </constraints>
-                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="69"/>
-                                                <color key="textColor" name="default_text_color"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                        </subviews>
-                                        <constraints>
-                                            <constraint firstItem="5Ld-8i-6aV" firstAttribute="centerX" secondItem="jDC-DG-tip" secondAttribute="centerX" id="BQ4-aQ-Rp6"/>
-                                            <constraint firstItem="5Ld-8i-6aV" firstAttribute="centerY" secondItem="jDC-DG-tip" secondAttribute="centerY" id="Gp1-bm-ho5"/>
-                                            <constraint firstItem="KVb-r9-dOG" firstAttribute="top" secondItem="jDC-DG-tip" secondAttribute="top" id="IGi-Bf-qiQ"/>
-                                            <constraint firstAttribute="bottom" secondItem="KVb-r9-dOG" secondAttribute="bottom" id="Y7L-fU-03Z"/>
-                                            <constraint firstItem="KVb-r9-dOG" firstAttribute="centerX" secondItem="5Ld-8i-6aV" secondAttribute="centerX" id="hgQ-mF-BVL"/>
-                                        </constraints>
-                                    </view>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lIj-ra-exD">
-                                        <rect key="frame" x="82.333333333333329" y="419.00000000000006" width="165.33333333333337" height="203.66666666666669"/>
-                                        <subviews>
-                                            <view clipsSubviews="YES" contentMode="scaleToFill" placeholderIntrinsicWidth="150" placeholderIntrinsicHeight="150" translatesAutoresizingMaskIntoConstraints="NO" id="Wql-Rb-gbc" customClass="HUDAlertPanelActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="7.6666666666666714" y="26.666666666666686" width="150" height="150"/>
-                                                <connections>
-                                                    <action selector="actionButtonTouchedUpInside:" destination="rRa-mJ-wGh" eventType="touchUpInside" id="Hxp-rf-Mj2"/>
-                                                </connections>
                                             </view>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstItem="Wql-Rb-gbc" firstAttribute="centerX" secondItem="lIj-ra-exD" secondAttribute="centerX" id="560-jg-D0a"/>
-                                            <constraint firstItem="Wql-Rb-gbc" firstAttribute="centerY" secondItem="lIj-ra-exD" secondAttribute="centerY" id="EDL-ql-2IX"/>
-                                        </constraints>
-                                    </view>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1zo-m4-bHL">
-                                        <rect key="frame" x="0.0" y="628.66666666666663" width="330.33333333333331" height="203.33333333333337"/>
-                                        <subviews>
-                                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="330.33333333333331" placeholderIntrinsicHeight="50" translatesAutoresizingMaskIntoConstraints="NO" id="mpo-oT-kvt" customClass="StopView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="76.666666666666742" width="330.33333333333331" height="50"/>
-                                            </view>
-                                        </subviews>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstItem="mpo-oT-kvt" firstAttribute="leading" secondItem="1zo-m4-bHL" secondAttribute="leading" id="E6K-yk-9ms"/>
-                                            <constraint firstAttribute="trailing" secondItem="mpo-oT-kvt" secondAttribute="trailing" id="ILY-Jo-pFE"/>
-                                            <constraint firstItem="mpo-oT-kvt" firstAttribute="centerX" secondItem="1zo-m4-bHL" secondAttribute="centerX" id="VFr-jL-gWN"/>
-                                            <constraint firstItem="mpo-oT-kvt" firstAttribute="centerY" secondItem="1zo-m4-bHL" secondAttribute="centerY" id="rSd-js-Vr3"/>
-                                        </constraints>
-                                    </view>
+                                    </stackView>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" name="default_bgcolor"/>
                         <constraints>
-                            <constraint firstItem="lIj-ra-exD" firstAttribute="width" secondItem="4fv-j0-Njy" secondAttribute="width" multiplier="0.4" id="eri-ET-w2B"/>
-                            <constraint firstItem="tPT-90-8Vm" firstAttribute="top" secondItem="fP3-nE-4Hr" secondAttribute="bottom" id="ffU-en-SK8"/>
-                            <constraint firstItem="fP3-nE-4Hr" firstAttribute="top" secondItem="4fv-j0-Njy" secondAttribute="top" constant="30" id="kig-1h-MVG"/>
-                            <constraint firstItem="fP3-nE-4Hr" firstAttribute="centerX" secondItem="4fv-j0-Njy" secondAttribute="centerX" id="xhk-h5-1NB"/>
+                            <constraint firstItem="1MW-wr-dmK" firstAttribute="leading" secondItem="RKy-vb-kC6" secondAttribute="leading" id="m37-9q-jhV"/>
+                            <constraint firstItem="1MW-wr-dmK" firstAttribute="top" secondItem="RKy-vb-kC6" secondAttribute="top" id="vJe-uB-TNs"/>
+                            <constraint firstAttribute="bottom" secondItem="1MW-wr-dmK" secondAttribute="bottom" id="whD-Ln-0zN"/>
+                            <constraint firstAttribute="trailing" secondItem="1MW-wr-dmK" secondAttribute="trailing" id="zvf-VE-XKM"/>
                         </constraints>
                     </view>
+                    <size key="freeformSize" width="200" height="320"/>
                     <connections>
-                        <outlet property="actionButton" destination="Wql-Rb-gbc" id="Bo6-vQ-ipk"/>
-                        <outlet property="goLabel" destination="KVb-r9-dOG" id="9il-bd-ZN7"/>
-                        <outlet property="progressView" destination="5Ld-8i-6aV" id="dyb-WZ-qpr"/>
-                        <outlet property="startView" destination="jDC-DG-tip" id="pW5-yP-wda"/>
-                        <outlet property="stopView" destination="mpo-oT-kvt" id="6jE-Pl-7uo"/>
-                        <outlet property="subtitleLabel" destination="Oiq-ke-ujY" id="ePF-MF-sxc"/>
-                        <outlet property="titleLabel" destination="W12-dr-RXx" id="cfd-qN-m89"/>
+                        <outlet property="actionButton" destination="uyz-kq-mVt" id="Sby-eQ-7TP"/>
+                        <outlet property="containerRightSidePanel" destination="jBD-e9-C3E" id="uk3-jd-IJU"/>
+                        <outlet property="goLabel" destination="HmF-yl-OIw" id="aQT-he-Sst"/>
+                        <outlet property="startView" destination="SEU-5s-ysy" id="0wH-Tw-OdL"/>
+                        <outlet property="stopView" destination="5Tp-Wr-h3j" id="AyZ-kV-Dfy"/>
+                        <outlet property="subtitleLabel" destination="Twt-nQ-U3h" id="eAX-a9-5T3"/>
+                        <outlet property="titleLabel" destination="5Sk-5I-Tid" id="sqT-Xf-wzy"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ahw-WX-v01" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -149,7 +181,7 @@
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="navy_blue">
             <color red="0.078431372549019607" green="0.43137254901960786" blue="0.84705882352941175" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

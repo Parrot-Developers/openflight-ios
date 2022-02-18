@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -96,14 +96,46 @@ public extension MapViewController {
         addGraphicOverlay(newOverlay, forKey: Constants.overlayKey, at: 0)
         // Update type of map to get altitude.
         updateElevationVisibility()
+
+        // Move user and drone graphic if necessary in flight plan overlay
+        insertUserGraphic()
+        insertDroneGraphic()
         if shouldReloadCamera {
             reloadCamera(flightPlan: flightPlan)
         }
 
-        if let graphics = flightPlanOverlay?.graphics {
-            guard let originGraphic = (graphics.first(where: { $0 is FlightPlanOriginGraphic }) as? FlightPlanOriginGraphic) else { return }
-            originGraphic.update(magicNumber:
-                    flightPlanOverlay?.sceneProperties?.surfacePlacement == .drapedFlat ? arcgisMagicValueToFixHeading : 1)
+        // update heading correction of flight plan origin graphic
+        graphics.compactMap { $0 as? FlightPlanOriginGraphic }.first.map {
+            let headingFactor = newOverlay.sceneProperties?.surfacePlacement == .drapedFlat ? arcgisMagicValueToFixHeading : 1
+            $0.update(magicNumber: headingFactor)
+        }
+
+        // get first waypoint
+        guard let firstWayPoint = flightPlan.dataSetting?.wayPoints.first?.agsPoint else { return }
+
+        // wait for elevation data to be ready before applying an altitude offset
+        viewModel.elevationSource.$elevationLoaded
+            .filter { $0 }
+            .removeDuplicates()
+            .sink { [unowned self] _ in
+                adjustAltitude(overlay: newOverlay, firstWayPoint: firstWayPoint)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Applies an altitude offset to graphics overlay, corresponding to altitude in AMSL of first waypoint.
+    ///
+    /// Flight plan's altitudes are relative to first waypoint altitude.
+    /// The flight plan overlay is drawn in absolute mode.
+    /// So we apply first waypoint altitude as overlay altitude offset.
+    ///
+    /// - Parameters:
+    ///   - overlay: graphics overlay that handles flight plan display
+    ///   - firstWayPoint: first flight plan waypoint
+    func adjustAltitude(overlay: AGSGraphicsOverlay, firstWayPoint: AGSPoint) {
+        sceneView.scene?.baseSurface?.elevation(for: firstWayPoint) { elevation, error in
+            guard error == nil else { return }
+            overlay.sceneProperties?.altitudeOffset = elevation
         }
     }
 
@@ -116,7 +148,7 @@ public extension MapViewController {
         let viewPoint = AGSViewpoint(targetExtent: bufferedExtent)
 
         // Get coordinate to calculate zoom
-        if let surface = self.sceneView.scene?.baseSurface {
+        if let surface = sceneView.scene?.baseSurface {
             surface.elevation(for: AGSPoint(clLocationCoordinate2D: viewPoint.targetGeometry.envelopeWithMargin().center.toCLLocationCoordinate2D()),
                 completion: { [weak self] altitude, error in
 
@@ -224,7 +256,7 @@ public extension MapViewController {
     ///     - index: graphic index
     func restoreSelectedItem(_ graphic: FlightPlanGraphic, at index: Int?) {
         if let wpIndex = index,
-           let newGraphic = self.flightPlanOverlay?.graphicForIndex(wpIndex, type: graphic.itemType) {
+           let newGraphic = flightPlanOverlay?.graphicForIndex(wpIndex, type: graphic.itemType) {
             flightDelegate?.didTapGraphicalItem(newGraphic)
         } else {
             flightDelegate?.didTapGraphicalItem(graphic)
@@ -366,43 +398,22 @@ extension MapViewController {
         guard let dragTimeStamp = flightPlanOverlay?.startDragTimeStamp,
             ProcessInfo.processInfo.systemUptime > dragTimeStamp + Style.tapGestureDuration else {
             flightPlanHandleTap(geoView, didTapAtScreenPoint: screenPoint, mapPoint: mapPoint)
-            flightEditionService?.stopWayPointOrientationEdition()
             resetDraggedGraphics()
             return
         }
         flightPlanOverlay?.updateDraggedGraphicLocation(mapPoint, editor: flightPlanEditionViewController)
 
-        // Check if WP orientation is selected.
-        if flightPlanOverlay?.hasSelection == true,
-           flightEditionService?.wayPointOrientationEditionValue == true {
-
-            if let wpIndex = self.flightPlanOverlay?.selectedWayPointIndex {
-                let wayPointLocation = self.flightPlan?.dataSetting?.wayPoints.elementAt(index: wpIndex)?.agsPoint
-                let touchLocation = self.sceneView.screen(toBaseSurface: screenPoint)
-
-                if let wpLoc = wayPointLocation {
-                    let newYaw = AGSGeometryEngine.standardGeodeticDistance(between: wpLoc,
-                                                                            and: touchLocation,
-                                                                            azimuthUnit: .degrees())?.azimuth1 ?? 0.0
-                    self.flightPlan?.dataSetting?.wayPoints.elementAt(index: wpIndex)?.setCustomYaw(newYaw.asPositiveDegrees)
-                    updateElevationVisibility()
-                }
-
-                flightEditionService?.stopWayPointOrientationEdition()
-            }
-        } else {
-            // Update graphics.
-
-            if flightPlanOverlay?.draggedGraphic is FlightPlanWayPointGraphic {
-                flightDelegate?.didChangeCourse()
-            } else if flightPlanOverlay?.draggedGraphic is FlightPlanPoiPointGraphic {
-                flightDelegate?.didChangePointOfView()
-            } else if flightPlanOverlay?.draggedGraphic is FlightPlanWayPointArrowGraphic {
-                flightDelegate?.didChangePointOfView()
-            }
-
-            resetDraggedGraphics()
+        // Update graphics.
+        if flightPlanOverlay?.draggedGraphic is FlightPlanWayPointGraphic {
+            flightDelegate?.didChangeCourse()
+        } else if flightPlanOverlay?.draggedGraphic is FlightPlanPoiPointGraphic {
+            flightDelegate?.didChangePointOfView()
+        } else if flightPlanOverlay?.draggedGraphic is FlightPlanWayPointArrowGraphic {
+            flightDelegate?.didChangePointOfView()
         }
+
+        resetDraggedGraphics()
+
     }
 }
 
@@ -416,7 +427,7 @@ private extension MapViewController {
 
     /// Enables elevation and displays flight plan in `relative` mode.
     func enableElevation() {
-        flightPlanOverlay?.sceneProperties?.surfacePlacement = .relative
+        flightPlanOverlay?.sceneProperties?.surfacePlacement = .absolute
         sceneView?.scene?.baseSurface?.isEnabled = true
     }
 
@@ -440,7 +451,7 @@ private extension MapViewController {
         dataSettings.addWaypoint(wayPoint)
         let index = dataSettings.wayPoints.count - 1
         let wayPointGraphic = wayPoint.markerGraphic(index: index)
-        wayPointGraphic.update(heading: self.sceneView.currentViewpointCamera().heading)
+        wayPointGraphic.update(heading: sceneView.currentViewpointCamera().heading)
         flightPlanOverlay?.graphics.add(wayPointGraphic)
 
         let angle = wayPoint.yaw ?? Constants.defaultWayPointYaw
@@ -476,7 +487,7 @@ private extension MapViewController {
         let index = dataSettings.pois.count - 1
         poi.addIndex(index: index)
         let poiGraphic = poi.markerGraphic(index: index)
-        poiGraphic.update(heading: self.sceneView.currentViewpointCamera().heading)
+        poiGraphic.update(heading: sceneView.currentViewpointCamera().heading)
         flightPlanOverlay?.graphics.add(poiGraphic)
         flightDelegate?.didChangePointOfView()
         flightDelegate?.didTapGraphicalItem(poiGraphic)
@@ -492,15 +503,15 @@ private extension MapViewController {
 // MARK: - EditionSettingsDelegate
 extension MapViewController: EditionSettingsDelegate {
     public func updateMode(tag: Int) {
-        self.updateFlightPlanType(tag: tag)
+        updateFlightPlanType(tag: tag)
     }
 
     public func updateSettingValue(for key: String?, value: Int) {
-        self.updateSetting(for: key, value: value)
+        updateSetting(for: key, value: value)
     }
 
     public func updateChoiceSetting(for key: String?, value: Bool) {
-        self.updateSetting(for: key, value: value == true ? 0 : 1)
+        updateSetting(for: key, value: value == true ? 0 : 1)
     }
 
     public func didTapCloseButton() {}

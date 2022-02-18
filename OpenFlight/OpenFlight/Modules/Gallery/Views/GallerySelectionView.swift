@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,7 +38,7 @@ protocol GallerySelectionDelegate: AnyObject {
     /// Download the selection.
     func mustDownloadSelection()
     /// Share the selection.
-    func mustShareSelection()
+    func mustShareSelection(srcView: UIView)
 }
 
 /// Gallery selection view.
@@ -79,56 +78,19 @@ private extension GallerySelectionView {
         delegate?.mustDownloadSelection()
     }
 
-    @IBAction func shareButtonDidTouchUpInside(_ sender: Any) {
-        delegate?.mustShareSelection()
+    @IBAction func shareButtonDidTouchUpInside(_ sender: UIView) {
+        delegate?.mustShareSelection(srcView: sender)
     }
 }
 
 // MARK: - Internal Funcs
 internal extension GallerySelectionView {
-    /// Sets count and size of items.
-    ///
-    /// - Parameters:
-    ///    - count: count
-    ///    - size: size
-    func setCountAndSizeOfItems(_ count: Int, _ size: UInt64) {
-        self.isHidden = false
-
-        if isDownloadAllowed {
-            infoLabel.text = String(format: "%d %@ (%@)",
-                                    count,
-                                    L10n.galleryMediaSelected.lowercased(),
-                                    StorageUtils.sizeForFile(size: size))
-        } else {
-            infoLabel.text = String(format: "%d %@",
-                                    count,
-                                    L10n.galleryMediaSelected.lowercased())
-        }
-    }
-
-    /// Sets if download is allowed.
-    ///
-    /// - Parameters:
-    ///    - enabled: enabled
-    func setAllowDownload(_ enabled: Bool) {
-        self.isDownloadAllowed = enabled
-        downloadButton.isHidden = !enabled
-    }
-
     /// Checks if all medias are downloaded.
     ///
     /// - Parameters:
     ///    - selectedMedias: medias which are selected
     func allMediasDownloaded(selectedMedias: [GalleryMedia]) -> Bool {
         return !selectedMedias.isEmpty && !selectedMedias.contains(where: { $0.downloadState != .downloaded })
-    }
-
-    /// Sets if share is allowed.
-    ///
-    /// - Parameters:
-    ///    - enabled: enabled
-    func setAllowShare(_ enabled: Bool) {
-        shareButton.isHidden = !enabled
     }
 
     /// Updates buttons if medias are selected or downloaded.

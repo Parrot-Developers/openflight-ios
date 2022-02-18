@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,7 +29,7 @@
 
 import UIKit
 import GroundSdk
-import Reachability
+import Combine
 
 /// State for `RemoteUpdateViewModel`.
 final class RemoteUpdateState: DevicesConnectionState {
@@ -38,7 +37,6 @@ final class RemoteUpdateState: DevicesConnectionState {
     var isNetworkReachable: Bool?
     var idealFirmwareVersion: String?
     var deviceUpdateStep: Observable<RemoteUpdateStep> = Observable(RemoteUpdateStep.none)
-    var deviceUpdateEvent: RemoteUpdateEvent?
     var currentProgress: Int?
 
     // MARK: - Init
@@ -54,20 +52,17 @@ final class RemoteUpdateState: DevicesConnectionState {
     ///     - isNetworkReachable: network reachability
     ///     - idealFirmwareVersion: The ideal firmware version
     ///     - deviceUpdateStep: state of the update
-    ///     - deviceUpdateEvent: event during the update
     ///     - currentProgress: update progress
     init(droneConnectionState: DeviceConnectionState?,
          remoteControlConnectionState: DeviceConnectionState?,
          isNetworkReachable: Bool?,
          idealFirmwareVersion: String?,
          deviceUpdateStep: Observable<RemoteUpdateStep>,
-         deviceUpdateEvent: RemoteUpdateEvent?,
          currentProgress: Int?) {
         super.init(droneConnectionState: droneConnectionState, remoteControlConnectionState: remoteControlConnectionState)
         self.isNetworkReachable = isNetworkReachable
         self.idealFirmwareVersion = idealFirmwareVersion
         self.deviceUpdateStep = deviceUpdateStep
-        self.deviceUpdateEvent = deviceUpdateEvent
         self.currentProgress = currentProgress
     }
 
@@ -80,7 +75,6 @@ final class RemoteUpdateState: DevicesConnectionState {
             && self.isNetworkReachable == other.isNetworkReachable
             && self.idealFirmwareVersion == other.idealFirmwareVersion
             && self.deviceUpdateStep.value == other.deviceUpdateStep.value
-            && self.deviceUpdateEvent == other.deviceUpdateEvent
             && self.currentProgress == other.currentProgress
     }
 
@@ -90,7 +84,6 @@ final class RemoteUpdateState: DevicesConnectionState {
                                      isNetworkReachable: self.isNetworkReachable,
                                      idealFirmwareVersion: self.idealFirmwareVersion,
                                      deviceUpdateStep: self.deviceUpdateStep,
-                                     deviceUpdateEvent: self.deviceUpdateEvent,
                                      currentProgress: self.currentProgress)
         return copy
     }
@@ -100,20 +93,21 @@ final class RemoteUpdateState: DevicesConnectionState {
 final class RemoteUpdateViewModel: DevicesStateViewModel<RemoteUpdateState> {
     // MARK: - Private Properties
     private var remoteControlUpdaterRef: Ref<Updater>?
-    private var reachability: Reachability?
+    private var networkService: NetworkService
+    private var cancellables = Set<AnyCancellable>()
+
+    // MARK: - Internal Properties
+    /// The latest applicable (local) firmware version.
+    var latestApplicableFirmwareVersion: FirmwareVersion? {
+        remoteControlUpdaterRef?.value?.applicableFirmwares.last?.firmwareIdentifier.version
+    }
 
     // MARK: - Init
     /// Init.
     override init() {
+        networkService = Services.hub.systemServices.networkService
+
         super.init()
-
-        RemoteControlGrabManager.shared.disableRemoteControl()
-    }
-
-    // MARK: - Deinit
-    deinit {
-        reachability?.stopNotifier()
-        RemoteControlGrabManager.shared.enableRemoteControl()
     }
 
     // MARK: - Override Funcs
@@ -121,13 +115,18 @@ final class RemoteUpdateViewModel: DevicesStateViewModel<RemoteUpdateState> {
         super.listenRemoteControl(remoteControl: remoteControl)
 
         listenUpdater(remoteControl)
-        listenReachability()
+        listenNetwork()
     }
 
     // MARK: - Internal Funcs
     /// Tells whether target firmware needs to be downloaded.
     func needDownload() -> Bool {
         return remoteControlUpdaterRef?.value?.downloadableFirmwares.isEmpty == false
+    }
+
+    /// Tells whether an applicable firmware is locally available (it may not be the ideal version).
+    func isLocalUpdateAvailable() -> Bool {
+        remoteControlUpdaterRef?.value?.applicableFirmwares.isEmpty == false
     }
 
     /// Returns true if the user can start an update.
@@ -145,6 +144,19 @@ final class RemoteUpdateViewModel: DevicesStateViewModel<RemoteUpdateState> {
         } else if updater?.applicableFirmwares.isEmpty == false {
             startUpdate()
         }
+    }
+
+    /// Starts download of the firmware.
+    func startDownload() {
+        let started = remoteControl?.getPeripheral(Peripherals.updater)?.downloadAllFirmwares() == true
+        if !started {
+            state.value.deviceUpdateStep.set(.downloadFailed)
+        }
+    }
+
+    /// Starts update of the firmware.
+    func startUpdate() {
+        remoteControl?.getPeripheral(Peripherals.updater)?.updateToLatestFirmware()
     }
 
     /// Cancels the download or the update.
@@ -168,8 +180,8 @@ final class RemoteUpdateViewModel: DevicesStateViewModel<RemoteUpdateState> {
         let copy = state.value.copy()
         copy.isNetworkReachable = nil
         self.state.set(copy)
-        reachability?.stopNotifier()
-        listenReachability()
+        cancellables.removeAll()
+        listenNetwork()
     }
 }
 
@@ -212,9 +224,9 @@ private extension RemoteUpdateViewModel {
         case .downloading:
             copy.deviceUpdateStep.set(.downloadStarted)
         case .canceled:
-            copy.deviceUpdateEvent = .downloadCanceled
+            copy.deviceUpdateStep.set(.cancelled)
         case .failed:
-            copy.deviceUpdateEvent = .updateFailed
+            copy.deviceUpdateStep.set(.downloadFailed)
         case .success:
             copy.deviceUpdateStep.set(.downloadCompleted)
         }
@@ -238,9 +250,9 @@ private extension RemoteUpdateViewModel {
         case .uploading:
             copy.deviceUpdateStep.set(.uploading)
         case .failed:
-            copy.deviceUpdateEvent = .updateFailed
+            copy.deviceUpdateStep.set(.updateFailed)
         case .canceled:
-            copy.deviceUpdateEvent = .updateCanceled
+            copy.deviceUpdateStep.set(.cancelled)
         case .waitingForReboot:
             copy.deviceUpdateStep.set(.rebooting)
         case .success:
@@ -251,33 +263,16 @@ private extension RemoteUpdateViewModel {
         state.set(copy)
     }
 
-    /// Starts watcher for reachability.
-    func listenReachability() {
-        let copy = state.value.copy()
-        do {
-            try reachability = Reachability()
-            try reachability?.startNotifier()
-        } catch {
-            copy.isNetworkReachable = false
-        }
+    func listenNetwork() {
+        networkService.networkReachable
+            .removeDuplicates()
+            .sink { [weak self] reachable in
+                guard let self = self else { return }
+                let copy = self.state.value.copy()
 
-        reachability?.whenReachable = { _ in
-            copy.isNetworkReachable = true
-            self.state.set(copy)
-        }
-        reachability?.whenUnreachable = {  _ in
-            copy.isNetworkReachable = false
-            self.state.set(copy)
-        }
-    }
-
-    /// Starts download of the firmware.
-    func startDownload() {
-        remoteControl?.getPeripheral(Peripherals.updater)?.downloadAllFirmwares()
-    }
-
-    /// Starts update of the firmware.
-    func startUpdate() {
-        remoteControl?.getPeripheral(Peripherals.updater)?.updateToLatestFirmware()
+                copy.isNetworkReachable = reachable
+                self.state.set(copy)
+            }
+            .store(in: &cancellables)
     }
 }

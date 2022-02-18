@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,76 +32,129 @@ import UIKit
 /// A generic style for buttons:
 /// - validate: plain .highlightColor bkg.
 /// - destructive: plain .errorColor bkg.
-/// - primary: plain .white bkg.
+/// - default1: plain .white bkg (bordered).
+/// - default2: plain .whiteAlbescent bkg.
+/// - action1: plain .warning bkg.
+/// - action2: plain .blueNavy bkg.
 /// - secondary: bordered clear bkg.
-enum ActionButtonStyle {
+public enum ActionButtonStyle {
     case none
     case validate
     case destructive
-    case primary
-    case secondary
+    case default1
+    case default2
+    case action1
+    case action2
+    case secondary1
+    case secondary2
 
-    var titleColor: ColorName {
+    var tintColor: UIColor {
         switch self {
-        case .validate,
-             .destructive:
-            return .white
+        case .none,
+             .default1,
+             .default2,
+             .secondary1:
+            return ColorName.defaultTextColor.color
         default:
-            return ColorName.defaultTextColor
+            return .white
         }
     }
 
-    var backgroundColor: ColorName {
+    var backgroundColor: UIColor {
         switch self {
-        case .validate: return ColorName.highlightColor
-        case .destructive: return ColorName.errorColor
-        case .primary: return ColorName.white
-        default: return ColorName.clear
+        case .validate: return ColorName.highlightColor.color
+        case .destructive: return ColorName.errorColor.color
+        case .default1: return ColorName.white.color
+        case .default2: return ColorName.whiteAlbescent.color
+        case .action1: return ColorName.warningColor.color
+        case .action2: return ColorName.blueNavy.color
+        default: return .clear
         }
     }
 
-    var borderColor: ColorName {
+    var borderColor: UIColor {
         switch self {
-        case .secondary: return ColorName.defaultTextColor
-        default: return ColorName.clear
+        case .default1: return ColorName.whiteAlbescent.color
+        case .secondary1: return ColorName.defaultTextColor.color
+        case .secondary2: return ColorName.white.color
+        default: return .clear
         }
     }
 
     var hasShadow: Bool {
         switch self {
-        case .secondary: return false
+        case .default2,
+            .secondary1,
+            .secondary2:
+            return false
         default: return true
         }
     }
 }
 
 /// A model for generic action buttons.
-class ActionButtonModel {
+public struct ActionButtonModel {
+    /// The image of the button.
+    var image: UIImage?
     /// The title of the button.
     var title: String?
-    /// The color of the title.
-    var titleColor: ColorName?
-    /// The font style
-    var fontStyle: ParrotFontStyle
-    /// The background color name of the button.
-    var backgroundColor: ColorName?
+    /// The tint color of the button.
+    var tintColor: UIColor
+    /// The content horizontal alignment.
+    var contentHorizontalAlignment: UIControl.ContentHorizontalAlignment
+    /// The label horizontal alignment in case of word wrapping.
+    var labelHorizontalAlignment: NSTextAlignment?
+    /// The font style.
+    var fontStyle: FontStyle
+    /// Font digits style.
+    var isMonospacedDigitsFont: Bool
+    /// The background color of the button.
+    var backgroundColor: UIColor
     /// The border color of the button.
-    var borderColor: ColorName?
+    var borderColor: UIColor
     /// Flag for shadow display.
-    var hasShadow: Bool?
+    var hasShadow: Bool
 
-    init(title: String? = nil,
-         titleColor: ColorName? = nil,
-         fontStyle: ParrotFontStyle = .regular,
-         backgroundColor: ColorName? = nil,
-         borderColor: ColorName? = nil,
-         hasShadow: Bool? = nil,
-         style: ActionButtonStyle = .none) {
+    /// The label horizontal alignment in case of word wrapping.
+    var defaultLabelHorizontalAlignment: NSTextAlignment {
+        switch contentHorizontalAlignment {
+        case .left, .leading: return .left
+        case .right, .trailing: return .right
+        default: return .center
+        }
+    }
+
+    public init(image: UIImage? = nil,
+                title: String? = nil,
+                tintColor: UIColor? = nil,
+                contentHorizontalAlignment: UIControl.ContentHorizontalAlignment? = nil,
+                labelHorizontalAlignment: NSTextAlignment? = nil,
+                fontStyle: FontStyle = .current,
+                isMonospacedDigitsFont: Bool = false,
+                backgroundColor: UIColor? = nil,
+                borderColor: UIColor? = nil,
+                hasShadow: Bool? = nil,
+                style: ActionButtonStyle = .none) {
+        self.image = image
         self.title = title
-        self.titleColor = titleColor ?? style.titleColor
+        self.tintColor = tintColor ?? style.tintColor
+        self.contentHorizontalAlignment = contentHorizontalAlignment ?? .center
+        self.labelHorizontalAlignment = labelHorizontalAlignment
         self.fontStyle = fontStyle
+        self.isMonospacedDigitsFont = isMonospacedDigitsFont
         self.backgroundColor = backgroundColor ?? style.backgroundColor
         self.borderColor = borderColor ?? style.borderColor
         self.hasShadow = hasShadow ?? style.hasShadow
+    }
+
+    /// Updates the model with a specific style.
+    ///
+    /// - Parameters:
+    ///    - style: The style of the model to apply.
+    mutating func updateWithStyle(_ style: ActionButtonStyle) {
+        tintColor = style.tintColor
+        backgroundColor = style.backgroundColor
+        borderColor = style.borderColor
+        hasShadow = style.hasShadow
     }
 }

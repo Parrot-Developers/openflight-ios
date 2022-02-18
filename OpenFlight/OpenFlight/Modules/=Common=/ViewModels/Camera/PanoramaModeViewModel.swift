@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,7 +31,6 @@ import GroundSdk
 import SwiftyUserDefaults
 
 /// State for `PanoramaModeViewModel`.
-
 final class PanoramaModeState: ViewModelState, EquatableState, Copying {
     // MARK: - Internal Properties
     /// Current panorama progress state.
@@ -47,7 +45,7 @@ final class PanoramaModeState: ViewModelState, EquatableState, Copying {
     // MARK: - Init
     required init() { }
 
-    /// Init.
+    /// Constructor.
     ///
     /// - Parameters:
     ///    - inProgress: current panorama progress state
@@ -66,25 +64,28 @@ final class PanoramaModeState: ViewModelState, EquatableState, Copying {
 
     // MARK: - Internal Funcs
     func isEqual(to other: PanoramaModeState) -> Bool {
-        return self.inProgress == other.inProgress
-            && self.progress == other.progress
-            && self.mode == other.mode
-            && self.available == other.available
+        return inProgress == other.inProgress
+        && progress == other.progress
+        && mode == other.mode
+        && available == other.available
     }
 
     /// Returns a copy of the object.
     func copy() -> PanoramaModeState {
-        let copy = PanoramaModeState(inProgress: self.inProgress,
-                                     progress: self.progress,
-                                     mode: self.mode,
-                                     available: self.available)
+        let copy = PanoramaModeState(inProgress: inProgress,
+                                     progress: progress,
+                                     mode: mode,
+                                     available: available)
         return copy
     }
 }
 
 /// View model that manages panorama mode.
-
 final class PanoramaModeViewModel: DroneWatcherViewModel<PanoramaModeState> {
+    enum PanoramaStatus { case idle, inProgress, success, failure }
+
+    @Published private(set) var status: PanoramaStatus = .idle
+
     // MARK: - Private Properties
     private var animationPilotingItfRef: Ref<AnimationPilotingItf>?
     private var panoramaModeObserver: DefaultsDisposable?
@@ -113,17 +114,12 @@ final class PanoramaModeViewModel: DroneWatcherViewModel<PanoramaModeState> {
     // MARK: - Internal Funcs
     /// Starts a panorama photo capture with current mode.
     func startPanoramaPhotoCapture() {
-        _ = animationItf?.startAnimation(config: state.value.mode.animationConfig)
+        Services.hub.panoramaService.startPanorama(mode: state.value.mode)
     }
 
     /// Cancels current photo panorama photo capture.
     func cancelPanoramaPhotoCapture() {
-        guard let animationItf = animationItf,
-            animationItf.isPanoramaPhotoCaptureInProgress
-            else {
-                return
-        }
-        _ = animationItf.abortCurrentAnimation()
+        Services.hub.panoramaService.cancelPanorama()
     }
 }
 
@@ -131,14 +127,16 @@ final class PanoramaModeViewModel: DroneWatcherViewModel<PanoramaModeState> {
 private extension PanoramaModeViewModel {
     /// Starts watcher for animation piloting interface.
     func listenAnimation(drone: Drone) {
-        animationPilotingItfRef = drone.getPilotingItf(PilotingItfs.animation) { [weak self] animationItf in
-            self?.animationItf = animationItf
-            self?.isCurrentPanoramaModeAvailable = animationItf?.isPanoramaPhotoCaptureAvailable(PanoramaMode.current) == true
-            let copy = self?.state.value.copy()
-            copy?.inProgress = animationItf?.animation?.status != nil
-            copy?.progress = animationItf?.animation?.progress ?? -1
-            copy?.available = self?.isCurrentPanoramaModeAvailable == true
-            self?.state.set(copy)
+        animationPilotingItfRef = drone.getPilotingItf(PilotingItfs.animation) { [unowned self] animationItf in
+            status = panoramaStatus(animationStatus: animationItf?.animation?.status,
+                                    progress: animationItf?.animation?.progress)
+            self.animationItf = animationItf
+            isCurrentPanoramaModeAvailable = animationItf?.isPanoramaPhotoCaptureAvailable(PanoramaMode.current) == true
+            let copy = state.value.copy()
+            copy.inProgress = animationItf?.animation?.status != nil
+            copy.progress = animationItf?.animation?.progress ?? -1
+            copy.available = isCurrentPanoramaModeAvailable == true
+            state.set(copy)
         }
     }
 
@@ -152,11 +150,31 @@ private extension PanoramaModeViewModel {
         updatePanoramaMode()
     }
 
-    /// Update current panorama state.
+    /// Updates current panorama state.
     func updatePanoramaMode() {
-        let copy = self.state.value.copy()
+        let copy = state.value.copy()
         copy.mode = PanoramaMode.current
         copy.available = isCurrentPanoramaModeAvailable ?? false
-        self.state.set(copy)
+        state.set(copy)
+    }
+
+    /// Returns panorama process status according to itf animation state.
+    ///
+    /// - Parameters:
+    ///    - animationStatus: The status of the animation.
+    ///    - progress: The progress of the animation (from 0 to 100).
+    func panoramaStatus(animationStatus: AnimationStatus?, progress: Int?) -> PanoramaStatus {
+        guard let animationStatus = animationStatus,
+              let progress = progress else {
+                  return .idle
+              }
+
+        if progress == Int(Values.oneHundred) {
+            return .success
+        }
+
+        return animationStatus == .aborting
+        ? .failure
+        : .inProgress
     }
 }

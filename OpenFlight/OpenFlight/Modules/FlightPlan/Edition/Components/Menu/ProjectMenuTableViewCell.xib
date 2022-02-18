@@ -1,77 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" rowHeight="93" id="KGk-i7-Jjw" customClass="ProjectMenuTableViewCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="374" height="63"/>
+        <tableViewCell contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" indentationWidth="10" rowHeight="106" id="KGk-i7-Jjw" customClass="ProjectMenuTableViewCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="374" height="76"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="374" height="63"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="374" height="76"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="folder" translatesAutoresizingMaskIntoConstraints="NO" id="tqp-d0-vX1">
-                        <rect key="frame" x="12" y="8" width="50" height="50"/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <color key="tintColor" name="default_text_color"/>
-                        <constraints>
-                            <constraint firstAttribute="height" constant="50" id="3GO-tE-14s"/>
-                            <constraint firstAttribute="width" constant="50" id="J8K-qy-4UW"/>
-                        </constraints>
-                    </imageView>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" text="Project name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oTq-3p-YN2">
-                        <rect key="frame" x="70" y="31" width="297" height="15"/>
-                        <constraints>
-                            <constraint firstAttribute="height" constant="15" id="POo-Ea-GGD"/>
-                        </constraints>
-                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                        <color key="textColor" name="default_text_color"/>
-                        <nil key="highlightedColor"/>
-                    </label>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PQm-Zo-JWZ">
-                        <rect key="frame" x="70" y="16" width="278" height="10"/>
-                        <constraints>
-                            <constraint firstAttribute="height" relation="lessThanOrEqual" constant="10" id="18V-fV-jCg"/>
-                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="10" id="GMO-LS-fhB"/>
-                        </constraints>
-                        <fontDescription key="fontDescription" type="system" pointSize="10"/>
-                        <color key="textColor" name="default_text_color"/>
-                        <nil key="highlightedColor"/>
-                    </label>
+                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="SX6-IW-RsA" userLabel="folderStack">
+                        <rect key="frame" x="16" y="0.0" width="342" height="27"/>
+                        <subviews>
+                            <button opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="z3X-Un-HmV" userLabel="folder" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="27" height="27"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="ddX-Wv-mF4"/>
+                                    <constraint firstAttribute="width" secondItem="z3X-Un-HmV" secondAttribute="height" multiplier="1:1" id="m0b-8y-OUB"/>
+                                </constraints>
+                                <color key="tintColor" name="sambuca"/>
+                                <size key="titleShadowOffset" width="2" height="1"/>
+                                <state key="normal" image="folder">
+                                    <color key="titleColor" name="sambuca"/>
+                                    <color key="titleShadowColor" name="sambuca_50"/>
+                                </state>
+                            </button>
+                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Uh4-2W-Bw9" userLabel="outerProjectStack">
+                                <rect key="frame" x="35" y="0.0" width="307" height="27"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="Gb0-Hw-dMn" userLabel="projectStack">
+                                        <rect key="frame" x="0.0" y="0.0" width="307" height="27"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="PROJECT" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ok5-Pv-RTg" userLabel="title">
+                                                <rect key="frame" x="0.0" y="0.0" width="307" height="10"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="10"/>
+                                                <color key="textColor" name="sambuca"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="PROJECT" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vit-tc-VoN" userLabel="name">
+                                                <rect key="frame" x="0.0" y="14" width="307" height="13"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                <color key="textColor" name="sambuca"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </stackView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </stackView>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="oTq-3p-YN2" firstAttribute="leading" secondItem="tqp-d0-vX1" secondAttribute="trailing" constant="8" id="0La-p9-Jde"/>
-                    <constraint firstItem="tqp-d0-vX1" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="12" id="0oa-I6-GwN"/>
-                    <constraint firstAttribute="bottom" secondItem="tqp-d0-vX1" secondAttribute="bottom" constant="8" id="2rS-P8-e0s"/>
-                    <constraint firstAttribute="trailing" secondItem="oTq-3p-YN2" secondAttribute="trailing" constant="7" id="OQn-iV-woZ"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="PQm-Zo-JWZ" secondAttribute="trailing" constant="10" id="Z3e-LA-8ir"/>
-                    <constraint firstItem="oTq-3p-YN2" firstAttribute="top" secondItem="PQm-Zo-JWZ" secondAttribute="bottom" constant="5" id="dML-j1-LAN"/>
-                    <constraint firstItem="PQm-Zo-JWZ" firstAttribute="leading" secondItem="tqp-d0-vX1" secondAttribute="trailing" constant="8" id="dz0-4T-ZtX"/>
-                    <constraint firstItem="tqp-d0-vX1" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="8" id="fls-BI-TRN"/>
-                    <constraint firstItem="PQm-Zo-JWZ" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="5" id="rW0-ro-4u2"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="SX6-IW-RsA" secondAttribute="trailing" id="Pub-IV-fbV"/>
+                    <constraint firstItem="SX6-IW-RsA" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="beM-d1-UFS"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="SX6-IW-RsA" secondAttribute="bottom" id="oxf-wd-MYr"/>
+                    <constraint firstItem="SX6-IW-RsA" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="wVz-si-ygW"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
-                <outlet property="folderImageView" destination="tqp-d0-vX1" id="SLl-M8-h8c"/>
-                <outlet property="projectLabel" destination="PQm-Zo-JWZ" id="0w2-4N-hmK"/>
-                <outlet property="projectName" destination="oTq-3p-YN2" id="gW6-Nu-DRN"/>
+                <outlet property="folderButton" destination="z3X-Un-HmV" id="q5g-kR-mZT"/>
+                <outlet property="projectButtonHeightConstraint" destination="ddX-Wv-mF4" id="aGb-78-gQ3"/>
+                <outlet property="projectNameLabel" destination="vit-tc-VoN" id="hv8-Ij-4S8"/>
+                <outlet property="projectTitleLabel" destination="ok5-Pv-RTg" id="Z5o-EW-jhi"/>
             </connections>
-            <point key="canvasLocation" x="24" y="102.99850074962519"/>
+            <point key="canvasLocation" x="24" y="108.84557721139431"/>
         </tableViewCell>
     </objects>
     <resources>
         <image name="folder" width="19" height="15"/>
-        <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        <namedColor name="sambuca">
+            <color red="0.32899999618530273" green="0.32400000095367432" blue="0.4779999852180481" alpha="0.33000001311302185" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="sambuca_50">
+            <color red="0.32899999618530273" green="0.32400000095367432" blue="0.4779999852180481" alpha="0.33000001311302185" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -78,7 +77,8 @@ class DashboardDroneCell: UICollectionViewCell, NibReusable {
         firmwareAndMissionsUpdateListener = FirmwareAndMissionsInteractor.shared
             .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
                 self?.firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel
-                self?.setDeviceStateButton(with: firmwareAndMissionToUpdateModel)
+                self?.setDeviceStateButton(with: firmwareAndMissionToUpdateModel,
+                                           and: self?.viewModel?.requiredCalibrationSubject.value ?? false)
             }
     }
 
@@ -107,7 +107,7 @@ private extension DashboardDroneCell {
         bindGpsStrength()
         bindDroneName()
         bindCellularStrength()
-        bindConnectionState()
+        bindDeviceState()
     }
 
     /// Binds the battery from the view model to battery label
@@ -124,8 +124,7 @@ private extension DashboardDroneCell {
     func bindWifiStrength() {
         viewModel?.$wifiStrength
             .sink { [unowned self] wifiStrength in
-                let isCellularActive = viewModel?.currentLink == .cellular
-                wifiStatusImageView.image = wifiStrength?.signalIcon(isLinkActive: !isCellularActive)
+                wifiStatusImageView.image = wifiStrength?.signalIcon
             }
             .store(in: &cancellables)
     }
@@ -152,18 +151,20 @@ private extension DashboardDroneCell {
     func bindCellularStrength() {
         viewModel?.$cellularStrength
             .sink { [unowned self] cellularStrength in
-                let isCellularActive = viewModel?.currentLink == .cellular
-                networkImageView.image = cellularStrength.signalIcon(isLinkActive: isCellularActive)
+                networkImageView.image = cellularStrength.signalIcon
             }
             .store(in: &cancellables)
     }
 
-    /// Binds the device connection state from the view model to the device state labal.
-    func bindConnectionState() {
-        viewModel?.$connectionState
-            .sink { [unowned self] _ in
+    /// Binds the device state from the view model to the device state label.
+    func bindDeviceState() {
+        guard let viewModel = viewModel else { return }
+
+        viewModel.$connectionState
+            .combineLatest(viewModel.requiredCalibrationSubject)
+            .sink { [unowned self] _, calibrationIsRequired in
                 if let firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel {
-                    setDeviceStateButton(with: firmwareAndMissionToUpdateModel)
+                    setDeviceStateButton(with: firmwareAndMissionToUpdateModel, and: calibrationIsRequired)
                 }
             }
             .store(in: &cancellables)
@@ -193,7 +194,8 @@ private extension DashboardDroneCell {
     ///
     /// - Parameters:
     ///    - firmwareAndMissionToUpdateModel: The firmware and mission update model
-    func setDeviceStateButton(with firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel) {
+    func setDeviceStateButton(with firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel,
+                              and calibrationIsRequired: Bool = false) {
         guard let droneInfosViewModel = viewModel else { return }
 
         let connectionState = droneInfosViewModel.connectionState
@@ -205,10 +207,10 @@ private extension DashboardDroneCell {
             status = .disconnected
             title = L10n.commonNotConnected
         case .connected:
-            if firmwareAndMissionToUpdateModel.needFirmwareUpdate {
-                status = .updateAvailable
+            if firmwareAndMissionToUpdateModel.updateRequired {
+                status = .updateRequired
                 title = firmwareAndMissionToUpdateModel.stateButtonTitle
-            } else if droneInfosViewModel.requiresCalibration {
+            } else if calibrationIsRequired {
                 status = .calibrationRequired
                 title = L10n.remoteCalibrationRequired
             } else if firmwareAndMissionToUpdateModel.needUpdate {

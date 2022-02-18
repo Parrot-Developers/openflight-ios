@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,5 +32,65 @@ import CoreData
 
 @objc(Flight)
 public class Flight: NSManagedObject {
+    // MARK: - Utils
+    /// Return FlightModel from Flight
+    public func model() -> FlightModel {
+        return FlightModel(apcId: apcId,
+                           cloudId: Int(cloudId),
+                           uuid: uuid,
+                           title: title,
+                           version: version,
+                           startTime: startTime,
+                           latestCloudModificationDate: latestCloudModificationDate,
+                           photoCount: photoCount,
+                           videoCount: videoCount,
+                           startLatitude: startLatitude,
+                           startLongitude: startLongitude,
+                           batteryConsumption: batteryConsumption,
+                           distance: distance,
+                           duration: duration,
+                           gutmaFile: gutmaFile,
+                           parrotCloudUploadUrl: parrotCloudUploadUrl,
+                           isLocalDeleted: isLocalDeleted,
+                           synchroStatus: SynchroStatus(status: synchroStatus),
+                           synchroError: SynchroError(error: synchroError),
+                           latestSynchroStatusDate: latestSynchroStatusDate,
+                           latestLocalModificationDate: latestLocalModificationDate,
+                           fileSynchroStatus: fileSynchroStatus,
+                           fileSynchroDate: fileSynchroDate,
+                           externalSynchroStatus: externalSynchroStatus,
+                           externalSynchroDate: externalSynchroDate)
+    }
 
+    /// Update from flightModel
+    /// - Parameters
+    ///     - flightModel: specified FlightModel
+    ///     - byUserUpdate: Boolean to know if it is updated by user interaction
+    public func update(fromFlightModel flightModel: FlightModel) {
+        apcId = flightModel.apcId
+        title = flightModel.title
+        uuid = flightModel.uuid
+        version = flightModel.version
+        photoCount = flightModel.photoCount
+        videoCount = flightModel.videoCount
+        startLatitude = flightModel.startLatitude
+        startLongitude = flightModel.startLongitude
+        startTime = flightModel.startTime
+        batteryConsumption = flightModel.batteryConsumption
+        distance = flightModel.distance
+        duration = flightModel.duration
+        gutmaFile = flightModel.gutmaFile
+        cloudId = Int64(flightModel.cloudId)
+        isLocalDeleted = flightModel.isLocalDeleted
+        parrotCloudUploadUrl = flightModel.parrotCloudUploadUrl
+        latestSynchroStatusDate = flightModel.latestSynchroStatusDate
+        latestCloudModificationDate = flightModel.latestCloudModificationDate
+        latestLocalModificationDate = flightModel.latestLocalModificationDate
+        synchroStatus = flightModel.synchroStatus?.rawValue ?? 0
+        synchroError = flightModel.synchroError?.rawValue ?? 0
+        fileSynchroDate = flightModel.fileSynchroDate
+        fileSynchroStatus = flightModel.fileSynchroStatus ?? 0
+        externalSynchroDate = flightModel.externalSynchroDate
+        externalSynchroStatus = flightModel.externalSynchroStatus ?? 0
+    }
 }

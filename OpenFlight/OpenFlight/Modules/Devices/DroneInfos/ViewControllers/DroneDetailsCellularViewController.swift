@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,9 +35,9 @@ final class DroneDetailsCellularViewController: UIViewController {
 
     // MARK: - Outlet
 
-    @IBOutlet private weak var enterPinButton: UIButton!
-    @IBOutlet private weak var forgetPinButton: UIButton!
-    @IBOutlet private weak var showDebugButton: UIButton!
+    @IBOutlet private weak var enterPinButton: ActionButton!
+    @IBOutlet private weak var forgetPinButton: ActionButton!
+    @IBOutlet private weak var showDebugButton: ActionButton!
     @IBOutlet private weak var cellularView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var cellularStatusLabel: UILabel!
@@ -56,12 +55,6 @@ final class DroneDetailsCellularViewController: UIViewController {
     @IBOutlet private weak var rightInternetImage: UIImageView!
     @IBOutlet private weak var bottomRightBranchImage: UIImageView!
     @IBOutlet private weak var droneStatusImage: UIImageView!
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let alphaEnabled: CGFloat = 1
-        static let alphaDisabled: CGFloat = 0.6
-    }
 
     // MARK: - Variables
 
@@ -89,6 +82,11 @@ final class DroneDetailsCellularViewController: UIViewController {
         addColorTransition()
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        view.backgroundColor = .clear
+    }
+
     // MARK: - Action
 
     @objc func closeCellularViewFromTouch() {
@@ -108,6 +106,7 @@ final class DroneDetailsCellularViewController: UIViewController {
     }
 
     @IBAction func unpairUser(_ sender: Any) {
+        // Not only the current user, but all paired users to the current drone are unpaired.
         viewModel.forgetPin()
     }
 }
@@ -135,67 +134,62 @@ private extension DroneDetailsCellularViewController {
 
         // Label's title
         titleLabel.text = L10n.droneDetailsCellularAccess
-        enterPinButton.setTitle(L10n.drone4gEnterPin, for: .normal)
-        forgetPinButton.setTitle(L10n.cellularForgetPin, for: .normal)
-        showDebugButton.setTitle(L10n.drone4gShowDebug, for: .normal)
+        titleLabel.font = FontStyle.title.font(isRegularSizeClass)
 
-        // Corner radius
-        enterPinButton.layer.cornerRadius = Style.largeCornerRadius
-        forgetPinButton.layer.cornerRadius = Style.largeCornerRadius
-        showDebugButton.layer.cornerRadius = Style.largeCornerRadius
+        // Setup buttons
+        enterPinButton.setup(title: L10n.drone4gEnterPin, style: .default2)
+        forgetPinButton.setup(title: L10n.cellularForgetPin, style: .default2)
+        showDebugButton.setup(title: L10n.drone4gShowDebug, style: .secondary1)
+
         cellularView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
-
-        // Border
-        showDebugButton.layer.borderWidth = Style.mediumBorderWidth
-        showDebugButton.layer.borderColor = ColorName.defaultTextColor.color.cgColor
     }
 
     func bindViewModel() {
-
         bindDroneSide()
         bindRemoteSide()
         bind4GIcon()
 
         viewModel.controllerError
-            .sink { [unowned self] remoteError in
-                controllerErrorLabel.text = remoteError
+            .combineLatest(viewModel.droneError)
+            .sink { [unowned self] (remoteError, droneError) in
+                controllerErrorLabel.text = droneError ?? remoteError
             }
             .store(in: &cancellables)
 
         // Enter pin button's state
         viewModel.isEnterPinEnabled
             .sink { [unowned self] isEnabled in
-                if isEnabled {
-                    enterPinButton.isEnabled = true
-                    enterPinButton.alpha = Constants.alphaEnabled
-                } else {
-                    enterPinButton.isEnabled = false
-                    enterPinButton.alpha = Constants.alphaDisabled
-                }
+                enterPinButton.isEnabled = isEnabled
             }
             .store(in: &cancellables)
 
-        // Cellular status label's text
-        viewModel.cellularStatus
-            .combineLatest(viewModel.drone)
-            .sink { [unowned self] (cellularStatus, drone) in
-                if drone == nil {
-                    cellularStatusLabel.text = nil
-                    return
-                }
+        viewModel.cellularStatusString
+            .removeDuplicates()
+            .sink { [unowned self] cellularStatusText in
+                cellularStatusLabel.text = cellularStatusText
+            }
+            .store(in: &cancellables)
 
-                cellularStatusLabel.text = cellularStatus.cellularDetailsTitle
-                cellularStatusLabel.textColor = cellularStatus.detailsTextColor.color
+        viewModel.cellularStatusColor
+            .sink { [unowned self] cellularStatusColor in
+                cellularStatusLabel.textColor = cellularStatusColor.color
+            }
+            .store(in: &cancellables)
 
-                forgetPinButton.isEnabled = cellularStatus == .cellularConnected
-                forgetPinButton.alpha = forgetPinButton.isEnabled ?  Constants.alphaEnabled : Constants.alphaDisabled
+        viewModel.isForgetPinEnabled
+            .removeDuplicates()
+            .combineLatest(viewModel.isFlying.removeDuplicates())
+            .sink { [unowned self] (isEnterPinEnabled, isFlying) in
+                forgetPinButton.isEnabled = isEnterPinEnabled && !isFlying
             }
             .store(in: &cancellables)
 
         // Operator label's text
         viewModel.operatorName
-            .sink { [unowned self] operatorName in
+            .combineLatest(viewModel.cellularStatusColor)
+            .sink { [unowned self] (operatorName, cellularStatusColor) in
                 operatorNameLabel.text = operatorName
+                operatorNameLabel.textColor = cellularStatusColor.color
             }
             .store(in: &cancellables)
     }

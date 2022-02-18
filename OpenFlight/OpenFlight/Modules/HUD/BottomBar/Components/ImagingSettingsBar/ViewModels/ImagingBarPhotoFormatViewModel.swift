@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -99,21 +98,12 @@ private extension ImagingBarPhotoFormatViewModel {
                   return
               }
 
-        let photoFormats: [PhotoFormatMode]?
-        var unavailableReason = [String: String]()
-        if cameraMode == .panorama {
-            photoFormats = [.rectilinearJpeg]
-            unavailableReason[PhotoFormatMode.fullFrameDngJpeg.key] = L10n.cameraSettingUnavailable(cameraMode.title)
-            unavailableReason[PhotoFormatMode.fullFrameJpeg.key] = L10n.cameraSettingUnavailable(cameraMode.title)
-            unavailableReason[PhotoFormatMode.rectilinearDngJpeg.key] = L10n.cameraSettingUnavailable(cameraMode.title)
-        } else {
-            photoFormats = camera.photoFormatModeSupportedValues
-        }
+        let photoFormats = cameraMode == .panorama ? [.rectilinearJpeg] : camera.photoFormatModeSupportedValues
 
         let copy = state.value.copy()
         copy.mode = camera.photoFormatMode
         copy.supportedModes = photoFormats
-        copy.unavailableReason = unavailableReason
+        copy.unavailableReason = [:]
         copy.showUnsupportedModes = true
         state.set(copy)
     }

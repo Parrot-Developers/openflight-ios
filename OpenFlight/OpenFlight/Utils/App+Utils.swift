@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,7 +38,9 @@ final class AppUtils {
     ///
     /// - Returns: String with current application version
     static var version: String {
-        var appVersion = "OpenFlight v"
+        var appVersion = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? ""
+
+        appVersion += " v"
 
         #if DEBUG
         let debugBuild = true
@@ -62,8 +64,7 @@ final class AppUtils {
                 appVersion += "1.0.0"
             }
             // Release build - try to detect Test Flight.
-            if let storeUrl = Bundle.main.appStoreReceiptURL?.lastPathComponent,
-                storeUrl.range(of: "sandbox", options: .caseInsensitive) != nil {
+            if isTestFlightApp {
                 if let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
                     appVersion += " (\(build))"
                 }
@@ -72,40 +73,31 @@ final class AppUtils {
         return appVersion
     }
 
-    /// Get Application language.
-    ///
-    /// - Returns: String with current application language
-    /// - Note: Format is "xx_XX" e.g. en_US or fr_FR
-    static var language: String {
-        let locale = Locale.current
-        guard let languageCode = locale.languageCode,
-            let regionCode = locale.regionCode else {
-                return "en_US"
+    /// True if the the App is on Test Flight
+    static var isTestFlightApp: Bool {
+        if let storeUrl = Bundle.main.appStoreReceiptURL?.lastPathComponent,
+            storeUrl.range(of: "sandbox", options: .caseInsensitive) != nil {
+            return true
         }
-        return languageCode + "_" + regionCode
+            return false
     }
 
-    /// Get Application language code.
-    ///
-    /// - Returns: String with current language code
-    /// - Note: Format is "xx" e.g. en or fr
-    static var languageCode: String {
-        let locale = Locale.current
-        guard let code = locale.languageCode else {
-            return "en"
+    /// True if the debug layout grid can be displayed
+    static var isLayoutGridAuthorized: Bool {
+        if let grid = Bundle.main.infoDictionary?["GridLayout"] as? String {
+            return grid == "ON"
         }
-        return code
+        return false
     }
 
-    /// Get Application country.
-    ///
-    /// - Returns: String with current country code
-    /// - Note: Format is "XX" e.g. US or FR
-    static var countryCode: String {
-        let locale = Locale.current
-        guard let regionCode = locale.regionCode else {
-            return "US"
+    /// True if the debug screen can be displayed
+    static var isDebugScreenAuthorized: Bool {
+        // debugScreen is Authorized on Test Flight
+        if isTestFlightApp {
+            return true
+        } else {
+            // else: same rules as Layout Grid
+            return isLayoutGridAuthorized
         }
-        return regionCode
     }
 }

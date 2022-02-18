@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,8 +35,8 @@ final class RemoteCalibrationViewController: UIViewController {
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var descriptionLabel: UILabel!
     @IBOutlet private weak var axesView: RemoteCalibrationAxesView!
-    @IBOutlet private weak var calibrationButton: UIButton!
-    @IBOutlet private weak var okButton: UIButton!
+    @IBOutlet private weak var calibrationButton: ActionButton!
+    @IBOutlet private weak var okButton: ActionButton!
     @IBOutlet private weak var remoteImageView: UIImageView!
 
     // MARK: - Private Properties
@@ -67,15 +66,11 @@ final class RemoteCalibrationViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.remoteCalibration, logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.remoteCalibration))
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -86,9 +81,8 @@ final class RemoteCalibrationViewController: UIViewController {
 // MARK: - Actions
 private extension RemoteCalibrationViewController {
     @IBAction func calibrationButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyRemoteInfosButton.remoteCalibration.name,
-                             newValue: remoteCalibrationViewModel.state.value.calibrationState?.description,
-                             logType: .button)
+        LogEvent.log(.button(item: LogEvent.LogKeyRemoteInfosButton.remoteCalibration.name,
+                             value: remoteCalibrationViewModel.state.value.calibrationState?.description ?? ""))
         calibrationButton.isHidden = true
         calibrationButton.isUserInteractionEnabled = false
         axesView.isHidden = false
@@ -99,14 +93,12 @@ private extension RemoteCalibrationViewController {
     }
 
     @IBAction func okButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyRemoteInfosButton.okRemoteCalibration.name,
-                             logType: .simpleButton)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyRemoteInfosButton.okRemoteCalibration.name))
         closeCalibration()
     }
 
     @IBAction func backButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back,
-                             logType: .simpleButton)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyCommonButton.back))
         closeCalibration()
     }
 }
@@ -116,14 +108,12 @@ private extension RemoteCalibrationViewController {
     /// Init the view.
     func initView() {
         titleLabel.text = L10n.remoteCalibrationTitle
+        titleLabel.font = FontStyle.title.font(isRegularSizeClass)
         descriptionLabel.text = L10n.remoteCalibrationDescription
+        descriptionLabel.font = FontStyle.readingText.font(isRegularSizeClass)
         descriptionLabel.isHidden = true
-        okButton.setTitle(L10n.remoteCalibrationReadyToFly, for: .normal)
-        calibrationButton.setTitle(L10n.remoteCalibrationCalibrate, for: .normal)
-        calibrationButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
-                                             radius: Style.largeCornerRadius)
-        okButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
-                                    radius: Style.largeCornerRadius)
+        okButton.setup(title: L10n.remoteCalibrationReadyToFly, style: .validate)
+        calibrationButton.setup(title: L10n.remoteCalibrationCalibrate, style: .validate)
     }
 
     /// Inits the view model.

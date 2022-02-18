@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="125" id="KGk-i7-Jjw" customClass="SettingsEndHoveringCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="367" height="125"/>
+        <tableViewCell contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="default" indentationWidth="10" rowHeight="119" id="KGk-i7-Jjw" customClass="SettingsEndHoveringCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="397" height="119"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="367" height="125"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="397" height="119"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I13-J7-MRg" userLabel="bgView">
-                        <rect key="frame" x="0.0" y="5" width="367" height="115"/>
+                    <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I13-J7-MRg" userLabel="bgView">
+                        <rect key="frame" x="16" y="0.0" width="365" height="108"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Tfs-mI-IUZ">
-                                <rect key="frame" x="0.0" y="0.0" width="367" height="115"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Tfs-mI-IUZ">
+                                <rect key="frame" x="0.0" y="0.0" width="365" height="108"/>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -34,10 +34,10 @@
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="I13-J7-MRg" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="2wH-me-aQt"/>
-                    <constraint firstAttribute="trailing" secondItem="I13-J7-MRg" secondAttribute="trailing" id="VPb-JE-W1g"/>
-                    <constraint firstItem="I13-J7-MRg" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="aqj-op-GxQ"/>
-                    <constraint firstAttribute="bottom" secondItem="I13-J7-MRg" secondAttribute="bottom" constant="5" id="r6F-dP-WbA"/>
+                    <constraint firstItem="I13-J7-MRg" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="2wH-me-aQt"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="I13-J7-MRg" secondAttribute="trailing" id="VPb-JE-W1g"/>
+                    <constraint firstItem="I13-J7-MRg" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="aqj-op-GxQ"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="I13-J7-MRg" secondAttribute="bottom" id="r6F-dP-WbA"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -45,7 +45,7 @@
                 <outlet property="bgView" destination="I13-J7-MRg" id="2lo-Cn-90e"/>
                 <outlet property="stackView" destination="Tfs-mI-IUZ" id="QGP-ND-exg"/>
             </connections>
-            <point key="canvasLocation" x="100" y="183.05847076461771"/>
+            <point key="canvasLocation" x="76" y="180.35982008995504"/>
         </tableViewCell>
     </objects>
 </document>

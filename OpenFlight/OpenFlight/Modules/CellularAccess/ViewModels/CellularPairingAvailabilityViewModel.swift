@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,25 +34,7 @@ import Combine
 /// Manages drone cellular pairing visibility.
 final class CellularPairingAvailabilityViewModel {
 
-    @Published private(set) var canShowModal = false
-
     private var pairingAvailabilityService = Services.hub.drone.cellularPairingAvailabilityService
-    private var currentDroneHolder = Services.hub.currentDroneHolder
-    private var cancellables = Set<AnyCancellable>()
-
-    init() {
-        currentDroneHolder.dronePublisher
-            .combineLatest(pairingAvailabilityService.isCellularAvailablePublisher.removeDuplicates(),
-                           pairingAvailabilityService.isDroneAlreadyPairedPublisher.removeDuplicates(),
-                           pairingAvailabilityService.isPairingProcessDismissedPublisher.removeDuplicates())
-            .sink { [unowned self] (drone, isCellularAvailable, isDroneAlreadyPaired, isPairingProcessDismissed) in
-                canShowModal = isCellularAvailable
-                    && drone.state.connectionState == .connected
-                    && !isPairingProcessDismissed
-                    && !isDroneAlreadyPaired
-            }
-            .store(in: &cancellables)
-    }
 
     // MARK: - Internal Funcs
     /// Updates cellular pairing process availability state.

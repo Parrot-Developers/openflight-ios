@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,19 +37,20 @@ class SettingsGridView: UIView {
 
     // MARK: - Private Properties
     private var path = UIBezierPath()
-    private var gridWidth: CGFloat {
-        return bounds.height / Constants.gridWidthMultiple
+    private var gridSize: CGFloat {
+        return bounds.height / gridSizeDivisor
     }
-    private var gridHeight: CGFloat {
-        return bounds.height / Constants.gridHeightMultiple
+    private var gridSizeDivisor : CGFloat {
+        let divisor = isRegularSizeClass ? Constants.gridAverageSizeRegular : Constants.gridAverageSize
+        return round(bounds.height / divisor)
     }
 
     // MARK: - Private Enums
     private enum Constants {
         static let gridLineWidth: CGFloat = 1.0
         static let axisLineWidth: CGFloat = 2.0
-        static let gridWidthMultiple: CGFloat = 10.0
-        static let gridHeightMultiple: CGFloat = 10.0
+        static let gridAverageSize: CGFloat = 25
+        static let gridAverageSizeRegular: CGFloat = 50
     }
 
     // MARK: - Override Funcs
@@ -100,16 +100,16 @@ private extension SettingsGridView {
 
         // Horizontal lines.
         for index in 0...Int(bounds.height) {
-            let start = CGPoint(x: CGFloat(index) * gridWidth, y: 0.0)
-            let end = CGPoint(x: CGFloat(index) * gridWidth, y: bounds.height)
+            let start = CGPoint(x: CGFloat(index) * gridSize, y: 0.0)
+            let end = CGPoint(x: CGFloat(index) * gridSize, y: bounds.height)
             path.move(to: start)
             path.addLine(to: end)
         }
 
         // Vertical lines.
-        for index in 0...Int(Constants.gridHeightMultiple) - 1 {
-            let start = CGPoint(x: 0, y: CGFloat(index) * gridHeight)
-            let end = CGPoint(x: bounds.width, y: CGFloat(index) * gridHeight)
+        for index in 0...Int(bounds.width / gridSizeDivisor) - 1 {
+            let start = CGPoint(x: 0, y: CGFloat(index) * gridSize)
+            let end = CGPoint(x: bounds.width, y: CGFloat(index) * gridSize)
             path.move(to: start)
             path.addLine(to: end)
         }

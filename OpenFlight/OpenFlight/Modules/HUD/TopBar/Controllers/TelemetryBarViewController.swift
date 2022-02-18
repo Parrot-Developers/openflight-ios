@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -45,8 +45,9 @@ final class TelemetryBarViewController: UIViewController {
     @IBOutlet private weak var altitudeItemView: TelemetryItemView!
     @IBOutlet private weak var distanceItemView: TelemetryItemView!
     @IBOutlet private weak var obstacleAvoidanceItemView: TelemetryItemView!
+    @IBOutlet private weak var liveTelemetryItemView: TelemetryItemView!
 
-    // MARK: - Internal Properties
+        // MARK: - Internal Properties
     weak var navigationDelegate: TelemetryBarViewControllerNavigation?
 
     // MARK: - Private Properties
@@ -99,13 +100,16 @@ private extension TelemetryBarViewController {
     func setupViewModels() {
         speedItemView?.model = TelemetryItemModel(image: Asset.Telemetry.icSpeed.image,
                                                   label: defaultSpeedLabel,
-                                                  backgroundColor: .clear)
+                                                  backgroundColor: .clear,
+                                                  borderColor: .clear)
         altitudeItemView?.model = TelemetryItemModel(image: Asset.Telemetry.icAltitude.image,
                                                      label: defaultDistanceLabel,
-                                                     backgroundColor: .clear)
+                                                     backgroundColor: .clear,
+                                                     borderColor: .clear)
         distanceItemView?.model = TelemetryItemModel(image: Asset.Telemetry.icDistance.image,
                                                      label: defaultDistanceLabel,
-                                                     backgroundColor: .clear)
+                                                     backgroundColor: .clear,
+                                                     borderColor: .clear)
 
         obstacleAvoidanceViewModel.$state.sink { [unowned self] state in
             updateView(state: state)
@@ -122,6 +126,23 @@ private extension TelemetryBarViewController {
                                                 distanceDidChange: { [weak self] distance in
                                                     self?.onDistanceChanged(distance)
                                                 })
+
+        if let telemetryViewModel = telemetryViewModel {
+            telemetryViewModel.$liveTlmState
+                .sink { [unowned self] state in
+                    guard let state = state else {
+                        liveTelemetryItemView.isHidden = true
+                        return
+                    }
+
+                    liveTelemetryItemView.model = TelemetryItemModel(image: state.image,
+                                                                     label: "",
+                                                                     backgroundColor: .clear,
+                                                                     borderColor: state.borderColor)
+                    liveTelemetryItemView.isHidden = false
+                }
+                .store(in: &cancellables)
+        }
     }
 
     /// Updates the obstacle avoidance item view with state.
@@ -147,7 +168,8 @@ private extension TelemetryBarViewController {
         }
         obstacleAvoidanceItemView.model = TelemetryItemModel(image: image,
                                                              label: "",
-                                                             backgroundColor: .clear)
+                                                             backgroundColor: .clear,
+                                                             borderColor: .clear)
     }
 
     /// Called when current speed changes.

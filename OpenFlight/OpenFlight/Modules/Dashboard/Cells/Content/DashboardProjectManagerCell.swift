@@ -1,6 +1,4 @@
-//
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -56,6 +54,7 @@ class DashboardProjectManagerCell: UICollectionViewCell, NibReusable {
     override func prepareForReuse() {
         super.prepareForReuse()
         cancellables.forEach { $0.cancel() }
+        cancellables.removeAll()
         resetLabels()
     }
 
@@ -83,8 +82,8 @@ class DashboardProjectManagerCell: UICollectionViewCell, NibReusable {
             .store(in: &cancellables)
 
         viewModel.isSynchronizingData
-            .receive(on: RunLoop.main)
-            .sink { [unowned self] isSync in
+            .sink { [weak self] isSync in
+                guard let self = self else { return }
                 viewModel.reloadAllProjects()
 
                 isSync ? self.syncLoaderImageView.startRotate() : self.syncLoaderImageView.stopRotate()
@@ -98,8 +97,6 @@ class DashboardProjectManagerCell: UICollectionViewCell, NibReusable {
 // MARK: - Private Funcs
 private extension DashboardProjectManagerCell {
     func initView() {
-        self.cornerRadiusedWith(backgroundColor: ColorName.clear.color,
-                                radius: Style.largeCornerRadius)
         resetLabels()
    }
 

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -138,19 +137,25 @@ private extension DroneDetailsInformationsViewModel {
 private extension DroneDetailsInformationsViewModel {
     /// Updates system informations.
     func updateSystemInfo() {
-        let systemInfo = drone?.getPeripheral(Peripherals.systemInfo)
+        guard let drone = drone else { return }
+        let systemInfo = drone.getPeripheral(Peripherals.systemInfo)
         let copy = state.value.copy()
         copy.hardwareVersion = systemInfo?.hardwareVersion ?? Style.dash
         copy.serialNumber = systemInfo?.serial ?? Style.dash
-        copy.firmwareVersion = systemInfo?.firmwareVersion ?? Style.dash
+        copy.firmwareVersion = hasLastConnectedDrone
+                                ? systemInfo?.firmwareVersion ?? Style.dash
+                                : Style.dash
         state.set(copy)
     }
 
     /// Updates cellular info.
     func updateCellularInfo() {
-        let cellular = drone?.getPeripheral(Peripherals.cellular)
+        guard let drone = drone else { return }
+        let cellular = drone.getPeripheral(Peripherals.cellular)
         let copy = state.value.copy()
-        copy.imei = cellular?.imei ?? Style.dash
+        copy.imei = hasLastConnectedDrone
+                    ? cellular?.imei ?? Style.dash
+                    : Style.dash
         state.set(copy)
     }
 }

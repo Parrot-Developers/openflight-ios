@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,18 +35,33 @@ final class StereoCalibrationViewController: UIViewController {
 
     // MARK: - Outlet
 
-    @IBOutlet weak var rightPanelView: UIView!
+    @IBOutlet weak var rightPanelView: RightSidePanelView!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var warningLabel: UILabel!
-    @IBOutlet weak var optimalCalibrationButton: UIButton!
-    @IBOutlet weak var welcomeStackView: UIStackView!
-    @IBOutlet weak var quickCalibrationButton: UIButton!
+    @IBOutlet weak var optimalCalibrationButton: ActionButton!
+    @IBOutlet weak var welcomeStackView: MainStackView!
+    @IBOutlet weak var quickCalibrationButton: ActionButton!
+    @IBOutlet weak var alertView: UIView!
+    @IBOutlet weak var alertLabel: UILabel!
+    private let progressView = StereoCalibrationProgressView()
 
     // MARK: - Private Properties
 
     private var viewModel: StereoCalibrationViewModel!
     private var cancellables = Set<AnyCancellable>()
+
+    private var fisrtAttributes: [NSAttributedString.Key: UIFont] {
+        return isRegularSizeClass ?
+        [NSAttributedString.Key.font: UIFont(name: "Rajdhani-Semibold", size: 18.0) ?? UIFont.systemFont(ofSize: 10)] :
+        [NSAttributedString.Key.font: UIFont(name: "Rajdhani-Semibold", size: 15.0) ?? UIFont.systemFont(ofSize: 10)]
+    }
+
+    private var secondeAttributes: [NSAttributedString.Key: UIFont] {
+        return isRegularSizeClass ?
+        [NSAttributedString.Key.font: UIFont(name: "Rajdhani-Semibold", size: 15.0) ?? UIFont.systemFont(ofSize: 10)] :
+        [NSAttributedString.Key.font: UIFont(name: "Rajdhani-Semibold", size: 13.0) ?? UIFont.systemFont(ofSize: 10)]
+    }
 
     // MARK: - Private Enums
 
@@ -77,15 +92,33 @@ final class StereoCalibrationViewController: UIViewController {
 
         initUI()
         bindViewModel()
+
+        viewModel.ophtalmoService
+            .calibrationStatusPublisher
+            .compactMap { $0 }
+            .removeDuplicates()
+            .sink { [unowned self] status in
+                switch status {
+                case .idle:
+                    progressView.removeFromSuperview()
+                    welcomeStackView.isHidden = false
+                default:
+                    welcomeStackView.isHidden = true
+                    viewModel.updateCalibrationWith(altitude: viewModel.ophtalmoService.altitude)
+                    progressView.setup(viewModel: viewModel)
+                    rightPanelView.addWithConstraints(subview: progressView)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.sensorCalibrationTutorial,
-                             logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.sensorCalibrationTutorial))
 
         viewModel.startMission()
+        alertView.isHidden = true
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -98,12 +131,16 @@ final class StereoCalibrationViewController: UIViewController {
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
+    }
+
+    override public func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
+
+        if let topBarVc = segue.destination as? HUDTopBarViewController {
+            topBarVc.navigationDelegate = self
+        }
     }
 }
 
@@ -112,23 +149,11 @@ final class StereoCalibrationViewController: UIViewController {
 private extension StereoCalibrationViewController {
 
     @IBAction func startOptimalCalibration(_ sender: Any) {
-        welcomeStackView.isHidden = true
-        let progressView = StereoCalibrationProgressView.instantiateView(viewModel: viewModel)
-        rightPanelView.addWithConstraints(subview: progressView)
-        viewModel.updateCalibrationWith(altitude: 120)
         viewModel.startCalibration(altitude: Constants.optimalAltitude)
     }
 
     @IBAction func startQuickCalibration(_ sender: Any) {
-        welcomeStackView.isHidden = true
-        let progressView = StereoCalibrationProgressView.instantiateView(viewModel: viewModel)
-        rightPanelView.addWithConstraints(subview: progressView)
-        viewModel.updateCalibrationWith(altitude: 50)
         viewModel.startCalibration(altitude: Constants.quickAltitude)
-    }
-
-    @IBAction func backButtonTouchedUpInside(_ sender: Any) {
-        viewModel.back()
     }
 }
 
@@ -137,23 +162,33 @@ private extension StereoCalibrationViewController {
 private extension StereoCalibrationViewController {
 
     func initUI() {
+        titleLabel.text = L10n.loveCalibrationTitle
         messageLabel.text = L10n.loveCalibrationSetupMessage
 
-        optimalCalibrationButton.cornerRadiusedWith(backgroundColor: UIColor.white,
-                                                  radius: Style.largeCornerRadius)
-        optimalCalibrationButton.setTitle(L10n.loveCalibrationOptimal, for: .normal)
-        optimalCalibrationButton.titleLabel?.textAlignment = .center
+        let optimalAttributedString = NSMutableAttributedString(string: L10n.loveCalibrationOptimal, attributes: fisrtAttributes)
 
-        quickCalibrationButton.cornerRadiusedWith(backgroundColor: UIColor.white,
-                                                  radius: Style.largeCornerRadius)
-        quickCalibrationButton.setTitle(L10n.loveCalibrationQuick, for: .normal)
-        quickCalibrationButton.titleLabel?.textAlignment = .center
+        let optimalAttributesText2 = NSAttributedString(string: "\n" + L10n.loveCalibrationOptimalDescription, attributes: secondeAttributes)
+        optimalAttributedString.append(optimalAttributesText2)
 
+        optimalCalibrationButton.setup(style: .default1)
+        optimalCalibrationButton.setAttributedTitle(optimalAttributedString, for: .normal)
+
+        let quickAttributedString = NSMutableAttributedString(string: L10n.loveCalibrationQuick, attributes: fisrtAttributes)
+
+        let quickAttributedText2 = NSAttributedString(string: "\n" + L10n.loveCalibrationQuickDescription, attributes: secondeAttributes)
+        quickAttributedString.append(quickAttributedText2)
+
+        quickCalibrationButton.setup(style: .default1)
+        quickCalibrationButton.setAttributedTitle(quickAttributedString, for: .normal)
+
+        alertView.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
+        alertLabel.font = UIFont.rajdhaniSemiBold(size: Layout.titleFontSize(isRegularSizeClass))
     }
 
     func bindViewModel() {
         viewModel.$warningText
             .sink { [unowned self] warningText in
+                warningLabel.isHidden = warningText == nil
                 warningLabel.text = warningText
             }
             .store(in: &cancellables)
@@ -171,5 +206,41 @@ private extension StereoCalibrationViewController {
                 }
             }
             .store(in: &cancellables)
+        viewModel.errorMessage
+            .dropFirst()
+            .sink { [unowned self] error in
+                if let error = error {
+                    alertLabel.text = error.label
+                    alertLabel.isHidden = false
+                    alertView.isHidden = false
+                } else {
+                    alertLabel.isHidden = true
+                    alertView.isHidden = true
+                }
+            }
+            .store(in: &cancellables)
+    }
+}
+
+// MARK: - HUD Top Bar Navigation
+extension StereoCalibrationViewController: HUDTopBarViewControllerNavigation {
+    func openDashboard() {
+        viewModel.askingForBack()
+    }
+
+    func openSettings(_ type: SettingsType?) {
+        viewModel.openSettings(type)
+    }
+
+    func openRemoteControlInfos() {
+        viewModel.openRemoteControlInfos()
+    }
+
+    func openDroneInfos() {
+        viewModel.openDroneInfos()
+    }
+
+    func back() {
+        viewModel.askingForBack()
     }
 }

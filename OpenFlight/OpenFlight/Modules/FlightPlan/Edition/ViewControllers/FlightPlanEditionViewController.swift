@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,62 +34,49 @@ import Combine
 /// Manages flight plan edition view.
 public class FlightPlanEditionViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var mapContainer: UIView!
     @IBOutlet private weak var editionSettingsContainer: UIView!
-    @IBOutlet private weak var topBarContainer: UIView!
-    @IBOutlet private weak var topBarContainterHeightConstraint: NSLayoutConstraint!
-    @IBOutlet private var allIntefaceViews: [UIView]!
     @IBOutlet private weak var settingsLeadConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
-    weak var coordinator: FlightPlanEditionCoordinator?
     private weak var panelCoordinator: FlightPlanPanelCoordinator?
     public var menuCoordinator: FlightPlanEditionMenuCoordinator?
     public var editionSettingsCoordinator: EditionSettingsCoordinator?
     private weak var mapViewController: MapViewController?
-    private weak var mapViewRestorer: MapViewRestorer?
     private var cancellables = [AnyCancellable]()
     private var viewModel: FlightPlanEditionViewModel!
     private var hasFlightPlanObject: Bool {
         viewModel.hasFlightPlanObject
     }
+    private var backButtonPublisher: AnyPublisher<Void, Never>?
 
     // MARK: - Setup
     /// Instantiate the view controller.
     ///
     /// - Parameters:
-    ///    - coordinator: flight plan edition coordinator
     ///    - panelCoordinator: flight plan panel coordinator
     ///    - mapViewController: controller for the map
-    ///    - mapViewRestorer: restorer for the map
     ///    - flightPlanProvider: flight plan provider
+    ///    - backButtonPublisher: the back button publisher that is triggered when the user wants to
+    ///      discard the current changes.
     /// - Returns: FlightPlanEditionViewController
-    ///
-    /// Note: these parameters are needed because, when entering
-    /// Flight Plan edition, map view is transferred to the new
-    /// view controller. Map is restored back to its original
-    /// container afterwards with `MapViewRestorer` protocol.
-    public static func instantiate(coordinator: FlightPlanEditionCoordinator,
-                                   panelCoordinator: FlightPlanPanelCoordinator,
+    public static func instantiate(panelCoordinator: FlightPlanPanelCoordinator,
                                    flightPlanServices: FlightPlanServices,
                                    mapViewController: MapViewController?,
-                                   mapViewRestorer: MapViewRestorer?,
-                                   flightPlanProvider: FlightPlanProvider?) -> FlightPlanEditionViewController {
+                                   flightPlanProvider: FlightPlanProvider?,
+                                   backButtonPublisher: AnyPublisher<Void, Never>) -> FlightPlanEditionViewController {
         let viewController = StoryboardScene.FlightPlanEdition.initialScene.instantiate()
-        viewController.coordinator = coordinator
         viewController.viewModel = FlightPlanEditionViewModel(
             settingsProvider: flightPlanProvider?.settingsProvider,
             edition: flightPlanServices.edition,
-            flightPlanProject: flightPlanServices.projectManager,
+            projectManager: flightPlanServices.projectManager,
             topBarService: Services.hub.ui.hudTopBarService)
         viewController.panelCoordinator = panelCoordinator
         viewController.mapViewController = mapViewController
         viewController.mapViewController?.setMapMode(.flightPlanEdition)
         viewController.viewModel.mapDelegate = mapViewController
+        viewController.backButtonPublisher = backButtonPublisher
         mapViewController?.flightDelegate = viewController.viewModel
-        viewController.mapViewRestorer = mapViewRestorer
         panelCoordinator.flightPlanEditionViewController = viewController
-
         return viewController
     }
 
@@ -102,10 +88,6 @@ public class FlightPlanEditionViewController: UIViewController {
     // MARK: - Override Funcs
     override public func viewDidLoad() {
         super.viewDidLoad()
-
-        if let mapView = mapViewController?.view {
-            mapContainer.addWithConstraints(subview: mapView)
-        }
         bindViewModel()
     }
 
@@ -115,24 +97,32 @@ public class FlightPlanEditionViewController: UIViewController {
             .sink { [unowned self] state in
                 switch state {
                 case .closeSettings:
-                    self.closeSettings()
+                    closeSettings()
                 case .showItemEdition:
-                    self.showItemEdition()
+                    showItemEdition()
                 case .updateConstraint:
-                    self.settingsLeadConstraint.constant = editionSettingsContainer.frame.width
-                    self.view.layoutIfNeeded()
+                    UIView.animate(withDuration: Style.shortAnimationDuration) {
+                        settingsLeadConstraint.constant = editionSettingsContainer.frame.width
+                        view.layoutIfNeeded()
+                    }
                 case .settingsLeadConstraint:
-                    self.settingsLeadConstraint.constant = 0.0
-                    self.view.layoutIfNeeded()
+                    UIView.animate(withDuration: Style.shortAnimationDuration) {
+                        settingsLeadConstraint.constant = 0.0
+                        view.layoutIfNeeded()
+                    }
                 }
             }
             .store(in: &cancellables)
+
+        backButtonPublisher?.sink { [unowned self] in
+            reset()
+        }.store(in: &cancellables)
     }
 
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.flightPlanEditor,
-                             logType: .screen)
+        Services.hub.ui.hudTopBarService.forbidTopBarDisplay()
+        LogEvent.log(.screen(LogEvent.Screen.flightPlanEditor))
     }
 
     override public func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -152,7 +142,7 @@ public class FlightPlanEditionViewController: UIViewController {
             settingsEditionVc.viewModel.settingsProvider = viewModel.settingsProvider
             settingsEditionVc.viewModel.savedFlightPlan = viewModel.currentFlightPlanModel()
             editionSettingsCoordinator?.start(navigationController: navigationController,
-                                              parentCoordinator: coordinator)
+                                              parentCoordinator: panelCoordinator)
         } else if segue.identifier == "FlightPlanEditionMenuViewController",
                   let navigationController = segue.destination as? NavigationController,
                   let menuViewController = navigationController.viewControllers.first as? FlightPlanEditionMenuViewController {
@@ -162,16 +152,12 @@ public class FlightPlanEditionViewController: UIViewController {
             menuViewController.settingsProvider = viewModel.settingsProvider
             menuViewController.viewModel = viewModel.updateEditionMenuViewModel()
             menuCoordinator?.start(navigationController: navigationController,
-                                  parentCoordinator: coordinator)
+                                   parentCoordinator: panelCoordinator)
         }
     }
 
     override public var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override public var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override public var prefersStatusBarHidden: Bool {
@@ -192,10 +178,22 @@ public class FlightPlanEditionViewController: UIViewController {
     func endEdition() {
         // Update flight plan informations.
         viewModel.endEdition()
+        // update UI
+        exitEdition()
+    }
 
-        // Restore map back to its original container, then dismiss.
-        mapViewRestorer?.restoreMapIfNeeded()
-        coordinator?.dismissFlightPlanEdition()
+    private func exitEdition() {
+        navigationController?.popViewController(animated: true)
+        mapViewController?.splitControls?.hideBottomBar(hide: false)
+        mapViewController?.splitControls?.hideCameraSliders(hide: false)
+        mapViewController?.flightPlanEditionViewControllerBackButton.isHidden = true
+    }
+
+    private func reset() {
+        panelCoordinator?.resetPopupConfirmation { [unowned self] in
+            viewModel.reset()
+            exitEdition()
+        }
     }
 }
 
@@ -225,11 +223,6 @@ private extension FlightPlanEditionViewController {
         viewModel.insertWayPoint(with: graphic)
     }
 
-    /// Select a graphic and display
-    func selectGraphic(_ graphic: FlightPlanGraphic) {
-        viewModel.selecteGraphic(graphic)
-    }
-
     /// Shows item edition for given graphical item.
     func showItemEdition() {
         viewModel.updateSettingsDataSource()
@@ -252,19 +245,13 @@ private extension FlightPlanEditionViewController {
     }
 }
 
-// MARK: - OverContextModalDelegate
-extension FlightPlanEditionViewController: OverContextModalDelegate {
-    func willDismissModal() {
-    }
-}
-
 // MARK: - EditionSettingsDelegate
 extension FlightPlanEditionViewController: EditionSettingsDelegate {
     public func canUndo() -> Bool {
         viewModel.canUndo()
     }
 
-    public func didTapOnUndo() {
+    public func didTapOnUndo(action: (() -> Void)?) {
         undoAction()
     }
 

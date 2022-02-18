@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -59,8 +58,8 @@ final class SettingsEndHoveringState: ViewModelState, EquatableState, Copying {
     }
 
     func copy() -> SettingsEndHoveringState {
-        return SettingsEndHoveringState(isHovering: self.isHovering,
-                                        hoveringAltitude: self.hoveringAltitude)
+        return SettingsEndHoveringState(isHovering: isHovering,
+                                        hoveringAltitude: hoveringAltitude)
     }
 }
 
@@ -74,11 +73,12 @@ final class SettingsEndHoveringViewModel: DroneWatcherViewModel<SettingsEndHover
     }
     /// Returns the setting entry for end Hovering altitude.
     var endHoveringAltitudeEntry: SettingEntry {
+        let isHovering = state.value.isHovering == true
         return SettingEntry(setting: returnHomePilotingRef?.value?.endingHoveringAltitude,
                             title: L10n.commonHovering,
                             unit: UnitType.distance,
                             defaultValue: Float(RthPreset.defaultHoveringAltitude),
-                            isEnabled: true)
+                            isEnabled: isHovering)
     }
 
     // MARK: - Private Properties

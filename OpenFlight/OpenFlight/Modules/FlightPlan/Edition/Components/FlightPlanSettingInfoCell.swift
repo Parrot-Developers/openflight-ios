@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,7 +31,7 @@ import UIKit
 import Reusable
 
 /// Displays Flight Plan info.
-final class FlightPlanSettingInfoCell: UITableViewCell, NibReusable, EditionSettingsCellModel {
+final class FlightPlanSettingInfoCell: MainTableViewCell, NibReusable, EditionSettingsCellModel {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var detailLabel: UILabel!

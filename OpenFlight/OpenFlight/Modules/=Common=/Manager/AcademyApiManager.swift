@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -58,7 +57,7 @@ public protocol AcademyApiService: AnyObject {
     ///    - session: Custom session.
     ///    - completion: Callback with the server response.
     func delete(_ endpoint: String,
-                session: URLSession,
+                session: URLSession?,
                 completion: @escaping (_ data: Data?, _ error: Error?) -> Void)
 
     /// Makes a GET request with custom parameters and returns a callback with the response.
@@ -68,7 +67,7 @@ public protocol AcademyApiService: AnyObject {
     ///    - session: Custom session.
     ///    - completion: Callback with the server response.
     func get(_ endpoint: String,
-             session: URLSession,
+             session: URLSession?,
              completion: @escaping (_ data: Data?, _ error: Error?) -> Void)
 
     /// Makes a POST request with parameters and returns the response.
@@ -80,7 +79,7 @@ public protocol AcademyApiService: AnyObject {
     ///    - completion: Callback with the server response.
     func post(_ endpoint: String,
               params: [String: Any],
-              session: URLSession,
+              session: URLSession?,
               completion: @escaping (_ data: Data?, _ error: Error?) -> Void)
 
     /// Makes a PUT request with parameters and returns the response.
@@ -92,7 +91,7 @@ public protocol AcademyApiService: AnyObject {
     ///    - completion: Callback with the server response.
     func put(_ endpoint: String,
              params: [String: Any],
-             session: URLSession,
+             session: URLSession?,
              completion: @escaping (_ data: Data?, _ error: Error?) -> Void)
 
     /// Handles the Data response with multiple verifications and returns the response in a Data object if it's correct.
@@ -110,8 +109,14 @@ public protocol AcademyApiService: AnyObject {
     /// Gets paired drones list.
     ///
     /// - Parameters:
-    ///     - completion: callback which returns the paired drones list
-    func performPairedDroneListRequest(completion: @escaping (([PairedDroneListResponse]?) -> Void))
+    ///    - completion: callback which returns the paired drones list
+    func performPairedDroneListRequest(completion: @escaping (([AcademyPairedDrone]?) -> Void))
+
+    /// Gets paired drones list.
+    ///
+    /// - Parameters:
+    ///    - completion: callback which returns the paired drones list
+    func getPairedDroneList(completion: @escaping (Result<[AcademyPairedDrone], Error>) -> Void)
 
     /// Performs the challenge request.
     ///
@@ -125,9 +130,9 @@ public protocol AcademyApiService: AnyObject {
     ///
     /// - Parameters:
     ///     - token: the json string signed by the drone divided in three base64 part
-    ///     - completion: callback which returns true if association is complete
+    ///     - completion: callback which returns the result of the association process
     func performAssociationRequest(token: String,
-                                   completion: @escaping ((Bool) -> Void))
+                                   completion: @escaping ((Result<Bool, Error>) -> Void))
 
     /// Unpairs current associated 4G drone.
     ///
@@ -137,7 +142,7 @@ public protocol AcademyApiService: AnyObject {
     func unpairDrone(commonName: String,
                      completion: @escaping (_ data: Data?, _ error: Error?) -> Void)
 
-    /// Unpairs all users associated to the current drone.
+    /// Unpairs all users associated to the current drone except the authenticated one.
     ///
     /// - Parameters:
     ///     - token: the json string signed by the drone divided in three base64 part
@@ -153,6 +158,7 @@ public protocol AcademyApiService: AnyObject {
     func pairedUsersCount(commonName: String,
                           completion: @escaping (_ usersCount: Int?, _ error: Error?) -> Void)
 
+    typealias ApiError = AcademyApiServiceImpl.AcademyApiManagerError
 }
 
 // MARK: - AcademyApiServiceImpl
@@ -215,6 +221,7 @@ public extension AcademyApiServiceImpl {
         case badParameters
         case badImage
         case ressourceNotFound
+        case tooManyRequests
         case badResponseCode
         case badData
         case noData
@@ -223,19 +230,33 @@ public extension AcademyApiServiceImpl {
         case preconditionFailed
         case cancelled
 
+        var isError4xx: Bool {
+            return [.preconditionFailed,
+                    .authenticationError,
+                    .accessDenied,
+                    .ressourceNotFound]
+                .contains(self)
+        }
+
+        static func error4xx(_ error: Error?) -> Self? {
+            guard let error = error as? Self,
+                  error.isError4xx else { return nil }
+            return error
+        }
     }
 }
 
 // MARK: - Private Funcs
 private extension AcademyApiServiceImpl {
     /// Returns a custom URLSession to communicate with Academy API.
-    func authSession() -> URLSession {
-        var token: String = ""
-        if userInformation.token.isEmpty,
-           !SecureKeyStorage.current.temporaryToken.isEmpty {
+    func authSession() -> URLSession? {
+        let token: String
+        if !userInformation.token.isEmpty {
+            token = userInformation.token
+        } else if !SecureKeyStorage.current.temporaryToken.isEmpty {
             token = SecureKeyStorage.current.temporaryToken
         } else {
-            token = userInformation.token
+            return nil
         }
 
         let config = URLSessionConfiguration.default
@@ -252,7 +273,7 @@ private extension AcademyApiServiceImpl {
     /// - Returns :
     ///     - Bool indicates if should manage the error or not
     func manageAccessDeniedError(_ urlResponse: HTTPURLResponse) -> Bool {
-        return !DroneAcademyEndPoints.allCases.contains(DroneAcademyEndPoints(rawValue: urlResponse.url?.path ?? ""))
+        return !DroneAcademyEndPoints.allCases.customContains(DroneAcademyEndPoints(rawValue: urlResponse.url?.path ?? ""))
     }
 }
 
@@ -264,11 +285,11 @@ public extension AcademyApiServiceImpl {
     }
 
     func delete(_ endpoint: String,
-                session: URLSession,
+                session: URLSession?,
                 completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
         // TODO: Change completion type to Result<Data, Error>
 
-        guard canPerformAcademyRequest else {
+        guard let session = session, canPerformAcademyRequest else {
             completion(nil, AcademyApiManagerError.cancelled)
             return
         }
@@ -291,10 +312,10 @@ public extension AcademyApiServiceImpl {
     }
 
     func get(_ endpoint: String,
-             session: URLSession,
+             session: URLSession?,
              completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
 
-        guard canPerformAcademyRequest else {
+        guard let session = session, canPerformAcademyRequest else {
             completion(nil, AcademyApiManagerError.cancelled)
             return
         }
@@ -311,10 +332,10 @@ public extension AcademyApiServiceImpl {
 
     func post(_ endpoint: String,
               params: [String: Any],
-              session: URLSession,
+              session: URLSession?,
               completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
 
-        guard canPerformAcademyRequest else {
+        guard let session = session, canPerformAcademyRequest else {
             completion(nil, AcademyApiManagerError.cancelled)
             return
         }
@@ -345,10 +366,10 @@ public extension AcademyApiServiceImpl {
 
     func put(_ endpoint: String,
              params: [String: Any],
-             session: URLSession,
+             session: URLSession?,
              completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
 
-        guard canPerformAcademyRequest else {
+        guard let session = session, canPerformAcademyRequest else {
             completion(nil, AcademyApiManagerError.cancelled)
             return
         }
@@ -416,6 +437,11 @@ public extension AcademyApiServiceImpl {
         case 404:
             returnError = .ressourceNotFound
 
+        case 429:
+            returnError = .tooManyRequests
+            academyErrorSubject.value = returnError
+            return completion(nil, returnError)
+
         case 0..<200:
             returnError = .badResponseCode
 
@@ -443,32 +469,52 @@ public extension AcademyApiServiceImpl {
         }
     }
 
-    func performPairedDroneListRequest(completion: @escaping (([PairedDroneListResponse]?) -> Void)) {
-        let session = self.authSession()
-
-        get(DroneAcademyEndPoints.getDroneList.rawValue, session: session) { data, error in
-            guard error == nil,
-                  let responseData = data else {
-                completion(nil)
-                return
-            }
-
-            let decoder = JSONDecoder()
-            do {
-                let response = try decoder.decode([PairedDroneListResponse].self, from: responseData)
-                completion(response)
-            } catch {
+    func performPairedDroneListRequest(completion: @escaping (([AcademyPairedDrone]?) -> Void)) {
+        getPairedDroneList {
+            switch $0 {
+            case .success(let list):
+                completion(list)
+            case .failure:
                 completion(nil)
             }
         }
     }
+
+    func getPairedDroneList(completion: @escaping (Result<[AcademyPairedDrone], Error>) -> Void) {
+        guard let session = self.authSession() else {
+            completion(.failure(AcademyApiManagerError.authenticationError))
+            return
+        }
+
+        ULog.d(.academyApiTag, "🦜 getPairedDroneList: \(DroneAcademyEndPoints.getDroneList.rawValue)")
+        get(DroneAcademyEndPoints.getDroneList.rawValue, session: session) { data, error in
+            ULog.d(.academyApiTag, "🦜 getPairedDroneList - data: \(String(data: data ?? Data(), encoding: .utf8)), error: \(error)")
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            guard let responseData = data else {
+                completion(.failure(AcademyApiManagerError.noData))
+                return
+            }
+
+            let decodedResponse = [AcademyPairedDrone].decode(responseData,
+                                                              convertFromSnakeCase: false)
+            completion(decodedResponse)
+        }
+    }
+
 }
 
 // MARK: - Internal Funcs
 public extension AcademyApiServiceImpl {
 
     func performChallengeRequest(action: PairingAction, completion: @escaping ((String?, Error?) -> Void)) {
-        let session = self.authSession()
+        guard let session = self.authSession() else {
+            completion(nil, AcademyApiManagerError.cancelled)
+            return
+        }
         var endpoint = ""
 
         switch action {
@@ -495,28 +541,38 @@ public extension AcademyApiServiceImpl {
         }
     }
 
-    func performAssociationRequest(token: String, completion: @escaping ((Bool) -> Void)) {
-        let session = self.authSession()
+    func performAssociationRequest(token: String, completion: @escaping ((Result<Bool, Error>) -> Void)) {
+        guard let session = self.authSession() else {
+            completion(.failure(AcademyApiManagerError.authenticationError))
+            return
+        }
         guard let data = token.data(using: .utf8),
               let body = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
-            completion(false)
-            return
+                  completion(.failure(AcademyApiManagerError.badParameters))
+                  return
         }
 
         post(DroneAcademyEndPoints.commonPairingEndpoint.rawValue, params: body, session: session) { data, error in
-            guard error == nil,
-                  data != nil else {
-                completion(false)
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            guard data != nil else {
+                completion(.failure(AcademyApiManagerError.noData))
                 return
             }
 
             // Drone is succesfully paired to Academy.
-            completion(true)
+            completion(.success(true))
         }
     }
 
     func unpairDrone(commonName: String, completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
-        let session = self.authSession()
+        guard let session = self.authSession() else {
+            completion(nil, AcademyApiManagerError.cancelled)
+            return
+        }
 
         guard let url = URL(string: AcademyURL.prodBaseURL + DroneAcademyEndPoints.commonPairingEndpoint.rawValue + "/" + commonName) else {
             completion(nil, AcademyApiManagerError.badURL)
@@ -533,7 +589,10 @@ public extension AcademyApiServiceImpl {
     }
 
     func unpairAllUsers(token: String, completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
-        let session = self.authSession()
+        guard let session = self.authSession() else {
+            completion(nil, AcademyApiManagerError.cancelled)
+            return
+        }
 
         guard let data = token.data(using: .utf8),
               let body = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
@@ -566,7 +625,10 @@ public extension AcademyApiServiceImpl {
 
     func pairedUsersCount(commonName: String,
                           completion: @escaping (_ usersCount: Int?, _ error: Error?) -> Void) {
-        let session = self.authSession()
+        guard let session = self.authSession() else {
+            completion(nil, AcademyApiManagerError.cancelled)
+            return
+        }
 
         guard let url = URL(string: AcademyURL.prodBaseURL + DroneAcademyEndPoints.commonPairingEndpoint.rawValue + "/" + commonName) else {
             completion(nil, AcademyApiManagerError.badURL)

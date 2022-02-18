@@ -1,6 +1,4 @@
-//
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,22 +35,19 @@ class ProjectManagerViewController: UIViewController {
     // MARK: - Outlets
     /// Top Bar
     @IBOutlet private weak var segmentedControl: UISegmentedControl!
-    @IBOutlet private weak var topBar: UIView!
+    @IBOutlet private weak var topBar: UIStackView!
 
     /// Right pane
     @IBOutlet weak var nameTextField: UITextField!
-    @IBOutlet weak var openButton: UIButton!
-    @IBOutlet weak var duplicateButton: UIButton!
-    @IBOutlet weak var deleteButton: UIButton!
-    @IBOutlet weak var newButton: UIButton!
+    @IBOutlet weak var openButton: ActionButton!
+    @IBOutlet weak var duplicateButton: ActionButton!
+    @IBOutlet weak var deleteButton: ActionButton!
+    @IBOutlet weak var newButton: ActionButton!
     @IBOutlet weak var textFieldUnderline: UIView!
-
-    /// Projects list view
-    @IBOutlet private weak var projectsListView: UIView!
 
     // MARK: - Private Properties
     private var viewAccount: MyFlightsAccountView?
-    private var coordinator: DashboardCoordinator?
+    private var coordinator: ProjectManagerCoordinator?
     private var viewModel: ProjectManagerViewModel!
     private(set) weak var projectsListViewController: ProjectsListViewController?
     private var selectedType: ProjectManagerUiParameters.ProjectType? {
@@ -62,22 +57,25 @@ class ProjectManagerViewController: UIViewController {
         projectsListViewController?.viewModel.selectedProject
     }
     private var cancellables = Set<AnyCancellable>()
+    private var tapAroundKeyboardSubscriber: AnyCancellable?
+
+    private var defaultSelectedProject: ProjectModel?
 
     // MARK: - Private Enums
     private enum Constants {
         static let heightAccountView: CGFloat = 40
         static let trailingAccountView: CGFloat = -20
         static let textFieldMaximumLength: Int = 50
-        static let buttonBorderColorAlpha: CGFloat = 0.32
-        static let buttonBorderWidth: CGFloat = 1
    }
 
     // MARK: - Setup
-    static func instantiate(coordinator: DashboardCoordinator,
-                            viewModel: ProjectManagerViewModel) -> ProjectManagerViewController {
+    static func instantiate(coordinator: ProjectManagerCoordinator,
+                            viewModel: ProjectManagerViewModel,
+                            defaultSelectedProject: ProjectModel? = nil) -> ProjectManagerViewController {
         let viewController = StoryboardScene.ProjectManager.projectManagerViewController.instantiate()
         viewController.coordinator = coordinator
         viewController.viewModel = viewModel
+        viewController.defaultSelectedProject = defaultSelectedProject
         return viewController
     }
 
@@ -87,6 +85,8 @@ class ProjectManagerViewController: UIViewController {
         self.navigationController?.setNavigationBarHidden(true, animated: false)
         initUI()
         bindViewModel()
+        updateUIForDefaultSelectedProject()
+        listenKeyboardPresentationChange()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -109,10 +109,6 @@ class ProjectManagerViewController: UIViewController {
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
     }
@@ -123,7 +119,7 @@ private extension ProjectManagerViewController {
 
     /// Top bar actions
     @IBAction func closeButtonTouchedUpInside(_ sender: AnyObject) {
-        coordinator?.back()
+        coordinator?.dismissProjectManager()
     }
 
     @IBAction func segmentDidChange(_ sender: Any) {
@@ -144,7 +140,7 @@ private extension ProjectManagerViewController {
 
     @IBAction func deleteButtonDidTap(_ sender: Any) {
         guard let selectedProject = selectedProject else { return }
-        viewModel.shhowDeletionConfirmation(for: selectedProject)
+        viewModel.showDeletionConfirmation(for: selectedProject)
     }
 
     @IBAction func newButtonDidTap(_ sender: Any) {
@@ -156,67 +152,20 @@ private extension ProjectManagerViewController {
 // MARK: - Private Funcs
 private extension ProjectManagerViewController {
 
-    enum ButtonStyle {
-        case `default`, new, delete
-    }
-
     /// Instantiate basic UI.
     func initUI() {
         /// Top Bar
-        topBar.addLightShadow()
         setupSegmentedControl()
         setupAccountView()
 
         /// Right pane
         setupTextField()
 
-        initUIButton(openButton, .default, L10n.flightPlanOpenLabel)
-        initUIButton(duplicateButton, .default, L10n.flightPlanDuplicate)
-        initUIButton(deleteButton, .delete, L10n.commonDelete)
-        initUIButton(newButton, .new, L10n.flightPlanNew)
-    }
-
-    func initUIButton(_ button: UIButton, _ style: ButtonStyle, _ title: String) {
-        var titleColor = ColorName.defaultTextColor
-        var disabledTitleColor = ColorName.defaultTextColor80
-        var backgroundColor = ColorName.white.color
-
-        switch style {
-        case .default:
-            titleColor = ColorName.defaultTextColor
-            disabledTitleColor = ColorName.defaultTextColor80
-            backgroundColor = ColorName.white.color
-        case .new:
-            titleColor = ColorName.white
-            disabledTitleColor = ColorName.white50
-            backgroundColor = ColorName.highlightColor.color
-        case .delete:
-            titleColor = ColorName.white
-            disabledTitleColor = ColorName.white50
-            backgroundColor = ColorName.errorColor.color
-        }
-
-        button.makeup()
-        button.makeup(color: titleColor)
-        button.makeup(color: disabledTitleColor, and: .disabled)
-        button.applyCornerRadius(Style.largeCornerRadius)
-        button.backgroundColor = backgroundColor
-        button.setTitle(title, for: .normal)
-        button.addLightShadow(condition: button.isEnabled)
-
-        if style == .default {
-            button.layer.borderWidth = Constants.buttonBorderWidth
-            button.layer.borderColor = ColorName.disabledTextColor.color
-                .withAlphaComponent(Constants.buttonBorderColorAlpha)
-                .cgColor
-        }
-
-        button.publisher(for: \.isEnabled)
-            .sink { isEnabled in
-                button.alphaWithEnabledState(isEnabled)
-                button.addLightShadow(condition: isEnabled)
-          }
-            .store(in: &cancellables)
+        newButton.setup(title: L10n.flightPlanNew, style: .default2)
+        duplicateButton.setup(title: L10n.flightPlanDuplicate, style: .default1)
+        deleteButton.setup(title: L10n.commonDelete, style: .destructive)
+        openButton.setup(title: L10n.flightPlanOpenLabel, style: .validate)
+        textFieldUnderline.backgroundColor = ColorName.separator.color
     }
 
     /// Setup account view.
@@ -227,7 +176,8 @@ private extension ProjectManagerViewController {
             viewAccount.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(viewAccount)
             NSLayoutConstraint.activate([
-                viewAccount.trailingAnchor.constraint(equalTo: topBar.trailingAnchor, constant: Constants.trailingAccountView),
+                viewAccount.trailingAnchor.constraint(equalTo: topBar.layoutMarginsGuide.trailingAnchor,
+                                                      constant: -Layout.mainPadding(isRegularSizeClass)),
                 viewAccount.heightAnchor.constraint(equalToConstant: Constants.heightAccountView),
                 viewAccount.centerYAnchor.constraint(equalTo: topBar.centerYAnchor),
                 viewAccount.leadingAnchor.constraint(equalTo: segmentedControl.trailingAnchor)
@@ -244,13 +194,14 @@ private extension ProjectManagerViewController {
                                            at: segmentedControl.numberOfSegments,
                                            animated: false)
         }
-        segmentedControl.selectedSegmentIndex = viewModel.index(of: selectedType) ?? 0
+        segmentedControl.selectedSegmentIndex = viewModel.segmentedControlSelectedIndex
         segmentedControl.customMakeup()
     }
 
     /// Setup Project name text field.
     func setupTextField() {
         nameTextField.makeUp(style: .largeMedium)
+        nameTextField.returnKeyType = .done
         nameTextField.textColor = ColorName.defaultTextColor.color
         nameTextField.backgroundColor = .clear
         nameTextField.text = nil
@@ -264,14 +215,14 @@ private extension ProjectManagerViewController {
         nameTextField.editingDidEndPublisher
             .sink { [unowned self] in
                 nameTextField.resignFirstResponder()
-                guard let selectedProject = selectedProject else { return }
-                viewModel.renameProject(selectedProject,
-                                                with: nameTextField.text)
             }
             .store(in: &cancellables)
         nameTextField.returnPressedPublisher
             .sink { [unowned self] in
                 nameTextField.resignFirstResponder()
+                guard let selectedProject = selectedProject else { return }
+                viewModel.renameProject(selectedProject,
+                                                with: nameTextField.text)
             }
             .store(in: &cancellables)
 
@@ -299,11 +250,67 @@ private extension ProjectManagerViewController {
              }
             .store(in: &cancellables)
     }
+
+    private func updateUIForDefaultSelectedProject() {
+        guard let defaultSelectedProject = defaultSelectedProject else { return }
+        segmentedControl.selectedSegmentIndex = viewModel.projectTypeIndex(of: defaultSelectedProject) ?? 0
+        if let selectedType = selectedType { viewModel.updateProjectType(selectedType) }
+        projectsListViewController?.viewModel.didSelect(project: defaultSelectedProject)
+    }
+
+    /// Listen keyboard state (shown or hidden) changes.
+    private func listenKeyboardPresentationChange() {
+        keyboardPublisher
+            .sink { [unowned self] in updateUIForKeyboardState($0) }
+            .store(in: &cancellables)
+    }
+
+    /// Listen taps around the keyboard to simulate a 'Return' key pressed.
+    private func returnsWhenTappedAroundKeyboard() {
+        tapAroundKeyboardSubscriber = view.tapGesturePublisher
+            .sink { [unowned self] in
+                // Prevent to save changes when top bar (back button) is tapped
+                guard topBar
+                        .hitTest($0.location(in: view),
+                                     with: nil) == nil
+                else { return }
+                // Hides the keyboard
+                view.endEditing(true)
+                // Save the current changes
+                guard let selectedProject = selectedProject else { return }
+                viewModel.renameProject(selectedProject,
+                                                with: nameTextField.text)
+            }
+    }
+
+    /// Disable action buttons and cells while keyboard is presented.
+    ///
+    ///  - parameters:
+    ///   - state: the keyboard state.
+    private func updateUIForKeyboardState(_ state: KeyboardState) {
+        // Disable Buttons.
+        openButton.isEnabled = state == .hidden
+        duplicateButton.isEnabled = state == .hidden
+        deleteButton.isEnabled = state == .hidden
+        newButton.isEnabled = state == .hidden
+        // Prevent to select another project.
+        projectsListViewController?.view.isUserInteractionEnabled = state == .hidden
+        // Prevent to switch to another project type.
+        segmentedControl.isUserInteractionEnabled = state == .hidden
+        // Handle taps around keyboard.
+        if state == .shown {
+            // Listen taps around the keyboard to dismiss it and save the project name.
+            returnsWhenTappedAroundKeyboard()
+        } else {
+            // Cancel the view tap gesture subscriber.
+            tapAroundKeyboardSubscriber?.cancel()
+        }
+    }
 }
 
 // MARK: - MyFlightsAccountViewDelegate
 extension ProjectManagerViewController: MyFlightsAccountViewDelegate {
     func didClickOnAccount() {
-        coordinator?.startMyFlightsAccountView()
+        coordinator?.startAccountView()
     }
 }

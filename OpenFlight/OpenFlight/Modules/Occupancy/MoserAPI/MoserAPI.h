@@ -28,7 +28,7 @@
 //    SUCH DAMAGE.
 
 #import <Foundation/Foundation.h>
-#import <simd/SIMD.h>
+#import <simd/simd.h>
 
 @class OBJCVoxelStorageCore;
 

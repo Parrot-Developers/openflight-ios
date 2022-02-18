@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,6 +36,9 @@ final class MissionProviderSelectorViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Outlets
+    @IBOutlet private weak var titleContainer: SideNavigationBarStackView!
+    @IBOutlet private weak var titleContainerHeightConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var missionsTableView: SidePanelTableView!
     @IBOutlet private weak var titleLabel: UILabel! {
         didSet {
             titleLabel.makeUp(and: ColorName.defaultTextColor)
@@ -63,6 +65,12 @@ final class MissionProviderSelectorViewController: UIViewController {
         }
         .store(in: &cancellables)
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        titleContainer.directionalLayoutMargins.leading = Layout.mainContainerInnerMargins(isRegularSizeClass).leading + Layout.mainPadding(isRegularSizeClass)
+        missionsTableView.contentInset.top = Layout.mainSpacing(isRegularSizeClass)
+    }
 }
 
 // MARK: - UITableViewDataSource
@@ -82,8 +90,7 @@ extension MissionProviderSelectorViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension MissionProviderSelectorViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        LogEvent.logAppEvent(itemName: items[indexPath.row].title.description,
-                             logType: .simpleButton)
+        LogEvent.log(.simpleButton(items[indexPath.row].title.description))
 
         viewModel.userDidTap(on: indexPath.row)
     }

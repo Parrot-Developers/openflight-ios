@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,38 +29,24 @@
 
 import UIKit
 import CoreData
+import Combine
 
 // MARK: - Protocol
 public protocol ExecutionsListDelegate: AnyObject {
-    func startFlightExecutionDetails(_ flightPlan: FlightPlanModel)
-    func handleHistoryCellAction(with: FlightPlanModel, actionType: HistoryMediasActionType?)
+    func startFlightExecutionDetails(_ flightPlan: FlightPlanModel, animated: Bool)
     func backDisplay()
     func open(flightPlan: FlightPlanModel)
-}
-
-// MARK: - Public Enums
-/// Stores different type of history table view.
-public enum HistoryTableType {
-    /// Table view is in a mini display mode.
-    case miniHistory
-    /// Table view is in a full display mode.
-    case fullHistory
 }
 
 /// Executions list ViewController.
 final class ExecutionsListViewController: UIViewController {
     // MARK: - Outlets
+    @IBOutlet private weak var topBar: SideNavigationBarView!
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var emptyFlightsTitleLabel: UILabel!
     @IBOutlet private weak var emptyFlightsDecriptionLabel: UILabel!
     @IBOutlet private weak var emptyLabelStack: UIStackView!
-    @IBOutlet weak var logoType: UIImageView!
-    @IBOutlet weak var titleLabel: UILabel! {
-        didSet {
-            titleLabel.makeUp(with: .huge, and: .defaultTextColor)
-        }
-    }
-    @IBOutlet weak var separator: UIView!
+    @IBOutlet private weak var titleLabel: UILabel!
 
     private enum Constant {
         static let height: CGFloat = 80
@@ -70,30 +55,34 @@ final class ExecutionsListViewController: UIViewController {
 
     // MARK: - Private Properties
     private var flightPlanHandler: FlightPlanManager!
+    private var projectManager: ProjectManager!
     private var flightItems: [FlightPlanModel] = []
+    private var selectedFlightItem: FlightPlanModel?
     private var projectModel: ProjectModel!
+    private var flightService: FlightService!
     private weak var delegate: ExecutionsListDelegate?
-
-    /// List of history views for each flight plan execution.
-    var fpExecutionsViews: [String: HistoryMediasView] = [:]
-    var tableType: HistoryTableType = .fullHistory
+    private var cancellables: [AnyCancellable] = []
 
     // MARK: - Setup
     static func instantiate(delegate: ExecutionsListDelegate?,
                             flightPlanHandler: FlightPlanManager,
+                            projectManager: ProjectManager,
                             projectModel: ProjectModel,
-                            tableType: HistoryTableType) -> ExecutionsListViewController {
+                            flightService: FlightService) -> ExecutionsListViewController {
         let viewController = StoryboardScene.ExecutionsListViewController.initialScene.instantiate()
         viewController.delegate = delegate
         viewController.flightPlanHandler = flightPlanHandler
+        viewController.projectManager = projectManager
         viewController.projectModel = projectModel
-        viewController.tableType = tableType
+        viewController.flightService = flightService
         return viewController
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        setupUI()
 
         // Setup tableView.
         tableView.dataSource = self
@@ -106,13 +95,10 @@ final class ExecutionsListViewController: UIViewController {
         emptyFlightsDecriptionLabel.text = L10n.dashboardMyFlightsEmptyListDesc
         view.backgroundColor = ColorName.white.color
         tableView.backgroundColor = ColorName.defaultBgcolor.color
-        separator.backgroundColor = ColorName.greySilver.color
-        if tableType == .miniHistory {
-            tableView.insetsContentViewsToSafeArea = false // Safe area is handled in this VC, not in content
-            tableView.allowsSelection = true
-        }
-        loadAllFlights(tableType: tableType)
-
+        tableView.insetsContentViewsToSafeArea = false // Safe area is handled in this VC, not in content
+        tableView.allowsSelection = true
+        listenBackDisplay()
+        listenFlightsChange()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -123,10 +109,6 @@ final class ExecutionsListViewController: UIViewController {
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     /// Update display when orientation changed.
@@ -146,24 +128,52 @@ final class ExecutionsListViewController: UIViewController {
         return true
     }
 
-    func getFligthPlanType(with type: String?) -> FlightPlanType? {
-        return Services.hub.flightPlan.typeStore.typeForKey(type)
-    }
-
     // MARK: - Public Funcs
     /// Load all flights saved in local database.
-    public func loadAllFlights(tableType: HistoryTableType) {
+    public func loadAllFlights() {
         flightItems = Services.hub.flightPlan.projectManager.executedFlightPlans(for: projectModel)
         emptyLabelStack.isHidden = !flightItems.isEmpty
+        tableView.isHidden = flightItems.isEmpty
         titleLabel.text = L10n.flightPlanHistory
-        fpExecutionsViews = FlightPlanHistorySyncManager.shared.syncProvider?.historySyncViews(
-            type: tableType,
-            projectModel: projectModel) ?? [:]
         tableView.reloadData()
     }
 
     @IBAction func didTapBackButton(_ sender: UIButton) {
         delegate?.backDisplay()
+    }
+
+    private func listenBackDisplay() {
+        projectManager.hideExecutionsListPublisher
+            .sink { [unowned self] _ in
+                delegate?.backDisplay()
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Reload flights when there is a change
+    private func listenFlightsChange() {
+        flightService.flightsDidChange
+            .debounce(for: .seconds(1), scheduler: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.loadAllFlights()
+            }
+            .store(in: &cancellables)
+    }
+}
+
+// MARK: - UI
+extension ExecutionsListViewController {
+
+    func setupUI() {
+        // Top Bar
+        topBar.backgroundColor = ColorName.white.color
+        topBar.layer.zPosition = 1
+        topBar.addShadow()
+
+        // Labels
+        titleLabel.makeUp(with: .huge, and: .defaultTextColor)
+        emptyFlightsTitleLabel.makeUp(with: .huge, and: .defaultTextColor)
+        emptyFlightsDecriptionLabel.makeUp(with: .large, and: .defaultTextColor)
     }
 }
 
@@ -183,6 +193,10 @@ extension ExecutionsListViewController: UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(for: indexPath) as FlightPlanExecutionCell
             let execution = flightItems[indexPath.row - 1]
             cell.fill(execution: execution)
+            if let selectedFlightItem = selectedFlightItem,
+               execution.uuid == selectedFlightItem.uuid {
+                tableView.selectRow(at: indexPath, animated: false, scrollPosition: .none)
+            }
             return cell
         }
     }
@@ -192,7 +206,9 @@ extension ExecutionsListViewController: UITableViewDataSource {
 extension ExecutionsListViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        delegate?.startFlightExecutionDetails(flightItems[indexPath.row - 1])
+        let flightItem = flightItems[indexPath.row - 1]
+        selectedFlightItem = flightItem
+        delegate?.startFlightExecutionDetails(flightItem, animated: true)
     }
 
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -211,17 +227,6 @@ extension ExecutionsListViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return tableType == .fullHistory ? Constant.height : UITableView.automaticDimension
-    }
-}
-
-extension ExecutionsListViewController: FlightPlanHistoryCellDelegate {
-    func didTapOnResume(flightModel: FlightPlanModel) {
-        delegate?.open(flightPlan: flightModel)
-    }
-
-    func didTapOnMedia(flightModel: FlightPlanModel, action: HistoryMediasActionType?) {
-        guard let strongAction = action else { return }
-        delegate?.handleHistoryCellAction(with: flightModel, actionType: strongAction)
+        return UITableView.automaticDimension
     }
 }

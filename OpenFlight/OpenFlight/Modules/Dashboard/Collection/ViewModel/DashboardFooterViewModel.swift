@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -117,7 +116,9 @@ private extension DashboardFooterViewModel {
     func listenSystemInfo(_ drone: Drone) {
         droneSystemInfoRef = drone.getPeripheral(Peripherals.systemInfo) { [weak self] systemInfo in
             let copy = self?.state.value.copy()
-            copy?.droneVersionNumber = systemInfo?.firmwareVersion ?? Style.dash
+            copy?.droneVersionNumber = Services.hub.currentDroneHolder.hasLastConnectedDrone
+                                        ? systemInfo?.firmwareVersion ?? Style.dash
+                                        : Style.dash
             self?.state.set(copy)
         }
     }

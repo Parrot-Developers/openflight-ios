@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,7 +34,7 @@ import Combine
 final class ManagePlansViewController: UIViewController {
 
     // MARK: - Outlets
-    @IBOutlet private weak var topView: UIView!
+    @IBOutlet private weak var topBar: FileNavigationStackView!
     @IBOutlet private weak var closeButton: UIButton!
     @IBOutlet private weak var projectTitle: UILabel! {
         didSet {
@@ -43,127 +42,55 @@ final class ManagePlansViewController: UIViewController {
             projectTitle.text = L10n.flightPlanProjects
         }
     }
-    @IBOutlet private weak var currentProjectView: UIView!
-    @IBOutlet private weak var openRecentView: UIView!
-    @IBOutlet private weak var projectName: UILabel! {
-        didSet {
-            projectName.makeUp(with: .small, and: .defaultTextColor)
-            projectName.text = L10n.flightPlanProjectName.uppercased()
-        }
-    }
-    @IBOutlet private weak var textfield: UITextField! {
-        didSet {
-            textfield.makeUp(style: .largeMedium)
-            textfield.textColor = ColorName.defaultTextColor.color
-            textfield.backgroundColor = .clear
-        }
-    }
-    @IBOutlet private weak var duplicateButton: UIButton! {
-        didSet {
-            duplicateButton.makeup()
-            duplicateButton.makeup(color: .defaultTextColor80, and: .disabled)
-            duplicateButton.makeup(color: .defaultTextColor)
-            duplicateButton.applyCornerRadius(Style.largeCornerRadius)
-            duplicateButton.backgroundColor = ColorName.white.color
-            duplicateButton.setTitle(L10n.flightPlanDuplicate, for: .normal)
-        }
-    }
-    @IBOutlet private weak var deleteButton: UIButton! {
-        didSet {
-            deleteButton.makeup()
-            deleteButton.applyCornerRadius(Style.largeCornerRadius)
-            deleteButton.backgroundColor = ColorName.errorColor.color
-            deleteButton.tintColor = ColorName.white.color
-            deleteButton.setTitle(L10n.commonDelete, for: .normal)
-        }
-    }
-    @IBOutlet private weak var newButton: UIButton! {
-        didSet {
-            newButton.makeup()
-            newButton.applyCornerRadius(Style.largeCornerRadius)
-            newButton.backgroundColor = ColorName.highlightColor.color
-            newButton.setTitle(L10n.flightPlanNew, for: .normal)
-        }
-    }
-    @IBOutlet private weak var openButton: UIButton! {
-        didSet {
-            openButton.makeup(color: .defaultTextColor, and: .normal)
-            openButton.cornerRadiusedWith(backgroundColor: ColorName.white.color,
-                                          radius: Style.largeCornerRadius)
-            openButton.setTitle(L10n.flightPlanOpenLabel, for: .normal)
-        }
-    }
+    @IBOutlet private weak var nameTextField: UITextField!
+    @IBOutlet private weak var duplicateButton: ActionButton!
+    @IBOutlet private weak var deleteButton: ActionButton!
+    @IBOutlet private weak var newButton: ActionButton!
+    @IBOutlet private weak var openButton: ActionButton!
 
     // MARK: - Private Enums
     private enum Constants {
         static let textFieldMaximumLength: Int = 50
+        static let heightAccountView: CGFloat = 40
+        static let trailingAccountView: CGFloat = -20
     }
 
     // MARK: - Private properties
+    private var viewAccount: MyFlightsAccountView?
     private var viewModel: ManagePlansViewModelInput!
+    private weak var coordinator: ManagePlansCoordinator?
     private var cancellables = [AnyCancellable]()
+    private var tapAroundKeyboardSubscriber: AnyCancellable?
     private(set) weak var flightPlansListViewController: FlightPlansListViewController?
 
     // MARK: - Setup
-    static func instantiate(viewModel: ManagePlansViewModel) -> ManagePlansViewController {
+    static func instantiate(viewModel: ManagePlansViewModel, coordinator: ManagePlansCoordinator) -> ManagePlansViewController {
         let viewController = StoryboardScene.ManagePlans.initialScene.instantiate()
         viewController.viewModel = viewModel
+        viewController.coordinator = coordinator
         return viewController
-    }
-
-    // MARK: - Private Funcs
-    private func bindViewModel() {
-        viewModel.statePublisher
-            .sink { [unowned self] state in
-                var isEnabled: Bool
-                switch state {
-                case .none:
-                    isEnabled = false
-                    textfield.text = ""
-                case .project(let flightPlan):
-                    isEnabled = true
-                    textfield.text = flightPlan.title
-                }
-                duplicateButton.isEnabled = isEnabled
-                deleteButton.isEnabled = isEnabled
-                openButton.isEnabled = isEnabled
-                textfield.isEnabled = isEnabled
-            }
-            .store(in: &cancellables)
-    }
-
-    @objc func textChanged() {
-        viewModel.renameSelectedFlightPlan(textfield.text)
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Setup textfield.
-        textfield.text = nil
-        textfield.delegate = self
-        textfield.addTarget(self, action: #selector(textChanged), for: .editingChanged)
+        setupUI()
         bindViewModel()
-        let gesture = UITapGestureRecognizer(target: self, action: #selector(didTapOnPincile))
-        textfield.rightView?.addGestureRecognizer(gesture)
-    }
-
-    @objc
-    func didTapOnPincile() {
-
+        listenKeyboardPresentationChange()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.flightPlanManageDialog,
-                             logType: .screen)
+        // Update Account view
+        // TODO: Refactor User Account Widget
+        viewAccount?.viewWillAppear()
+        LogEvent.log(.screen(LogEvent.Screen.flightPlanManageDialog))
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         super.prepare(for: segue, sender: sender)
         if let destination = segue.destination as? FlightPlansListViewController,
-           let flightPlansViewModel = self.viewModel.flightPlanListviewModel as? (FlightPlansListViewModelUIInput & FlightPlanListHeaderDelegate) {
+           let flightPlansViewModel = viewModel.flightPlanListviewModel as? (FlightPlansListViewModelUIInput & FlightPlanListHeaderDelegate) {
             flightPlansListViewController = destination
             viewModel.setToCompactMode()
             flightPlansListViewController?.setupViewModel(with: flightPlansViewModel)
@@ -202,34 +129,150 @@ private extension ManagePlansViewController {
     }
 }
 
-// MARK: - UITextField Delegate
-extension ManagePlansViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return true
+// MARK: - Private Funcs
+private extension ManagePlansViewController {
+
+    /// Setup basic UI.
+    func setupUI() {
+
+        view.backgroundColor = ColorName.defaultBgcolor.color
+
+        // Top Bar
+        topBar.backgroundColor = ColorName.white.color
+        topBar.layer.zPosition = 1
+        topBar.addShadow()
+        setupAccountView()
+
+        /// Project name text field
+        setupTextField()
+
+        /// Buttons
+        newButton.setup(title: L10n.flightPlanNew, style: .default2)
+        duplicateButton.setup(title: L10n.flightPlanDuplicate, style: .default1)
+        deleteButton.setup(title: L10n.commonDelete, style: .destructive)
+        openButton.setup(title: L10n.flightPlanOpenLabel, style: .validate)
     }
 
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        textField.resignFirstResponder()
+    /// Setup Project name text field.
+    func setupTextField() {
+        nameTextField.makeUp(style: .largeMedium)
+        nameTextField.textColor = ColorName.defaultTextColor.color
+        nameTextField.backgroundColor = .clear
+        nameTextField.text = nil
+        nameTextField.returnKeyType = .done
+        nameTextField.editingChangedPublisher
+            .sink { [unowned self] in
+                if $0.count > Constants.textFieldMaximumLength {
+                    nameTextField.text = String($0.prefix(Constants.textFieldMaximumLength))
+                }
+            }
+            .store(in: &cancellables)
+        nameTextField.editingDidEndPublisher
+            .sink { [unowned self] in
+                nameTextField.resignFirstResponder()
+                viewModel.renameSelectedFlightPlan(nameTextField.text)
+            }
+            .store(in: &cancellables)
+        nameTextField.returnPressedPublisher
+            .sink { [unowned self] in
+                nameTextField.resignFirstResponder()
+            }
+            .store(in: &cancellables)
+
+        nameTextField.rightView?.tapGesturePublisher
+            .sink { [unowned self] _ in
+                nameTextField.becomeFirstResponder()
+            }
+            .store(in: &cancellables)
     }
 
-    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        return true
+    private func bindViewModel() {
+        viewModel.statePublisher
+            .sink { [unowned self] state in
+                var isEnabled: Bool
+                switch state {
+                case .none:
+                    isEnabled = false
+                    nameTextField.text = ""
+                case .project(let flightPlan):
+                    isEnabled = true
+                    nameTextField.text = flightPlan.title
+                }
+                duplicateButton.isEnabled = isEnabled
+                deleteButton.isEnabled = isEnabled
+                openButton.isEnabled = isEnabled
+                nameTextField.isEnabled = isEnabled
+            }
+            .store(in: &cancellables)
     }
 
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        guard let textFieldText = textField.text,
-            let rangeOfTextToReplace = Range(range, in: textFieldText) else {
-                return false
+    /// Setup account view.
+    func setupAccountView() {
+        if let currentAccount = AccountManager.shared.currentAccount,
+           let viewAccount = currentAccount.myFlightsAccountView {
+            viewAccount.translatesAutoresizingMaskIntoConstraints = false
+            viewAccount.delegate = self
+            view.addSubview(viewAccount)
+            NSLayoutConstraint.activate([
+                viewAccount.trailingAnchor.constraint(equalTo: topBar.layoutMarginsGuide.trailingAnchor,
+                                                      constant: -Layout.mainPadding(isRegularSizeClass)),
+                viewAccount.heightAnchor.constraint(equalToConstant: Constants.heightAccountView),
+                viewAccount.centerYAnchor.constraint(equalTo: topBar.centerYAnchor),
+                viewAccount.leadingAnchor.constraint(equalTo: projectTitle.trailingAnchor)
+            ])
+            self.viewAccount = viewAccount
         }
+    }
 
-        let substringToReplace = textFieldText[rangeOfTextToReplace]
-        if substringToReplace.count > string.count {
-            // Always allow removing characters.
-            return true
+    /// Listen keyboard state (shown or hidden) changes.
+    private func listenKeyboardPresentationChange() {
+        keyboardPublisher
+            .sink { [unowned self] in updateUIForKeyboardState($0) }
+            .store(in: &cancellables)
+    }
+
+    /// Listen taps around the keyboard to simulate a 'Return' key pressed.
+    private func returnsWhenTappedAroundKeyboard() {
+        tapAroundKeyboardSubscriber = view.tapGesturePublisher
+            .sink { [unowned self] in
+                // Prevent to save changes when back button is tapped
+                guard closeButton
+                        .hitTest($0.location(in: view),
+                                     with: nil) == nil
+                else { return }
+                // Hides the keyboard
+                view.endEditing(true)
+                // Save the current changes
+                viewModel.renameSelectedFlightPlan(nameTextField.text)
+            }
+    }
+
+    /// Disable action buttons and cells while keyboard is presented.
+    ///
+    ///  - parameters:
+    ///   - state: the keyboard state.
+    private func updateUIForKeyboardState(_ state: KeyboardState) {
+        // Disable Buttons.
+        openButton.isEnabled = state == .hidden
+        duplicateButton.isEnabled = state == .hidden
+        deleteButton.isEnabled = state == .hidden
+        newButton.isEnabled = state == .hidden
+        // Prevent to select another project.
+        flightPlansListViewController?.view.isUserInteractionEnabled = state == .hidden
+        // Handle taps around keyboard.
+        if state == .shown {
+            // Listen taps around the keyboard to dismiss it and save the project name.
+            returnsWhenTappedAroundKeyboard()
         } else {
-            let count = textFieldText.count - substringToReplace.count + string.count
-            return count <= Constants.textFieldMaximumLength
+            // Cancel the view tap gesture subscriber.
+            tapAroundKeyboardSubscriber?.cancel()
         }
+    }
+}
+
+// MARK: - MyFlightsAccountViewDelegate
+extension ManagePlansViewController: MyFlightsAccountViewDelegate {
+    func didClickOnAccount() {
+        coordinator?.startAccountView()
     }
 }

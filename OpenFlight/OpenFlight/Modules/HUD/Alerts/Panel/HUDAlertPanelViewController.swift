@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +28,11 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import GroundSdk
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "AlertPanel")
+}
 
 // MARK: - Protocols
 public protocol HUDAlertPanelDelegate: AnyObject {
@@ -45,17 +49,12 @@ final class HUDAlertPanelViewController: AlertPanelViewController {
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var subtitleLabel: UILabel!
     @IBOutlet private weak var stopView: StopView!
-    @IBOutlet private weak var progressView: UIProgressView!
     @IBOutlet private weak var goLabel: UILabel!
     @IBOutlet private weak var startView: UIView!
+    @IBOutlet private weak var containerRightSidePanel: RightSidePanelStackView!
 
     // MARK: - Private Properties
-    private let alertViewModel = HUDAlertPanelViewModel<HUDAlertPanelState>()
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let totalProgress: Int = 3
-    }
+    private let alertViewModel = HUDAlertPanelViewModel<HUDAlertPanelState>(services: Services.hub)
 
     // MARK: - Setup
     static func instantiate() -> HUDAlertPanelViewController {
@@ -67,6 +66,12 @@ final class HUDAlertPanelViewController: AlertPanelViewController {
         super.viewDidLoad()
 
         initView()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        containerRightSidePanel.screenBorders = [.bottom]
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -107,6 +112,7 @@ private extension HUDAlertPanelViewController {
         actionButton.delegate = self
         startView.isHidden = true
         goLabel.text = L10n.commonGo.uppercased()
+        goLabel.makeUp(with: .giant, and: .defaultTextColor)
     }
 
     /// Inits the alert view model.
@@ -122,10 +128,8 @@ private extension HUDAlertPanelViewController {
     /// - Parameters:
     ///    - state: current alert state to display
     func updatePanel(state: HUDAlertPanelState) {
-        actionButton.stopProgress()
-
-        guard let alert = state.currentAlert,
-              state.canShowAlert else {
+        guard let alert = state.currentAlert, state.canShowAlert else {
+            actionButton.stopProgress()
             delegate?.hideAlertPanel()
             return
         }
@@ -139,12 +143,29 @@ private extension HUDAlertPanelViewController {
     /// - Parameters:
     ///    - alert: current alert state
     func updateView(with alert: AlertPanelState) {
+        if let type = alert.rthAlertType, let countdown = alert.countdown, let total = alert.initialCountdown {
+            ULog.d(.tag, "type \(type) | countdown \(countdown)/\(total)")
+        }
+
+        if actionButton.rthAlertType != alert.rthAlertType {
+            // Reset progress if we override an already on-going alert.
+            actionButton.stopProgress()
+            actionButton.rthAlertType = alert.rthAlertType
+        }
+
         // Handle special cases according to the current alert.
         if alert.hasAnimation {
-            actionButton.startProgressAnimation(delay: Double(alert.countdown ?? 0),
-                                                countdownMessage: alert.countdownMessage)
-        } else if alert.hasProgressView {
-            updateProgressView(countdown: alert.countdown)
+            if let countdown = alert.countdown {
+                // Animate progress based on `alert.countdown` value.
+                actionButton.startProgressAnimation(initialCountdown: alert.initialCountdown,
+                                                    delay: Double(countdown),
+                                                    countdownMessage: alert.countdownMessage)
+            } else {
+                // No countdown specified => launch default automatic progress animation.
+                actionButton.launchCountdownAnimation()
+            }
+        } else if alert.hasTextCountdown {
+            updateCountdown(alert: alert)
         }
 
         startView.isHidden = alert.startViewIsVisible == false
@@ -155,12 +176,14 @@ private extension HUDAlertPanelViewController {
                                withText: alert.actionLabelText)
         actionButton.isEnabled = alert.state == .available
 
-        // Starts or stops animation regarding state.
-        switch alert.state {
-        case .started:
-            actionButton.startAnimation(state: alert)
-        default:
-            actionButton.stopAnimation(state: alert)
+        if !alert.hasAnimation {
+            // Starts or stops animation regarding state.
+            switch alert.state {
+            case .started:
+                actionButton.startAnimation(state: alert)
+            default:
+                actionButton.stopAnimation(state: alert)
+            }
         }
 
         titleLabel.text = alert.title
@@ -172,21 +195,16 @@ private extension HUDAlertPanelViewController {
         titleLabel.isHidden = false
     }
 
-    /// Update progress view.
+    /// Updates count down.
     ///
     /// - Parameters:
-    ///    - countdown: current countdown
-    func updateProgressView(countdown: Int?) {
-        guard let countdown = countdown else {
-            titleLabel.isHidden = true
-            progressView.isHidden = true
-            goLabel.isHidden = true
-            return
+    ///    - alert: current alert state
+    func updateCountdown(alert: AlertPanelState) {
+        goLabel.isHidden = false
+        if let countdownMessage = alert.countdownMessage,
+           let countdown = alert.countdown {
+            goLabel.text = countdownMessage(countdown)
         }
-
-        progressView.setProgress(1.0 - Float(countdown / Constants.totalProgress), animated: true)
-        progressView.isHidden = countdown == 0
-        goLabel.isHidden = countdown != 0
     }
 }
 

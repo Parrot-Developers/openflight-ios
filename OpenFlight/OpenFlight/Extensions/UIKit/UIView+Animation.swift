@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -58,20 +57,6 @@ public extension UIView {
                        })
     }
 
-    func animateIsHidden(_ isHidden: Bool, duration: TimeInterval = 0.3) {
-        UIView.animate(withDuration: duration, delay: 0, options: .curveEaseOut) {
-            self.isHidden = isHidden
-            self.alphaHidden(isHidden)
-        }
-    }
-
-    func animateIsHiddenInStackView(_ isHidden: Bool, duration: TimeInterval = 0.3) {
-        UIView.animate(withDuration: duration, delay: 0, options: .curveEaseOut) {
-            self.isHiddenInStackView = isHidden
-            self.alphaHidden(isHidden)
-        }
-    }
-
     /// Animates showing/hiding of the view from one of its edges.
     ///
     /// - Parameters:
@@ -88,7 +73,7 @@ public extension UIView {
                       show: Bool,
                       fadeFrom: CGFloat? = nil,
                       animate: Bool = true,
-                      duration: TimeInterval = 0.2,
+                      duration: TimeInterval = Style.shortAnimationDuration,
                       delay: TimeInterval = 0,
                       initialTransform: CGAffineTransform = .identity) {
         let translation: CGPoint
@@ -111,11 +96,74 @@ public extension UIView {
         }
 
         if animate {
-            UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut) {
+            UIView.animate(withDuration: duration, delay: 0, options: .curveEaseOut) {
                 transformBlock()
             }
         } else {
             transformBlock()
         }
+    }
+
+    /// Animates view with pre-defined parameters (convenience function).
+    ///
+    /// - Parameters:
+    ///    - duration: Animation duration.
+    ///    - delay: Delay for the animation.
+    ///    - options: Animation options.
+    ///    - animations: The animation block.
+    ///    - completion: The completion block.
+    static func animate(_ duration: TimeInterval = Style.shortAnimationDuration,
+                        delay: TimeInterval = 0,
+                        options: UIView.AnimationOptions = [.curveEaseOut],
+                        animations: @escaping () -> Void,
+                        completion: ((Bool) -> Void)? = nil) {
+        animate(withDuration: duration, delay: delay, options: options, animations: animations, completion: completion)
+
+    }
+
+    /// Animates isHidden with pre-defined parameters (convenience function).
+    ///
+    /// - Parameters:
+    ///    - isHidden: `isHidden` property value of the view.
+    ///    - withAlpha: Animates view's opacity from/to `withAlpha` value if not nil (1 by default).
+    ///    - duration: Animation duration.
+    ///    - delay: Delay for the animation.
+    ///    - options: Animation options.
+    ///    - completion: The completion block.
+    func animateIsHidden(_ isHidden: Bool,
+                         withAlpha alpha: CGFloat? = 1,
+                         duration: TimeInterval = Style.shortAnimationDuration,
+                         delay: TimeInterval = 0,
+                         options: UIView.AnimationOptions = [.curveEaseOut],
+                         completion: ((Bool) -> Void)? = nil) {
+        UIView.animate(withDuration: duration, delay: delay, options: options, animations: {
+            self.isHidden = isHidden
+            if let alpha = alpha {
+                self.alphaHidden(isHidden, withAlpha: alpha)
+            }
+        }, completion: completion)
+    }
+
+    /// Animates isHiddenInStackView with pre-defined parameters (convenience function).
+    ///
+    /// - Parameters:
+    ///    - isHidden: `isHiddenInStackView` property value of the view.
+    ///    - withAlpha: Animates view's opacity from/to `withAlpha` value if not nil (1 by default).
+    ///    - duration: Animation duration.
+    ///    - delay: Delay for the animation.
+    ///    - options: Animation options.
+    ///    - completion: The completion block.
+    func animateIsHiddenInStackView(_ isHidden: Bool,
+                                    withAlpha alpha: CGFloat? = 1,
+                                    duration: TimeInterval = Style.shortAnimationDuration,
+                                    delay: TimeInterval = 0,
+                                    options: UIView.AnimationOptions = [.curveEaseOut],
+                                    completion: ((Bool) -> Void)? = nil) {
+        UIView.animate(withDuration: duration, delay: delay, options: options, animations: {
+            self.isHiddenInStackView = isHidden
+            if let alpha = alpha {
+                self.alphaHidden(isHidden, withAlpha: alpha)
+            }
+        }, completion: completion)
     }
 }

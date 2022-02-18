@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -66,21 +65,15 @@ final class ImagingBarWhiteBalanceBarView: UIView, NibOwnerLoadable, BarItemMode
     private let secondaryViewModel = ImagingBarWhiteBalanceViewModel()
     private var customWhiteBalanceViewModel = ImagingBarWhiteBalanceCustomViewModel()
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let selectionDelay: TimeInterval = 0.2
-        static let animationDuration: TimeInterval = 0.1
-    }
-
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitImagingBarWhiteBalanceBarView()
+        commonInitImagingBarWhiteBalanceBarView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitImagingBarWhiteBalanceBarView()
+        commonInitImagingBarWhiteBalanceBarView()
     }
 }
 
@@ -100,9 +93,9 @@ private extension ImagingBarWhiteBalanceBarView {
 private extension ImagingBarWhiteBalanceBarView {
     /// Common init.
     func commonInitImagingBarWhiteBalanceBarView() {
-        self.loadNibContent()
-        self.layer.cornerRadius = Style.largeCornerRadius
-        self.layer.masksToBounds = true
+        loadNibContent()
+        layer.cornerRadius = Style.largeCornerRadius
+        layer.masksToBounds = true
         secondaryViewModel.state.valueChanged = { [weak self] state in
             self?.updateAutomaticMode(isAutomatic: state.mode as? Camera2WhiteBalanceMode == .automatic)
             self?.segmentedBarView?.updateModels()
@@ -128,7 +121,7 @@ private extension ImagingBarWhiteBalanceBarView {
         let rulerBar = CenteredRulerBarView<ImagingBarState>()
         rulerBar.viewModel = customWhiteBalanceViewModel
         centeredRulerBarContainer.addWithConstraints(subview: rulerBar)
-        self.centeredRulerBarView = rulerBar
+        centeredRulerBarView = rulerBar
     }
 
     /// Update UI with given automatic setting.
@@ -150,7 +143,7 @@ private extension ImagingBarWhiteBalanceBarView {
     /// - Parameters:
     ///    - showCustom: boolean describing whether custom temperatures should be displayed.
     func updateBarMode(showCustom: Bool) {
-        if showCustom == true {
+        if showCustom {
             presetsView.isHidden = true
             rulerStackView.isHidden = false
         } else {
@@ -167,12 +160,12 @@ extension ImagingBarWhiteBalanceBarView: SegmentedBarViewDelegate {
             // Show custom bar.
             updateBarMode(showCustom: true)
             // Switch to custom only if mode isn't automatic.
-            if let currentMode = self.viewModel?.state.value.mode as? Camera2WhiteBalanceMode, currentMode != .automatic {
-                self.viewModel?.update(mode: mode)
+            if let currentMode = viewModel?.state.value.mode as? Camera2WhiteBalanceMode, currentMode != .automatic {
+                viewModel?.update(mode: mode)
             }
         } else {
-            self.viewModel?.update(mode: mode)
+            viewModel?.update(mode: mode)
         }
-        self.segmentedBarView?.updateModels()
+        segmentedBarView?.updateModels()
     }
 }

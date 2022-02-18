@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="HVb-73-rfU">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="HVb-73-rfU">
     <device id="retina6_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -13,71 +12,74 @@
         <scene sceneID="qWE-Cc-vr4">
             <objects>
                 <viewController storyboardIdentifier="MyFlightsViewController" modalPresentationStyle="overFullScreen" useStoryboardIdentifierAsRestorationIdentifier="YES" id="HVb-73-rfU" customClass="MyFlightsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="TJv-AT-RbU"/>
+                        <viewControllerLayoutGuide type="bottom" id="6Xb-zc-rJA"/>
+                    </layoutGuides>
                     <view key="view" opaque="NO" contentMode="scaleToFill" id="6gF-dH-wZl">
                         <rect key="frame" x="0.0" y="0.0" width="926" height="428"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jif-ps-qad">
-                                <rect key="frame" x="0.0" y="0.0" width="926" height="55"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="LO4-Jz-CfV">
+                                <rect key="frame" x="0.0" y="0.0" width="926" height="428"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="a2k-Rf-EC3">
-                                        <rect key="frame" x="44" y="8" width="39" height="39"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" secondItem="a2k-Rf-EC3" secondAttribute="height" multiplier="1:1" id="dWo-e6-mmZ"/>
-                                        </constraints>
-                                        <color key="tintColor" name="default_text_color"/>
-                                        <state key="normal" image="ic_back"/>
-                                        <connections>
-                                            <action selector="closeButtonTouchedUpInside:" destination="HVb-73-rfU" eventType="touchUpInside" id="Zhm-gm-UwJ"/>
-                                        </connections>
-                                    </button>
-                                    <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="1" translatesAutoresizingMaskIntoConstraints="NO" id="R63-xl-7s2">
-                                        <rect key="frame" x="333.66666666666669" y="9.6666666666666643" width="259.00000000000006" height="37"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="36" id="0ga-Vy-sM2"/>
-                                        </constraints>
-                                        <segments>
-                                            <segment title="Completed flights"/>
-                                            <segment title="Plans"/>
-                                        </segments>
-                                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <connections>
-                                            <action selector="segmentDidChange:" destination="HVb-73-rfU" eventType="valueChanged" id="RKO-bd-T95"/>
-                                        </connections>
-                                    </segmentedControl>
+                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="x49-H8-wS6" customClass="FileNavigationStackView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="926" height="36"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="a2k-Rf-EC3">
+                                                <rect key="frame" x="0.0" y="0.0" width="36" height="36"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" secondItem="a2k-Rf-EC3" secondAttribute="height" multiplier="1:1" id="dWo-e6-mmZ"/>
+                                                </constraints>
+                                                <color key="tintColor" name="default_text_color"/>
+                                                <state key="normal" image="ic_back"/>
+                                                <connections>
+                                                    <action selector="closeButtonTouchedUpInside:" destination="HVb-73-rfU" eventType="touchUpInside" id="Zhm-gm-UwJ"/>
+                                                </connections>
+                                            </button>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oFe-uc-meE" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="36" y="0.0" width="297.66666666666669" height="36"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </view>
+                                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="1" translatesAutoresizingMaskIntoConstraints="NO" id="R63-xl-7s2">
+                                                <rect key="frame" x="333.66666666666669" y="0.0" width="259.00000000000006" height="37"/>
+                                                <segments>
+                                                    <segment title="Completed flights"/>
+                                                    <segment title="Plans"/>
+                                                </segments>
+                                                <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <connections>
+                                                    <action selector="segmentDidChange:" destination="HVb-73-rfU" eventType="valueChanged" id="RKO-bd-T95"/>
+                                                </connections>
+                                            </segmentedControl>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="x1z-Ys-Uqb" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="592.66666666666663" y="0.0" width="333.33333333333337" height="36"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </view>
+                                        </subviews>
+                                    </stackView>
+                                    <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OUg-iQ-Uqx">
+                                        <rect key="frame" x="0.0" y="36" width="926" height="392"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </containerView>
                                 </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="bottom" secondItem="a2k-Rf-EC3" secondAttribute="bottom" constant="8" id="5MZ-Ob-NEH"/>
-                                    <constraint firstAttribute="height" constant="55" id="5aR-7K-sHn"/>
-                                    <constraint firstItem="a2k-Rf-EC3" firstAttribute="top" secondItem="jif-ps-qad" secondAttribute="top" constant="8" id="CgV-QU-cBQ"/>
-                                    <constraint firstItem="R63-xl-7s2" firstAttribute="centerX" secondItem="jif-ps-qad" secondAttribute="centerX" id="hYe-HS-yDg"/>
-                                    <constraint firstItem="R63-xl-7s2" firstAttribute="centerY" secondItem="jif-ps-qad" secondAttribute="centerY" id="zE5-nR-zxY"/>
-                                </constraints>
-                            </view>
-                            <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OUg-iQ-Uqx">
-                                <rect key="frame" x="0.0" y="55" width="926" height="373"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </containerView>
+                            </stackView>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="kST-uB-INM"/>
                         <color key="backgroundColor" name="default_bgcolor"/>
                         <constraints>
-                            <constraint firstItem="jif-ps-qad" firstAttribute="top" secondItem="kST-uB-INM" secondAttribute="top" id="1Dc-TG-tBj"/>
-                            <constraint firstItem="jif-ps-qad" firstAttribute="bottom" secondItem="OUg-iQ-Uqx" secondAttribute="top" id="GpH-Xw-wJu"/>
-                            <constraint firstItem="OUg-iQ-Uqx" firstAttribute="leading" secondItem="6gF-dH-wZl" secondAttribute="leading" id="W0o-7e-Adx"/>
-                            <constraint firstAttribute="leading" secondItem="jif-ps-qad" secondAttribute="leading" id="WAZ-qB-Xcr"/>
-                            <constraint firstAttribute="bottom" secondItem="OUg-iQ-Uqx" secondAttribute="bottom" id="Xxn-j6-EhF"/>
-                            <constraint firstItem="kST-uB-INM" firstAttribute="leading" secondItem="a2k-Rf-EC3" secondAttribute="leading" id="Z1P-db-F82"/>
-                            <constraint firstItem="OUg-iQ-Uqx" firstAttribute="trailing" secondItem="6gF-dH-wZl" secondAttribute="trailing" id="i2B-yI-tgV"/>
-                            <constraint firstItem="jif-ps-qad" firstAttribute="trailing" secondItem="6gF-dH-wZl" secondAttribute="trailing" id="pwy-rq-DvB"/>
+                            <constraint firstItem="LO4-Jz-CfV" firstAttribute="leading" secondItem="6gF-dH-wZl" secondAttribute="leading" id="9X3-YS-CxD"/>
+                            <constraint firstAttribute="bottom" secondItem="LO4-Jz-CfV" secondAttribute="bottom" id="AGI-nX-uri"/>
+                            <constraint firstItem="R63-xl-7s2" firstAttribute="centerX" secondItem="6gF-dH-wZl" secondAttribute="centerX" id="EIS-70-XTS"/>
+                            <constraint firstItem="LO4-Jz-CfV" firstAttribute="top" secondItem="TJv-AT-RbU" secondAttribute="bottom" id="M6y-e7-wMp"/>
+                            <constraint firstAttribute="trailing" secondItem="LO4-Jz-CfV" secondAttribute="trailing" id="Tvh-kW-doR"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="6hI-On-sFS"/>
                     <connections>
                         <outlet property="containerView" destination="OUg-iQ-Uqx" id="MUd-yp-UBQ"/>
                         <outlet property="segmentedControl" destination="R63-xl-7s2" id="TZw-IM-lic"/>
-                        <outlet property="topBar" destination="jif-ps-qad" id="oyq-An-jSc"/>
+                        <outlet property="topBar" destination="x49-H8-wS6" id="JwW-CU-s6o"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="NJX-ee-1IH" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -86,12 +88,12 @@
         </scene>
     </scenes>
     <resources>
-        <image name="ic_back" width="21" height="21"/>
+        <image name="ic_back" width="21" height="28.333333969116211"/>
         <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

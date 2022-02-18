@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -74,6 +73,11 @@ private extension GalleryPanoramaStepView {
     func update(with model: GalleryPanoramaStepModel?) {
         guard let model = model else { return }
 
+        if model.status == .active {
+            imageView.startRotate()
+        } else {
+            imageView.stopRotate()
+        }
         imageView.image = model.stateIcon
         descLabel.text = model.step.descModel.text
         errorLabel.text = model.step.descModel.errorText

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -63,9 +62,6 @@ private extension MyAccountView {
     /// Common init view.
     func commonInitMyAccountView() {
         self.loadNibContent()
-        self.backgroundView.cornerRadiusedWith(backgroundColor: .white,
-                                               radius: Style.largeCornerRadius)
-
         self.connectButton.setTitle(L10n.commonLogIn, for: .normal)
         self.connectButton.makeup()
         self.connectButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,

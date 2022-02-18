@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,6 +31,7 @@
 /// Provides different state and errors which occurs when cellular connection got problems.
 public enum DetailsCellularStatus: Int {
     case noState
+    case initializing
     case cellularConnected
     case cellularConnecting
     case simLocked
@@ -65,7 +65,7 @@ extension DetailsCellularStatus {
         case .simNotDetected:
             return L10n.cellularDetailsNoSimCard
         case .simNotRecognized:
-            return L10n.cellularDetailsSimCardError
+            return nil
         case .simLocked:
             return L10n.drone4gSimLocked
         case .userNotPaired:
@@ -77,15 +77,13 @@ extension DetailsCellularStatus {
             return L10n.cellularDetailsNoConnection
         case .airplaneMode:
             return L10n.cellularErrorNoInternetTitle
-        case .modemStatusOff:
-            return L10n.cellularDetailsInternalError
-        case .noData:
+        case .noData, .modemStatusOff:
             return L10n.cellularDetailsDataDisabled
         case .cellularConnected:
             return L10n.connected
         case .cellularConnecting:
             return L10n.connecting
-        case .noState:
+        case .noState, .initializing:
             return Style.dash
         }
     }
@@ -98,7 +96,7 @@ extension DetailsCellularStatus {
         case .simNotDetected:
             return L10n.cellularDetailsNoSimCard
         case .simNotRecognized:
-            return L10n.cellularDetailsSimCardError
+            return nil
         case .simLocked:
             return L10n.drone4gEnterPin
         case .userNotPaired:
@@ -118,39 +116,7 @@ extension DetailsCellularStatus {
             return L10n.connected
         case .cellularConnecting:
             return L10n.connecting
-        case .noState:
-            return nil
-        }
-    }
-
-    /// Returns error description in drone cellular details.
-    var cellularDetailsDescription: String? {
-        switch self {
-        case .simBlocked:
-            return L10n.cellularErrorSimBlockedMessage
-        case .simNotDetected:
-            return L10n.cellularDetailsInsertSimCard
-        case .simNotRecognized:
-            return L10n.cellularDetailsSimCardNotRecognized
-        case .simLocked:
-            return L10n.cellularDetailsEnterPin
-        case .userNotPaired:
-            return L10n.cellularDetailsPairDevice
-        case .notRegistered,
-             .networkStatusError,
-             .networkStatusDenied:
-            return L10n.cellularErrorUnableConnectNetwork
-        case .airplaneMode:
-            return L10n.cellularErrorNoInternetMessage
-        case .modemStatusOff:
-            return L10n.cellularDetailsPleaseContact
-        case .noData:
-            return L10n.cellularDetailsDataDisabled
-        case .connectionFailed:
-            return L10n.cellularErrorConnectionFailedMessage
-        case .cellularConnected,
-             .cellularConnecting,
-             .noState:
+        case .noState, .initializing:
             return nil
         }
     }
@@ -172,7 +138,8 @@ extension DetailsCellularStatus {
             return .errorColor
         case .noData,
              .noState,
-             .cellularConnecting:
+             .cellularConnecting,
+             .initializing:
             return .defaultTextColor
         case .simNotDetected,
              .simLocked:
@@ -180,15 +147,10 @@ extension DetailsCellularStatus {
         }
     }
 
-    /// Returns true if action button needs to be displayed.
-    var shouldShowActionButton: Bool {
-        return self == .simLocked || self == .userNotPaired || self == .noData
-    }
-
     var shouldShowPinAction: Bool {
         return self == .simLocked
     }
-    
+
     /// Returns action button title.
     var actionButtonTitle: String {
         switch self {

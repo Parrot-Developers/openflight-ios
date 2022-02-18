@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -45,9 +45,11 @@ public extension UIFont {
     ///
     /// - Parameters:
     ///    - size: font size
+    ///    - monospacedDigits: return monospacedDigits font if `true`, default font otherwise
     /// - Returns: result font
-    class func rajdhaniSemiBold(size: CGFloat) -> UIFont {
-        return UIFont(name: "Rajdhani-SemiBold", size: size) ?? UIFont.systemFont(ofSize: size, weight: .semibold)
+    class func rajdhaniSemiBold(size: CGFloat, monospacedDigits: Bool = false) -> UIFont {
+        let fontName = monospacedDigits ? "Rajdhani-SemiBold-Ext" : "Rajdhani-SemiBold"
+        return UIFont(name: fontName, size: size) ?? UIFont.systemFont(ofSize: size, weight: .semibold)
     }
 
     /// Returns a `Rajdhani-Bold` font of given size.

@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-Bold.ttf">
+            <string>Rajdhani-Bold</string>
+        </array>
+    </customFonts>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="HUDLandingView" customModule="OpenFlight" customModuleProvider="target">
             <connections>
+                <outlet property="customImage" destination="mP3-XD-j27" id="9Nu-gs-rRe"/>
+                <outlet property="customMessageLabel" destination="1Vb-kd-5UY" id="nNe-oU-Wea"/>
+                <outlet property="customView" destination="ChG-eA-Ekh" id="jrr-l0-DpK"/>
                 <outlet property="rthImageView" destination="yFA-bl-HJK" id="neQ-Uz-aoO"/>
             </connections>
         </placeholder>
@@ -17,22 +26,54 @@
             <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRthHUD" translatesAutoresizingMaskIntoConstraints="NO" id="yFA-bl-HJK">
+                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="jmR-ld-IES">
                     <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
-                </imageView>
+                    <subviews>
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRthHUD" translatesAutoresizingMaskIntoConstraints="NO" id="yFA-bl-HJK">
+                            <rect key="frame" x="0.0" y="0.0" width="600" height="560"/>
+                        </imageView>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ChG-eA-Ekh">
+                            <rect key="frame" x="0.0" y="560" width="600" height="40"/>
+                            <subviews>
+                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icloading" translatesAutoresizingMaskIntoConstraints="NO" id="mP3-XD-j27">
+                                    <rect key="frame" x="255" y="9.5" width="21" height="21"/>
+                                    <color key="tintColor" name="highlight_color"/>
+                                </imageView>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1Vb-kd-5UY">
+                                    <rect key="frame" x="281" y="11.5" width="38" height="17"/>
+                                    <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="17"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="40" id="0Og-Nd-ryv"/>
+                                <constraint firstItem="1Vb-kd-5UY" firstAttribute="centerX" secondItem="ChG-eA-Ekh" secondAttribute="centerX" id="24I-ju-UbP"/>
+                                <constraint firstItem="1Vb-kd-5UY" firstAttribute="centerY" secondItem="ChG-eA-Ekh" secondAttribute="centerY" id="7QC-GR-KyD"/>
+                                <constraint firstItem="mP3-XD-j27" firstAttribute="centerY" secondItem="ChG-eA-Ekh" secondAttribute="centerY" id="fo7-20-qeI"/>
+                                <constraint firstItem="1Vb-kd-5UY" firstAttribute="leading" secondItem="mP3-XD-j27" secondAttribute="trailing" constant="5" id="re5-re-r0v"/>
+                            </constraints>
+                        </view>
+                    </subviews>
+                </stackView>
             </subviews>
             <constraints>
-                <constraint firstAttribute="bottom" secondItem="yFA-bl-HJK" secondAttribute="bottom" id="Xia-av-Hqd"/>
-                <constraint firstItem="yFA-bl-HJK" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="hkA-ff-I8V"/>
-                <constraint firstAttribute="trailing" secondItem="yFA-bl-HJK" secondAttribute="trailing" id="pXY-4u-V0q"/>
-                <constraint firstItem="yFA-bl-HJK" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="t60-Rm-BDJ"/>
+                <constraint firstItem="jmR-ld-IES" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="BUB-FC-GVi"/>
+                <constraint firstAttribute="trailing" secondItem="jmR-ld-IES" secondAttribute="trailing" id="eQV-Xu-f1z"/>
+                <constraint firstItem="jmR-ld-IES" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="hhb-CT-Kf6"/>
+                <constraint firstAttribute="bottom" secondItem="jmR-ld-IES" secondAttribute="bottom" id="nv9-Xu-fA7"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <point key="canvasLocation" x="141" y="155"/>
+            <point key="canvasLocation" x="140.80000000000001" y="154.72263868065968"/>
         </view>
     </objects>
     <resources>
         <image name="icRthHUD" width="172" height="152"/>
+        <image name="icloading" width="21" height="21"/>
+        <namedColor name="highlight_color">
+            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
     </resources>
 </document>

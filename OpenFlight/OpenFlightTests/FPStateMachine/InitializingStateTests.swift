@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -64,7 +63,6 @@ class InitializingStateTests: XCTestCase {
                                          dataStringType: "",
                                          dataString: "",
                                          pgyProjectId: nil,
-                                         mediaCustomId: nil,
                                          state: .editable,
                                          lastMissionItemExecuted: 0,
                                          recoveryId: nil,

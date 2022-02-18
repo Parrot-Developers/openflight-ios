@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,4 +35,37 @@ import CoreData
 @objc(FlightPlanFlights)
 public class FlightPlanFlights: NSManagedObject {
 
+    // MARK: - Utils
+    func model() -> FlightPlanFlightsModel {
+        return FlightPlanFlightsModel(apcId: apcId,
+                                      cloudId: Int(cloudId),
+                                      flightplanUuid: flightplanUuid,
+                                      flightUuid: flightUuid,
+                                      dateExecutionFlight: dateExecutionFlight,
+                                      isLocalDeleted: isLocalDeleted,
+                                      synchroStatus: SynchroStatus(status: synchroStatus),
+                                      synchroError: SynchroError(error: synchroError),
+                                      latestSynchroStatusDate: latestSynchroStatusDate,
+                                      latestLocalModificationDate: latestLocalModificationDate)
+    }
+
+    func update(fromFPlanFlightsModel fPlanFlights: FlightPlanFlightsModel, withFlightPlan: FlightPlan, withFlight: Flight) {
+        ofFlight = withFlight
+        ofFlightPlan = withFlightPlan
+
+        apcId = fPlanFlights.apcId
+        cloudId = Int64(fPlanFlights.cloudId)
+        flightplanUuid = fPlanFlights.flightplanUuid
+        flightUuid = fPlanFlights.flightUuid
+        dateExecutionFlight = fPlanFlights.dateExecutionFlight
+
+        isLocalDeleted = fPlanFlights.isLocalDeleted
+        latestSynchroStatusDate = fPlanFlights.latestSynchroStatusDate
+        latestLocalModificationDate = fPlanFlights.latestLocalModificationDate
+
+        // To ensure synchronisation
+        // reset `synchroStatus´ when the modifications are made by User
+        synchroStatus = fPlanFlights.synchroStatus?.rawValue ?? 0
+        synchroError = fPlanFlights.synchroError?.rawValue ?? 0
+    }
 }

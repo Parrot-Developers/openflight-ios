@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,8 +32,9 @@ import GroundSdk
 // MARK: - Internal Enums
 /// Enum describing Wifi strength.
 enum WifiStrength: Int {
-    case offline = -1
-    case ko0On4 = 0
+    case offline = -2
+    case ko0On4 = -1
+    case ok0On4 = 0
     case ok1On4 = 1
     case ok2On4 = 2
     case ok3On4 = 3
@@ -45,7 +45,8 @@ enum WifiStrength: Int {
 extension WifiStrength: SignalStrength {
     var backgroundColor: ColorName {
         switch self {
-        case .ok1On4:
+        case .ok0On4,
+             .ok1On4:
             return .disabledWarningColor
 
         case .ok2On4,
@@ -60,43 +61,36 @@ extension WifiStrength: SignalStrength {
 
     var borderColor: ColorName {
         switch self {
-
-        case .ok1On4:
+        case .ok0On4,
+             .ok1On4:
             return .warningColor
 
         case .ok2On4,
              .ok3On4,
              .ok4On4:
             return .highlightColor
+
         default:
             return .clear
         }
     }
 
-    func signalIcon(isLinkActive: Bool = false) -> UIImage {
+    var signalIcon: UIImage {
         switch self {
         case .offline:
             return Asset.Wifi.icWifiOffline.image
         case .ko0On4:
-            return isLinkActive
-                ? Asset.Wifi.icWifiQuality1.image
-                : Asset.Wifi.icWifiOffline.image
+            return Asset.Wifi.icWifiQuality0.image
+        case .ok0On4:
+            return Asset.Wifi.icWifiQuality1.image
         case .ok1On4:
-            return isLinkActive
-                ? Asset.Wifi.icWifiQuality2.image
-                : Asset.Wifi.icWifiOffline.image
+            return Asset.Wifi.icWifiQuality2.image
         case .ok2On4:
-            return isLinkActive
-                ? Asset.Wifi.icWifiQuality3.image
-                : Asset.Wifi.icWifiOffline.image
+            return Asset.Wifi.icWifiQuality3.image
         case .ok3On4:
-            return isLinkActive
-                ? Asset.Wifi.icWifiQuality4.image
-                : Asset.Wifi.icWifiOffline.image
+            return Asset.Wifi.icWifiQuality4.image
         case .ok4On4:
-            return isLinkActive
-                ? Asset.Wifi.icWifiQuality5.image
-                : Asset.Wifi.icWifiOffline.image
+            return Asset.Wifi.icWifiQuality5.image
         }
     }
 }

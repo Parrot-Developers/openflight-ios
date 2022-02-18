@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ModesChoiceTableViewCell" id="KGk-i7-Jjw" customClass="ModesChoiceTableViewCell" customModule="OpenFlight" customModuleProvider="target">
+        <tableViewCell contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" indentationWidth="10" reuseIdentifier="ModesChoiceTableViewCell" id="KGk-i7-Jjw" customClass="ModesChoiceTableViewCell" customModule="OpenFlight" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" translatesAutoresizingMaskIntoConstraints="NO" id="H2p-sc-9uM">
+            <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
                 <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="WcN-c3-0bq">
-                        <rect key="frame" x="10" y="10" width="300" height="60"/>
+                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="WcN-c3-0bq">
+                        <rect key="frame" x="16" y="0.0" width="288" height="70"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GFG-nN-ooZ">
-                                <rect key="frame" x="0.0" y="0.0" width="300" height="20.5"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GFG-nN-ooZ">
+                                <rect key="frame" x="0.0" y="0.0" width="288" height="20.5"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nws-8b-MEs">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nws-8b-MEs">
                                         <rect key="frame" x="0.0" y="0.0" width="41.5" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cdv-9L-rtj">
-                                        <rect key="frame" x="41.5" y="0.0" width="258.5" height="20.5"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cdv-9L-rtj">
+                                        <rect key="frame" x="41.5" y="0.0" width="246.5" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
@@ -38,15 +38,15 @@
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rZL-Hu-Q73">
-                                <rect key="frame" x="0.0" y="24.5" width="300" height="35.5"/>
+                            <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rZL-Hu-Q73">
+                                <rect key="frame" x="0.0" y="30.5" width="288" height="39.5"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="I8B-eU-Wdl">
-                                        <rect key="frame" x="0.0" y="0.0" width="300" height="35.5"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="I8B-eU-Wdl">
+                                        <rect key="frame" x="0.0" y="0.0" width="288" height="39.5"/>
                                         <color key="tintColor" name="default_text_color"/>
                                     </stackView>
                                 </subviews>
-                                <color key="backgroundColor" name="setting_group"/>
+                                <color key="backgroundColor" name="white_albescent"/>
                                 <constraints>
                                     <constraint firstItem="I8B-eU-Wdl" firstAttribute="top" secondItem="rZL-Hu-Q73" secondAttribute="top" id="0hL-w5-jv4"/>
                                     <constraint firstAttribute="bottom" secondItem="I8B-eU-Wdl" secondAttribute="bottom" id="NfO-Tg-8iY"/>
@@ -56,24 +56,18 @@
                             </view>
                         </subviews>
                         <constraints>
-                            <constraint firstAttribute="height" constant="60" id="Y7D-8e-1Ti"/>
+                            <constraint firstAttribute="height" constant="70" id="Y7D-8e-1Ti"/>
                         </constraints>
                     </stackView>
                 </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="WcN-c3-0bq" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="10" id="Dfc-2Q-uCr"/>
-                    <constraint firstAttribute="bottom" secondItem="WcN-c3-0bq" secondAttribute="bottom" constant="10" id="eHT-Oq-65p"/>
-                    <constraint firstItem="WcN-c3-0bq" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="10" id="jHF-R2-9Bz"/>
-                    <constraint firstAttribute="trailing" secondItem="WcN-c3-0bq" secondAttribute="trailing" constant="10" id="ofx-St-7xR"/>
+                    <constraint firstItem="WcN-c3-0bq" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="Dfc-2Q-uCr"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="WcN-c3-0bq" secondAttribute="bottom" id="eHT-Oq-65p"/>
+                    <constraint firstItem="WcN-c3-0bq" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="jHF-R2-9Bz"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="WcN-c3-0bq" secondAttribute="trailing" id="ofx-St-7xR"/>
                 </constraints>
             </tableViewCellContentView>
-            <viewLayoutGuide key="safeArea" id="XZv-Kk-IB1"/>
-            <constraints>
-                <constraint firstAttribute="bottom" secondItem="H2p-sc-9uM" secondAttribute="bottom" id="P4y-fc-kiX"/>
-                <constraint firstItem="H2p-sc-9uM" firstAttribute="leading" secondItem="KGk-i7-Jjw" secondAttribute="leading" id="XKV-z3-KOu"/>
-                <constraint firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailing" id="ix8-Uw-oqD"/>
-                <constraint firstItem="H2p-sc-9uM" firstAttribute="top" secondItem="KGk-i7-Jjw" secondAttribute="top" id="t6j-WQ-eB2"/>
-            </constraints>
             <connections>
                 <outlet property="modeLabel" destination="Cdv-9L-rtj" id="LeW-Wj-VH1"/>
                 <outlet property="modesBackgroundView" destination="rZL-Hu-Q73" id="sql-Yy-C9X"/>
@@ -85,9 +79,9 @@
     </objects>
     <resources>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="setting_group">
+        <namedColor name="white_albescent">
             <color red="0.87450980392156863" green="0.84705882352941175" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>

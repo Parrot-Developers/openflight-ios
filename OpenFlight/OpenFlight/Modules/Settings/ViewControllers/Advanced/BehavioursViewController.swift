@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,31 +33,14 @@ import UIKit
 final class BehavioursViewController: SettingsContentViewController {
     // MARK: - Outlets
     @IBOutlet private weak var presetView: SettingsPresetsView!
+    @IBOutlet private weak var presetViewHeightConstraint: NSLayoutConstraint!
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        resetCellLabel = L10n.settingsBehaviourReset(SettingsBehavioursMode.current.title)
-
-        // Setup view model.
-        viewModel = BehavioursViewModel()
-        viewModel?.state.valueChanged = { [weak self] state in
-            self?.updateDataSource(state)
-        }
-        viewModel?.infoHandler = { [weak self] modeType in
-            self?.showInfo(modeType)
-        }
-
-        // Setup preset view.
-        if let items =  SettingsBehavioursMode.allValues as? [SettingsBehavioursMode] {
-            presetView.setup(items: items,
-                             selectedMode: SettingsBehavioursMode.current,
-                             delegate: self)
-        }
-
-        // Inital data source update.
-        updateDataSource()
+        initView()
+        setupViewModel()
     }
 
     /// Reset to default settings.
@@ -72,9 +54,7 @@ final class BehavioursViewController: SettingsContentViewController {
             itemName = LogEvent.LogKeyAdvancedSettings.resetSportSettings
         }
 
-        LogEvent.logAppEvent(itemName: itemName,
-                             newValue: nil,
-                             logType: LogEvent.LogType.button)
+        LogEvent.log(.simpleButton(itemName))
 
         viewModel?.resetSettings()
     }
@@ -83,13 +63,42 @@ final class BehavioursViewController: SettingsContentViewController {
 // MARK: - Private Funcs
 private extension BehavioursViewController {
 
+    /// Inits view.
+    func initView() {
+        presetViewHeightConstraint.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass)
+        resetCellLabel = L10n.settingsBehaviourReset(SettingsBehavioursMode.current.title)
+
+        // Setup preset view.
+        if let items =  SettingsBehavioursMode.allValues as? [SettingsBehavioursMode] {
+            presetView.setup(items: items,
+                             selectedMode: SettingsBehavioursMode.current,
+                             delegate: self)
+        }
+    }
+
+    /// Sets up view model.
+    func setupViewModel() {
+        // Setup view model.
+        viewModel = BehavioursViewModel()
+        viewModel?.state.valueChanged = { [weak self] state in
+            self?.updateDataSource(state)
+        }
+        // Inital data source update.
+        updateDataSource()
+
+        viewModel?.infoHandler = { [weak self] modeType in
+            self?.showInfo(modeType)
+        }
+
+    }
+
     /// Show info related to setting type.
     func showInfo(_ modeType: SettingMode.Type) {
         switch modeType {
         case is InclinedRoll.Type:
-            self.coordinator?.startSettingInfoHorizontal()
+            coordinator?.startSettingInfoHorizontal()
         case is BankedTurn.Type:
-            self.coordinator?.startSettingInfoBankedTurn()
+            coordinator?.startSettingInfoBankedTurn()
         default:
             break
         }

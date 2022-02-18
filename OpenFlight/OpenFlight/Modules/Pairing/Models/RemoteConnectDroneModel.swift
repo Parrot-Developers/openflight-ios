@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -60,7 +59,10 @@ struct RemoteConnectDroneModel: Equatable {
     var droneUid: String
     var droneName: String
     var isKnown: Bool
-    var rssiImage: UIImage
+    var wifiSignalQualityImage: UIImage?
+    var wifiImageVisible: Bool
+    var cellularImage: UIImage?
+    var cellularImageVisible: Bool
     var isDronePaired: Bool
     var isDroneConnected: Bool
     var commonName: String
@@ -72,21 +74,30 @@ struct RemoteConnectDroneModel: Equatable {
     ///    - droneUid: drone id
     ///    - droneName: drone name
     ///    - isKnown: tells if the drone is already known
-    ///    - rssiImage: image for rssi value
+    ///    - wifiSignalQualityImage: image for wifi rssi value
+    ///    - wifiImageVisible: tell if wifi image is visible
+    ///    - cellularImage: cellular image
+    ///    - cellularImageVisible: tell if cellular image is visible
     ///    - isDronePaired: tells if drone is paired for 4G
     ///    - isDroneConnected: tells if drone is connected
     ///    - commonName: common name
     init(droneUid: String,
          droneName: String,
          isKnown: Bool,
-         rssiImage: UIImage,
+         wifiSignalQualityImage: UIImage?,
+         wifiImageVisible: Bool,
+         cellularImage: UIImage?,
+         cellularImageVisible: Bool,
          isDronePaired: Bool,
          isDroneConnected: Bool,
          commonName: String) {
         self.droneUid = droneUid
         self.droneName = droneName
         self.isKnown = isKnown
-        self.rssiImage = rssiImage
+        self.wifiSignalQualityImage = wifiSignalQualityImage
+        self.wifiImageVisible = wifiImageVisible
+        self.cellularImage = cellularImage
+        self.cellularImageVisible = cellularImageVisible
         self.isDronePaired = isDronePaired
         self.isDroneConnected = isDroneConnected
         self.commonName = commonName
@@ -95,18 +106,19 @@ struct RemoteConnectDroneModel: Equatable {
 
 // MARK: - Public Structs
 /// Paired drone object used to parse API reponse to get drones list response..
-public struct PairedDroneListResponse: Codable {
+public struct AcademyPairedDrone: Codable {
     // MARK: - Internal Properties
     public var serial: String?
     public var modelId: String?
-    public var pairedFor4g: Bool
+    public var lastUseDate: Date?
+    public var pairedFor4G: Bool
     public var commonName: String?
 
-    // MARK: - Internal Enums
     enum CodingKeys: String, CodingKey {
         case serial
         case modelId = "model_id"
-        case pairedFor4g = "paired_for_4g"
+        case lastUseDate
+        case pairedFor4G = "paired_for_4g"
         case commonName = "common_name"
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -128,7 +127,7 @@ private extension JoysticksTypeViewModel {
     /// Update left and right joystick types.
     func updateJoysticks() {
         // Listen current control mode and update each joystick's type.
-        var mode: ControlsSettingsMode = PilotingPreset.controlMode
+        var mode: ControlsSettingsMode = ControlsSettingsMode.defaultMode
         if let rawUserMode = Defaults.userControlModeSetting,
             let userMode = ControlsSettingsMode(value: rawUserMode) {
             mode = userMode
@@ -139,15 +138,15 @@ private extension JoysticksTypeViewModel {
         case .mode1:
             copy.leftJoystickType = .pitchYaw
             copy.rightJoystickType = .gazRoll
+        case .mode1Inversed:
+            copy.leftJoystickType = .gazRoll
+            copy.rightJoystickType = .pitchYaw
         case .mode2:
             copy.leftJoystickType = .gazYaw
             copy.rightJoystickType = .pitchRoll
-        case .mode3:
+        case .mode2Inversed:
             copy.leftJoystickType = .pitchRoll
             copy.rightJoystickType = .gazYaw
-        case .mode4:
-            copy.leftJoystickType = .gazRoll
-            copy.rightJoystickType = .pitchYaw
         }
         state.set(copy)
     }

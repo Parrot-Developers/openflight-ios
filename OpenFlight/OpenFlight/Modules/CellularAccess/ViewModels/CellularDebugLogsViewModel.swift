@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -44,18 +43,29 @@ final class CellularDebugLogsViewModel {
     // MARK: - Private Properties
     private var cellularLogsRef: Ref<CellularLogs>?
     private var cancellables = Set<AnyCancellable>()
+    private weak var coordinator: DroneCoordinator?
 
     // TODO - Wrong injection
     private let currentDroneHolder = Services.hub.currentDroneHolder
 
     // MARK: - Init
 
-    init() {
+    init(coordinator: DroneCoordinator) {
+        self.coordinator = coordinator
         currentDroneHolder.dronePublisher
             .sink { [unowned self] drone in
                 listenCellularLogs(drone: drone)
             }
             .store(in: &cancellables)
+    }
+
+    // MARK: - Functions
+
+    /// Dismisses the current view and shows the drone details cellular screen
+    func dismissView() {
+        coordinator?.dismiss {
+            self.coordinator?.displayDroneDetailsCellular()
+        }
     }
 }
 
@@ -66,9 +76,9 @@ private extension CellularDebugLogsViewModel {
     /// - Parameters:
     ///    - drone: current drone
     func listenCellularLogs(drone: Drone) {
-        cellularLogsRef = drone.getInstrument(Instruments.cellularLogs) { [weak self] cellularLogs in
+        cellularLogsRef = drone.getInstrument(Instruments.cellularLogs) { [unowned self] cellularLogs in
             if let cellularLogs = cellularLogs {
-                self?.updateLogs(cellularLogs: cellularLogs)
+                updateLogs(cellularLogs: cellularLogs)
             }
         }
     }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -100,7 +99,6 @@ final class RightPanelContainerControlsState: ViewModelState, EquatableState, Co
 
 final class RightPanelContainerControlsViewModel: BaseViewModel<RightPanelContainerControlsState> {
     // MARK: - Private Properties
-    private var missionLauncherModeObserver: Any?
     private var alertPanelModeObserver: Any?
     // TODO : wrong injection
     private unowned var currentMissionManager = Services.hub.currentMissionManager
@@ -117,8 +115,6 @@ final class RightPanelContainerControlsViewModel: BaseViewModel<RightPanelContai
 
     // MARK: - Deinit
     deinit {
-        NotificationCenter.default.remove(observer: missionLauncherModeObserver)
-        missionLauncherModeObserver = nil
         NotificationCenter.default.remove(observer: alertPanelModeObserver)
         alertPanelModeObserver = nil
     }

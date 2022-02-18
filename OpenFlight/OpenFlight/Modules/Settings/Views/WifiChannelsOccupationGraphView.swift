@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -66,7 +65,7 @@ final class WifiChannelsOccupationGraphView: WifiChannelsOccupationView {
                 let endPoint = CGPoint(x: (columnWidth * (CGFloat(channelIndex) + (rangeWidth - 1.0))) + columnWidth / 2.0, y: -1.0)
                 // middle point is the peak
                 let occupationRatio = (maxOccupation > 0) ? CGFloat(occupation) / CGFloat(maxOccupation) : 0.0
-                let middlePoint = CGPoint(x: columnWidth * CGFloat(channelIndex), y: occupationRatio * self.frame.size.height)
+                let middlePoint = CGPoint(x: columnWidth * CGFloat(channelIndex), y: occupationRatio * frame.size.height)
 
                 path.move(to: CGPoint(x: startPoint.x, y: height - (startPoint.y)))
 

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -91,8 +90,18 @@ final class ImagingBarAutoModeViewModel {
         if let camera = currentDrone.drone.currentCamera,
            let exposureMode = camera.config[Camera2Params.exposureMode]?.value {
             let editor = camera.currentEditor
-            editor[Camera2Params.exposureMode]?.value = exposureMode.automaticIsoAndShutterSpeed ?
-                .manual : exposureMode.toAutomaticMode()
+            if exposureMode.automaticIsoAndShutterSpeed {
+                // switch to manual mode
+                editor[Camera2Params.exposureMode]?.value = .manual
+                if let exposureIndicator = camera.getComponent(Camera2Components.exposureIndicator) {
+                    // apply current exposure values to manual settings
+                    editor[Camera2Params.isoSensitivity]?.value = exposureIndicator.isoSensitivity
+                    editor[Camera2Params.shutterSpeed]?.value = exposureIndicator.shutterSpeed
+                }
+            } else {
+                // switch to automatic mode
+                editor[Camera2Params.exposureMode]?.value = exposureMode.toAutomaticMode()
+            }
             editor.saveSettings(currentConfig: camera.config)
         }
     }

@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,5 +32,24 @@ import CoreData
 
 @objc(DronesData)
 public class DronesData: NSManagedObject {
+    // MARK: - Utils
+    func model() -> DroneModel {
+        return DroneModel(apcId: apcId,
+                          droneSerial: droneSerial,
+                          droneCommonName: droneCommonName,
+                          modelId: modelId,
+                          pairedFor4G: pairedFor4G,
+                          synchroDate: synchroDate,
+                          synchroStatus: SynchroStatus(status: synchroStatus))
+    }
 
+    func update(fromDroneModel droneModel: DroneModel) {
+        apcId = droneModel.apcId
+        droneSerial = droneModel.droneSerial
+        droneCommonName = droneModel.droneCommonName
+        modelId = droneModel.modelId
+        pairedFor4G = droneModel.pairedFor4G
+        synchroDate = droneModel.synchroDate
+        synchroStatus = droneModel.synchroStatus?.rawValue ?? 0
+    }
 }

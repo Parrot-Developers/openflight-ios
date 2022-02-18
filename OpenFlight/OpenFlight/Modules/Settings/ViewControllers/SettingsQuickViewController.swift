@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,43 +36,40 @@ import GroundSdk
 final class SettingsQuickViewController: UIViewController, StoryboardBased {
     // MARK: - Outlets
     @IBOutlet private weak var collectionView: UICollectionView!
+    @IBOutlet private weak var collectionViewWidthConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var collectionViewHeightConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
     // TODO wrong injection, viewModel should be prepared one level up (coordinator or upper VM)
     private let viewModel = QuickSettingsViewModel(obstacleAvoidanceMonitor: Services.hub.obstacleAvoidanceMonitor)
     private var settings: [SettingEntry] = [] {
         didSet {
-            collectionView?.reloadData()
-            self.collectionView.isUserInteractionEnabled = true
+            guard let indexPath = settingTappedIndexPath else { return }
+            collectionView.reloadItems(at: [indexPath])
         }
     }
+    private var settingTappedIndexPath: IndexPath?
     private var filteredSettings: [SettingEntry] {
         return settings.filter({ $0.setting != nil })
     }
-    private var valueInterSpaceItem: CGFloat = 20
-    private var valueInterLineRowItem: CGFloat = 20
+    private var itemSpacing: (compact: CGFloat, regular: CGFloat) = (10, 15)
+    private var itemWidth: (compact: CGFloat, regular: CGFloat) = (150, 200)
+    private var itemHeight: (compact: CGFloat, regular: CGFloat) = (120, 160)
+    private var itemSize: CGSize {
+        return isRegularSizeClass
+        ? CGSize.init(width: itemWidth.regular, height: itemHeight.regular)
+        : CGSize.init(width: itemWidth.compact, height: itemHeight.compact)
+    }
+    private var valueInterSpaceItem: CGFloat { isRegularSizeClass ? itemSpacing.regular : itemSpacing.compact }
+    private var valueInterLineRowItem: CGFloat { isRegularSizeClass ? itemSpacing.regular : itemSpacing.compact }
     private var valueMaxItemsPerRow: CGFloat = 3
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // watch current drone.
-        viewModel.state.valueChanged = { [weak self] _ in
-            self?.updateCells()
-        }
-        updateCells()
-        setupCollectionViewLayout()
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        setupCollectionViewLayout()
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        setupCollectionViewLayout()
+        initView()
+        setupViewModel()
     }
 
     override func viewWillLayoutSubviews() {
@@ -84,35 +80,47 @@ final class SettingsQuickViewController: UIViewController, StoryboardBased {
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
+}
 
-    private func setupCollectionViewLayout() {
-        guard let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout else { return }
-
-        layout.estimatedItemSize = CGSize.zero
-        let maxItemPerRow: CGFloat = valueMaxItemsPerRow
-        // collection.width divide by 3 items means 2 inter space in the row.
-        let maxItemForInterLine = maxItemPerRow > 1 ? maxItemPerRow - 1 : 1
-
-        // get width of item for one row.
-        let itemSizeCustom = (collectionView.frame.size.width / maxItemPerRow )
-        let spaceInterItemCustom: CGFloat = (valueInterSpaceItem / maxItemPerRow) * (maxItemForInterLine)
-        let spaceInterLineCustom: CGFloat = valueInterLineRowItem
-
-        // Alignment
-        let deltaHeight = collectionView.frame.height - (itemSizeCustom * (CGFloat(filteredSettings.count) / valueMaxItemsPerRow))
-        // try to center some elements vertically, otherwise it is set to 0 or you can set a constant value.
-        layout.sectionInset.top = deltaHeight / 2 < 0 ? 0 : deltaHeight / 2
-        layout.scrollDirection = .vertical
-        layout.minimumInteritemSpacing = spaceInterItemCustom
-        layout.minimumLineSpacing = spaceInterLineCustom
-
-        layout.itemSize = CGSize(width: itemSizeCustom - spaceInterItemCustom, height: itemSizeCustom - spaceInterItemCustom)
-
+private extension SettingsQuickViewController {
+    /// Inits view.
+    func initView() {
+        setupCollectionViewLayout()
         collectionView.register(cellType: SettingsQuickCollectionViewCell.self)
     }
 
-    private func updateCells() {
+    /// Sets up view model.
+    func setupViewModel() {
+        // watch current drone.
+        viewModel.state.valueChanged = { [weak self] _ in
+            self?.updateCells()
+        }
+        updateCells()
+    }
+
+    func setupCollectionViewLayout() {
+        guard let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout else { return }
+
+        // updates collection view size
+        let maxItemPerRow: CGFloat = valueMaxItemsPerRow
+        let maxItemPerLine = ceil(CGFloat(filteredSettings.count) / valueMaxItemsPerRow)
+
+        let maxInterItem = maxItemPerRow > 1 ? maxItemPerRow - 1 : 1
+        let maxInterLine = maxItemPerLine > 1 ? maxItemPerLine - 1 : 1
+        collectionViewWidthConstraint.constant = maxItemPerRow * itemSize.width + maxInterItem * valueInterSpaceItem
+        collectionViewHeightConstraint.constant = maxItemPerLine * itemSize.height + maxInterLine * valueInterLineRowItem
+
+        // updates layout
+        layout.estimatedItemSize = CGSize.zero
+        layout.scrollDirection = .vertical
+        layout.minimumInteritemSpacing = valueInterSpaceItem
+        layout.minimumLineSpacing = valueInterLineRowItem
+        layout.itemSize = CGSize(width: itemSize.width, height: itemSize.height)
+    }
+
+    func updateCells() {
         settings = viewModel.settingEntries
+        setupCollectionViewLayout()
     }
 }
 
@@ -128,7 +136,6 @@ extension SettingsQuickViewController: UICollectionViewDataSource {
         let settingEntry = filteredSettings[indexPath.row]
         cell.configureCell(settingEntry: settingEntry, atIndexPath: indexPath, delegate: self)
         cell.backgroundColor = settingEntry.bgColor
-
         return cell
     }
 }
@@ -136,6 +143,7 @@ extension SettingsQuickViewController: UICollectionViewDataSource {
 // MARK: - Settings quick collection view cell delegate
 extension SettingsQuickViewController: SettingsQuickCollectionViewCellDelegate {
     func settingsQuickCelldidTap(indexPath: IndexPath) {
+        settingTappedIndexPath = indexPath
         let settingEntry = filteredSettings[indexPath.row]
 
         if let model = settingEntry.segmentModel {

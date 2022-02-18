@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -49,12 +48,22 @@ public class MapViewModel {
     private var centerStateSubject = CurrentValueSubject<MapCenterState, Never>(.none)
     /// Locations tracker
     private unowned var locationsTracker: LocationsTracker
+    /// Connected drone holder
+    private unowned var connectedDroneHolder: ConnectedDroneHolder
+    /// Network service
+    private let networkService: NetworkService
+    /// Current drone connection state
+    private var droneConnectionStateSubject = CurrentValueSubject<Bool, Never>(false)
 
     // MARK: Public Properties
     /// User location publisher
     public var userLocationPublisher: AnyPublisher<OrientedLocation, Never> { locationsTracker.userLocationPublisher }
     /// Drone location publisher
     public var droneLocationPublisher: AnyPublisher<OrientedLocation, Never> { locationsTracker.droneLocationPublisher }
+    /// Drone connection state publisher
+    public var droneConnectedPublisher: AnyPublisher<Bool, Never> { droneConnectionStateSubject.eraseToAnyPublisher() }
+    /// Network reachable publisher
+    public var networkReachablePublisher: AnyPublisher<Bool, Never> { networkService.networkReachable }
     /// Drone location
     public var droneLocation: OrientedLocation { locationsTracker.droneLocation }
     // TODO: center button should not be managed by this VM (currently SplitObjects holds the IBOutlet)
@@ -92,9 +101,13 @@ public class MapViewModel {
 
     /// Init
     /// - Parameters:
-    ///     - locationsTracker: the locations tracker
-    init(locationsTracker: LocationsTracker) {
+    ///  - locationsTracker: the locations tracker
+    ///  - currentDroneHolder: the current drone holder
+    ///  - networkService: the network service
+    init(locationsTracker: LocationsTracker, connectedDroneHolder: ConnectedDroneHolder, networkService: NetworkService) {
         self.locationsTracker = locationsTracker
+        self.connectedDroneHolder = connectedDroneHolder
+        self.networkService = networkService
         locationsTracker.droneLocationPublisher
             .combineLatest(locationsTracker.droneGpsFixedPublisher, $alwaysCenterOnDroneLocation, locationsTracker.userLocationPublisher)
             .sink { [unowned self] in
@@ -103,6 +116,12 @@ public class MapViewModel {
                                                        userLocation: userLocation,
                                                        droneGpsFixed: droneGpsFixed,
                                                        alwaysCenterOnDrone: alwaysCenterOnDrone)
+            }
+            .store(in: &cancellables)
+
+        connectedDroneHolder.dronePublisher
+            .sink { [unowned self] in
+                droneConnectionStateSubject.value = $0 != nil
             }
             .store(in: &cancellables)
     }
@@ -128,22 +147,29 @@ private extension MapViewModel {
 
 // MARK: Internal functions
 extension MapViewModel {
+    var droneConnectionState: Bool {
+        return droneConnectionStateSubject.value
+    }
+
+    var droneConnectionStatePublisher: AnyPublisher<Bool, Never> {
+        droneConnectionStateSubject.eraseToAnyPublisher()
+    }
 
     /// Force / stop force hidding center button
     /// - Parameter forceHide: whether hidding should be forced
     func forceHideCenterButton(_ forceHide: Bool) {
-        self.forceHideCenterButton = forceHide
+        forceHideCenterButton = forceHide
     }
 
     /// Disable / enable auto center
     /// - Parameter disableAutoCenter: whether auto center should be disabled
     func disableAutoCenter(_ disableAutoCenter: Bool) {
-        self.autoCenterDisabledSubject.value = disableAutoCenter
+        autoCenterDisabledSubject.value = disableAutoCenter
     }
 
     /// Always / don't center on drone location
     /// - Parameter alwaysCenterOnDrone: whether the map should center on drone location
     func alwaysCenterOnDroneLocation(_ alwaysCenterOnDrone: Bool) {
-        self.alwaysCenterOnDroneLocation = alwaysCenterOnDrone
+        alwaysCenterOnDroneLocation = alwaysCenterOnDrone
     }
 }

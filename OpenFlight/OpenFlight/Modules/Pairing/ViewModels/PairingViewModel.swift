@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,10 +38,10 @@ class PairingViewModel: DevicesStateViewModel<DevicesConnectionState> {
     var currentControllerStyle: Controller = Controller.remoteControl
     var isDroneSwitchedOn: Bool = false
     var isRemoteControlConnected: Bool {
-        return self.state.value.remoteControlConnectionState?.isConnected() == true
+        return state.value.remoteControlConnectionState?.isConnected() == true
     }
     var isDroneConnected: Bool {
-        return self.state.value.droneConnectionState?.isConnected() == true
+        return state.value.droneConnectionState?.isConnected() == true
     }
 
     // MARK: - Internal Funcs
@@ -63,7 +62,7 @@ extension PairingViewModel {
         var pairingRemoteState: PairingState = PairingState.todo
         var pairingDroneWithRemoteState: PairingState = PairingState.todo
         var pairingWifiState: PairingState = PairingState.todo
-        var pairingDroneWihtoutRemoteState: PairingState = PairingState.todo
+        var pairingDroneWithoutRemoteState: PairingState = PairingState.todo
 
         if currentControllerStyle == .remoteControl {
             pairingRemoteState = .doing
@@ -80,16 +79,16 @@ extension PairingViewModel {
                     DroneWithRemotePairingModel(state: pairingDroneWithRemoteState)]
         } else {
             if isDroneConnected {
-                pairingDroneWihtoutRemoteState = .done
+                pairingDroneWithoutRemoteState = .done
                 pairingWifiState = .done
             } else if !isDroneSwitchedOn {
-                pairingDroneWihtoutRemoteState = .doing
+                pairingDroneWithoutRemoteState = .doing
                 pairingWifiState = .todo
             } else {
-                pairingDroneWihtoutRemoteState = .done
+                pairingDroneWithoutRemoteState = .done
                 pairingWifiState = .doing
             }
-            return [DroneWithoutRemotePairingModel(state: pairingDroneWihtoutRemoteState),
+            return [DroneWithoutRemotePairingModel(state: pairingDroneWithoutRemoteState),
                     WifiPairingModel(state: pairingWifiState)]
         }
     }

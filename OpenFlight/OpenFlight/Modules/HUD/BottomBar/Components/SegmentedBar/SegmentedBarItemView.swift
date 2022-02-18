@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -86,10 +85,11 @@ final class SegmentedBarItemView: UIControl, NibOwnerLoadable {
 private extension SegmentedBarItemView {
     /// Called when user taps item view.
     @IBAction func onTap(_ sender: Any) {
-        LogEvent.logAppEvent(itemName: model.mode?.logKey,
-                             newValue: model.mode?.key ?? "",
-                             logType: .button)
-        if model.isSelected.value == true {
+        if let logItem = model.mode?.logKey {
+            LogEvent.log(.button(item: logItem,
+                                 value: model.mode?.key ?? ""))
+        }
+        if model.isSelected.value {
             // Special case when item is already currently selected.
             model.isSelected.set(false)
             model.isSelected.set(true)
@@ -102,7 +102,7 @@ private extension SegmentedBarItemView {
 // MARK: - Private Funcs
 private extension SegmentedBarItemView {
     func commonInit() {
-        self.loadNibContent()
+        loadNibContent()
         imageView.tintColor = .white
     }
 
@@ -135,7 +135,7 @@ private extension SegmentedBarItemView {
     }
 
     func updateIcon() {
-        let isSelected = model.isSelected.value == true
+        let isSelected = model.isSelected.value
         let hasImage = model.image != nil
         imageView.isHidden = !hasImage
         imageViewContainer.isHidden = !hasImage
@@ -144,17 +144,16 @@ private extension SegmentedBarItemView {
     }
 
     func updateLabel() {
-        let isSelected = model.isSelected.value == true
-        let hasImage = model.image != nil
+        let isSelected = model.isSelected.value
         label.text = model.subtext
-        label.textColor = isSelected ? .white : ColorName.defaultTextColor.color
         label.isHidden = model.subtext?.isEmpty ?? true
-        label.font = (hasImage ? ParrotFontStyle.regular : ParrotFontStyle.large).font
+        let textColor = isSelected ? ColorName.white : ColorName.defaultTextColor
+        label.makeUp(with: .current, color: textColor)
     }
 
     /// Updates bar item background.
     func updateBackgroundColor() {
-        let isSelected = model.isSelected.value == true
+        let isSelected = model.isSelected.value
         backgroundColor = isSelected ? ColorName.highlightColor.color : .clear
         if isSelected {
             applyCornerRadius(Style.largeCornerRadius)

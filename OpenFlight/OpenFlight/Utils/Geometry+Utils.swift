@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -87,20 +86,5 @@ final class GeometryUtils {
     /// - Returns: the computed yaw, in degrees
     static func yawToDegrees(_ yaw: Double) -> Double {
         return 360.0 - yaw.toDegrees()
-    }
-
-    /// Computes and returns angle between two screen points.
-    ///
-    /// - Parameters:
-    ///    - originPoint: the origin point
-    ///    - destinationPoint: the destination point
-    /// - Returns: computed angle, in degrees
-    static func angleBetween(_ originPoint: CGPoint, and destinationPoint: CGPoint) -> CGFloat {
-        let diffX = destinationPoint.x - originPoint.x
-        let diffY = destinationPoint.y - originPoint.y
-        let angle = atan2(diffY, diffX)
-        var degrees = angle.toDegrees
-        degrees = (degrees > 0.0 ? degrees : 360.0 + degrees)
-        return degrees
     }
 }

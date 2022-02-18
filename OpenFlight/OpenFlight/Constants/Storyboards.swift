@@ -12,6 +12,13 @@ import UIKit
 
 // swiftlint:disable explicit_type_interface identifier_name line_length type_body_length type_name
 internal enum StoryboardScene {
+  internal enum AirSdkMissionsUpdating: StoryboardType {
+    internal static let storyboardName = "AirSdkMissionsUpdating"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.AirSdkMissionsUpdatingViewController>(storyboard: AirSdkMissionsUpdating.self)
+
+    internal static let airSdkMissionsUpdatingViewController = SceneType<OpenFlight.AirSdkMissionsUpdatingViewController>(storyboard: AirSdkMissionsUpdating.self, identifier: "AirSdkMissionsUpdatingViewController")
+  }
   internal enum AlertViewController: StoryboardType {
     internal static let storyboardName = "AlertViewController"
 
@@ -43,26 +50,12 @@ internal enum StoryboardScene {
 
     internal static let cellularAccessCardPin = SceneType<OpenFlight.CellularAccessCardPinViewController>(storyboard: CellularAccessCardPin.self, identifier: "CellularAccessCardPin")
   }
-  internal enum CellularConfiguration: StoryboardType {
-    internal static let storyboardName = "CellularConfiguration"
-
-    internal static let initialScene = InitialSceneType<OpenFlight.CellularConfigurationViewController>(storyboard: CellularConfiguration.self)
-
-    internal static let cellularConfiguration = SceneType<OpenFlight.CellularConfigurationViewController>(storyboard: CellularConfiguration.self, identifier: "CellularConfiguration")
-  }
   internal enum CellularDebugLogs: StoryboardType {
     internal static let storyboardName = "CellularDebugLogs"
 
     internal static let initialScene = InitialSceneType<OpenFlight.CellularDebugLogsViewController>(storyboard: CellularDebugLogs.self)
 
     internal static let cellularDebugLogsViewController = SceneType<OpenFlight.CellularDebugLogsViewController>(storyboard: CellularDebugLogs.self, identifier: "CellularDebugLogsViewController")
-  }
-  internal enum CellularPairingSuccess: StoryboardType {
-    internal static let storyboardName = "CellularPairingSuccess"
-
-    internal static let initialScene = InitialSceneType<OpenFlight.CellularPairingSuccessViewController>(storyboard: CellularPairingSuccess.self)
-
-    internal static let cellularPairingSuccess = SceneType<OpenFlight.CellularPairingSuccessViewController>(storyboard: CellularPairingSuccess.self, identifier: "CellularPairingSuccess")
   }
   internal enum Dashboard: StoryboardType {
     internal static let storyboardName = "Dashboard"
@@ -171,17 +164,6 @@ internal enum StoryboardScene {
 
     internal static let flightDetailsViewController = SceneType<OpenFlight.FlightDetailsViewController>(storyboard: FlightDetailsViewController.self, identifier: "FlightDetailsViewController")
   }
-  internal enum FlightPlanDashboardViewController: StoryboardType {
-    internal static let storyboardName = "FlightPlanDashboardViewController"
-
-    internal static let initialScene = InitialSceneType<OpenFlight.FlightPlanDashboardViewController>(storyboard: FlightPlanDashboardViewController.self)
-
-    internal static let flightPlanDashboardViewController = SceneType<OpenFlight.FlightPlanDashboardViewController>(storyboard: FlightPlanDashboardViewController.self, identifier: "FlightPlanDashboardViewController")
-
-    internal static let flightPlanFullHistoryViewController = SceneType<OpenFlight.FlightPlanFullHistoryViewController>(storyboard: FlightPlanDashboardViewController.self, identifier: "FlightPlanFullHistoryViewController")
-
-    internal static let flightPlanHistoryViewController = SceneType<OpenFlight.FlightPlanHistoryViewController>(storyboard: FlightPlanDashboardViewController.self, identifier: "FlightPlanHistoryViewController")
-  }
   internal enum FlightPlanEdition: StoryboardType {
     internal static let storyboardName = "FlightPlanEdition"
 
@@ -206,8 +188,6 @@ internal enum StoryboardScene {
   internal enum FlightPlansDashboardList: StoryboardType {
     internal static let storyboardName = "FlightPlansDashboardList"
 
-    internal static let initialScene = InitialSceneType<OpenFlight.FlightPlanDashboardListViewController>(storyboard: FlightPlansDashboardList.self)
-
     internal static let flightPlansListViewController = SceneType<OpenFlight.FlightPlanDashboardListViewController>(storyboard: FlightPlansDashboardList.self, identifier: "FlightPlansListViewController")
   }
   internal enum FlightPlansList: StoryboardType {
@@ -216,11 +196,6 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.FlightPlansListViewController>(storyboard: FlightPlansList.self)
 
     internal static let flightPlansListViewController = SceneType<OpenFlight.FlightPlansListViewController>(storyboard: FlightPlansList.self, identifier: "FlightPlansListViewController")
-  }
-  internal enum FlightReport: StoryboardType {
-    internal static let storyboardName = "FlightReport"
-
-    internal static let flightReportViewController = SceneType<OpenFlight.FlightReportViewController>(storyboard: FlightReport.self, identifier: "FlightReportViewController")
   }
   internal enum FlightsViewController: StoryboardType {
     internal static let storyboardName = "FlightsViewController"
@@ -318,10 +293,6 @@ internal enum StoryboardScene {
 
     internal static let initialScene = InitialSceneType<OpenFlight.HUDTopBarViewController>(storyboard: HUDTopBar.self)
 
-    internal static let controllerInfoViewController = SceneType<OpenFlight.HUDControllerInfoViewController>(storyboard: HUDTopBar.self, identifier: "ControllerInfoViewController")
-
-    internal static let droneInfoViewController = SceneType<OpenFlight.HUDDroneInfoViewController>(storyboard: HUDTopBar.self, identifier: "DroneInfoViewController")
-
     internal static let telemetryBarViewController = SceneType<OpenFlight.TelemetryBarViewController>(storyboard: HUDTopBar.self, identifier: "TelemetryBarViewController")
 
     internal static let topBarViewController = SceneType<OpenFlight.HUDTopBarViewController>(storyboard: HUDTopBar.self, identifier: "TopBarViewController")
@@ -337,6 +308,11 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.ImagingSettingsBarViewController>(storyboard: ImagingSettingsBar.self)
 
     internal static let imagingSettingsBarViewController = SceneType<OpenFlight.ImagingSettingsBarViewController>(storyboard: ImagingSettingsBar.self, identifier: "ImagingSettingsBarViewController")
+  }
+  internal enum LayoutGridManager: StoryboardType {
+    internal static let storyboardName = "LayoutGridManager"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.LayoutGridManagerViewController>(storyboard: LayoutGridManager.self)
   }
   internal enum LockAETargetZone: StoryboardType {
     internal static let storyboardName = "LockAETargetZone"
@@ -384,13 +360,6 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.OccupancyViewController>(storyboard: Occupancy.self)
 
     internal static let occupancyViewController = SceneType<OpenFlight.OccupancyViewController>(storyboard: Occupancy.self, identifier: "OccupancyViewController")
-  }
-  internal enum OnboardingPairing: StoryboardType {
-    internal static let storyboardName = "OnboardingPairing"
-
-    internal static let initialScene = InitialSceneType<OpenFlight.OnboardingPairingViewController>(storyboard: OnboardingPairing.self)
-
-    internal static let onboardingPairingViewController = SceneType<OpenFlight.OnboardingPairingViewController>(storyboard: OnboardingPairing.self, identifier: "OnboardingPairingViewController")
   }
   internal enum OnboardingTermsOfUse: StoryboardType {
     internal static let storyboardName = "OnboardingTermsOfUse"
@@ -459,13 +428,6 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.ProjectsListViewController>(storyboard: ProjectsList.self)
 
     internal static let projectsListViewController = SceneType<OpenFlight.ProjectsListViewController>(storyboard: ProjectsList.self, identifier: "ProjectsListViewController")
-  }
-  internal enum ProtobufMissionsUpdating: StoryboardType {
-    internal static let storyboardName = "ProtobufMissionsUpdating"
-
-    internal static let initialScene = InitialSceneType<OpenFlight.ProtobufMissionsUpdatingViewController>(storyboard: ProtobufMissionsUpdating.self)
-
-    internal static let protobufMissionsUpdating = SceneType<OpenFlight.ProtobufMissionsUpdatingViewController>(storyboard: ProtobufMissionsUpdating.self, identifier: "ProtobufMissionsUpdating")
   }
   internal enum RemoteCalibration: StoryboardType {
     internal static let storyboardName = "RemoteCalibration"
@@ -589,15 +551,7 @@ internal enum StoryboardScene {
   internal enum StereoCalibration: StoryboardType {
     internal static let storyboardName = "StereoCalibration"
 
-    internal static let controllerInfoViewController = SceneType<OpenFlight.HUDControllerInfoViewController>(storyboard: StereoCalibration.self, identifier: "ControllerInfoViewController")
-
-    internal static let droneInfoViewController = SceneType<OpenFlight.HUDDroneInfoViewController>(storyboard: StereoCalibration.self, identifier: "DroneInfoViewController")
-
     internal static let stereoCalibrationViewController = SceneType<OpenFlight.StereoCalibrationViewController>(storyboard: StereoCalibration.self, identifier: "StereoCalibrationViewController")
-
-    internal static let telemetryBarViewController = SceneType<OpenFlight.TelemetryBarViewController>(storyboard: StereoCalibration.self, identifier: "TelemetryBarViewController")
-
-    internal static let topBarViewController = SceneType<OpenFlight.HUDTopBarViewController>(storyboard: StereoCalibration.self, identifier: "TopBarViewController")
   }
   internal enum StereoVisionBlended: StoryboardType {
     internal static let storyboardName = "StereoVisionBlended"
@@ -605,6 +559,11 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.StereoVisionBlendedViewController>(storyboard: StereoVisionBlended.self)
 
     internal static let stereoVisionBlendedViewController = SceneType<OpenFlight.StereoVisionBlendedViewController>(storyboard: StereoVisionBlended.self, identifier: "StereoVisionBlendedViewController")
+  }
+  internal enum TouchAndFlyPanel: StoryboardType {
+    internal static let storyboardName = "TouchAndFlyPanel"
+
+    internal static let touchAndFlyPanel = SceneType<OpenFlight.TouchAndFlyPanelViewController>(storyboard: TouchAndFlyPanel.self, identifier: "TouchAndFlyPanel")
   }
 }
 // swiftlint:enable explicit_type_interface identifier_name line_length type_body_length type_name

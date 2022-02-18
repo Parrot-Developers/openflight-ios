@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -15,68 +15,93 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="DashboardDeviceCell" translatesAutoresizingMaskIntoConstraints="NO" id="gTV-IL-0wX" customClass="DashboardDeviceCell" customModule="OpenFlight" customModuleProvider="target">
+        <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="DashboardDeviceCell" translatesAutoresizingMaskIntoConstraints="NO" id="gTV-IL-0wX" customClass="DashboardDeviceCell" customModule="OpenFlight" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="162" height="158"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                 <rect key="frame" x="0.0" y="0.0" width="162" height="158"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <view multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="emZ-eg-iYF" userLabel="Content view">
+                    <view multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="emZ-eg-iYF" userLabel="Content view" customClass="MainTileView" customModule="OpenFlight" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="162" height="158"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" translatesAutoresizingMaskIntoConstraints="NO" id="Tk9-7r-Ns1">
-                                <rect key="frame" x="9" y="9" width="144" height="140"/>
+                                <rect key="frame" x="5" y="5" width="152" height="148"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Bii-xG-UvL">
-                                        <rect key="frame" x="0.0" y="0.0" width="144" height="14"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" translatesAutoresizingMaskIntoConstraints="NO" id="Bii-xG-UvL">
+                                        <rect key="frame" x="0.0" y="0.0" width="152" height="20"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="9MK-Wr-SSU">
-                                                <rect key="frame" x="0.0" y="0.0" width="37" height="14"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGpsNone" translatesAutoresizingMaskIntoConstraints="NO" id="ix6-JG-9yL">
-                                                        <rect key="frame" x="0.0" y="0.0" width="16" height="14"/>
-                                                    </imageView>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon4GOffline" translatesAutoresizingMaskIntoConstraints="NO" id="BLO-o8-Qzy">
-                                                        <rect key="frame" x="24" y="0.0" width="13" height="14"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
                                                     </imageView>
                                                 </subviews>
                                             </stackView>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icWifiOffline" translatesAutoresizingMaskIntoConstraints="NO" id="4G2-JS-UEk">
-                                                <rect key="frame" x="60.5" y="0.0" width="18" height="14"/>
-                                            </imageView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Lua-sr-P2Z">
-                                                <rect key="frame" x="97" y="0.0" width="47" height="14"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="Lua-sr-P2Z">
+                                                <rect key="frame" x="70" y="0.0" width="82" height="20"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryNone" translatesAutoresizingMaskIntoConstraints="NO" id="dRF-M7-xo2">
-                                                        <rect key="frame" x="0.0" y="0.0" width="23.5" height="14"/>
-                                                    </imageView>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="center" verticalHuggingPriority="251" text="90%" lineBreakMode="characterWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="X6Y-RX-Fxe">
-                                                        <rect key="frame" x="23.5" y="0.0" width="23.5" height="14"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="default_text_color"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
-                                                        </variation>
-                                                    </label>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="jOF-e1-gqi">
+                                                        <rect key="frame" x="0.0" y="0.0" width="38.5" height="20"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryUserDeviceNone" translatesAutoresizingMaskIntoConstraints="NO" id="ccy-De-I8t">
+                                                                <rect key="frame" x="0.0" y="0.0" width="6" height="20"/>
+                                                            </imageView>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="center" verticalHuggingPriority="251" text="100%" lineBreakMode="characterWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="CP4-pU-hil">
+                                                                <rect key="frame" x="9" y="0.0" width="29.5" height="20"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <color key="textColor" name="default_text_color"/>
+                                                                <nil key="highlightedColor"/>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                                </variation>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="FvB-rB-1vo">
+                                                        <rect key="frame" x="43.5" y="0.0" width="38.5" height="20"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryRemoteNone" translatesAutoresizingMaskIntoConstraints="NO" id="dRF-M7-xo2">
+                                                                <rect key="frame" x="0.0" y="0.0" width="12" height="20"/>
+                                                            </imageView>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="center" verticalHuggingPriority="251" text="90%" lineBreakMode="characterWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="X6Y-RX-Fxe">
+                                                                <rect key="frame" x="15" y="0.0" width="23.5" height="20"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <color key="textColor" name="default_text_color"/>
+                                                                <nil key="highlightedColor"/>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                                </variation>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
                                                 </subviews>
                                             </stackView>
                                         </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="20" id="9ms-kR-dFz"/>
+                                        </constraints>
                                     </stackView>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icController" translatesAutoresizingMaskIntoConstraints="NO" id="sau-Xx-DUA">
-                                        <rect key="frame" x="0.0" y="51.5" width="144" height="25"/>
+                                        <rect key="frame" x="0.0" y="43.5" width="152" height="40"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <color key="tintColor" name="default_text_color"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="25" id="a6K-mh-Xld">
-                                                <variation key="heightClass=regular-widthClass=regular" constant="40"/>
+                                            <constraint firstAttribute="height" constant="40" id="a6K-mh-Xld">
+                                                <variation key="heightClass=regular-widthClass=regular" constant="52"/>
                                             </constraint>
                                         </constraints>
                                     </imageView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="0GU-XM-u1r">
-                                        <rect key="frame" x="0.0" y="114" width="144" height="26"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="0GU-XM-u1r">
+                                        <rect key="frame" x="0.0" y="107" width="152" height="41"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fhz-yt-jKF">
-                                                <rect key="frame" x="0.0" y="0.0" width="144" height="0.0"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="152" height="17"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="17" id="FxO-DG-YM9">
+                                                        <variation key="heightClass=regular-widthClass=regular" constant="20"/>
+                                                    </constraint>
+                                                </constraints>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
@@ -85,10 +110,10 @@
                                                 </variation>
                                             </label>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kPA-3I-eB5">
-                                                <rect key="frame" x="0.0" y="7" width="144" height="19"/>
+                                                <rect key="frame" x="0.0" y="22" width="152" height="19"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="c6T-Se-u3F" customClass="DeviceStateButton" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="57" y="0.0" width="30" height="19"/>
+                                                        <rect key="frame" x="61" y="0.0" width="30" height="19"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                         <inset key="titleEdgeInsets" minX="6" minY="2" maxX="6" maxY="2"/>
@@ -102,23 +127,38 @@
                                                 </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="19" id="2OW-Ku-Mag"/>
+                                                    <constraint firstAttribute="height" constant="19" id="2OW-Ku-Mag">
+                                                        <variation key="heightClass=regular-widthClass=regular" constant="22"/>
+                                                    </constraint>
                                                     <constraint firstItem="c6T-Se-u3F" firstAttribute="top" secondItem="kPA-3I-eB5" secondAttribute="top" id="b2u-kT-zX7"/>
                                                     <constraint firstItem="c6T-Se-u3F" firstAttribute="centerX" secondItem="kPA-3I-eB5" secondAttribute="centerX" id="bRd-ze-NTp"/>
                                                     <constraint firstAttribute="bottom" secondItem="c6T-Se-u3F" secondAttribute="bottom" id="nHC-WJ-J5t"/>
                                                 </constraints>
                                             </view>
                                         </subviews>
+                                        <variation key="heightClass=regular-widthClass=regular" spacing="7"/>
                                     </stackView>
                                 </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="Bii-xG-UvL" secondAttribute="trailing" id="8Du-GA-v8R"/>
+                                    <constraint firstItem="Bii-xG-UvL" firstAttribute="leading" secondItem="Tk9-7r-Ns1" secondAttribute="leading" id="Je7-9R-16q"/>
+                                </constraints>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="Tk9-7r-Ns1" firstAttribute="leading" secondItem="emZ-eg-iYF" secondAttribute="leading" constant="9" id="4h4-RJ-Egh"/>
-                            <constraint firstAttribute="bottom" secondItem="Tk9-7r-Ns1" secondAttribute="bottom" constant="9" id="Knp-Pf-BiK"/>
-                            <constraint firstAttribute="trailing" secondItem="Tk9-7r-Ns1" secondAttribute="trailing" constant="9" id="xJu-Tp-3FA"/>
-                            <constraint firstItem="Tk9-7r-Ns1" firstAttribute="top" secondItem="emZ-eg-iYF" secondAttribute="top" constant="9" id="zES-JF-2H2"/>
+                            <constraint firstItem="Tk9-7r-Ns1" firstAttribute="leading" secondItem="emZ-eg-iYF" secondAttribute="leading" constant="5" id="4h4-RJ-Egh">
+                                <variation key="heightClass=regular-widthClass=regular" constant="10"/>
+                            </constraint>
+                            <constraint firstAttribute="bottom" secondItem="Tk9-7r-Ns1" secondAttribute="bottom" constant="5" id="q3A-Zg-NoE">
+                                <variation key="heightClass=regular-widthClass=regular" constant="10"/>
+                            </constraint>
+                            <constraint firstAttribute="trailing" secondItem="Tk9-7r-Ns1" secondAttribute="trailing" constant="5" id="xJu-Tp-3FA">
+                                <variation key="heightClass=regular-widthClass=regular" constant="10"/>
+                            </constraint>
+                            <constraint firstItem="Tk9-7r-Ns1" firstAttribute="top" secondItem="emZ-eg-iYF" secondAttribute="top" constant="5" id="zES-JF-2H2">
+                                <variation key="heightClass=regular-widthClass=regular" constant="10"/>
+                            </constraint>
                         </constraints>
                         <userDefinedRuntimeAttributes>
                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -137,25 +177,24 @@
             <size key="customSize" width="162" height="158"/>
             <connections>
                 <outlet property="batteryLevelImageView" destination="dRF-M7-xo2" id="g23-eq-uvC"/>
+                <outlet property="batteryLevelUserDeviceImageView" destination="ccy-De-I8t" id="tRh-v9-eAZ"/>
                 <outlet property="batteryValueLabel" destination="X6Y-RX-Fxe" id="F9I-Eg-bQE"/>
+                <outlet property="batteryValueUserDeviceLabel" destination="CP4-pU-hil" id="iOg-F3-dGX"/>
                 <outlet property="deviceImageView" destination="sau-Xx-DUA" id="A7y-S1-X4i"/>
                 <outlet property="deviceNameLabel" destination="Fhz-yt-jKF" id="502-Cc-Cj8"/>
                 <outlet property="deviceStateButton" destination="c6T-Se-u3F" id="wv5-Hp-j4A"/>
                 <outlet property="gpsStatusImageView" destination="ix6-JG-9yL" id="EnJ-Od-VDQ"/>
-                <outlet property="networkImageView" destination="BLO-o8-Qzy" id="xDG-C2-evT"/>
-                <outlet property="wifiStatusImageView" destination="4G2-JS-UEk" id="dll-cC-Lme"/>
             </connections>
-            <point key="canvasLocation" x="155.19999999999999" y="162.81859070464768"/>
+            <point key="canvasLocation" x="155.19999999999999" y="161.91904047976013"/>
         </collectionViewCell>
     </objects>
     <resources>
-        <image name="icBatteryNone" width="7" height="14"/>
-        <image name="icController" width="33" height="25"/>
-        <image name="icGpsNone" width="16" height="12"/>
-        <image name="icWifiOffline" width="18" height="14"/>
-        <image name="icon4GOffline" width="13" height="14"/>
+        <image name="icBatteryRemoteNone" width="12" height="12"/>
+        <image name="icBatteryUserDeviceNone" width="6" height="11"/>
+        <image name="icController" width="40" height="40"/>
+        <image name="icGpsNone" width="20" height="20"/>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

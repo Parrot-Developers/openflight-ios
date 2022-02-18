@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,73 +33,54 @@ import GroundSdk
 /// Piloting presets.
 
 public enum PilotingPreset {
-    static let controlMode = ControlsSettingsMode.defaultMode
     public static let thrownTakeOff = true
 }
 
 /// Piloting style settings control modes.
 
 enum ControlsSettingsMode {
-    /// !isSpecialMode && jogsInversed
-    case mode1(PilotingStyle)
     /// !isSpecialMode && !jogsInversed
-    case mode2(PilotingStyle)
-    /// isSpecialMode && jogsInversed
-    case mode3(PilotingStyle)
+    case mode1
+    /// !isSpecialMode && jogsInversed
+    case mode1Inversed
     /// isSpecialMode && !jogsInversed
-    case mode4(PilotingStyle)
+    case mode2
+    /// isSpecialMode && jogsInversed
+    case mode2Inversed
 }
 
 /// ControlsSettingsMode model helpers.
 
 extension ControlsSettingsMode: Equatable {
-    init?(value: String, mode: PilotingStyle = ControlsSettingsMode.defaultPilotingMode) {
+    init?(value: String) {
         switch value {
         case "mode1":
-            self = .mode1(mode)
+            self = .mode1
+        case "mode1Inversed":
+            self = .mode1Inversed
         case "mode2":
-            self = .mode2(mode)
-        case "mode3":
-            self = .mode3(mode)
-        case "mode4":
-            self = .mode4(mode)
+            self = .mode2
+        case "mode2Inversed":
+            self = .mode2Inversed
         default:
             return nil
         }
     }
 
     static var defaultMode: ControlsSettingsMode {
-        return .mode2(ControlsSettingsMode.defaultPilotingMode)
-    }
-
-    static func defaultMode(for type: PilotingStyle) -> ControlsSettingsMode {
-        return .mode2(type)
-    }
-
-    static var defaultPilotingMode: PilotingStyle {
-        return .classical
-    }
-
-    var pilotingStyle: PilotingStyle {
-        switch self {
-        case let .mode1(mode),
-             let .mode2(mode),
-             let .mode3(mode),
-             let .mode4(mode):
-            return mode
-        }
+        return .mode2
     }
 
     var value: String {
         switch self {
         case .mode1:
             return "mode1"
+        case .mode1Inversed:
+            return "mode1Inversed"
         case .mode2:
             return "mode2"
-        case .mode3:
-            return "mode3"
-        case .mode4:
-            return "mode4"
+        case .mode2Inversed:
+            return "mode2Inversed"
         }
     }
 
@@ -109,195 +90,66 @@ extension ControlsSettingsMode: Equatable {
             return isRegularSizeClass
                 ? Asset.Settings.Controls.iPadControlMode1.image
                 : Asset.Settings.Controls.iphoneControlMode1.image
+        case .mode1Inversed:
+            return isRegularSizeClass
+                ? Asset.Settings.Controls.ipadControlMode1Inversed.image
+                : Asset.Settings.Controls.iphoneControlMode1Inversed.image
         case .mode2:
             return isRegularSizeClass
                 ? Asset.Settings.Controls.iPadControlMode2.image
                 : Asset.Settings.Controls.iphoneControlMode2.image
-        case .mode3:
+        case .mode2Inversed:
             return isRegularSizeClass
-                ? Asset.Settings.Controls.iPadControlMode3.image
-                : Asset.Settings.Controls.iphoneControlMode3.image
-        case .mode4:
-            return isRegularSizeClass
-                ? Asset.Settings.Controls.iPadControlMode4.image
-                : Asset.Settings.Controls.iphoneControlMode4.image
+                ? Asset.Settings.Controls.iPadControlMode2Inversed.image
+                : Asset.Settings.Controls.iphoneControlMode2Inversed.image
         }
     }
 
     var jogsInversed: Bool {
         switch self {
-        case .mode1:
+        case .mode1, .mode2:
             return false
-        case .mode2:
-            return false
-        case .mode3:
-            return true
-        case .mode4:
+        case .mode1Inversed, .mode2Inversed:
             return true
         }
     }
 
     var isSpecialMode: Bool {
         switch self {
-        case .mode1:
-            return true
-        case .mode2:
+        case .mode1, .mode1Inversed:
             return false
-        case .mode3:
-            return false
-        case .mode4:
+        case .mode2, .mode2Inversed:
             return true
         }
     }
 
-    var controllerLeftJoystickText: String {
-        switch self {
-        case let .mode1(mode):
-            if mode == .classical {
-                return L10n.settingsControlsMappingAccelerationRotation
-            } else {
-                return L10n.settingsControlsMappingAccelerationRotation
-            }
-        case let .mode2(mode):
-            if mode == .classical {
-                return L10n.settingsControlsMappingElevationRotation
-            } else {
-                return L10n.settingsControlsMappingCameraRotation
-            }
-        case .mode3:
-            return L10n.settingsControlsMappingDirections
-        case let .mode4(mode):
-            if mode == .classical {
-                return L10n.settingsControlsMappingElevationLateral
-            } else {
-                return L10n.settingsControlsMappingCameraLateral
-            }
-        }
-    }
-
-    var controllerRightJoystickText: String {
-        switch self {
-        case let .mode1(mode):
-            if mode == .classical {
-                return L10n.settingsControlsMappingElevationLateral
-            } else {
-                return L10n.settingsControlsMappingCameraLateral
-            }
-        case let .mode2(mode):
-            if mode == .classical {
-                return L10n.settingsControlsMappingDirections
-            } else {
-                return L10n.settingsControlsMappingDirections
-            }
-        case let .mode3(mode):
-            if mode == .classical {
-                return L10n.settingsControlsMappingElevationRotation
-            } else {
-                return L10n.settingsControlsMappingCameraRotation
-            }
-        case let .mode4(mode):
-            if mode == .classical {
-                return L10n.settingsControlsMappingAccelerationRotation
-            } else {
-                return L10n.settingsControlsMappingAccelerationRotation
-            }
-        }
-    }
-
-    var hudLeftJoystickText: String {
+    var leftJoystickText: String {
         switch self {
         case .mode1:
             return L10n.settingsControlsMappingAccelerationRotation
+        case .mode1Inversed:
+            return L10n.settingsControlsMappingElevationLateral
         case .mode2:
             return L10n.settingsControlsMappingElevationRotation
-        case .mode3:
+        case .mode2Inversed:
             return L10n.settingsControlsMappingDirections
-        case .mode4:
-            return L10n.settingsControlsMappingElevationLateral
         }
     }
 
-    var hudRightJoystickText: String {
+    var rightJoystickText: String {
         switch self {
         case .mode1:
             return L10n.settingsControlsMappingElevationLateral
+        case .mode1Inversed:
+            return L10n.settingsControlsMappingAccelerationRotation
         case .mode2:
             return L10n.settingsControlsMappingDirections
-        case .mode3:
+        case .mode2Inversed:
             return L10n.settingsControlsMappingElevationRotation
-        case .mode4:
-            return L10n.settingsControlsMappingAccelerationRotation
         }
     }
 
     var controllerCameraText: String {
-        switch self {
-        case let .mode1(mode),
-             let .mode2(mode),
-             let .mode3(mode),
-             let .mode4(mode):
-            if mode == .arcade {
-                return L10n.settingsControlsMappingElevation
-            } else {
-                return L10n.settingsControlsMappingCamera
-            }
-        }
+        return L10n.settingsControlsMappingCamera
     }
-}
-
-/// Piloting style settings modes.
-
-enum PilotingStyle: String, SettingMode, BarItemMode {
-    case classical
-    case arcade
-
-    var localized: String {
-        return title.uppercased()
-    }
-
-    var key: String {
-        return rawValue
-    }
-
-    var isAvailable: Bool {
-        return true
-    }
-
-    var allValues: [BarItemMode] {
-        return [PilotingStyle.classical,
-                PilotingStyle.arcade]
-    }
-
-    // TODO simplify this to remove arcade mode.
-    var title: String {
-        switch self {
-        case .classical:
-            return L10n.settingsControlsPilotingStyleClassic
-        case .arcade:
-            return L10n.settingsControlsPilotingStyleArcade
-        }
-    }
-
-    static var allValues: [BarItemMode] {
-        return [PilotingStyle.classical, PilotingStyle.classical]
-    }
-
-    var subModes: [BarItemSubMode]? {
-        return nil
-    }
-
-    // TODO: Waiting for spec.
-    var logKey: String {
-        return ""
-    }
-}
-
-/// Arcade unavailability issues defines why arcade mode cannot be activated.
-enum ArcadeUnavailabilityIssues {
-    case remoteDisconnected
-    case droneDisconnected
-    case droneLanded
-    case droneTakingOff
-    case droneLanding
-    case rthInProgress
 }

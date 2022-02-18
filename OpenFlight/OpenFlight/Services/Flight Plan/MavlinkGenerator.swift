@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,7 +29,6 @@
 
 import Foundation
 import GroundSdk
-import Combine
 
 private extension ULogTag {
     static let tag = ULogTag(name: "MavlinkGenerator")
@@ -60,7 +58,6 @@ public class MavlinkGeneratorImpl {
     private let typeStore: FlightPlanTypeStore
     private let filesManager: FlightPlanFilesManager
     private let repo: FlightPlanRepository
-    private var cancellables = Set<AnyCancellable>()
 
     init(typeStore: FlightPlanTypeStore,
          filesManager: FlightPlanFilesManager,
@@ -75,10 +72,6 @@ extension MavlinkGeneratorImpl: MavlinkGenerator {
 
     public func generateMavlink(for flightPlan: FlightPlanModel, _ completion: @escaping MavlinkGenerationCompletion) {
         // Generate mavlink file from Flight Plan.
-        guard let flightPlanType = typeStore.typeForKey(flightPlan.type) else {
-            completion(.failure(.unknown))
-            return
-        }
         let path = filesManager.defaultUrl(flightPlan: flightPlan).path
         let mainQueueCompletion = { (result: Result<MavlinkGenerationResult, MavlinkGenerationError>) in
             DispatchQueue.main.async {
@@ -89,34 +82,51 @@ extension MavlinkGeneratorImpl: MavlinkGenerator {
             let commands: [MavlinkStandard.MavlinkCommand]
             let type = typeStore.typeForKey(flightPlan.type)
             let canGenerateMavlink = type?.canGenerateMavlink ?? false
-            if !canGenerateMavlink {
-                ULog.i(.tag, "Can not generate mavlink for this type of Flight Plan: (\(flightPlan.type))")
-                // Do not generate Mavlink, use the stored one.
-                if flightPlanType.mavLinkType == .standard,
-                   let data = flightPlan.dataSetting?.mavlinkDataFile,
-                   let str = String(data: data, encoding: .utf8) {
-                    // If Flight Plan uses MavlinkStandard we can parse its commands to display progress.
-                    do {
-                        commands = try MavlinkStandard.MavlinkFiles.parse(mavlinkString: str)
-                        filesManager.writeFile(of: flightPlan)
-                    } catch {
-                        mainQueueCompletion(.failure(.parsingFromExistingFailed(error)))
-                        return
-                    }
-                } else {
-                    mainQueueCompletion(.failure(.cannotGenerateMavlinkAndNoData))
+            if FileManager.default.fileExists(atPath: path) {
+                ULog.i(.tag, "Found mavlink in file system of '\(flightPlan.uuid)' at \(path)")
+                do {
+                    commands = try MavlinkStandard.MavlinkFiles.parse(filepath: path)
+                } catch {
+                    ULog.e(.tag, "Failed to parse existing mavlink file for flightPlan "
+                           + " '\(flightPlan.uuid)' at path: \(path) Error: \(error)")
+                    mainQueueCompletion(.failure(.parsingFromExistingFailed(error)))
+                    return
+                }
+            } else if let data = flightPlan.dataSetting?.mavlinkDataFile,
+                      let str = String(data: data, encoding: .utf8) {
+                ULog.i(.tag, "Found mavlink in data model of '\(flightPlan.uuid)'")
+                do {
+                    commands = try MavlinkStandard.MavlinkFiles.parse(mavlinkString: str)
+                    filesManager.writeFile(of: flightPlan)
+                } catch {
+                    ULog.e(.tag, "Failed to parse existing mavlink in data model for flightPlan"
+                           + " '\(flightPlan.uuid)'. Error: \(error)")
+                    mainQueueCompletion(.failure(.parsingFromExistingFailed(error)))
                     return
                 }
             } else {
-                ULog.i(.tag, "Mavlink needs to be generated for this type of Flight Plan: (\(flightPlan.type))")
-                // Generate Mavlink from flight plan.
+                ULog.i(.tag, "Flight plan \(flightPlan.uuid) mavlink file doesn't exist in file"
+                       + " system or data model")
+                guard canGenerateMavlink else {
+                    ULog.e(.tag, "Failed mavlink generation of '\(flightPlan.type)'"
+                           + " as it's missing from both the file system and the data model and the"
+                           + " flightPlan is generatable."
+                           + " Aborting mavlink generation.")
+                    mainQueueCompletion(.failure(.cannotGenerateMavlinkAndNoData))
+                    return
+                }
                 commands = generateMavlinkCommands(for: flightPlan)
                 do {
                     try MavlinkStandard.MavlinkFiles.generate(filepath: path, commands: commands)
                     let data = try Data(contentsOf: URL(fileURLWithPath: path))
                     flightPlan.dataSetting?.mavlinkDataFile = data
-                    repo.persist(flightPlan, true)
+                    repo.saveOrUpdateFlightPlan(flightPlan,
+                                                byUserUpdate: true,
+                                                toSynchro: true,
+                                                withFileUploadNeeded: true)
+                    ULog.i(.tag, "Generated mavlink of '\(flightPlan.uuid)' with \(commands.count) commands at \(path)")
                 } catch {
+                    ULog.e(.tag, "Failed mavlink generation '\(flightPlan.uuid)' at \(path). Error \(error)")
                     mainQueueCompletion(.failure(.generateFileFromCommandsFailed(error)))
                     return
                 }

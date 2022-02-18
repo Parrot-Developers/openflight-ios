@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +33,7 @@ import CoreData
 extension FlightPlan {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<FlightPlan> {
-        return NSFetchRequest<FlightPlan>(entityName: "FlightPlan")
+        return NSFetchRequest<FlightPlan>(entityName: Self.entityName)
     }
 
     // MARK: Properties
@@ -57,13 +57,15 @@ extension FlightPlan {
     @NSManaged public var synchroStatus: Int16
     @NSManaged public var fileSynchroStatus: Int16
     @NSManaged public var fileSynchroDate: Date?
-    @NSManaged public var synchroDate: Date?
-    @NSManaged public var parrotCloudId: Int64
+    @NSManaged public var latestSynchroStatusDate: Date?
+    @NSManaged public var cloudId: Int64
     @NSManaged public var parrotCloudUploadUrl: String?
-    @NSManaged public var parrotCloudToBeDeleted: Bool
-    @NSManaged public var cloudLastUpdate: Date?
+    @NSManaged public var isLocalDeleted: Bool
+    @NSManaged public var latestCloudModificationDate: Date?
     @NSManaged public var uploadAttemptCount: Int16
     @NSManaged public var lastUploadAttempt: Date?
+    @NSManaged public var latestLocalModificationDate: Date?
+    @NSManaged public var synchroError: Int16
 
     // MARK: - Relationship
 
@@ -89,44 +91,4 @@ extension FlightPlan {
     @objc(removeFlightPlanFlights:)
     @NSManaged public func removeFromFlightPlanFlights(_ values: NSSet)
 
-}
-
-// MARK: - Utils
-extension FlightPlan {
-
-    /// Return FlightPlanModel from FlightPlan type of NSManagedObject
-    func model() -> FlightPlanModel {
-        var flightPlanSettings: String?
-        if let dataString = dataString {
-            flightPlanSettings = String(decoding: dataString, as: UTF8.self)
-        }
-        return FlightPlanModel(apcId: apcId,
-                                type: type,
-                                uuid: uuid,
-                                version: version,
-                                customTitle: customTitle,
-                                thumbnailUuid: thumbnailUuid,
-                                projectUuid: projectUuid,
-                                dataStringType: dataStringType,
-                                dataString: flightPlanSettings,
-                                pgyProjectId: pgyProjectId,
-                                mediaCustomId: mediaCustomId,
-                                state: FlightPlanModel.FlightPlanState(rawString: state) ?? .editable,
-                                lastMissionItemExecuted: lastMissionItemExecuted,
-                                mediaCount: mediaCount,
-                                uploadedMediaCount: uploadedMediaCount,
-                                lastUpdate: lastUpdate,
-                                synchroStatus: synchroStatus,
-                                fileSynchroStatus: fileSynchroStatus,
-                                fileSynchroDate: fileSynchroDate,
-                                synchroDate: synchroDate,
-                                parrotCloudId: parrotCloudId,
-                                parrotCloudUploadUrl: parrotCloudUploadUrl,
-                                parrotCloudToBeDeleted: parrotCloudToBeDeleted,
-                                cloudLastUpdate: cloudLastUpdate,
-                                uploadAttemptCount: uploadAttemptCount,
-                                lastUploadAttempt: lastUploadAttempt,
-                                thumbnail: thumbnail?.model(),
-                                flightPlanFlights: flightPlanFlights?.toArray().map({ $0.model() }))
-    }
 }

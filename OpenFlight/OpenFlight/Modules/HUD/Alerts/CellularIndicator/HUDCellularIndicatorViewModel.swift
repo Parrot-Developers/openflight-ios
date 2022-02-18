@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,6 +29,7 @@
 
 import GroundSdk
 import SwiftyUserDefaults
+import Combine
 
 /// State for `HUDCellularIndicatorViewModel`.
 final class HUDCellularIndicatorState: DeviceConnectionState {
@@ -112,6 +112,12 @@ final class HUDCellularIndicatorViewModel: DroneStateViewModel<HUDCellularIndica
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var cellularRef: Ref<Cellular>?
     private var networkControlRef: Ref<NetworkControl>?
+    private var remoteCellularLinkStatus: Ref<CellularLinkStatus>?
+
+    private var remoteCellularStatus: CellularLinkStatus?
+
+    private var connectedRemoteControlHolder: ConnectedRemoteControlHolder = Services.hub.connectedRemoteControlHolder
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Deinit
     deinit {
@@ -128,6 +134,13 @@ final class HUDCellularIndicatorViewModel: DroneStateViewModel<HUDCellularIndica
         listenNetworkControl(drone)
         listenCellular(drone)
         updateCellularState()
+
+        connectedRemoteControlHolder.remoteControlPublisher
+            .compactMap { $0 }
+            .sink { [unowned self] remoteControl in
+                listenRemoteCellularLink(remoteControl: remoteControl)
+            }
+            .store(in: &cancellables)
     }
 
     override func droneConnectionStateDidChange() {
@@ -162,6 +175,15 @@ private extension HUDCellularIndicatorViewModel {
         }
     }
 
+    /// Observes the controller's cellular link
+    /// - Parameter remoteControl: The connected remote controller
+    func listenRemoteCellularLink(remoteControl: RemoteControl) {
+        remoteCellularLinkStatus = remoteControl.getInstrument(Instruments.cellularLinkStatus) { [unowned self] remoteCellular in
+            remoteCellularStatus = remoteCellular
+            updateCellularState()
+        }
+    }
+
     /// Starts watcher for drone network control.
     func listenNetworkControl(_ drone: Drone) {
         networkControlRef = drone.getPeripheral(Peripherals.networkControl) { [weak self] _ in
@@ -190,7 +212,7 @@ private extension HUDCellularIndicatorViewModel {
         let cellularLink = networkControl?.links.first(where: { $0.type == .cellular })
         let isCellularAvailable: Bool = cellular.isAvailable && cellular.mode.value == .data
 
-        if cellularLink?.status == .running {
+        if cellularLink?.status == .running && remoteCellularStatus?.status == .running {
             updateCellularState(with: .cellularConnected)
         } else if isCellularAvailable {
             updateCellularState(with: .cellularConnecting)

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -115,7 +114,6 @@ final class HUDIndicatorViewModel: DroneStateViewModel<HUDIndicatorState> {
     // MARK: - Private Properties
     private var splitModeObserver: Any?
     private var bottomBarModeObserver: Any?
-    private var missionLauncherModeObserver: Any?
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
@@ -142,8 +140,6 @@ final class HUDIndicatorViewModel: DroneStateViewModel<HUDIndicatorState> {
         splitModeObserver = nil
         NotificationCenter.default.remove(observer: bottomBarModeObserver)
         bottomBarModeObserver = nil
-        NotificationCenter.default.remove(observer: missionLauncherModeObserver)
-        missionLauncherModeObserver = nil
     }
 
     // MARK: - Internal Funcs

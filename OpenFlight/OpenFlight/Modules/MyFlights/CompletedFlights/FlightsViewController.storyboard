@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina4_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -21,25 +20,29 @@
         <scene sceneID="gAF-Wg-Bhz">
             <objects>
                 <viewController storyboardIdentifier="FlightsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="FlightsViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="Wf3-fd-o0X">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="GvP-QL-9JV"/>
+                        <viewControllerLayoutGuide type="bottom" id="omJ-Kv-yUY"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Wf3-fd-o0X">
                         <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="NuY-Xk-Tem">
-                                <rect key="frame" x="0.0" y="8" width="667" height="367"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NuY-Xk-Tem">
+                                <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </tableView>
-                            <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="CPj-eu-GQn">
-                                <rect key="frame" x="312.5" y="165" width="42" height="45"/>
+                            <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" distribution="fillProportionally" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="CPj-eu-GQn">
+                                <rect key="frame" x="314.5" y="168" width="38" height="39"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pvu-rq-eJr">
-                                        <rect key="frame" x="0.0" y="0.0" width="42" height="20"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="38" height="17"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="17"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zXZ-Ad-Oxr">
-                                        <rect key="frame" x="0.0" y="25" width="42" height="20"/>
+                                        <rect key="frame" x="0.0" y="22" width="38" height="17"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
@@ -47,14 +50,13 @@
                                 </subviews>
                             </stackView>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="kDw-e2-kfo"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="CPj-eu-GQn" firstAttribute="centerX" secondItem="Wf3-fd-o0X" secondAttribute="centerX" id="7xc-eI-WPV"/>
-                            <constraint firstItem="kDw-e2-kfo" firstAttribute="trailing" secondItem="NuY-Xk-Tem" secondAttribute="trailing" id="I13-Mv-CqP"/>
-                            <constraint firstItem="NuY-Xk-Tem" firstAttribute="top" secondItem="kDw-e2-kfo" secondAttribute="top" constant="8" id="ITw-XE-QwE"/>
+                            <constraint firstAttribute="trailing" secondItem="NuY-Xk-Tem" secondAttribute="trailing" id="I13-Mv-CqP"/>
+                            <constraint firstItem="NuY-Xk-Tem" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="ITw-XE-QwE"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="CPj-eu-GQn" secondAttribute="trailing" id="MQm-Te-be1"/>
-                            <constraint firstItem="NuY-Xk-Tem" firstAttribute="leading" secondItem="kDw-e2-kfo" secondAttribute="leading" id="Tcf-qP-OmP"/>
+                            <constraint firstItem="NuY-Xk-Tem" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="Tcf-qP-OmP"/>
                             <constraint firstAttribute="bottom" secondItem="NuY-Xk-Tem" secondAttribute="bottom" id="aBx-xM-teU"/>
                             <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="CPj-eu-GQn" secondAttribute="bottom" id="bd9-tj-5wM"/>
                             <constraint firstItem="CPj-eu-GQn" firstAttribute="top" relation="greaterThanOrEqual" secondItem="Wf3-fd-o0X" secondAttribute="top" id="p7Q-J9-b0F"/>
@@ -76,7 +78,7 @@
     </scenes>
     <resources>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import UIKit
 
 // MARK: - Private Enums
 private enum Constants {
@@ -45,21 +45,17 @@ protocol SignalStrength {
     /// Returns border color.
     var borderColor: ColorName { get }
 
-    // MARK: - Internal Funcs
     /// Provides the signal icon.
-    ///
-    /// - Parameters:
-    ///     - isLinkActive: tells if link is active
-    /// - Returns: The signal image with quality.
-    func signalIcon(isLinkActive: Bool) -> UIImage
+    var signalIcon: UIImage { get }
 }
 
 // MARK: - Internal Enums
 /// Describes cellular link strength.
 enum CellularStrength: Int {
-    case offline = -2
-    case deactivated = -1
-    case ko0On4 = 0
+    case offline = -3
+    case deactivated = -2
+    case ko0On4 = -1
+    case ok0On4 = 0
     case ok1On4 = 1
     case ok2On4 = 2
     case ok3On4 = 3
@@ -76,7 +72,8 @@ extension CellularStrength: SignalStrength {
              .ko0On4:
             return .clear
 
-        case .ok1On4:
+        case .ok0On4,
+             .ok1On4:
             return .disabledWarningColor
 
         case .ok2On4,
@@ -93,7 +90,8 @@ extension CellularStrength: SignalStrength {
              .ko0On4:
             return .clear
 
-        case .ok1On4:
+        case .ok0On4,
+             .ok1On4:
             return .warningColor
 
         case .ok2On4,
@@ -103,32 +101,24 @@ extension CellularStrength: SignalStrength {
         }
     }
 
-    func signalIcon(isLinkActive: Bool = false) -> UIImage {
+    var signalIcon: UIImage {
         switch self {
         case .deactivated:
             return Asset.Cellular.ic4GDeactivated.image
         case .offline:
-            return Asset.Cellular.icon4GOffline.image
+            return Asset.Cellular.ic4GOffline.image
         case .ko0On4:
-            return isLinkActive
-                ? Asset.Cellular.ic4GQuality1.image
-                : Asset.Cellular.icon4GOffline.image
+            return Asset.Cellular.ic4GQuality1.image
+        case .ok0On4:
+            return Asset.Cellular.ic4GQuality0.image
         case .ok1On4:
-            return isLinkActive
-                ? Asset.Cellular.ic4GQuality2.image
-                : Asset.Cellular.icon4GOffline.image
+            return Asset.Cellular.ic4GQuality2.image
         case .ok2On4:
-            return isLinkActive
-                ? Asset.Cellular.ic4GQuality3.image
-                : Asset.Cellular.icon4GOffline.image
+            return Asset.Cellular.ic4GQuality3.image
         case .ok3On4:
-            return isLinkActive
-                ? Asset.Cellular.ic4GQuality4.image
-                : Asset.Cellular.icon4GOffline.image
+            return Asset.Cellular.ic4GQuality4.image
         case .ok4On4:
-            return isLinkActive
-                ? Asset.Cellular.ic4GQuality5.image
-                : Asset.Cellular.icon4GOffline.image
+            return Asset.Cellular.ic4GQuality5.image
         }
     }
 }

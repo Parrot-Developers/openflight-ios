@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +32,7 @@ import GroundSdk
 
 // MARK: - Internal Enums
 /// Enum used to display panorama sub-modes in bottom bar.
-enum PanoramaMode: String, BarItemSubMode, DefaultsLoadableBarItem {
+public enum PanoramaMode: String, BarItemSubMode, DefaultsLoadableBarItem {
     case vertical
     case horizontal
     case degrees360
@@ -47,12 +46,12 @@ enum PanoramaMode: String, BarItemSubMode, DefaultsLoadableBarItem {
         return PanoramaMode(rawValue: Defaults.userPanoramaSetting) ?? .vertical
     }
 
-    static let allValues: [BarItemMode] = [PanoramaMode.vertical,
-                                           PanoramaMode.horizontal,
-                                           PanoramaMode.degrees360,
-                                           PanoramaMode.wide]
+    public static let allValues: [BarItemMode] = [PanoramaMode.vertical,
+                                                  PanoramaMode.horizontal,
+                                                  PanoramaMode.degrees360,
+                                                  PanoramaMode.wide]
 
-    var title: String {
+    public var title: String {
         switch self {
         case .vertical:
             return L10n.cameraSubModePanoramaVertical
@@ -65,7 +64,7 @@ enum PanoramaMode: String, BarItemSubMode, DefaultsLoadableBarItem {
         }
     }
 
-    var image: UIImage? {
+    public var image: UIImage? {
         switch self {
         case .vertical:
             return Asset.BottomBar.CameraSubModes.icPanoVertical.image
@@ -78,11 +77,11 @@ enum PanoramaMode: String, BarItemSubMode, DefaultsLoadableBarItem {
         }
     }
 
-    var key: String {
+    public var key: String {
         return rawValue
     }
 
-    var shutterText: String? {
+    public var shutterText: String? {
         return nil
     }
 
@@ -112,7 +111,17 @@ enum PanoramaMode: String, BarItemSubMode, DefaultsLoadableBarItem {
         }
     }
 
-    var logKey: String {
+    public var logKey: String {
         return LogEvent.LogKeyHUDBottomBarButton.panorama.name
+    }
+
+    /// Whether panorama mode requires the drone to fly.
+    var requireDroneFlying: Bool {
+        switch self {
+        case .vertical, .horizontal, .degrees360:
+            return true
+        case .wide:
+            return false
+        }
     }
 }

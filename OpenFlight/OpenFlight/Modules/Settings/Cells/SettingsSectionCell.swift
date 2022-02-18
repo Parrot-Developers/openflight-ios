@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,18 +33,14 @@ import Reusable
 final class SettingsSectionCell: UITableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet fileprivate weak var iconImageView: UIImageView!
-    @IBOutlet fileprivate weak var titleLabel: UILabel! {
-        didSet {
-            titleLabel.adjustsFontSizeToFitWidth = true
-        }
-    }
+    @IBOutlet fileprivate weak var titleLabel: UILabel!
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
 
         // setup cell display.
-        self.selectionStyle = .none
+        selectionStyle = .none
     }
 
     // MARK: - Internal funcs
@@ -53,6 +49,7 @@ final class SettingsSectionCell: UITableViewCell, NibReusable {
     /// - Parameters:
     ///    - settingsSection: data to apply to the cell
     func configure(with settingsSection: SettingsSection) {
+        directionalLayoutMargins = Layout.leftSidePanelInnerMargins(isRegularSizeClass)
         titleLabel.text = settingsSection.title
         iconImageView.image = settingsSection.icon
     }

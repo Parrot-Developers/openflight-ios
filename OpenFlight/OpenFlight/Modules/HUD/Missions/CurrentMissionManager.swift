@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -43,6 +42,10 @@ public protocol CurrentMissionManager: AnyObject {
     var mode: MissionMode { get }
     /// Mode for current mission mode
     var modePublisher: AnyPublisher<MissionMode, Never> { get }
+    /// Last mission selected in the HUD
+    var hudLastSelection: (provider: MissionProvider, mode: MissionMode) { get }
+    /// Last mission selected in the HUD Publisher
+    var hudLastSelectionPublisher: AnyPublisher<(provider: MissionProvider, mode: MissionMode), Never> { get }
 
     /// Change the current mission provider
     func set(provider: MissionProvider)
@@ -50,11 +53,33 @@ public protocol CurrentMissionManager: AnyObject {
     /// Change the current mission mode
     func set(mode: MissionMode)
 
+    /// Store last mission selected in the HUD
+    func storeLastHudSelection(provider: MissionProvider, mode: MissionMode)
+
+    /// Restore last mission selected in the HUD
+    func restoreLastHudSelection()
+
     /// Update active mission mode regarding active mission Uid when relevant
     ///
     /// - Parameters:
     ///     - activeMissionUid: active mission Uid
     func updateActiveMissionIfNeeded(activeMissionUid: String)
+
+    /// Whether the current mode can be deactivated.
+    ///
+    /// - Returns: can be deactivated
+    func canDeactivateCurrentMode() -> Bool
+
+    /// Whether the current mode can be activated.
+    ///
+    /// - Returns: can be activated
+    func canActivateCurrentMode() -> Bool
+
+    /// Show failed activation message.
+    func showFailedActivationMessage()
+
+    /// Show failed deactivation message.
+    func showFailedDectivationMessage()
 }
 
 public class CurrentMissionManagerImpl {
@@ -66,11 +91,14 @@ public class CurrentMissionManagerImpl {
     private var providerSubject: CurrentValueSubject<MissionProvider, Never>
     /// Current mission mode subject
     private var modeSubject: CurrentValueSubject<MissionMode, Never>
+    /// Last mission selected in the HUD subject
+    private var hudLastSelectionSubject: CurrentValueSubject<(provider: MissionProvider, mode: MissionMode), Never>
 
     init(store: MissionsStore) {
         self.store = store
         providerSubject = CurrentValueSubject(store.defaultMission)
         modeSubject = CurrentValueSubject(store.defaultMission.mission.defaultMode)
+        hudLastSelectionSubject = CurrentValueSubject((store.defaultMission, store.defaultMission.mission.defaultMode))
     }
 }
 
@@ -79,9 +107,15 @@ extension CurrentMissionManagerImpl: CurrentMissionManager {
 
     public var mode: MissionMode { modeSubject.value }
 
+    public var hudLastSelection: (provider: MissionProvider, mode: MissionMode) { hudLastSelectionSubject.value }
+
     public var providerPublisher: AnyPublisher<MissionProvider, Never> { providerSubject.eraseToAnyPublisher() }
 
     public var modePublisher: AnyPublisher<MissionMode, Never> { modeSubject.eraseToAnyPublisher() }
+
+    public var hudLastSelectionPublisher: AnyPublisher<(provider: MissionProvider, mode: MissionMode), Never> {
+        hudLastSelectionSubject.eraseToAnyPublisher()
+    }
 
     public func set(provider: MissionProvider) {
         providerSubject.value = provider
@@ -89,19 +123,45 @@ extension CurrentMissionManagerImpl: CurrentMissionManager {
 
     public func set(mode: MissionMode) {
         guard mode.key != modeSubject.value.key else { return }
-        // Stops current mission if needed.
-        modeSubject.value.missionActivationModel.stopMissionIfNeeded()
+        // If ophtalmo mission is active there is no need to stop the mission.
+        if Services.hub.drone.ophtalmoService.ophtalmoMissionState != .active {
+            // Stops current mission if needed.
+            modeSubject.value.missionActivationModel.stopMissionIfNeeded()
+        }
         modeSubject.value = mode
-        // Starts new mission if needed.
-        mode.missionActivationModel.startMission()
+        // If ophtalmo mission is active, then do not start another mission.
+        // Start mission will be called when ophtalmo is dismissed.
+        if Services.hub.drone.ophtalmoService.ophtalmoMissionState != .active {
+            // Starts new mission if needed.
+            mode.missionActivationModel.startMission()
+        }
+    }
 
+    public func canDeactivateCurrentMode() -> Bool {
+        return modeSubject.value.missionActivationModel.canStopMission()
+    }
+
+    public func canActivateCurrentMode() -> Bool {
+        return modeSubject.value.missionActivationModel.canStartMission()
+    }
+
+    public func showFailedActivationMessage() {
+        modeSubject.value.missionActivationModel.showFailedActivationMessage()
+    }
+
+    public func showFailedDectivationMessage() {
+        modeSubject.value.missionActivationModel.showFailedDectivationMessage()
+    }
+
+    public func storeLastHudSelection(provider: MissionProvider, mode: MissionMode) {
+        hudLastSelectionSubject.value = (provider, mode)
+    }
+
+    public func restoreLastHudSelection() {
+        set(provider: hudLastSelectionSubject.value.provider)
+        set(mode: hudLastSelectionSubject.value.mode)
     }
 
     public func updateActiveMissionIfNeeded(activeMissionUid: String) {
-        if !providerSubject.value.isCompatibleWith(missionUid: activeMissionUid),
-           let missionProvider = store.allMissions.first(where: { $0.signature.missionUID ==  activeMissionUid }) {
-            set(provider: missionProvider)
-            set(mode: missionProvider.mission.defaultMode)
-        }
     }
 }

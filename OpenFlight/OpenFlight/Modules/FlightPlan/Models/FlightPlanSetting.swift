@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -100,7 +99,7 @@ extension Array where Element == FlightPlanSetting {
 }
 
 /// Class that defines a light setting stored in core data in a flight plan.
-public class FlightPlanLightSetting: Codable, Equatable {
+public struct FlightPlanLightSetting: Codable, Equatable {
     // MARK: - Public Properties
     public var key: String
     public var currentValue: Int?
@@ -127,7 +126,7 @@ public class FlightPlanLightSetting: Codable, Equatable {
         self.longValue = longValue
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.key = try container.decode(String.self, forKey: .key)
         self.currentValue = try container.decodeIfPresent(Int.self, forKey: .currentValue)

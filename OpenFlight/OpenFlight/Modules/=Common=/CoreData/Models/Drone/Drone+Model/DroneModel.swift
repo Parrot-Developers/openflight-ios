@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,39 +31,34 @@ import Foundation
 
 public struct DroneModel: Equatable {
 
-    // MARK: - Properties
-
+    // MARK: __ Academy
     public var apcId: String
     public var droneSerial: String
     public var droneCommonName: String?
     public var modelId: String?
     public var pairedFor4G: Bool
 
-    // MARK: - Synchro Properties
-
-    /// - Contains the Date of last synchro trying if is not succeeded
+    // MARK: __ Synchronization
+    public var synchroStatus: SynchroStatus?
     public var synchroDate: Date?
 
-    /// - Contains 0 if not yet synchronized, 1 if yes
-        /// statusCode if sync failed
-    public var synchroStatus: Int16?
-
     // MARK: - Public init
-
     public init(apcId: String,
                 droneSerial: String,
                 droneCommonName: String?,
                 modelId: String?,
                 pairedFor4G: Bool,
                 synchroDate: Date? = nil,
-                synchroStatus: Int16? = 0) {
-
+                synchroStatus: SynchroStatus? = .notSync) {
+        // Academy
         self.apcId = apcId
         self.droneSerial = droneSerial
         self.droneCommonName = droneCommonName
         self.modelId = modelId
         self.pairedFor4G = pairedFor4G
-        self.synchroDate = synchroDate
+        // Synchronization
         self.synchroStatus = synchroStatus
+        self.synchroDate = synchroDate
+
     }
 }

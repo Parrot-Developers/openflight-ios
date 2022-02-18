@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
-        <capability name="Named colors" minToolsVersion="9.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -66,7 +65,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="200" height="400"/>
                                 <subviews>
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="5Zc-YD-WUV">
-                                        <rect key="frame" x="0.0" y="0.0" width="200" height="371.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="200" height="400"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="FAp-aU-yuw">
                                             <size key="itemSize" width="200" height="200"/>
@@ -76,36 +75,6 @@
                                         </collectionViewFlowLayout>
                                         <cells/>
                                     </collectionView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="s8e-XL-JKx">
-                                        <rect key="frame" x="0.0" y="363.5" width="200" height="36.5"/>
-                                        <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fSP-fM-JJu">
-                                                <rect key="frame" x="0.0" y="0.0" width="34" height="36.5"/>
-                                                <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icInternalChip" translatesAutoresizingMaskIntoConstraints="NO" id="8hG-WB-57u">
-                                                        <rect key="frame" x="22" y="11.5" width="12" height="12"/>
-                                                        <color key="tintColor" name="default_text_color"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" constant="12" id="LA8-SI-L18"/>
-                                                            <constraint firstAttribute="width" secondItem="8hG-WB-57u" secondAttribute="height" multiplier="1:1" id="kMP-W5-wdX"/>
-                                                        </constraints>
-                                                    </imageView>
-                                                </subviews>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstItem="8hG-WB-57u" firstAttribute="leading" secondItem="fSP-fM-JJu" secondAttribute="leading" constant="22" id="KPh-5f-Aag"/>
-                                                    <constraint firstAttribute="trailing" secondItem="8hG-WB-57u" secondAttribute="trailing" id="Mac-nO-UcJ"/>
-                                                    <constraint firstItem="8hG-WB-57u" firstAttribute="centerY" secondItem="fSP-fM-JJu" secondAttribute="centerY" constant="-1" id="XoF-7A-sgi"/>
-                                                </constraints>
-                                            </view>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KrU-Ak-lFT">
-                                                <rect key="frame" x="38" y="0.0" width="162" height="36.5"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                <nil key="textColor"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                        </subviews>
-                                    </stackView>
                                 </subviews>
                             </stackView>
                         </subviews>
@@ -120,8 +89,6 @@
                     <size key="freeformSize" width="200" height="400"/>
                     <connections>
                         <outlet property="collection" destination="5Zc-YD-WUV" id="90J-kw-YsK"/>
-                        <outlet property="internalImageView" destination="8hG-WB-57u" id="hxN-eZ-XnZ"/>
-                        <outlet property="internalLabel" destination="KrU-Ak-lFT" id="x09-dD-tgG"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="XUi-LK-0v8" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -151,45 +118,18 @@
                                 </collectionViewFlowLayout>
                                 <cells/>
                             </collectionView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aZV-dx-5NI" customClass="GallerySelectionView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="250" width="400" height="50"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="50" id="GSS-3n-4f2"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ftd-Iz-UYJ" customClass="GalleryLoadingView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="250" width="400" height="50"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="50" id="XxR-Js-bUd"/>
-                                </constraints>
-                            </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="H0f-g5-iEa" firstAttribute="top" secondItem="c6Q-Bt-09j" secondAttribute="top" id="2cz-IX-c54"/>
-                            <constraint firstAttribute="bottom" secondItem="ftd-Iz-UYJ" secondAttribute="bottom" id="3E3-Sx-oZt"/>
                             <constraint firstAttribute="trailing" secondItem="H0f-g5-iEa" secondAttribute="trailing" id="5L8-oZ-nLk"/>
-                            <constraint firstItem="ftd-Iz-UYJ" firstAttribute="leading" secondItem="c6Q-Bt-09j" secondAttribute="leading" id="8K3-BX-jkj"/>
                             <constraint firstItem="H0f-g5-iEa" firstAttribute="leading" secondItem="c6Q-Bt-09j" secondAttribute="leading" id="KT4-C8-1lj"/>
-                            <constraint firstAttribute="trailing" secondItem="aZV-dx-5NI" secondAttribute="trailing" id="fZe-Xs-Ux8"/>
-                            <constraint firstAttribute="trailing" secondItem="ftd-Iz-UYJ" secondAttribute="trailing" id="j97-T9-E7A"/>
-                            <constraint firstItem="aZV-dx-5NI" firstAttribute="leading" secondItem="c6Q-Bt-09j" secondAttribute="leading" id="l2f-5a-J8J"/>
-                            <constraint firstAttribute="bottom" secondItem="aZV-dx-5NI" secondAttribute="bottom" id="sxw-oX-7vp"/>
                             <constraint firstAttribute="bottom" secondItem="H0f-g5-iEa" secondAttribute="bottom" id="zlA-y3-YFd"/>
                         </constraints>
-                        <variation key="default">
-                            <mask key="subviews">
-                                <exclude reference="aZV-dx-5NI"/>
-                            </mask>
-                        </variation>
                     </view>
                     <size key="freeformSize" width="400" height="300"/>
                     <connections>
                         <outlet property="collection" destination="H0f-g5-iEa" id="uQZ-NI-Ctw"/>
-                        <outlet property="loadingView" destination="ftd-Iz-UYJ" id="fnD-cw-3wY"/>
-                        <outlet property="selectionView" destination="aZV-dx-5NI" id="7TH-gM-Zg3"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Zvd-4K-Kgz" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -198,10 +138,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="icInternalChip" width="10" height="9"/>
-        <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

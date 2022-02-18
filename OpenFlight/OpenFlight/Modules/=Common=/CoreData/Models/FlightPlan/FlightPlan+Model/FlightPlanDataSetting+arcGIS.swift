@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -125,15 +124,6 @@ extension FlightPlanDataSetting {
         return max(sqrt(accelerationMax * distance / 3.0), speedMin)
     }
 
-    /// Optimistic estimation of the duration to travel a given distance at a given speed
-    ///
-    /// - Parameters:
-    ///     - distance: distance
-    ///     - speed: speed, should be different from 0
-    private func pieceDurationOptimistic(distance: Double, speed: Double) -> Double {
-        return distance / speed
-    }
-
     /// Pessimistic estimation of the duration to travel a given distance at a given speed
     ///
     /// - Parameters:
@@ -232,24 +222,6 @@ extension FlightPlanDataSetting {
     }
 
     // MARK: - Public Funcs
-    /// Computes all lines towards point of interest at given index.
-    ///
-    /// - Parameters:
-    ///    - poiIndex: point of interest's index
-    /// - Returns: computed line graphics
-    func wayPointToPoiLinesGraphic(poiIndex: Int) -> [FlightPlanWayPointToPoiLineGraphic] {
-        let poiPoint = pois[poiIndex]
-        return wayPoints
-            .enumerated()
-            .filter { $1.poiIndex == poiIndex }
-            .compactMap { (index, wayPoint) in
-                return FlightPlanWayPointToPoiLineGraphic(wayPoint: wayPoint,
-                                                          poiPoint: poiPoint,
-                                                          wayPointIndex: index,
-                                                          poiIndex: poiIndex)
-        }
-    }
-
     /// Inserts a waypoint at given index.
     ///
     /// - Parameters:

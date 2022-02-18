@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -40,22 +39,15 @@ enum UserInformationKey {
 }
 
 public protocol UserInformation: AnyObject {
-
-    /// User information token
-    var token: String { get }
-
-    var tokenPublisher: AnyPublisher<String, Never> { get }
-
-    func set(token: String)
-
-    /// User information apcId
-    var apcId: String { get set }
-
     /// User information keychain
     var keychain: Keychain { get }
 
-    /// String value to use for `apcId`or `email`when there's no logged-in User
-    var anonymousString: String { get }
+    /// User information token
+    var token: String { get set }
+    var tokenPublisher: AnyPublisher<String, Never> { get }
+
+    /// User information apcId
+    var apcId: String { get set }
 }
 
 /// Class used to handle the storage of the user informations in the keychain.
@@ -67,28 +59,42 @@ public class UserInformationImpl: UserInformation {
         return Keychain(service: UserInformationKey.accountConnection)
     }
 
-    public var token: String { keychain[UserInformationKey.token] ?? "" }
-
     private let tokenSubject = CurrentValueSubject<String, Never>("")
-
-    public func set(token: String) {
-        keychain[UserInformationKey.token] = token
-        self.tokenSubject.value = token
-    }
-
     public var tokenPublisher: AnyPublisher<String, Never> { tokenSubject.eraseToAnyPublisher() }
+
+    public var token: String {
+        get {
+            keychain.get(UserInformationKey.token) ?? ""
+        } set {
+            keychain.set(key: UserInformationKey.token, newValue)
+            self.tokenSubject.value = newValue
+        }
+    }
 
     public var apcId: String {
         get {
-            return keychain[UserInformationKey.apcId] ?? anonymousString
+            return keychain.get(UserInformationKey.apcId) ?? User.anonymousId
         }
         set {
-            keychain[UserInformationKey.apcId] = newValue
+            keychain.set(key: UserInformationKey.apcId, newValue)
         }
     }
 
-    public var anonymousString: String {
-        return "ANONYMOUS"
+    private var storedCurrentUser: User?
+    public var currentUser: User? {
+        get {
+            if storedCurrentUser == nil {
+                if apcId != User.anonymousId {
+                    storedCurrentUser = Services.hub.repos.user.getCurrentUser()
+                } else {
+                    storedCurrentUser = Services.hub.repos.user.getAnonymousUser()
+                }
+            }
+            return storedCurrentUser
+        }
+        set {
+            storedCurrentUser = newValue
+        }
     }
 
     // MARK: - Init

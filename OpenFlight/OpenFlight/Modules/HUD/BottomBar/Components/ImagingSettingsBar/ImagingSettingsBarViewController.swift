@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -350,9 +349,7 @@ private extension ImagingSettingsBarViewController {
     ///     - itemName: Button name
     ///     - newValue: New value
     func logEvent(with itemName: String, and newValue: String?) {
-        LogEvent.logAppEvent(itemName: itemName,
-                             newValue: newValue,
-                             logType: .button)
+        LogEvent.log(.button(item: itemName, value: newValue ?? ""))
     }
 }
 

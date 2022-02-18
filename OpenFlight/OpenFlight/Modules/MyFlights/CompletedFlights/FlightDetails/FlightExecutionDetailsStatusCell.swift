@@ -1,6 +1,4 @@
-//
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +31,7 @@ import UIKit
 import Combine
 import Reusable
 
-class FlightExecutionDetailsStatusCell: UITableViewCell, NibReusable {
+class FlightExecutionDetailsStatusCell: MainTableViewCell, NibReusable {
     @IBOutlet weak var statusTitleLabel: UILabel!
     @IBOutlet weak var statusLabel: UILabel!
 
@@ -47,12 +45,14 @@ class FlightExecutionDetailsStatusCell: UITableViewCell, NibReusable {
     @IBOutlet weak var uploadPausedLabel: UILabel!
     @IBOutlet weak var uploadPausedProgressLabel: UILabel!
 
-    @IBOutlet weak var fremiumDesription: UILabel!
+    @IBOutlet weak var freemiumDescription: UILabel!
 
     @IBOutlet weak var actionButton: UIView!
     @IBOutlet weak var actionButtonProgressView: UIView!
+    @IBOutlet weak var actionButtonIcon: UIImageView!
     @IBOutlet weak var actionButtonTitle: UILabel!
     @IBOutlet weak var actionButtonProgressWidthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var actionButtonHeight: NSLayoutConstraint!
 
     private var cancellables = Set<AnyCancellable>()
     private var tapGestureSubscriber: AnyCancellable?
@@ -66,20 +66,14 @@ class FlightExecutionDetailsStatusCell: UITableViewCell, NibReusable {
     override func prepareForReuse() {
         super.prepareForReuse()
         cancellables.forEach { $0.cancel() }
+        cancellables = []
         tapGestureSubscriber?.cancel()
-        hideAll()
-    }
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
     }
 
     func setupUI() {
-        statusTitleLabel.text = "Status" // TODO: Localize
-        statusTitleLabel.makeUp(with: .large, and: .defaultTextColor)
-        statusLabel.makeUp(with: .large, and: .defaultTextColor)
+        statusTitleLabel.makeUp(with: .caps, color: .defaultTextColor80)
+        statusTitleLabel.text = L10n.flightPlanDetailsStatusTitle.uppercased()
+        statusLabel.makeUp(with: .current, color: .defaultTextColor)
         statusLabel.isHidden = true
 
         uploadingPhotosCountLabel.makeUp(with: .largeMedium, and: .defaultTextColor)
@@ -87,26 +81,21 @@ class FlightExecutionDetailsStatusCell: UITableViewCell, NibReusable {
         uploadingExtraIcon.tintColor = ColorName.blueDodger.color
         uploadingStack.isHidden = true
 
-        uploadPausedLabel.makeUp(with: .small, and: .orangePeel)
+        uploadPausedLabel.makeUp(with: .small, and: .warningColor)
         uploadPausedProgressLabel.makeUp(with: .small, and: .greyShark)
         uploadPausedProgressLabel.isHidden = true
         uploadPausedStack.isHidden = true
 
-        fremiumDesription.makeUp(with: .small, and: .warningColor)
-        fremiumDesription.isHidden = true
+        freemiumDescription.makeUp(with: .small, and: .warningColor)
+        freemiumDescription.isHidden = true
 
-        actionButton.applyCornerRadius(Style.mediumCornerRadius)
+        actionButton.applyCornerRadius(Style.largeCornerRadius)
         actionButtonProgressView.isHidden = true
-        actionButtonTitle.makeUp(with: .large, and: .defaultTextColor)
+        actionButtonTitle.makeUp(with: .current, color: .defaultTextColor)
         actionButtonProgressWidthConstraint.constant = 0
         actionButton.isHidden = true
+        actionButtonHeight.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass)
     }
-
-    // MARK: - Constants
-    enum Constants {
-        static let progressAnimationDuration = 0.5
-    }
-
 }
 
 extension FlightExecutionDetailsStatusCell {
@@ -114,46 +103,65 @@ extension FlightExecutionDetailsStatusCell {
     // Populate the cell.
     func fill(with viewModel: FlightExecutionDetailsStatusCellModel) {
         self.viewModel = viewModel
-        initCell(with: viewModel)
+        hideAll()
+        configure(with: viewModel)
     }
 
-    func initCell(with viewModel: FlightExecutionDetailsStatusCellModel) {
+    private func configure(with viewModel: FlightExecutionDetailsStatusCellModel) {
         cancellables.forEach { $0.cancel() }
-        hideAll()
+        cancellables = []
+
         // FlightPlan Status
-        if let statusText = viewModel.statusText,
-           let statusTextColor = viewModel.statusTextColor {
-            updateStatus(text: statusText,
-                         textColor: statusTextColor)
-        } else {
-            hideStatus()
-        }
+        Publishers.CombineLatest(viewModel.$statusText, viewModel.$statusTextColor)
+            .removeDuplicates { $0.0 == $1.0 && $0.1 == $1.1 }
+            .sink { [weak self] in
+                guard let self = self else { return }
+                if let statusText = $0,
+                   let statusTextColor = $1 {
+                    self.updateStatus(text: statusText,
+                                 textColor: statusTextColor)
+                } else {
+                    self.hideStatus()
+                }
+            }
+            .store(in: &cancellables)
 
         // Uploading Photo State.
-        if let uploadingPhotosCount = viewModel.uploadingPhotosCount,
-           let uploadingProgressText = viewModel.uploadingProgressText {
-            showUploadingInfo(photoCount: uploadingPhotosCount,
-                              extraIcon: viewModel.uploadingExtraIcon,
-                              progressText: uploadingProgressText)
-
-            // Listen uploading bytes text changes.
-            viewModel.$uploadingProgressText
-                .sink { [weak self] text in
-                    self?.updateUploadingInfo(progressText: text ?? "")
+        Publishers.CombineLatest(viewModel.$uploadingPhotosCount, viewModel.$uploadingProgressText)
+            .sink { [weak self] in
+                guard let self = self else { return }
+                if let uploadingPhotosCount = $0,
+                   let uploadingProgressText = $1 {
+                    self.showUploadingInfo(photoCount: uploadingPhotosCount,
+                                      extraIcon: viewModel.uploadingExtraIcon,
+                                      extraIconColor: viewModel.uploadingExtraIconColor,
+                                      progressText: uploadingProgressText)
+                } else {
+                    self.hideUploadingInfo()
                 }
-                .store(in: &cancellables)
+            }
+            .store(in: &cancellables)
 
-        } else {
-            hideUploadingInfo()
-        }
+        // Listen uploading bytes text changes.
+        viewModel.$uploadingProgressText
+            .compactMap { $0 }
+            .sink { [weak self] text in
+                self?.updateUploadingInfo(progressText: text)
+            }.store(in: &cancellables)
 
         // Upload paused state.
-        if let uploadPausedText = viewModel.uploadPausedText {
-            showUploadPausedInfo(text: uploadPausedText,
-                                 progressText: viewModel.uploadPausedProgressText)
-        } else {
-            hideUploadPausedInfo()
-        }
+        viewModel.$uploadPausedText
+            .sink { [weak self] uploadPausedText in
+                guard let self = self else { return }
+                if let uploadPausedText = uploadPausedText {
+                    self.showUploadPausedInfo(text: uploadPausedText,
+                                         textColor: viewModel.uploadPausedTextColor,
+                                         progressText: viewModel.uploadPausedProgressText)
+                } else {
+                    self.hideUploadPausedInfo()
+                }
+            }
+            .store(in: &cancellables)
 
         // Freemium account info.
         if let freemiumText = viewModel.freemiumText {
@@ -163,28 +171,37 @@ extension FlightExecutionDetailsStatusCell {
         }
 
         // Action Button.
-        if let actionButtonText = viewModel.actionButtonText,
-           let actionButtonTextColor = viewModel.actionButtonTextColor,
-           let actionButtonColor = viewModel.actionButtonColor {
-
-            showActionButton(text: actionButtonText,
-                             textColor: actionButtonTextColor,
-                             backgroundColor: actionButtonColor,
-                             progress: viewModel.actionButtonProgress,
-                             progressColor: viewModel.actionButtonProgressColor,
-                             action: viewModel.actionButtonAction)
-
-            // If needed, listen progress changes
-            if viewModel.actionButtonProgress != nil {
-                viewModel.$actionButtonProgress
-                    .sink { [weak self] progress in
-                        self?.updateActionButtonProgress(to: progress ?? 0)
-                    }
-                    .store(in: &cancellables)
+        Publishers.CombineLatest4(viewModel.$actionButtonIcon,
+                                  viewModel.$actionButtonText,
+                                  viewModel.$actionButtonTextColor,
+                                  viewModel.$actionButtonColor)
+            .sink { [weak self] (icon, text, textColor, buttonColor) in
+                guard let self = self else { return }
+                if let actionButtonText = text,
+                   let actionButtonTextColor = textColor,
+                   let actionButtonColor = buttonColor {
+                    self.showActionButton(icon: viewModel.actionButtonIcon,
+                                     text: actionButtonText,
+                                     textColor: actionButtonTextColor,
+                                     backgroundColor: actionButtonColor,
+                                     progress: viewModel.actionButtonProgress,
+                                     progressColor: viewModel.actionButtonProgressColor,
+                                     action: viewModel.actionButtonAction)
+                } else {
+                    self.hideActionButton()
+                }
             }
-        } else {
-            hideActionButton()
-        }
+            .store(in: &cancellables)
+
+        viewModel.$actionButtonProgress
+            .compactMap { $0 }
+            .sink { [weak self] progress in
+                guard let self = self else { return }
+                self.hideUploadPausedInfo()
+                self.updateActionButtonProgress(to: progress,
+                                           progressColor: viewModel.actionButtonProgressColor)
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -223,13 +240,17 @@ extension FlightExecutionDetailsStatusCell {
     ///
     /// - Parameters:
     ///   - photoCount: The number of photo to upload.
+    ///   - extraIcon: The extra icon.
+    ///   - extraIconColor: The extra icon color.
     ///   - progressText: The text representing the number of bytes uploaded of total number of bytes to upload.
     func showUploadingInfo(photoCount: Int,
                            extraIcon: UIImage? = nil,
+                           extraIconColor: Color? = ColorName.blueDodger.color,
                            progressText: String) {
         uploadingPhotosCountLabel.text = "\(photoCount)"
         uploadingProgressLabel.text = progressText
         uploadingExtraIcon.image =  extraIcon?.withRenderingMode(.alwaysTemplate)
+        uploadingExtraIcon.tintColor = extraIconColor
         uploadingExtraIcon.isHidden = extraIcon == nil
         uploadingStack.isHidden = false
     }
@@ -246,16 +267,20 @@ extension FlightExecutionDetailsStatusCell {
     /// Hide the uploading indicator.
     func hideUploadingInfo() {
         uploadingStack.isHidden = true
+        actionButtonProgressView.backgroundColor = .clear
     }
 
     /// Show the state when upload is paused.
     ///
     /// - Parameters:
     ///   - text: The text to display.
+    ///   - textColor: The text color.
     ///   - progressText: The text representing the number of bytes uploaded of total number of bytes to upload.
     func showUploadPausedInfo(text: String,
+                              textColor: Color?,
                               progressText: String?) {
         uploadPausedLabel.text = text
+        uploadPausedLabel.textColor = textColor != nil ? textColor : ColorName.warningColor.color
         uploadPausedProgressLabel.text = progressText
         uploadPausedProgressLabel.isHidden = progressText == nil
         uploadPausedStack.isHidden = false
@@ -266,68 +291,65 @@ extension FlightExecutionDetailsStatusCell {
         uploadPausedStack.isHidden = true
     }
 
-    /// Update the upload paused text.
-    ///
-    /// - Parameters:
-    ///   - photoCount: The number of photo to upload.
-    ///   - progressText: The text representing the number of bytes uploaded of total number of bytes to upload.
-    func updateUploadPauseInfo(progressText: String) {
-        uploadPausedProgressLabel.text = progressText
-    }
-
     /// Show the Freemium info.
     ///
     /// - Parameters:
     ///   - text: The text to display.
     ///   - textColor: The text color.
     func showFreemiumInfo(text: String) {
-        fremiumDesription.text = text
-        fremiumDesription.isHidden = false
+        freemiumDescription.text = text
+        freemiumDescription.isHidden = false
     }
 
     /// Hide the upload  paused indicator.
     func hideFreemiumInfo() {
-        fremiumDesription.isHidden = true
+        freemiumDescription.isHidden = true
     }
 
     /// Update the action button's progress indicator.
     ///
     /// - Parameters:
     ///   - progress: The button progress indicator - between 0 and 1.
-    func updateActionButtonProgress(to progress: Double) {
-        DispatchQueue.main.async { [unowned self] in
-            actionButtonProgressWidthConstraint.constant = actionButton.frame.width * CGFloat(progress)
+    func updateActionButtonProgress(to progress: Double, progressColor: UIColor?) {
+        actionButtonProgressView.isHidden = false
+        if let prgColor = progressColor {
+            actionButtonProgressView.backgroundColor = prgColor
         }
+        actionButtonProgressWidthConstraint.constant = actionButton.frame.width * CGFloat(progress)
     }
 
     /// Show the action button.
     ///
     /// - Parameters:
-    ///   - text: The button text.
-    ///   - textColor: The button text color.
-    ///   - backgroundColor: The button  color.
-    ///   - progress (optional): The button progress indicator - between 0 and 1.
-    ///   - progressColor (optional): The button progress indicator color.
-    ///   - action: callback called when button tapped.
-    func showActionButton(text: String,
+    ///   - icon: the button's icon
+    ///   - text: the button's text
+    ///   - textColor: the button text color
+    ///   - backgroundColor: the button  color
+    ///   - progress (optional): the button progress indicator - between 0 and 1
+    ///   - progressColor (optional): the button progress indicator color
+    ///   - action: callback called when button tapped
+    func showActionButton(icon: UIImage?,
+                          text: String,
                           textColor: UIColor,
                           backgroundColor: UIColor,
                           progress: Double? = nil,
                           progressColor: UIColor? = nil,
                           action: ((Coordinator?) -> Void)? = nil) {
+        actionButtonIcon.image = icon
+        actionButtonIcon.isHidden = icon == nil
         actionButtonTitle.text = text
         actionButtonTitle.textColor = textColor
         actionButton.backgroundColor = backgroundColor
         if let progress = progress, let progressColor = progressColor {
-            updateActionButtonProgress(to: progress)
-            actionButtonProgressView.backgroundColor = progressColor
+            hideUploadPausedInfo()
+            updateActionButtonProgress(to: progress, progressColor: progressColor)
         }
-        actionButtonProgressView.isHidden = progress == nil
         actionButton.isHidden = false
         if let action = action {
             tapGestureSubscriber = actionButton.tapGesturePublisher
                 .sink { [weak self] _ in
-                    action(self?.viewModel?.coordinator)
+                    guard let self = self else { return }
+                    action(self.viewModel?.coordinator)
                 }
         }
     }
@@ -335,6 +357,7 @@ extension FlightExecutionDetailsStatusCell {
     /// Hide the action button.
     func hideActionButton() {
         actionButton.isHidden = true
+        actionButtonProgressView.isHidden = true
         tapGestureSubscriber?.cancel()
    }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,6 +32,13 @@ import GroundSdk
 import SwiftyUserDefaults
 import CoreData
 
+// MARK: - Internal Enums
+/// Constants for all missions.
+enum MissionsConstants {
+    static let classicMissionManualKey: String = "classicManual"
+    static let classicMissionTouchAndFlyKey: String = "classicTouchAndFly"
+}
+
 public extension ULogTag {
     static let appDelegate = ULogTag(name: "AppDelegate")
 }
@@ -58,17 +65,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private var services: ServiceHub!
     /// Inits Grab view model.
     private var grabberViewModel: RemoteControlGrabberViewModel!
+    /// Retain a GroundSdk session opened during all application lifecycle.
+    private var groundSdk: GroundSdk!
 
     // MARK: - Public Funcs
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         // Enable device battery monitoring.
         UIDevice.current.isBatteryMonitoringEnabled = true
 
-        // Setup GroundSdk
-        AppDelegateSetup.sdkSetup()
+        // Setup GroundSdk and retain it
+        groundSdk = AppDelegateSetup.sdkSetup()
         // Create instance of services
-        let missionsToLoadAtStart: [ProtobufMissionSignature] = [OFMissionSignatures.defaultMission,
-                                                                 OFMissionSignatures.helloWorld]
+        let missionsToLoadAtStart: [AirSdkMissionSignature] = [OFMissionSignatures.defaultMission,
+                                                               OFMissionSignatures.helloWorld]
 
         let services = Services.createInstance(variableAssetsService: VariableAssetsServiceImpl(),
                                                persistentContainer: persistentContainer,
@@ -77,12 +86,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // TODO move to service hub
         addMissionsToHUDPanel()
 
-        /// Sets up grabber view model
-        grabberViewModel = RemoteControlGrabberViewModel(zoomService: services.drone.zoomService)
+        // Sets up grabber view model
+        grabberViewModel = RemoteControlGrabberViewModel(zoomService: services.drone.zoomService,
+                                                         gimbalTiltService: services.drone.gimbalTiltService)
 
         setupFirmwareAndMissionsInteractor()
 
-        /// Start AppCoordinator.
+        // Start AppCoordinator.
         self.appCoordinator = AppCoordinator(services: services)
         self.appCoordinator.start()
 
@@ -94,6 +104,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Keep screen on while app is running (Enable).
         application.isIdleTimerDisabled = true
+
+        NSSetUncaughtExceptionHandler { exception in
+            ULog.e(.appDelegate, "Uncaught exception \(exception). Backtrace: \(exception.callStackSymbols)")
+        }
+        return true
+    }
+
+    func application(_ app: UIApplication,
+                     open url: URL,
+                     options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        guard services.flightPlan.filesManager.isMavlinkUrl(url) else { return false }
+
+        guard let project = services.flightPlan.projectManager.newProjectFromMavlinkFile(url) else { return false }
+        services.flightPlan.projectManager.loadEverythingAndOpen(project: project)
 
         return true
     }
@@ -108,21 +132,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        return UIInterfaceOrientationMask.landscape
+        return UIInterfaceOrientationMask.landscapeRight
     }
 }
 
-// MARK: - ProtobufMissionsSetupProtocol
-extension AppDelegate: ProtobufMissionsSetupProtocol {
+// MARK: - AirSdkMissionsSetupProtocol
+extension AppDelegate: AirSdkMissionsSetupProtocol {
     /// Sets up `FirmwareAndMissionsInteractor`
     func setupFirmwareAndMissionsInteractor() {
         FirmwareAndMissionsInteractor.shared.setup()
     }
 
-    /// Add protobuf missions to the HUD Panel.
+    /// Add AirSdk missions to the HUD Panel.
     func addMissionsToHUDPanel() {
-        services.missionsStore.addMissions([FlightPlanMission(),
-                                            HelloWorldMission()])
+        services.missionsStore.add(missions: [FlightPlanMission(),
+                                              HelloWorldMission()])
     }
 }
 
@@ -132,7 +156,7 @@ extension AppDelegate: ProtobufMissionsSetupProtocol {
 
 public class AppDelegateSetup {
     /// Setup GroundSDK.
-    public static func sdkSetup() {
+    public static func sdkSetup() -> GroundSdk {
         // Set optional config BEFORE starting GroundSdk
         #if DEBUG
         setenv("ULOG_LEVEL", "D", 1)
@@ -149,7 +173,7 @@ public class AppDelegateSetup {
         if Defaults.debugC == true {
             GroundSdkConfig.sharedInstance.autoSelectWifiCountry = false
         }
-        _ = GroundSdk()
+        return GroundSdk()
     }
 
 }

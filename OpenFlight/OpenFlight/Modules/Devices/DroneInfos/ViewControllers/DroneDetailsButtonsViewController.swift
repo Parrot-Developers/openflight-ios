@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -85,7 +84,7 @@ private extension DroneDetailsButtonsViewController {
 
     @IBAction func firmwareUpdateButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyDroneDetailsButtons.firmwareUpdate)
-        self.coordinator?.startFimwareAndProtobufMissionsUpdate()
+        self.coordinator?.startFimwareAndAirSdkMissionsUpdate()
     }
 
     @IBAction func cellularAccessButtonTouchedUpInside(_ sender: Any) {
@@ -117,12 +116,6 @@ private extension DroneDetailsButtonsViewController {
 
     /// Sets up initial view display.
     func initUI() {
-        mapButtonView.applyCornerRadius(Style.largeCornerRadius)
-        calibrationButtonView.applyCornerRadius(Style.largeCornerRadius)
-        firmwareUpdateButtonView.applyCornerRadius(Style.largeCornerRadius)
-        cellularAccessButtonView.applyCornerRadius(Style.largeCornerRadius)
-        passwordButtonView.applyCornerRadius(Style.largeCornerRadius)
-
         mapButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.MyFlights.poi.image,
                                                        title: L10n.droneDetailsLastKnownPosition)
         calibrationButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDrone.image,
@@ -146,13 +139,6 @@ private extension DroneDetailsButtonsViewController {
                 // Cellular button.
                 cellularAccessButtonView.model?.subtitle = cellularButtonSubtitle
                 cellularAccessButtonView.model?.subtitleColor = cellularStatus.detailsTextColor
-                }
-            .store(in: &cancellables)
-
-        viewModel.$canShowCellular
-            .sink { [unowned self] canShowCellular in
-                cellularAccessButtonView.isEnabled = canShowCellular
-                cellularAccessButtonView.alphaWithEnabledState(canShowCellular)
             }
             .store(in: &cancellables)
 
@@ -165,20 +151,18 @@ private extension DroneDetailsButtonsViewController {
             .store(in: &cancellables)
 
         viewModel.$connectionState
-            .combineLatest(viewModel.$flyingState)
-            .sink { [unowned self] (connectionState, flyingState) in
-                let isEnabled = connectionState == .connected && flyingState == .landed
-                passwordButtonView.isEnabled = isEnabled
-                passwordButtonView.alphaWithEnabledState(isEnabled)
-            }
-            .store(in: &cancellables)
-
-        viewModel.$connectionState
             .combineLatest(viewModel.$lastKnownPosition, viewModel.$mapThumbnail)
             .sink { [unowned self] (connectionState, lastKnownPosition, mapThumbnail) in
                 let displayMap = connectionState == .connected && lastKnownPosition != nil
                 mapContainerView.isHidden = !displayMap
                 mapButtonView.model?.mainImage = displayMap ? nil : mapThumbnail
+            }
+            .store(in: &cancellables)
+
+        viewModel.isPasswordButtonAvailable
+            .sink { [unowned self] isPasswordButtonAvailable in
+                passwordButtonView.isEnabled = isPasswordButtonAvailable
+                passwordButtonView.alphaWithEnabledState(isPasswordButtonAvailable)
             }
             .store(in: &cancellables)
 
@@ -239,6 +223,7 @@ private extension DroneDetailsButtonsViewController {
         firmwareUpdateButtonView.model?.mainImageTintColor = model.titleColor
         firmwareUpdateButtonView.model?.subtitleColor = model.titleColor
         firmwareUpdateButtonView.model?.subimageTintColor = model.subImageTintColor
+        firmwareUpdateButtonView.isEnabled = model.isEnabled
     }
 
     /// Calls log event.
@@ -246,8 +231,6 @@ private extension DroneDetailsButtonsViewController {
     /// - Parameters:
     ///     - itemName: Button name
     func logEvent(with itemName: String) {
-        LogEvent.logAppEvent(itemName: itemName,
-                             newValue: nil,
-                             logType: .button)
+        LogEvent.log(.simpleButton(itemName))
     }
 }

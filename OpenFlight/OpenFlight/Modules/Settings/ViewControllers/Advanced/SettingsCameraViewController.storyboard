@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="3us-Rm-O6e">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="3us-Rm-O6e">
     <device id="ipad9_7" orientation="landscape" layout="fullscreen" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -12,56 +11,27 @@
         <scene sceneID="ZMr-Eg-HLV">
             <objects>
                 <viewController storyboardIdentifier="SettingsCameraViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="3us-Rm-O6e" customClass="SettingsCameraViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" opaque="NO" contentMode="scaleToFill" id="VbN-R7-jEu">
-                        <rect key="frame" x="0.0" y="0.0" width="601" height="330"/>
+                    <view key="view" opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="VbN-R7-jEu">
+                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" indicatorStyle="white" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Vko-Sw-IvP">
-                                <rect key="frame" x="15" y="0.0" width="571" height="330"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" indicatorStyle="white" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Vko-Sw-IvP">
+                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="600" id="ZXR-p0-OTM">
-                                        <variation key="heightClass=compact-widthClass=compact" constant="480"/>
-                                    </constraint>
-                                </constraints>
-                                <variation key="heightClass=regular-widthClass=regular">
-                                    <mask key="constraints">
-                                        <exclude reference="ZXR-p0-OTM"/>
-                                    </mask>
-                                </variation>
                                 <connections>
                                     <outlet property="dataSource" destination="3us-Rm-O6e" id="0aF-ID-JTo"/>
                                     <outlet property="delegate" destination="3us-Rm-O6e" id="eaN-5y-goy"/>
                                 </connections>
                             </tableView>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="8tJ-B3-lkG"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="Vko-Sw-IvP" firstAttribute="leading" secondItem="8tJ-B3-lkG" secondAttribute="leading" constant="0.5" id="4a1-c4-qBe">
-                                <variation key="heightClass=regular-widthClass=regular" constant="15"/>
-                            </constraint>
+                            <constraint firstItem="Vko-Sw-IvP" firstAttribute="leading" secondItem="VbN-R7-jEu" secondAttribute="leading" id="4a1-c4-qBe"/>
                             <constraint firstItem="Vko-Sw-IvP" firstAttribute="bottom" secondItem="VbN-R7-jEu" secondAttribute="bottom" id="9WC-33-30L"/>
-                            <constraint firstItem="Vko-Sw-IvP" firstAttribute="top" secondItem="8tJ-B3-lkG" secondAttribute="top" id="BAi-Vb-RPJ"/>
-                            <constraint firstItem="Vko-Sw-IvP" firstAttribute="centerX" secondItem="8tJ-B3-lkG" secondAttribute="centerX" id="TfL-QN-SbP"/>
-                            <constraint firstItem="8tJ-B3-lkG" firstAttribute="trailing" secondItem="Vko-Sw-IvP" secondAttribute="trailing" constant="0.5" id="v7J-0L-4rg">
-                                <variation key="heightClass=regular-widthClass=regular" constant="15"/>
-                            </constraint>
+                            <constraint firstItem="Vko-Sw-IvP" firstAttribute="top" secondItem="VbN-R7-jEu" secondAttribute="topMargin" id="BAi-Vb-RPJ"/>
+                            <constraint firstAttribute="trailing" secondItem="Vko-Sw-IvP" secondAttribute="trailing" id="v7J-0L-4rg"/>
                         </constraints>
-                        <variation key="default">
-                            <mask key="constraints">
-                                <exclude reference="v7J-0L-4rg"/>
-                                <exclude reference="4a1-c4-qBe"/>
-                            </mask>
-                        </variation>
-                        <variation key="heightClass=regular-widthClass=regular">
-                            <mask key="constraints">
-                                <include reference="v7J-0L-4rg"/>
-                                <include reference="4a1-c4-qBe"/>
-                            </mask>
-                        </variation>
                     </view>
-                    <size key="freeformSize" width="601" height="330"/>
                     <connections>
                         <outlet property="settingsTableView" destination="Vko-Sw-IvP" id="qF0-d9-nEk"/>
                     </connections>

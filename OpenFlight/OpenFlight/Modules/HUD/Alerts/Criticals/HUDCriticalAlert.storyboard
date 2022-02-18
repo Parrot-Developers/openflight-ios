@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
-    <device id="retina4_7" orientation="landscape" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina5_9" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -25,31 +25,31 @@
                         <viewControllerLayoutGuide type="top" id="MD9-JM-PST"/>
                         <viewControllerLayoutGuide type="bottom" id="udy-kZ-t6m"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="slw-N7-gqi">
-                        <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="slw-N7-gqi">
+                        <rect key="frame" x="0.0" y="0.0" width="812" height="375"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zn6-in-iJX" userLabel="invisibleButton">
-                                <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                            <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zn6-in-iJX" userLabel="backgroundDismissButton">
+                                <rect key="frame" x="0.0" y="0.0" width="812" height="375"/>
                                 <connections>
                                     <action selector="backgroundButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="Van-eG-ggG"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FCX-RP-P3P" userLabel="Panel View">
-                                <rect key="frame" x="20" y="50" width="627" height="325"/>
+                            <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FCX-RP-P3P" userLabel="Panel View">
+                                <rect key="frame" x="37" y="51.333333333333343" width="738" height="323.66666666666663"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="mg7-al-ruG">
-                                        <rect key="frame" x="73.5" y="20" width="480" height="273"/>
+                                        <rect key="frame" x="139" y="20" width="460" height="273.66666666666669"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yro-Dy-ahS">
-                                                <rect key="frame" x="189.5" y="0.0" width="101" height="55"/>
+                                                <rect key="frame" x="179.66666666666669" y="0.0" width="101" height="50"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icDownloadAlert" translatesAutoresizingMaskIntoConstraints="NO" id="f5d-Ie-wTJ">
-                                                        <rect key="frame" x="9" y="9" width="34.5" height="37"/>
+                                                        <rect key="frame" x="10" y="6" width="35" height="38"/>
                                                         <color key="tintColor" name="default_text_color"/>
                                                     </imageView>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.59999999999999998" translatesAutoresizingMaskIntoConstraints="NO" id="e70-os-U8b">
-                                                        <rect key="frame" x="58.5" y="9" width="33.5" height="37"/>
+                                                        <rect key="frame" x="55" y="9" width="37" height="32"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                         <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
@@ -58,36 +58,37 @@
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="bottom" secondItem="e70-os-U8b" secondAttribute="bottom" constant="9" id="07v-UG-aXL"/>
-                                                    <constraint firstItem="f5d-Ie-wTJ" firstAttribute="leading" secondItem="yro-Dy-ahS" secondAttribute="leading" constant="9" id="Hia-oc-dga"/>
-                                                    <constraint firstItem="f5d-Ie-wTJ" firstAttribute="top" secondItem="yro-Dy-ahS" secondAttribute="top" constant="9" id="NtP-MB-Odg"/>
-                                                    <constraint firstItem="e70-os-U8b" firstAttribute="leading" secondItem="f5d-Ie-wTJ" secondAttribute="trailing" constant="15" id="WgR-dt-8Rn"/>
-                                                    <constraint firstAttribute="bottom" secondItem="f5d-Ie-wTJ" secondAttribute="bottom" constant="9" id="Y2L-4R-bXJ"/>
+                                                    <constraint firstItem="f5d-Ie-wTJ" firstAttribute="leading" secondItem="yro-Dy-ahS" secondAttribute="leading" constant="10" id="Hia-oc-dga"/>
+                                                    <constraint firstItem="f5d-Ie-wTJ" firstAttribute="top" secondItem="yro-Dy-ahS" secondAttribute="top" constant="6" id="NtP-MB-Odg"/>
+                                                    <constraint firstItem="e70-os-U8b" firstAttribute="leading" secondItem="f5d-Ie-wTJ" secondAttribute="trailing" constant="10" id="WgR-dt-8Rn"/>
+                                                    <constraint firstAttribute="bottom" secondItem="f5d-Ie-wTJ" secondAttribute="bottom" constant="6" id="Y2L-4R-bXJ"/>
                                                     <constraint firstItem="e70-os-U8b" firstAttribute="top" secondItem="yro-Dy-ahS" secondAttribute="top" constant="9" id="kRz-gi-220"/>
                                                     <constraint firstAttribute="trailing" secondItem="e70-os-U8b" secondAttribute="trailing" constant="9" id="vaC-QD-3Lf"/>
                                                 </constraints>
                                             </view>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icDroneRemoteUpdateAlert" translatesAutoresizingMaskIntoConstraints="NO" id="ntw-da-5ph">
-                                                <rect key="frame" x="174" y="75" width="132.5" height="74"/>
+                                                <rect key="frame" x="164" y="70.000000000000014" width="132.33333333333337" height="73.999999999999986"/>
                                                 <color key="tintColor" name="default_text_color"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="74" id="1Ks-vY-Vyd"/>
+                                                    <constraint firstAttribute="height" constant="74" id="1Ks-vY-Vyd">
+                                                        <variation key="heightClass=regular-widthClass=regular" constant="150"/>
+                                                    </constraint>
                                                 </constraints>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Le drone utilise ce(s) capteur(s) pour un vol stable, il ne pourra pas décoller sans. Veuillez contacter le support Parrot." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999999999999996" preferredMaxLayoutWidth="480" translatesAutoresizingMaskIntoConstraints="NO" id="SQi-8v-TvT">
-                                                <rect key="frame" x="7.5" y="169" width="465" height="34"/>
+                                                <rect key="frame" x="0.0" y="164" width="460" height="39.666666666666657"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="17"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="40" translatesAutoresizingMaskIntoConstraints="NO" id="FH5-xb-IN2">
-                                                <rect key="frame" x="0.0" y="223" width="480" height="50"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="26" translatesAutoresizingMaskIntoConstraints="NO" id="FH5-xb-IN2" userLabel="Buttons Stack View">
+                                                <rect key="frame" x="0.0" y="223.66666666666669" width="460" height="50"/>
                                                 <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="c1Z-BX-qZr">
-                                                        <rect key="frame" x="0.0" y="0.0" width="220" height="50"/>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="c1Z-BX-qZr" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="217" height="50"/>
                                                         <color key="backgroundColor" name="white_albescent"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="50" id="52J-Jm-n8e"/>
-                                                            <constraint firstAttribute="width" constant="220" id="tOl-Uf-SYS"/>
+                                                            <constraint firstAttribute="height" constant="50" id="XPr-Xl-Hab"/>
                                                         </constraints>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                         <state key="normal" title="Cancel">
@@ -97,12 +98,11 @@
                                                             <action selector="cancelButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="ESa-cK-uTS"/>
                                                         </connections>
                                                     </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8qG-x6-ZN2">
-                                                        <rect key="frame" x="260" y="0.0" width="220" height="50"/>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8qG-x6-ZN2" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="243" y="0.0" width="217" height="50"/>
                                                         <color key="backgroundColor" name="highlight_color"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" constant="220" id="371-Od-BGl"/>
-                                                            <constraint firstAttribute="height" constant="50" id="8A5-Pe-rtp"/>
+                                                            <constraint firstAttribute="height" constant="50" id="S4x-l6-VUm"/>
                                                         </constraints>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                         <state key="normal" title="Update now">
@@ -115,6 +115,17 @@
                                                 </subviews>
                                             </stackView>
                                         </subviews>
+                                        <constraints>
+                                            <constraint firstItem="8qG-x6-ZN2" firstAttribute="width" relation="greaterThanOrEqual" secondItem="mg7-al-ruG" secondAttribute="width" multiplier="0.5" priority="999" id="20X-7b-uPQ"/>
+                                            <constraint firstItem="c1Z-BX-qZr" firstAttribute="width" relation="greaterThanOrEqual" secondItem="mg7-al-ruG" secondAttribute="width" multiplier="0.5" priority="999" id="82q-Ms-bo0"/>
+                                            <constraint firstAttribute="trailing" secondItem="SQi-8v-TvT" secondAttribute="trailing" id="90W-PB-u1f"/>
+                                            <constraint firstItem="FH5-xb-IN2" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="mg7-al-ruG" secondAttribute="leading" id="XRy-ie-4uU"/>
+                                            <constraint firstItem="SQi-8v-TvT" firstAttribute="leading" secondItem="mg7-al-ruG" secondAttribute="leading" id="Z2R-mc-MVU"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="FH5-xb-IN2" secondAttribute="trailing" id="h9G-Kc-y3F"/>
+                                            <constraint firstAttribute="width" constant="460" id="sjc-gw-gJj">
+                                                <variation key="heightClass=regular-widthClass=regular" constant="600"/>
+                                            </constraint>
+                                        </constraints>
                                     </stackView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ezr-La-Qog">
                                         <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
@@ -123,6 +134,7 @@
                                             <constraint firstAttribute="width" secondItem="ezr-La-Qog" secondAttribute="height" multiplier="1:1" id="WhM-n9-1hs"/>
                                         </constraints>
                                         <color key="tintColor" name="default_text_color"/>
+                                        <inset key="imageEdgeInsets" minX="-10" minY="-10" maxX="0.0" maxY="0.0"/>
                                         <state key="normal" image="icClose"/>
                                         <connections>
                                             <action selector="closeButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="7KG-rU-6ha"/>
@@ -135,19 +147,26 @@
                                     <constraint firstItem="mg7-al-ruG" firstAttribute="centerX" secondItem="FCX-RP-P3P" secondAttribute="centerX" id="4B1-Jg-CtY"/>
                                     <constraint firstItem="mg7-al-ruG" firstAttribute="top" secondItem="FCX-RP-P3P" secondAttribute="top" constant="20" id="A8j-WU-rdn"/>
                                     <constraint firstItem="ezr-La-Qog" firstAttribute="top" secondItem="FCX-RP-P3P" secondAttribute="top" id="jmo-nm-iaX"/>
-                                    <constraint firstAttribute="bottom" secondItem="mg7-al-ruG" secondAttribute="bottom" constant="32" id="nE8-iC-3Ez"/>
+                                    <constraint firstAttribute="bottom" secondItem="mg7-al-ruG" secondAttribute="bottom" constant="30" id="nE8-iC-3Ez">
+                                        <variation key="heightClass=regular-widthClass=regular" constant="40"/>
+                                    </constraint>
                                 </constraints>
                             </view>
                         </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="FCX-RP-P3P" secondAttribute="bottom" id="2nS-u1-UpJ"/>
-                            <constraint firstItem="FCX-RP-P3P" firstAttribute="leading" secondItem="slw-N7-gqi" secondAttribute="leadingMargin" id="YXR-C9-YwS"/>
-                            <constraint firstItem="zn6-in-iJX" firstAttribute="top" secondItem="MD9-JM-PST" secondAttribute="bottom" id="abe-Dw-b7f"/>
+                            <constraint firstItem="FCX-RP-P3P" firstAttribute="leading" secondItem="slw-N7-gqi" secondAttribute="leading" constant="37" id="YXR-C9-YwS">
+                                <variation key="heightClass=regular-widthClass=regular" constant="30"/>
+                            </constraint>
+                            <constraint firstItem="zn6-in-iJX" firstAttribute="top" secondItem="slw-N7-gqi" secondAttribute="top" id="abe-Dw-b7f"/>
                             <constraint firstItem="zn6-in-iJX" firstAttribute="leading" secondItem="slw-N7-gqi" secondAttribute="leading" id="df3-8s-Gw5"/>
                             <constraint firstItem="zn6-in-iJX" firstAttribute="trailing" secondItem="slw-N7-gqi" secondAttribute="trailing" id="gR5-1G-oNW"/>
                             <constraint firstAttribute="bottom" secondItem="zn6-in-iJX" secondAttribute="bottom" id="hlT-F2-lKd"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="FCX-RP-P3P" secondAttribute="trailing" id="mvq-KG-xuB"/>
-                            <constraint firstItem="FCX-RP-P3P" firstAttribute="top" relation="greaterThanOrEqual" secondItem="MD9-JM-PST" secondAttribute="bottom" constant="16" id="oaC-h1-Hk3"/>
+                            <constraint firstAttribute="trailing" secondItem="FCX-RP-P3P" secondAttribute="trailing" constant="37" id="mvq-KG-xuB">
+                                <variation key="heightClass=regular-widthClass=regular" constant="30"/>
+                            </constraint>
+                            <constraint firstItem="FCX-RP-P3P" firstAttribute="top" relation="greaterThanOrEqual" secondItem="MD9-JM-PST" secondAttribute="bottom" constant="30" id="oaC-h1-Hk3"/>
                         </constraints>
                     </view>
                     <connections>
@@ -171,9 +190,9 @@
     <resources>
         <image name="icClose" width="17" height="17"/>
         <image name="icDownloadAlert" width="12" height="12"/>
-        <image name="icDroneRemoteUpdateAlert" width="132.5" height="131"/>
+        <image name="icDroneRemoteUpdateAlert" width="132.33332824707031" height="131"/>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>

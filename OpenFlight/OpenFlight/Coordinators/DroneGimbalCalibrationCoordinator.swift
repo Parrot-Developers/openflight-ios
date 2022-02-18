@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,26 +32,18 @@ public final class DroneGimbalCalibrationCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
 
     // MARK: - Public Funcs
     public func start() {
         let viewModel = DroneCalibrationViewModel()
         let viewController = DroneGimbalCalibrationViewController.instantiate(coordinator: self, viewModel: viewModel)
-        self.navigationController = NavigationController(rootViewController: viewController)
-        self.navigationController?.isNavigationBarHidden = true
+        navigationController = NavigationController(rootViewController: viewController)
+        navigationController?.isNavigationBarHidden = true
     }
 
     /// Dismisses current coordinator.
     func dismissDroneCalibration() {
-        self.parentCoordinator?.dismissChildCoordinator()
-    }
-}
-
-// MARK: - Drone Details Navigation
-extension DroneGimbalCalibrationCoordinator {
-    /// Dismisses current coordinator.
-    func dismissGimbalDroneCalibration() {
-        self.parentCoordinator?.dismissChildCoordinator()
+        parentCoordinator?.dismissChildCoordinator()
     }
 }

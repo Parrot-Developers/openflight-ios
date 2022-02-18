@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,7 +35,7 @@ import GroundSdk
 extension DiscoveredDrone {
     // MARK: - Internal Properties
     /// Returns wifi image regarding rssi value.
-    var image: UIImage {
+    var wifiImage: UIImage {
         if rssi > Constants.rssi40 {
             return Asset.Wifi.icWifiQuality5.image
         } else if rssi >= Constants.rssi40 {
@@ -53,20 +52,28 @@ extension DiscoveredDrone {
     }
 
     /// Returns wifi hightlighted image regarding rssi value.
-    var highlightImage: UIImage {
+    var wifiHighlightImage: UIImage {
         if rssi > Constants.rssi40 {
-            return Asset.Wifi.icWifiInactiveQuality5.image
+            return Asset.Wifi.icWifiQuality5Highlighted.image
         } else if rssi >= Constants.rssi40 {
-            return Asset.Wifi.icWifiInactiveQuality4.image
+            return Asset.Wifi.icWifiQuality4Highlighted.image
         } else if rssi > Constants.rssi50 && rssi <= Constants.rssi40 {
-            return Asset.Wifi.icWifiInactiveQuality3.image
+            return Asset.Wifi.icWifiQuality3Highlighted.image
         } else if rssi > Constants.rssi60 && rssi <= Constants.rssi50 {
-            return Asset.Wifi.icWifiQuality2.image
+            return Asset.Wifi.icWifiQuality2Highlighted.image
         } else if rssi > Constants.rssi70 && rssi <= Constants.rssi60 {
-            return Asset.Wifi.icWifiQuality1.image
+            return Asset.Wifi.icWifiQuality1Highlighted.image
         } else {
             return Asset.Wifi.icWifiOffline.image
         }
+    }
+
+    var cellularImage: UIImage {
+        return Asset.Cellular.ic4GQuality5.image
+    }
+
+    var cellularHighlightImage: UIImage {
+        return Asset.Cellular.ic4GQuality5Highlighted.image
     }
 
     // MARK: - Private Enums

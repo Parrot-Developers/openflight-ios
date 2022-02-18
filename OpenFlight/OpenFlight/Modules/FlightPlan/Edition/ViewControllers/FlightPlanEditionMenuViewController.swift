@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -53,25 +52,13 @@ public protocol FlightPlanEditionMenuDelegate: AnyObject {
 final class FlightPlanEditionMenuViewController: UIViewController {
     weak var coordinator: Coordinator?
     // MARK: - IBOutlets
+    @IBOutlet private weak var stackView: UIStackView!
+    @IBOutlet private weak var topBarContainer: UIView!
     @IBOutlet private weak var tableView: UITableView!
-    @IBOutlet private weak var doneButton: UIButton! {
-        didSet {
-            doneButton.makeup(with: .large)
-            doneButton.backgroundColor = ColorName.highlightColor.color
-            doneButton.applyCornerRadius(Style.largeCornerRadius)
-            doneButton.setTitle(L10n.ok, for: .normal)
-        }
-    }
-    @IBOutlet private weak var undoButton: UIButton! {
-        didSet {
-            undoButton.cornerRadiusedWith(backgroundColor: ColorName.white.color,
-                                          radius: Style.largeCornerRadius)
-            undoButton.makeup(with: .large, color: .defaultTextColor)
-            undoButton.setTitle(L10n.commonUndo, for: .normal)
-        }
-    }
-
-    @IBOutlet private weak var tableViewTrailingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var doneButton: ActionButton!
+    @IBOutlet private weak var undoButton: ActionButton!
+    @IBOutlet private weak var bottomGradientView: BottomGradientView!
+    @IBOutlet private weak var buttonsStackView: MainContainerStackView!
 
     // MARK: - Public Properties
     var viewModel: FlightPlanEditionMenuViewModel!
@@ -81,11 +68,12 @@ final class FlightPlanEditionMenuViewController: UIViewController {
     public weak var settingsDelegate: EditionSettingsDelegate?
     /// Provider used to get the settings of the flight plan provider.
     public var settingsProvider: FlightPlanSettingsProvider?
-    private var flighPlan: FlightPlanModel?
+    private var flightPlan: FlightPlanModel?
+    private var topbar: FlightPlanTopBarViewController?
 
     // MARK: - Private Properties
     private var fpSettings: [FlightPlanSetting]? {
-        if let flightPlan = flighPlan,
+        if let flightPlan = flightPlan,
            let settings = settingsProvider?.settings(for: flightPlan) {
             return settings
         } else {
@@ -93,17 +81,12 @@ final class FlightPlanEditionMenuViewController: UIViewController {
         }
     }
 
-    private var trailingMargin: CGFloat {
-        if UIApplication.shared.statusBarOrientation == .landscapeLeft {
-            return UIApplication.shared.keyWindow?.safeAreaInsets.right ?? 0.0
-        } else {
-            return 0.0
-        }
-    }
     /// Build data source regarding setting categories.
     private var dataSource: [SectionsType] {
         let categories = settingsProvider?.settingsCategories
-        var sections: [SectionsType] = [.project]
+        var sections: [SectionsType] = [
+            .projectName
+        ]
         if settingsProvider?.hasCustomType == true {
             // Optional section mode.
             sections.append(.mode)
@@ -129,6 +112,7 @@ final class FlightPlanEditionMenuViewController: UIViewController {
     // MARK: - Private Enums
     private enum SectionsType {
         case project
+        case projectName
         case mode
         case image
         case settings(FlightPlanSettingCategory)
@@ -136,6 +120,8 @@ final class FlightPlanEditionMenuViewController: UIViewController {
 
         var title: String {
             switch self {
+            case .projectName:
+                return L10n.flightPlanProjectName
             case .project:
                 return L10n.flightPlanMenuProject.uppercased()
             case .mode:
@@ -155,22 +141,11 @@ final class FlightPlanEditionMenuViewController: UIViewController {
         }
     }
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let cellheight: CGFloat = 70.0
-        static let headerHeight: CGFloat = 44
-        static let footerHeight: CGFloat = 1.0
-        static let footerEstimationHeight: CGFloat = 44.0
-        static let contentInsetTop: CGFloat = -30
-    }
-
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
         initView()
-        setupOrientationObserver()
-        menuDelegate?.resetUndoStack()
         refreshContent()
         bindViewModel()
     }
@@ -181,7 +156,7 @@ final class FlightPlanEditionMenuViewController: UIViewController {
             .sink { [unowned self] state in
                 switch state {
                 case let .update(flighPlan):
-                    self.flighPlan = flighPlan
+                    self.flightPlan = flighPlan
                     self.tableView?.reloadData()
                 case .refresh:
                     self.refreshContent()
@@ -194,23 +169,34 @@ final class FlightPlanEditionMenuViewController: UIViewController {
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     // MARK: - Private Funcs
     /// Refreshes view data.
     private func refreshContent() {
         self.tableView.reloadData()
-        undoButton.isHidden = !(settingsDelegate?.canUndo() ?? true)
+        if let canUndo = settingsDelegate?.canUndo() {
+            undoButton.isEnabled = canUndo
+            if canUndo {
+                bottomGradientView.shortGradient()
+            } else {
+                bottomGradientView.mediumGradient()
+            }
+        }
+    }
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
+
+        if segue.identifier == "topBarSegue" {
+            topbar = segue.destination as? FlightPlanTopBarViewController
+        }
     }
 }
 
 // MARK: - Actions
 private extension FlightPlanEditionMenuViewController {
     @IBAction func doneTouchUpInside(_ sender: Any) {
-        guard let flighPlan = flighPlan else { return }
-        menuDelegate?.doneEdition(flighPlan)
+        guard let flightPlan = flightPlan else { return }
+        menuDelegate?.doneEdition(flightPlan)
     }
 
     @IBAction func undoTouchUpInside(_ sender: Any) {
@@ -224,32 +210,38 @@ private extension FlightPlanEditionMenuViewController {
     /// Inits the view.
     func initView() {
         tableView.insetsContentViewsToSafeArea = false // Safe area is handled in this VC, not in content
-        tableViewTrailingConstraint.constant = trailingMargin
         tableView.register(cellType: SettingsMenuTableViewCell.self)
         tableView.register(cellType: EstimationMenuTableViewCell.self)
         tableView.register(cellType: ProjectMenuTableViewCell.self)
+        tableView.register(cellType: ProjectNameMenuTableViewCell.self)
         tableView.register(cellType: ImageMenuTableViewCell.self)
         tableView.register(cellType: ModesChoiceTableViewCell.self)
         tableView.register(headerFooterViewType: HeaderMenuTableViewCell.self)
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.estimatedRowHeight = Constants.cellheight
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.sectionHeaderHeight = UITableView.automaticDimension
+        tableView.estimatedSectionHeaderHeight = CGFloat.leastNonzeroMagnitude
+        tableView.sectionFooterHeight = CGFloat.leastNonzeroMagnitude
+        tableView.contentInset.top = Layout.mainPadding(isRegularSizeClass)
+        tableView.contentInset.bottom = Layout.mainContainerInnerMargins(isRegularSizeClass).bottom +
+        Layout.mainPadding(isRegularSizeClass) +
+        Layout.buttonIntrinsicHeight(isRegularSizeClass)
         tableView.makeUp(backgroundColor: .clear)
-        tableView.contentInset.top = Constants.contentInsetTop
-    }
 
-    /// Sets up observer for orientation change.
-    func setupOrientationObserver() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateSafeAreaConstraints),
-                                               name: UIDevice.orientationDidChangeNotification,
-                                               object: nil)
-    }
+        undoButton.setup(title: L10n.commonUndo, style: .default1)
+        doneButton.setup(title: L10n.commonDone, style: .validate)
 
-    /// Updates safe area constraints.
-    @objc func updateSafeAreaConstraints() {
-        tableViewTrailingConstraint.constant = trailingMargin
+        buttonsStackView.screenBorders = [.bottom, .right]
+        if !dataSource.isEmpty {
+            let type = dataSource[0]
+            topbar?.set(title: type.title)
+        }
+
+        topbar?.set(backbuttonVisibility: false)
+        // Keeps the topBar shadow above the tableView
+        stackView.bringSubviewToFront(topBarContainer)
+        topBarContainer.isHidden = true
     }
 }
 
@@ -267,6 +259,7 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
         case .mode,
              .image,
              .project,
+             .projectName,
              .estimation:
             return 1
         }
@@ -285,7 +278,7 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
             return cell
         case .image:
             let cell = tableView.dequeueReusableCell(for: indexPath) as ImageMenuTableViewCell
-            let cellProvider = ImageMenuCellProvider(dataSettings: flighPlan?.dataSetting)
+            let cellProvider = ImageMenuCellProvider(dataSettings: flightPlan?.dataSetting)
             cell.setup(provider: cellProvider,
                        settings: fpSettings?.filter({ $0.category == .image }) ?? [])
             return cell
@@ -296,11 +289,15 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
             return cell
         case .project:
             let cell = tableView.dequeueReusableCell(for: indexPath) as ProjectMenuTableViewCell
-            cell.setup(name: viewModel.getCurrentTitle(with: flighPlan))
+            cell.setup(with: viewModel.projectNameCellProvider(forFlightPlan: flightPlan))
+            return cell
+        case .projectName:
+            let cell = tableView.dequeueReusableCell(for: indexPath) as ProjectNameMenuTableViewCell
+            cell.setup(with: viewModel.projectNameCellProvider(forFlightPlan: flightPlan))
             return cell
         case .estimation:
             let cell = tableView.dequeueReusableCell(for: indexPath) as EstimationMenuTableViewCell
-            cell.updateEstimations(estimationModel: flighPlan?.dataSetting?.estimations)
+            cell.updateEstimations(estimationModel: flightPlan?.dataSetting?.estimations)
             return cell
         }
     }
@@ -326,40 +323,29 @@ extension FlightPlanEditionMenuViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let type = dataSource[section]
         switch type {
-        case .mode, .project:
-            return nil
+        case .project, .projectName:
+            return UIView(frame: CGRect.zero)
+        case .mode:
+            let view = tableView.dequeueReusableHeaderFooterView(HeaderMenuTableViewCell.self)
+            view?.setup(with: nil)
+            return view
         default:
             let view = tableView.dequeueReusableHeaderFooterView(HeaderMenuTableViewCell.self)
-            view?.setup(with: type.title)
+            view?.setup(with: type.title) { [unowned self] in
+                sectionHeaderTapped(section)
+            }
             return view
         }
     }
 
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        let type = dataSource[section]
-        switch type {
-        case .mode,
-             .project:
-            return CGFloat.leastNormalMagnitude
-        default:
-            return Constants.headerHeight
-        }
-    }
+    /// Emulates a tap on the first cell of a section when a header of section is tapped
+    ///
+    /// - Parameters:
+    ///   - section: the section that was tapped
+    @objc func sectionHeaderTapped(_ section: Int) {
+        let indexPath = IndexPath(row: 0, section: section)
+        tableView(tableView, didSelectRowAt: indexPath)
 
-    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        let view = UIView()
-        view.backgroundColor = ColorName.white10.color
-        return view
-    }
-
-    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        let type = dataSource[section]
-        switch type {
-        case .estimation:
-            return Constants.footerEstimationHeight
-        default:
-            return Constants.footerHeight
-        }
     }
 }
 

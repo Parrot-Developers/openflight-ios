@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -55,7 +54,7 @@ struct ImageMenuCellProvider {
 }
 
 /// Image menu table view cell.
-final class ImageMenuTableViewCell: UITableViewCell, NibReusable {
+final class ImageMenuTableViewCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var modeImage: UIImageView!
     @IBOutlet private weak var imageLabel: UILabel!
@@ -89,7 +88,8 @@ internal extension ImageMenuTableViewCell {
             switch captureMode {
             case .gpsLapse:
                 if let value = provider.gpsLapseDistance {
-                    settingDescription += Style.whiteSpace + UnitHelper.stringDistanceWithDouble(Double(value))
+                    settingDescription += Style.whiteSpace
+                        + UnitHelper.stringDistanceWithDouble(Double(value)/1000, useFractionDigit: true)
                 }
             case .timeLapse:
                 if let value = provider.timeLapseCycle {

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -162,8 +161,14 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
     ///  - mode: new camera capture mode
     override func update(mode: BarItemMode) {
         guard let camera = drone?.currentCamera,
-            let cameraMode = mode as? CameraCaptureMode else {
-                return
+              let cameraMode = mode as? CameraCaptureMode else {
+                  return
+              }
+
+        // stop current photo capture or video recording if capture mode changes
+        if cameraMode != (state.value.mode as? CameraCaptureMode) {
+            camera.photoCapture?.stop()
+            camera.recording?.stop()
         }
 
         // Update user defaults for Timer and Panorama modes that both use single photo mode.
@@ -199,9 +204,8 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
             camera.timeLapseMode == nil {
             editor[Camera2Params.photoTimelapseInterval]?.value = TimeLapseMode.preset.interval
         } else if cameraMode == .gpslapse,
-            camera.gpsLapseMode == nil,
-            let value = GpsLapseMode.preset.value {
-            editor[Camera2Params.photoGpslapseInterval]?.value = Double(value)
+            camera.gpsLapseMode == nil {
+            editor[Camera2Params.photoGpslapseInterval]?.value = GpsLapseMode.preset.interval
         } else if cameraMode == .burst {
             editor[Camera2Params.photoBurst]?.value = .burst10Over1s
         }
@@ -226,9 +230,7 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
                 currentEditor[Camera2Params.photoBracketing]?.value = bracketingValue
             }
         case let gpsLapseMode as GpsLapseMode:
-            if let gpsLapseValue = gpsLapseMode.value {
-                currentEditor[Camera2Params.photoGpslapseInterval]?.value = Double(gpsLapseValue)
-            }
+            currentEditor[Camera2Params.photoGpslapseInterval]?.value = gpsLapseMode.interval
         case let timeLapseMode as TimeLapseMode:
             currentEditor[Camera2Params.photoTimelapseInterval]?.value = timeLapseMode.interval
         default:
@@ -251,9 +253,9 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
 private extension CameraCaptureModeViewModel {
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
-        mainCameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] mainCamera in
+        mainCameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] mainCamera in
             guard let camera = mainCamera else { return }
-            self?.updateState(withCamera: camera)
+            updateState(withCamera: camera)
         }
     }
 

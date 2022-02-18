@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,23 +34,33 @@ import Combine
 
 // MARK: - Internal Enums
 /// Describes different cellular connection state.
-enum CellularConnectionState {
+enum CellularConnectionState: Equatable {
     case ready
     case searching
-    case denied
+    case denied(_ hasError: Bool)
     case none
 
     /// Return description color.
-    var descriptionColor: UIColor? {
+    var descriptionColor: UIColor {
         switch self {
         case .searching:
             return ColorName.highlightColor.color
         case .denied:
-            return ColorName.redTorch.color
-        case .none:
-            return ColorName.defaultTextColor.color
+            return ColorName.errorColor.color
         default:
-            return nil
+            return ColorName.defaultTextColor.color
+        }
+    }
+
+    /// Tells if the description is hidden.
+    var isDescriptionHidden: Bool {
+        switch self {
+        case .searching:
+            return false
+        case .denied(let hasError):
+            return !hasError
+        default:
+            return true
         }
     }
 }
@@ -65,27 +74,13 @@ final class CellularAccessCardPinViewModel {
                              6, 7, 8, 9, 0]
 
     /// Current cellular connection state.
-    @Published private(set) var cellularConnectionState: CellularConnectionState?
+    @Published private(set) var cellularConnectionState: CellularConnectionState = .none
     /// Description title.
     @Published private(set) var descriptionTitle: String?
     /// Tells if we can show the loader view.
     @Published private(set) var shouldShowLoader: Bool = false
-    /// Connection state of the device
+    /// Connection state of the device.
     @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
-
-    /// Tells if we need to show the description label.
-    var hideLabel: AnyPublisher<Bool, Never> {
-        $cellularConnectionState.map { (cellularConnectionState: CellularConnectionState?) -> Bool in
-            guard let state = cellularConnectionState else { return true }
-            switch state {
-            case .denied, .searching:
-                return false
-            default:
-                return true
-            }
-        }
-        .eraseToAnyPublisher()
-    }
 
     // MARK: - Private Properties
     private var cellularRef: Ref<Cellular>?
@@ -93,6 +88,7 @@ final class CellularAccessCardPinViewModel {
 
     // TODO - Wrong injection
     private let currentDroneHolder = Services.hub.currentDroneHolder
+    private unowned let pinCodeService = Services.hub.drone.pinCodeService
 
     // MARK: - Init
 
@@ -120,6 +116,7 @@ final class CellularAccessCardPinViewModel {
     /// We can show it again if the application restarts or if the drone is connected again.
     func dismissCellularModal() {
         updateLoaderState(shouldShow: false)
+        pinCodeService.resetPinCodeRequested()
     }
 }
 
@@ -127,8 +124,8 @@ private extension CellularAccessCardPinViewModel {
 
     /// Starts watcher for Cellular.
     func listenCellular(drone: Drone) {
-        cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] _ in
-            self?.updateState(drone: drone)
+        cellularRef = drone.getPeripheral(Peripherals.cellular) { [unowned self] _ in
+            updateState(drone: drone)
         }
         updateState(drone: drone)
     }
@@ -151,20 +148,23 @@ private extension CellularAccessCardPinViewModel {
             cellularConnectionState = .searching
             descriptionTitle = L10n.pinModalUnlocking
         case(.locked, _):
-            cellularConnectionState = CellularConnectionState.denied
+            guard cellular.pinRemainingTries < 3 else {
+                cellularConnectionState = .denied(false)
+                descriptionTitle = nil
+                return
+            }
+
+            cellularConnectionState = .denied(true)
             switch cellular.pinRemainingTries {
             case 0:
                 descriptionTitle = L10n.pinErrorLocked
             case 1:
                 descriptionTitle = L10n.pinErrorRemainingAttemptsSingular(cellular.pinRemainingTries)
-            case 2:
-                descriptionTitle = L10n.pinErrorRemainingAttemptsPlural(cellular.pinRemainingTries)
             default:
-                descriptionTitle = ""
+                descriptionTitle = L10n.pinErrorRemainingAttemptsPlural(cellular.pinRemainingTries)
             }
         default:
             cellularConnectionState = CellularConnectionState.none
-            descriptionTitle = ""
         }
     }
 

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -40,7 +39,7 @@ public protocol AccountProvider {
     /// Returns a coordinator to start for the account details.
     var destinationCoordinator: Coordinator? { get }
     /// Returns a user avatar, if a user is connected.
-    var userAvatar: UIImage? { get }
+    var userAvatar: String { get }
     /// Returns a user name, if a user is connected.
     var userName: String? { get }
     /// Returns if current user is connected or not.
@@ -49,24 +48,8 @@ public protocol AccountProvider {
     var dashboardAccountView: DashboardAccountView { get }
     /// Custom account view to display in MyFlightsVC.
     var myFlightsAccountView: MyFlightsAccountView? { get }
-    /// Start Data confidentiality view from coordinator.
-    func startDataConfidentiality()
     /// Start a specific view from coordinator when clicking on MyFlightsAccountView.
     func startMyFlightsAccountView()
-    /// Remove flight, synchronized on the user's account.
-    ///
-    /// - Parameters:
-    ///    - flightId: flight Id to remove
-    ///    - completion: Callback with success
-    func removeSynchronizedFlight(flightId: Int,
-                                  completion: @escaping (Bool, Error?) -> Void)
-    /// Remove Flight Plan, synchronized on the user's account.
-    ///
-    /// - Parameters:
-    ///    - flightPlanId: flight Plan Id to remove
-    ///    - completion: Callback with success
-    func removeSynchronizedFlightPlan(flightPlanId: Int,
-                                      completion: @escaping (Bool, Error?) -> Void)
 }
 
 /// MissionProvider protocol, dedicated to provide Mission content.
@@ -74,7 +57,7 @@ public protocol MissionProvider {
     /// Returns mission description.
     var mission: Mission { get }
     /// Returns mission signature
-    var signature: ProtobufMissionSignature { get }
+    var signature: AirSdkMissionSignature { get }
 
     /// Check if given the drone active mission uid, this mission should be activated in the app
     /// - Parameter missionUid: the drone active mission uid
@@ -83,18 +66,6 @@ public protocol MissionProvider {
 
 public extension MissionProvider {
     func isCompatibleWith(missionUid: String) -> Bool { signature.missionUID == missionUid }
-}
-
-/// Protocol that defines a business item model used within the launcher in HUD.
-public protocol MissionButtonState: BottomBarState {
-    /// Button title.
-    var title: String? { get }
-    /// Button image.
-    var image: UIImage? { get }
-    /// Current provider value.
-    var provider: MissionProvider? { get }
-    /// Current mode, if exists.
-    var mode: MissionMode? { get }
 }
 
 // MARK: Flight Plan Provider
@@ -141,6 +112,8 @@ public protocol FlightPlanProvider {
     func hasFlightPlanType(_ type: String) -> Bool
     /// Status view to be added to the FP panel
     var statusView: UIView? { get }
+    /// Indicates if the video recording time indicator can be displayed.
+    var canShowVideoRecordingIndicator: Bool { get }
     /// Custom progress to take over classic progress when not nil
     var customProgressPublisher: AnyPublisher<CustomFlightPlanProgress?, Never> { get }
     /// Flight Plan execution title.
@@ -349,18 +322,24 @@ public protocol FlightPlanType {
     var missionMode: MissionMode { get }
 }
 
-/// Provides a custom UIViewController displayed modally at Flight Plan's completion.
-public protocol FlightPlanCompletionModalProvider {
-    /// Returns custom modal to display.
-    func customModal() -> UIViewController?
-}
-
 /// Protocols used to provide mission activation methods.
 public protocol MissionActivationModel {
     /// Starts a Mission.
     func startMission()
     /// Stops a Mission if needed.
     func stopMissionIfNeeded()
+    /// Whether the mission can be stop.
+    func canStopMission() -> Bool
+    /// Whether the mission can be start.
+    func canStartMission() -> Bool
+    /// Show failed activation message.
+    func showFailedActivationMessage()
+    /// Show failed deactivation message.
+    func showFailedDectivationMessage()
+    /// Is mission active
+    func isActive() -> Bool
+    /// Priority of mission
+    func getPriority() -> MissionPriority
 }
 
 /// Protocols used to provide camera configuration restrictions for a mission.
@@ -374,7 +353,7 @@ public protocol MissionCameraRestrictionsModel {
 // MARK: - Structs
 
 /// Mission description.
-public struct Mission {
+public struct Mission: Equatable {
     /// Returns mission key.
     var key: String
     /// Returns mission name.
@@ -383,8 +362,6 @@ public struct Mission {
     var icon: UIImage
     /// Log name.
     var logName: String
-    /// Returns mission modes.
-    public var modes: [MissionMode]
 
     /// Returns default mission mode.
     /// Mission have usually only one mode.
@@ -395,14 +372,12 @@ public struct Mission {
                 name: String,
                 icon: UIImage,
                 logName: String,
-                modes: [MissionMode],
-                defaultMode: MissionMode) {
+                mode: MissionMode) {
         self.key = key
         self.name = name
         self.icon = icon
         self.logName = logName
-        self.modes = modes
-        self.defaultMode = defaultMode
+        self.defaultMode = mode
     }
 
     /// Init with one mission mode, as public.
@@ -411,8 +386,15 @@ public struct Mission {
                   name: mode.name,
                   icon: mode.icon,
                   logName: mode.logName,
-                  modes: [mode],
-                  defaultMode: mode)
+                  mode: mode)
+    }
+
+    public static func == (lhs: Mission, rhs: Mission) -> Bool {
+        lhs.key == rhs.key
+        && lhs.name == rhs.name
+        && lhs.icon == rhs.icon
+        && lhs.logName == rhs.logName
+        && lhs.defaultMode == rhs.defaultMode
     }
 }
 
@@ -432,10 +414,16 @@ public struct MissionModeConfigurator {
     var isMapRequired: Bool
     /// Returns if FlightPlan panel is requiered for this mode.
     var isRightPanelRequired: Bool
+    /// Returns true if this mode supports AE Lock.
+    var isAeLockEnabled: Bool
     /// Returns the RTH title to show.
     var rthTitle: (ReturnHomeTarget?) -> String
     /// Returns if this mode is a Tracking one.
     var isTrackingMode: Bool
+    /// Returns if this mode requires that the mission is installed.
+    var isInstallationRequired: Bool
+    /// Returns true if the camera shutter button is enabled
+    var isCameraShutterButtonEnabled: Bool
 
     /// Default struct init, as public.
     public init(key: String,
@@ -446,7 +434,10 @@ public struct MissionModeConfigurator {
                 isMapRequired: Bool,
                 isRightPanelRequired: Bool,
                 rthTitle: ((ReturnHomeTarget?) -> String)? = nil,
-                isTrackingMode: Bool) {
+                isTrackingMode: Bool,
+                isAeLockEnabled: Bool,
+                isInstallationRequired: Bool,
+                isCameraShutterButtonEnabled: Bool) {
         self.key = key
         self.name = name
         self.icon = icon
@@ -465,6 +456,9 @@ public struct MissionModeConfigurator {
             }
         }
         self.isTrackingMode = isTrackingMode
+        self.isAeLockEnabled = isAeLockEnabled
+        self.isInstallationRequired = isInstallationRequired
+        self.isCameraShutterButtonEnabled = isCameraShutterButtonEnabled
     }
 }
 
@@ -485,10 +479,14 @@ public struct MissionMode: Equatable {
     var preferredSplitMode: SplitScreenMode
     /// Returns if map should always be visible instead of other right panel components.
     var isMapRequired: Bool
+    /// Returns if mission installation is required to display this mode
+    var isInstallationRequired: Bool
     /// Returns true if HUD right panel is needed for this mode.
     var isRightPanelRequired: Bool
     /// Return a coordinator that should be inserted in the right panel if any
     var hudRightPanelContentProvider: HudRightPanelContentProvider
+    /// Returns true if the camera shutter button is enabled
+    var isCameraShutterButtonEnabled: Bool
     /// Default map mode for this mission
     public var mapMode: MapMode
     /// Returns Flight Plan provider.
@@ -499,6 +497,8 @@ public struct MissionMode: Equatable {
     var rthTitle: (ReturnHomeTarget?) -> String
     /// Returns true if this mode is a tracking one.
     var isTrackingMode: Bool
+    /// Returns true if this mode supports AE Lock.
+    var isAeLockEnabled: Bool
     /// Returns an array of elements to display in the right stack of the bottom bar.
     var bottomBarRightStack: [ImagingStackElement]
     /// State machine
@@ -546,6 +546,9 @@ public struct MissionMode: Equatable {
         self.stateMachine = stateMachine
         self.hudRightPanelContentProvider = hudRightPanelContentProvider ?? { _, _, _ in nil }
         self.cameraRestrictions = cameraRestrictions
+        self.isAeLockEnabled = configurator.isAeLockEnabled
+        self.isInstallationRequired = configurator.isInstallationRequired
+        self.isCameraShutterButtonEnabled = configurator.isCameraShutterButtonEnabled
     }
 
     // MARK: - Equatable Implementation

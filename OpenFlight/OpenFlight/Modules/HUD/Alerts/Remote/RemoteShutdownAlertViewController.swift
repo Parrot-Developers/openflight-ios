@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -49,7 +48,6 @@ final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProv
     // MARK: - Private Properties
     private let viewModel = RemoteShutdownAlertViewModel()
     private var cancellables = Set<AnyCancellable>()
-    private weak var coordinator: Coordinator?
 
     // MARK: - Private Enums
     private enum Constants {
@@ -60,13 +58,10 @@ final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProv
     // MARK: - Setup
     /// Instantiate the alert view controller.
     ///
-    /// - Parameters:
-    ///     - coordinator: coordinator of the view controller
     /// - Returns: The remote alert shutdown controller.
-    static func instantiate(coordinator: Coordinator) -> RemoteShutdownAlertViewController {
+    static func instantiate() -> RemoteShutdownAlertViewController {
         let viewController = StoryboardScene.RemoteShutdownAlertViewController.initialScene.instantiate()
-        viewController.coordinator = coordinator
-
+        viewController.modalPresentationStyle = .overFullScreen
         return viewController
     }
 
@@ -80,10 +75,6 @@ final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProv
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -108,7 +99,7 @@ private extension RemoteShutdownAlertViewController {
     func initView() {
         alertInstructionLabel.text = L10n.remoteAlertShutdownInstruction
         sliderStepLabel.text = String(Constants.timer)
-        panelView.layer.cornerRadius = Style.largeCornerRadius
+        panelView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
         panelView.layer.masksToBounds = true
         bgSlider.roundCorneredWith(backgroundColor: OpenFlight.ColorName.errorColor.color)
         sliderStepView.roundCornered()
@@ -191,6 +182,6 @@ private extension RemoteShutdownAlertViewController {
 
     /// Dismiss remote shutdown alert after 2 seconds.
     func dismissRemoteAlertShutdown() {
-        self.coordinator?.dismiss()
+        dismiss(animated: true)
     }
 }

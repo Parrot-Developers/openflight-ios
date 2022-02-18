@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -73,9 +72,7 @@ final class GalleryInternalMediaState: GalleryContentState {
     ///    - connectionState: drone connection state
     ///    - availableSpace: available space, in giga bytes
     ///    - capacity: capacity, in giga bytes
-    ///    - downloadingItem: downloading item
-    ///    - downloadStatus: download status
-    ///    - downloadProgress: download progress
+    ///    - isFormatNeeded: format needed status
     ///    - isRemoving: ViewModel is removing
     ///    - medias: media list
     ///    - sourceType: source type
@@ -86,9 +83,7 @@ final class GalleryInternalMediaState: GalleryContentState {
     required init(connectionState: DeviceState.ConnectionState,
                   availableSpace: Double,
                   capacity: Double,
-                  downloadingItem: MediaItem?,
-                  downloadStatus: MediaTaskStatus,
-                  downloadProgress: Float,
+                  isFormatNeeded: Bool,
                   isRemoving: Bool,
                   medias: [GalleryMedia],
                   sourceType: GallerySourceType,
@@ -99,9 +94,7 @@ final class GalleryInternalMediaState: GalleryContentState {
         super.init(connectionState: connectionState,
                    availableSpace: availableSpace,
                    capacity: capacity,
-                   downloadingItem: downloadingItem,
-                   downloadStatus: downloadStatus,
-                   downloadProgress: downloadProgress,
+                   isFormatNeeded: false,
                    isRemoving: isRemoving,
                    medias: medias,
                    sourceType: sourceType,
@@ -117,9 +110,7 @@ final class GalleryInternalMediaState: GalleryContentState {
     ///    - connectionState: drone connection state
     ///    - availableSpace: available space on internal memory
     ///    - capacity: Total internal memory capacity
-    ///    - downloadingItem: downloading item
-    ///    - downloadStatus: download status
-    ///    - downloadProgress: download progress
+    ///    - isFormatNeeded: format needed status
     ///    - droneUid: media list
     ///    - isRemoving: ViewModel is removing
     ///    - medias: media list
@@ -133,9 +124,7 @@ final class GalleryInternalMediaState: GalleryContentState {
     required init(connectionState: DeviceState.ConnectionState,
                   availableSpace: Double,
                   capacity: Double,
-                  downloadingItem: MediaItem?,
-                  downloadStatus: MediaTaskStatus,
-                  downloadProgress: Float,
+                  isFormatNeeded: Bool,
                   droneUid: String?,
                   isRemoving: Bool,
                   medias: [GalleryMedia],
@@ -149,9 +138,7 @@ final class GalleryInternalMediaState: GalleryContentState {
         super.init(connectionState: connectionState,
                    availableSpace: availableSpace,
                    capacity: capacity,
-                   downloadingItem: downloadingItem,
-                   downloadStatus: downloadStatus,
-                   downloadProgress: downloadProgress,
+                   isFormatNeeded: isFormatNeeded,
                    isRemoving: isRemoving,
                    medias: medias,
                    sourceType: sourceType,
@@ -180,9 +167,7 @@ final class GalleryInternalMediaState: GalleryContentState {
         return GalleryInternalMediaState(connectionState: self.connectionState,
                                          availableSpace: self.availableSpace,
                                          capacity: self.capacity,
-                                         downloadingItem: self.downloadingItem,
-                                         downloadStatus: self.downloadStatus,
-                                         downloadProgress: self.downloadProgress,
+                                         isFormatNeeded: self.isFormatNeeded,
                                          droneUid: self.droneUid,
                                          isRemoving: self.isRemoving,
                                          medias: self.medias,
@@ -199,6 +184,10 @@ final class GalleryInternalMediaState: GalleryContentState {
 
 /// ViewModel for InternalCard Gallery Media Item.
 final class GalleryInternalMediaViewModel: DroneStateViewModel<GalleryInternalMediaState> {
+    @Published private(set) var downloadProgress: Float?
+    @Published private(set) var downloadStatus: MediaTaskStatus?
+    @Published private(set) var downloadingItem: MediaItem?
+
     // MARK: - Private Properties
     private var internalRef: Ref<InternalUserStorage>?
     private var mediaListRef: Ref<[MediaItem]>?
@@ -209,6 +198,7 @@ final class GalleryInternalMediaViewModel: DroneStateViewModel<GalleryInternalMe
         return self.state.value.availableSpace
     }
     var downloadRequest: Ref<MediaDownloader>?
+    var uploadRequest: Ref<ResourceUploader>?
     var deleteRequest: Ref<MediaDeleter>?
     var deleteAllRequest: Ref<AllMediasDeleter>?
     var mediaStore: MediaStore?
@@ -275,10 +265,11 @@ extension GalleryInternalMediaViewModel {
     /// - Parameters:
     ///     - mediaDownloader: MediaDownloader
     func downloaderDidUpdate(_ mediaDownloader: MediaDownloader?) {
+        downloadProgress = mediaDownloader?.totalProgress
+        downloadStatus = mediaDownloader?.status
+        downloadingItem = mediaDownloader?.currentMedia
+
         var copy = self.state.value.copy()
-        copy.downloadProgress = mediaDownloader?.totalProgress ?? 0.0
-        copy.downloadingItem = mediaDownloader?.currentMedia
-        copy.downloadStatus = mediaDownloader?.status ?? .complete
 
         /// Update loading media if needed.
         copy = updateMediasDownloadState(state: copy)
@@ -436,7 +427,7 @@ private extension GalleryInternalMediaViewModel {
         guard let mediaItem = mediaItems.first else { return nil }
 
         let downloadState: GalleryMediaDownloadState
-        if self.state.value.downloadingItem?.uid == mediaItem.uid {
+        if downloadingItem?.uid == mediaItem.uid, downloadStatus == .running {
             downloadState = .downloading
         } else if mediaItem.isDownloaded {
             downloadState = .downloaded
@@ -470,9 +461,9 @@ private extension GalleryInternalMediaViewModel {
     ///    - state: Gallery internalMedia State
     /// - Returns: Updated Gallery Internal Media State
     func updateMediasDownloadState(state: GalleryInternalMediaState) -> GalleryInternalMediaState {
-        guard let loadingMedia = state.downloadingItem else { return state }
+        guard let loadingMedia = downloadingItem else { return state }
 
-        let isError = state.downloadStatus == .error
+        let isError = downloadStatus == .error
         var allMedia = self.state.value.medias
         if let index = state.medias.firstIndex(where: { $0.mainMediaItem?.uid == loadingMedia.uid }),
            state.medias[index].downloadState != .downloading {

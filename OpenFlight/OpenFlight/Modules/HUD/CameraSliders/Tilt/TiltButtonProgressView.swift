@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -76,7 +75,7 @@ private extension TiltButtonProgressView {
         let border = CAShapeLayer()
         border.path = path.cgPath
         border.lineWidth = 1
-        border.strokeColor = UIColor(named: .greenSpring).cgColor
+        border.strokeColor = UIColor(named: .highlightColor).cgColor
         border.fillColor = UIColor.clear.cgColor
 
         layer.addSublayer(border)
@@ -88,7 +87,7 @@ private extension TiltButtonProgressView {
 
         let background = CAShapeLayer()
         background.path = path.cgPath
-        background.fillColor = ColorName.greenSpring20.color.cgColor
+        background.fillColor = ColorName.disabledHighlightColor.color.cgColor
 
         layer.addSublayer(background)
         backgroundLayer = background

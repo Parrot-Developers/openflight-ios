@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -137,11 +136,6 @@ public struct SettingValueRulerModel {
     fileprivate var values: [Double] {
         return orientation.isHorizontal ? range : range.reversed()
     }
-    fileprivate var valuesDescription: [String]? {
-        guard rangeDescriptions.count == range.count else { return nil }
-
-        return orientation.isHorizontal ? rangeDescriptions : rangeDescriptions.reversed()
-    }
 }
 
 /// Custom setting ruler view.
@@ -153,6 +147,10 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
     @IBOutlet private weak var verticalSelectionView: UIView!
     @IBOutlet private(set) weak var horizontalSelectionView: UIView!
     @IBOutlet private weak var gradientBackground: UIView!
+    @IBOutlet weak var centerLeftIndicatorWidthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var centerRightIndicatorWidthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var centerTopIndicatorHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var centerBottomIndicatorHeightConstraint: NSLayoutConstraint!
 
     // MARK: - Public Properties
     public var model: SettingValueRulerModel = SettingValueRulerModel() {
@@ -187,11 +185,11 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
     // MARK: - Private Enums
     private enum Constants {
         static let gradientBorderColor: CGColor = UIColor.clear.cgColor
-        static let gradientCentralColor: CGColor = ColorName.white.color.cgColor
+        static let gradientCentralColor: CGColor = ColorName.defaultBgcolor.color.cgColor
         static let gradientStartingPoint: CGPoint = CGPoint(x: 0.0, y: 0.5)
         static let gradientEndPoint: CGPoint = CGPoint(x: 1.0, y: 0.5)
-        static let largeCellSize: CGSize = CGSize(width: 66.0, height: 48.0)
-        static let cellSize: CGSize = CGSize(width: 44.0, height: 40.0)
+        static let cellSize: CGSize = CGSize(width: Layout.sidePanelSettingSliderItemWidth(UIViewController().isRegularSizeClass),
+                                             height: Layout.sidePanelSettingSliderHeight(UIViewController().isRegularSizeClass))
     }
 
     // MARK: - Override Funcs
@@ -272,8 +270,6 @@ private extension SettingValueRulerView {
 
     /// Adds gradient layer over collection.
     func addGradientLayer() {
-        guard model.displayType != .string else { return }
-
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = collectionContainerView.bounds
         gradientLayer.colors = [Constants.gradientBorderColor,

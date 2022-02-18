@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,14 +29,21 @@
 
 import Foundation
 import Combine
+import SdkCore
 
 public protocol ProjectManager {
 
     /// Current project publisher
     var currentProjectPublisher: AnyPublisher<ProjectModel?, Never> { get }
 
-    /// All Projects publisher
-    var projectsPublisher: AnyPublisher<[ProjectModel], Never> { get }
+    /// Projects did change
+    var projectsDidChangePublisher: AnyPublisher<Void, Never> { get }
+
+    /// Project must close its history list
+    var hideExecutionsListPublisher: AnyPublisher<Void, Never> { get }
+
+    /// Publisher notifying to start edition of current project.
+    var startEditionPublisher: AnyPublisher<Void, Never> { get }
 
     /// Current project
     var currentProject: ProjectModel? { get }
@@ -59,6 +65,10 @@ public protocol ProjectManager {
     /// - Returns: the created project
     func newProject(flightPlanProvider: FlightPlanProvider) -> ProjectModel
 
+    /// Creates a new project from a mavlink file
+    /// - Parameter url: the mavlink file URL
+    func newProjectFromMavlinkFile(_ url: URL?) -> ProjectModel?
+
     /// Fetch ordered flight plans for a project
     /// - Parameter project: the project
     func flightPlans(for project: ProjectModel) -> [FlightPlanModel]
@@ -66,6 +76,12 @@ public protocol ProjectManager {
     /// Fetch ordered executed flight plans for a project
     /// - Parameter project: the project
     func executedFlightPlans(for project: ProjectModel) -> [FlightPlanModel]
+
+    /// Returns the Project's executions INCLUDING the flying one.
+    /// - Parameters:
+    ///    - project: the project.
+    /// - Returns: The executions list.
+    func executions(for project: ProjectModel) -> [FlightPlanModel]
 
     /// Get the last flight plan used for a specific project
     ///
@@ -84,7 +100,8 @@ public protocol ProjectManager {
     ///
     /// - Parameters:
     ///     - project: project to duplicate
-    func duplicate(project: ProjectModel)
+    @discardableResult
+    func duplicate(project: ProjectModel) -> ProjectModel
 
     /// Loads last opened project (if exists).
     ///
@@ -122,9 +139,48 @@ public protocol ProjectManager {
     /// - Parameter flightPlan: the flight plan
     func loadEverythingAndOpen(flightPlan: FlightPlanModel)
 
+    /// Setup everything (mission, project, flight plan) to open a flight plan
+    /// - Parameters:
+    ///    - flightPlan: the flight plan
+    ///    - autoStart: automatically start the flight plan if `true`
+    func loadEverythingAndOpen(flightPlan: FlightPlanModel, autoStart: Bool)
+
     /// Setup everything (mission, project, flight plan) to open the project's flight plan
     /// - Parameter project: the project
     func loadEverythingAndOpen(project: ProjectModel)
+
+    /// Setup everything (mission, project, flight plan) to open the project's flight plan but do
+    /// not mark it as last used.
+    ///
+    /// This method is usefull for newly created/duplicated projects.
+    /// - Parameter project: the project
+    func loadEverythingAndOpenWhileNotSettingAsLastUsed(project: ProjectModel)
+
+    /// Starts edition of current project.
+    func startEdition()
+
+    /// Update a Flight Plan's `customTitle` according his execution position.
+    ///
+    /// - Parameters:
+    ///    - flightPlan: The flight plan execution.
+    ///
+    /// - Returns: The updated `FlightPlanModel`.
+    @discardableResult
+    func updateExecutionCustomTitle(for flightPlan: FlightPlanModel) -> FlightPlanModel
+
+    /// Reset a Flight Plan's `customTitle` to his project's title.
+    ///
+    /// - Parameters:
+    ///    - flightPlan: The flight plan execution.
+    ///
+    /// - Returns: The updated `FlightPlanModel`.
+    @discardableResult
+    func resetExecutionCustomTitle(for flightPlan: FlightPlanModel) -> FlightPlanModel
+
+}
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "ProjectManager")
 }
 
 public class ProjectManagerImpl {
@@ -144,16 +200,24 @@ public class ProjectManagerImpl {
     private let filesManager: FlightPlanFilesManager
     private let missionsStore: MissionsStore
     private let flightPlanManager: FlightPlanManager
+    private let flightPlanRunManager: FlightPlanRunManager
 
-    /// Publisher of `ProjectModel` array
-    public var projectsPublisher: AnyPublisher<[ProjectModel], Never> {
-        return persistenceProject.projectsPublisher
+    public var projectsDidChangePublisher: AnyPublisher<Void, Never> {
+        return persistenceProject.projectsDidChangePublisher
     }
 
-    private var cancellables = [AnyCancellable]()
+    public var hideExecutionsListPublisher: AnyPublisher<Void, Never> {
+        return hideExecutionsListSubject.eraseToAnyPublisher()
+    }
 
-    // MARK: - Public Properties
+    public var startEditionPublisher: AnyPublisher<Void, Never> {
+        return startEditionSubject.eraseToAnyPublisher()
+    }
+
+    // MARK: - Private Properties
     private var currentProjectSubject = CurrentValueSubject<ProjectModel?, Never>(nil)
+    private var hideExecutionsListSubject = PassthroughSubject<Void, Never>()
+    private var startEditionSubject = PassthroughSubject<Void, Never>()
 
     init(missionsStore: MissionsStore,
          flightPlanTypeStore: FlightPlanTypeStore,
@@ -163,7 +227,8 @@ public class ProjectManagerImpl {
          currentMissionManager: CurrentMissionManager,
          currentUser: UserInformation,
          filesManager: FlightPlanFilesManager,
-         flightPlanManager: FlightPlanManager) {
+         flightPlanManager: FlightPlanManager,
+         flightPlanRunManager: FlightPlanRunManager) {
         self.missionsStore = missionsStore
         self.flightPlanTypeStore = flightPlanTypeStore
         self.persistenceProject = persistenceProject
@@ -173,6 +238,7 @@ public class ProjectManagerImpl {
         self.currentUser = currentUser
         self.filesManager = filesManager
         self.flightPlanManager = flightPlanManager
+        self.flightPlanRunManager = flightPlanRunManager
     }
 }
 
@@ -196,65 +262,38 @@ extension ProjectManagerImpl: ProjectManager {
     }
 
     public func newProject(flightPlanProvider: FlightPlanProvider) -> ProjectModel {
-        let uuid = UUID().uuidString
-        let newTitle = titleFromDuplicateTitle(L10n.flightPlanNewProject)
-        let flightPlanTitle = titleFromDuplicateTitle(L10n.flightPlanNewFlightPlan)
-        let dataSetting = FlightPlanDataSetting(product: FlightPlanConstants.defaultDroneModel,
-                                                settings: flightPlanProvider.settingsProvider?.settings.toLightSettings() ?? [],
-                                                freeSettings: [:],
-                                                polygonPoints: [],
-                                                mavlinkDataFile: nil,
-                                                takeoffActions: [],
-                                                pois: [],
-                                                wayPoints: [],
-                                                disablePhotoSignature: false)
+        newProjectAndFlightPlan(flightPlanProvider: flightPlanProvider).project
+    }
 
-        let flightplan = FlightPlanModel(apcId: currentUser.apcId,
-                                          type: flightPlanProvider.typeKey,
-                                          uuid: UUID().uuidString,
-                                          version: String(Constants.defaultFlightPlanVersion),
-                                          customTitle: flightPlanTitle,
-                                          thumbnailUuid: nil,
-                                          projectUuid: uuid,
-                                          dataStringType: "json",
-                                          dataString: dataSetting.toJSONString(),
-                                          pgyProjectId: nil,
-                                          mediaCustomId: nil,
-                                          state: .editable,
-                                          lastMissionItemExecuted: nil,
-                                          mediaCount: 0,
-                                          uploadedMediaCount: nil,
-                                          lastUpdate: Date(),
-                                          synchroStatus: 0,
-                                          fileSynchroStatus: 0,
-                                          synchroDate: nil,
-                                          parrotCloudId: nil,
-                                          parrotCloudUploadUrl: nil,
-                                          parrotCloudToBeDeleted: false,
-                                          cloudLastUpdate: nil,
-                                          uploadAttemptCount: nil,
-                                          lastUploadAttempt: nil,
-                                          thumbnail: nil,
-                                          flightPlanFlights: [])
+    public func newProjectFromMavlinkFile(_ url: URL?) -> ProjectModel? {
+        guard let url = url,
+              let flightPlanProvider = FlightPlanMissionMode.standard.missionMode.flightPlanProvider else { return nil }
 
-        let project = ProjectModel(
-            apcId: currentUser.apcId,
-            uuid: uuid,
-            title: newTitle,
-            type: flightPlanProvider.projectType,
-            lastUpdated: Date()
-        )
-        persistenceProject.persist(project, true)
-        flightPlanRepo.persist(flightplan, true)
+        var (project, flightPlan) = newProjectAndFlightPlan(flightPlanProvider: flightPlanProvider,
+                                                            title: url.deletingPathExtension().lastPathComponent)
+
+        flightPlan = MavlinkToFlightPlanParser
+            .generateFlightPlanFromMavlinkStandard(url: url,
+                                                   flightPlan: flightPlan) ?? flightPlan
+        flightPlan.dataSetting?.readOnly = true
+        flightPlan.dataSetting?.mavlinkDataFile = try? Data(contentsOf: url)
+        flightPlanRepo.saveOrUpdateFlightPlan(flightPlan,
+                                              byUserUpdate: true,
+                                              toSynchro: true,
+                                              withFileUploadNeeded: true)
         return project
     }
 
     public func flightPlans(for project: ProjectModel) -> [FlightPlanModel] {
-        persistenceProject.flightPlans(of: project)
+        persistenceProject.getFlightPlans(ofProject: project)
     }
 
     public func executedFlightPlans(for project: ProjectModel) -> [FlightPlanModel] {
-        persistenceProject.executedFlightPlan(of: project)
+        executions(for: project, excludeFlyingFlightPlan: true)
+    }
+
+    public func executions(for project: ProjectModel) -> [FlightPlanModel] {
+        executions(for: project, excludeFlyingFlightPlan: false)
     }
 
     public func lastFlightPlan(for project: ProjectModel) -> FlightPlanModel? {
@@ -263,130 +302,101 @@ extension ProjectManagerImpl: ProjectManager {
 
     public func loadProjects(type: String?) -> [ProjectModel] {
         if let type = type {
-            return persistenceProject.loadAllProjects()
-                .filter { $0.type == type }
+            return persistenceProject.getProjects(withType: type)
         } else {
-            return persistenceProject.loadAllProjects()
+            return persistenceProject.getAllProjects()
         }
     }
 
     public func loadExecutedProjects() -> [ProjectModel] {
-        persistenceProject.executedProjects()
+        persistenceProject.getExecutedProjects()
     }
 
     public func delete(project: ProjectModel) {
+        ULog.i(.tag, "Deleting project '\(project.uuid)' '\(project.title ?? "")'")
         for flightPlan in flightPlans(for: project) {
             // There are side effects to manage (delete mavlink,...), let the manager do the job
             flightPlanManager.delete(flightPlan: flightPlan)
         }
-        persistenceProject.performRemoveProject(project)
+        persistenceProject.deleteOrFlagToDeleteProject(withUuid: project.uuid)
         if project.uuid == currentProject?.uuid {
             clearCurrentProject()
             currentMissionManager.mode.stateMachine?.reset()
             editionService.resetFlightPlan()
             guard let newProject = loadProjects(type: project.type).sorted(by: { $0.lastUpdated > $1.lastUpdated }).first,
-                  let flightplan = lastFlightPlan(for: newProject) else { return }
+                  let flightPlan = lastFlightPlan(for: newProject) else { return }
+            ULog.i(.tag, "Opening flightPlan '\(flightPlan.uuid)' of project '\(newProject.uuid)' '\(newProject.title ?? "")'")
             setCurrent(newProject)
-            currentMissionManager.mode.stateMachine?.open(flightPlan: flightplan)
+            currentMissionManager.mode.stateMachine?.open(flightPlan: flightPlan)
         }
     }
 
     public func rename(_ project: ProjectModel, title: String?) {
-        var project = project
         guard let oldTitle = project.title else { return }
         let newTitle = titleFromRenameTitle(title, oldTitle: oldTitle)
         guard newTitle != oldTitle else { return }
+
+        var project = project
         project.title = newTitle
-        persistenceProject.persist(project, true)
-        if let flightPlan = lastFlightPlan(for: project) {
-            editionService.rename(flightPlan, title: newTitle)
+        persistenceProject.saveOrUpdateProject(project, byUserUpdate: true, toSynchro: true)
+        ULog.i(.tag, "Rename project '\(project.uuid)' from '\(oldTitle)' to '\(newTitle)'")
+        // Rename the customTitle of the project's editable FP.
+        if var flightPlan = lastFlightPlan(for: project),
+           flightPlan.state == .editable {
+            flightPlan.customTitle = newTitle
+            flightPlanRepo.saveOrUpdateFlightPlan(flightPlan, byUserUpdate: true, toSynchro: true)
+            editionService.setupFlightPlan(flightPlan)
         }
         if project.uuid == currentProject?.uuid {
             currentProject?.title = newTitle
         }
     }
 
-    public func duplicate(project: ProjectModel) {
-
-        let projectID = UUID().uuidString
+    @discardableResult
+    public func duplicate(project: ProjectModel) -> ProjectModel {
+        let duplicatedProjectID = UUID().uuidString
         var duplicatedFlightPlans: [FlightPlanModel] = []
 
         if let flightPlan = lastFlightPlan(for: project) {
-            flightPlan.dataSetting?.mavlinkDataFile = nil
-            let thumbnailUUID = UUID().uuidString
-
-            var duplicatedFlightPlan = flightPlan
+            var duplicatedFlightPlan = flightPlanManager.newFlightPlan(basedOn: flightPlan,
+                                                                       save: false)
             duplicatedFlightPlan.customTitle = titleFromDuplicateTitle(project.title)
-            duplicatedFlightPlan.uuid = UUID().uuidString
-            duplicatedFlightPlan.lastUpdate = Date()
-            duplicatedFlightPlan.state = .editable
-            duplicatedFlightPlan.projectUuid = projectID
-            duplicatedFlightPlan.lastMissionItemExecuted = 0
-            duplicatedFlightPlan.pgyProjectId = 0
-            duplicatedFlightPlan.uploadedMediaCount = 0
-            duplicatedFlightPlan.parrotCloudId = 0
-            duplicatedFlightPlan.parrotCloudToBeDeleted = false
-            duplicatedFlightPlan.parrotCloudUploadUrl = nil
-            duplicatedFlightPlan.synchroDate = nil
-            duplicatedFlightPlan.thumbnail = ThumbnailModel(apcId: currentUser.apcId,
-                                                            uuid: thumbnailUUID,
-                                                            thumbnailImage: flightPlan.thumbnail?.thumbnailImage)
-            duplicatedFlightPlan.thumbnailUuid = thumbnailUUID
-            duplicatedFlightPlan.flightPlanFlights = []
-            duplicatedFlightPlan.dataSetting?.notPropagatedSettings = [:]
-
+            duplicatedFlightPlan.projectUuid = duplicatedProjectID
             duplicatedFlightPlans.append(duplicatedFlightPlan)
-            // Duplicate the Mavlink if it exists
-            let sourceUrl = filesManager.defaultUrl(flightPlan: flightPlan)
-            filesManager.copyMavlink(of: duplicatedFlightPlan, from: sourceUrl)
         }
 
-        let duplicatedProject = ProjectModel(
-            apcId: currentUser.apcId,
-            uuid: projectID,
-            title: titleFromDuplicateTitle(project.title),
-            type: project.type,
-            lastUpdated: Date(),
-            parrotCloudId: project.parrotCloudId,
-            parrotCloudToBeDeleted: project.parrotCloudToBeDeleted,
-            synchroDate: nil,
-            synchroStatus: 0
-        )
+        let duplicatedProject = ProjectModel(duplicateProject: project,
+                                             withApcId: currentUser.apcId,
+                                             uuid: duplicatedProjectID,
+                                             title: titleFromDuplicateTitle(project.title))
 
-        persistenceProject.persist(duplicatedProject, true)
-        duplicatedFlightPlans.forEach { flightPlanRepo.persist($0, true) }
+        persistenceProject.saveOrUpdateProject(duplicatedProject, byUserUpdate: true, toSynchro: true)
+        flightPlanRepo.saveOrUpdateFlightPlans(duplicatedFlightPlans, byUserUpdate: true, toSynchro: true)
         currentProject = duplicatedProject
-    }
-
-    /// Loads last opened Flight Plan (if exists).
-    ///
-    /// - Parameters:
-    ///     - state: mission state
-   public  func selectLastOpenedProject(state: MissionProviderState) {
-    self.currentProject = loadProjects(type: state.mode?.flightPlanProvider?.projectType).first
+        ULog.i(.tag, "Duplicate project '\(project.uuid)' '\(project.title ?? "")' -> '\(duplicatedProject.uuid)'."
+               + " Duplicated flightPlans: " + duplicatedFlightPlans.map({ "'\($0.uuid)'" }).joined(separator: ", "))
+        return duplicatedProject
     }
 
     public func setCurrent(_ project: ProjectModel) {
-        self.currentProject = setAsLastUsed(project)
+        currentProject = setAsLastUsed(project)
     }
 
     public func setLastOpenedProjectAsCurrent(type: String) {
-        self.currentProject = loadProjects(type: type).sorted(by: { $0.lastUpdated > $1.lastUpdated }).first
+        currentProject = loadProjects(type: type).sorted(by: { $0.lastUpdated > $1.lastUpdated }).first
     }
 
     public func setAsLastUsed(_ project: ProjectModel) -> ProjectModel {
-        let now = Date()
         // Save date in file.
         var newProject = project
-        newProject.lastUpdated = now
-
+        newProject.lastUpdated = Date()
         // Save Flight Plan.
-        persistenceProject.persist(newProject, true)
+        persistenceProject.saveOrUpdateProject(newProject, byUserUpdate: true, toSynchro: true)
         return newProject
     }
 
     public func project(for flightPlan: FlightPlanModel) -> ProjectModel? {
-        persistenceProject.loadProject(flightPlan.projectUuid)
+        persistenceProject.getProject(withUuid: flightPlan.projectUuid)
     }
 
     public func clearCurrentProject() {
@@ -394,28 +404,70 @@ extension ProjectManagerImpl: ProjectManager {
     }
 
     public func loadEverythingAndOpen(flightPlan: FlightPlanModel) {
-        guard let projectModel = project(for: flightPlan) else { return }
+        loadEverythingAndOpen(flightPlan: flightPlan, autoStart: false)
+    }
+
+    public func loadEverythingAndOpen(flightPlan: FlightPlanModel, autoStart: Bool) {
+        loadEverythingAndOpen(flightPlan: flightPlan, touch: true, autoStart: autoStart)
+    }
+
+    private func loadEverythingAndOpen(flightPlan: FlightPlanModel, touch: Bool, autoStart: Bool = false) {
+        guard let project = project(for: flightPlan) else { return }
         var missionProvider: MissionProvider?
         var missionMode: MissionMode?
         for provider in missionsStore.allMissions {
-            for mode in provider.mission.modes {
-                if mode.flightPlanProvider?.hasFlightPlanType(flightPlan.type) ?? false {
-                    missionProvider = provider
-                    missionMode = mode
-                }
+            if provider.mission.defaultMode.flightPlanProvider?.hasFlightPlanType(flightPlan.type) ?? false {
+                missionProvider = provider
+                missionMode = provider.mission.defaultMode
             }
         }
         guard let mPovider = missionProvider, let mMode = missionMode else { return }
+        ULog.i(.tag, "Opening flightPlan '\(flightPlan.uuid)' of project '\(project.uuid)' '\(project.title ?? "")'")
         // Setup Mission as a Flight Plan mission (may be custom).
         currentMissionManager.set(provider: mPovider)
         currentMissionManager.set(mode: mMode)
-        setCurrent(projectModel)
+        if touch {
+            setCurrent(project)
+        } else {
+            currentProject = project
+        }
         mMode.stateMachine?.open(flightPlan: flightPlan)
+        if autoStart {
+            mMode.stateMachine?.start()
+        }
+        hideExecutionsListSubject.send()
     }
 
     public func loadEverythingAndOpen(project: ProjectModel) {
+        loadEverythingAndOpen(project: project, touch: true)
+    }
+
+    public func loadEverythingAndOpenWhileNotSettingAsLastUsed(project: ProjectModel) {
+        loadEverythingAndOpen(project: project, touch: false)
+    }
+
+    private func loadEverythingAndOpen(project: ProjectModel, touch: Bool) {
         guard let flightPlan = lastFlightPlan(for: project) else { return }
-        loadEverythingAndOpen(flightPlan: flightPlan)
+        ULog.i(.tag, "Opening project '\(project.uuid)' '\(project.title ?? "")' will continue"
+               + " opening flightPlan '\(flightPlan.uuid)'")
+        loadEverythingAndOpen(flightPlan: flightPlan, touch: touch)
+    }
+
+    public func startEdition() {
+        startEditionSubject.send()
+    }
+
+    @discardableResult
+    public func updateExecutionCustomTitle(for flightPlan: FlightPlanModel) -> FlightPlanModel {
+        let customTitle = executionCustomTitle(for: flightPlan)
+        return flightPlanManager.update(flightplan: flightPlan, with: customTitle)
+    }
+
+    @discardableResult
+    public func resetExecutionCustomTitle(for flightPlan: FlightPlanModel) -> FlightPlanModel {
+        guard let project = project(for: flightPlan),
+        let projectTitle = project.title else { return flightPlan }
+        return flightPlanManager.update(flightplan: flightPlan, with: projectTitle)
     }
 }
 
@@ -512,5 +564,104 @@ private extension ProjectManagerImpl {
         }
 
         return String(text.prefix(text.count - suffix.count))
+    }
+
+    func newProjectAndFlightPlan(flightPlanProvider: FlightPlanProvider,
+                                 title: String = L10n.flightPlanNewProject) -> (project: ProjectModel, flightPlan: FlightPlanModel) {
+        let uuid = UUID().uuidString
+        let title = titleFromDuplicateTitle(title)
+        let dataSetting = FlightPlanDataSetting(product: FlightPlanConstants.defaultDroneModel,
+                                                settings: flightPlanProvider.settingsProvider?.settings.toLightSettings() ?? [],
+                                                freeSettings: [:],
+                                                polygonPoints: [],
+                                                mavlinkDataFile: nil,
+                                                takeoffActions: [],
+                                                pois: [],
+                                                wayPoints: [],
+                                                disablePhotoSignature: false)
+
+        let flightPlan = FlightPlanModel(apcId: currentUser.apcId,
+                                         type: flightPlanProvider.typeKey,
+                                         uuid: UUID().uuidString,
+                                         version: String(Constants.defaultFlightPlanVersion),
+                                         customTitle: title,
+                                         thumbnailUuid: nil,
+                                         projectUuid: uuid,
+                                         dataStringType: "json",
+                                         dataString: dataSetting.toJSONString(),
+                                         pgyProjectId: nil,
+                                         state: .editable,
+                                         lastMissionItemExecuted: nil,
+                                         mediaCount: 0,
+                                         uploadedMediaCount: nil,
+                                         lastUpdate: Date(),
+                                         synchroStatus: .notSync,
+                                         fileSynchroStatus: 0,
+                                         latestSynchroStatusDate: nil,
+                                         cloudId: nil,
+                                         parrotCloudUploadUrl: nil,
+                                         isLocalDeleted: false,
+                                         latestCloudModificationDate: nil,
+                                         uploadAttemptCount: nil,
+                                         lastUploadAttempt: nil,
+                                         thumbnail: nil,
+                                         flightPlanFlights: [],
+                                         latestLocalModificationDate: Date(),
+                                         synchroError: .noError)
+
+        let project = ProjectModel(apcId: currentUser.apcId,
+                                   uuid: uuid,
+                                   title: title,
+                                   type: flightPlanProvider.projectType)
+
+        persistenceProject.saveOrUpdateProject(project, byUserUpdate: true, toSynchro: true)
+        flightPlanRepo.saveOrUpdateFlightPlan(flightPlan,
+                                              byUserUpdate: true,
+                                              toSynchro: true,
+                                              withFileUploadNeeded: false)
+        return (project, flightPlan)
+    }
+
+    /// Returns the project's executions.
+    ///
+    /// - Parameters:
+    ///    - project: The project.
+    ///    - excludeFlyingFlightPlan: Indicates if the flyng Flight Plan must be excluded.
+    ///
+    /// - Returns: The executions list.
+    func executions(for project: ProjectModel, excludeFlyingFlightPlan: Bool) -> [FlightPlanModel] {
+        // Get the list of executed FP (FP has reached first way point).
+        var executions = persistenceProject.getExecutedFlightPlans(ofProject: project)
+        // Exclude, if needed, the flying FP.
+        if excludeFlyingFlightPlan {
+            executions = executions.filter { $0.uuid != flightPlanRunManager.playingFlightPlan?.uuid }
+        }
+        // Re-order executions with no associated Flight at top of the list.
+        // Note: A FP is linked to a Flight only after the Drone landed and Gutma received.
+        let syncedExecutions = executions.filter { !($0.flightPlanFlights?.isEmpty ?? true) }
+        let unsyncedExecutions = executions.filter { $0.flightPlanFlights?.isEmpty ?? true }
+        return unsyncedExecutions + syncedExecutions
+    }
+
+    /// Returns an execution `customTitle` according his run position.
+    ///
+    /// - Parameters:
+    ///    - flightPlan: The flight plan execution.
+    ///
+    /// - Returns: The `customTitle`.
+    ///
+    ///  Note: There is no check on the FP state at this level.
+    func executionCustomTitle(for flightPlan: FlightPlanModel) -> String {
+        // Ensure the FP is linked to a project.
+        guard let project = project(for: flightPlan) else {
+            return flightPlan.customTitle
+        }
+        // Get the project's executions list excluding the current FP.
+        let executions = executions(for: project)
+            .filter { $0.uuid != flightPlan.uuid }
+        // The current FP execution index is the number of project's executions + 1 for the current one.
+        let executionIndex = executions.count + 1
+        // Returns the new customTitle by appending the executionIndex to the project title.
+        return "\(project.title ?? flightPlan.customTitle) (\(executionIndex))"
     }
 }

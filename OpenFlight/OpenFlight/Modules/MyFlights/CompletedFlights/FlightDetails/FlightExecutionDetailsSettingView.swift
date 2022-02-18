@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -51,8 +50,8 @@ final class FlightExecutionDetailsSettingView: UIView, NibOwnerLoadable {
 
     private func commonInit() {
         loadNibContent()
-
-        titleLabel.makeUp(with: .tiny, and: .defaultIconColor)
-        valueLabel.makeUp(with: .large, and: .defaultIconColor)
+        titleLabel.makeUp(with: .current, color: .defaultTextColor)
+        valueLabel.font = UIFont.rajdhaniMedium(size: isRegularSizeClass ? 16 : 13)
+        valueLabel.textColor = ColorName.defaultTextColor80.color
     }
 }

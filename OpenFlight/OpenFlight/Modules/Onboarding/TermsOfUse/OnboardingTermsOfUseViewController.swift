@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,8 +36,9 @@ public final class OnboardingTermsOfUseViewController: UIViewController {
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var termsTextView: UITextView!
     @IBOutlet private weak var acceptButton: UIButton!
-    @IBOutlet private weak var scrollDownView: UIView!
     @IBOutlet private weak var scrollDownLabel: UILabel!
+    @IBOutlet private weak var navigationBar: FileNavigationStackView!
+    @IBOutlet private weak var mainStackView: MainContainerStackView!
 
     // MARK: - Private Properties
     private var coordinator: OnboardingCoordinator?
@@ -95,9 +95,9 @@ private extension OnboardingTermsOfUseViewController {
         if canAcceptTermsOfUse {
             Defaults[key: termsOfUseKey] = true
             goToOnBoardingThirdScreen()
-        } else if scrollDownView.isHidden {
+        } else if scrollDownLabel.isHidden {
             UIView.animate(withDuration: Style.shortAnimationDuration) {
-                self.scrollDownView.isHidden = false
+                self.scrollDownLabel.isHidden = false
             }
         }
     }
@@ -111,9 +111,9 @@ extension OnboardingTermsOfUseViewController: UITextViewDelegate {
            Defaults[key: termsOfUseKey] == false {
             canAcceptTermsOfUse = true
             updateAcceptButtonUI()
-            if !scrollDownView.isHidden {
+            if !scrollDownLabel.isHidden {
                 UIView.animate(withDuration: Style.shortAnimationDuration) {
-                    self.scrollDownView.isHidden = true
+                    self.scrollDownLabel.isHidden = true
                 }
             }
         }
@@ -132,6 +132,10 @@ extension OnboardingTermsOfUseViewController: UITextViewDelegate {
 private extension OnboardingTermsOfUseViewController {
     /// Initializes UI and wordings.
     func initUI() {
+        let backgroundColor: UIColor = .clear
+        navigationBar.backgroundColor = backgroundColor
+        navigationBar.layer.shadowColor = backgroundColor.cgColor
+        mainStackView.enabledMargins = [.left, .right]
         updateAcceptButtonUI()
         scrollDownLabel.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                            radius: Style.smallCornerRadius)
@@ -140,7 +144,7 @@ private extension OnboardingTermsOfUseViewController {
         titleLabel.text = L10n.termsOfUseTitle.localizedUppercase
         acceptButton.setTitle(L10n.termsOfUseAccept, for: .normal)
         scrollDownLabel.text = L10n.termsOfUseScroll
-        scrollDownView.isHidden = true
+        scrollDownLabel.isHidden = true
 
         if let filePath = Bundle.main.url(forResource: termsOfUseFileName,
                                           withExtension: Constants.termsOfUseFileExtension) {

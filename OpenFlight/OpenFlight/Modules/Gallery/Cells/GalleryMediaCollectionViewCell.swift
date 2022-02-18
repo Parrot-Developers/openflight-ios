@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -49,11 +48,7 @@ final class GalleryMediaCollectionViewCell: UICollectionViewCell, NibReusable {
     @IBOutlet private weak var typeImage: UIImageView!
     @IBOutlet private weak var thumbnailImageView: UIImageView!
     @IBOutlet private weak var internalStorageIcon: UIView!
-    @IBOutlet private weak var downloadButton: DownloadButton! {
-        didSet {
-            downloadButton.setup()
-        }
-    }
+    @IBOutlet private weak var downloadButton: DownloadButton!
     @IBOutlet private weak var selectionView: UIView!
     @IBOutlet private weak var selectionCheckmarkView: UIView!
 
@@ -133,15 +128,16 @@ internal extension GalleryMediaCollectionViewCell {
     func setupView(media: GalleryMedia,
                    delegate: GalleryMediaCellDelegate?,
                    selected: Bool = false) {
-        typeImage.image = media.type.image
-        downloadButton.updateState(media.downloadState, title: media.formattedSize)
         self.media = media
         self.delegate = delegate
-        self.isUserInteractionEnabled = media.downloadState != .downloading
+
+        typeImage.image = media.type.image
+        downloadButton.model = DownloadButtonModel(title: media.formattedSize,
+                                                   state: media.downloadState)
         downloadButton.isHidden = media.source == .mobileDevice
         selectionView.isHidden = !selected
         selectionCheckmarkView.isHidden = !selected
-        setBorder(borderColor: ColorName.greenSpring.color, borderWidth: selected ? 2.0 : 0.0)
+        setBorder(borderColor: ColorName.highlightColor.color, borderWidth: selected ? 2.0 : 0.0)
         internalStorageIcon.applyCornerRadius(Style.mediumCornerRadius)
         internalStorageIcon.isHidden = media.source != .droneInternal
     }

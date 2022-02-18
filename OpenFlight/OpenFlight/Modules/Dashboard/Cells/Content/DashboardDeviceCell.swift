@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -43,49 +43,31 @@ protocol DashboardDeviceCellDelegate: AnyObject {
 class DashboardDeviceCell: UICollectionViewCell, NibReusable, CellConfigurable {
     // MARK: - Outlets
     @IBOutlet private weak var gpsStatusImageView: UIImageView!
-    @IBOutlet private weak var networkImageView: UIImageView!
-    @IBOutlet private weak var wifiStatusImageView: UIImageView!
     @IBOutlet private weak var deviceImageView: UIImageView!
     @IBOutlet private weak var deviceNameLabel: UILabel!
     @IBOutlet private weak var deviceStateButton: DeviceStateButton!
     @IBOutlet private weak var batteryValueLabel: UILabel!
     @IBOutlet private weak var batteryLevelImageView: UIImageView!
+    @IBOutlet private weak var batteryLevelUserDeviceImageView: UIImageView!
+    @IBOutlet private weak var batteryValueUserDeviceLabel: UILabel!
 
     // MARK: - Private Properties
     private var currentState: ViewModelState?
+    private var currentUserDeviceState: UserDeviceInfosState?
     private weak var delegate: DashboardDeviceCellDelegate?
 
-    private var firmwareAndMissionsUpdateListener: FirmwareAndMissionsListener?
-    private var firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel?
-
-    // MARK: - Override Funcs
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        // Clean UI when we create the cell.
-        cleanViews()
-    }
-
-    override func prepareForReuse() {
-        super.prepareForReuse()
-
-        // Clean UI and states.
-        cleanViews()
-        cleanStates()
-    }
-
     // MARK: - Internal Funcs
-    /// Sets up function used for User Device, Remote and Drone states.
+    /// Sets up function used for User Device and Remote states.
     ///
     /// - Parameters:
     ///    - state: the current state
     func setup(state: ViewModelState) {
-        // We need to clean the current state and UI.
-        currentState = state
-        cleanViews()
         switch state {
         case is UserDeviceInfosState:
+            currentUserDeviceState = state as? UserDeviceInfosState
             setupUserDevice(state)
         case is RemoteInfosState:
+            currentState = state
             setupRemote(state)
         default:
             break
@@ -121,36 +103,7 @@ private extension DashboardDeviceCell {
     ///    - batteryValue: the current battery value model
     func updateBatteryLevel(_ batteryValue: BatteryValueModel) {
         batteryValueLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryValue.currentValue)
-        batteryLevelImageView.image = batteryValue.batteryImage
-    }
-
-    /// This method is used to clean UI before setting value from the state.
-    func cleanViews() {
-        networkImageView.image = nil
-        batteryLevelImageView.image = nil
-        deviceNameLabel.text = nil
-        batteryValueLabel.text = nil
-        deviceImageView.image = nil
-        wifiStatusImageView.image = nil
-        gpsStatusImageView.image = nil
-    }
-
-    /// This method is used to clean all current states.
-    func cleanStates() {
-        FirmwareAndMissionsInteractor.shared.unregister(firmwareAndMissionsUpdateListener)
-        firmwareAndMissionToUpdateModel = nil
-        switch currentState {
-        case is UserDeviceInfosState:
-            let userDeviceInfosState = currentState as? UserDeviceInfosState
-            userDeviceInfosState?.userDeviceBatteryLevel.valueChanged = nil
-        case is RemoteInfosState:
-            let remoteInfosState = currentState as? RemoteInfosState
-            remoteInfosState?.remoteBatteryLevel.valueChanged = nil
-            remoteInfosState?.remoteName.valueChanged = nil
-            remoteInfosState?.remoteNeedUpdate.valueChanged = nil
-        default:
-            break
-        }
+        batteryLevelImageView.image = batteryValue.batteryRemoteControl
     }
 }
 
@@ -161,19 +114,10 @@ private extension DashboardDeviceCell {
     /// - Parameters:
     ///    - state: The view model state for User Device cell
     func setupUserDevice(_ state: ViewModelState) {
-        if let userDeviceInfosState = currentState as? UserDeviceInfosState {
-            // Set current values because we cleared all fields.
-            gpsStatusImageView.image = userDeviceInfosState.userDeviceGpsStrength.value.image
-            deviceImageView.image = Asset.Dashboard.icPhone.image
-            deviceStateButton.update(with: DeviceStateButton.Status.notDisconnected, title: L10n.commonReady)
-
-            updateBatteryLevel(userDeviceInfosState.userDeviceBatteryLevel.value)
-
+        if let userDeviceInfosState = state as? UserDeviceInfosState {
+            updateGpsStatus(with: currentUserDeviceState?.userDeviceGpsStrength.value ?? .unavailable)
+            updateUserDeviceBatteryLevel(userDeviceInfosState.userDeviceBatteryLevel.value)
             observeUserDeviceValues(userDeviceInfosState)
-        }
-
-        if let targetName = Bundle.main.infoDictionary?["CFBundleName"] as? String {
-            deviceNameLabel.text = targetName
         }
     }
 
@@ -183,11 +127,41 @@ private extension DashboardDeviceCell {
     ///    - userDeviceInfosState: The view model state for user device cell
     func observeUserDeviceValues(_ userDeviceInfosState: UserDeviceInfosState) {
         userDeviceInfosState.userDeviceBatteryLevel.valueChanged = { [weak self] batteryValue in
-            self?.updateBatteryLevel(batteryValue)
+            self?.updateUserDeviceBatteryLevel(batteryValue)
         }
         userDeviceInfosState.userDeviceGpsStrength.valueChanged = { [weak self] gpsStrength in
-            self?.gpsStatusImageView.image = gpsStrength.image
+            self?.updateGpsStatus(with: gpsStrength)
         }
+    }
+
+    /// Updates user device gps status icon.
+    ///
+    /// - Parameters:
+    ///    - gps: the current user location gps strength
+    func updateGpsStatus(with gps: UserLocationGpsStrength) {
+        gpsStatusImageView.image = Asset.Gps.Controller.icGpsNone.image
+        if let currentState = currentState as? RemoteInfosState,
+           currentState.remoteConnectionState.value == .connected {
+            gpsStatusImageView.image = gps.image
+        }
+    }
+
+    /// Updates user device battery percent and icon.
+    ///
+    /// - Parameters:
+    ///    - batteryValue: the current battery value model
+    func updateUserDeviceBatteryLevel(_ batteryValue: BatteryValueModel) {
+        var currentValue: Int?
+        var imageBattery = Asset.Remote.icBatteryUserDeviceNone.image
+
+        if let currentState = currentState as? RemoteInfosState,
+           currentState.remoteConnectionState.value == .connected {
+            currentValue = batteryValue.currentValue ?? nil
+            imageBattery = batteryValue.batteryUserDevice
+        }
+
+        batteryValueUserDeviceLabel.attributedText = NSMutableAttributedString(withBatteryLevel: currentValue)
+        batteryLevelUserDeviceImageView.image = imageBattery
     }
 }
 
@@ -198,7 +172,7 @@ private extension DashboardDeviceCell {
     /// - Parameters:
     ///    - state: The view model state for remote cell
     func setupRemote(_ state: ViewModelState) {
-        if let remoteInfosState = currentState as? RemoteInfosState {
+        if let remoteInfosState = state as? RemoteInfosState {
             setRemoteValues(remoteInfosState)
             observeRemoteValues(remoteInfosState)
             deviceImageView.image = Asset.Dashboard.icController.image
@@ -229,17 +203,22 @@ private extension DashboardDeviceCell {
         case .disconnected:
             status = .disconnected
             title = L10n.commonNotConnected
+            deviceImageView.image = Asset.Dashboard.icController.image
         case .connected:
-            if remoteInfosState.remoteNeedUpdate.value == true {
-                status = .updateAvailable
+            if remoteInfosState.remoteUpdateState.value == .required {
+                status = .updateRequired
                 title = remoteInfosState.remoteUpdateVersion.value
             } else if remoteInfosState.remoteNeedCalibration.value == true {
                 status = .calibrationRequired
                 title = L10n.remoteCalibrationRequired
+            } else if remoteInfosState.remoteUpdateState.value == .recommended {
+                status = .updateAvailable
+                title = remoteInfosState.remoteUpdateVersion.value
             } else {
                 status = .notDisconnected
                 title = connectionState.title
             }
+            deviceImageView.image = Asset.Dashboard.icControllerOn.image
         default:
             status = .notDisconnected
             title = connectionState.title
@@ -259,11 +238,15 @@ private extension DashboardDeviceCell {
         remoteInfosState.remoteName.valueChanged = { [weak self] remoteName in
             self?.deviceNameLabel.text = remoteName
         }
-        remoteInfosState.remoteNeedUpdate.valueChanged = { [weak self] _ in
+        remoteInfosState.remoteUpdateState.valueChanged = { [weak self] _ in
             self?.updateRemoteStateButton(remoteInfosState)
         }
         remoteInfosState.remoteConnectionState.valueChanged = { [weak self] _ in
             self?.updateRemoteStateButton(remoteInfosState)
+            if let currentUserDeviceState = self?.currentUserDeviceState {
+                self?.updateUserDeviceBatteryLevel(currentUserDeviceState.userDeviceBatteryLevel.value)
+                self?.updateGpsStatus(with: currentUserDeviceState.userDeviceGpsStrength.value)
+            }
         }
         remoteInfosState.remoteNeedCalibration.valueChanged = { [weak self] _ in
             self?.updateRemoteStateButton(remoteInfosState)

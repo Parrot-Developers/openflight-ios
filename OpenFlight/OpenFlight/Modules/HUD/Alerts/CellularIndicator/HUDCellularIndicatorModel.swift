@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -62,7 +61,7 @@ enum HUDCellularState: Int {
     var descriptionColor: ColorName {
         switch self {
         case .cellularConnected:
-            return ColorName.greenSpring
+            return ColorName.highlightColor
         case .noState,
              .cellularConnecting:
             return ColorName.white

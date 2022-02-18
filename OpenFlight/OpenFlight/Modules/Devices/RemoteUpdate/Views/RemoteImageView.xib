@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -20,11 +20,11 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="fRa-lr-cYv" customClass="CircleProgressView" customModule="OpenFlight" customModuleProvider="target">
-                    <rect key="frame" x="182.5" y="162.5" width="235" height="215"/>
+                    <rect key="frame" x="182.5" y="192.5" width="235" height="215"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dPV-Uc-TJu">
-                    <rect key="frame" x="212.5" y="192.5" width="175" height="155"/>
+                    <rect key="frame" x="212.5" y="222.5" width="175" height="155"/>
                     <subviews>
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRemoteUpdate" translatesAutoresizingMaskIntoConstraints="NO" id="LDU-Jr-iN6">
                             <rect key="frame" x="0.0" y="0.0" width="175" height="155"/>
@@ -48,7 +48,7 @@
                 <constraint firstItem="dPV-Uc-TJu" firstAttribute="centerX" secondItem="nbL-IG-Ax3" secondAttribute="centerX" id="W04-1R-a8p"/>
                 <constraint firstItem="fRa-lr-cYv" firstAttribute="top" secondItem="dPV-Uc-TJu" secondAttribute="top" constant="-30" id="bes-wi-5Y8"/>
                 <constraint firstItem="dPV-Uc-TJu" firstAttribute="trailing" secondItem="fRa-lr-cYv" secondAttribute="trailing" constant="-30" id="dGl-U6-m7B"/>
-                <constraint firstItem="dPV-Uc-TJu" firstAttribute="centerY" secondItem="nbL-IG-Ax3" secondAttribute="centerY" constant="-30" id="saU-N2-ZnC"/>
+                <constraint firstItem="dPV-Uc-TJu" firstAttribute="centerY" secondItem="nbL-IG-Ax3" secondAttribute="centerY" id="saU-N2-ZnC"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
@@ -58,7 +58,7 @@
     <resources>
         <image name="icRemoteUpdate" width="200" height="141"/>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

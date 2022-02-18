@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -40,7 +40,7 @@ public class Gutma: Codable {
 /// Namespace for all Gutma objects
 public extension Gutma {
     // MARK: - Exchange
-    class Exchange: Codable {
+    struct Exchange: Codable {
         public var exchangeType: String?
         public var message: Message?
 
@@ -51,7 +51,7 @@ public extension Gutma {
     }
 
     // MARK: - Message
-    class Message: Codable {
+    struct Message: Codable {
         public var flightData: FlightData?
         public var file: File?
         public var flightLogging: FlightLogging?
@@ -66,7 +66,7 @@ public extension Gutma {
     }
 
     // MARK: - File
-    class File: Codable {
+    struct File: Codable {
         public var version, parrotVersion, loggingType, filename: String?
         public var creationDtg: String?
 
@@ -80,7 +80,7 @@ public extension Gutma {
     }
 
     // MARK: - FlightData
-    class FlightData: Codable {
+    struct FlightData: Codable {
         public var aircraft: Aircraft?
         public var gcs: Gcs?
         public var payload: [Payload]?
@@ -95,7 +95,7 @@ public extension Gutma {
     }
 
     // MARK: - Aircraft
-    class Aircraft: Codable {
+    struct Aircraft: Codable {
         public var serialNumber, model, hardwareVersion, firmwareVersion: String?
         public var motherboardVersion: String?
 
@@ -109,12 +109,12 @@ public extension Gutma {
     }
 
     // MARK: - Gcs
-    class Gcs: Codable {
+    struct Gcs: Codable {
         public var type, name: String?
     }
 
     // MARK: - Payload
-    class Payload: Codable {
+    struct Payload: Codable {
         public var firmwareVersion, hardwareVersion, payload, serialNumber: String?
 
         enum CodingKeys: String, CodingKey {
@@ -126,11 +126,13 @@ public extension Gutma {
     }
 
     // MARK: - FlightLogging
-    class FlightLogging: Codable {
+    struct FlightLogging: Codable {
+        public typealias Item = [Double]
+
         public var altitudeSystem, loggingStartDtg: String?
         public var events: [Event]?
         public var flightLoggingKeys: [String]?
-        public var flightLoggingItems: [[Double]]?
+        public var flightLoggingItems: [Item]?
 
         enum CodingKeys: String, CodingKey {
             case altitudeSystem = "altitude_system"
@@ -139,19 +141,34 @@ public extension Gutma {
             case flightLoggingKeys = "flight_logging_keys"
             case flightLoggingItems = "flight_logging_items"
         }
+
+        static var formatter: DateFormatter = {
+            let formatter = DateFormatter()
+            formatter.dateFormat = GutmaConstants.dateFormatLogging
+            return formatter
+        }()
     }
 
     // MARK: - Event
-    class Event: Codable {
-        // swiftlint:disable:next identifier_name
+    struct Event: Codable {
         public var eventInfo, eventTimestamp, eventType, step, id, customId: String?
+
+        /// The media event type. Only available when `eventInfo` is "VIDEO"
+        /// It can either be "start" or "stop".
+        public var mediaEvent: String?
+        /// The media name when `eventInfo` is "PHOTO" or "VIDEO"
+        public var mediaName: String?
+        /// The mission item index, if any, when `step` equals "MISSION_ITEM".
+        public var missionItem: String?
 
         enum CodingKeys: String, CodingKey {
             case eventInfo = "event_info"
             case eventTimestamp = "event_timestamp"
             case eventType = "event_type"
+            case mediaEvent = "media_event"
+            case mediaName = "media_name"
+            case missionItem = "mission_item"
             case step
-            // swiftlint:disable:next identifier_name
             case id
             case customId = "custom_id"
         }

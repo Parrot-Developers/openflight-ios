@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -51,6 +50,7 @@ public final class HUDAlertPanelHandLandState: DeviceConnectionState, AlertPanel
     public var state: AlertPanelCurrentState? = .none
     public var isAlertForceHidden: Bool = false
     public var countdown: Int?
+    public var initialCountdown: TimeInterval?
     public var startViewIsVisible: Bool {
         return false
     }
@@ -67,7 +67,7 @@ public final class HUDAlertPanelHandLandState: DeviceConnectionState, AlertPanel
     public var hasAnimation: Bool {
         return false
     }
-    public var hasProgressView: Bool {
+    public var hasTextCountdown: Bool {
         return false
     }
     public var countdownMessage: ((Int) -> String)? {

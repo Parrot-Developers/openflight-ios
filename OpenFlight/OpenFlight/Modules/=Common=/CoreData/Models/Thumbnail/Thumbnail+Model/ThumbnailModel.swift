@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,86 +30,116 @@
 import Foundation
 
 public struct ThumbnailModel {
-
-    // MARK: - Properties
-
-    public var uuid: String
-    public var thumbnailImage: UIImage?
-
-    // MARK: - Synchro Properties
-
-    /// - To identify data user
+    // MARK: __ User's ID
     public var apcId: String
-
-    /// - Last modification date
+    // MARK: __ Academy
+    public var cloudId: Int
+    public var uuid: String
+    public var latestCloudModificationDate: Date?
+    // MARK: __ Local
     public var lastUpdate: Date?
-
-    /// - Id of project on server: Set only if synchronized
-    public var parrotCloudId: Int64
-
-    /// - Contains the Date of last synchro trying if is not succeeded
-    public var synchroDate: Date?
-
-    /// - Contains
-    ///     - 0 Not synchronized,
-    ///     - 1 Synchronized
-    ///     - StatusCode if sync failed
-    public var synchroStatus: Int16?
-
+    /// Uuid of the flight associated with this thumbnail if any
+    public var flightUuid: String?
+    public var thumbnailImage: UIImage?
+    /// - Return Thumbnail data type
+    public var thumbnailImageData: Data? {
+        return thumbnailImage?.pngData()
+    }
+    // MARK: __ Synchronization
+    ///  Boolean to know if it delete locally but needs to be deleted on server
+    public var isLocalDeleted: Bool
+    ///  Synchro status
+    public var synchroStatus: SynchroStatus?
+    ///  Synchro error
+    public var synchroError: SynchroError?
+    ///  Date of last tried synchro
+    public var latestSynchroStatusDate: Date?
+    ///  Date of local modification
+    public var latestLocalModificationDate: Date?
     /// - Contains:
     ///     - 0 Not yet synchronized
     ///     - 1 Synchronized
     ///     - 2 Upload Url is taped
     ///     - StatusCode if sync failed
     public var fileSynchroStatus: Int16?
-
     /// - Date of synchro file
     public var fileSynchroDate: Date?
 
-    /// - Remote last modification date of Thumbnail File
-    public var cloudLastUpdate: Date?
-
-    /// - Set True if a Delete Request was triguerred without success
-    public var parrotCloudToBeDeleted: Bool
-
-    /// - Return Thumbnail data type
-    public var thumbnailImageData: Data? {
-        return thumbnailImage?.pngData()
-    }
-
-    /// Uuid of the flight associated with this thumbnail if any
-    public var flightUuid: String?
-
-    // MARK: - Relationship
-
-    public var relatedFlightPlans: [FlightPlanModel] = []
-
     // MARK: - Public init
+    public init(apcId: String,
+                cloudId: Int,
+                uuid: String,
+                latestCloudModificationDate: Date?,
+                lastUpdate: Date?,
+                flightUuid: String?,
+                thumbnailImage: UIImage?,
+                isLocalDeleted: Bool,
+                synchroStatus: SynchroStatus?,
+                synchroError: SynchroError?,
+                latestSynchroStatusDate: Date?,
+                latestLocalModificationDate: Date?,
+                fileSynchroStatus: Int16?,
+                fileSynchroDate: Date?) {
+        /// User's ID
+        self.apcId = apcId
+        /// Academy
+        self.cloudId = cloudId
+        self.uuid = uuid
+        self.latestCloudModificationDate = latestCloudModificationDate
+        /// Local
+        self.lastUpdate = lastUpdate
+        self.flightUuid = flightUuid
+        self.thumbnailImage = thumbnailImage
+        /// Synchronization
+        self.isLocalDeleted = isLocalDeleted
+        self.synchroStatus = synchroStatus
+        self.synchroError = synchroError
+        self.latestSynchroStatusDate = latestSynchroStatusDate
+        self.latestLocalModificationDate = latestLocalModificationDate
+        self.fileSynchroStatus = fileSynchroStatus
+        self.fileSynchroDate = fileSynchroDate
+    }
+}
+
+extension ThumbnailModel {
+    public init(apcId: String,
+                cloudId: Int,
+                uuid: String,
+                latestCloudModificationDate: Date?,
+                thumbnailImage: UIImage?) {
+        self.init(apcId: apcId,
+                  cloudId: cloudId,
+                  uuid: uuid,
+                  latestCloudModificationDate: latestCloudModificationDate,
+                  lastUpdate: latestCloudModificationDate,
+                  flightUuid: nil,
+                  thumbnailImage: thumbnailImage,
+                  isLocalDeleted: false,
+                  synchroStatus: .notSync,
+                  synchroError: .noError,
+                  latestSynchroStatusDate: nil,
+                  latestLocalModificationDate: nil,
+                  fileSynchroStatus: 0,
+                  fileSynchroDate: nil)
+    }
 
     public init(apcId: String,
                 uuid: String,
-                thumbnailImage: UIImage?,
-                lastUpdate: Date? = Date(),
-                synchroStatus: Int16? = 0,
-                fileSynchroStatus: Int16? = 0,
-                fileSynchroDate: Date? = nil,
-                cloudLastUpdate: Date? = nil,
-                synchroDate: Date? = nil,
-                parrotCloudId: Int64 = 0,
-                parrotCloudToBeDeleted: Bool = false,
-                flightUuid: String? = nil) {
-
-        self.apcId = apcId
-        self.uuid = uuid
-        self.thumbnailImage = thumbnailImage
-        self.lastUpdate = lastUpdate
-        self.synchroStatus = synchroStatus
-        self.fileSynchroStatus = fileSynchroStatus
-        self.fileSynchroDate = fileSynchroDate
-        self.cloudLastUpdate = cloudLastUpdate
-        self.synchroDate = synchroDate
-        self.parrotCloudId = parrotCloudId
-        self.parrotCloudToBeDeleted = parrotCloudToBeDeleted
-        self.flightUuid = flightUuid
+                flightUuid: String?,
+                thumbnailImage: UIImage?) {
+        self.init(apcId: apcId,
+                  cloudId: 0,
+                  uuid: uuid,
+                  latestCloudModificationDate: nil,
+                  lastUpdate: Date(),
+                  flightUuid: flightUuid,
+                  thumbnailImage: thumbnailImage,
+                  isLocalDeleted: false,
+                  synchroStatus: .notSync,
+                  synchroError: .noError,
+                  latestSynchroStatusDate: nil,
+                  latestLocalModificationDate: nil,
+                  fileSynchroStatus: 0,
+                  fileSynchroDate: nil)
     }
 }

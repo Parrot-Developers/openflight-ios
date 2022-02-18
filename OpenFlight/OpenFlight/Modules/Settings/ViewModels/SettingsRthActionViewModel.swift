@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -64,16 +63,16 @@ final class SettingsRthActionState: DeviceConnectionState {
     override func isEqual(to other: DeviceConnectionState) -> Bool {
         guard let other = other as? SettingsRthActionState else { return false }
 
-        return self.altitude == other.altitude
-            && self.maxAltitude == other.maxAltitude
-            && self.minAltitude == other.minAltitude
+        return altitude == other.altitude
+            && maxAltitude == other.maxAltitude
+            && minAltitude == other.minAltitude
     }
 
     override func copy() -> SettingsRthActionState {
-        return SettingsRthActionState(connectionState: self.connectionState,
-                                      altitude: self.altitude,
-                                      maxAltitude: self.maxAltitude,
-                                      minAltitude: self.minAltitude)
+        return SettingsRthActionState(connectionState: connectionState,
+                                      altitude: altitude,
+                                      maxAltitude: maxAltitude,
+                                      minAltitude: minAltitude)
     }
 }
 
@@ -108,16 +107,15 @@ final class SettingsRthActionViewModel: DroneStateViewModel<SettingsRthActionSta
 private extension SettingsRthActionViewModel {
     /// Starts watcher for Return Home.
     func listenReturnHome(_ drone: Drone) {
-        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] rth in
-            guard let safeSelf = self,
-                  let rth = rth,
+        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] rth in
+            guard let rth = rth,
                   let minAltitude = rth.minAltitude else { return }
 
-            let copy = safeSelf.state.value.copy()
+            let copy = state.value.copy()
             copy.altitude = minAltitude.value
             copy.minAltitude = minAltitude.min
             copy.maxAltitude = minAltitude.max
-            safeSelf.state.set(copy)
+            state.set(copy)
         }
     }
 }

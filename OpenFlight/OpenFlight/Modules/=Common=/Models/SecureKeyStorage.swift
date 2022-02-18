@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,7 +28,45 @@
 //    SUCH DAMAGE.
 
 import KeychainAccess
+import SwiftyUserDefaults
 import Combine
+
+private extension DefaultsKeys {
+    // MARK: - Edition Settings
+    static let keySuffix = DefaultsKey<String?>("secure_key_storage_suffix")
+}
+
+public extension Keychain {
+    /// This suffix stored in UserDefaults ensures that we don't access the keychain storage from
+    /// a previous installation
+    private var suffix: String {
+        if let suffix = Defaults[key: DefaultsKeys.keySuffix] {
+            return suffix
+        }
+        let suffix = UUID().uuidString
+        Defaults[key: DefaultsKeys.keySuffix] = suffix
+        return suffix
+
+    }
+
+    func get(_ key: String) -> String? {
+        if let value = self[key + suffix] {
+            self[key] = nil
+            return value
+        }
+        // Backward compatibility fallback
+        if let legacyValue = self[key] {
+            self[key + suffix] = legacyValue
+            self[key] = nil
+            return legacyValue
+        }
+        return nil
+    }
+
+    func set(key: String, _ value: String?) {
+        self[key + suffix] = value
+    }
+}
 
 /// Handles the storage of the user informations in the keychain.
 public class SecureKeyStorage {
@@ -47,10 +84,10 @@ public class SecureKeyStorage {
     /// Secure storage temporary token.
     public var temporaryToken: String {
         get {
-            return keychain[Constants.temporaryToken] ?? ""
+            return keychain.get(Constants.temporaryToken) ?? ""
         }
         set {
-            keychain[Constants.temporaryToken] = newValue
+            keychain.set(key: Constants.temporaryToken, newValue)
             temporaryTokenSubject.value = newValue
         }
     }

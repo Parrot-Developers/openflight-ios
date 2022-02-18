@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -66,4 +65,39 @@ extension GalleryInternalMediaViewModel {
         }
     }
 
+    /// Deletes a resource from a media.
+    ///
+    /// - Parameters:
+    ///    - resource: Resource to delete.
+    ///    - mediaItem: Media containing the resource to delete.
+    ///    - completion: Completion block called after deletion.
+    func deleteResource(_ resource: MediaItem.Resource, of mediaItem: MediaItem, completion: @escaping (Bool) -> Void) {
+        let mediaList = MediaResourceListFactory.emptyList()
+        mediaList.add(media: mediaItem, resource: resource)
+
+        deleteRequest = drone?
+            .getPeripheral(Peripherals.mediaStore)?
+            .newDeleter(mediaResources: mediaList) { [weak self] mediaDeleter in
+                guard let mediaDeleter = mediaDeleter
+                    else {
+                        self?.updateRemovingState(false)
+                        completion(false)
+                        return
+                }
+
+                switch mediaDeleter.status {
+                case .complete:
+                    self?.updateRemovingState(false)
+                    completion(true)
+                case .error:
+                    self?.updateRemovingState(false)
+                    completion(false)
+                case .running:
+                    self?.updateRemovingState(true)
+                default:
+                    // fileDownloaded case is not supposed to happen.
+                    break
+                }
+        }
+    }
 }

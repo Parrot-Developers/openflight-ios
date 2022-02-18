@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,8 +30,9 @@
 import UIKit
 import Reusable
 
-final class FlightPlanListExecutionHeaderCell: UITableViewCell, NibReusable {
+final class FlightPlanListExecutionHeaderCell: MainTableViewCell, NibReusable {
 
+    @IBOutlet private weak var cellStackView: MainContainerStackView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var subtitleLabel: UILabel!
 
@@ -44,6 +44,12 @@ final class FlightPlanListExecutionHeaderCell: UITableViewCell, NibReusable {
         backgroundView = UIView(frame: .zero)
         backgroundView?.backgroundColor = .clear
         backgroundColor = .clear
+
+        // Setup margins
+        cellStackView.directionalLayoutMargins = .init(top: Layout.mainSpacing(isRegularSizeClass),
+                                                       leading: Layout.mainPadding(isRegularSizeClass),
+                                                       bottom: Layout.mainSpacing(isRegularSizeClass),
+                                                       trailing: Layout.mainPadding(isRegularSizeClass))
     }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,5 +32,46 @@ import CoreData
 
 @objc(Thumbnail)
 public class Thumbnail: NSManagedObject {
+    // MARK: - Utils
+    func model() -> ThumbnailModel {
+        /// Load UIImage from Data if exist
+        var thumbnailImage: UIImage?
+        if let thumbnailData = thumbnailData {
+            thumbnailImage = UIImage(data: thumbnailData)
+        }
+        return ThumbnailModel(apcId: apcId,
+                              cloudId: Int(cloudId),
+                              uuid: uuid,
+                              latestCloudModificationDate: latestCloudModificationDate,
+                              lastUpdate: latestCloudModificationDate,
+                              flightUuid: ofFlight?.uuid,
+                              thumbnailImage: thumbnailImage,
+                              isLocalDeleted: isLocalDeleted,
+                              synchroStatus: SynchroStatus(status: synchroStatus),
+                              synchroError: .noError,
+                              latestSynchroStatusDate: latestSynchroStatusDate,
+                              latestLocalModificationDate: latestLocalModificationDate,
+                              fileSynchroStatus: 0,
+                              fileSynchroDate: nil)
+    }
 
+    func update(fromThumbnailModel thumbnailModel: ThumbnailModel, withFlight: Flight?) {
+        apcId = thumbnailModel.apcId
+        uuid = thumbnailModel.uuid
+        thumbnailData = thumbnailModel.thumbnailImageData
+        lastUpdate = thumbnailModel.lastUpdate
+        latestSynchroStatusDate = thumbnailModel.latestSynchroStatusDate
+        fileSynchroDate = thumbnailModel.fileSynchroDate
+        latestCloudModificationDate = thumbnailModel.latestCloudModificationDate
+        cloudId = Int64(thumbnailModel.cloudId)
+        isLocalDeleted = thumbnailModel.isLocalDeleted
+        latestLocalModificationDate = thumbnailModel.latestLocalModificationDate
+        synchroStatus = thumbnailModel.synchroStatus?.rawValue ?? 0
+        synchroError = thumbnailModel.synchroError?.rawValue ?? 0
+        fileSynchroStatus = thumbnailModel.fileSynchroStatus ?? 0
+
+        if let flight = withFlight {
+            ofFlight = flight
+        }
+    }
 }

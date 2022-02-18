@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -48,9 +47,7 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     case noGpsLapse
     case tooMuchWind
     case strongImuVibration
-    case internalMemoryFull
     case sdError
-    case sdFull
     case sdTooSlow
     case geofenceAltitudeAndDistance
     case geofenceAltitude
@@ -90,9 +87,7 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return .conditionsWind
         case .strongImuVibration:
             return .componentsImu
-        case .internalMemoryFull,
-             .sdError,
-             .sdFull,
+        case .sdError,
              .sdTooSlow:
             return .sdCard
         case .geofenceAltitudeAndDistance,
@@ -146,12 +141,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return L10n.alertTooMuchWind
         case .strongImuVibration:
             return L10n.alertStrongImuVibrations
-        case .internalMemoryFull:
-            return L10n.alertInternalMemoryFull
         case .sdError:
             return L10n.alertSdError
-        case .sdFull:
-            return L10n.alertSdFull
         case .sdTooSlow:
             return L10n.alertSdcardTooSlow
         case .geofenceAltitudeAndDistance,
@@ -188,12 +179,9 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
         case .tooMuchWind,
              .obstacleAvoidanceStrongWind:
             return Asset.Common.Icons.icWind.image
-        case .internalMemoryFull:
-            return Asset.Common.Icons.icSdSmall.image
         case .sdError,
-             .sdFull,
              .sdTooSlow:
-            return Asset.Gallery.droneInternalMemory.image
+            return Asset.Gallery.droneSd.image
         case .geofenceAltitudeAndDistance:
             return Asset.Telemetry.icDistance.image
         case .geofenceAltitude:
@@ -212,7 +200,7 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     }
 
     public var vibrationDelay: TimeInterval {
-        return HUDAlertConstants.defaultVibrationDelay
+        return 0.0
     }
 }
 
@@ -299,24 +287,16 @@ public enum HUDBannerWarningAlertType: String, HUDAlertType {
     }
 
     public var vibrationDelay: TimeInterval {
-        switch self {
-        case .targetLost, .droneGpsKo, .userDeviceGpsKo:
-            return 0.0
-        default:
-            return HUDAlertConstants.defaultVibrationDelay
-        }
+        return 0.0
     }
 }
 
-/// List of tutorial alerts for HUD banner.
-public enum HUDBannerTutorialAlertType: String, HUDAlertType {
+/// List of advices alerts for HUD banner.
+public enum HUDBannerAdviceslertType: String, HUDAlertType {
     case takeOff
-    case takeOffWaypoint
-    case takeOffPoi
-    case selectSubject
 
     public var level: HUDAlertLevel {
-        return .tutorial
+        return .advice
     }
 
     public var category: AlertCategoryType {
@@ -331,12 +311,6 @@ public enum HUDBannerTutorialAlertType: String, HUDAlertType {
         switch self {
         case .takeOff:
             return L10n.alertTakeOff
-        case .takeOffWaypoint:
-            return L10n.alertTakeOffWaypoint
-        case .takeOffPoi:
-            return L10n.alertTakeOffPoi
-        case .selectSubject:
-            return L10n.alertSelectSubject
         }
     }
 

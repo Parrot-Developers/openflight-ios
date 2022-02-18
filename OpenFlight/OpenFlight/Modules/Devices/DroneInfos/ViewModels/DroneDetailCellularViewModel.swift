@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,7 +30,11 @@
 import Foundation
 import Combine
 import GroundSdk
-import Reachability
+import Network
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "DroneDetailCellularViewModel")
+}
 
 final class DroneDetailCellularViewModel {
 
@@ -39,9 +42,9 @@ final class DroneDetailCellularViewModel {
 
     @Published private(set) var remoteCellularStatus: CellularLinkStatus?
     @Published private(set) var networkLinkStatus: NetworkControlLinkInfo?
-    @Published private(set) var reachable: Bool = false
     @Published private(set) var cellularStrength: CellularStrength?
     @Published private(set) var remoteError: String?
+    private(set) var isFlying = CurrentValueSubject<Bool, Never>(false)
 
     // MARK: - Variables
 
@@ -50,11 +53,10 @@ final class DroneDetailCellularViewModel {
     private var cellularPairingService: CellularPairingService
     private var connectedRemoteControlHolder: ConnectedRemoteControlHolder
     private var connectedDroneHolder: ConnectedDroneHolder
-    private var droneConnectionStateRef: Ref<DeviceState>?
-    private var remoteConnectionStateRef: Ref<DeviceState>?
+    private unowned let networkService: NetworkService
     private var networkControlRef: Ref<NetworkControl>?
     private var remoteCellularLinkStatus: Ref<CellularLinkStatus>?
-    private var reachability: Reachability?
+    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
@@ -63,13 +65,20 @@ final class DroneDetailCellularViewModel {
          currentDroneHolder: CurrentDroneHolder,
          cellularPairingService: CellularPairingService,
          connectedRemoteControlHolder: ConnectedRemoteControlHolder,
-         connectedDroneHolder: ConnectedDroneHolder) {
+         connectedDroneHolder: ConnectedDroneHolder,
+         networkService: NetworkService) {
         self.coordinator = coordinator
         self.currentDroneHolder = currentDroneHolder
         self.cellularPairingService = cellularPairingService
         self.connectedRemoteControlHolder = connectedRemoteControlHolder
         self.connectedDroneHolder = connectedDroneHolder
-        listenReachability()
+        self.networkService = networkService
+
+        connectedDroneHolder.dronePublisher
+            .sink { [unowned self] drone in
+                listenFlyingState(drone: drone)
+            }
+            .store(in: &cancellables)
 
         connectedRemoteControlHolder.remoteControlPublisher
             .compactMap { $0 }
@@ -81,6 +90,30 @@ final class DroneDetailCellularViewModel {
 
     // MARK: - AnyPublisher
 
+    var cellularStatusString: AnyPublisher<String?, Never> {
+        cellularPairingService.cellularStatusPublisher
+            .combineLatest(remoteControl,
+                           networkService.networkReachable.removeDuplicates(),
+                           drone)
+            .map { (cellularStatus, remoteControl, reachable, drone) in
+                if remoteControl == nil || reachable == false || drone == nil {
+                    return nil
+                }
+
+                return cellularStatus.cellularDetailsTitle
+            }
+            .eraseToAnyPublisher()
+    }
+
+    var cellularStatusColor: AnyPublisher<ColorName, Never> {
+        cellularPairingService.cellularStatusPublisher
+            .map { (cellularStatus) in
+                return cellularStatus.detailsTextColor
+            }
+            .eraseToAnyPublisher()
+
+    }
+
     /// Publishes the cellular status of the drone
     var cellularStatus: AnyPublisher<DetailsCellularStatus, Never> {
         cellularPairingService.cellularStatusPublisher
@@ -91,7 +124,12 @@ final class DroneDetailCellularViewModel {
     /// Publishes the operator name
     var operatorName: AnyPublisher<String?, Never> {
         cellularPairingService.operatorNamePublisher
-            .map { (operatorName) in
+            .combineLatest(connectedRemoteControlHolder.remoteControlPublisher, $remoteCellularStatus, $networkLinkStatus)
+            .map { (operatorName, connectedRemote, remoteCellularStatus, networkLinkStatus) in
+                if connectedRemote == nil || remoteCellularStatus?.status != .running || networkLinkStatus?.status != .running {
+                    return nil
+                }
+
                 return operatorName
             }
             .eraseToAnyPublisher()
@@ -102,6 +140,14 @@ final class DroneDetailCellularViewModel {
         cellularPairingService.cellularStatusPublisher
             .map { cellularStatus in
                 return cellularStatus.shouldShowPinAction
+            }
+            .eraseToAnyPublisher()
+    }
+
+    var isForgetPinEnabled: AnyPublisher<Bool, Never> {
+        connectedDroneHolder.dronePublisher
+            .map { drone in
+                return drone != nil
             }
             .eraseToAnyPublisher()
     }
@@ -138,7 +184,8 @@ final class DroneDetailCellularViewModel {
 
     /// Publishes the image for the left internet asset
     var leftInternetImage: AnyPublisher<UIImage, Never> {
-        $reachable
+        networkService.networkReachable
+            .removeDuplicates()
             .combineLatest(remoteControl)
             .map { (reachable, remoteControl) in
                 if remoteControl == nil || !reachable {
@@ -193,7 +240,7 @@ final class DroneDetailCellularViewModel {
     /// Publishes the image for the bottom left branch asset
     var bottomLeftBranchImage: AnyPublisher<UIImage, Never> {
         remoteControl
-            .combineLatest($reachable)
+            .combineLatest(networkService.networkReachable.removeDuplicates())
             .map { (remoteControl, reachable) in
                 if remoteControl == nil || reachable == false {
                     return Asset.CellularPairing.ic4GBottomLeftBranchKo.image
@@ -207,7 +254,7 @@ final class DroneDetailCellularViewModel {
     /// Publishes the image for the top left branch asset
     var topLeftBranchImage: AnyPublisher<UIImage, Never> {
         remoteControl
-            .combineLatest($reachable, $remoteCellularStatus, $networkLinkStatus)
+            .combineLatest(networkService.networkReachable.removeDuplicates(), $remoteCellularStatus, $networkLinkStatus)
             .map { (remoteControl, reachable, remoteCellularStatus, networkLinkStatus) in
                 if networkLinkStatus?.status == .running {
                     return Asset.CellularPairing.ic4GTopLeftBranchOk.image
@@ -225,7 +272,7 @@ final class DroneDetailCellularViewModel {
     /// Publishes the error if any for the controller side
     var controllerError: AnyPublisher<String?, Never> {
         remoteControl
-            .combineLatest($reachable, $remoteCellularStatus)
+            .combineLatest(networkService.networkReachable.removeDuplicates(), $remoteCellularStatus)
             .map { (remoteControl, reachable, remoteCellularStatus) in
                 if remoteControl == nil {
                     return L10n.controllerNotConnected
@@ -235,12 +282,65 @@ final class DroneDetailCellularViewModel {
                     return L10n.cellularErrorNoInternetMessage
                 }
 
-                if remoteCellularStatus?.status != .running {
-                    guard case .error = remoteCellularStatus?.status else { return nil }
-                    return L10n.controllerErrorParrotConnectionFailed
-                }
+                switch remoteCellularStatus?.status {
+                case .error(error: let error):
+                    switch error {
+                    case .dns:
+                        return L10n.cellularConnectionControllerDnsError
 
-                return nil
+                    case .connect:
+                        return L10n.cellularConnectionControllerConnectError
+
+                    case .authentication:
+                        return L10n.cellularConnectionControllerAuthenticationError
+
+                    case .communicationLink:
+                        return L10n.cellularConnectionControllerCommunicationLinkError
+
+                    case .timeout:
+                        return L10n.cellularConnectionControllerTimeoutError
+
+                    case .invite:
+                        return L10n.cellularConnectionControllerInviteError
+
+                    default:
+                        return nil
+                    }
+
+                default:
+                    return nil
+                }
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Publishes the error if any for the drone side
+    var droneError: AnyPublisher<String?, Never> {
+        $networkLinkStatus
+            .map { networkLinkStatus in
+                guard let linkError = networkLinkStatus?.error else { return nil }
+                switch linkError {
+                case .dns:
+                    return L10n.cellularConnectionDroneDnsError
+
+                case .connect:
+                    return L10n.cellularConnectionDroneConnectError
+
+                case .authentication:
+                    return L10n.cellularConnectionDroneAuthenticationError
+
+                case .publish:
+                    return L10n.cellularConnectionDronePublishError
+
+                case .communicationLink:
+                    return L10n.cellularConnectionDroneCommunicationLinkError
+
+                case .timeout:
+                    return L10n.cellularConnectionDroneTimeoutError
+
+                default:
+                    return nil
+                }
             }
             .eraseToAnyPublisher()
     }
@@ -294,20 +394,20 @@ final class DroneDetailCellularViewModel {
     /// Publishes the image for cellular asset
     var cellularImage: AnyPublisher<UIImage, Never> {
         remoteControl
-            .combineLatest(drone, cellularStatus, $reachable)
+            .combineLatest(drone, cellularStatus, networkService.networkReachable.removeDuplicates())
             .combineLatest($networkLinkStatus, $cellularStrength, $remoteCellularStatus)
-            .map { [unowned self] (arg0, networkLinkStatus, cellularStrength, remoteCellularStatus) in
+            .map { (arg0, networkLinkStatus, _, remoteCellularStatus) in
                 let (remoteControl, drone, cellularStatus, reachable) = arg0
                 if remoteControl == nil || drone == nil || !reachable || cellularStatus.isStatusError ||
                     cellularStatus == .simLocked || cellularStatus == .simBlocked || cellularStatus == .simNotDetected {
-                    return Asset.CellularPairing.ic4GStatus0.image
+                    return Asset.CellularPairing.ic4GStatusKO.image
                 }
 
                 if remoteCellularStatus?.status != .running || networkLinkStatus?.status != .running {
-                    return Asset.CellularPairing.ic4GStatus0.image
+                    return Asset.CellularPairing.ic4GStatusKO.image
                 }
 
-                return imageQualityFor4G(cellularStrength: cellularStrength)
+                return Asset.CellularPairing.ic4GStatusOK.image
             }
             .eraseToAnyPublisher()
     }
@@ -336,9 +436,8 @@ final class DroneDetailCellularViewModel {
     /// Reset the pin code
     func forgetPin() {
         coordinator?.displayAlertReboot {
+            ULog.d(.tag, "Forget PIN")
             self.unpairAllUser()
-            let cellular = self.connectedDroneHolder.drone?.getPeripheral(Peripherals.cellular)
-            _ = cellular?.resetSettings()
         }
     }
 }
@@ -348,30 +447,6 @@ private extension DroneDetailCellularViewModel {
     /// Unpairs all users from the drone
     func unpairAllUser() {
          cellularPairingService.startUnpairProcessRequest()
-    }
-
-    /// Selects an image for the cellular asset
-    /// - Parameter cellularStrength: The cellular strength of the drone
-    /// - Returns: An image representing the current strength
-    func imageQualityFor4G(cellularStrength: CellularStrength?) -> UIImage {
-        guard let cellularStrength = cellularStrength else {
-            return Asset.CellularPairing.ic4GStatus0.image
-        }
-
-        switch cellularStrength {
-        case .ko0On4:
-            return Asset.CellularPairing.ic4GStatus0.image
-        case .ok1On4:
-            return Asset.CellularPairing.ic4GStatus1.image
-        case .ok2On4:
-            return Asset.CellularPairing.ic4GStatus2.image
-        case .ok3On4:
-            return Asset.CellularPairing.ic4GStatus3.image
-        case .ok4On4:
-            return Asset.CellularPairing.ic4GStatus4.image
-        default:
-            return Asset.CellularPairing.ic4GStatus0.image
-        }
     }
 
     /// Observes the controller's cellular link
@@ -393,20 +468,18 @@ private extension DroneDetailCellularViewModel {
         }
     }
 
-    /// Observes network reachability.
-    func listenReachability() {
-        do {
-            try reachability = Reachability()
-            try reachability?.startNotifier()
-            reachability?.whenReachable = { [unowned self] _ in
-                reachable = true
-            }
-        } catch {
-            // Nothing to do here
-        }
+    /// Listen flying indicators instrument.
+    ///
+    /// - Parameter drone: the current drone
+    func listenFlyingState(drone: Drone?) {
+        guard let drone = drone else { return }
 
-        reachability?.whenUnreachable = {[unowned self] _ in
-            reachable = false
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicator in
+            guard let flyingIndicator = flyingIndicator else {
+                isFlying.value = false
+                return
+            }
+            isFlying.value =  flyingIndicator.state != .landed && flyingIndicator.state != .emergency
         }
     }
 }

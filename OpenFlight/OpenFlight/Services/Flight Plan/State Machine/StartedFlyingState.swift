@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,11 +35,12 @@ public protocol StartedFlyingStateDelegate: AnyObject {
     func flightPlanRunWillBegin(flightPlan: FlightPlanModel)
     func flightPlanRunDidTimeout(flightPlan: FlightPlanModel)
     func flightPlanRunDidBegin(flightPlan: FlightPlanModel)
+    func flightPlanRunDidPause(flightPlan: FlightPlanModel)
     func flightPlanRunDidFinish(flightPlan: FlightPlanModel, completed: Bool)
 }
 
 private extension ULogTag {
-    static let tag = ULogTag(name: "StartedFlyingState")
+    static let tag = ULogTag(name: "FPStartedFlyingState")
 }
 
 open class StartedFlyingState: GKState {
@@ -60,6 +60,7 @@ open class StartedFlyingState: GKState {
     private weak var delegate: StartedFlyingStateDelegate?
     public let runManager: FlightPlanRunManager
     public let flightPlanManager: FlightPlanManager
+    public let projectManager: ProjectManager
     private var activateTimer: Timer?
     var flightPlan: FlightPlanModel!
     var commands: [MavlinkStandard.MavlinkCommand]!
@@ -67,35 +68,48 @@ open class StartedFlyingState: GKState {
     private var cancellables = Set<AnyCancellable>()
     private var state = State.activating
     private var lastMissionItemExecutedOnStart: Int?
+    private var recoveryResourceId: String?
     private var durationOnStart: TimeInterval?
 
     required public init(delegate: StartedFlyingStateDelegate,
                          runManager: FlightPlanRunManager,
-                         flightPlanManager: FlightPlanManager) {
+                         flightPlanManager: FlightPlanManager,
+                         projectManager: ProjectManager) {
         self.delegate = delegate
         self.runManager = runManager
         self.flightPlanManager = flightPlanManager
+        self.projectManager = projectManager
         super.init()
     }
 
     open override func didEnter(from previousState: GKState?) {
+        // If it's not a resume, update the customTitle to add the execution index.
+        if flightPlan.state == .editable {
+            flightPlan = projectManager.updateExecutionCustomTitle(for: flightPlan)
+        }
         flightPlan = flightPlanManager.update(flightplan: flightPlan, with: .flying)
         delegate?.flightPlanRunWillBegin(flightPlan: flightPlan)
         runManager.setup(flightPlan: flightPlan, mavlinkCommands: commands)
+        let oldState = state
         if lastMissionItemExecutedOnStart != nil {
             state = .running
         } else {
             state = .activating
         }
-        runManager.statePublisher.sink { [unowned self] in
-            ULog.i(.tag, "runState changed to \($0), own state = \(state)")
-            runState = $0
+        ULog.i(.tag, "state changed to '\(state)' from '\(oldState)'")
+        runManager.statePublisher.sink { [unowned self] newState in
+            runState = newState
             // Keep FP up to date
             if let flightPlan = runState.flightPlan {
                 self.flightPlan = flightPlan
             }
             switch state {
             case .activating:
+                // if the runState failed to activate, firing the timer will create an infinite
+                // recursion that will provoke a stack overflow and crash the application.
+                if case .activationError = newState {
+                    break
+                }
                 activateTimer?.fire()
             case .running:
                 handleRunUpdate()
@@ -106,7 +120,9 @@ open class StartedFlyingState: GKState {
         .store(in: &cancellables)
         if let lastMissionItemExecuted = self.lastMissionItemExecutedOnStart,
            let duration = self.durationOnStart {
-            runManager.catchUp(lastMissionItemExecuted: lastMissionItemExecuted, duration: duration)
+            runManager.catchUp(lastMissionItemExecuted: lastMissionItemExecuted,
+                               recoveryResourceId: recoveryResourceId,
+                               duration: duration)
         } else {
             activate()
         }
@@ -129,27 +145,37 @@ open class StartedFlyingState: GKState {
                 self.flightPlan = flightPlan
                 delegate?.flightPlanRunDidBegin(flightPlan: flightPlan)
                 state = .running
-            case .activationError:
-                // Retry
-                runManager.play()
+            case let .activationError(reason):
+                if reason == .cannotTakeOff {
+                    activateTimer?.invalidate()
+                    state = .error
+                    delegate?.flightPlanRunDidTimeout(flightPlan: flightPlan)
+                } else {
+                    // Retry
+                    runManager.play()
+                }
             case .idle:
                 // Transient state
                 break
             case .noFlightPlan, .ended, .paused:
                 activateTimer?.invalidate()
-                ULog.w(.tag, "Inconsistent runState while activating: \(runState)")
+                ULog.w(.tag, "Inconsistent runState while activating runState: '\(runState)' state: '\(state)'")
             }
         }
+        activateTimer?.tolerance = FlightPlanConstants.timerTolerance
         activateTimer?.fire()
     }
 
     private func handleRunUpdate() {
         switch runState {
-        case .playing, .paused:
+        case .playing:
             // Ok, still running
             break
+        case .paused(flightPlan: let flightPlan, startAvailability: _):
+            // Informs the State Machine Flight Plan is paused.
+            delegate?.flightPlanRunDidPause(flightPlan: flightPlan)
         case .noFlightPlan, .activationError, .idle:
-            ULog.w(.tag, "Inconsistent runState while running: \(runState)")
+            ULog.w(.tag, "Inconsistent runState while running runState: '\(runState)' state: '\(state)'")
         case .ended(let completed, flightPlan: let flightPlan):
             state = .finished
             self.flightPlan = flightPlan
@@ -158,7 +184,7 @@ open class StartedFlyingState: GKState {
     }
 
     open func setup(flightPlan: FlightPlanModel, commands: [MavlinkStandard.MavlinkCommand],
-                    lastMissionItemExecuted: Int?, runningTime: TimeInterval?) {
+                    lastMissionItemExecuted: Int?, recoveryResourceId: String?, runningTime: TimeInterval?) {
         self.flightPlan = flightPlan
         self.commands = commands
         if let lastMissionItemExecuted = lastMissionItemExecuted {
@@ -168,6 +194,7 @@ open class StartedFlyingState: GKState {
             lastMissionItemExecutedOnStart = nil
             state = .activating
         }
+        self.recoveryResourceId = recoveryResourceId
 
         if let duration = runningTime {
             durationOnStart = duration
@@ -188,8 +215,10 @@ open class StartedFlyingState: GKState {
         runManager.unpause()
     }
 
-    open func updateRun(lastMissionItemExecuted: Int, runningTime: TimeInterval) {
-        runManager.catchUp(lastMissionItemExecuted: lastMissionItemExecuted, duration: runningTime)
+    open func updateRun(lastMissionItemExecuted: Int, recoveryResourceId: String?, runningTime: TimeInterval) {
+        runManager.catchUp(lastMissionItemExecuted: lastMissionItemExecuted,
+                           recoveryResourceId: recoveryResourceId,
+                           duration: runningTime)
     }
 
     open func flightPlanWasUpdated(_ flightPlan: FlightPlanModel) {
@@ -199,6 +228,7 @@ open class StartedFlyingState: GKState {
 
     open override func isValidNextState(_ stateClass: AnyClass) -> Bool {
         return stateClass is EndedState.Type
+            || stateClass is IdleState.Type
     }
 
     open override func willExit(to nextState: GKState) {

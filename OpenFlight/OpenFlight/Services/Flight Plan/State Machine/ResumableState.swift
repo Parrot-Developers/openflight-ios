@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -69,6 +68,8 @@ open class ResumableState: GKState {
     }
 
     open override func isValidNextState(_ stateClass: AnyClass) -> Bool {
-        return stateClass is EditableState.Type || stateClass is StartedNotFlyingState.Type
+        return stateClass is EditableState.Type
+            || stateClass is StartedNotFlyingState.Type
+            || stateClass is IdleState.Type
     }
 }

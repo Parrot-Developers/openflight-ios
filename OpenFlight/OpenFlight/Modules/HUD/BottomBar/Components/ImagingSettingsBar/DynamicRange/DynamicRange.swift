@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -63,7 +62,7 @@ extension DynamicRange: BarItemMode {
     }
 
     static var allValues: [BarItemMode] {
-        return self.allCases
+        return allCases
     }
 
     var subModes: [BarItemSubMode]? {

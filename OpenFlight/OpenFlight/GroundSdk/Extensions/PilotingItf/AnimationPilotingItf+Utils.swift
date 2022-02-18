@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,15 +32,6 @@ import GroundSdk
 /// Utility extension for `AnimationPilotingItf`.
 
 extension AnimationPilotingItf {
-    /// Returns true if a panorama photo capture is currently in progresss.
-    var isPanoramaPhotoCaptureInProgress: Bool {
-        guard let currentAnimation = animation else {
-            return false
-        }
-        return currentAnimation.isPanoramaPhotoCapture
-            && currentAnimation.status == .animating
-    }
-
     /// Checks panorama photo capture availability.
     ///
     /// - Parameters:

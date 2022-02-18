@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -49,5 +49,16 @@ extension UIView {
     func removeGestureRecognizer(_ gestureRecognizer: UIGestureRecognizer?) {
         guard let strongGestureRecognizer = gestureRecognizer else { return }
         self.removeGestureRecognizer(strongGestureRecognizer)
+    }
+
+    /// Adds a double tap gesture recognizer.
+    ///
+    /// - Parameters:
+    ///    - target: The gesture recognizer target.
+    ///    - action: The action to perform when double tap is detected.
+    func addDoubleTapRecognizer(target: Any?, action: Selector?) {
+        let doubleTapGesture = UITapGestureRecognizer(target: target, action: action)
+        doubleTapGesture.numberOfTapsRequired = 2
+        addGestureRecognizer(doubleTapGesture)
     }
 }

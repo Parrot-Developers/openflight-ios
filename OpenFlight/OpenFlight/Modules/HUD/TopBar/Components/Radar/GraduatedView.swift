@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,7 +30,6 @@
 import UIKit
 
 /// View drawing an horizontal graduation.
-
 final class GraduatedView: UIView {
 
     // MARK: - Private Enums

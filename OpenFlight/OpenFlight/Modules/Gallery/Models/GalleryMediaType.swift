@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -116,11 +115,28 @@ extension GalleryMediaType: CaseIterable {
     }
     var image: UIImage? {
         switch self {
+        case .video:
+            return Asset.Gallery.icVideo.image
         case .photo:
             return nil
-        default:
-            // FIXME: use right (bigger) images
-            return filterImage
+        case .dng:
+            return Asset.Gallery.icDng.image
+        case .burst:
+            return Asset.Gallery.icBurst.image
+        case .bracketing:
+            return Asset.Gallery.icBracketing.image
+        case .gpsLapse:
+            return Asset.Gallery.icGPSLapse.image
+        case .timeLapse:
+            return Asset.Gallery.icTimelapse.image
+        case .panoHorizontal:
+            return Asset.Gallery.icPanoH.image
+        case .panoVertical:
+            return Asset.Gallery.icPanoV.image
+        case .pano360:
+            return Asset.Gallery.icPano360.image
+        case .panoWide:
+            return Asset.Gallery.icWide.image
         }
     }
     var pathExtension: String {

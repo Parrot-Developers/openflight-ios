@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -66,11 +65,10 @@ final class DynamicRangeBarViewModel: BarButtonViewModel<ImagingBarState> {
 
     override func update(mode: BarItemMode) {
         guard let camera = drone?.getPeripheral(Peripherals.mainCamera2),
-            !camera.config.updating,
-            let dynamicRange = mode as? DynamicRange
-            else {
-                return
-        }
+              !camera.config.updating,
+              let dynamicRange = mode as? DynamicRange else {
+                  return
+              }
 
         let currentEditor = camera.currentEditor
 
@@ -94,10 +92,10 @@ final class DynamicRangeBarViewModel: BarButtonViewModel<ImagingBarState> {
 private extension DynamicRangeBarViewModel {
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
             guard let camera = camera else { return }
-            self?.updateCurrentMode(with: camera)
-            self?.updateAvailableModes(with: camera)
+            updateCurrentMode(with: camera)
+            updateAvailableModes(with: camera)
         }
         guard let camera = drone.getPeripheral(Peripherals.mainCamera2) else { return }
         updateCurrentMode(with: camera)

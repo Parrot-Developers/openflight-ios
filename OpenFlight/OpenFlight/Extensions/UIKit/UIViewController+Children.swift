@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,10 +32,14 @@ import UIKit
 /// Extension for `UIViewController` to manage child view controllers.
 
 extension UIViewController {
-    /// Add a child view controller with constraints.
-    func add(_ child: UIViewController) {
+    /// Adds a child view controller with constraints.
+    ///
+    /// - Parameters:
+    ///    - child: The child view controller to add.
+    ///    - subview: The view to add to child view controller's view to.
+    func add(_ child: UIViewController, in subview: UIView? = nil) {
         addChild(child)
-        view.addWithConstraints(subview: child.view)
+        (subview ?? view).addWithConstraints(subview: child.view)
         child.didMove(toParent: self)
     }
 

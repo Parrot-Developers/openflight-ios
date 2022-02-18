@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,7 +36,7 @@ public final class DroneCalibrationCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
     weak var delegate: DroneCalibrationCoordinatorDelegate?
 
     // MARK: - Private
@@ -50,52 +49,78 @@ public final class DroneCalibrationCoordinator: Coordinator {
 
     public func start() {
         let viewController = DroneCalibrationViewController.instantiate(coordinator: self)
-        self.navigationController = NavigationController(rootViewController: viewController)
-        self.navigationController?.isNavigationBarHidden = true
+        navigationController = NavigationController(rootViewController: viewController)
+        navigationController?.isNavigationBarHidden = true
     }
 
-    /// Start magnetometer calibration.
+    /// Starts magnetometer calibration.
     public func startWithMagnetometerCalibration() {
         let viewController = MagnetometerCalibrationViewController.instantiate(coordinator: self)
-        self.navigationController = NavigationController(rootViewController: viewController)
-        self.navigationController?.isNavigationBarHidden = true
+        navigationController = NavigationController(rootViewController: viewController)
+        navigationController?.isNavigationBarHidden = true
     }
 }
 
-// MARK: - Drone Details Navigation
+// MARK: - Drone Calibration Navigation
 extension DroneCalibrationCoordinator {
     /// Dismisses current coordinator.
     func dismissDroneCalibration() {
-        self.parentCoordinator?.dismissChildCoordinator()
+        parentCoordinator?.dismissChildCoordinator()
     }
 
-    /// Start magnetometer calibration.
+    /// Starts magnetometer calibration.
     func startMagnetometerCalibration() {
         let controller = MagnetometerCalibrationViewController.instantiate(coordinator: self)
-        self.push(controller)
+        push(controller)
     }
 
-    /// Starts Gimbal calibration.
+    /// Starts gimbal calibration.
     func startGimbal() {
         let droneGimbalCalibrationCoordinator = DroneGimbalCalibrationCoordinator()
         droneGimbalCalibrationCoordinator.parentCoordinator = self
         droneGimbalCalibrationCoordinator.start()
-        self.present(childCoordinator: droneGimbalCalibrationCoordinator,
-                     overFullScreen: true)
+        present(childCoordinator: droneGimbalCalibrationCoordinator,
+                overFullScreen: true)
     }
 
-    /// Starts Stereo Vision calibration.
+    /// Starts stereo vision calibration.
     func startStereoVisionCalibration() {
         let viewModel = StereoCalibrationViewModel(coordinator: self, ophtalmoService: services.drone.ophtalmoService)
         let controller = StereoCalibrationViewController.instantiate(viewModel: viewModel)
-        self.push(controller)
+        push(controller)
     }
 
-    /// Starts Horizon correction.
+    /// Starts horizon correction.
     func startHorizonCorrection() {
         let viewModel = HorizonCorrectionViewModel(coordinator: self, droneHolder: Services.hub.connectedDroneHolder)
         let controller = HorizonCorrectionViewController.instantiate(viewModel: viewModel)
-        self.push(controller)
+        push(controller)
+    }
+
+    /// Starts settings coordinator.
+    ///
+    /// - Parameters:
+    ///     - type: settings type
+    func startSettings(_ type: SettingsType?) {
+        let settingsCoordinator = SettingsCoordinator()
+        settingsCoordinator.startSettingType = type
+        presentCoordinatorWithAnimator(childCoordinator: settingsCoordinator)
+    }
+
+    /// Starts drone details coordinator.
+    func startDroneInformation() {
+        let droneCoordinator = DroneCoordinator(services: services)
+        droneCoordinator.parentCoordinator = self
+        droneCoordinator.start()
+        present(childCoordinator: droneCoordinator)
+    }
+
+    /// Starts remote details coordinator.
+    func startRemoteInformation() {
+        let remoteCoordinator = RemoteCoordinator()
+        remoteCoordinator.parentCoordinator = self
+        remoteCoordinator.start()
+        present(childCoordinator: remoteCoordinator)
     }
 }
 
@@ -110,7 +135,7 @@ extension DroneCalibrationCoordinator: HUDCriticalAlertDelegate {
     func displayCriticalAlert() {
         let criticalAlertVC = HUDCriticalAlertViewController.instantiate(with: .droneUpdateRequired)
         criticalAlertVC.delegate = self
-        self.presentModal(viewController: criticalAlertVC)
+        presentModal(viewController: criticalAlertVC)
     }
 
     func dismissAlert() {

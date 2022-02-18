@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,15 +29,31 @@
 
 import Foundation
 import Combine
+import SdkCore
 
 public protocol FlightPlanManager {
 
-    /// Duplicates Flight Plan.
+    /// Creates a new Flight Plan with the same title, type, version, flightPlanType, dataSetting.
     ///
     /// - Parameters:
-    ///     - flightPlan: flight plan to duplicate
-    /// - Returns: the new version of duplicat flight plan
-    func duplicate(flightPlan: FlightPlanModel) -> FlightPlanModel
+    ///     - flightPlan: flight plan to be based on
+    ///     - persist: whether to save the flight plan in the database.
+    /// - Returns: a new flight plan. The duplicated flight plan is in `.editable` state has
+    ///            a new uuid & thumbnail and has the following fields cleared:
+    ///            `lastMissionItemExecuted`,
+    ///            `recoveryResourceId`,
+    ///            `pgyProjectId`,
+    ///            `uploadedMediaCount`,
+    ///            `mediaCount`,
+    ///            `parrotCloudId`,
+    ///            `parrotCloudToBeDeleted`,
+    ///            `parrotCloudUploadUrl`,
+    ///            `synchroDate`
+    ///            `synchroStatus`
+    ///            `fileSynchroStatus`
+    ///            `fileSynchroDate`
+    func newFlightPlan(basedOn flightPlan: FlightPlanModel,
+                       save: Bool) -> FlightPlanModel
 
     /// Deletes a flightPlan.
     ///
@@ -56,11 +72,15 @@ public protocol FlightPlanManager {
     /// - Parameters:
     ///   - flightPlan: flight plan
     ///   - lastMissionItemExecuted: last item executed
-    func update(flightPlan: FlightPlanModel, lastMissionItemExecuted: Int) -> FlightPlanModel
+    ///   - recoveryResourceId: first resource identifier of media captured after the latest reached waypoint
+    func update(flightPlan: FlightPlanModel, lastMissionItemExecuted: Int, recoveryResourceId: String?) -> FlightPlanModel
 
-    /// Saves drone progress
+    /// Updates flightplan `customTitle` and saves it in CoreData.
     ///
-    func saveExecutionProgress(for flightPlan: FlightPlanModel, at waypoint: Int) -> FlightPlanModel
+    /// - Parameters:
+    ///    - flightplan: flight plan to update.
+    ///    - customTitle: the new `customTitle` value.
+    func update(flightplan: FlightPlanModel, with customTitle: String) -> FlightPlanModel
 
     /// Get all Editable flightplans linked to a specific project
     ///
@@ -92,6 +112,10 @@ public protocol FlightPlanManager {
     func lastFlightDate(_ flightPlan: FlightPlanModel) -> Date?
 }
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "FPManager")
+}
+
 public class FlightPlanManagerImpl: FlightPlanManager {
     private let persistenceFlightPlan: FlightPlanRepository
     private let currentUser: UserInformation
@@ -110,94 +134,130 @@ public class FlightPlanManagerImpl: FlightPlanManager {
 
     // MARK: - Private Functions
 
-    private func persist(_ flightPlan: FlightPlanModel) {
-        persistenceFlightPlan.persist(flightPlan, true)
+    private func persist(_ flightPlan: FlightPlanModel,
+                         toSynchro: Bool,
+                         withFileUploadNeeded: Bool) {
+        persistenceFlightPlan.saveOrUpdateFlightPlan(flightPlan,
+                                                     byUserUpdate: true,
+                                                     toSynchro: toSynchro,
+                                                     withFileUploadNeeded: withFileUploadNeeded)
     }
 
     // MARK: - Public Functions
 
-    public func duplicate(flightPlan: FlightPlanModel) -> FlightPlanModel {
-
-        flightPlan.dataSetting?.mavlinkDataFile = nil
+    public func newFlightPlan(basedOn flightPlan: FlightPlanModel,
+                              save: Bool) -> FlightPlanModel {
+        var newFlightPlan = flightPlan
+        newFlightPlan.dataSetting = flightPlan.dataSetting?.copy()
+        newFlightPlan.uuid = UUID().uuidString
+        newFlightPlan.lastUpdate = Date()
+        newFlightPlan.state = .editable
+        newFlightPlan.lastMissionItemExecuted = 0
+        newFlightPlan.recoveryResourceId = nil
+        newFlightPlan.pgyProjectId = 0
+        newFlightPlan.uploadedMediaCount = 0
+        newFlightPlan.mediaCount = 0
+        newFlightPlan.uploadAttemptCount = 0
+        newFlightPlan.cloudId = 0
+        newFlightPlan.isLocalDeleted = false
+        newFlightPlan.parrotCloudUploadUrl = nil
+        newFlightPlan.latestCloudModificationDate = nil
+        newFlightPlan.latestSynchroStatusDate = nil
+        newFlightPlan.synchroStatus = nil
+        newFlightPlan.fileSynchroStatus = nil
+        newFlightPlan.fileSynchroDate = nil
+        newFlightPlan.synchroError = nil
         let thumbnailUUID = UUID().uuidString
+        newFlightPlan.thumbnail = ThumbnailModel(apcId: currentUser.apcId,
+                                                 uuid: thumbnailUUID,
+                                                 flightUuid: nil,
+                                                 thumbnailImage: flightPlan.thumbnail?.thumbnailImage)
+        newFlightPlan.thumbnailUuid = thumbnailUUID
+        newFlightPlan.flightPlanFlights = []
+        newFlightPlan.dataSetting?.notPropagatedSettings = [:]
 
-        var duplicatedFlightPlan = flightPlan
-        duplicatedFlightPlan.uuid = UUID().uuidString
-        duplicatedFlightPlan.lastUpdate = Date()
-        duplicatedFlightPlan.state = .editable
-        duplicatedFlightPlan.lastMissionItemExecuted = 0
-        duplicatedFlightPlan.pgyProjectId = 0
-        duplicatedFlightPlan.uploadedMediaCount = 0
-        duplicatedFlightPlan.parrotCloudId = 0
-        duplicatedFlightPlan.parrotCloudToBeDeleted = false
-        duplicatedFlightPlan.parrotCloudUploadUrl = nil
-        duplicatedFlightPlan.synchroDate = nil
-        duplicatedFlightPlan.thumbnail = ThumbnailModel(apcId: currentUser.apcId,
-                                                        uuid: thumbnailUUID,
-                                                        thumbnailImage: flightPlan.thumbnail?.thumbnailImage)
-        duplicatedFlightPlan.thumbnailUuid = thumbnailUUID
-        duplicatedFlightPlan.flightPlanFlights = []
-        duplicatedFlightPlan.dataSetting?.notPropagatedSettings = [:]
-
-        persist(duplicatedFlightPlan)
-        return duplicatedFlightPlan
+        if save {
+            persist(newFlightPlan,
+                    toSynchro: true,
+            withFileUploadNeeded: true)
+        }
+        return newFlightPlan
     }
 
     public func delete(flightPlan: FlightPlanModel) {
+        ULog.i(.tag, "Deleting flightPlan '\(flightPlan.uuid)'")
         if flightPlan.pgyProjectId > 0 {
-            pgyProjectRepo.removePgyProject(flightPlan.pgyProjectId)
+            pgyProjectRepo.deletePgyProject(withProjectId: flightPlan.pgyProjectId, updateRelatedFlightPlan: false)
         }
         filesManager.deleteMavlink(of: flightPlan)
-        persistenceFlightPlan.performRemoveFlightPlan(flightPlan)
+        persistenceFlightPlan.deleteOrFlagToDeleteFlightPlan(withUuid: flightPlan.uuid)
     }
 
     public func editableFlightPlansFor(projectId: String) -> [FlightPlanModel] {
-        persistenceFlightPlan.loadFlightPlans(["projectUuid": projectId, "state": FlightPlanModel.FlightPlanState.editable.rawValue])
+        persistenceFlightPlan.getFlightPlans(withProjectUuid: projectId, withState: FlightPlanModel.FlightPlanState.editable)
     }
 
     public func flightPlansForState(_ state: FlightPlanModel.FlightPlanState) -> [FlightPlanModel] {
-        persistenceFlightPlan.loadFlightPlansByExcluding(types: ["default"]).filter { $0.state.rawValue == state.rawValue }
+        persistenceFlightPlan.getFlightPlans(byExcludingTypes: ["default"]).filter { $0.state.rawValue == state.rawValue }
     }
 
     public func updateWithUploadAttempt(flightplan: FlightPlanModel) -> FlightPlanModel {
         var updatedFlightplan = flightplan
         updatedFlightplan.lastUploadAttempt = Date()
         updatedFlightplan.uploadAttemptCount += 1
-        persist(updatedFlightplan)
+        persist(updatedFlightplan,
+                toSynchro: false,
+                withFileUploadNeeded: false)
+        ULog.i(.tag, "Update flightPlan '\(updatedFlightplan.uuid)' uploadAttempt to \(updatedFlightplan.uploadAttemptCount)")
         return updatedFlightplan
     }
 
     public func update(flightplan: FlightPlanModel, with state: FlightPlanModel.FlightPlanState) -> FlightPlanModel {
         var newStateFlightPlan = flightplan
         newStateFlightPlan.state = state
-        persist(newStateFlightPlan)
+        newStateFlightPlan.lastUpdate = Date()
+        persist(newStateFlightPlan,
+                toSynchro: true,
+                withFileUploadNeeded: false)
+        ULog.i(.tag, "Update flightPlan '\(newStateFlightPlan.uuid)' state to '\(state)'")
         return newStateFlightPlan
     }
 
-    public func update(flightPlan: FlightPlanModel, lastMissionItemExecuted: Int) -> FlightPlanModel {
-        var newFlightPlan = flightPlan
-        newFlightPlan.lastMissionItemExecuted = Int64(lastMissionItemExecuted)
-        self.persistenceFlightPlan.persist(newFlightPlan, true)
+
+    public func update(flightplan: FlightPlanModel, with customTitle: String) -> FlightPlanModel {
+        var newFlightPlan = flightplan
+        newFlightPlan.customTitle = customTitle
+        persist(newFlightPlan,
+                toSynchro: true,
+                withFileUploadNeeded: false)
+        ULog.i(.tag, "Update flightPlan '\(newFlightPlan.uuid)' customTitle to '\(customTitle)'")
         return newFlightPlan
     }
 
-    public func saveExecutionProgress(for flightPlan: FlightPlanModel, at waypoint: Int) -> FlightPlanModel {
-        var updatedFlightplan = flightPlan
-        updatedFlightplan.lastMissionItemExecuted = Int64(waypoint)
-        updatedFlightplan.state = .flying
-        persistenceFlightPlan.persist(updatedFlightplan, true)
-        return updatedFlightplan
+    public func update(flightPlan: FlightPlanModel, lastMissionItemExecuted: Int, recoveryResourceId: String?) -> FlightPlanModel {
+        guard lastMissionItemExecuted >= flightPlan.lastMissionItemExecuted else {
+            // update flightplan only if new value of `last mission item executed` is greater or equal to current value
+            return flightPlan
+        }
+        var newFlightPlan = flightPlan
+        newFlightPlan.lastMissionItemExecuted = Int64(lastMissionItemExecuted)
+        newFlightPlan.recoveryResourceId = recoveryResourceId
+        persistenceFlightPlan.saveOrUpdateFlightPlan(newFlightPlan,
+                                                     byUserUpdate: true,
+                                                     toSynchro: false,
+                                                     withFileUploadNeeded: false)
+        return newFlightPlan
     }
 
     public func flightPlan(uuid: String) -> FlightPlanModel? {
-        persistenceFlightPlan.loadFlightPlan("uuid", uuid)
+        persistenceFlightPlan.getFlightPlan(withUuid: uuid)
     }
 
     public func flightPlanWith(pgyId: Int64) -> FlightPlanModel? {
-        persistenceFlightPlan.loadFlightPlansByPgyProject(pgyProjectId: pgyId)
+        persistenceFlightPlan.getFlightPlan(withPgyProjectId: pgyId)
     }
 
     public func lastFlightDate(_ flightPlan: FlightPlanModel) -> Date? {
-        persistenceFlightPlan.lastFlightDate(flightPlan)
+        persistenceFlightPlan.getLastFlightDateOfFlightPlan(flightPlan)
     }
 }

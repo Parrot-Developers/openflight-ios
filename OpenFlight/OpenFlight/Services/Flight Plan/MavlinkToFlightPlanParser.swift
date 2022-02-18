@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,6 +29,10 @@
 
 import GroundSdk
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "MavlinkParser")
+}
+
 /// MAVLink to Flight Plan parser.
 final class MavlinkToFlightPlanParser {
     /// Generates FlightPlan from MAVLink file at given URL or MAVLink string (legacy).
@@ -37,13 +40,7 @@ final class MavlinkToFlightPlanParser {
     /// - Parameters:
     ///    - url: url of MAVLink file to parse
     ///    - mavlinkString: MAVLink string to parse
-    ///    - title: title of FlightPlan to generate
-    ///    - type: Flight Plan type
-    ///    - uuid: Flight Plan ID
-    ///    - settings: Flight Plan settings
-    ///    - polygonPoints:Flight Plan polygon points
-    ///    - version: version of FlightPlan
-    ///    - model: model of drone for generated FlightPlan
+    ///    - flightPlan: the existing flight plan.
     ///
     /// - Returns: generated `FlightPlanModel` is operation succeeded, `nil` otherwise
     static func generateFlightPlanFromMavlinkLegacy(
@@ -51,200 +48,177 @@ final class MavlinkToFlightPlanParser {
         mavlinkString: String? = nil,
         flightPlan: FlightPlanModel) -> FlightPlanModel? {
 
-        var commands: [MavlinkCommand] = []
+            var commands: [MavlinkCommand] = []
 
-        if let strongUrl = url {
-            commands = MavlinkFiles.parse(filepath: strongUrl.path)
-        } else if let strongMavlinkString = mavlinkString {
-            commands = MavlinkFiles.parse(mavlinkString: strongMavlinkString)
-        }
+            if let strongUrl = url {
+                commands = MavlinkFiles.parse(filepath: strongUrl.path)
+            } else if let strongMavlinkString = mavlinkString {
+                commands = MavlinkFiles.parse(mavlinkString: strongMavlinkString)
+            }
 
-        var takeOffActions = [Action]()
-        var pois = [PoiPoint]()
-        var waypoints = [WayPoint]()
+            var takeOffActions = [Action]()
+            var pois = [PoiPoint]()
+            var waypoints = [WayPoint]()
 
-        var currentWaypoint: WayPoint?
-        var currentViewModeCommand = MavlinkStandard.SetViewModeCommand(mode: .absolute)
-        var currentSpeedCommand: MavlinkStandard.ChangeSpeedCommand?
+            var currentWaypoint: WayPoint?
+            var currentViewModeCommand = MavlinkStandard.SetViewModeCommand(mode: .absolute)
+            var currentSpeedCommand: MavlinkStandard.ChangeSpeedCommand?
 
-        for command in commands {
-            switch command {
-            case let roiCommand as SetRoiCommand:
-                let newPoi = PoiPoint(roiMavLinkCommand: roiCommand.asStandard)
-                pois.append(newPoi)
+            for command in commands {
+                switch command {
+                case let roiCommand as SetRoiCommand:
+                    let newPoi = PoiPoint(roiMavLinkCommand: roiCommand.asStandard)
+                    pois.append(newPoi)
 
-            case let viewModeCommand as SetViewModeCommand:
-                currentWaypoint?.update(viewModeCommand: viewModeCommand.asStandard)
-                currentViewModeCommand = viewModeCommand.asStandard
+                case let viewModeCommand as SetViewModeCommand:
+                    currentWaypoint?.update(viewModeCommand: viewModeCommand.asStandard)
+                    currentViewModeCommand = viewModeCommand.asStandard
 
-            case let speedModeCommand as ChangeSpeedCommand:
-                currentWaypoint?.update(speedMavlinkCommand: speedModeCommand.asStandard)
-                currentSpeedCommand = speedModeCommand.asStandard
+                case let speedModeCommand as ChangeSpeedCommand:
+                    currentWaypoint?.update(speedMavlinkCommand: speedModeCommand.asStandard)
+                    currentSpeedCommand = speedModeCommand.asStandard
 
-            case let waypointCommand as NavigateToWaypointCommand:
-                let newWaypoint = WayPoint(navigateToWaypointCommand: waypointCommand.asStandard,
-                                           speedMavlinkCommand: currentSpeedCommand,
-                                           viewModeCommand: currentViewModeCommand)
-                waypoints.append(newWaypoint)
-                currentWaypoint = newWaypoint
+                case let waypointCommand as NavigateToWaypointCommand:
+                    let newWaypoint = WayPoint(navigateToWaypointCommand: waypointCommand.asStandard,
+                                               speedMavlinkCommand: currentSpeedCommand,
+                                               viewModeCommand: currentViewModeCommand)
+                    waypoints.append(newWaypoint)
+                    currentWaypoint = newWaypoint
 
-            default:
-                guard let newAction = Action(mavLinkCommand: command) else { continue }
+                default:
+                    guard let newAction = Action(mavLinkCommand: command) else { continue }
 
-                if let currentWaypoint = currentWaypoint {
-                    currentWaypoint.addAction(newAction)
-                } else {
-                    takeOffActions.append(newAction)
+                    if let currentWaypoint = currentWaypoint {
+                        currentWaypoint.addAction(newAction)
+                    } else {
+                        takeOffActions.append(newAction)
+                    }
                 }
             }
+
+            let newDataSetting = dataSetting(fromFlightPlan: flightPlan,
+                                             takeOffActions: takeOffActions,
+                                             pois: pois,
+                                             waypoints: waypoints)
+            return derivedFligthPlan(fromFlightPlan: flightPlan, dataSetting: newDataSetting)
         }
-
-        let newDataSetting = FlightPlanDataSetting(product: FlightPlanConstants.defaultDroneModel,
-                                                   settings: flightPlan.dataSetting?.settings ?? [],
-                                                   freeSettings: flightPlan.dataSetting?.freeSettings ?? [:],
-                                                   polygonPoints: flightPlan.dataSetting?.polygonPoints,
-                                                   mavlinkDataFile: nil,
-                                                   takeoffActions: takeOffActions,
-                                                   pois: pois,
-                                                   wayPoints: waypoints,
-                                                   disablePhotoSignature: flightPlan.dataSetting?.disablePhotoSignature ?? false)
-
-        let newFlightPlan = FlightPlanModel(apcId: Services.hub.userInformation.apcId,
-                                             type: flightPlan.type,
-                                             uuid: flightPlan.uuid,
-                                             version: flightPlan.version,
-                                             customTitle: flightPlan.customTitle,
-                                             thumbnailUuid: flightPlan.thumbnailUuid,
-                                             projectUuid: flightPlan.projectUuid,
-                                             dataStringType: flightPlan.dataStringType,
-                                             dataString: newDataSetting.toJSONString(),
-                                             pgyProjectId: flightPlan.pgyProjectId,
-                                             mediaCustomId: flightPlan.mediaCustomId,
-                                             state: flightPlan.state,
-                                             lastMissionItemExecuted: flightPlan.lastMissionItemExecuted,
-                                             mediaCount: flightPlan.mediaCount,
-                                             uploadedMediaCount: flightPlan.uploadedMediaCount,
-                                             lastUpdate: Date(),
-                                             synchroStatus: 0,
-                                             fileSynchroStatus: 0,
-                                             synchroDate: flightPlan.synchroDate,
-                                             parrotCloudId: flightPlan.parrotCloudId, parrotCloudUploadUrl: flightPlan.parrotCloudUploadUrl,
-                                             parrotCloudToBeDeleted: flightPlan.parrotCloudToBeDeleted,
-                                             thumbnail: flightPlan.thumbnail,
-                                             flightPlanFlights: flightPlan.flightPlanFlights)
-        return newFlightPlan
-    }
 
     /// Generates FlightPlan from MAVLink file at given URL or MAVLink string (standard).
     ///
     /// - Parameters:
     ///    - url: url of MAVLink file to parse
     ///    - mavlinkString: MAVLink string to parse
-    ///    - title: title of FlightPlan to generate
-    ///    - type: Flight Plan type
-    ///    - uuid: Flight Plan ID
-    ///    - settings: Flight Plan settings
-    ///    - polygonPoints:Flight Plan polygon points
-    ///    - version: version of FlightPlan
-    ///    - model: model of drone for generated FlightPlan
+    ///    - flightPlan: the existing flight plan.
     ///
     /// - Returns: generated `FlightPlanModel` is operation succeeded, `nil` otherwise
     static func generateFlightPlanFromMavlinkStandard(
-        url: URL?,
-        mavlinkString: String?,
+        url: URL? = nil,
+        mavlinkString: String? = nil,
         flightPlan: FlightPlanModel) -> FlightPlanModel? {
-        var commands: [MavlinkStandard.MavlinkCommand] = []
+            var commands: [MavlinkStandard.MavlinkCommand] = []
 
-        if let strongUrl = url {
-            commands = (try? MavlinkStandard.MavlinkFiles.parse(filepath: strongUrl.path)) ?? []
-        } else if let strongMavlinkString = mavlinkString {
-            commands = (try? MavlinkStandard.MavlinkFiles.parse(mavlinkString: strongMavlinkString)) ?? []
-        }
+            if let strongUrl = url {
+                commands = (try? MavlinkStandard.MavlinkFiles.parse(filepath: strongUrl.path)) ?? []
+            } else if let strongMavlinkString = mavlinkString {
+                commands = (try? MavlinkStandard.MavlinkFiles.parse(mavlinkString: strongMavlinkString)) ?? []
+            }
 
-        var captureModeEnum: FlightPlanCaptureMode = FlightPlanCaptureMode.defaultValue
+            var captureModeEnum: FlightPlanCaptureMode = FlightPlanCaptureMode.defaultValue
 
-        var takeOffActions = [Action]()
-        var pois = [PoiPoint]()
-        var waypoints = [WayPoint]()
+            var takeOffActions = [Action]()
+            var pois = [PoiPoint]()
+            var waypoints = [WayPoint]()
 
-        var currentWaypoint: WayPoint?
-        var currentViewModeCommand = MavlinkStandard.SetViewModeCommand(mode: .absolute)
-        var currentSpeedCommand: MavlinkStandard.ChangeSpeedCommand?
+            var currentWaypoint: WayPoint?
+            var currentViewModeCommand = MavlinkStandard.SetViewModeCommand(mode: .absolute)
+            var currentSpeedCommand: MavlinkStandard.ChangeSpeedCommand?
 
-        for command in commands {
-            switch command {
-            case is MavlinkStandard.StartVideoCaptureCommand:
-                captureModeEnum = .video
-            case is MavlinkStandard.CameraTriggerDistanceCommand:
-                captureModeEnum = .gpsLapse
-            case is MavlinkStandard.CameraTriggerIntervalCommand:
-                captureModeEnum = .timeLapse
-            case let roiCommand as MavlinkStandard.SetRoiLocationCommand:
-                let newPoi = PoiPoint(roiMavLinkCommand: roiCommand)
-                pois.append(newPoi)
+            for command in commands {
+                switch command {
+                case is MavlinkStandard.StartVideoCaptureCommand:
+                    captureModeEnum = .video
+                case is MavlinkStandard.CameraTriggerDistanceCommand:
+                    captureModeEnum = .gpsLapse
+                case is MavlinkStandard.CameraTriggerIntervalCommand:
+                    captureModeEnum = .timeLapse
+                case let roiCommand as MavlinkStandard.SetRoiLocationCommand:
+                    let newPoi = PoiPoint(roiMavLinkCommand: roiCommand)
+                    pois.append(newPoi)
 
-            case let viewModeCommand as MavlinkStandard.SetViewModeCommand:
-                currentWaypoint?.update(viewModeCommand: viewModeCommand)
-                currentViewModeCommand = viewModeCommand
+                case let viewModeCommand as MavlinkStandard.SetViewModeCommand:
+                    currentWaypoint?.update(viewModeCommand: viewModeCommand)
+                    currentViewModeCommand = viewModeCommand
 
-            case let speedModeCommand as MavlinkStandard.ChangeSpeedCommand:
-                currentWaypoint?.update(speedMavlinkCommand: speedModeCommand)
-                currentSpeedCommand = speedModeCommand
+                case let speedModeCommand as MavlinkStandard.ChangeSpeedCommand:
+                    currentWaypoint?.update(speedMavlinkCommand: speedModeCommand)
+                    currentSpeedCommand = speedModeCommand
 
-            case let waypointCommand as MavlinkStandard.NavigateToWaypointCommand:
-                let newWaypoint = WayPoint(navigateToWaypointCommand: waypointCommand,
-                                           speedMavlinkCommand: currentSpeedCommand,
-                                           viewModeCommand: currentViewModeCommand)
-                waypoints.append(newWaypoint)
-                currentWaypoint = newWaypoint
+                case let waypointCommand as MavlinkStandard.NavigateToWaypointCommand:
+                    let newWaypoint = WayPoint(navigateToWaypointCommand: waypointCommand,
+                                               speedMavlinkCommand: currentSpeedCommand,
+                                               viewModeCommand: currentViewModeCommand)
+                    waypoints.append(newWaypoint)
+                    currentWaypoint = newWaypoint
 
-            default:
-                guard let newAction = Action(mavLinkCommand: command) else { continue }
-                if let currentWaypoint = currentWaypoint {
-                    currentWaypoint.addAction(newAction)
-                } else {
-                    takeOffActions.append(newAction)
+                default:
+                    guard let newAction = Action(mavLinkCommand: command) else { continue }
+                    if let currentWaypoint = currentWaypoint {
+                        currentWaypoint.addAction(newAction)
+                    } else {
+                        takeOffActions.append(newAction)
+                    }
                 }
             }
+
+            let newDataSetting = dataSetting(fromFlightPlan: flightPlan,
+                                             takeOffActions: takeOffActions,
+                                             pois: pois,
+                                             waypoints: waypoints)
+            newDataSetting.captureMode = captureModeEnum.rawValue
+            return derivedFligthPlan(fromFlightPlan: flightPlan, dataSetting: newDataSetting)
         }
 
-        let newDataSetting = FlightPlanDataSetting(product: FlightPlanConstants.defaultDroneModel,
-                                                   settings: flightPlan.dataSetting?.settings ?? [],
-                                                   freeSettings: flightPlan.dataSetting?.freeSettings ?? [:],
-                                                   polygonPoints: flightPlan.dataSetting?.polygonPoints,
-                                                   mavlinkDataFile: nil,
-                                                   takeoffActions: takeOffActions,
-                                                   pois: pois,
-                                                   wayPoints: waypoints,
-                                                   disablePhotoSignature: flightPlan.dataSetting?.disablePhotoSignature ?? false)
+    static private func dataSetting(fromFlightPlan flightPlan: FlightPlanModel,
+                                    takeOffActions: [Action],
+                                    pois: [PoiPoint],
+                                    waypoints: [WayPoint]) -> FlightPlanDataSetting {
+        FlightPlanDataSetting(product: FlightPlanConstants.defaultDroneModel,
+                              settings: flightPlan.dataSetting?.settings ?? [],
+                              freeSettings: flightPlan.dataSetting?.freeSettings ?? [:],
+                              polygonPoints: flightPlan.dataSetting?.polygonPoints,
+                              mavlinkDataFile: nil,
+                              takeoffActions: takeOffActions,
+                              pois: pois,
+                              wayPoints: waypoints,
+                              disablePhotoSignature: flightPlan.dataSetting?.disablePhotoSignature ?? false)
+    }
 
-        newDataSetting.captureMode = captureModeEnum.rawValue
-
-        let newFlightPlan = FlightPlanModel(apcId: Services.hub.userInformation.apcId,
-                                             type: flightPlan.type,
-                                             uuid: flightPlan.uuid,
-                                             version: flightPlan.version,
-                                             customTitle: flightPlan.customTitle,
-                                             thumbnailUuid: flightPlan.thumbnailUuid,
-                                             projectUuid: flightPlan.projectUuid,
-                                             dataStringType: flightPlan.dataStringType,
-                                             dataString: newDataSetting.toJSONString(),
-                                             pgyProjectId: flightPlan.pgyProjectId,
-                                             mediaCustomId: flightPlan.mediaCustomId,
-                                             state: flightPlan.state,
-                                             lastMissionItemExecuted: flightPlan.lastMissionItemExecuted,
-                                             mediaCount: flightPlan.mediaCount,
-                                             uploadedMediaCount: flightPlan.uploadedMediaCount,
-                                             lastUpdate: Date(),
-                                             synchroStatus: 0,
-                                             fileSynchroStatus: 0,
-                                             synchroDate: nil,
-                                             parrotCloudId: flightPlan.parrotCloudId, parrotCloudUploadUrl: flightPlan.parrotCloudUploadUrl,
-                                             parrotCloudToBeDeleted: flightPlan.parrotCloudToBeDeleted,
-                                             thumbnail: flightPlan.thumbnail,
-                                             flightPlanFlights: flightPlan.flightPlanFlights)
-
-        return newFlightPlan
+    static private func derivedFligthPlan(fromFlightPlan flightPlan: FlightPlanModel, dataSetting: FlightPlanDataSetting) -> FlightPlanModel {
+        FlightPlanModel(apcId: Services.hub.userInformation.apcId,
+                        type: flightPlan.type,
+                        uuid: flightPlan.uuid,
+                        version: flightPlan.version,
+                        customTitle: flightPlan.customTitle,
+                        thumbnailUuid: flightPlan.thumbnailUuid,
+                        projectUuid: flightPlan.projectUuid,
+                        dataStringType: flightPlan.dataStringType,
+                        dataString: dataSetting.toJSONString(),
+                        pgyProjectId: flightPlan.pgyProjectId,
+                        state: flightPlan.state,
+                        lastMissionItemExecuted: flightPlan.lastMissionItemExecuted,
+                        mediaCount: flightPlan.mediaCount,
+                        uploadedMediaCount: flightPlan.uploadedMediaCount,
+                        lastUpdate: Date(),
+                        synchroStatus: .notSync,
+                        fileSynchroStatus: 0,
+                        latestSynchroStatusDate: flightPlan.latestSynchroStatusDate,
+                        cloudId: flightPlan.cloudId,
+                        parrotCloudUploadUrl: flightPlan.parrotCloudUploadUrl,
+                        isLocalDeleted: flightPlan.isLocalDeleted,
+                        thumbnail: flightPlan.thumbnail,
+                        flightPlanFlights: flightPlan.flightPlanFlights,
+                        latestLocalModificationDate: flightPlan.latestLocalModificationDate,
+                        synchroError: .noError)
     }
 }
 
@@ -340,7 +314,7 @@ private extension Action {
             self.period = command.interval
         default:
             // FIXME: Remove this print when all MavLink commands management will be approved.
-            print("Unknown mavlink command : \(mavLinkCommand)")
+            ULog.e(.tag, "Unknown mavlink command : \(mavLinkCommand)")
             return nil
         }
     }

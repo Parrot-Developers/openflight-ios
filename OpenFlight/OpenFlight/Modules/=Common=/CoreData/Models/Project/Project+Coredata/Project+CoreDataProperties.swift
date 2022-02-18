@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +33,7 @@ import CoreData
 extension Project {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<Project> {
-        return NSFetchRequest<Project>(entityName: "Project")
+        return NSFetchRequest<Project>(entityName: Self.entityName)
     }
 
     // MARK: - Properties
@@ -43,11 +43,13 @@ extension Project {
     @NSManaged public var title: String?
     @NSManaged public var type: String!
     @NSManaged public var lastUpdated: Date!
-    @NSManaged public var cloudLastUpdate: Date?
-    @NSManaged public var parrotCloudId: Int64
-    @NSManaged public var parrotCloudToBeDeleted: Bool
-    @NSManaged public var synchroDate: Date?
+    @NSManaged public var latestCloudModificationDate: Date?
+    @NSManaged public var cloudId: Int64
+    @NSManaged public var isLocalDeleted: Bool
+    @NSManaged public var latestSynchroStatusDate: Date?
     @NSManaged public var synchroStatus: Int16
+    @NSManaged public var latestLocalModificationDate: Date?
+    @NSManaged public var synchroError: Int16
 
     // MARK: - Relationship
 
@@ -71,22 +73,4 @@ extension Project {
     @objc(removeFlightPlans:)
     @NSManaged public func removeFromFlightPlans(_ values: NSSet)
 
-}
-
-// MARK: - Utils
-extension Project {
-
-    /// Return ProjectModel from Project type of NSManagedObject
-    func model() -> ProjectModel {
-        return ProjectModel(apcId: apcId,
-                            uuid: uuid,
-                            title: title,
-                            type: type,
-                            lastUpdated: lastUpdated,
-                            parrotCloudId: parrotCloudId,
-                            cloudLastUpdate: cloudLastUpdate,
-                            parrotCloudToBeDeleted: parrotCloudToBeDeleted,
-                            synchroDate: synchroDate,
-                            synchroStatus: synchroStatus)
-    }
 }

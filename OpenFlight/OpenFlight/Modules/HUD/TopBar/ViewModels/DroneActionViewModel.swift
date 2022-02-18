@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,6 +30,10 @@
 import GroundSdk
 import SwiftyUserDefaults
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "DroneActionVM")
+}
+
 // MARK: - DroneActionState
 /// State for `DroneActionViewModel`.
 final class DroneActionState: DeviceConnectionState {
@@ -46,7 +49,7 @@ final class DroneActionState: DeviceConnectionState {
         super.init()
     }
 
-    /// Init.
+    /// Constructor.
     ///
     /// - Parameters:
     ///    - connectionState: drone connection state
@@ -75,20 +78,20 @@ final class DroneActionState: DeviceConnectionState {
         guard let other = other as? DroneActionState else { return false }
 
         return super.isEqual(to: other)
-            && self.buttonImage == other.buttonImage
-            && self.backgroundColor == other.backgroundColor
-            && self.isRthAvailable == other.isRthAvailable
-            && self.isTakeOffButtonEnabled == other.isTakeOffButtonEnabled
-            && self.shouldHideActionButton == other.shouldHideActionButton
+            && buttonImage == other.buttonImage
+            && backgroundColor == other.backgroundColor
+            && isRthAvailable == other.isRthAvailable
+            && isTakeOffButtonEnabled == other.isTakeOffButtonEnabled
+            && shouldHideActionButton == other.shouldHideActionButton
     }
 
     override func copy() -> DroneActionState {
-        let copy = DroneActionState(connectionState: self.connectionState,
-                                    buttonImage: self.buttonImage,
-                                    backgroundColor: self.backgroundColor,
-                                    isRthAvailable: self.isRthAvailable,
-                                    isTakeOffButtonEnabled: self.isTakeOffButtonEnabled,
-                                    shouldHideTakeOffButton: self.shouldHideActionButton)
+        let copy = DroneActionState(connectionState: connectionState,
+                                    buttonImage: buttonImage,
+                                    backgroundColor: backgroundColor,
+                                    isRthAvailable: isRthAvailable,
+                                    isTakeOffButtonEnabled: isTakeOffButtonEnabled,
+                                    shouldHideTakeOffButton: shouldHideActionButton)
 
         return copy
     }
@@ -101,8 +104,6 @@ final class DroneActionViewModel: DroneStateViewModel<DroneActionState> {
     private var returnHomePilotingRef: Ref<ReturnHomePilotingItf>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var handDetectedAlertObserver: Any?
-    private var takeOffAvailabilityObserver: Any?
-    private var criticalAlertViewModel: HUDCriticalAlertViewModel = HUDCriticalAlertViewModel()
 
     // MARK: - Init
     override init() {
@@ -115,8 +116,6 @@ final class DroneActionViewModel: DroneStateViewModel<DroneActionState> {
     deinit {
         NotificationCenter.default.remove(observer: handDetectedAlertObserver)
         handDetectedAlertObserver = nil
-        NotificationCenter.default.remove(observer: takeOffAvailabilityObserver)
-        takeOffAvailabilityObserver = nil
     }
 
     // MARK: - Override Funcs
@@ -141,14 +140,14 @@ extension DroneActionViewModel {
     func startAction() {
         guard let drone = drone else { return }
 
-        // Post a notification about take off request.
-        // In case of unavailability, we need to display again dismissed alerts.
+        // post a notification about take off request;
+        // in case of unavailability, we need to display again dismissed alerts
         NotificationCenter.default.post(name: .takeOffRequestedDidChange,
                                         object: nil,
                                         userInfo: [HUDCriticalAlertConstants.takeOffRequestedNotificationKey: true])
 
-        // Starts drone action only if the drone can take off or is currently flying.
-        if criticalAlertViewModel.state.value.canTakeOff
+        // starts drone action only if the drone can take off or is currently flying
+        if Services.hub.ui.criticalAlert.canTakeOff
             || drone.getInstrument(Instruments.flyingIndicators)?.state == .flying {
             takeOffOrLandDrone()
         }
@@ -158,11 +157,13 @@ extension DroneActionViewModel {
     func startReturnToHome() {
         switch drone?.getPilotingItf(PilotingItfs.returnHome)?.state {
         case .active:
+            ULog.i(.tag, "RTH pressed: cancel RTH")
             _ = drone?.cancelReturnHome()
         case .idle:
+            ULog.i(.tag, "RTH pressed: start RTH")
             _ = drone?.performReturnHome()
         default:
-            break
+            ULog.w(.tag, "RTH pressed: do nothing")
         }
     }
 }
@@ -187,24 +188,24 @@ private extension DroneActionViewModel {
 
     /// Starts watcher for manual piloting.
     func listenManualPiloting(drone: Drone) {
-        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [weak self] _ in
-            self?.updateButtonState()
-            self?.updateRthAvailability()
+        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [unowned self] _ in
+            updateButtonState()
+            updateRthAvailability()
         }
     }
 
     /// Starts watcher for flying indicators.
     func listenFlyingIndicators(drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
-            self?.updateButtonState()
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] _ in
+            updateButtonState()
         }
     }
 
     /// Starts watcher for Return Home.
     func listenReturnHome(drone: Drone) {
-        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] _ in
-            self?.updateButtonState()
-            self?.updateRthAvailability()
+        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] _ in
+            updateButtonState()
+            updateRthAvailability()
         }
     }
 
@@ -212,7 +213,7 @@ private extension DroneActionViewModel {
     func activateManualPiloting() {
         guard let drone = drone else { return }
 
-        // Deactivate RTH if it is the current pilotingItf.
+        // deactivate RTH if it is the current pilotingItf
         if drone.isReturningHome {
             _ = drone.cancelReturnHome()
         } else {
@@ -225,17 +226,17 @@ private extension DroneActionViewModel {
         let copy = state.value.copy()
         guard let drone = drone else {
             copy.buttonImage = Asset.DroneAction.icTakeOffIndicator.image
-            copy.backgroundColor = UIColor(named: .greenSpring20)
+            copy.backgroundColor = UIColor(named: .takeoffIndicatorColor)
             state.set(copy)
             return
         }
 
         if drone.isLandedOrDisconnected {
             copy.buttonImage = Asset.DroneAction.icTakeOffIndicator.image
-            copy.backgroundColor = UIColor(named: .greenSpring20)
+            copy.backgroundColor = UIColor(named: .takeoffIndicatorColor)
         } else {
             copy.buttonImage = Asset.DroneAction.icLandIndicator.image
-            copy.backgroundColor = UIColor(named: .orangePeel50)
+            copy.backgroundColor = UIColor(named: .landingIndicatorColor)
         }
 
         state.set(copy)
@@ -255,11 +256,28 @@ private extension DroneActionViewModel {
 
     /// Starts take off or landing action.
     func takeOffOrLandDrone() {
-        guard let drone = drone else { return }
+        guard let drone = drone,
+              let manualPilotingItf = drone.getPilotingItf(PilotingItfs.manualCopter) else {
+                  return
+              }
 
         if !drone.isManualPilotingActive {
             activateManualPiloting()
         }
-        drone.getPilotingItf(PilotingItfs.manualCopter)?.smartTakeOffLand()
+
+        switch manualPilotingItf.smartTakeOffLandAction {
+        case .thrownTakeOff:
+            if Services.hub.drone.handLaunchService.canStart {
+                manualPilotingItf.thrownTakeOff()
+            } else {
+                manualPilotingItf.takeOff()
+            }
+        case .takeOff:
+            manualPilotingItf.takeOff()
+        case .land:
+            manualPilotingItf.land()
+        default:
+            break
+        }
     }
 }

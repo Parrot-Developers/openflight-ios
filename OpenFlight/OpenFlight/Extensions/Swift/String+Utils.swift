@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,11 +33,5 @@ extension String {
     /// Returns current string prefixed with a dash.
     var dashPrefixed: String {
         return String(format: "%@ %@", Style.dash, self)
-    }
-
-    /// Returns only numbers in the string.
-    var onlyNumbers: String {
-        let pattern = UnicodeScalar("0")..."9"
-        return String(unicodeScalars.compactMap { pattern ~= $0 ? Character($0) : nil })
     }
 }

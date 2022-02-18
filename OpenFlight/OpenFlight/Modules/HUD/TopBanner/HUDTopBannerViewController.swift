@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Handles HUD's top banner that displays alerts and some specific informations (hdr, precise home, etc).
 final class HUDTopBannerViewController: UIViewController, DelayedTaskProvider {
@@ -44,6 +44,7 @@ final class HUDTopBannerViewController: UIViewController, DelayedTaskProvider {
 
     // MARK: - Private Properties
     private var viewModel = HUDTopBannerViewModel()
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -75,33 +76,61 @@ private extension HUDTopBannerViewController {
                                                      backgroundColor: ColorName.yellowSea.color)
         homeInfoView.model = HUDTopBannerInfoModel(image: Asset.Common.Icons.iconHome.image,
                                                    text: nil,
-                                                   backgroundColor: ColorName.greenSpring.color)
+                                                   backgroundColor: ColorName.highlightColor.color)
     }
 
     /// Sets up view model.
     func setupViewModel() {
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.updateInfoBanner(state: state)
-        }
-        updateInfoBanner(state: viewModel.state.value)
-    }
+        viewModel.$hdrOn
+            .removeDuplicates()
+            .sink { [unowned self] hdrOn in
+                hdrInfoView.isHidden = !hdrOn
+            }
+            .store(in: &cancellables)
 
-    /// Updates banner display.
-    ///
-    /// - Parameters:
-    ///    - state: top banner state
-    func updateInfoBanner(state: HUDTopBannerState) {
-        guard state.isConnected(),
-              !state.isDisplayingAlert else {
-            cameraLabelsContainer.isHidden = true
-            homeLabelsContainer.isHidden = true
-            return
-        }
+        viewModel.$shouldDisplayAutoExposureLock
+            .removeDuplicates()
+            .sink { [unowned self] shouldDisplayAELock in
+                lockAeInfoView.isHidden = !shouldDisplayAELock
+            }
+            .store(in: &cancellables)
 
-        hdrInfoView.isHidden = !state.hdrOn
-        lockAeInfoView.isHidden = !state.shouldDisplayAutoExposureLock
-        cameraLabelsContainer.isHidden = !state.lockAeMode.locked && !state.hdrOn
-        updateHomeInfo(homeState: state.homeState)
+        viewModel.$lockAeMode
+            .removeDuplicates()
+            .combineLatest(viewModel.$hdrOn.removeDuplicates(),
+                           viewModel.$connectionState.removeDuplicates(),
+                           viewModel.$isDisplayingAlert.removeDuplicates())
+            .sink { [unowned self] (lockAeMode, hdrOn, connectionState, isDisplayingAlert) in
+                if connectionState == .connected && !isDisplayingAlert {
+                    cameraLabelsContainer.isHidden = !lockAeMode.locked && !hdrOn
+                }
+            }
+            .store(in: &cancellables)
+
+        viewModel.$homeState
+            .removeDuplicates()
+            .sink { [unowned self] homeState in
+                updateHomeInfo(homeState: homeState)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$connectionState
+            .removeDuplicates()
+            .combineLatest(viewModel.$isDisplayingAlert.removeDuplicates())
+            .sink { [unowned self] (connectionState, isDisplayingAlert) in
+                if connectionState != .connected || isDisplayingAlert {
+                    cameraLabelsContainer.isHidden = true
+                    homeLabelsContainer.isHidden = true
+                }
+            }
+            .store(in: &cancellables)
+
+        viewModel.$isLanded
+            .removeDuplicates()
+            .sink { [unowned self] _ in
+                updateHomeInfo(homeState: .none)
+            }
+            .store(in: &cancellables)
     }
 
     /// Updates home info.
@@ -115,17 +144,18 @@ private extension HUDTopBannerViewController {
             homeInfoView.model?.text = homeDisplayText
         }
         switch homeState {
-        case .preciseHomeSet, .homePositionSet:
+        case .homePositionSet:
             setupDelayedTask(hideHomeInfoIfNeeded, delay: Constants.homeSetDisplayDuration)
         case .preciseRthInProgress, .preciseLandingInProgress:
             cancelDelayedTask()
         case .none:
-            break
+            hideHomeInfoIfNeeded()
         }
     }
 
     /// Hides home info if needed.
     func hideHomeInfoIfNeeded() {
-        homeLabelsContainer.isHidden = viewModel.state.value.homeState == .none
+        viewModel.updateHomeState(with: .none)
+        homeLabelsContainer.isHidden = viewModel.homeState == .none
     }
 }

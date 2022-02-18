@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,6 +38,8 @@ public protocol CurrentDroneHolder: AnyObject {
     var drone: Drone { get }
     // The current drone publisher
     var dronePublisher: AnyPublisher<Drone, Never> { get }
+    /// True if a drone has been connected before
+    var hasLastConnectedDrone: Bool { get }
     /// Clear the current drone if it matches the `uid` argument and restart autoconnection
     func clearCurrentDroneOnMatch(uid: String)
 }
@@ -65,6 +66,10 @@ class CurrentDroneHolderImpl: CurrentDroneHolder {
     var dronePublisher: AnyPublisher<Drone, Never> { droneSubject.eraseToAnyPublisher() }
 
     var drone: Drone { droneSubject.value }
+
+    var hasLastConnectedDrone: Bool {
+        return Defaults[\.lastConnectedDroneUID] != nil
+    }
 
     init(connectedDroneHolder: ConnectedDroneHolder) {
         let groundSdk = GroundSdk()

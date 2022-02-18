@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,7 +32,7 @@ public final class SettingsCoordinator: Coordinator {
     // MARK: - Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
 
     // This optional parameter allows to start settings view controller on a specific type of settings.
     var startSettingType: SettingsType?
@@ -40,8 +40,8 @@ public final class SettingsCoordinator: Coordinator {
     // MARK: - Public Funcs
     public func start() {
         let viewController = SettingsViewController.instantiate(coordinator: self, settingType: startSettingType)
-        self.navigationController = NavigationController(rootViewController: viewController)
-        self.navigationController?.isNavigationBarHidden = true
+        navigationController = NavigationController(rootViewController: viewController)
+        navigationController?.isNavigationBarHidden = true
     }
 
     /// Dismisses settings.
@@ -49,28 +49,27 @@ public final class SettingsCoordinator: Coordinator {
         if parentCoordinator is DashboardCoordinator {
             dismiss()
         } else {
-            dismissCoordinatorWithAnimation(animationDirection: .fromLeft)
+            dismissCoordinatorWithAnimator()
         }
     }
 
     /// Starts banked turn setting info.
     func startSettingInfoBankedTurn() {
         let viewController = SettingsInfoViewController.instantiate(coordinator: self, infoType: .bankedTurn)
-        self.push(viewController)
+        presentModal(viewController: viewController)
     }
 
     /// Starts horizontal gimbal setting info.
     func startSettingInfoHorizontal() {
         let viewController = SettingsInfoViewController.instantiate(coordinator: self, infoType: .horizonLine)
-        self.push(viewController)
+        presentModal(viewController: viewController)
     }
 
     /// Starts drone password edition.
     ///
     /// - Parameters:
-    ///     - viewModel: Settings network viewModel
+    ///    - viewModel: Settings network viewModel
     func startSettingDronePasswordEdition(viewModel: SettingsNetworkViewModel?) {
-        let viewModel = SettingsNetworkViewModel()
         let viewController = SettingsPasswordEditionViewController.instantiate(
             coordinator: self,
             viewModel: viewModel,
@@ -81,6 +80,6 @@ public final class SettingsCoordinator: Coordinator {
     /// Starts DRI info screen.
     func startDriInfoScreen() {
         let viewController = SettingsDRIViewController.instantiate(coordinator: self)
-        self.presentModal(viewController: viewController)
+        presentModal(viewController: viewController)
     }
 }

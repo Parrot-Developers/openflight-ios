@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="LayoutGridView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="bottomBarSpacingGuide" destination="mR4-gj-MXL" id="fTx-Oo-dzO"/>
+                <outlet property="bottomButtonsGuide" destination="dbf-Zn-f6X" id="YWE-hs-loo"/>
+                <outlet property="bottomButtonsSpacingGuide" destination="eXS-4g-JUw" id="Ldu-Qt-FAP"/>
+                <outlet property="bottomMarginGuide" destination="6JM-PZ-yHJ" id="iek-3W-FTi"/>
+                <outlet property="gridView" destination="Zy7-Va-dbf" id="tgD-qv-uA6"/>
+                <outlet property="hCenterGuide" destination="eSI-YZ-NhB" id="0wY-ou-oDJ"/>
+                <outlet property="leftMarginGuide" destination="AJt-NN-KZd" id="V5o-hT-Anw"/>
+                <outlet property="leftPanelGuide" destination="91x-Ge-gCr" id="5EY-7D-yo3"/>
+                <outlet property="leftPanelTrailingGuide" destination="kTB-a6-T9c" id="o3j-pS-0Nw"/>
+                <outlet property="leftSafeAreaGuide" destination="Zhf-SU-7im" id="VZm-1Q-93K"/>
+                <outlet property="missionButtonGuideContainer" destination="fP4-7E-tUH" id="utL-Vd-b6f"/>
+                <outlet property="missionButtonVGuide" destination="Dhp-El-Bfh" id="dDi-p5-Iag"/>
+                <outlet property="missionButtonWidthConstraint" destination="lqF-kj-wH1" id="f3K-3V-TO6"/>
+                <outlet property="rightMarginGuide" destination="dXT-Rj-wXy" id="TXx-vD-Xql"/>
+                <outlet property="rightPanelButtonsGuide0" destination="z4X-IT-gM4" id="Lp5-qD-aXe"/>
+                <outlet property="rightPanelButtonsGuide1" destination="jM7-NV-Cdv" id="cKp-l3-i6d"/>
+                <outlet property="rightPanelButtonsGuide2" destination="BiJ-5R-xuE" id="dsL-o9-uzB"/>
+                <outlet property="rightPanelButtonsSpacingGuide0" destination="VGc-AS-dou" id="nC0-d0-t9O"/>
+                <outlet property="rightPanelButtonsSpacingGuide1" destination="ZQg-Ut-SIH" id="eIB-XI-5ZJ"/>
+                <outlet property="rightPanelButtonsSpacingGuide2" destination="VUx-6f-P8M" id="KBd-Xx-0G1"/>
+                <outlet property="rightPanelGuide" destination="sqk-YZ-vlt" id="vGO-KX-k1I"/>
+                <outlet property="rightPanelLeadingGuide" destination="bjP-4j-CmN" id="ghE-d0-w7S"/>
+                <outlet property="topBarBottomPaddingGuide" destination="beC-5l-nno" id="PBp-xy-QRA"/>
+                <outlet property="topBarGuide" destination="xsC-51-oJI" id="c2w-yF-hfN"/>
+                <outlet property="topBarTopPaddingGuide" destination="EWJ-wn-efv" id="wUu-I7-Ou3"/>
+                <outlet property="vCenterGuide" destination="hrB-kT-O1O" id="fBf-7a-5RZ"/>
+                <outletCollection property="bottomGuides" destination="6JM-PZ-yHJ" collectionClass="NSMutableArray" id="Ydh-q2-pHi"/>
+                <outletCollection property="bottomGuides" destination="dbf-Zn-f6X" collectionClass="NSMutableArray" id="lLu-bo-Z2V"/>
+                <outletCollection property="bottomGuides" destination="eXS-4g-JUw" collectionClass="NSMutableArray" id="Gog-mt-lLx"/>
+                <outletCollection property="leftPanelGuides" destination="91x-Ge-gCr" collectionClass="NSMutableArray" id="qtJ-YY-0Ga"/>
+                <outletCollection property="leftPanelGuides" destination="kTB-a6-T9c" collectionClass="NSMutableArray" id="2Lf-mV-Vmi"/>
+                <outletCollection property="rightPanelGuides" destination="sqk-YZ-vlt" collectionClass="NSMutableArray" id="htT-R8-eWf"/>
+                <outletCollection property="centerGuides" destination="eSI-YZ-NhB" collectionClass="NSMutableArray" id="ZXe-2F-4l4"/>
+                <outletCollection property="centerGuides" destination="hrB-kT-O1O" collectionClass="NSMutableArray" id="bwM-7Q-u4Y"/>
+                <outletCollection property="hudGuides" destination="Dhp-El-Bfh" collectionClass="NSMutableArray" id="a10-6j-xth"/>
+                <outletCollection property="hudGuides" destination="mR4-gj-MXL" collectionClass="NSMutableArray" id="B6x-6E-L61"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="iN0-l3-epB" customClass="PassThroughView" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Zy7-Va-dbf" userLabel="Grid View" customClass="PassThroughView" customModule="OpenFlight" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eSI-YZ-NhB" userLabel="HCenter Guide">
+                            <rect key="frame" x="0.0" y="206.5" width="896" height="1"/>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="1" id="K5k-1W-4xe"/>
+                            </constraints>
+                        </view>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hrB-kT-O1O" userLabel="VCenter Guide">
+                            <rect key="frame" x="447.5" y="0.0" width="1" height="414"/>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="1" id="QPF-Th-8u2"/>
+                            </constraints>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="896" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="xsC-51-oJI" userLabel="Top Bar Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="0.0" width="896" height="40"/>
+                            <subviews>
+                                <view contentMode="scaleToFill" placeholderIntrinsicWidth="896" placeholderIntrinsicHeight="20" translatesAutoresizingMaskIntoConstraints="NO" id="EWJ-wn-efv" userLabel="Top Bar Top Padding Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="0.0" width="896" height="20"/>
+                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                </view>
+                                <view contentMode="scaleToFill" placeholderIntrinsicWidth="896" placeholderIntrinsicHeight="20" translatesAutoresizingMaskIntoConstraints="NO" id="beC-5l-nno" userLabel="Top Bar Bottom Padding Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="20" width="896" height="20"/>
+                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                </view>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstItem="EWJ-wn-efv" firstAttribute="leading" secondItem="xsC-51-oJI" secondAttribute="leading" id="6kE-3u-coX"/>
+                                <constraint firstItem="beC-5l-nno" firstAttribute="leading" secondItem="xsC-51-oJI" secondAttribute="leading" id="BPX-TQ-D18"/>
+                                <constraint firstAttribute="trailing" secondItem="EWJ-wn-efv" secondAttribute="trailing" id="DH3-yy-QPg"/>
+                                <constraint firstItem="beC-5l-nno" firstAttribute="height" secondItem="EWJ-wn-efv" secondAttribute="height" id="TCj-O5-W9C"/>
+                                <constraint firstAttribute="trailing" secondItem="beC-5l-nno" secondAttribute="trailing" id="Xrd-4C-9fB"/>
+                                <constraint firstAttribute="bottom" secondItem="beC-5l-nno" secondAttribute="bottom" id="c2F-bM-n39"/>
+                                <constraint firstItem="EWJ-wn-efv" firstAttribute="top" secondItem="xsC-51-oJI" secondAttribute="top" id="vMH-iz-F3g"/>
+                            </constraints>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="896" placeholderIntrinsicHeight="30" translatesAutoresizingMaskIntoConstraints="NO" id="6JM-PZ-yHJ" userLabel="Bottom Margin Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="384" width="896" height="30"/>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="896" placeholderIntrinsicHeight="50" translatesAutoresizingMaskIntoConstraints="NO" id="dbf-Zn-f6X" userLabel="Bottom Buttons Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="334" width="896" height="50"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="896" placeholderIntrinsicHeight="10" translatesAutoresizingMaskIntoConstraints="NO" id="eXS-4g-JUw" userLabel="Bottom Buttons Spacing Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="324" width="896" height="10"/>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="138" placeholderIntrinsicHeight="414" translatesAutoresizingMaskIntoConstraints="NO" id="91x-Ge-gCr" userLabel="Left Panel Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="31" y="0.0" width="138" height="414"/>
+                            <subviews>
+                                <view contentMode="scaleToFill" placeholderIntrinsicWidth="20" placeholderIntrinsicHeight="414" translatesAutoresizingMaskIntoConstraints="NO" id="kTB-a6-T9c" userLabel="Left Panel Trailing Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                                    <rect key="frame" x="118" y="0.0" width="20" height="414"/>
+                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                </view>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="trailing" secondItem="kTB-a6-T9c" secondAttribute="trailing" id="5fI-Km-yll"/>
+                                <constraint firstItem="kTB-a6-T9c" firstAttribute="top" secondItem="91x-Ge-gCr" secondAttribute="top" id="6lp-6T-Eii"/>
+                                <constraint firstAttribute="bottom" secondItem="kTB-a6-T9c" secondAttribute="bottom" id="rO2-Ui-fwK"/>
+                            </constraints>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="20" placeholderIntrinsicHeight="414" translatesAutoresizingMaskIntoConstraints="NO" id="AJt-NN-KZd" userLabel="Left Margin Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="31" y="0.0" width="20" height="414"/>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="31" placeholderIntrinsicHeight="414" translatesAutoresizingMaskIntoConstraints="NO" id="Zhf-SU-7im" userLabel="Left Safe Area Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="0.0" width="31" height="414"/>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        </view>
+                        <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fP4-7E-tUH" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="0.0" width="62" height="414"/>
+                            <subviews>
+                                <view contentMode="scaleToFill" placeholderIntrinsicWidth="41" placeholderIntrinsicHeight="414" translatesAutoresizingMaskIntoConstraints="NO" id="r6s-Nl-zCS">
+                                    <rect key="frame" x="0.0" y="0.0" width="50" height="414"/>
+                                    <subviews>
+                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Dhp-El-Bfh" userLabel="VCenter Guide">
+                                            <rect key="frame" x="24.5" y="0.0" width="1" height="414"/>
+                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="1" id="5EX-dU-MUv"/>
+                                            </constraints>
+                                        </view>
+                                    </subviews>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstItem="Dhp-El-Bfh" firstAttribute="top" secondItem="r6s-Nl-zCS" secondAttribute="top" id="IeY-c3-xjB"/>
+                                        <constraint firstItem="Dhp-El-Bfh" firstAttribute="centerX" secondItem="r6s-Nl-zCS" secondAttribute="centerX" id="MvR-oF-ntj"/>
+                                        <constraint firstAttribute="width" constant="50" id="lqF-kj-wH1"/>
+                                        <constraint firstAttribute="bottom" secondItem="Dhp-El-Bfh" secondAttribute="bottom" id="pE3-ja-iWA"/>
+                                    </constraints>
+                                </view>
+                                <view contentMode="scaleToFill" placeholderIntrinsicWidth="12" placeholderIntrinsicHeight="414" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mR4-gj-MXL" userLabel="Bottom Bar Spacing Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                                    <rect key="frame" x="50" y="0.0" width="12" height="414"/>
+                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                </view>
+                            </subviews>
+                        </stackView>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="20" placeholderIntrinsicHeight="414" translatesAutoresizingMaskIntoConstraints="NO" id="dXT-Rj-wXy" userLabel="Right Margin Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="876" y="0.0" width="20" height="414"/>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        </view>
+                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="138" placeholderIntrinsicHeight="414" translatesAutoresizingMaskIntoConstraints="NO" id="sqk-YZ-vlt" userLabel="Right Panel Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                            <rect key="frame" x="758" y="0.0" width="138" height="414"/>
+                            <subviews>
+                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="NC4-9G-aMe">
+                                    <rect key="frame" x="0.0" y="204" width="138" height="180"/>
+                                    <subviews>
+                                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="138" placeholderIntrinsicHeight="10" translatesAutoresizingMaskIntoConstraints="NO" id="VUx-6f-P8M" userLabel="Right Panel Buttons Spacing Guide 2" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="0.0" width="138" height="10"/>
+                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        </view>
+                                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="138" placeholderIntrinsicHeight="50" translatesAutoresizingMaskIntoConstraints="NO" id="BiJ-5R-xuE" userLabel="Right Panel Buttons Guide 2" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="10" width="138" height="50"/>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </view>
+                                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="138" placeholderIntrinsicHeight="10" translatesAutoresizingMaskIntoConstraints="NO" id="ZQg-Ut-SIH" userLabel="Right Panel Buttons Spacing Guide 1" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="60" width="138" height="10"/>
+                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        </view>
+                                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="138" placeholderIntrinsicHeight="50" translatesAutoresizingMaskIntoConstraints="NO" id="jM7-NV-Cdv" userLabel="Right Panel Buttons Guide 1" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="70" width="138" height="50"/>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </view>
+                                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="138" placeholderIntrinsicHeight="10" translatesAutoresizingMaskIntoConstraints="NO" id="VGc-AS-dou" userLabel="Right Panel Buttons Spacing Guide 0" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="120" width="138" height="10"/>
+                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        </view>
+                                        <view contentMode="scaleToFill" placeholderIntrinsicWidth="138" placeholderIntrinsicHeight="50" translatesAutoresizingMaskIntoConstraints="NO" id="z4X-IT-gM4" userLabel="Right Panel Buttons Guide 0" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="130" width="138" height="50"/>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </view>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="z4X-IT-gM4" firstAttribute="height" secondItem="BiJ-5R-xuE" secondAttribute="height" id="Cv8-ch-ULw"/>
+                                        <constraint firstItem="VGc-AS-dou" firstAttribute="height" secondItem="ZQg-Ut-SIH" secondAttribute="height" id="GkT-a2-GlZ"/>
+                                        <constraint firstItem="z4X-IT-gM4" firstAttribute="height" secondItem="jM7-NV-Cdv" secondAttribute="height" id="Jtq-OL-gEG"/>
+                                        <constraint firstItem="VGc-AS-dou" firstAttribute="height" secondItem="VUx-6f-P8M" secondAttribute="height" id="lzd-0Y-Zf2"/>
+                                    </constraints>
+                                </stackView>
+                                <view contentMode="scaleToFill" placeholderIntrinsicWidth="20" placeholderIntrinsicHeight="414" translatesAutoresizingMaskIntoConstraints="NO" id="bjP-4j-CmN" userLabel="Right Panel Leading Guide" customClass="Guide" customModule="OpenFlight" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="0.0" width="20" height="414"/>
+                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                </view>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="trailing" secondItem="NC4-9G-aMe" secondAttribute="trailing" id="9NA-N3-obT"/>
+                                <constraint firstAttribute="bottom" secondItem="bjP-4j-CmN" secondAttribute="bottom" id="L3D-AU-8OZ"/>
+                                <constraint firstItem="bjP-4j-CmN" firstAttribute="top" secondItem="sqk-YZ-vlt" secondAttribute="top" id="LwD-7q-Diu"/>
+                                <constraint firstItem="bjP-4j-CmN" firstAttribute="leading" secondItem="sqk-YZ-vlt" secondAttribute="leading" id="r3w-GW-fkH"/>
+                                <constraint firstItem="NC4-9G-aMe" firstAttribute="leading" secondItem="sqk-YZ-vlt" secondAttribute="leading" id="vsh-7x-fxa"/>
+                            </constraints>
+                        </view>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="dbf-Zn-f6X" firstAttribute="leading" secondItem="Zy7-Va-dbf" secondAttribute="leading" id="3X0-IG-7eE"/>
+                        <constraint firstAttribute="trailing" secondItem="sqk-YZ-vlt" secondAttribute="trailing" id="7zx-UL-BXG"/>
+                        <constraint firstItem="sqk-YZ-vlt" firstAttribute="top" secondItem="Zy7-Va-dbf" secondAttribute="top" id="96u-jN-XE1"/>
+                        <constraint firstItem="Zhf-SU-7im" firstAttribute="top" secondItem="Zy7-Va-dbf" secondAttribute="top" id="9iX-VL-cec"/>
+                        <constraint firstAttribute="trailing" secondItem="xsC-51-oJI" secondAttribute="trailing" id="A0r-3V-skx"/>
+                        <constraint firstAttribute="trailing" secondItem="eSI-YZ-NhB" secondAttribute="trailing" id="A76-uW-BZR"/>
+                        <constraint firstItem="hrB-kT-O1O" firstAttribute="centerX" secondItem="Zy7-Va-dbf" secondAttribute="centerX" id="E1T-wZ-Vt9"/>
+                        <constraint firstItem="hrB-kT-O1O" firstAttribute="top" secondItem="Zy7-Va-dbf" secondAttribute="top" id="F3d-c5-Tpn"/>
+                        <constraint firstItem="sqk-YZ-vlt" firstAttribute="bottom" secondItem="Zy7-Va-dbf" secondAttribute="bottom" id="IQ9-Aw-6MH"/>
+                        <constraint firstAttribute="bottom" secondItem="dXT-Rj-wXy" secondAttribute="bottom" id="JLk-L0-4lN"/>
+                        <constraint firstItem="eXS-4g-JUw" firstAttribute="leading" secondItem="Zy7-Va-dbf" secondAttribute="leading" id="JVU-Ar-HDZ"/>
+                        <constraint firstAttribute="bottom" secondItem="hrB-kT-O1O" secondAttribute="bottom" id="Oww-ZR-p4G"/>
+                        <constraint firstAttribute="trailing" secondItem="6JM-PZ-yHJ" secondAttribute="trailing" id="Q7l-wy-Aem"/>
+                        <constraint firstItem="eSI-YZ-NhB" firstAttribute="centerY" secondItem="Zy7-Va-dbf" secondAttribute="centerY" id="RX7-sX-ks7"/>
+                        <constraint firstItem="6JM-PZ-yHJ" firstAttribute="leading" secondItem="Zy7-Va-dbf" secondAttribute="leading" id="Rdz-o6-wDl"/>
+                        <constraint firstItem="xsC-51-oJI" firstAttribute="leading" secondItem="Zy7-Va-dbf" secondAttribute="leading" id="Saa-mD-ZvT"/>
+                        <constraint firstAttribute="trailing" secondItem="dXT-Rj-wXy" secondAttribute="trailing" id="VGB-yD-TW5"/>
+                        <constraint firstItem="6JM-PZ-yHJ" firstAttribute="top" secondItem="NC4-9G-aMe" secondAttribute="bottom" id="Vqd-hp-J5B"/>
+                        <constraint firstItem="6JM-PZ-yHJ" firstAttribute="top" secondItem="dbf-Zn-f6X" secondAttribute="bottom" id="ZFQ-7S-xlk"/>
+                        <constraint firstItem="AJt-NN-KZd" firstAttribute="top" secondItem="Zy7-Va-dbf" secondAttribute="top" id="ZNJ-sZ-khc"/>
+                        <constraint firstItem="AJt-NN-KZd" firstAttribute="leading" secondItem="Zhf-SU-7im" secondAttribute="trailing" id="byv-Sx-w9G"/>
+                        <constraint firstItem="91x-Ge-gCr" firstAttribute="top" secondItem="Zy7-Va-dbf" secondAttribute="top" id="dj5-xu-2tI"/>
+                        <constraint firstAttribute="bottom" secondItem="6JM-PZ-yHJ" secondAttribute="bottom" id="fVM-sb-Fhz"/>
+                        <constraint firstAttribute="trailing" secondItem="eXS-4g-JUw" secondAttribute="trailing" id="hNB-dU-uEL"/>
+                        <constraint firstItem="dbf-Zn-f6X" firstAttribute="top" secondItem="eXS-4g-JUw" secondAttribute="bottom" id="jJC-GB-lrg"/>
+                        <constraint firstItem="AJt-NN-KZd" firstAttribute="bottom" secondItem="Zy7-Va-dbf" secondAttribute="bottom" id="kFW-s0-lQ0"/>
+                        <constraint firstItem="eSI-YZ-NhB" firstAttribute="leading" secondItem="Zy7-Va-dbf" secondAttribute="leading" id="mVz-cl-5z4"/>
+                        <constraint firstItem="Zhf-SU-7im" firstAttribute="leading" secondItem="Zy7-Va-dbf" secondAttribute="leading" id="n81-Fx-dYs"/>
+                        <constraint firstItem="91x-Ge-gCr" firstAttribute="bottom" secondItem="Zy7-Va-dbf" secondAttribute="bottom" id="oCQ-0I-l94"/>
+                        <constraint firstItem="dXT-Rj-wXy" firstAttribute="top" secondItem="Zy7-Va-dbf" secondAttribute="top" id="pd3-p9-JLR"/>
+                        <constraint firstItem="91x-Ge-gCr" firstAttribute="leading" secondItem="Zhf-SU-7im" secondAttribute="trailing" id="rXJ-Gl-orA"/>
+                        <constraint firstAttribute="trailing" secondItem="dbf-Zn-f6X" secondAttribute="trailing" id="uJD-LI-po4"/>
+                        <constraint firstItem="xsC-51-oJI" firstAttribute="top" secondItem="Zy7-Va-dbf" secondAttribute="top" id="vf8-tF-yW1"/>
+                        <constraint firstAttribute="bottom" secondItem="Zhf-SU-7im" secondAttribute="bottom" id="xLZ-4q-6kU"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="fP4-7E-tUH" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="5NT-z3-Uqw"/>
+                <constraint firstItem="Zy7-Va-dbf" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="6vA-yb-5k8"/>
+                <constraint firstAttribute="bottom" secondItem="fP4-7E-tUH" secondAttribute="bottom" id="Ffl-RI-54L"/>
+                <constraint firstItem="fP4-7E-tUH" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="Isq-db-d0v"/>
+                <constraint firstAttribute="trailing" secondItem="Zy7-Va-dbf" secondAttribute="trailing" id="NXM-R2-7ga"/>
+                <constraint firstAttribute="bottom" secondItem="Zy7-Va-dbf" secondAttribute="bottom" id="UvS-02-fhe"/>
+                <constraint firstItem="Zy7-Va-dbf" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="ioU-c7-9uJ"/>
+            </constraints>
+            <point key="canvasLocation" x="-354" y="84"/>
+        </view>
+    </objects>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

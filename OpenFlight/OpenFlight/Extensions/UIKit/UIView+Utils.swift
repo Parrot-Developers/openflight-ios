@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,7 +33,7 @@ import UIKit
 
 extension UIView {
     /// Returns true if both size classes are regular (iPad).
-    var isRegularSizeClass: Bool {
+    public var isRegularSizeClass: Bool {
         return traitCollection.horizontalSizeClass == .regular && traitCollection.verticalSizeClass == .regular
     }
 

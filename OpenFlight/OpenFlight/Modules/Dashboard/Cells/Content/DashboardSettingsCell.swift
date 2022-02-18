@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,6 +37,5 @@ class DashboardSettingsCell: UICollectionViewCell, NibReusable {
     func setup() {
         titleLabel.text = L10n.dashboardMyFlightsProjectExecutionSettingsTitle
         imageView.image = Asset.Common.Icons.icSettingsMedium.image
-        layer.cornerRadius = Style.largeCornerRadius
     }
 }

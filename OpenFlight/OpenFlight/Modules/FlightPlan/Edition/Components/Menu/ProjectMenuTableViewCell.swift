@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,20 +30,36 @@
 import UIKit
 import Reusable
 
+protocol ProjectMenuTableViewCellProvider {
+    var title: String { get }
+}
+
 /// Project Menu TableView Cell.
-final class ProjectMenuTableViewCell: UITableViewCell, NibReusable {
+final class ProjectMenuTableViewCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
-    @IBOutlet private weak var projectName: UILabel!
-    @IBOutlet weak var projectLabel: UILabel!
-    @IBOutlet weak var folderImageView: UIImageView!
+    @IBOutlet private weak var projectButtonHeightConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var folderButton: ActionButton!
+    @IBOutlet private weak var projectNameLabel: UILabel!
+    @IBOutlet private weak var projectTitleLabel: UILabel!
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-        projectLabel.makeUp(with: .tiny, and: .defaultTextColor)
-        projectLabel.text = L10n.flightPlanMenuProject.uppercased()
-        folderImageView.cornerRadiusedWith(backgroundColor: ColorName.white.color, radius: Style.largeCornerRadius)
-        projectName.makeUp(and: .defaultTextColor)
+        setupUI()
+    }
+
+    private func setupUI() {
+
+        projectButtonHeightConstraint.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass)
+
+        folderButton.setup(image: Asset.MyFlights.folder.image,
+                           style: .default1)
+
+        projectTitleLabel.makeUp(with: .caps, color: .defaultTextColor80)
+        projectTitleLabel.text = L10n.flightPlanMenuProject.uppercased()
+
+        projectNameLabel.makeUp(with: .current, color: .defaultTextColor)
+        projectNameLabel.lineBreakMode = .byTruncatingTail
     }
 }
 
@@ -53,8 +68,8 @@ extension ProjectMenuTableViewCell {
     /// Cell setup.
     ///
     /// - Parameters:
-    ///     - name: project name
-    func setup(name: String?) {
-        projectName.text = name
+    ///     - provider: the provider of the cell
+    func setup(with provider: ProjectMenuTableViewCellProvider) {
+        projectNameLabel.text = provider.title
     }
 }

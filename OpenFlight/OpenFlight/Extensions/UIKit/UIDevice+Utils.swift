@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -72,11 +71,6 @@ extension UIDevice {
         return Double(capacityAsBytes) / Double(StorageUtils.Constants.bytesPerGigabyte)
     }
 
-    /// Returns device total capacity as a string.
-    var capacityAsString: String {
-        return StorageUtils.sizeForFile(size: capacityAsBytes)
-    }
-
     /// Returns device available storage space in bytes.
     var availableSpaceAsBytes: UInt64 {
         guard let systemAttributes = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory() as String),
@@ -91,11 +85,6 @@ extension UIDevice {
         return Double(availableSpaceAsBytes) / Double(StorageUtils.Constants.bytesPerGigabyte)
     }
 
-    /// Returns device used storage space as a string.
-    var availableSpaceAsString: String {
-        return StorageUtils.sizeForFile(size: availableSpaceAsBytes)
-    }
-
     /// Returns device used storage space in bytes.
     var usedStorageAsBytes: UInt64 {
         return capacityAsBytes - availableSpaceAsBytes
@@ -106,8 +95,12 @@ extension UIDevice {
         return Double(usedStorageAsBytes) / Double(StorageUtils.Constants.bytesPerGigabyte)
     }
 
-    /// Returns device used storage space as a string.
-    var usedStorageAsString: String {
-        return StorageUtils.sizeForFile(size: usedStorageAsBytes)
-    }
+    /// Bottom safe area inset.
+    var bottomSafeAreaInset: CGFloat { UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0 }
+    /// Left safe area inset.
+    var leftSafeAreaInset: CGFloat { UIApplication.shared.windows.first?.safeAreaInsets.left ?? 0 }
+    /// Returns `true` if device's main window has a bottom safe area inset > 0, `false` otherwise.
+    var hasBottomSafeAreaInset: Bool { bottomSafeAreaInset > 0 }
+    /// Returns `true` if device's main window has a left safe area inset > 0, `false` otherwise.
+    var hasLeftSafeAreaInset: Bool { leftSafeAreaInset > 0 }
 }

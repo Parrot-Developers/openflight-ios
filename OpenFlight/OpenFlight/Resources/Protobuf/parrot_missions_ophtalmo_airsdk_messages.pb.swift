@@ -176,9 +176,20 @@ struct Parrot_Missions_Ophtalmo_Airsdk_Messages_State {
 
   var completionPercent: UInt32 = 0
 
+  var config: Parrot_Missions_Ophtalmo_Airsdk_Messages_Config {
+    get {return _config ?? Parrot_Missions_Ophtalmo_Airsdk_Messages_Config()}
+    set {_config = newValue}
+  }
+  /// Returns true if `config` has been explicitly set.
+  var hasConfig: Bool {return self._config != nil}
+  /// Clears the value of `config`. Subsequent reads from it will return its default value.
+  mutating func clearConfig() {self._config = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+
+  fileprivate var _config: Parrot_Missions_Ophtalmo_Airsdk_Messages_Config? = nil
 }
 
 /// Union of all possible commands of this package.
@@ -345,6 +356,7 @@ extension Parrot_Missions_Ophtalmo_Airsdk_Messages_State: SwiftProtobuf.Message,
     1: .standard(proto: "calibration_status"),
     2: .standard(proto: "calibration_step"),
     3: .standard(proto: "completion_percent"),
+    4: .same(proto: "config"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -356,12 +368,17 @@ extension Parrot_Missions_Ophtalmo_Airsdk_Messages_State: SwiftProtobuf.Message,
       case 1: try { try decoder.decodeSingularEnumField(value: &self.calibrationStatus) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.calibrationStep) }()
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self.completionPercent) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._config) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.calibrationStatus != .idle {
       try visitor.visitSingularEnumField(value: self.calibrationStatus, fieldNumber: 1)
     }
@@ -371,6 +388,9 @@ extension Parrot_Missions_Ophtalmo_Airsdk_Messages_State: SwiftProtobuf.Message,
     if self.completionPercent != 0 {
       try visitor.visitSingularUInt32Field(value: self.completionPercent, fieldNumber: 3)
     }
+    try { if let v = self._config {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -378,6 +398,7 @@ extension Parrot_Missions_Ophtalmo_Airsdk_Messages_State: SwiftProtobuf.Message,
     if lhs.calibrationStatus != rhs.calibrationStatus {return false}
     if lhs.calibrationStep != rhs.calibrationStep {return false}
     if lhs.completionPercent != rhs.completionPercent {return false}
+    if lhs._config != rhs._config {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -429,8 +450,9 @@ extension Parrot_Missions_Ophtalmo_Airsdk_Messages_Command: SwiftProtobuf.Messag
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every case branch when no optimizations are
-    // enabled. https://github.com/apple/swift-protobuf/issues/1034
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     switch self.id {
     case .start?: try {
       guard case .start(let v)? = self.id else { preconditionFailure() }
@@ -483,9 +505,13 @@ extension Parrot_Missions_Ophtalmo_Airsdk_Messages_Event: SwiftProtobuf.Message,
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if case .state(let v)? = self.id {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if case .state(let v)? = self.id {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    }
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 

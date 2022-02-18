@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
 // MARK: - Public Structs
 /// Struct representing a telemetry value and its associated alert level.
@@ -39,7 +39,6 @@ struct TelemetryValueModel: Equatable {
 
 // MARK: - TelemetryState
 /// State for `TelemetryViewModel`.
-
 final class TelemetryState: ViewModelState {
     // MARK: - Internal Properties
     /// Observable for current speed.
@@ -52,7 +51,6 @@ final class TelemetryState: ViewModelState {
 
 // MARK: - TelemetryViewModel
 /// ViewModel for Telemetry, notifies on speed, altitude and distance changes.
-
 final class TelemetryViewModel: DroneWatcherViewModel<TelemetryState> {
     // MARK: - Private Properties
     private let groundSdk = GroundSdk()
@@ -61,8 +59,12 @@ final class TelemetryViewModel: DroneWatcherViewModel<TelemetryState> {
     private var speedometerRef: Ref<Speedometer>?
     private var altimeterRef: Ref<Altimeter>?
     private var userLocationManager: LocationManager
+    private var liveTelemetryWatcher: LiveTelemetryWatcher? = Services.hub.liveTelemetryWatcher
+    private var cancellables = Set<AnyCancellable>()
+    @Published private(set) var liveTlmState: LiveTelemetryState?
+
     /// Returns current distance to user location,
-    /// nil if drone's gps and/or user location is unavailable.
+    /// `nil` if drone's gps and/or user location is unavailable.
     private var distanceToUserLocation: Double? {
         guard let drone = drone,
             let userLocation = groundSdk.getFacility(Facilities.userLocation),
@@ -89,7 +91,7 @@ final class TelemetryViewModel: DroneWatcherViewModel<TelemetryState> {
         fatalError("Forbidden init")
     }
 
-    /// Init.
+    /// Constructor.
     ///
     /// - Parameters:
     ///    - userLocationManager: provider for user location update callbacks
@@ -106,6 +108,7 @@ final class TelemetryViewModel: DroneWatcherViewModel<TelemetryState> {
         state.value.altitude.valueChanged = altitudeDidChange
         state.value.distance.valueChanged = distanceDidChange
         listenUserLocation()
+        listenLiveTelemetry()
     }
 
     // MARK: - Override Funcs
@@ -121,39 +124,52 @@ final class TelemetryViewModel: DroneWatcherViewModel<TelemetryState> {
 private extension TelemetryViewModel {
     /// Starts watcher for speedometer.
     func listenSpeedometer(drone: Drone) {
-        speedometerRef = drone.getInstrument(Instruments.speedometer) { [weak self] _ in
-            self?.computeSpeed()
+        speedometerRef = drone.getInstrument(Instruments.speedometer) { [unowned self] _ in
+            computeSpeed()
         }
     }
 
     /// Starts watcher for altimeter.
     func listenAltimeter(drone: Drone) {
-        altimeterRef = drone.getInstrument(Instruments.altimeter) { [weak self] _ in
-            self?.computeSpeed()
-            self?.computeAltitude()
+        altimeterRef = drone.getInstrument(Instruments.altimeter) { [unowned self] _ in
+            computeSpeed()
+            computeAltitude()
         }
     }
 
     /// Starts watcher for gps.
     func listenGps(drone: Drone) {
-        gpsRef = drone.getInstrument(Instruments.gps) { [weak self] _ in
-            self?.computeDistance()
+        gpsRef = drone.getInstrument(Instruments.gps) { [unowned self] _ in
+            computeDistance()
         }
     }
 
     /// Starts watcher for geofence.
     func listenGeofence(drone: Drone) {
-        geofenceRef = drone.getPeripheral(Peripherals.geofence) { [weak self] _ in
-            self?.computeAltitude()
-            self?.computeDistance()
+        geofenceRef = drone.getPeripheral(Peripherals.geofence) { [unowned self] _ in
+            computeAltitude()
+            computeDistance()
         }
     }
 
     /// Starts watcher for user location.
     func listenUserLocation() {
-        userLocationManager.onLocationUpdate = { [weak self] in
-            self?.computeDistance()
+        userLocationManager.onLocationUpdate = { [unowned self] in
+            computeDistance()
         }
+    }
+
+    /// Starts watcher for live telemetry.
+    func listenLiveTelemetry() {
+        guard let liveTelemetryWatcher = liveTelemetryWatcher else {
+            return
+        }
+
+        liveTelemetryWatcher.liveTelemetryStatePublisher
+            .sink { [unowned self] in
+                liveTlmState = $0
+            }
+            .store(in: &cancellables)
     }
 
     /// Computes current speed and updates TelemetryState accordingly.
@@ -177,7 +193,7 @@ private extension TelemetryViewModel {
                 state.value.altitude.set(TelemetryValueModel(currentValue: nil, alertLevel: .none))
                 return
         }
-        let alertLevel: AlertLevel = drone?.isAltitudeCloseToGeofenceLimit == true ? .warning : .none
+        let alertLevel: AlertLevel = drone?.isAltitudeGeofenceReached == true ? .warning : .none
         state.value.altitude.set(TelemetryValueModel(currentValue: altitude.rounded(toPlaces: Constants.altitudeDigitPrecision),
                                                      alertLevel: alertLevel))
     }

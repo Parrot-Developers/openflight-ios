@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -52,16 +51,14 @@ final class HUDCriticalAlertViewController: UIViewController {
     @IBOutlet private weak var topImageView: UIImageView!
     @IBOutlet private weak var mainImageView: UIImageView!
     @IBOutlet private weak var buttonsStackView: UIView!
-    @IBOutlet private weak var cancelButton: UIButton!
-    @IBOutlet private weak var actionButton: UIButton!
+    @IBOutlet private weak var cancelButton: ActionButton!
+    @IBOutlet private weak var actionButton: ActionButton!
     @IBOutlet private weak var descriptionLabel: UILabel!
     @IBOutlet private weak var closeButton: UIButton!
 
     // MARK: - Internal Properties
     weak var delegate: HUDCriticalAlertDelegate?
-
-    // MARK: - Private Properties
-    private var currentAlert: HUDCriticalAlertType?
+    var currentAlert: HUDCriticalAlertType?
 
     // MARK: - Setup
     /// Instantiate the alert view controller.
@@ -69,7 +66,7 @@ final class HUDCriticalAlertViewController: UIViewController {
     /// - Parameters:
     ///     - alert: alert type to present
     /// - Returns: The critical alert view controller.
-    static func instantiate(with alert: HUDCriticalAlertType?) -> HUDCriticalAlertViewController {
+    static func instantiate(with alert: HUDCriticalAlertType) -> HUDCriticalAlertViewController {
         let viewController = StoryboardScene.HUDCriticalAlert.initialScene.instantiate()
         viewController.currentAlert = alert
 
@@ -87,12 +84,24 @@ final class HUDCriticalAlertViewController: UIViewController {
         setupView(alertModel: strongModel)
     }
 
-    override var prefersHomeIndicatorAutoHidden: Bool {
-        return true
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        UIView.animate(withDuration: Style.shortAnimationDuration,
+                       delay: Style.shortAnimationDuration,
+                       animations: {
+            self.view.backgroundColor = ColorName.nightRider80.color
+        })
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        view.backgroundColor = .clear
+    }
+
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return true
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -102,12 +111,16 @@ final class HUDCriticalAlertViewController: UIViewController {
 
 // MARK: - Actions
 private extension HUDCriticalAlertViewController {
-    @IBAction func backgroundButtonTouchedUpInside(_ sender: Any) {
+    func dismissAlert() {
         delegate?.dismissAlert()
     }
 
+    @IBAction func backgroundButtonTouchedUpInside(_ sender: Any) {
+        dismissAlert()
+    }
+
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
-        delegate?.dismissAlert()
+        dismissAlert()
     }
 
     @IBAction func actionButtonTouchedUpInside(_ sender: Any) {
@@ -116,7 +129,7 @@ private extension HUDCriticalAlertViewController {
 
     /// Called when user touches the close button.
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
-        delegate?.dismissAlert()
+        dismissAlert()
     }
 }
 
@@ -127,11 +140,11 @@ private extension HUDCriticalAlertViewController {
         panelView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
         topView.cornerRadiusedWith(backgroundColor: .white, radius: Style.mediumCornerRadius)
         topView.addShadow(shadowColor: ColorName.whiteAlbescent.color)
-        cancelButton.setTitle(L10n.cancel, for: .normal)
-        actionButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
-                                        radius: Style.largeCornerRadius)
-        cancelButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
-                                        radius: Style.largeCornerRadius)
+        descriptionLabel.font = FontStyle.readingText.font(isRegularSizeClass)
+        cancelButton.setup(title: L10n.cancel, style: .default2)
+        cancelButton.customCornered(corners: .allCorners, radius: Style.largeCornerRadius)
+        actionButton.customCornered(corners: .allCorners, radius: Style.largeCornerRadius)
+        actionButton.backgroundColor = ActionButtonStyle.validate.backgroundColor
     }
 
     /// Updates the view according to model value.
@@ -140,16 +153,19 @@ private extension HUDCriticalAlertViewController {
     ///     - alertModel: current alert to display
     func setupView(alertModel: HUDCriticalAlertType) {
         titleLabel.text = alertModel.topTitle
+        titleLabel.textColor = alertModel.topTitleColor?.color
         topImageView.image = alertModel.topIcon
         topImageView.tintColor = alertModel.topIconTintColor?.color
         topImageView.isHidden = alertModel.topIcon == nil
         topView.backgroundColor = alertModel.topBackgroundColor?.color
-        titleLabel.textColor = alertModel.topTitleColor?.color
         mainImageView.image = alertModel.mainImage
+        mainImageView.isHidden = alertModel.mainImage == nil
         descriptionLabel.text = alertModel.mainDescription
         cancelButton.isHidden = alertModel.showCancelButton == false
+        if alertModel.addCancelButtonShadow == true { cancelButton.addShadow() }
         actionButton.setTitle(alertModel.actionButtonTitle, for: .normal)
         actionButton.setTitleColor(alertModel.actionButtonTitleColor?.color, for: .normal)
         actionButton.backgroundColor = alertModel.actionButtonBackgroundColor?.color
+        if alertModel.addActionButtonShadow == true { actionButton.addShadow() }
     }
 }

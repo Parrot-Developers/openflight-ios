@@ -327,6 +327,7 @@ public enum Asset {
       public static let icLowTemperatureAlert = ImageAsset(name: "icLowTemperatureAlert")
       public static let icModemInitializing = ImageAsset(name: "icModemInitializing")
       public static let icRefreshAlert = ImageAsset(name: "icRefreshAlert")
+      public static let icRemoteUpdateAlert = ImageAsset(name: "icRemoteUpdateAlert")
       public static let allValues: [ImageAsset] = [
         icDownloadAlert,
         icDroneCalibrationNeeded,
@@ -340,6 +341,7 @@ public enum Asset {
         icLowTemperatureAlert,
         icModemInitializing,
         icRefreshAlert,
+        icRemoteUpdateAlert,
       ]
     }
     public enum TooMuchAngle {
@@ -475,32 +477,26 @@ public enum Asset {
     public static let ic4GBigConnected = ImageAsset(name: "ic4GBigConnected")
     public static let ic4GBigConnecting = ImageAsset(name: "ic4GBigConnecting")
     public static let ic4GDeactivated = ImageAsset(name: "ic4GDeactivated")
-    public static let ic4GInactiveQuality1 = ImageAsset(name: "ic4GInactiveQuality1")
-    public static let ic4GInactiveQuality2 = ImageAsset(name: "ic4GInactiveQuality2")
-    public static let ic4GInactiveQuality3 = ImageAsset(name: "ic4GInactiveQuality3")
-    public static let ic4GInactiveQuality4 = ImageAsset(name: "ic4GInactiveQuality4")
-    public static let ic4GInactiveQuality5 = ImageAsset(name: "ic4GInactiveQuality5")
+    public static let ic4GOffline = ImageAsset(name: "ic4GOffline")
+    public static let ic4GQuality0 = ImageAsset(name: "ic4GQuality0")
     public static let ic4GQuality1 = ImageAsset(name: "ic4GQuality1")
     public static let ic4GQuality2 = ImageAsset(name: "ic4GQuality2")
     public static let ic4GQuality3 = ImageAsset(name: "ic4GQuality3")
     public static let ic4GQuality4 = ImageAsset(name: "ic4GQuality4")
     public static let ic4GQuality5 = ImageAsset(name: "ic4GQuality5")
-    public static let icon4GOffline = ImageAsset(name: "icon4GOffline")
+    public static let ic4GQuality5Highlighted = ImageAsset(name: "ic4GQuality5Highlighted")
     public static let allValues: [ImageAsset] = [
       ic4GBigConnected,
       ic4GBigConnecting,
       ic4GDeactivated,
-      ic4GInactiveQuality1,
-      ic4GInactiveQuality2,
-      ic4GInactiveQuality3,
-      ic4GInactiveQuality4,
-      ic4GInactiveQuality5,
+      ic4GOffline,
+      ic4GQuality0,
       ic4GQuality1,
       ic4GQuality2,
       ic4GQuality3,
       ic4GQuality4,
       ic4GQuality5,
-      icon4GOffline,
+      ic4GQuality5Highlighted,
     ]
   }
   public enum CellularPairing {
@@ -525,11 +521,8 @@ public enum Asset {
     public static let ic4GRightInternet = ImageAsset(name: "ic4GRightInternet")
     public static let ic4GRightInternetKo = ImageAsset(name: "ic4GRightInternetKo")
     public static let ic4GRightInternetOk = ImageAsset(name: "ic4GRightInternetOk")
-    public static let ic4GStatus0 = ImageAsset(name: "ic4GStatus-0")
-    public static let ic4GStatus1 = ImageAsset(name: "ic4GStatus-1")
-    public static let ic4GStatus2 = ImageAsset(name: "ic4GStatus-2")
-    public static let ic4GStatus3 = ImageAsset(name: "ic4GStatus-3")
-    public static let ic4GStatus4 = ImageAsset(name: "ic4GStatus-4")
+    public static let ic4GStatusKO = ImageAsset(name: "ic4GStatus-KO")
+    public static let ic4GStatusOK = ImageAsset(name: "ic4GStatus-OK")
     public static let ic4GStatus = ImageAsset(name: "ic4GStatus")
     public static let ic4GTopLeftBranch = ImageAsset(name: "ic4GTopLeftBranch")
     public static let ic4GTopLeftBranchKo = ImageAsset(name: "ic4GTopLeftBranchKo")
@@ -558,11 +551,8 @@ public enum Asset {
       ic4GRightInternet,
       ic4GRightInternetKo,
       ic4GRightInternetOk,
-      ic4GStatus0,
-      ic4GStatus1,
-      ic4GStatus2,
-      ic4GStatus3,
-      ic4GStatus4,
+      ic4GStatusKO,
+      ic4GStatusOK,
       ic4GStatus,
       ic4GTopLeftBranch,
       ic4GTopLeftBranchKo,
@@ -619,7 +609,10 @@ public enum Asset {
       public static let icPrevious = ImageAsset(name: "icPrevious")
       public static let icRemoteControl = ImageAsset(name: "icRemoteControl")
       public static let icRemoveLastCharacter = ImageAsset(name: "icRemoveLastCharacter")
+      public static let icResume = ImageAsset(name: "icResume")
       public static let icRightArrow = ImageAsset(name: "icRightArrow")
+      public static let icSdCardError = ImageAsset(name: "icSdCardError")
+      public static let icSdCardErrorSmall = ImageAsset(name: "icSdCardErrorSmall")
       public static let icSdCardFormatFull = ImageAsset(name: "icSdCardFormatFull")
       public static let icSdCardFormatQuick = ImageAsset(name: "icSdCardFormatQuick")
       public static let icSdSmall = ImageAsset(name: "icSdSmall")
@@ -642,6 +635,7 @@ public enum Asset {
       public static let landing = ImageAsset(name: "landing")
       public static let play = ImageAsset(name: "play")
       public static let refresh = ImageAsset(name: "refresh")
+      public static let replay = ImageAsset(name: "replay")
       public static let stopIcon = ImageAsset(name: "stopIcon")
       public static let allValues: [ImageAsset] = [
         pause,
@@ -672,7 +666,10 @@ public enum Asset {
         icPrevious,
         icRemoteControl,
         icRemoveLastCharacter,
+        icResume,
         icRightArrow,
+        icSdCardError,
+        icSdCardErrorSmall,
         icSdCardFormatFull,
         icSdCardFormatQuick,
         icSdSmall,
@@ -695,13 +692,16 @@ public enum Asset {
         landing,
         play,
         refresh,
+        replay,
         stopIcon,
       ]
     }
     public enum Slider {
       public static let slider = ImageAsset(name: "slider")
+      public static let sliderNoMarge = ImageAsset(name: "sliderNoMarge")
       public static let allValues: [ImageAsset] = [
         slider,
+        sliderNoMarge,
       ]
     }
     public static let allValues: [ImageAsset] = [
@@ -765,11 +765,13 @@ public enum Asset {
     }
     public static let icCardMini = ImageAsset(name: "icCardMini")
     public static let icController = ImageAsset(name: "icController")
+    public static let icControllerOn = ImageAsset(name: "icControllerOn")
     public static let icDrone = ImageAsset(name: "icDrone")
     public static let icDroneWhite = ImageAsset(name: "icDroneWhite")
     public static let icFlightModeStandard = ImageAsset(name: "icFlightModeStandard")
     public static let icGalleryEmpty = ImageAsset(name: "icGalleryEmpty")
     public static let icGetUpdate = ImageAsset(name: "icGetUpdate")
+    public static let icInternalMini = ImageAsset(name: "icInternalMini")
     public static let icPhone = ImageAsset(name: "icPhone")
     public static let icPhoneLight = ImageAsset(name: "icPhoneLight")
     public static let icPhoneMini = ImageAsset(name: "icPhoneMini")
@@ -779,16 +781,17 @@ public enum Asset {
     public static let icSkywardDashboard = ImageAsset(name: "icSkywardDashboard")
     public static let icTimePassedMini = ImageAsset(name: "icTimePassedMini")
     public static let icTotalDistance = ImageAsset(name: "icTotalDistance")
-    public static let icUserNoPhoto = ImageAsset(name: "icUserNoPhoto")
     public static let icVideoMini = ImageAsset(name: "icVideoMini")
     public static let allValues: [ImageAsset] = [
       icCardMini,
       icController,
+      icControllerOn,
       icDrone,
       icDroneWhite,
       icFlightModeStandard,
       icGalleryEmpty,
       icGetUpdate,
+      icInternalMini,
       icPhone,
       icPhoneLight,
       icPhoneMini,
@@ -798,7 +801,6 @@ public enum Asset {
       icSkywardDashboard,
       icTimePassedMini,
       icTotalDistance,
-      icUserNoPhoto,
       icVideoMini,
     ]
   }
@@ -829,6 +831,7 @@ public enum Asset {
     public static let icDroneStereoVisionError = ImageAsset(name: "icDroneStereoVisionError")
     public static let icDroneStereoVisionOk = ImageAsset(name: "icDroneStereoVisionOk")
     public static let icDroneStereoVisionWarning = ImageAsset(name: "icDroneStereoVisionWarning")
+    public static let icDroneStorageFull = ImageAsset(name: "icDroneStorageFull")
     public static let icGimbal = ImageAsset(name: "icGimbal")
     public static let icGimbalCamera = ImageAsset(name: "icGimbalCamera")
     public static let icGimbalError = ImageAsset(name: "icGimbalError")
@@ -864,6 +867,7 @@ public enum Asset {
       icDroneStereoVisionError,
       icDroneStereoVisionOk,
       icDroneStereoVisionWarning,
+      icDroneStorageFull,
       icGimbal,
       icGimbalCamera,
       icGimbalError,
@@ -955,7 +959,17 @@ public enum Asset {
     public static let dng = ImageAsset(name: "dng")
     public static let droneInternalMemory = ImageAsset(name: "droneInternalMemory")
     public static let droneSd = ImageAsset(name: "droneSd")
+    public static let icBracketing = ImageAsset(name: "icBracketing")
+    public static let icBurst = ImageAsset(name: "icBurst")
+    public static let icDng = ImageAsset(name: "icDng")
+    public static let icGPSLapse = ImageAsset(name: "icGPSLapse")
     public static let icInternalChip = ImageAsset(name: "icInternalChip")
+    public static let icPano360 = ImageAsset(name: "icPano360")
+    public static let icPanoH = ImageAsset(name: "icPanoH")
+    public static let icPanoV = ImageAsset(name: "icPanoV")
+    public static let icTimelapse = ImageAsset(name: "icTimelapse")
+    public static let icVideo = ImageAsset(name: "icVideo")
+    public static let icWide = ImageAsset(name: "icWide")
     public static let iconSelected = ImageAsset(name: "iconSelected")
     public static let mediaCorrupted = ImageAsset(name: "mediaCorrupted")
     public static let mediaDownload = ImageAsset(name: "mediaDownload")
@@ -966,7 +980,17 @@ public enum Asset {
       dng,
       droneInternalMemory,
       droneSd,
+      icBracketing,
+      icBurst,
+      icDng,
+      icGPSLapse,
       icInternalChip,
+      icPano360,
+      icPanoH,
+      icPanoV,
+      icTimelapse,
+      icVideo,
+      icWide,
       iconSelected,
       mediaCorrupted,
       mediaDownload,
@@ -979,13 +1003,11 @@ public enum Asset {
     public enum Controller {
       public static let icGpsKo = ImageAsset(name: "icGpsKo")
       public static let icGpsNone = ImageAsset(name: "icGpsNone")
-      public static let icGpsNoneBig = ImageAsset(name: "icGpsNoneBig")
       public static let icGpsOK = ImageAsset(name: "icGpsOK")
       public static let icGpsWeak = ImageAsset(name: "icGpsWeak")
       public static let allValues: [ImageAsset] = [
         icGpsKo,
         icGpsNone,
-        icGpsNoneBig,
         icGpsOK,
         icGpsWeak,
       ]
@@ -1047,11 +1069,13 @@ public enum Asset {
     public static let centerOnDrone = ImageAsset(name: "centerOnDrone")
     public static let centerOnUser = ImageAsset(name: "centerOnUser")
     public static let mapDrone = ImageAsset(name: "mapDrone")
+    public static let mapDroneDisconnected = ImageAsset(name: "mapDroneDisconnected")
     public static let user = ImageAsset(name: "user")
     public static let allValues: [ImageAsset] = [
       centerOnDrone,
       centerOnUser,
       mapDrone,
+      mapDroneDisconnected,
       user,
     ]
   }
@@ -1083,6 +1107,7 @@ public enum Asset {
     public static let calendar = ImageAsset(name: "Calendar")
     public static let poi = ImageAsset(name: "POI")
     public static let time = ImageAsset(name: "Time")
+    public static let battery = ImageAsset(name: "battery")
     public static let cloudNotStored = ImageAsset(name: "cloudNotStored")
     public static let distance = ImageAsset(name: "distance")
     public static let folder = ImageAsset(name: "folder")
@@ -1094,6 +1119,7 @@ public enum Asset {
       calendar,
       poi,
       time,
+      battery,
       cloudNotStored,
       distance,
       folder,
@@ -1133,13 +1159,6 @@ public enum Asset {
       deepsky2px,
       deepsky2py,
       deepsky2pz,
-    ]
-  }
-  public enum OnBoarding {
-
-    public static let icGpsOnboarding = ImageAsset(name: "icGpsOnboarding")
-    public static let allValues: [ImageAsset] = [
-      icGpsOnboarding,
     ]
   }
   public enum Pairing {
@@ -1244,9 +1263,7 @@ public enum Asset {
     public static let ic4GDisconnected = ImageAsset(name: "ic4GDisconnected")
     public static let icBatteryCritic = ImageAsset(name: "icBatteryCritic")
     public static let icBatteryFull = ImageAsset(name: "icBatteryFull")
-    public static let icBatteryHigh = ImageAsset(name: "icBatteryHigh")
     public static let icBatteryLow = ImageAsset(name: "icBatteryLow")
-    public static let icBatteryMedium = ImageAsset(name: "icBatteryMedium")
     public static let icBatteryNone = ImageAsset(name: "icBatteryNone")
     public static let icBatteryRemoteCritic = ImageAsset(name: "icBatteryRemoteCritic")
     public static let icBatteryRemoteFull = ImageAsset(name: "icBatteryRemoteFull")
@@ -1256,6 +1273,8 @@ public enum Asset {
     public static let icBatteryUserDeviceFull = ImageAsset(name: "icBatteryUserDeviceFull")
     public static let icBatteryUserDeviceLow = ImageAsset(name: "icBatteryUserDeviceLow")
     public static let icBatteryUserDeviceNone = ImageAsset(name: "icBatteryUserDeviceNone")
+    public static let icDroneDark = ImageAsset(name: "icDroneDark")
+    public static let icDroneLight = ImageAsset(name: "icDroneLight")
     public static let icErrorUpdate = ImageAsset(name: "icErrorUpdate")
     public static let icLoaderMini = ImageAsset(name: "icLoaderMini")
     public static let icRemoteBig = ImageAsset(name: "icRemoteBig")
@@ -1267,9 +1286,7 @@ public enum Asset {
       ic4GDisconnected,
       icBatteryCritic,
       icBatteryFull,
-      icBatteryHigh,
       icBatteryLow,
-      icBatteryMedium,
       icBatteryNone,
       icBatteryRemoteCritic,
       icBatteryRemoteFull,
@@ -1279,6 +1296,8 @@ public enum Asset {
       icBatteryUserDeviceFull,
       icBatteryUserDeviceLow,
       icBatteryUserDeviceNone,
+      icDroneDark,
+      icDroneLight,
       icErrorUpdate,
       icLoaderMini,
       icRemoteBig,
@@ -1301,27 +1320,29 @@ public enum Asset {
           horizonFollow,
         ]
       }
-      public static let drone = ImageAsset(name: "drone")
       public static let iconDroneFace = ImageAsset(name: "iconDroneFace")
       public static let iconDroneFaceActive = ImageAsset(name: "iconDroneFaceActive")
       public static let iconPoiRth = ImageAsset(name: "iconPoiRth")
+      public static let iconSettingsDrone = ImageAsset(name: "iconSettingsDrone")
       public static let iconSpeedHorizontal = ImageAsset(name: "iconSpeedHorizontal")
       public static let iconSpeedRotation = ImageAsset(name: "iconSpeedRotation")
       public static let iconSpeedVertical = ImageAsset(name: "iconSpeedVertical")
       public static let iconUser = ImageAsset(name: "iconUser")
+      public static let iconWoods = ImageAsset(name: "iconWoods")
       public static let presetCinematic = ImageAsset(name: "presetCinematic")
       public static let presetFilm = ImageAsset(name: "presetFilm")
       public static let presetRacing = ImageAsset(name: "presetRacing")
       public static let presetSport = ImageAsset(name: "presetSport")
       public static let allValues: [ImageAsset] = [
-        drone,
         iconDroneFace,
         iconDroneFaceActive,
         iconPoiRth,
+        iconSettingsDrone,
         iconSpeedHorizontal,
         iconSpeedRotation,
         iconSpeedVertical,
         iconUser,
+        iconWoods,
         presetCinematic,
         presetFilm,
         presetRacing,
@@ -1332,29 +1353,29 @@ public enum Asset {
       public static let evTrigger = ImageAsset(name: "evTrigger")
       public static let iPadControlMode1 = ImageAsset(name: "iPadControlMode1")
       public static let iPadControlMode2 = ImageAsset(name: "iPadControlMode2")
-      public static let iPadControlMode3 = ImageAsset(name: "iPadControlMode3")
-      public static let iPadControlMode4 = ImageAsset(name: "iPadControlMode4")
+      public static let iPadControlMode2Inversed = ImageAsset(name: "iPadControlMode2Inversed")
       public static let icRemoteIllu = ImageAsset(name: "icRemoteIllu")
       public static let inverseTilt = ImageAsset(name: "inverseTilt")
+      public static let ipadControlMode1Inversed = ImageAsset(name: "ipadControlMode1Inversed")
       public static let iphoneControlMode1 = ImageAsset(name: "iphoneControlMode1")
+      public static let iphoneControlMode1Inversed = ImageAsset(name: "iphoneControlMode1Inversed")
       public static let iphoneControlMode2 = ImageAsset(name: "iphoneControlMode2")
-      public static let iphoneControlMode3 = ImageAsset(name: "iphoneControlMode3")
-      public static let iphoneControlMode4 = ImageAsset(name: "iphoneControlMode4")
-      public static let reverseJoy = ImageAsset(name: "reverseJoy")
+      public static let iphoneControlMode2Inversed = ImageAsset(name: "iphoneControlMode2Inversed")
+      public static let reverseJoys = ImageAsset(name: "reverseJoys")
       public static let special = ImageAsset(name: "special")
       public static let allValues: [ImageAsset] = [
         evTrigger,
         iPadControlMode1,
         iPadControlMode2,
-        iPadControlMode3,
-        iPadControlMode4,
+        iPadControlMode2Inversed,
         icRemoteIllu,
         inverseTilt,
+        ipadControlMode1Inversed,
         iphoneControlMode1,
+        iphoneControlMode1Inversed,
         iphoneControlMode2,
-        iphoneControlMode3,
-        iphoneControlMode4,
-        reverseJoy,
+        iphoneControlMode2Inversed,
+        reverseJoys,
         special,
       ]
     }
@@ -1394,14 +1415,18 @@ public enum Asset {
     }
     public static let iconSettingsBehaviour = ImageAsset(name: "iconSettingsBehaviour")
     public static let iconSettingsCamera = ImageAsset(name: "iconSettingsCamera")
+    public static let iconSettingsCameraFill = ImageAsset(name: "iconSettingsCameraFill")
     public static let iconSettingsGeofence = ImageAsset(name: "iconSettingsGeofence")
     public static let iconSettingsInterface = ImageAsset(name: "iconSettingsInterface")
+    public static let iconSettingsNetwork = ImageAsset(name: "iconSettingsNetwork")
     public static let iconSettingsRth = ImageAsset(name: "iconSettingsRth")
     public static let allValues: [ImageAsset] = [
       iconSettingsBehaviour,
       iconSettingsCamera,
+      iconSettingsCameraFill,
       iconSettingsGeofence,
       iconSettingsInterface,
+      iconSettingsNetwork,
       iconSettingsRth,
     ]
   }
@@ -1446,40 +1471,42 @@ public enum Asset {
   public enum Wifi {
 
     public static let icWifiDeactivated = ImageAsset(name: "icWifiDeactivated")
-    public static let icWifiInactiveQuality1 = ImageAsset(name: "icWifiInactiveQuality1")
-    public static let icWifiInactiveQuality2 = ImageAsset(name: "icWifiInactiveQuality2")
-    public static let icWifiInactiveQuality3 = ImageAsset(name: "icWifiInactiveQuality3")
-    public static let icWifiInactiveQuality4 = ImageAsset(name: "icWifiInactiveQuality4")
-    public static let icWifiInactiveQuality5 = ImageAsset(name: "icWifiInactiveQuality5")
     public static let icWifiNoSignal = ImageAsset(name: "icWifiNoSignal")
     public static let icWifiOff14 = ImageAsset(name: "icWifiOff14")
     public static let icWifiOff24 = ImageAsset(name: "icWifiOff24")
     public static let icWifiOff34 = ImageAsset(name: "icWifiOff34")
     public static let icWifiOff44 = ImageAsset(name: "icWifiOff44")
     public static let icWifiOffline = ImageAsset(name: "icWifiOffline")
+    public static let icWifiQuality0 = ImageAsset(name: "icWifiQuality0")
     public static let icWifiQuality1 = ImageAsset(name: "icWifiQuality1")
+    public static let icWifiQuality1Highlighted = ImageAsset(name: "icWifiQuality1Highlighted")
     public static let icWifiQuality2 = ImageAsset(name: "icWifiQuality2")
+    public static let icWifiQuality2Highlighted = ImageAsset(name: "icWifiQuality2Highlighted")
     public static let icWifiQuality3 = ImageAsset(name: "icWifiQuality3")
+    public static let icWifiQuality3Highlighted = ImageAsset(name: "icWifiQuality3Highlighted")
     public static let icWifiQuality4 = ImageAsset(name: "icWifiQuality4")
+    public static let icWifiQuality4Highlighted = ImageAsset(name: "icWifiQuality4Highlighted")
     public static let icWifiQuality5 = ImageAsset(name: "icWifiQuality5")
+    public static let icWifiQuality5Highlighted = ImageAsset(name: "icWifiQuality5Highlighted")
     public static let allValues: [ImageAsset] = [
       icWifiDeactivated,
-      icWifiInactiveQuality1,
-      icWifiInactiveQuality2,
-      icWifiInactiveQuality3,
-      icWifiInactiveQuality4,
-      icWifiInactiveQuality5,
       icWifiNoSignal,
       icWifiOff14,
       icWifiOff24,
       icWifiOff34,
       icWifiOff44,
       icWifiOffline,
+      icWifiQuality0,
       icWifiQuality1,
+      icWifiQuality1Highlighted,
       icWifiQuality2,
+      icWifiQuality2Highlighted,
       icWifiQuality3,
+      icWifiQuality3Highlighted,
       icWifiQuality4,
+      icWifiQuality4Highlighted,
       icWifiQuality5,
+      icWifiQuality5Highlighted,
     ]
   }
   public static let allValues: [ImageAsset] = [

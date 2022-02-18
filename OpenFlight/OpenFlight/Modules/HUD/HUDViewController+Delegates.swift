@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -45,12 +45,17 @@ extension HUDViewController: HUDTopBarViewControllerNavigation {
 
     /// Opens remote control details info view.
     func openRemoteControlInfos() {
-        self.coordinator?.startRemoteInfos()
+        self.coordinator?.startRemoteInformation()
     }
 
     /// Opens drone details info view.
     func openDroneInfos() {
-        self.coordinator?.startDroneInfos()
+        self.coordinator?.startDroneInformation()
+    }
+
+    /// Returns to the previous displayed view (e.g. Project Manager, My Flights...)
+    func back() {
+        coordinator?.returnToPreviousView()
     }
 }
 
@@ -59,7 +64,6 @@ extension HUDViewController: HUDCameraStreamingViewControllerDelegate {
 
     public func didUpdate(contentZone: CGRect?) {
         // Sets up current content zone wherever it is needed.
-        splitControls.setupRatio(withContentZone: contentZone)
         videoControls.lockAETargetZoneViewController?.streamingContentZone = contentZone
     }
 }

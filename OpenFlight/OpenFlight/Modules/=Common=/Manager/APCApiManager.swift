@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +28,10 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "APCApiManager")
+}
 
 // MARK: - APCApiManager
 /// Manager that handles all methods relative to APC API.
@@ -120,21 +123,14 @@ extension APCApiManager {
     /// Set user account on gsdk.
     ///
     /// - Parameter token: the APC token to set
-    private func updateGsdkUserAccount(token: String?) {
+    func updateGsdkUserAccount(token: String?) {
         guard let token = token else {
             return
         }
-
-        let userAccount = GroundSdk().getFacility(Facilities.userAccount)
-
         // User account update should be done on the main Thread.
         DispatchQueue.main.async {
-            userAccount?.set(accountProvider: APCApiManager.Params.accountProvider,
-                             accountId: "",
-                             dataUploadPolicy: .deny,
-                             oldDataPolicy: .denyUpload,
-                             token: token,
-                             droneList: "")
+            let userAccount = GroundSdk().getFacility(Facilities.userAccount)
+            userAccount?.set(token: token)
         }
     }
 }

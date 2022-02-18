@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,13 +33,29 @@ import Combine
 class FlightsViewModel {
 
     private let service: FlightService
-    private weak var coordinator: DashboardCoordinator?
+    private let navigationStack: NavigationStackService
+    private weak var coordinator: MyFlightsCoordinator?
 
     var flights: AnyPublisher<[FlightModel], Never> { service.allFlights }
+    @Published private(set) var selectedFlight: FlightModel?
+    private var cancellable = Set<AnyCancellable>()
 
-    init(service: FlightService, coordinator: DashboardCoordinator) {
+    init(service: FlightService,
+         coordinator: MyFlightsCoordinator,
+         navigationStack: NavigationStackService) {
         self.service = service
         self.coordinator = coordinator
+        self.navigationStack = navigationStack
+
+        Services.hub.cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { isSynchronizingData in
+            if !isSynchronizingData {
+                Task {
+                    do {
+                        await self.service.handleFlightsUnknownLocationTitle()
+                    }
+                }
+            }
+        }.store(in: &cancellable)
     }
 
     func delete(flight: FlightModel) {
@@ -47,7 +63,9 @@ class FlightsViewModel {
     }
 
     func didTapOn(flight: FlightModel) {
+        navigationStack.updateLast(with: .myFlights(selectedFlight: flight))
         coordinator?.startFlightDetails(flight: flight)
+        selectedFlight = flight
     }
 
     func askForDeletion(flight: FlightModel) {
@@ -57,6 +75,12 @@ class FlightsViewModel {
      }
 
     func cellViewModel(flight: FlightModel) -> FlightTableViewCellModel {
-        FlightTableViewCellModel(service: service, flight: flight)
+        FlightTableViewCellModel(service: service,
+                                 flight: flight,
+                                 flightsViewModel: self)
+    }
+
+    func didSelectFlight(_ flight: FlightModel) {
+        selectedFlight = flight
     }
 }

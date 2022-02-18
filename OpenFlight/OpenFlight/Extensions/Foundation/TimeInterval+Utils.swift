@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -44,9 +43,21 @@ public extension TimeInterval {
     var longFormattedString: String {
         let interval = Int(self)
         let hours = interval / 3600
-        let seconds = interval % 60
-        let minutes = (interval / 60)
+        let seconds = (interval % 3600) % 60
+        let minutes = (interval % 3600) / 60
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+
+    /// Returns a string containing current time interval with HH:MM:SS or MM:SS format.
+    var adaptiveFormattedString: String {
+        let interval = Int(self)
+        let hours = interval / 3600
+        let minutes = (interval % 3600) / 60
+        let seconds = (interval % 3600) % 60
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
+        }
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 
     /// Returns a string containing current time interval with HMS format.
@@ -55,4 +66,35 @@ public extension TimeInterval {
         durationFormatter.unitsStyle = .abbreviated
         return durationFormatter.string(from: self)
     }
+}
+
+public extension TimeInterval {
+    var hourMinuteSecondMillisecond: String {
+        String(format: "%d:%02d:%02d.%03d", hour, minute, second, millisecond)
+    }
+    var hourMinuteSecond: String {
+        String(format: "%d:%02d:%02d", hour, minute, second)
+    }
+    var minuteSecondMillisecond: String {
+        String(format: "%d:%02d.%03d", minute, second, millisecond)
+    }
+    var minuteSecond: String {
+        String(format: "%d:%02d", minute, second)
+    }
+    var hour: Int {
+        Int((self/3600).truncatingRemainder(dividingBy: 3600))
+    }
+    var minute: Int {
+        Int((self/60).truncatingRemainder(dividingBy: 60))
+    }
+    var second: Int {
+        Int(truncatingRemainder(dividingBy: 60))
+    }
+    var millisecond: Int {
+        Int((self*1000).truncatingRemainder(dividingBy: 1000))
+    }
+}
+
+extension Int {
+    var msToSeconds: Double { Double(self) / 1000 }
 }

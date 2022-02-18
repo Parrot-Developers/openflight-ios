@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,42 +30,36 @@
 import UIKit
 import Combine
 
+public protocol BuildingHeightMenuViewControllerDelagate: AnyObject {
+    func buildingHeightSettingUpdated(value: Int)
+}
+
 /// Building height edition menu.
 final class BuildingHeightMenuViewController: UIViewController {
     weak var coordinator: EditionSettingsCoordinator?
     // MARK: - IBOutlets
+    @IBOutlet private weak var stackView: UIStackView!
+    @IBOutlet private weak var topBarContainer: UIView!
     @IBOutlet private weak var tableView: UITableView!
-    @IBOutlet private weak var doneButton: UIButton! {
-        didSet {
-            doneButton.makeup(with: .large)
-            doneButton.backgroundColor = ColorName.warningColor.color
-            doneButton.applyCornerRadius(Style.largeCornerRadius)
-            doneButton.setTitle(L10n.flightPlanSettingBuildingHeightAction, for: .normal)
-        }
-    }
-
-    @IBOutlet private weak var tableViewTrailingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var doneButton: ActionButton!
+    @IBOutlet private weak var buttonsStackView: MainContainerStackView!
+    @IBOutlet private weak var bottomGradientView: BottomGradientView!
 
     // MARK: - Public Properties
     var viewModel: EditionSettingsViewModel!
     private var cancellables = [AnyCancellable]()
-
-    // MARK: - Private Properties
-    private var trailingMargin: CGFloat {
-        if UIApplication.shared.statusBarOrientation == .landscapeLeft {
-            return UIApplication.shared.keyWindow?.safeAreaInsets.right ?? 0.0
-        } else {
-            return 0.0
-        }
-    }
+    private var topbar: FlightPlanTopBarViewController?
 
     // MARK: - Private Enums
     private enum Constants {
         static let cellheight: CGFloat = 164.0
     }
 
+    private weak var delegate: BuildingHeightMenuViewControllerDelagate?
+
     static func instantiate(viewModel: EditionSettingsViewModel,
-                            coordinator: EditionSettingsCoordinator) -> BuildingHeightMenuViewController? {
+                            coordinator: EditionSettingsCoordinator,
+                            delegate: BuildingHeightMenuViewControllerDelagate) -> BuildingHeightMenuViewController? {
         guard let viewController = StoryboardScene.FlightPlanEdition.storyboard
             .instantiateViewController(identifier: "BuildingHeightMenuViewController") as? BuildingHeightMenuViewController
         else {
@@ -74,20 +67,19 @@ final class BuildingHeightMenuViewController: UIViewController {
         }
         viewController.viewModel = viewModel
         viewController.coordinator = coordinator
+        viewController.delegate = delegate
         return viewController
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         initView()
-        setupOrientationObserver()
         bindViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
-        navigationController?.setNavigationBarHidden(false, animated: animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
         super.viewWillAppear(animated)
     }
 
@@ -106,6 +98,14 @@ final class BuildingHeightMenuViewController: UIViewController {
             }
             .store(in: &cancellables)
     }
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
+
+        if segue.identifier == "topBarSegue" {
+            topbar = segue.destination as? FlightPlanTopBarViewController
+        }
+    }
 }
 
 // MARK: - Actions
@@ -120,27 +120,24 @@ private extension BuildingHeightMenuViewController {
 private extension BuildingHeightMenuViewController {
     /// Inits the view.
     func initView() {
-        tableView.insetsContentViewsToSafeArea = false // Safe area is handled in this VC, not in content
-        tableViewTrailingConstraint.constant = trailingMargin
+        tableView.insetsContentViewsToSafeArea = false
         tableView.register(cellType: WarningCenteredRulerTableViewCell.self)
         tableView.dataSource = self
         tableView.estimatedRowHeight = Constants.cellheight
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.contentInset.top = Layout.mainPadding(isRegularSizeClass)
+        tableView.contentInset.bottom = Layout.mainContainerInnerMargins(isRegularSizeClass).bottom +
+        Layout.mainPadding(isRegularSizeClass) +
+        Layout.buttonIntrinsicHeight(isRegularSizeClass)
         tableView.makeUp(backgroundColor: .clear)
-        title = L10n.flightPlanSettingBuildingHeightTitle
-    }
 
-    /// Sets up observer for orientation change.
-    func setupOrientationObserver() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateSafeAreaConstraints),
-                                               name: UIDevice.orientationDidChangeNotification,
-                                               object: nil)
-    }
+        doneButton.setup(title: L10n.flightPlanSettingBuildingHeightAction, style: .action1)
+        buttonsStackView.screenBorders = [.bottom, .right]
 
-    /// Updates safe area constraints.
-    @objc func updateSafeAreaConstraints() {
-        tableViewTrailingConstraint.constant = trailingMargin
+        // Keeps the topBar shadow above the tableView
+        stackView.bringSubviewToFront(topBarContainer)
+        topbar?.set(title: L10n.flightPlanSettingBuildingHeightTitle)
+        topbar?.set(backbuttonVisibility: false)
     }
 }
 
@@ -156,10 +153,14 @@ extension BuildingHeightMenuViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(for: indexPath) as WarningCenteredRulerTableViewCell
-        let setting = viewModel.dataSource.filter { $0.key == "buildingHeight" }.first
+        let setting = viewModel.dataSource.compactMap { (setting: EditionSettingsViewModel.Setting) -> FlightPlanSetting? in
+            if case let EditionSettingsViewModel.Setting.setting(flightPlanSetting) = setting,
+               flightPlanSetting.key == "buildingHeight" { return flightPlanSetting }
+            return nil
+        }.first
         cell.backgroundColor = .clear
         cell.fill(with: setting)
-        cell.subtitleLabel.text = L10n.flightPlanSettingBuildingHeightDescription
+        cell.titleLabel.text = L10n.flightPlanSettingBuildingHeightDescription
         cell.disableCell(setting?.isDisabled == true)
         cell.delegate = self
         return cell
@@ -181,7 +182,6 @@ extension BuildingHeightMenuViewController: EditionSettingsCellModelDelegate {
 // MARK: - Private Funcs
 extension BuildingHeightMenuViewController {
     private func updateSetting(forKey key: String, withValue value: Int) {
-        coordinator?.flightPlanEditionViewController?
-            .updateSettingValue(for: key, value: value)
+        delegate?.buildingHeightSettingUpdated(value: value)
     }
 }

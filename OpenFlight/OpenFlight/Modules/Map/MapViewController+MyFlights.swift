@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -80,7 +79,7 @@ internal extension MapViewController {
         updateViewPoint(viewPoint)
 
         // wait for elevation data to be ready before applying an altitude offset
-        viewModel.elevationSource.$elevationLoaded
+        elevationLoadedCancellable = viewModel.elevationSource.$elevationLoaded
             .filter { $0 }
             .removeDuplicates()
             .sink { [unowned self] _ in
@@ -88,7 +87,6 @@ internal extension MapViewController {
                                firstPoint: firstPoint.point,
                                hasAsmlAltitude: hasAsmlAltitude)
             }
-            .store(in: &cancellables)
     }
 
     /// Applies an altitude offset to graphics overlay to ensure that first point is drawn above the ground.

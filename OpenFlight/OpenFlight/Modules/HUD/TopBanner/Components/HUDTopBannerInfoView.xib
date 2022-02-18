@@ -23,14 +23,14 @@
                     <rect key="frame" x="0.0" y="0.0" width="600" height="100"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 </view>
-                <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="cZ3-N7-s6W">
-                    <rect key="frame" x="3" y="0.0" width="594" height="100"/>
+                <stackView opaque="NO" contentMode="scaleToFill" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="cZ3-N7-s6W">
+                    <rect key="frame" x="6" y="0.0" width="588" height="100"/>
                     <subviews>
                         <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="KrS-UM-YUg">
                             <rect key="frame" x="0.0" y="0.0" width="0.0" height="100"/>
                         </imageView>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="g3O-q1-5kf">
-                            <rect key="frame" x="0.0" y="0.0" width="594" height="100"/>
+                            <rect key="frame" x="0.0" y="0.0" width="588" height="100"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
@@ -43,9 +43,9 @@
                 <constraint firstItem="cZ3-N7-s6W" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="KFP-P6-BmA"/>
                 <constraint firstAttribute="bottom" secondItem="B5t-zo-3v7" secondAttribute="bottom" id="MGy-SZ-U1L"/>
                 <constraint firstItem="B5t-zo-3v7" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="PKd-UP-frc"/>
-                <constraint firstAttribute="trailing" secondItem="cZ3-N7-s6W" secondAttribute="trailing" constant="3" id="XWk-Oi-HWa"/>
+                <constraint firstAttribute="trailing" secondItem="cZ3-N7-s6W" secondAttribute="trailing" constant="6" id="XWk-Oi-HWa"/>
                 <constraint firstAttribute="bottom" secondItem="cZ3-N7-s6W" secondAttribute="bottom" id="ZFH-Ah-GlZ"/>
-                <constraint firstItem="cZ3-N7-s6W" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="3" id="hJw-tH-tQn"/>
+                <constraint firstItem="cZ3-N7-s6W" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="6" id="hJw-tH-tQn"/>
                 <constraint firstItem="B5t-zo-3v7" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="lsU-aN-lxy"/>
                 <constraint firstAttribute="trailing" secondItem="B5t-zo-3v7" secondAttribute="trailing" id="xkj-mF-P37"/>
             </constraints>

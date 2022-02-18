@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -66,7 +65,7 @@ final class MediaUtils {
 
     // MARK: File management
 
-    /// Move a file to a folder depending on their type and return destination URL if the operation was successful.
+    /// Moves a file to a folder depending on its type and returns destination URL if the operation was successful.
     ///
     /// - Parameters:
     ///     - fileUrl: file Url
@@ -80,19 +79,31 @@ final class MediaUtils {
             else { return nil }
 
         let fileDestination = destinationUrl.appendingPathComponent(fileUrl.lastPathComponent)
+        return moveFile(srcUrl: fileUrl, dstUrl: fileDestination)
+    }
+
+    /// Moves a file from a source URL to a destination URL and returns destination URL if the operation was successful.
+    ///
+    /// - Parameters:
+    ///    - srcUrl: Source URL.
+    ///    - dstUrl: Destination URL.
+    /// - Returns: The destination URL if the operation was successful.
+    @discardableResult static func moveFile(srcUrl: URL, dstUrl: URL) -> URL? {
+        guard FileManager.default.fileExists(atPath: srcUrl.path) else { return nil }
+
         do {
-            if FileManager.default.fileExists(atPath: fileDestination.path) {
-                try FileManager.default.removeItem(at: fileDestination)
+            if FileManager.default.fileExists(atPath: dstUrl.path) {
+                try FileManager.default.removeItem(at: dstUrl)
             }
-            try FileManager.default.moveItem(at: fileUrl, to: fileDestination)
+            try FileManager.default.moveItem(at: srcUrl, to: dstUrl)
         } catch {
             return nil
         }
 
-        return fileDestination
+        return dstUrl
     }
 
-    /// Associate a runUid to a media relative Url.
+    /// Associates a runUid to a media relative Url.
     ///
     /// - Parameters:
     ///     - runUid: run Uid
@@ -105,7 +116,7 @@ final class MediaUtils {
         }
     }
 
-    /// Create a folder at the specific URL and return a boolean for the result of creation.
+    /// Creates a folder at the specific URL and returns a boolean for the result of creation.
     ///
     /// - Parameters:
     ///     - url: directory url

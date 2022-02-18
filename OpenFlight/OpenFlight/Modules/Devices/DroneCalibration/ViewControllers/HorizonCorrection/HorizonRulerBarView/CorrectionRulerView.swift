@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -83,15 +82,6 @@ public final class CorrectionRulerView: UIView, NibOwnerLoadable {
     @IBOutlet private weak var horizontalSelectionView: UIView!
 
     // MARK: - Public Properties
-    public var model: CorrectionRulerModel = CorrectionRulerModel() {
-        didSet {
-            collectionView?.reloadData()
-            collectionView?.scrollToItem(at: indexPathForSelectedValue,
-                                         at: orientation.isHorizontal ? .centeredHorizontally : .centeredVertically,
-                                         animated: true)
-            titleLabel.text = model.title
-        }
-    }
     public weak var delegate: CorrectionRulerViewDelegate?
 
     // MARK: - Private Properties
@@ -100,6 +90,16 @@ public final class CorrectionRulerView: UIView, NibOwnerLoadable {
     }
     /// Property which updates the ruler view according to its orientation.
     private var orientation: RulerOrientation = .vertical
+
+    private var model: CorrectionRulerModel {
+        didSet {
+            collectionView?.reloadData()
+            collectionView?.scrollToItem(at: indexPathForSelectedValue,
+                                         at: orientation.isHorizontal ? .centeredHorizontally : .centeredVertically,
+                                         animated: true)
+            titleLabel.text = model.title
+        }
+    }
 
     // MARK: - Private Enums
     private enum Constants {
@@ -111,21 +111,17 @@ public final class CorrectionRulerView: UIView, NibOwnerLoadable {
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        self.commonInitCorrectionRulerView()
-    }
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        self.commonInitCorrectionRulerView()
+        fatalError("init(coder:) has not been implemented")
     }
 
     /// Init.
     ///
     /// - Parameters:
     ///     - orientation: ruler view orientation
-    init(orientation: RulerOrientation = .vertical) {
+    ///     - model: model of the ruler
+    required init(orientation: RulerOrientation = .vertical, model: CorrectionRulerModel) {
         self.orientation = orientation
+        self.model = model
         super.init(frame: CGRect.zero)
         self.commonInitCorrectionRulerView()
     }
@@ -161,6 +157,8 @@ private extension CorrectionRulerView {
         collectionView.register(cellType: CorrectionViewCell.self)
         collectionView.dataSource = self
         collectionView.delegate = self
+        collectionView.contentInsetAdjustmentBehavior = .never
+
         if orientation.isHorizontal {
             let layout = UICollectionViewFlowLayout()
             layout.scrollDirection = .horizontal

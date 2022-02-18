@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,27 +38,31 @@ final class TrackingState: ViewModelState, EquatableState, Copying {
     // MARK: - Internal Properties
     fileprivate(set) var trackingInfo: TrackingData?
     fileprivate(set) var tilt: Double?
+    fileprivate(set) var droneNotConnected: Bool?
 
     // MARK: - Init
     required init() { }
 
-    /// Init.
+    /// Constructor.
     ///
     /// - Parameters:
-    ///    - trackingInfo: meta data returned by the drone.
-    init(trackingInfo: TrackingData?, tilt: Double?) {
+    ///    - trackingInfo: meta data returned by the drone
+    ///    - tilt: tilt
+    ///    - droneNotConnected: state of the drone
+    init(trackingInfo: TrackingData?, tilt: Double?, droneNotConnected: Bool?) {
         self.trackingInfo = trackingInfo
     }
 
     // MARK: - Internal Funcs
     func isEqual(to other: TrackingState) -> Bool {
-        return self.trackingInfo == other.trackingInfo
-            && self.tilt == other.tilt
+        return trackingInfo == other.trackingInfo
+        && tilt == other.tilt
+        && droneNotConnected == other.droneNotConnected
     }
 
     /// Returns a copy of the object.
     func copy() -> TrackingState {
-        let copy = TrackingState(trackingInfo: self.trackingInfo, tilt: self.tilt)
+        let copy = TrackingState(trackingInfo: trackingInfo, tilt: tilt, droneNotConnected: droneNotConnected)
         return copy
     }
 }
@@ -71,17 +74,13 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
     private var streamServerRef: Ref<StreamServer>?
     private var cameraLiveRef: Ref<CameraLive>?
     private var gimbalRef: Ref<Gimbal>?
+    private var stateRef: Ref<DeviceState>?
     private var sink: StreamSink?
     private var onboardTrackerRef: Ref<OnboardTracker>?
     private var onboardTracker: OnboardTracker?
     private var frameTimeStamp: UInt64?
     private var cookie: UInt = 1
     private var isMonitoring: Bool = false
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let defaultTilt: Double = 30.0
-    }
 
     // MARK: - Deinit
     deinit {
@@ -90,13 +89,19 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
-        switchToVideoRecording(drone: drone)
-
-        /// If monitoring is already enabled, reset it for drone change.
-        if self.isMonitoring {
+        // if monitoring is already enabled, reset it for drone change
+        if isMonitoring {
             enableMonitoring(false)
             enableMonitoring(true)
         }
+
+        stateRef = drone.getState { [unowned self] droneState in
+            let copy = state.value.copy()
+
+            copy.droneNotConnected = !(droneState?.connectionState == .connected)
+            state.set(copy)
+        }
+
     }
 
     // MARK: - Internal Funcs
@@ -115,15 +120,15 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
         }
     }
 
-    /// Send the frame that the user has drawed.
+    /// Sends the frame that the user has drawn.
     ///
     /// - Parameters:
-    ///    - frame: frame drawed by the user.
+    ///    - frame: frame drawn by the user
     func sendSelectionToDrone(frame: CGRect) {
         guard let frameTimeStamp = frameTimeStamp,
-            let onboardTracker = onboardTracker else {
-                return
-        }
+              let onboardTracker = onboardTracker else {
+                  return
+              }
 
         cookie += 1
         var frameRequest = onboardTracker.ofRect(timestamp: frameTimeStamp,
@@ -135,15 +140,15 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
         onboardTracker.replaceAllTargetsBy(trackingRequest: frameRequest)
     }
 
-    /// Send the proposal selected by the user.
+    /// Sends the proposal selected by the user.
     ///
     /// - Parameters:
-    ///    - proposalId: Proposal selected by the user.
+    ///    - proposalId: proposal selected by the user
     func sendProposalToDrone(proposalId: UInt) {
         guard let frameTimeStamp = frameTimeStamp,
-            let onboardTracker = onboardTracker else {
-                return
-        }
+              let onboardTracker = onboardTracker else {
+                  return
+              }
 
         cookie += 1
         var proposalRequest = onboardTracker.ofProposal(timestamp: frameTimeStamp, proposalId: proposalId)
@@ -151,7 +156,7 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
         onboardTracker.replaceAllTargetsBy(trackingRequest: proposalRequest)
     }
 
-    /// Remove all current targets.
+    /// Removes all current targets.
     func removeAllTargets() {
         onboardTracker?.removeAllTargets()
     }
@@ -159,68 +164,56 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
 
 // MARK: - Private Funcs
 private extension TrackingViewModel {
-    /// Switch camera mode to recording if necessary.
-    func switchToVideoRecording(drone: Drone) {
-        guard let currentCamera = drone.currentCamera,
-              currentCamera.mode == .photo else {
-            return
-        }
-
-        let currentEditor = currentCamera.currentEditor
-        currentEditor[Camera2Params.mode]?.value = .recording
-        currentEditor.saveSettings(currentConfig: currentCamera.config)
-    }
 
     /// Starts watcher for stream server state.
     func listenStreamServer(drone: Drone) {
-        streamServerRef = drone.getPeripheral(Peripherals.streamServer) { [weak self] streamServer in
+        streamServerRef = drone.getPeripheral(Peripherals.streamServer) { [unowned self] streamServer in
 
-            guard let strongStreamServer = streamServer,
-                strongStreamServer.enabled else {
-                    // Avoid issues when dismissing App and returning on it.
-                    self?.cameraLiveRef = nil
-                    self?.sink = nil
-                    return
-            }
+            guard let streamServer = streamServer,
+                  streamServer.enabled else {
+                      // avoid issues when dismissing App and returning on it
+                      cameraLiveRef = nil
+                      sink = nil
+                      return
+                  }
 
-            self?.cameraLiveRef = strongStreamServer.live { [weak self] liveStream in
-                guard let strongSelf = self,
-                    let strongLiveStream = liveStream,
-                    strongSelf.sink == nil else {
-                        return
-                }
+            cameraLiveRef = streamServer.live { [unowned self] liveStream in
+                guard let liveStream = liveStream,
+                      sink == nil else {
+                          return
+                      }
 
-                strongSelf.sink = strongLiveStream.openYuvSink(queue: DispatchQueue.main, listener: strongSelf)
+                sink = liveStream.openYuvSink(queue: DispatchQueue.main, listener: self)
             }
         }
     }
 
     /// Starts watcher for onBoard tracker state.
     func listenOnboardTracker(drone: Drone) {
-        onboardTrackerRef = drone.getPeripheral(Peripherals.onboardTracker) { [weak self] onboardTracker in
-            self?.onboardTracker = onboardTracker
+        onboardTrackerRef = drone.getPeripheral(Peripherals.onboardTracker) { [unowned self] onboardTracker in
+            self.onboardTracker = onboardTracker
         }
     }
 
     /// Starts watcher for gimbal.
     func listenGimbal(drone: Drone) {
-        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
-            guard let strongGimbal = gimbal,
-                strongGimbal.calibrated,
-                let currentPitch = strongGimbal.currentAttitude[.pitch] else {
-                    return
-            }
+        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [unowned self] gimbal in
+            guard let gimbal = gimbal,
+                  gimbal.calibrated,
+                  let currentPitch = gimbal.currentAttitude[.pitch] else {
+                      return
+                  }
 
-            let copy = self?.state.value.copy()
-            copy?.tilt = currentPitch
-            self?.state.set(copy)
+            let copy = state.value.copy()
+            copy.tilt = currentPitch
+            state.set(copy)
         }
     }
 
-    /// Update tracking info from drone.
+    /// Updates tracking info from drone.
     ///
     /// - Parameters:
-    ///    - info: Meta data from the drone.
+    ///    - info: metadata from the drone
     func trackingStatusDidUpdate(_ info: TrackingData?) {
         frameTimeStamp = info?.camera.timestamp
         let copy = state.value.copy()
@@ -228,12 +221,12 @@ private extension TrackingViewModel {
         state.set(copy)
     }
 
-    /// Clear every variables of the view model.
+    /// Clears all variables of the view model.
     func stopImageProcessing() {
         removeAllReferences()
     }
 
-    // Nullifies all references
+    /// Releases all references.
     func removeAllReferences() {
         streamServerRef = nil
         cameraLiveRef = nil

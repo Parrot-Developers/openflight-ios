@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -26,7 +26,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="200" height="80"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="sTP-eo-qfq">
-                                <rect key="frame" x="20" y="4" width="160" height="72"/>
+                                <rect key="frame" x="0.0" y="4" width="200" height="72"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gUR-2E-zI1">
                                         <rect key="frame" x="0.0" y="0.0" width="20" height="72"/>
@@ -48,16 +48,16 @@
                                         </constraints>
                                     </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="KdJ-F7-fYk">
-                                        <rect key="frame" x="30" y="0.0" width="96" height="72"/>
+                                        <rect key="frame" x="30" y="0.0" width="136" height="72"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="g1E-xh-7zv">
-                                                <rect key="frame" x="0.0" y="0.0" width="96" height="52.5"/>
-                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="136" height="52.5"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7dS-eT-o0G">
-                                                <rect key="frame" x="0.0" y="56.5" width="96" height="15.5"/>
+                                                <rect key="frame" x="0.0" y="56.5" width="136" height="15.5"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
@@ -65,7 +65,7 @@
                                         </subviews>
                                     </stackView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZoO-TI-H9h">
-                                        <rect key="frame" x="136" y="0.0" width="24" height="72"/>
+                                        <rect key="frame" x="176" y="0.0" width="24" height="72"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="56r-sm-l1L" customClass="CircleProgressView" customModule="OpenFlight" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="24" width="24" height="24"/>
@@ -88,9 +88,9 @@
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="sTP-eo-qfq" secondAttribute="trailing" constant="20" symbolic="YES" id="9Pt-sH-5o0"/>
+                            <constraint firstAttribute="trailing" secondItem="sTP-eo-qfq" secondAttribute="trailing" id="9Pt-sH-5o0"/>
                             <constraint firstItem="sTP-eo-qfq" firstAttribute="centerY" secondItem="UVk-B4-xKa" secondAttribute="centerY" id="aEc-PO-bwW"/>
-                            <constraint firstItem="sTP-eo-qfq" firstAttribute="leading" secondItem="UVk-B4-xKa" secondAttribute="leading" constant="20" symbolic="YES" id="p5q-LT-Z23"/>
+                            <constraint firstItem="sTP-eo-qfq" firstAttribute="leading" secondItem="UVk-B4-xKa" secondAttribute="leading" id="p5q-LT-Z23"/>
                         </constraints>
                     </view>
                 </subviews>
@@ -115,7 +115,7 @@
     </objects>
     <resources>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

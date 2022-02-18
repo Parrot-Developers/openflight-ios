@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,10 +33,10 @@ import Combine
 
 /// Flight TableViewCell.
 
-final class FlightTableViewCell: UITableViewCell, NibReusable {
+final class FlightTableViewCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var dateView: UIView!
-    @IBOutlet private weak var dateStackView: UIStackView!
+    @IBOutlet private weak var cellStackView: UIStackView!
     @IBOutlet private weak var monthLabel: UILabel!
     @IBOutlet private weak var yearLabel: UILabel!
     @IBOutlet private weak var bgView: UIView! {
@@ -54,6 +53,10 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
 
     private var cancellables = Set<AnyCancellable>()
 
+    private enum Constants {
+        static let selectedBackgroundAlpha: CGFloat = 0.2
+    }
+
     // MARK: - Internal Funcs
     /// Configure cell.
     ///
@@ -62,10 +65,14 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
     ///    - showDate: Show flight date
     func configureCell(viewModel: FlightTableViewCellModel, showDate: Bool) {
         cancellables = []
+
+        // Add left screen borders for devices with notch
+        screenBorders = [.left]
+
         // Setup date section display.
         dateView.isHidden = !(UIApplication.isLandscape || showDate)
         dateView.alpha = showDate ? 1.0 : 0.0
-        dateStackView.axis =  UIApplication.isLandscape ? .horizontal : .vertical
+        cellStackView.axis =  UIApplication.isLandscape ? .horizontal : .vertical
         // Setup content.
         if showDate {
             let date = viewModel.flight.startTime
@@ -84,6 +91,17 @@ final class FlightTableViewCell: UITableViewCell, NibReusable {
         viewModel.$thumbnail
             .sink { [weak self] in
                 self?.updateMapImage(viewModel: viewModel, thumbnail: $0)
+            }
+            .store(in: &cancellables)
+        viewModel.$isSelected
+            .sink { [weak self] selected in
+                let bgColor: UIColor
+                if selected {
+                    bgColor = ColorName.highlightColor.color.withAlphaComponent(Constants.selectedBackgroundAlpha)
+                } else {
+                    bgColor = ColorName.white.color
+                }
+                self?.bgView.backgroundColor = bgColor
             }
             .store(in: &cancellables)
     }

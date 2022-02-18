@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -97,7 +96,7 @@ private extension CellularPairingAvailabilityServiceImpl {
 
         let uid = connectedDroneHolder.drone?.uid
 
-        isPairingProcessDismissedSubject.value = Defaults.dronesListPairingProcessHidden.contains(uid)
+        isPairingProcessDismissedSubject.value = Defaults.dronesListPairingProcessHidden.customContains(uid)
     }
 
     /// Observes default to checks if the pairing modal has been already dismissed.
@@ -134,7 +133,7 @@ private extension CellularPairingAvailabilityServiceImpl {
             }
 
             let pairedList = cellularPairedDronesList?
-                .filter({ $0.pairedFor4g == true })
+                .filter({ $0.pairedFor4G == true })
                 .compactMap { return $0.serial } ?? []
 
             Defaults.cellularPairedDronesList = pairedList
@@ -162,19 +161,18 @@ private extension CellularPairingAvailabilityServiceImpl {
     func listenDronesPairedList() {
         dronesPairedObserver = Defaults.observe(\.cellularPairedDronesList) { [weak self] _ in
             self?.updateDronePairingState()
+            self?.updatePairedDronesIfNeeded()
         }
     }
 
     /// When pairing is available, start a pairing process
     func listenPairingAvailability() {
-        currentDroneHolder.dronePublisher
+        connectedDroneHolder.dronePublisher
             .combineLatest(isCellularAvailablePublisher.removeDuplicates(),
-                           isDroneAlreadyPairedPublisher.removeDuplicates(),
-                           isPairingProcessDismissedPublisher.removeDuplicates())
-            .sink { [unowned self] (drone, isCellularAvailable, isDroneAlreadyPaired, isPairingProcessDismissed) in
+                           isDroneAlreadyPairedPublisher.removeDuplicates())
+            .sink { [unowned self] (drone, isCellularAvailable, isDroneAlreadyPaired) in
                 guard isCellularAvailable,
-                      drone.state.connectionState == .connected,
-                      !isPairingProcessDismissed,
+                      drone?.state.connectionState == .connected,
                       !isDroneAlreadyPaired else { return }
                 cellularPairingService.startPairingProcessRequest()
             }

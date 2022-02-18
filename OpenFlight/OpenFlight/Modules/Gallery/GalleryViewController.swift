@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 // MARK: - Segmented Control
 private enum GallerySourceSegment: Int, CaseIterable {
@@ -51,8 +51,8 @@ private extension GallerySourceSegment {
     static func type(at index: Int) -> GallerySourceSegment {
         guard index >= 0,
               index < GallerySourceSegment.allCases.count else {
-            return GallerySourceSegment.defaultPanel
-        }
+                  return GallerySourceSegment.defaultPanel
+              }
         return GallerySourceSegment.allCases[index]
     }
 
@@ -112,16 +112,23 @@ final class GalleryViewController: UIViewController {
     @IBOutlet private weak var mediaSourceContainer: UIView!
     @IBOutlet private weak var mediaSourceHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var mediasContainer: UIView!
+    @IBOutlet private weak var mediaStackView: MainContainerStackView!
+    @IBOutlet private weak var loadingView: GalleryLoadingView!
 
     // Side Panel
+    @IBOutlet private weak var sidePanelContainerStackView: RightSidePanelStackView!
     @IBOutlet private weak var selectionCountLabel: UILabel!
-    @IBOutlet private weak var mainActionButton: ActionButton!
+    @IBOutlet private weak var mainActionButton: LoaderButton!
     @IBOutlet private weak var deleteButton: ActionButton!
     @IBOutlet private weak var selectAllButton: ActionButton!
     @IBOutlet private weak var formatSDButton: ActionButton!
     @IBOutlet private weak var selectButton: ActionButton!
+    @IBOutlet private weak var sdCardErrorView: UIStackView!
+    @IBOutlet private weak var sdCardErrorIcon: UIImageView!
+    @IBOutlet private weak var sdCardErrorLabel: UILabel!
 
     // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
     private var filtersViewController: GalleryFiltersViewController?
     private var mediaViewController: GalleryMediaViewController?
     private var sourceViewController: GallerySourcesViewController?
@@ -157,7 +164,6 @@ final class GalleryViewController: UIViewController {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let closeButtonSize = CGSize(width: 25.0, height: 25.0)
         static let filtersMinimumHeight: CGFloat = 37.0
     }
 
@@ -174,7 +180,6 @@ final class GalleryViewController: UIViewController {
         super.viewDidLoad()
 
         setupUI()
-        setupSegmentedControl()
         setupViewModel()
 
         if let coordinator = coordinator, let viewModel = viewModel {
@@ -187,6 +192,8 @@ final class GalleryViewController: UIViewController {
             self.mediaViewController = mediaViewController
             mediaViewController.delegate = self
             addController(mediaViewController, inContainer: mediasContainer)
+            // Listen sharing media state.
+            listenSharingMediaState()
 
             let sourceViewController = GallerySourcesViewController.instantiate(coordinator: coordinator, viewModel: viewModel)
             self.sourceViewController = sourceViewController
@@ -195,7 +202,7 @@ final class GalleryViewController: UIViewController {
         updateContainers()
 
         // Set gallery content to selectedSource.
-        mediaSourceHeightConstraint.constant = GallerySourcesViewController.Constants.cellHeight
+        mediaSourceHeightConstraint.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass) + Layout.mainSpacing(isRegularSizeClass)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -203,16 +210,11 @@ final class GalleryViewController: UIViewController {
 
         viewModel?.refreshMedias(source: selectedSource)
         updateContainers()
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.gallery,
-                             logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.gallery))
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     /// Update display when orientation changed.
@@ -234,11 +236,11 @@ private extension GalleryViewController {
         self.coordinator?.dismissGallery()
     }
 
-    @IBAction func mainActionButtonTouchedUpInside(_ sender: Any) {
+    @IBAction func mainActionButtonTouchedUpInside(_ sender: UIView) {
         // Trigger share or download depending on available service.
         isDeviceSourceSelected
-            ? mediaViewController?.mustShareSelection()
-            : mediaViewController?.mustDownloadSelection()
+        ? mediaViewController?.mustShareSelection(srcView: sender)
+        : mediaViewController?.mustDownloadSelection()
     }
 
     @IBAction func deleteButtonTouchedUpInside(_ sender: Any) {
@@ -253,8 +255,8 @@ private extension GalleryViewController {
 
     @IBAction func selectAllButtonTouchedUpInside(_ sender: Any) {
         areAllMediaSelected
-            ? mediaViewController?.mustDeselectAll()
-            : mediaViewController?.mustSelectAll()
+        ? mediaViewController?.mustDeselectAll()
+        : mediaViewController?.mustSelectAll()
     }
 
     @IBAction func selectButtonTouchedUpInside(_ sender: Any) {
@@ -268,6 +270,7 @@ private extension GalleryViewController {
         mediaViewController?.sourceDidChange(source: selectedSource)
         updateSelectionMode(with: false) // Force selection mode reset.
         updateFormatSDButtonState()
+        updateSDCardErrorState()
     }
 }
 
@@ -275,11 +278,16 @@ private extension GalleryViewController {
 private extension GalleryViewController {
     /// Sets up UI components
     func setupUI() {
-        navigationBar.addLightShadow()
+        navigationBar.addShadow()
         mediasInfosLabel.text = L10n.galleryNoMedia
         selectionCountLabel.makeUp(with: .regular, and: .disabledTextColor)
+        mediaStackView.enabledMargins = [.left, .top, .right]
+        sidePanelContainerStackView.enabledMargins = [.left, .bottom, .right]
+        loadingView.delegate = self
 
+        setupSegmentedControl()
         setupPanelButtons()
+        sdCardErrorView.alphaHidden(true)
     }
 
     /// Sets up top segmented control for gallery source selection.
@@ -291,14 +299,19 @@ private extension GalleryViewController {
                                            animated: false)
         }
         segmentedControl.customMakeup()
+        // Select .device segment by default. Will be updated by VM state changes or user interaction.
+        segmentedControl.selectedSegmentIndex = GallerySourceSegment.index(for: .device)
     }
 
     /// Sets up side panel action buttons: download/share, delete, format SD, select.
     func setupPanelButtons() {
-        deleteButton.model = ActionButtonModel(title: L10n.commonDelete, style: .destructive)
-        formatSDButton.model = ActionButtonModel(title: L10n.galleryFormat, style: .secondary)
-        mainActionButton.animateIsEnabled(false)
-        deleteButton.animateIsEnabled(false)
+        deleteButton.setup(title: L10n.commonDelete, style: .destructive)
+        formatSDButton.setup(title: L10n.galleryFormat, style: .secondary1)
+        sdCardErrorLabel.makeUp(with: .regular, and: .errorColor)
+        sdCardErrorLabel.font = FontStyle.current.font(isRegularSizeClass)
+        sdCardErrorIcon.tintColor = ColorName.errorColor.color
+        mainActionButton.isEnabled = false
+        deleteButton.isEnabled = false
 
         updateStates()
     }
@@ -307,6 +320,7 @@ private extension GalleryViewController {
     func updateStates() {
         updateSelectButtonsState()
         updateActionButtonsState()
+        updateSDCardErrorState()
         updateFormatSDButtonState()
         updateMediaInfosLabelState()
         updateSegmentedControlState()
@@ -316,15 +330,15 @@ private extension GalleryViewController {
     func updateSelectButtonsState() {
         let isSelectionModeEnabled = viewModel?.selectionModeEnabled ?? false
         let title = isSelectionModeEnabled
-            ? L10n.cancel
-            : L10n.commonSelect
+        ? L10n.cancel
+        : L10n.commonSelect
         let style: ActionButtonStyle = isSelectionModeEnabled
-            ? .secondary
-            : .primary
-        selectButton.model = ActionButtonModel(title: title, style: style)
+        ? .secondary1
+        : .default1
+        selectButton.setup(title: title, style: style)
 
         selectAllButton.animateIsHiddenInStackView(!isSelectionModeEnabled)
-        selectButton.animateIsEnabled(galleryHasMedia)
+        selectButton.isEnabled = galleryHasMedia
 
         // Need to show selection count if `isSelectionModeEnabled`, source storage info else.
         selectionCountLabel.animateIsHidden(!isSelectionModeEnabled)
@@ -339,17 +353,18 @@ private extension GalleryViewController {
     /// Updates side panel action buttons according to current state (source and selection).
     func updateActionButtonsState() {
         let mainActionTitle = isDeviceSourceSelected
-            ? L10n.commonShare
-            : L10n.commonDownload
+        ? L10n.commonShare
+        : L10n.commonDownload
         let mainActionStyle: ActionButtonStyle = isDeviceSourceSelected
-            ? .primary
-            : .validate
-        mainActionButton.model = ActionButtonModel(title: mainActionTitle, style: mainActionStyle)
+        ? .default1
+        : .validate
+        mainActionButton.setup(title: mainActionTitle, style: mainActionStyle)
+        mainActionButton.loaderColor = ColorName.defaultTextColor.color
 
         let allButtonTitle = areAllMediaSelected
-            ? L10n.commonDeselectAll
-            : L10n.commonSelectAll
-        selectAllButton.model = ActionButtonModel(title: allButtonTitle, style: .primary)
+        ? L10n.commonDeselectAll
+        : L10n.commonSelectAll
+        selectAllButton.setup(title: allButtonTitle, style: .default1)
     }
 
     /// Updates selection count label with current selected medias count and size (if available).
@@ -365,8 +380,9 @@ private extension GalleryViewController {
                                               StorageUtils.sizeForFile(size: size))
         }
 
-        mainActionButton.animateIsEnabled(selectionCount != 0)
-        deleteButton.animateIsEnabled(selectionCount != 0)
+        let downloadInDrone = !isDeviceSourceSelected && viewModel?.downloadStatus == .running
+        mainActionButton.isEnabled = selectionCount != 0 && !downloadInDrone
+        deleteButton.isEnabled = selectionCount != 0
     }
 
     /// Updates source selection according to VM changes.
@@ -395,15 +411,28 @@ private extension GalleryViewController {
 
     /// Updates format SD button state depending on feature availability.
     func updateFormatSDButtonState() {
-        let isHidden = !(viewModel?.shouldDisplayFormatOptions ?? false)
-            || viewModel?.selectionModeEnabled ?? false
+        guard let viewModel = viewModel, let sdCardViewModel = viewModel.sdCardViewModel else { return }
+        let isHidden = selectedSource == .mobileDevice || viewModel.selectionModeEnabled
 
         formatSDButton.animateIsHiddenInStackView(isHidden)
 
         guard !isHidden else { return }
 
-        let isEnabled = viewModel?.sdCardViewModel?.state.value.canFormat ?? false
-        formatSDButton.animateIsEnabled(isEnabled)
+        let isEnabled = sdCardViewModel.state.value.canFormat && (viewModel.drone?.isConnected ?? false)
+        formatSDButton.isEnabled = isEnabled
+    }
+
+    /// Updates SD card error view state.
+    func updateSDCardErrorState() {
+        guard let viewModel = viewModel else { return }
+        let formatNeeded = viewModel.state.value.isFormatNeeded
+        let showError = (formatNeeded || viewModel.isSdCardMissing) && selectedSource != .mobileDevice
+        UIView.animate {
+            self.sdCardErrorView.alphaHidden(!showError)
+        }
+        sdCardErrorLabel.text = formatNeeded
+                                ? L10n.alertSdcardFormatErrorTitle
+                                : L10n.alertNoSdcardErrorTitle
     }
 
     /// Update containers display.
@@ -419,8 +448,8 @@ private extension GalleryViewController {
     func addSourcesView(to destinationContainerView: UIView) {
         guard let sourceViewController = sourceViewController,
               sourceViewController.view.superview != destinationContainerView else {
-            return
-        }
+                  return
+              }
 
         // Add child view controller first time.
         let isContainingSourcesViewController = self.children.contains(sourceViewController)
@@ -455,6 +484,26 @@ private extension GalleryViewController {
             self?.filtersViewController?.stateDidChange(state: state)
             self?.mediaViewController?.stateDidChange(state: state)
         })
+
+        // Listen to drone's memory download state changes.
+        guard let viewModel = viewModel else { return }
+        viewModel.$downloadProgress
+            .combineLatest(viewModel.$downloadStatus)
+            .sink { [unowned self] (progress, status) in
+                loadingView.setProgress(progress, status: status)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Update Sharing button loader according to sharing state.
+    func listenSharingMediaState() {
+        mediaViewController?.$isSharingMedia
+            .sink { [weak self] in
+                $0 ?
+                self?.mainActionButton.startLoader() :
+                self?.mainActionButton.stopLoader()
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -489,5 +538,12 @@ extension GalleryViewController: GalleryMediaViewDelegate {
         selectedMediasCount = count
         updateSelectionCountLabel(selectionCount: count, size: size)
         updateActionButtonsState()
+    }
+}
+
+// MARK: - Gallery Loading View Delegate.
+extension GalleryViewController: GalleryLoadingViewDelegate {
+    func shouldStopProgress() {
+        viewModel?.cancelDownloads()
     }
 }

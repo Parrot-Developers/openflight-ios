@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -17,39 +17,44 @@
                 <rect key="frame" x="0.0" y="0.0" width="200" height="270"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0Dl-B1-0FX" userLabel="Line Separator">
-                        <rect key="frame" x="0.0" y="6" width="200" height="1"/>
-                        <color key="backgroundColor" name="default_text_color_20"/>
-                        <constraints>
-                            <constraint firstAttribute="height" constant="1" id="UGD-Op-nva"/>
-                        </constraints>
-                    </view>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0OW-8z-zPH" userLabel="title">
-                        <rect key="frame" x="10" y="21" width="180" height="21"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                        <nil key="textColor"/>
-                        <nil key="highlightedColor"/>
-                    </label>
-                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="S93-vf-Gx0" userLabel="contentStackView">
-                        <rect key="frame" x="20" y="52" width="160" height="208"/>
+                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="y94-vj-oyM">
+                        <rect key="frame" x="0.0" y="0.0" width="200" height="259"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0Dl-B1-0FX" userLabel="Line Separator">
+                                <rect key="frame" x="0.0" y="0.0" width="200" height="1"/>
+                                <color key="backgroundColor" name="default_text_color_20"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="1" id="UGD-Op-nva"/>
+                                </constraints>
+                            </view>
+                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="ghN-5M-cfV" customClass="SubContainerStackView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="11" width="200" height="248"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0OW-8z-zPH" userLabel="title">
+                                        <rect key="frame" x="0.0" y="0.0" width="200" height="20.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="S93-vf-Gx0" userLabel="contentStackView" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="30.5" width="200" height="217.5"/>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
                     </stackView>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="0OW-8z-zPH" firstAttribute="leading" secondItem="aFU-Xw-1ML" secondAttribute="leading" constant="10" id="6t3-ke-efi"/>
-                    <constraint firstItem="0OW-8z-zPH" firstAttribute="top" secondItem="0Dl-B1-0FX" secondAttribute="bottom" constant="14" id="QZw-0l-bam"/>
-                    <constraint firstItem="S93-vf-Gx0" firstAttribute="top" secondItem="0OW-8z-zPH" secondAttribute="bottom" constant="10" id="W3f-YQ-yKy"/>
-                    <constraint firstItem="S93-vf-Gx0" firstAttribute="leading" secondItem="aFU-Xw-1ML" secondAttribute="leading" constant="20" id="c6v-9b-21L"/>
-                    <constraint firstAttribute="trailing" secondItem="0Dl-B1-0FX" secondAttribute="trailing" id="gbu-Fd-NzQ"/>
-                    <constraint firstAttribute="trailing" secondItem="S93-vf-Gx0" secondAttribute="trailing" constant="20" id="icx-Lc-UoV"/>
-                    <constraint firstItem="0Dl-B1-0FX" firstAttribute="top" secondItem="aFU-Xw-1ML" secondAttribute="top" constant="6" id="poX-Ir-Etj"/>
-                    <constraint firstItem="0Dl-B1-0FX" firstAttribute="leading" secondItem="aFU-Xw-1ML" secondAttribute="leading" id="ruN-RW-IQz"/>
-                    <constraint firstAttribute="trailing" secondItem="0OW-8z-zPH" secondAttribute="trailing" constant="10" id="s1c-sf-DBH"/>
-                    <constraint firstAttribute="bottom" secondItem="S93-vf-Gx0" secondAttribute="bottom" constant="10" id="xNo-mG-hz8"/>
+                    <constraint firstItem="y94-vj-oyM" firstAttribute="leading" secondItem="aFU-Xw-1ML" secondAttribute="leading" id="0dL-S1-ZLb"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="y94-vj-oyM" secondAttribute="bottom" id="8hY-sb-asa"/>
+                    <constraint firstAttribute="trailing" secondItem="y94-vj-oyM" secondAttribute="trailing" id="RL7-ZG-V1w"/>
+                    <constraint firstItem="y94-vj-oyM" firstAttribute="top" secondItem="aFU-Xw-1ML" secondAttribute="top" id="cx5-xN-t4Z"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
+                <outlet property="containerStackView" destination="ghN-5M-cfV" id="0ys-wm-Z37"/>
                 <outlet property="contentStackView" destination="S93-vf-Gx0" id="Bfw-tx-GWJ"/>
                 <outlet property="titleLabel" destination="0OW-8z-zPH" id="GsO-la-u5z"/>
             </connections>
@@ -58,7 +63,7 @@
     </objects>
     <resources>
         <namedColor name="default_text_color_20">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="0.20000000298023224" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="0.20000000298023224" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

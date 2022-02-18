@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +33,7 @@ import CoreData
 extension PgyProject {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<PgyProject> {
-        return NSFetchRequest<PgyProject>(entityName: "PgyProject")
+        return NSFetchRequest<PgyProject>(entityName: Self.entityName)
     }
 
     // MARK: - Properties
@@ -43,27 +43,13 @@ extension PgyProject {
     @NSManaged public var name: String!
     @NSManaged public var processingCalled: Bool
     @NSManaged public var projectDate: Date!
-    @NSManaged public var synchroDate: Date?
+    @NSManaged public var latestSynchroStatusDate: Date?
     @NSManaged public var synchroStatus: Int16
-    @NSManaged public var cloudToBeDeleted: Bool
+    @NSManaged public var isLocalDeleted: Bool
+    @NSManaged public var latestLocalModificationDate: Date?
+    @NSManaged public var synchroError: Int16
 
     // MARK: - Relationship
 
     @NSManaged public var ofUserParrot: UserParrot?
-}
-
-// MARK: - Utils
-extension PgyProject {
-
-    /// Return PgyProjectsModel from PgyProjects type of NSManagedObject
-    func model() -> PgyProjectModel {
-        return PgyProjectModel(apcId: apcId,
-                               pgyProjectId: pgyProjectId,
-                               cloudToBeDeleted: cloudToBeDeleted,
-                               name: name,
-                               processingCalled: processingCalled,
-                               projectDate: projectDate,
-                               synchroDate: synchroDate,
-                               synchroStatus: synchroStatus)
-    }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,7 +40,6 @@ protocol PinNumberCollectionViewCellDelegate: AnyObject {
 }
 
 /// Custom cell for cellular pin number.
-
 final class PinNumberCollectionViewCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var mainView: UIView!
@@ -88,7 +86,7 @@ private extension PinNumberCollectionViewCell {
 
     @IBAction func numberButtonTouchedDown(_ sender: Any) {
         updateView(isSelected: true)
-        delegate?.updatePinNumber(number: self.number)
+        delegate?.updatePinNumber(number: number)
     }
 }
 

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -46,14 +45,6 @@ protocol SettingsQuickCollectionViewCellDelegate: AnyObject {
 final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var settingImage: UIImageView!
-    @IBOutlet private weak var pageControl: UIPageControl! {
-        didSet {
-            pageControl.isUserInteractionEnabled = false
-            if #available(iOS 14.0, *) {
-                pageControl.backgroundStyle = .minimal
-            }
-        }
-    }
     @IBOutlet private weak var settingTitle: UILabel!
 
     // MARK: - Internal Properties
@@ -62,37 +53,21 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
     // MARK: - Private Properties
     private var indexPath: IndexPath?
     private var selectedItem: Int = 0
-    private var isSwipeAllowed: Bool = false
     private var animationImage = UIImageView()
     private var nextImage: UIImage?
     private var previousImage: UIImage?
     private var isEnabled: Bool = false
     private weak var settingEntry: SettingEntry?
 
-    // MARK: - Private Enums
-    private enum Constants {
-         static let animationDuration: TimeInterval = 0.2
-    }
-
     // MARK: - Override Funcs
     override func prepareForReuse() {
         super.prepareForReuse()
-        self.resetCellContent()
+        resetCellContent()
     }
 
     override func awakeFromNib() {
         super.awakeFromNib()
-
-        self.animationImage.frame = self.settingImage.frame
-        self.addSubview(animationImage)
-        self.resetCellContent()
-        self.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
-                                borderColor: .clear,
-                                radius: Style.largeCornerRadius,
-                                borderWidth: Style.noBorderWidth)
-
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTap))
-        self.addGestureRecognizer(tapRecognizer)
+        initView()
     }
 
     // MARK: - Internal Funcs
@@ -108,32 +83,25 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
         self.settingEntry = settingEntry
         self.delegate = delegate
         self.indexPath = indexPath
-        self.isEnabled = settingEntry.isEnabled
+        isEnabled = settingEntry.isEnabled
         let selectedIndex = segmentModel.selectedIndex
-        self.selectedItem = selectedIndex
-        self.pageControl.isHidden = segmentModel.isBoolean
+        selectedItem = selectedIndex
 
-        self.settingImage.image = segmentModel.segments.elementAt(index: selectedIndex)?.image
-
+        settingImage.image = segmentModel.segments.elementAt(index: selectedIndex)?.image
         if segmentModel.isBoolean {
             let textColor = (selectedIndex == 0) ? ColorName.defaultTextColor : ColorName.defaultTextColor
-            self.settingTitle.text = settingEntry.title
-            self.contentView.backgroundColor = (selectedIndex == 0) ? ColorName.whiteAlbescent.color : ColorName.white.color
-            self.settingImage.tintColor = textColor.color
-            settingTitle.makeUp(and: textColor)
+            settingTitle.text = settingEntry.title
+            contentView.backgroundColor = (selectedIndex == 0) ? ColorName.whiteAlbescent.color : ColorName.white.color
+            settingImage.tintColor = textColor.color
         } else {
             var title = segmentModel.segments.elementAt(index: selectedIndex)?.title ?? Style.dash
             if let cellTitle = settingEntry.title {
                 title = "\(cellTitle) : " + title
             }
-            self.settingTitle.text = title
-            self.contentView.backgroundColor = ColorName.white.color
-            self.settingImage.tintColor = ColorName.defaultTextColor.color
-            self.pageControl.numberOfPages = segmentModel.segments.count
-            self.pageControl.currentPage = selectedIndex
+            settingTitle.text = title
+            contentView.backgroundColor = ColorName.white.color
+            settingImage.tintColor = ColorName.defaultTextColor.color
         }
-
-        self.isSwipeAllowed = !segmentModel.isBoolean
 
         nextImage = segmentModel.segments.elementAt(index: segmentModel.nextIndex)?.image
         previousImage = segmentModel.segments.elementAt(index: segmentModel.previousIndex)?.image
@@ -143,11 +111,24 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
 // MARK: - DELEGATE
 // MARK: - Private Funcs
 private extension SettingsQuickCollectionViewCell {
+    /// Inits view.
+    func initView() {
+        animationImage.frame = settingImage.frame
+        addSubview(animationImage)
+        resetCellContent()
+        cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
+                           borderColor: .clear,
+                           radius: Style.largeCornerRadius,
+                           borderWidth: Style.noBorderWidth)
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTap))
+        addGestureRecognizer(tapRecognizer)
+    }
+
     /// Reset cell content.
     func resetCellContent() {
-        self.settingTitle.text = ""
-        self.settingImage.image = nil
-        self.isEnabled = false
+        settingTitle.text = ""
+        settingImage.image = nil
+        isEnabled = false
     }
 
     /// Called when cell is tapped.
@@ -155,10 +136,11 @@ private extension SettingsQuickCollectionViewCell {
         if let model = settingEntry?.segmentModel {
             guard let entry = settingEntry else { return }
 
-            LogEvent.logAppEvent(itemName: settingEntry?.itemLogKey,
-                                 newValue: LogEvent.formatNewValue(settingEntry: entry,
-                                                                   index: model.nextIndex),
-                                 logType: LogEvent.LogType.button)
+            if let logItem = settingEntry?.itemLogKey {
+                LogEvent.log(.button(item: logItem,
+                                     value: LogEvent.formatNewValue(settingEntry: entry,
+                                                                    index: model.nextIndex)))
+            }
         }
 
         guard isEnabled else { return }
@@ -166,7 +148,7 @@ private extension SettingsQuickCollectionViewCell {
     }
 
     func changeItem() {
-        guard let indexPath = self.indexPath else { return }
-        self.delegate?.settingsQuickCelldidTap(indexPath: indexPath)
+        guard let indexPath = indexPath else { return }
+        delegate?.settingsQuickCelldidTap(indexPath: indexPath)
     }
 }

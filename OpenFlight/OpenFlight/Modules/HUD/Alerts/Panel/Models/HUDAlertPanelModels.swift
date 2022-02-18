@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -49,6 +48,8 @@ public protocol AlertPanelState {
     var isAlertForceHidden: Bool { get set }
     /// Countdown for action.
     var countdown: Int? { get }
+    /// Initial countdown value.
+    var initialCountdown: TimeInterval? { get }
     /// Tells if start view need to be displayed.
     var startViewIsVisible: Bool { get }
     /// Tells if action label need to be displayed.
@@ -61,8 +62,8 @@ public protocol AlertPanelState {
     var stopViewStyle: StopViewStyle? { get }
     /// Tells if we need to show the alert panel.
     var shouldShowAlertPanel: Bool { get }
-    /// Tells if the alert has a progress view.
-    var hasProgressView: Bool { get }
+    /// Tells if the alert has a text count down.
+    var hasTextCountdown: Bool { get }
     /// Tells if the alert has an animation.
     var hasAnimation: Bool { get }
     /// Custom countdown message function.
@@ -76,8 +77,6 @@ public protocol AlertPanelActionType {
     func startAction()
     /// Cancels alert action.
     func cancelAction()
-    /// Starts timer when action is canceled.
-    func startTimer()
 }
 
 // MARK: - Public Enums
@@ -107,14 +106,6 @@ public enum RthAlertType: Int {
     case droneBatteryCriticalAlert
     /// Drone battery warning alert.
     case droneBatteryWarningAlert
-    /// Remote battery critical alert.
-    case remoteBatteryCriticalAlert
-    /// Remote battery warning alert.
-    case remoteBatteryWarningAlert
-    /// User device battery critical alert.
-    case userDeviceCriticalAlert
-    /// User device battery warning alert.
-    case userDeviceWarningAlert
 
     /// Returns the alert subtitle.
     var subtitle: String? {
@@ -123,16 +114,8 @@ public enum RthAlertType: Int {
             return L10n.alertReturnHomeDroneVeryLowBattery
         case .droneBatteryCriticalAlert:
             return L10n.alertReturnHomeDroneVeryLowBattery
-        case .remoteBatteryCriticalAlert:
-            return L10n.alertReturnHomeControllerVeryLowBattery
-        case .userDeviceCriticalAlert:
-            return L10n.alertReturnHomeDeviceVeryLowBattery
         case .droneBatteryWarningAlert:
             return L10n.alertReturnHomeDroneLowBattery
-        case .remoteBatteryWarningAlert:
-            return L10n.alertReturnHomeControllerLowBattery
-        case .userDeviceWarningAlert:
-            return L10n.alertReturnHomeDeviceLowBattery
         }
     }
 

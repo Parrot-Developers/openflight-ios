@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -106,28 +105,28 @@ final class CameraShutterButtonState: DeviceConnectionState {
         guard let other = other as? CameraShutterButtonState else { return false }
 
         return super.isEqual(to: other)
-            && self.cameraMode == other.cameraMode
-            && self.cameraCaptureMode == other.cameraCaptureMode
-            && self.cameraCaptureSubMode?.key == other.cameraCaptureSubMode?.key
-            && self.photoFunctionState == other.photoFunctionState
-            && self.userStorageState == other.userStorageState
-            && self.recordingTimeState == other.recordingTimeState
-            && self.panoramaModeState == other.panoramaModeState
-            && self.lapseModeState == other.lapseModeState
-            && self.timeBeforeRestartRecord == other.timeBeforeRestartRecord
+            && cameraMode == other.cameraMode
+            && cameraCaptureMode == other.cameraCaptureMode
+            && cameraCaptureSubMode?.key == other.cameraCaptureSubMode?.key
+            && photoFunctionState == other.photoFunctionState
+            && userStorageState == other.userStorageState
+            && recordingTimeState == other.recordingTimeState
+            && panoramaModeState == other.panoramaModeState
+            && lapseModeState == other.lapseModeState
+            && timeBeforeRestartRecord == other.timeBeforeRestartRecord
     }
 
     override func copy() -> CameraShutterButtonState {
-        let copy = CameraShutterButtonState(connectionState: self.connectionState,
-                                            cameraMode: self.cameraMode,
-                                            cameraCaptureMode: self.cameraCaptureMode,
-                                            cameraCaptureSubMode: self.cameraCaptureSubMode,
-                                            photoFunctionState: self.photoFunctionState,
-                                            userStorageState: self.userStorageState,
-                                            recordingTimeState: self.recordingTimeState,
-                                            panoramaModeState: self.panoramaModeState,
-                                            lapseModeState: self.lapseModeState,
-                                            timeBeforeRestartRecord: self.timeBeforeRestartRecord)
+        let copy = CameraShutterButtonState(connectionState: connectionState,
+                                            cameraMode: cameraMode,
+                                            cameraCaptureMode: cameraCaptureMode,
+                                            cameraCaptureSubMode: cameraCaptureSubMode,
+                                            photoFunctionState: photoFunctionState,
+                                            userStorageState: userStorageState,
+                                            recordingTimeState: recordingTimeState,
+                                            panoramaModeState: panoramaModeState,
+                                            lapseModeState: lapseModeState,
+                                            timeBeforeRestartRecord: timeBeforeRestartRecord)
         return copy
     }
 }
@@ -209,36 +208,36 @@ final class CameraShutterButtonViewModel: DroneStateViewModel<CameraShutterButto
 private extension CameraShutterButtonViewModel {
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
             guard let camera = camera,
                   let cameraMode = camera.mode else {
                 return
             }
 
-            self?.listenPhotoCapture(camera)
-            self?.listenCameraConfiguration(camera)
-            let copy = self?.state.value.copy()
-            copy?.cameraMode = cameraMode
-            self?.state.set(copy)
+            listenPhotoCapture(camera)
+            listenCameraConfiguration(camera)
+            let copy = state.value.copy()
+            copy.cameraMode = cameraMode
+            state.set(copy)
         }
     }
 
     /// Starts watcher for camera configuration.
     func listenCameraConfiguration(_ camera: MainCamera2) {
-        recordingRef = camera.getComponent(Camera2Components.recording) { [weak self] recording in
+        recordingRef = camera.getComponent(Camera2Components.recording) { [unowned self] recording in
             guard let recordingState = recording?.state else { return }
 
-            let copy = self?.state.value.copy()
+            let copy = state.value.copy()
             // Reset timer before restart record
             if case .stopping(reason: .configurationChange, _) = recordingState {
-                copy?.timeBeforeRestartRecord = Constants.timerBeforeRestartRecord
+                copy.timeBeforeRestartRecord = Constants.timerBeforeRestartRecord
             }
 
-            self?.state.set(copy)
+            state.set(copy)
             // Prevents for multiple copy call
-            if self?.state.value.timeBeforeRestartRecord != nil,
+            if state.value.timeBeforeRestartRecord != nil,
                case .stopping(reason: .configurationChange, _) = recordingState {
-                self?.restartRecording()
+                restartRecording()
             }
         }
     }
@@ -264,23 +263,23 @@ private extension CameraShutterButtonViewModel {
     func cancelRestartRecording() {
         countDownTimer?.invalidate()
         countDownTimer = nil
-        let copy = self.state.value.copy()
+        let copy = state.value.copy()
         copy.timeBeforeRestartRecord = nil
-        self.state.set(copy)
+        state.set(copy)
     }
 
     /// Starts watcher for photo capture.
     func listenPhotoCapture(_ camera: MainCamera2) {
-        photoCaptureRef = camera.getComponent(Camera2Components.photoCapture) { [weak self] photo in
+        photoCaptureRef = camera.getComponent(Camera2Components.photoCapture) { [unowned self] photo in
             guard let cameraMode = camera.mode,
                   let photoState = photo?.state else {
                 return
             }
 
-            let copy = self?.state.value.copy()
-            copy?.cameraMode = cameraMode
-            copy?.photoFunctionState = photoState
-            self?.state.set(copy)
+            let copy = state.value.copy()
+            copy.cameraMode = cameraMode
+            copy.photoFunctionState = photoState
+            state.set(copy)
         }
     }
 
@@ -342,53 +341,53 @@ private extension CameraShutterButtonViewModel {
     /// Updates current recording time state.
     ///
     /// - Parameters:
-    ///    - state: current recording time state
-    func updateRecordingTimeState(_ state: RecordingTimeState) {
-        let copy = self.state.value.copy()
-        copy.recordingTimeState = state
-        self.state.set(copy)
+    ///    - recordingState: current recording time state
+    func updateRecordingTimeState(_ recordingState: RecordingTimeState) {
+        let copy = state.value.copy()
+        copy.recordingTimeState = recordingState
+        state.set(copy)
     }
 
     /// Update current lapse capture mode state.
     ///
     /// - Parameters:
-    ///     - state: current photo lapse state
-    func updateLapseModeState(_ state: PhotoLapseState) {
-        let copy = self.state.value.copy()
-        copy.lapseModeState = state
-        self.state.set(copy)
+    ///     - photosState: current photo lapse state
+    func updateLapseModeState(_ photosState: PhotoLapseState) {
+        let copy = state.value.copy()
+        copy.lapseModeState = photosState
+        state.set(copy)
     }
 
     /// Update current panorama mode state.
     ///
     /// - Parameters:
-    ///     - state: current panorama mode state
-    func updatePanoramaModeState(_ state: PanoramaModeState) {
-        let copy = self.state.value.copy()
-        copy.panoramaModeState = state
-        self.state.set(copy)
+    ///     - panoramaState: current panorama mode state
+    func updatePanoramaModeState(_ panoramaState: PanoramaModeState) {
+        let copy = state.value.copy()
+        copy.panoramaModeState = panoramaState
+        state.set(copy)
     }
 
     /// Update current user storage state.
     ///
     /// - Parameters:
-    ///     - state: current global user storage state
-    func updateUserStorageState(_ state: GlobalUserStorageState) {
-        let copy = self.state.value.copy()
-        copy.userStorageState = state
-        self.state.set(copy)
+    ///     - userStorageState: current global user storage state
+    func updateUserStorageState(_ userStorageState: GlobalUserStorageState) {
+        let copy = state.value.copy()
+        copy.userStorageState = userStorageState
+        state.set(copy)
     }
 
     /// Update current camera capture mode.
     ///
     /// - Parameters:
-    ///     - state: current bar button state
-    func updateCameraCaptureModeState(_ state: CameraBarButtonState) {
-        if let mode = state.mode as? CameraCaptureMode {
-            let copy = self.state.value.copy()
+    ///     - captureState: current bar button state
+    func updateCameraCaptureModeState(_ captureState: CameraBarButtonState) {
+        if let mode = captureState.mode as? CameraCaptureMode {
+            let copy = state.value.copy()
             copy.cameraCaptureMode = mode
-            copy.cameraCaptureSubMode = state.subMode
-            self.state.set(copy)
+            copy.cameraCaptureSubMode = captureState.subMode
+            state.set(copy)
         }
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -63,6 +62,10 @@ extension DateFormatter {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = format
         return dateFormatter
+    }
+
+    public var iso8601: DateFormatter {
+        .customFormat("yyyy-MM-dd'T'HH:mm:ss.ZZZZZ")
     }
 
     public static let apiDateFormatter: DateFormatter = {

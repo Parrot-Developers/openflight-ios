@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -52,11 +51,6 @@ class FlightPlanListHeaderViewController: UICollectionViewController {
         }
     }
 
-    // MARK: - Private Enums
-    private enum Constant {
-        static let collectionViewInset: UIEdgeInsets = .init(top: 0, left: 10, bottom: 0, right: 10)
-    }
-
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -102,14 +96,5 @@ class FlightPlanListHeaderViewController: UICollectionViewController {
     ///     - provider: array of provider struct to setup variables and trigger didSet to reloadData
     func configure(provider: [FlightPlanListHeaderCellProvider]) {
         self.providers = provider
-    }
-}
-
-// MARK: - UICollectionViewDelegateFlowLayout
-extension FlightPlanListHeaderViewController: UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        insetForSectionAt section: Int) -> UIEdgeInsets {
-        return Constant.collectionViewInset
     }
 }

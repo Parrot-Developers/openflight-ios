@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,21 +38,17 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Outlets
+    @IBOutlet private weak var previewImageView: UIImageView!
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet private weak var streamView: StreamView!
     @IBOutlet private weak var videoView: MediaVideoView!
-    @IBOutlet private weak var thumbnailImageView: UIImageView!
     @IBOutlet private weak var playButton: UIButton!
-    @IBOutlet private weak var bottomBarView: UIView!
-    @IBOutlet private weak var videoProgressView: MediaVideoBottomBarView!
-    @IBOutlet private weak var videoProgressViewBottomConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     private(set) var index: Int = 0
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
-    private var thumbnailViewModel: GalleryMediaThumbnailViewModel?
     private var timer: Timer?
     private var mediaListener: GalleryMediaListener?
     private var videoGravity = AVLayerVideoGravity.resizeAspect
@@ -89,17 +84,13 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
     // MARK: - Deinit
     deinit {
         viewModel?.unregisterListener(mediaListener)
-        stop()
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        videoProgressView.delegate = self
-        start()
         updatePlayButton()
-        updateBottomBar()
         initMediaPlayerViewModel()
         observeViewModel()
     }
@@ -113,37 +104,39 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        start()
-        viewModel?.videoPlay()
-        updateMuteState(viewModel?.mediaBrowsingViewModel.isVideoMuted ?? true)
+        setupPreviewImage()
+        stop()
         viewModel?.mediaBrowsingViewModel.didDisplayMedia(index: index, count: 1)
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
 
-        // Update gradient @didLayoutSubviews in order to avoid display issue if layer not rendered yet.
-        bottomBarView.addGradient(startAlpha: 0, endAlpha: 0.7)
+        start {
+            self.viewModel?.videoPlay()
+        }
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool { true }
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .landscape }
     override var prefersStatusBarHidden: Bool { true }
 
     func observeViewModel() {
-        viewModel?.mediaBrowsingViewModel.$isVideoMuted
+        guard let mediaBrowsingViewModel = viewModel?.mediaBrowsingViewModel else { return }
+
+        mediaBrowsingViewModel.$isVideoMuted
             .sink { [weak self] isMuted in
                 self?.updateMuteState(isMuted)
             }
             .store(in: &cancellables)
 
-        viewModel?.mediaBrowsingViewModel.$areControlsShown
-            .sink { [weak self] areControlsShown in
-                self?.showControls(areControlsShown)
+        mediaBrowsingViewModel.$areControlsShown
+            .combineLatest(mediaBrowsingViewModel.$isCameraRecording)
+            .sink { [weak self] (areControlsShown, isCameraRecording) in
+                self?.showControls(areControlsShown && !isCameraRecording)
             }
             .store(in: &cancellables)
 
-        viewModel?.mediaBrowsingViewModel.$zoomLevel
+        mediaBrowsingViewModel.$zoomLevel
             .sink { [weak self] zoomLevel in
                 self?.updateZoomLevel(zoomLevel)
             }
@@ -163,7 +156,6 @@ private extension GalleryVideoViewController {
             stop()
             start(completion: {
                 viewModel.videoTogglePlayingStatus()
-                self.hideThumbnail()
             })
         } else {
             viewModel.videoTogglePlayingStatus()
@@ -173,37 +165,49 @@ private extension GalleryVideoViewController {
 
 // MARK: - Private Funcs
 private extension GalleryVideoViewController {
-    func showControls(_ show: Bool) {
-        bottomBarView.showFromEdge(.bottom,
-                                 offset: view.safeAreaInsets.bottom,
-                                 show: show)
-        videoProgressView.sliderStyle = show ? .full : .minimal
-        videoProgressViewBottomConstraint.constant = show ? Constants.progressViewFullStyleBottomMargin : 0
-        UIView.animate(withDuration: Style.shortAnimationDuration) {
-            self.view.layoutIfNeeded() // Animate constraint change if needed.
-        }
+    func setupPreviewImage() {
+        guard let viewModel = viewModel,
+              let media = viewModel.getMedia(index: index) else {
+                  return
+              }
 
+        let thumbnailViewModel = GalleryMediaThumbnailViewModel(media: media,
+                                                                mediaStore: viewModel.mediaStore,
+                                                                index: viewModel.getMediaImageDefaultIndex(media))
+        thumbnailViewModel.getThumbnail { [weak self] image in
+            self?.showPreviewImage(true)
+            self?.previewImageView.image = image
+        }
+    }
+
+    func showPreviewImage(_ show: Bool) {
+        UIView.animate { self.previewImageView.alpha = show ? 1 : 0 }
+    }
+
+    func showControls(_ show: Bool) {
         playButton.animateIsHidden(!show)
     }
 
     /// Init media player view model.
     func initMediaPlayerViewModel() {
-        mediaListener = viewModel?.registerListener(didChange: { [weak self] state in
-            let isDownloading = state.downloadStatus == .running
-            if isDownloading {
-                self?.stop()
-                self?.activityIndicator.startAnimating()
-            } else {
-                self?.start()
-                self?.activityIndicator.stopAnimating()
-            }
-            self?.updatePlayButton(forceHideBars: isDownloading)
-            self?.updateBottomBar(forceHideBars: isDownloading)
-
-            if self?.viewModel?.videoIsPlaying() == true {
-                self?.hideThumbnail()
-            }
+        guard let viewModel = viewModel else { return }
+        mediaListener = viewModel.registerListener(didChange: { [unowned self] _ in
+            updatePlayButton()
+            showPreviewImage(viewModel.getVideoPosition() == 0)
         })
+
+        viewModel.$downloadStatus
+            .sink { [unowned self] status in
+                if status == .running {
+                    stop()
+                    activityIndicator.startAnimating()
+                } else {
+                    start()
+                    activityIndicator.stopAnimating()
+                }
+                updatePlayButton()
+            }
+            .store(in: &cancellables)
     }
 
     func updateMuteState(_ isMuted: Bool) {
@@ -219,10 +223,7 @@ private extension GalleryVideoViewController {
     }
 
     /// Update play button design from current player status.
-    ///
-    /// - Parameters:
-    ///    - forceHideBars: if true, hide top and bottom bar
-    func updatePlayButton(forceHideBars: Bool = false) {
+    func updatePlayButton() {
         guard let viewModel = viewModel else { return }
 
         let image = viewModel.videoIsPlaying()
@@ -230,15 +231,11 @@ private extension GalleryVideoViewController {
             : Asset.Gallery.Player.buttonPlayBig.image
 
         playButton.setImage(image, for: .normal)
-    }
 
-    /// Update bottom bar from current resource.
-    ///
-    /// - Parameters:
-    ///    - forceHideBars: if true, hide top and bottom bar
-    func updateBottomBar(forceHideBars: Bool = false) {
-        guard let viewModel = viewModel else { return }
-        videoProgressView.updateSlider(position: viewModel.getVideoPosition(), duration: viewModel.getVideoDuration())
+        if !viewModel.videoIsPlaying() && viewModel.getVideoPosition() == viewModel.getVideoDuration() {
+            // Show controls when video has reached end.
+            viewModel.mediaBrowsingViewModel.didInteractForControlsDisplay(true)
+        }
     }
 
     /// Configure streaming.
@@ -262,23 +259,27 @@ private extension GalleryVideoViewController {
     ///
     /// - Parameters:
     ///    - url: media url
-    ///    - completion: completion block
-    func configureVideo(url: URL, completion: (() -> Void)? = nil) {
+    func configureVideo(url: URL) {
+        // Configure the player with the media's url.
+        viewModel?.videoSetVideo(with: url)
+
+        // Ensure the player layer exists.
+        guard let playerLayer = viewModel?.deviceViewModel?.videoPlayerLayer else { return }
+
+        // Remove the previous playerLayer if exists.
+        videoView.playerLayer?.removeFromSuperlayer()
+
+        // Setup the playerLayer.
+        playerLayer.player?.seek(to: CMTime(seconds: Constants.timeSeek,
+                                            preferredTimescale: Constants.preferredTimescale))
+        playerLayer.needsDisplayOnBoundsChange = true
+
+        // Display the video view.
         streamView.isHidden = true
         videoView.isHidden = false
-        viewModel?.videoSetVideo(index: self.index, completion: { layer in
-            self.videoView.playerLayer = layer
-            guard let playerLayer = self.videoView.playerLayer else { return }
-
-            playerLayer.player?.seek(to: CMTime(seconds: Constants.timeSeek, preferredTimescale: Constants.preferredTimescale))
-            playerLayer.needsDisplayOnBoundsChange = true
-            playerLayer.frame = self.videoView.bounds
-            self.videoView.layer.addSublayer(playerLayer)
-            self.scheduledTimerWithTimeInterval()
-            if let completion = completion {
-                completion()
-            }
-        })
+        videoView.playerLayer = playerLayer
+        videoView.layer.addSublayer(playerLayer)
+        scheduledTimerWithTimeInterval()
     }
 
     /// Start replay configuration.
@@ -296,22 +297,18 @@ private extension GalleryVideoViewController {
     func start(completion: (() -> Void)? = nil) {
         guard let viewModel = viewModel,
               viewModel.videoShouldReset(),
-              let currentMedia = viewModel.getMedia(index: index) else {
+              let currentMedia = viewModel.getMedia(index: index),
+        !Platform.isSimulator else {
+            completion?()
             return
         }
 
         if let mediaUrl = currentMedia.url {
-            configureVideo(url: mediaUrl, completion: {
-                if let completion = completion {
-                    completion()
-                }
-            })
+            configureVideo(url: mediaUrl)
+            updateMuteState(viewModel.mediaBrowsingViewModel.isVideoMuted)
+            completion?()
         } else {
-            configureStreaming(completion: {
-                if let completion = completion {
-                    completion()
-                }
-            })
+            configureStreaming(completion: completion)
         }
     }
 
@@ -326,39 +323,16 @@ private extension GalleryVideoViewController {
 
     /// Scheduled timer to update.
     func scheduledTimerWithTimeInterval() {
+        timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: Constants.timerInterval, repeats: true) { [weak self] _ in
             self?.viewModel?.videoUpdateState()
         }
-    }
-
-    /// Show  thumbnail.
-    func showThumbnail() {
-        guard let media = viewModel?.getMedia(index: index),
-              let mediaIndex = viewModel?.getMediaImageDefaultIndex(media),
-              let mediaStore = viewModel?.mediaStore else {
-            return
-        }
-
-        thumbnailViewModel = GalleryMediaThumbnailViewModel(media: media,
-                                                            mediaStore: mediaStore,
-                                                            index: mediaIndex)
-        thumbnailViewModel?.getThumbnail { [weak self] image in
-            self?.thumbnailImageView.image = image
-            self?.thumbnailImageView.isHidden = false
-        }
-    }
-
-    /// Hide  thumbnail.
-    func hideThumbnail() {
-        thumbnailImageView.fadeOut(Constants.fadeOut, completion: {
-            self.thumbnailImageView.isHidden = true
-        })
     }
 }
 
 // MARK: - MediaVideoBottomBarViewDelegate
 extension GalleryVideoViewController: MediaVideoBottomBarViewDelegate {
     func didUpdateSlider(newPositionValue: TimeInterval) {
-        _ = viewModel?.videoUpdatePosition(position: newPositionValue)
+        viewModel?.videoUpdatePosition(position: newPositionValue)
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -96,17 +95,29 @@ public enum HUDAlertLevel: Int {
     case critical = 1
     case warning
     case info
-    case tutorial
+    case advice
 
     /// Color for alert.
     var color: UIColor {
         switch self {
         case .critical:
-            return ColorName.redTorch.color
+            return ColorName.errorColor.color
         case .warning:
             return ColorName.black60.color
+        case .advice:
+            return .white
         default:
             return .clear
+        }
+    }
+
+    /// Color for alert.
+    var textColor: UIColor {
+        switch self {
+        case .advice:
+            return .black
+        default:
+            return .white
         }
     }
 
@@ -116,7 +127,7 @@ public enum HUDAlertLevel: Int {
         case .critical:
             return ColorName.white.color
         case .warning:
-            return ColorName.orangePeel.color
+            return ColorName.warningColor.color
         default:
             return .clear
         }
@@ -125,9 +136,9 @@ public enum HUDAlertLevel: Int {
     /// Returns true if alert is an error.
     var isError: Bool {
         switch self {
-        case .critical, .warning:
+        case .critical, .warning, .advice:
             return true
-        case .info, .tutorial:
+        case .info:
             return false
         }
     }

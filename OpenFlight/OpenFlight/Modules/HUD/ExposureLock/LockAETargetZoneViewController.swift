@@ -1,4 +1,4 @@
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -78,7 +78,8 @@ final class LockAETargetZoneViewController: UIViewController {
     /// TODO injection
     private var viewModel = LockAETargetZoneViewModel(
         exposureService: Services.hub.drone.exposureService,
-        exposureLockService: Services.hub.drone.exposureLockService)
+        exposureLockService: Services.hub.drone.exposureLockService,
+        panoramaService: Services.hub.panoramaService)
     /// Time at which touch down occured.
     var touchDownTime: Date?
     /// Whether locking on region animation is ongoing.
@@ -101,10 +102,6 @@ final class LockAETargetZoneViewController: UIViewController {
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {

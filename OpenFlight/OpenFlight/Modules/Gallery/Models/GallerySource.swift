@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,7 +38,9 @@ enum GallerySourceType: CaseIterable {
     var image: UIImage? {
          switch self {
          case .droneSdCard:
-              return Asset.Dashboard.icCardMini.image
+            return Asset.Dashboard.icCardMini.image
+         case .droneInternal:
+            return Asset.Dashboard.icInternalMini.image
          case .mobileDevice:
             return Asset.Dashboard.icPhoneMini.image
          default:
@@ -82,6 +83,34 @@ enum GallerySourceType: CaseIterable {
             return count > 1
                 ? L10n.galleryRemoveLocalMemoryConfirmPlural
                 : L10n.galleryRemoveLocalMemoryConfirm
+        default:
+            return ""
+        }
+    }
+
+    func deleteErrorMessage(count: Int) -> String {
+        switch self {
+        case .droneSdCard,
+             .droneInternal:
+            return count > 1
+                ? L10n.galleryRemoveDroneMemoryErrorPlural
+                : L10n.galleryRemoveDroneMemoryError
+        case .mobileDevice:
+            return count > 1
+                ? L10n.galleryRemoveLocalMemoryErrorPlural
+                : L10n.galleryRemoveLocalMemoryError
+        default:
+            return ""
+        }
+    }
+
+    func deleteResourceConfirmMessage(count: Int) -> String {
+        switch self {
+        case .droneSdCard,
+             .droneInternal:
+            return L10n.galleryRemoveResourceDroneMemoryConfirm(count)
+        case .mobileDevice:
+            return L10n.galleryRemoveResourceLocalMemoryConfirm(count)
         default:
             return ""
         }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,6 +34,7 @@ final class PairingViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var collectionView: UICollectionView!
     @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet private weak var topBarHeightConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
     private weak var coordinator: PairingCoordinator?
@@ -64,6 +64,7 @@ final class PairingViewController: UIViewController {
         super.viewDidLoad()
 
         titleLabel.text = L10n.pairingHowToConnectDroneTitle
+        topBarHeightConstraint.constant = Layout.fileNavigationBarHeight(isRegularSizeClass)
 
         collectionView.register(cellType: PairingCell.self)
         collectionView.backgroundColor = UIColor.clear
@@ -83,15 +84,11 @@ final class PairingViewController: UIViewController {
             isFirstDisplay = false
         }
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairing, logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.pairing))
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {

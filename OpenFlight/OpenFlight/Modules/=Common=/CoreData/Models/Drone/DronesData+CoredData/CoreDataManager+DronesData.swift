@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,152 +30,220 @@
 import Foundation
 import CoreData
 import GroundSdk
+import Combine
 
+// MARK: - Repository Protocol
 public protocol DroneDataRepository: AnyObject {
-    /// Persist or update user's droneData into CoreData
+    // MARK: __ Publisher
+    /// Publisher notify changes
+    var dronesDidChangePublisher: AnyPublisher<Void, Never> { get }
+
+    // MARK: __ Save Or Update
+    /// Save or update DroneData into CoreData from DroneModel
     /// - Parameters:
-    ///     - drone: DroneModel to persist
-    func persist(_ drone: DroneModel)
+    ///    - droneModel: DroneModel to save or update
+    func saveOrUpdateDrone(fromDroneModel droneModel: DroneModel)
 
-    /// Persist or update user's dronesData into CoreData
+    /// Save or update DroneData into CoreData from DroneMode listl
     /// - Parameters:
-    ///     - drones: List of DroneModel to persist
-    func persist(_ drones: [DroneModel])
+    ///    - droneModels: DroneModel list to save or update
+    func saveOrUpdateDrones(fromDroneModels droneModels: [DroneModel])
 
-    /// Load droneData by serial from CoreData
-    /// return DroneModel if exist
+    /// Save or update DroneData into CoreData from DroneMode listl
     /// - Parameters:
-    ///     - droneSerial: Drone identifier to load
-    func loadDrone(_ droneSerial: String) -> DroneModel?
+    ///    - droneModels: DroneModel list to save or update
+    ///    - completion: The callback returning the status.
+    func saveOrUpdateDrones(_ droneModels: [DroneModel], completion: ((_ status: Bool) -> Void)?)
 
-    /// Load all droneData  from CoreData
-    func loadAllDrones() -> [DroneModel]
+    // MARK: __ Get
+    /// Get DroneModel with serial
+    /// - Parameters:
+    ///     - serial: DroneData's serial to search
+    /// - Returns:
+    ///     - DroneModel object if not found
+    func getDrone(withSerial serial: String) -> DroneModel?
 
+    /// Get count of all Drones
+    /// - Returns: Count of all Drones
+    func getAllDronesCount() -> Int
+
+    /// Get all DroneDataModels from all DroneDatas in CoreData
+    /// - Returns:
+    ///     -  List of DroneDataModels
+    func getAllDrones() -> [DroneModel]
+
+    // MARK: __ Delete
+    /// Delete DroneData in CoreData with a specified list of serials
+    /// - Parameters:
+    ///    - serials: List of serials to search
+    func deleteDrones(withSerials serials: [String])
 }
 
+// MARK: - Implementation
 extension CoreDataServiceImpl: DroneDataRepository {
-    public func persist(_ drone: DroneModel) {
-        // Prepare content to save.
-        guard let managedContext = currentContext else { return }
+    // MARK: __ Publisher
+    public var dronesDidChangePublisher: AnyPublisher<Void, Never> {
+        return dronesDidChangeSubject.eraseToAnyPublisher()
+    }
 
-        // Prepare new CoreData entity
-        let dronesData: NSManagedObject?
-
-        // Check object if exists.
-        if let object = self.loadDronesData("droneSerial", drone.droneSerial) {
-            // Use persisted object.
-            dronesData = object
-        } else {
-            // Create new object.
-            let fetchRequest: NSFetchRequest<DronesData> = DronesData.fetchRequest()
-            guard let name = fetchRequest.entityName else {
-                return
+    // MARK: __ Save Or Update
+    public func saveOrUpdateDrone(fromDroneModel droneModel: DroneModel) {
+        performAndSave({ [unowned self] _ in
+            var dronesDataObj: DronesData?
+            if let existingDronesData = getDronesDataCD(withSerial: droneModel.droneSerial) {
+                dronesDataObj = existingDronesData
+            } else if let newDronesData = insertNewObject(entityName: DronesData.entityName) as? DronesData {
+                dronesDataObj = newDronesData
             }
-            dronesData = NSEntityDescription.insertNewObject(forEntityName: name, into: managedContext)
+
+            guard let dronesData = dronesDataObj else {
+                return false
+            }
+
+            dronesData.update(fromDroneModel: droneModel)
+
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                dronesDidChangeSubject.send()
+            case .failure(let error):
+                ULog.e(.dataModelTag,
+                       "Error saveOrUpdateDronesData with serial: \(droneModel.droneSerial) - error: \(error)")
+            }
+        })
+    }
+
+    public func saveOrUpdateDrones(fromDroneModels droneModels: [DroneModel]) {
+        droneModels.forEach { droneModel in
+            var dronesDataObj: DronesData?
+            if let existingDronesData = getDronesDataCD(withSerial: droneModel.droneSerial) {
+                dronesDataObj = existingDronesData
+            } else if let newDronesData = insertNewObject(entityName: DronesData.entityName) as? DronesData {
+                dronesDataObj = newDronesData
+            }
+
+            if let dronesData = dronesDataObj {
+                dronesData.update(fromDroneModel: droneModel)
+            }
         }
 
-        guard let dronesDataObject = dronesData as? DronesData else { return }
-
-        dronesDataObject.apcId = drone.apcId
-        dronesDataObject.droneSerial = drone.droneSerial
-        dronesDataObject.droneCommonName = drone.droneCommonName
-        dronesDataObject.modelId = drone.modelId
-        dronesDataObject.pairedFor4G = drone.pairedFor4G
-        dronesDataObject.synchroDate = drone.synchroDate
-        dronesDataObject.synchroStatus = drone.synchroStatus ?? 0
-
-        managedContext.perform {
-            do {
-                try managedContext.save()
-            } catch let error {
-                ULog.e(.dataModelTag, "Error during persist DroneData into Coredata: \(error.localizedDescription)")
+        saveContext { [unowned self] result in
+            switch result {
+            case .success:
+                dronesDidChangeSubject.send()
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error saveOrUpdateDrones - error: \(error.localizedDescription)")
             }
         }
     }
 
-    public func persist(_ drones: [DroneModel]) {
-        for drone in drones {
-            self.persist(drone)
+    public func saveOrUpdateDrones(_ droneModels: [DroneModel], completion: ((_ status: Bool) -> Void)?) {
+
+        droneModels.forEach { droneModel in
+            var dronesDataObj: DronesData?
+            if let existingDronesData = getDronesDataCD(withSerial: droneModel.droneSerial) {
+                dronesDataObj = existingDronesData
+            } else if let newDronesData = insertNewObject(entityName: DronesData.entityName) as? DronesData {
+                dronesDataObj = newDronesData
+            }
+
+            if let dronesData = dronesDataObj {
+                dronesData.update(fromDroneModel: droneModel)
+            }
+        }
+
+        saveContext { [unowned self] result in
+            switch result {
+            case .success:
+                dronesDidChangeSubject.send()
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error saveOrUpdateDrones - error: \(error.localizedDescription)")
+                completion?(false)
+            }
         }
     }
 
-    public func loadDrone(_ droneSerial: String) -> DroneModel? {
-        return self.loadDronesData("droneSerial", droneSerial)?.model()
+    // MARK: __ Get
+    public func getDrone(withSerial serial: String) -> DroneModel? {
+        return getDronesDataCD(withSerial: serial)?.model()
     }
 
-    public func loadAllDrones() -> [DroneModel] {
-        guard let managedContext = currentContext else {
+    public func getAllDronesCount() -> Int {
+        return getAllDronesCountCD(toBeDeleted: false)
+    }
+
+    public func getAllDrones() -> [DroneModel] {
+        return getAllDronesDatasCD().map({ $0.model() })
+    }
+
+    // MARK: __ Delete
+    public func deleteDrones(withSerials serials: [String]) {
+        guard !serials.isEmpty else {
+            return
+        }
+
+        performAndSave({ [unowned self] _ in
+            let dronesDatas = getDronesDatasCD(withSerials: serials)
+            deleteDronesDatasCD(dronesDatas)
+
+            return false
+        })
+    }
+}
+
+// MARK: - Internal
+internal extension CoreDataServiceImpl {
+    func getAllDronesCountCD(toBeDeleted: Bool?) -> Int {
+        let fetchRequest = DronesData.fetchRequest()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        fetchRequest.predicate = apcIdPredicate
+
+        return fetchCount(request: fetchRequest)
+    }
+
+    func getAllDronesDatasCD() -> [DronesData] {
+        let fetchRequest = DronesData.fetchRequest()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        fetchRequest.predicate = apcIdPredicate
+
+        return fetch(request: fetchRequest)
+    }
+
+    func getDronesDataCD(withSerial serial: String) -> DronesData? {
+        let fetchRequest = DronesData.fetchRequest()
+        let serialPredicate = NSPredicate(format: "droneSerial == %@", serial)
+
+        fetchRequest.predicate = serialPredicate
+        fetchRequest.fetchLimit = 1
+
+        return fetch(request: fetchRequest).first
+    }
+
+    func getDronesDatasCD(withSerials serials: [String]) -> [DronesData] {
+        guard !serials.isEmpty else {
             return []
         }
 
-        let fetchRequest: NSFetchRequest<DronesData> = DronesData.fetchRequest()
-        let predicate = NSPredicate(format: "apcId == %@", Services.hub.userInformation.apcId)
-        fetchRequest.predicate = predicate
+        let fetchRequest = DronesData.fetchRequest()
+        let serialPredicate = NSPredicate(format: "droneSerial IN %@", serials)
+        fetchRequest.predicate = serialPredicate
 
-        var droneModelList = [DroneModel]()
+        let synchroDateSortDesc = NSSortDescriptor(key: "synchroDate", ascending: false)
+        fetchRequest.sortDescriptors = [synchroDateSortDesc]
 
-        do {
-            droneModelList = try managedContext.fetch(fetchRequest).compactMap({$0.model()})
-        } catch let error {
-            ULog.e(.dataModelTag, "Error loading DroneData into Coredata: \(error.localizedDescription)")
-        }
-
-        return droneModelList
+        return fetch(request: fetchRequest)
     }
 
-    public func removeDrone(droneSerial: String) {
-        guard let dronesData = self.loadDronesData("droneSerial", droneSerial) else {
+    func deleteDronesDatasCD(_ dronesDatas: [DronesData]) {
+        guard !dronesDatas.isEmpty else {
             return
         }
-        self.removeDrone(dronesData)
-    }
-
-    public func removeDrone(commonName: String) {
-        guard let dronesData = self.loadDronesData("commonName", commonName) else {
-            return
-        }
-        self.removeDrone(dronesData)
-    }
-
-}
-
-// MARK: - Utils
-private extension CoreDataServiceImpl {
-    func loadDronesData(_ key: String?, _ value: String?) -> DronesData? {
-        guard let managedContext = currentContext,
-              let key = key,
-              let value = value else {
-            return nil
-        }
-
-        /// fetch drone by Serial
-        let fetchRequest: NSFetchRequest<DronesData> = DronesData.fetchRequest()
-        let serialPredicate = NSPredicate(format: "%K == %@", key, value)
-        let currentUserPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
-        let predicate = NSCompoundPredicate(type: .and, subpredicates: [serialPredicate, currentUserPredicate])
-        fetchRequest.predicate = predicate
-
-        do {
-            return try (managedContext.fetch(fetchRequest)).first
-        } catch let error {
-            ULog.e(.dataModelTag, "No DroneData found with: \(key) value: \(value) in CoreData : \(error.localizedDescription)")
-            return nil
-        }
-    }
-
-    func removeDrone(_ droneData: DronesData) {
-        guard let managedContext = currentContext else {
-            return
-        }
-
-        managedContext.delete(droneData)
-
-        managedContext.perform {
-            do {
-                try managedContext.save()
-            } catch let error {
-                ULog.e(.dataModelTag, "Error removing DroneData with serial : \(droneData.droneSerial ?? "-") from CoreData : \(error.localizedDescription)")
-            }
+        delete(dronesDatas) { error in
+            ULog.e(.dataModelTag, "Error deleteDronesDatasCD: \(error.localizedDescription)")
         }
     }
 }

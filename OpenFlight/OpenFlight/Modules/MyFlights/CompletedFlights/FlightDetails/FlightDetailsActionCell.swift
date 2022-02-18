@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,61 +31,24 @@ import UIKit
 import Reusable
 
 protocol FlightDetailsActionCellDelegate: AnyObject {
-    func flightDetailsCellAction(_ action: FlightDetailsActionCellModel.Action)
+    func flightDetailsCellAction(_ action: FlightDetailsActionCellModel.Action, srcView: UIView)
 }
 
-final class FlightDetailsActionCell: UITableViewCell, NibReusable {
+final class FlightDetailsActionCell: MainTableViewCell, NibReusable {
 
-    enum Style {
-        case `default`
-        case destructive
-    }
-
-    @IBOutlet private weak var button: UIButton!
+    @IBOutlet private weak var button: ActionButton!
 
     weak var delegate: FlightDetailsActionCellDelegate?
 
     // MARK: - Private Properties
     private var buttonAction: FlightDetailsActionCellModel.Action!
 
-    var style: Style = .default {
-        didSet {
-            switch style {
-            case .default:
-                button.backgroundColor = ColorName.whiteAlbescent.color
-                button.setTitleColor(ColorName.defaultTextColor.color, for: .normal)
-            case .destructive:
-                button.backgroundColor = ColorName.redTorch.color
-                button.setTitleColor(ColorName.white.color, for: .normal)
-            }
-        }
-    }
-
-    var title: String? {
-        get {
-            button.title(for: .normal)
-        }
-        set {
-            button.setTitle(newValue, for: .normal)
-        }
-    }
-
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        setupUI()
-    }
-
-    private func setupUI() {
-        button.titleLabel?.makeUp(with: .large)
-    }
-
     @IBAction func action() {
-        delegate?.flightDetailsCellAction(buttonAction)
+        delegate?.flightDetailsCellAction(buttonAction, srcView: button)
     }
 
     func configure(with model: FlightDetailsActionCellModel) {
-        self.buttonAction = model.action
-        title = model.buttonTitle
-        style = model.action == .delete ? .destructive : .default
+        buttonAction = model.action
+        button.model = model.buttonModel
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import AVFoundation
+import Combine
 
 /// A class for gallery media browsing view.
 final class GalleryMediaBrowsingViewModel {
@@ -38,8 +38,14 @@ final class GalleryMediaBrowsingViewModel {
 
     /// The state of gallery controls (shown if `true`, hidden else).
     @Published private(set) var areControlsShown = true
+    /// The media loading state.
+    @Published private(set) var isLoading = false
     /// The state of video sound (off if `true`, on else).
     @Published private(set) var isVideoMuted = true
+    /// The recording state of drone's camera.
+    @Published private(set) var isCameraRecording = false
+    /// Whether drone's camera start recording is requested.
+    @Published private(set) var isCameraRecordRequested = false
     /// The zoom level of the media displayed.
     @Published private(set) var zoomLevel = ZoomLevel.minimum
     /// The index of the media to display.
@@ -59,6 +65,26 @@ final class GalleryMediaBrowsingViewModel {
         isVideoMuted
             ? Asset.Gallery.Player.icSoundOff.image
             : Asset.Gallery.Player.icSoundOn.image
+    }
+
+    private var cancellables = Set<AnyCancellable>()
+
+    init(cameraRecordingService: CameraRecordingService) {
+        cameraRecordingService.statePublisher
+            .sink { [unowned self] state in
+                switch state {
+                case .starting:
+                    isCameraRecordRequested = true
+                    isCameraRecording = false
+                case .started:
+                    isCameraRecording = true
+                    isCameraRecordRequested = false
+                case .stopping, .stopped:
+                    isCameraRecording = false
+                    isCameraRecordRequested = false
+                }
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Model State Update
@@ -103,11 +129,15 @@ final class GalleryMediaBrowsingViewModel {
     ///   - media: The displayed media.
     ///   - index: The index of the displayed media.
     ///   - count: The number of resources of the displayed media.
-    func didDisplayMedia(_ media: GalleryMedia? = nil, index: Int, count: Int) {
+    ///   - resetUrls: Reset mediaUrls array if `true`.
+    func didDisplayMedia(_ media: GalleryMedia? = nil,
+                         index: Int,
+                         count: Int,
+                         resetUrls: Bool = true) {
         mediaIndex = index
         resourcesCount = count
 
-        guard let media = media else { return }
+        guard let media = media, resetUrls else { return }
         resetMediaUrls(media: media)
     }
 
@@ -117,6 +147,13 @@ final class GalleryMediaBrowsingViewModel {
     ///   - index: The index of the displayed resource.
     func didDisplayResourceAt(_ index: Int) {
         resourceIndex = index
+    }
+
+    /// Updates loading state.
+    ///
+    /// - Parameter isLoading: `true` if current media is still loading, `false` otherwise
+    func didUpdateLoadingState(isLoading: Bool) {
+        self.isLoading = isLoading
     }
 
     /// Resets media urls array.
@@ -149,5 +186,15 @@ final class GalleryMediaBrowsingViewModel {
     ///   - status: The panorama generation status to update.
     func didUpdatePanoramaGeneration(_ status: GalleryPanoramaStepStatus) {
         panoramaGenerationStatus = status
+        mediaUrls[0] = nil // Force panorama resource reloading in gallery.
+    }
+
+    /// Updates urls array after a resource deletion has been performed.
+    ///
+    /// - Parameters:
+    ///   - index: The index of the resource that has been deleted.
+    func didDeleteResourceAt(_ index: Int) {
+        guard index < mediaUrls.count else { return }
+        mediaUrls.remove(at: index)
     }
 }

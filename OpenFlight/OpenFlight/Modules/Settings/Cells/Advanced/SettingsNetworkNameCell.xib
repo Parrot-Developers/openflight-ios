@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -15,68 +13,76 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="68" id="KGk-i7-Jjw" customClass="SettingsNetworkNameCell" customModule="OpenFlight" customModuleProvider="target">
+        <tableViewCell contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="default" indentationWidth="10" rowHeight="68" id="KGk-i7-Jjw" customClass="SettingsNetworkNameCell" customModule="OpenFlight" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="599" height="62"/>
-            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
                 <rect key="frame" x="0.0" y="0.0" width="599" height="62"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dS6-sl-Hp2">
-                        <rect key="frame" x="0.0" y="5" width="599" height="54"/>
+                    <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dS6-sl-Hp2" customClass="TableViewCellContainerView" customModule="OpenFlight" customModuleProvider="target">
+                        <rect key="frame" x="16" y="0.0" width="567" height="51"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AQD-rJ-j4e">
-                                <rect key="frame" x="16" y="18.5" width="281" height="17.5"/>
-                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                <color key="textColor" name="default_text_color"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="qOG-81-U1l">
-                                <rect key="frame" x="305" y="12" width="160" height="30"/>
-                                <color key="backgroundColor" name="default_bgcolor"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="30" id="V9i-B4-vhi"/>
-                                    <constraint firstAttribute="width" constant="160" id="b8s-ml-CzN"/>
-                                </constraints>
-                                <color key="textColor" name="default_text_color"/>
-                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="done"/>
-                            </textField>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3DB-ef-54f">
-                                <rect key="frame" x="477" y="12" width="110" height="30"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="110" id="Eic-3f-DnI"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                <state key="normal" title="Button">
-                                    <color key="titleColor" name="default_text_color"/>
-                                </state>
-                                <connections>
-                                    <action selector="passwordTouchedUpInsideSender:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="S5S-9h-djO"/>
-                                </connections>
-                            </button>
+                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="nFb-oN-KHN">
+                                <rect key="frame" x="8" y="8" width="551" height="35"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Label" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AQD-rJ-j4e">
+                                        <rect key="frame" x="0.0" y="0.0" width="37" height="35"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                        <color key="textColor" name="default_text_color"/>
+                                        <nil key="highlightedColor"/>
+                                        <variation key="heightClass=regular-widthClass=regular">
+                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="18"/>
+                                        </variation>
+                                    </label>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="qOG-81-U1l">
+                                        <rect key="frame" x="47" y="0.0" width="379" height="35"/>
+                                        <color key="backgroundColor" name="default_bgcolor"/>
+                                        <color key="textColor" name="default_text_color"/>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="done"/>
+                                        <variation key="heightClass=regular-widthClass=regular">
+                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                        </variation>
+                                    </textField>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3DB-ef-54f" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="436" y="0.0" width="115" height="35"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="115" id="Eic-3f-DnI"/>
+                                            <constraint firstAttribute="height" constant="35" id="HHJ-OU-noB">
+                                                <variation key="heightClass=regular-widthClass=regular" constant="45"/>
+                                            </constraint>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                        <state key="normal" title="Button">
+                                            <color key="titleColor" name="default_text_color"/>
+                                        </state>
+                                        <variation key="heightClass=regular-widthClass=regular">
+                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                        </variation>
+                                        <connections>
+                                            <action selector="passwordTouchedUpInsideSender:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="S5S-9h-djO"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="3DB-ef-54f" firstAttribute="leading" secondItem="qOG-81-U1l" secondAttribute="trailing" constant="12" id="2wa-B4-0Rn"/>
-                            <constraint firstAttribute="height" constant="54" id="5Fk-fi-hSn"/>
-                            <constraint firstItem="AQD-rJ-j4e" firstAttribute="leading" secondItem="dS6-sl-Hp2" secondAttribute="leading" constant="16" id="6fr-ZG-xEL"/>
-                            <constraint firstItem="3DB-ef-54f" firstAttribute="height" secondItem="qOG-81-U1l" secondAttribute="height" id="OzS-9m-Bfx"/>
-                            <constraint firstAttribute="trailing" secondItem="3DB-ef-54f" secondAttribute="trailing" constant="12" id="buY-Yg-zsk"/>
-                            <constraint firstItem="qOG-81-U1l" firstAttribute="leading" secondItem="AQD-rJ-j4e" secondAttribute="trailing" constant="8" id="g8c-TU-1zM"/>
-                            <constraint firstItem="qOG-81-U1l" firstAttribute="centerY" secondItem="dS6-sl-Hp2" secondAttribute="centerY" id="nZd-qq-Izj"/>
-                            <constraint firstItem="AQD-rJ-j4e" firstAttribute="centerY" secondItem="dS6-sl-Hp2" secondAttribute="centerY" id="s58-Jz-9lJ"/>
-                            <constraint firstItem="3DB-ef-54f" firstAttribute="centerY" secondItem="dS6-sl-Hp2" secondAttribute="centerY" id="xkf-ma-DH8"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="nFb-oN-KHN" secondAttribute="trailing" id="3Ak-vx-beZ"/>
+                            <constraint firstItem="nFb-oN-KHN" firstAttribute="leading" secondItem="dS6-sl-Hp2" secondAttribute="leadingMargin" id="Apw-fF-9hy"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="nFb-oN-KHN" secondAttribute="bottom" id="t8p-Vz-WYz"/>
+                            <constraint firstItem="nFb-oN-KHN" firstAttribute="top" secondItem="dS6-sl-Hp2" secondAttribute="topMargin" id="xYB-yr-atr"/>
                         </constraints>
                     </view>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="dS6-sl-Hp2" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="CMu-qj-s0Y"/>
-                    <constraint firstAttribute="trailing" secondItem="dS6-sl-Hp2" secondAttribute="trailing" id="aWz-mm-yTP"/>
-                    <constraint firstAttribute="bottom" secondItem="dS6-sl-Hp2" secondAttribute="bottom" constant="5" id="kHt-K9-gnL"/>
-                    <constraint firstItem="dS6-sl-Hp2" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="t83-QV-JWL"/>
+                    <constraint firstItem="dS6-sl-Hp2" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="CMu-qj-s0Y"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="dS6-sl-Hp2" secondAttribute="trailing" id="aWz-mm-yTP"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="dS6-sl-Hp2" secondAttribute="bottom" id="kHt-K9-gnL"/>
+                    <constraint firstItem="dS6-sl-Hp2" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="t83-QV-JWL"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -94,7 +100,7 @@
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

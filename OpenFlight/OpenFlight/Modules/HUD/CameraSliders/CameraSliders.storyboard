@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zxS-jz-EQH">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zxS-jz-EQH">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -56,7 +56,7 @@
                                                                     <constraint firstAttribute="height" constant="30" id="Vhf-xM-8t2"/>
                                                                 </constraints>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                                <color key="textColor" name="default_icon_color"/>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <color key="highlightedColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             </label>
                                                         </subviews>
@@ -90,13 +90,13 @@
                                         <rect key="frame" x="0.0" y="0.0" width="31" height="150"/>
                                         <subviews>
                                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Zoom max reached" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qKA-eY-Yh4" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="38" y="59.5" width="101.5" height="31"/>
+                                                <rect key="frame" x="38" y="59.5" width="113" height="31"/>
                                                 <color key="backgroundColor" name="white_90"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="31" id="Ctw-z2-ZQH"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                <color key="textColor" name="default_icon_color"/>
+                                                <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="bottomInset">
@@ -114,14 +114,14 @@
                                                 </userDefinedRuntimeAttributes>
                                             </label>
                                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Max Tilt" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ydd-Y8-qtH" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="38" y="73.5" width="41.5" height="31"/>
+                                                <rect key="frame" x="38" y="73.5" width="46" height="31"/>
                                                 <color key="backgroundColor" name="white_90"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="31" id="R73-a7-w7k"/>
                                                     <constraint firstAttribute="height" constant="31" id="cPl-HZ-yg4"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                <color key="textColor" name="default_icon_color"/>
+                                                <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="bottomInset">
@@ -145,7 +145,7 @@
                                                     <constraint firstAttribute="width" secondItem="LMP-tc-3wq" secondAttribute="height" id="bj8-IR-XHV"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                <color key="textColor" name="default_icon_color"/>
+                                                <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="xwO-H2-OhT">
@@ -173,7 +173,7 @@
                                                         </constraints>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                         <state key="normal" title="1×">
-                                                            <color key="titleColor" name="default_icon_color"/>
+                                                            <color key="titleColor" name="default_text_color"/>
                                                         </state>
                                                         <connections>
                                                             <action selector="zoomButtonTouchedUpInside:" destination="zxS-jz-EQH" eventType="touchUpInside" id="iqV-s8-dSX"/>
@@ -263,17 +263,17 @@
     </scenes>
     <designables>
         <designable name="PDV-ei-r2q">
-            <size key="intrinsicContentSize" width="40" height="13"/>
+            <size key="intrinsicContentSize" width="43" height="15.5"/>
         </designable>
         <designable name="Ydd-Y8-qtH">
-            <size key="intrinsicContentSize" width="41.5" height="13"/>
+            <size key="intrinsicContentSize" width="46" height="15.5"/>
         </designable>
         <designable name="qKA-eY-Yh4">
-            <size key="intrinsicContentSize" width="101.5" height="13"/>
+            <size key="intrinsicContentSize" width="113" height="15.5"/>
         </designable>
     </designables>
     <resources>
-        <namedColor name="default_icon_color">
+        <namedColor name="default_text_color">
             <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="white_90">

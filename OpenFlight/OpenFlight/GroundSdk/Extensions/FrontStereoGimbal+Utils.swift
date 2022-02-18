@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,40 +29,17 @@
 
 import GroundSdk
 
-/// Front stereo gimbal calibration state.
-enum FrontStereoGimbalState {
-    case calibrated
-    case recommended
-    case needed
-    case error
-    case unavailable
-
-    /// Image calibration according to front stereo gimbal calibration state.
-    var calibrationImage: UIImage? {
-        switch self {
-        case .calibrated,
-             .unavailable:
-            return Asset.Drone.icDroneStereoVisionOk.image
-        case .recommended:
-            return Asset.Drone.icDroneStereoVisionWarning.image
-        case .needed,
-             .error:
-            return Asset.Drone.icDroneStereoVisionError.image
-        }
-    }
-}
-
 /// Utility extension for front stereo gimbal.
 extension FrontStereoGimbal {
     /// Front stereo gimbal calibration state.
-    var state: FrontStereoGimbalState {
-        switch (calibrated, currentErrors.isEmpty) {
-        case (false, true):
-            return .recommended
-        case (_, false):
-            return .needed
-        default:
-            return .calibrated
-        }
+    var state: CalibratableGimbalState {
+        return calibrated ? .calibrated : .needed
+    }
+
+    /// Image error according to gimbal and front stereo calibration state.
+    var errorImage: UIImage {
+        return currentErrors.isEmpty
+        ? Asset.Drone.icDroneStereoVisionOk.image
+        : Asset.Drone.icDroneStereoVisionError.image
     }
 }

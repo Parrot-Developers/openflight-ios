@@ -19,8 +19,8 @@
                             <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fSe-J4-Cbo">
                                 <rect key="frame" x="155.5" y="0.0" width="89" height="30"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="Qof-ab-aNW">
-                                        <rect key="frame" x="15" y="0.0" width="59" height="30"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="Qof-ab-aNW">
+                                        <rect key="frame" x="10" y="0.0" width="63.5" height="30"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icDroneSmall" translatesAutoresizingMaskIntoConstraints="NO" id="hLi-Y9-rjL">
                                                 <rect key="frame" x="0.0" y="0.0" width="12" height="30"/>
@@ -36,10 +36,10 @@
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="Qof-ab-aNW" secondAttribute="trailing" constant="15" id="3Q9-V7-ZbO"/>
+                                    <constraint firstAttribute="trailing" secondItem="Qof-ab-aNW" secondAttribute="trailing" constant="10" id="3Q9-V7-ZbO"/>
                                     <constraint firstItem="Qof-ab-aNW" firstAttribute="top" secondItem="fSe-J4-Cbo" secondAttribute="top" id="CxQ-Ow-8Un"/>
                                     <constraint firstAttribute="bottom" secondItem="Qof-ab-aNW" secondAttribute="bottom" id="wr5-7N-Fu4"/>
-                                    <constraint firstItem="Qof-ab-aNW" firstAttribute="leading" secondItem="fSe-J4-Cbo" secondAttribute="leading" constant="15" id="xG7-sa-sLZ"/>
+                                    <constraint firstItem="Qof-ab-aNW" firstAttribute="leading" secondItem="fSe-J4-Cbo" secondAttribute="leading" constant="10" id="xG7-sa-sLZ"/>
                                 </constraints>
                             </view>
                         </subviews>

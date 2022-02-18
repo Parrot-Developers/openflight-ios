@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,12 +37,8 @@ final class DroneDetailsButtonsViewModel {
 
     // MARK: - Published Properties
 
-    /// Gimbal state.
-    @Published private(set) var gimbalState: CalibratableGimbalState?
-    /// Drone's cellular network state.
-    @Published private(set) var cellularStateDescription: String?
     /// Drone's flying state.
-    @Published private(set) var flyingState: FlyingIndicatorsState?
+    @Published private(set) var flyingState: FlyingIndicatorsState = .landed
     /// Whether a gimbal calibration is needed.
     @Published private(set) var isGimbalCalibrationNeeded: Bool = false
     /// Whether a gimbal front stereo vision calibration is needed.
@@ -58,8 +53,6 @@ final class DroneDetailsButtonsViewModel {
     @Published private(set) var cellularStatus: DetailsCellularStatus = .noState
     /// Drone's connection state.
     @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
-    /// Tells if we can display the cellular modal.
-    @Published private(set) var canShowCellular: Bool = false
     /// Tells if we can display the cellular modal.
     @Published private(set) var mapThumbnail: UIImage? = Asset.MyFlights.poi.image
 
@@ -82,8 +75,8 @@ final class DroneDetailsButtonsViewModel {
                 listenGps(drone)
                 listenGimbal(drone)
                 listenStereoVisionSensor(drone)
-                listenMagnetometer(drone)
                 listenFrontStereoGimbal(drone)
+                listenMagnetometer(drone)
                 listenFlyingIndicators(drone: drone)
                 listenConnectionState(drone: drone)
             }
@@ -95,44 +88,28 @@ final class DroneDetailsButtonsViewModel {
 
         updateCellularState(cellularStatus: cellularStatus)
 
-        $connectionState
-            .removeDuplicates()
-            .combineLatest(pairingService.cellularStatusPublisher)
-            .sink { [unowned self] (connectionState, cellularStatus) in
-                canShowCellular = cellularStatus != .noState && connectionState == .connected
-            }
-            .store(in: &cancellables)
     }
 
     // MARK: Helpers
     /// Subtitle to display on calibration button.
     var calibrationSubtitle: AnyPublisher<String?, Never> {
         $connectionState
-            .combineLatest($flyingState)
-            .combineLatest($isMagnetometerCalibrationNeeded,
-                           $isGimbalFrontStereoCalibrationNeeded,
+            .combineLatest($isGimbalCalibrationNeeded,
+                           $isMagnetometerCalibrationNeeded)
+            .combineLatest($isGimbalFrontStereoCalibrationNeeded,
                            $isStereoVisionSensorCalibrationNeeded)
-            .map { [unowned self] (arg0, isMagnetometerNeeded, isGimbalFrontNeeded, isStereoNeeded) in
-                let (connectionState, flyingState) = arg0
-                if !(connectionState == .connected) || flyingState == .flying {
-                    return L10n.droneDetailsCalibrationOk
+            .map { (arg0, isGimbalFrontNeeded, isStereoNeeded) in
+                let (connectionState, isGimbalNeeded, isMagnetometerNeeded) = arg0
+                if connectionState != .connected {
+                    return Style.dash
                 } else if isMagnetometerNeeded {
                     return L10n.droneDetailsCalibrationRequired
                 } else if isStereoNeeded {
                     return L10n.droneDetailsCalibrationLoveRequired
-                } else if isGimbalFrontNeeded {
+                } else if isGimbalFrontNeeded || isGimbalNeeded {
                     return L10n.droneDetailsCalibrationGimbalRequired
                 } else {
-                    let gimbalState = currentDrone.drone.getPeripheral(Peripherals.gimbal)?.state
-                    switch gimbalState {
-                    case .needed,
-                         .error:
-                        return L10n.droneDetailsCalibrationGimbalRequired
-                    case .recommended:
-                        return L10n.droneDetailsCalibrationGimbalRecommended
-                    default:
-                        return L10n.droneDetailsCalibrationOk
-                    }
+                    return L10n.droneDetailsCalibrationOk
                 }
             }
             .eraseToAnyPublisher()
@@ -142,8 +119,9 @@ final class DroneDetailsButtonsViewModel {
     var isCalibrationNeeded: AnyPublisher<Bool, Never> {
         $isMagnetometerCalibrationNeeded
             .combineLatest($isStereoVisionSensorCalibrationNeeded,
-                           $isGimbalFrontStereoCalibrationNeeded)
-            .map { $0 || $1 || $2 }
+                           $isGimbalFrontStereoCalibrationNeeded,
+                           $isGimbalCalibrationNeeded)
+            .map { $0 || $1 || $2 || $3 }
             .eraseToAnyPublisher()
     }
 
@@ -152,7 +130,19 @@ final class DroneDetailsButtonsViewModel {
         $connectionState
             .combineLatest($flyingState)
             .map { (connectionState, flyingState) in
-                return (connectionState == .connected) && flyingState == .landed
+                return connectionState == .connected
+                    && flyingState != .flying && flyingState != .emergencyLanding
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Tells if wifi password button is available.
+    var isPasswordButtonAvailable: AnyPublisher<Bool, Never> {
+        $connectionState
+            .combineLatest($flyingState)
+            .map { (connectionState, flyingState) in
+                return connectionState == .connected
+                    && flyingState != .flying && flyingState != .emergencyLanding
             }
             .eraseToAnyPublisher()
     }
@@ -160,15 +150,14 @@ final class DroneDetailsButtonsViewModel {
     /// Title color for calibration.
     var calibrationTitleColor: AnyPublisher<ColorName?, Never> {
         $connectionState
-            .combineLatest($flyingState,
-                           isCalibrationNeeded)
-            .map { [unowned self] (connectionState, flyingState, isCalibrationNeeded) in
-                if !(connectionState == .connected) || flyingState == .flying {
+            .combineLatest(isCalibrationNeeded)
+            .map { [unowned self] (connectionState, isCalibrationNeeded) in
+                if connectionState != .connected {
                     return .defaultTextColor
                 } else if isCalibrationNeeded {
                     return .white
                 } else {
-                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.titleColor ?? .white
+                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.titleColor ?? .defaultTextColor
                 }
             }
             .eraseToAnyPublisher()
@@ -177,10 +166,9 @@ final class DroneDetailsButtonsViewModel {
     /// Background for calibration cell.
     var calibrationBackgroundColor: AnyPublisher<ColorName?, Never> {
         $connectionState
-            .combineLatest($flyingState,
-                           isCalibrationNeeded)
-            .map { [unowned self] (connectionState, flyingState, isCalibrationNeeded) in
-                if !(connectionState == .connected) || flyingState == .flying {
+            .combineLatest(isCalibrationNeeded)
+            .map { [unowned self] (connectionState, isCalibrationNeeded) in
+                if connectionState != .connected {
                     return .white
                 } else if isCalibrationNeeded {
                     return .errorColor
@@ -194,10 +182,9 @@ final class DroneDetailsButtonsViewModel {
     /// Color for calibration text cell.
     var calibrationSubtitleColor: AnyPublisher<ColorName?, Never> {
         $connectionState
-            .combineLatest($flyingState,
-                           isCalibrationNeeded)
-            .map { [unowned self] (connectionState, flyingState, isCalibrationNeeded) in
-                if !(connectionState == .connected) || flyingState == .flying {
+            .combineLatest(isCalibrationNeeded)
+            .map { [unowned self] (connectionState, isCalibrationNeeded) in
+                if connectionState != .connected {
                     return .defaultTextColor
                 } else if isCalibrationNeeded {
                     return .white
@@ -285,22 +272,21 @@ private extension DroneDetailsButtonsViewModel {
     /// Starts watcher for gimbal.
     func listenGimbal(_ drone: Drone) {
         gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
-            self?.gimbalState = gimbal?.state
+            self?.updateGimbal(gimbal: gimbal)
         }
     }
 
     /// Starts watcher for stereo vision sensor.
     func listenStereoVisionSensor(_ drone: Drone) {
         stereoVisionSensorRef = drone.getPeripheral(Peripherals.stereoVisionSensor) { [weak self] stereoVisionSensor in
-            self?.updateStereoVisionSensorCalibrationState(stereoVisionSensors: stereoVisionSensor)
+            self?.updateStereoVisionSensorCalibrationState(stereoVisionSensor: stereoVisionSensor)
         }
     }
 
     /// Starts watcher for flying indicators.
     func listenFlyingIndicators(drone: Drone) {
         flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicators in
-            guard let flyingState = flyingIndicators?.state else { return }
-            self?.flyingState = flyingState
+            self?.flyingState = flyingIndicators?.state ?? .landed
         }
     }
 
@@ -320,43 +306,27 @@ private extension DroneDetailsButtonsViewModel {
 
     /// Updates front stereo gimbal calibration state.
     func updateFrontStereoGimbal(frontStereoGimbal: FrontStereoGimbal?) {
-        guard let frontStereoGimbal = frontStereoGimbal else {
-            isGimbalFrontStereoCalibrationNeeded = false
-            return
-        }
+        isGimbalFrontStereoCalibrationNeeded = frontStereoGimbal?.state == .needed
+    }
 
-        switch (frontStereoGimbal.calibrated, frontStereoGimbal.currentErrors.isEmpty) {
-        case (false, true),
-             (true, false):
-            isGimbalFrontStereoCalibrationNeeded = true
-        default:
-            isGimbalFrontStereoCalibrationNeeded = false
-        }
+    /// Updates gimbal calibration state.
+    func updateGimbal(gimbal: Gimbal?) {
+        isGimbalCalibrationNeeded = gimbal?.state == .needed
     }
 
     /// Updates stereo vision sensor calibration state.
-    func updateStereoVisionSensorCalibrationState(stereoVisionSensors: StereoVisionSensor?) {
-        guard let stereoVisionSensor = stereoVisionSensors else {
-            isStereoVisionSensorCalibrationNeeded = false
-            return
-        }
-
-        isStereoVisionSensorCalibrationNeeded = !stereoVisionSensor.isCalibrated
+    func updateStereoVisionSensorCalibrationState(stereoVisionSensor: StereoVisionSensor?) {
+        isStereoVisionSensorCalibrationNeeded = stereoVisionSensor?.state == .needed
     }
 
     /// Updates magnetometer calibration state.
     func updateMagnetometerCalibrationState(magnetometer: MagnetometerWith3StepCalibration?) {
-       guard let magnetometer = magnetometer else {
-            isMagnetometerCalibrationNeeded = false
-            return
-        }
-
-        switch magnetometer.calibrationState {
-        case .calibrated:
-            isMagnetometerCalibrationNeeded = false
+        switch magnetometer?.calibrationState {
         case .required,
              .recommended:
             isMagnetometerCalibrationNeeded = true
+        default:
+            isMagnetometerCalibrationNeeded = false
         }
     }
 

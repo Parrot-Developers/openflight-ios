@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,14 +34,15 @@ public class AppCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
 
     // MARK: - Private Properties
     private var hudCoordinator: HUDCoordinator
 
     // MARK: - Init
 
-    /// Init
+    /// Constructor.
+    ///
     /// - Parameter services: the services
     init(services: ServiceHub) {
         hudCoordinator = HUDCoordinator(services: services)
@@ -49,15 +50,14 @@ public class AppCoordinator: Coordinator {
 
     // MARK: - Public Funcs
     public func start() {
-        self.navigationController = NavigationController()
+        navigationController = NavigationController()
         if Defaults[key: DefaultsKeys.areOFTermsOfUseAccepted] == false {
             let onboardingCoordinator = OnboardingCoordinator { self.hudCoordinator }
             onboardingCoordinator.parentCoordinator = self
-            self.start(childCoordinator: onboardingCoordinator)
+            start(childCoordinator: onboardingCoordinator)
         } else {
-            let hudCoordinator = self.hudCoordinator
             hudCoordinator.parentCoordinator = self
-            self.start(childCoordinator: hudCoordinator)
+            start(childCoordinator: hudCoordinator)
         }
     }
 }

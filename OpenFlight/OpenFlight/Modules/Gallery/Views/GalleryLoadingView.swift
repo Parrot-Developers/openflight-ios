@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,7 +40,7 @@ protocol GalleryLoadingViewDelegate: AnyObject {
 
 /// Gallery loading view.
 
-final class GalleryLoadingView: UIView, NibOwnerLoadable {
+final class GalleryLoadingView: ActionView, NibOwnerLoadable {
     var hasYOffsetAppearanceAnimation: Bool = true
 
     // MARK: - Outlets
@@ -80,10 +79,9 @@ internal extension GalleryLoadingView {
     /// - Parameters:
     ///    - progress: progress
     ///    - status: MediaTaskStatus
-    func setProgress(_ progress: Float, status: MediaTaskStatus) {
-        guard status == .running,
-            progress > 0.0
-            else {
+    func setProgress(_ progress: Float?, status: MediaTaskStatus?) {
+        guard let progress = progress,
+              status == .running else {
                 show(false)
                 progressView.setProgress(0.0, animated: false)
                 return

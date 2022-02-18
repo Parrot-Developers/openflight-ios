@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,16 +32,6 @@ import Foundation
 /// Utility extension for `URL`.
 
 extension URL {
-    /// Return url's modification date.
-    var fileModificationDate: Date? {
-        do {
-            let attr = try FileManager.default.attributesOfItem(atPath: self.path)
-            return attr[FileAttributeKey.modificationDate] as? Date
-        } catch {
-            return nil
-        }
-    }
-
     /// Returns media Url, relative to Documents directory.
     var mediaRelativeUrl: String? {
         guard let mediaIndex = absoluteString.range(of: Paths.mediasDirectory)?.upperBound

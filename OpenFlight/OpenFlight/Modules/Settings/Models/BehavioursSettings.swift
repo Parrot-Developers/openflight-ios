@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -178,9 +177,9 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
         case .sport:
             return BehavioursPreset(horizontalSpeed: 25.0,
                                     horizontalAcceleration: 1.01,
-                                    verticalSpeed: 2.0,
-                                    rotationSpeed: 20.0,
-                                    cameraTilt: 20.0,
+                                    verticalSpeed: 4.0,
+                                    rotationSpeed: 90.0,
+                                    cameraTilt: 35.0,
                                     bankedTurn: false,
                                     inclinedRoll: false)
         }
@@ -296,6 +295,10 @@ enum BankedTurn: String, SettingMode {
         case .disabled:
             return false
         }
+    }
+
+    var usedAsBool: Bool {
+        return true
     }
 
     static var allValues: [BankedTurn] {

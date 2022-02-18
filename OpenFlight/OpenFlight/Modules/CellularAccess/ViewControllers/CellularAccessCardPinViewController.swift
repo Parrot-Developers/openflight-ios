@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -80,7 +79,7 @@ final class CellularAccessCardPinViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairing4gPinDialog, logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.pairing4gPinDialog))
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -93,10 +92,6 @@ final class CellularAccessCardPinViewController: UIViewController {
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -113,12 +108,12 @@ final class CellularAccessCardPinViewController: UIViewController {
 // MARK: - Actions
 private extension CellularAccessCardPinViewController {
     @IBAction func okButtonTouchedUpInside(_ sender: Any) {
-        logEvent(with: LogEvent.LogKeyCellularAccessCardPin.confirmPin, and: pinCode.description)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyCellularAccessCardPin.confirmPin))
         viewModel.connect(pinCode: pinCode)
     }
 
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
-        logEvent(with: LogEvent.LogKeyCellularAccessCardPin.cancel)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyCellularAccessCardPin.cancel))
         guard !pinCode.isEmpty else { return }
 
         pinCode.removeLast()
@@ -127,16 +122,16 @@ private extension CellularAccessCardPinViewController {
     }
 
     @IBAction func pinVisibilityButtonTouchedUpInside(_ sender: Any) {
-        logEvent(with: LogEvent.LogKeyCellularAccessCardPin.pinVisibility)
+        LogEvent.log(.simpleButton( LogEvent.LogKeyCellularAccessCardPin.pinVisibility))
         pinTextField.toggleVisibility()
         pinVisibilityButton.setImage(pinTextField.isSecureTextEntry
-                                        ? Asset.Common.Icons.icPasswordShow.image
-                                        : Asset.Common.Icons.icPasswordHide.image, for: .normal)
+                                     ? Asset.Common.Icons.icPasswordShow.image
+                                     : Asset.Common.Icons.icPasswordHide.image, for: .normal)
     }
 
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
-        logEvent(with: LogEvent.LogKeyCellularAccessCardPin.close)
-        self.view.backgroundColor = .clear
+        LogEvent.log(.simpleButton( LogEvent.LogKeyCellularAccessCardPin.close))
+        view.backgroundColor = .clear
         viewModel.dismissCellularModal()
         coordinator?.dismiss()
     }
@@ -172,10 +167,11 @@ private extension CellularAccessCardPinViewController {
             .sink { [unowned self] connectionState in
                 if connectionState == CellularConnectionState.none {
                     coordinator?.dismiss(animated: true, completion: nil)
-                } else if connectionState == CellularConnectionState.ready {
+                } else if connectionState == .ready {
                     coordinator?.dismiss {}
                 } else {
-                    descriptionLabel.textColor = connectionState?.descriptionColor
+                    descriptionLabel.textColor = connectionState.descriptionColor
+                    descriptionLabel.isHidden = connectionState.isDescriptionHidden
                 }
             }
             .store(in: &cancellables)
@@ -191,12 +187,6 @@ private extension CellularAccessCardPinViewController {
             .removeDuplicates()
             .sink { [unowned self] shouldShowLoader in
                 updateLoaderView(shouldShow: shouldShowLoader == true)
-            }
-            .store(in: &cancellables)
-
-        viewModel.hideLabel
-            .sink { [unowned self] hideLabel in
-                descriptionLabel.isHidden = hideLabel
             }
             .store(in: &cancellables)
     }
@@ -227,17 +217,6 @@ private extension CellularAccessCardPinViewController {
         okButton.cornerRadiusedWith(backgroundColor: backgroundColor,
                                     radius: Style.largeCornerRadius)
         okButton.setTitleColor(.white, for: .normal)
-    }
-
-    /// Calls log event.
-    ///
-    /// - Parameters:
-    ///     - itemName: Button name
-    ///     - newValue: Value changed
-    func logEvent(with itemName: String, and newValue: String? = nil) {
-        LogEvent.logAppEvent(itemName: itemName,
-                             newValue: newValue,
-                             logType: .button)
     }
 }
 
@@ -288,8 +267,8 @@ extension CellularAccessCardPinViewController: PinNumberCollectionViewCellDelega
         guard let number = number,
               let pinLength = pinTextField.text?.count,
               pinLength < Constants.maxPinNumber else {
-            return
-        }
+                  return
+              }
 
         pinCode += "\(number)"
         updateTextFieldContent()

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -66,7 +65,8 @@ private extension FlightPlanPanelMediaCounterView {
     /// Sets up initial view display.
     func setupView() {
         recordView.roundCorneredWith(backgroundColor: ColorName.errorColor.color)
-        recordCounterLabel.makeUp(and: .defaultTextColor)
+        recordCounterLabel.font = FontStyle.current.font(isRegularSizeClass, monospacedDigits: true)
+        recordCounterLabel.textColor = ColorName.defaultTextColor.color
     }
 
     /// Sets up view model.
@@ -90,6 +90,6 @@ private extension FlightPlanPanelMediaCounterView {
             recordingStackView.isHidden = true
         }
 
-        recordCounterLabel.text = state.recordingTime?.formattedHmsString
+        recordCounterLabel.text = state.recordingTime?.adaptiveFormattedString
     }
 }

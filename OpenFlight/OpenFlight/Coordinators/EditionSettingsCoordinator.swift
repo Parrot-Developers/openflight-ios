@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,10 +34,11 @@ public final class EditionSettingsCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
 
     var viewModel: EditionSettingsViewModel?
     weak var flightPlanEditionViewController: FlightPlanEditionViewController?
+    weak var buldingHeightPickerViewController: UIViewController?
 
     // MARK: - Public Funcs
     public func start() {
@@ -53,20 +53,30 @@ public final class EditionSettingsCoordinator: Coordinator {
             editionSettingsViewController.coordinator = self
         }
     }
+
+    public func dismissBuildingHeightPickerIfNeeded() {
+        if buldingHeightPickerViewController != nil {
+            back()
+        }
+        buldingHeightPickerViewController = nil
+    }
 }
 
 extension EditionSettingsCoordinator {
 
-    public func showBuildingHeightPicker() {
-        if let viewController = self.navigationController?.topViewController as? BuildingHeightMenuViewController {
+    public func showBuildingHeightPicker(delegate: BuildingHeightMenuViewControllerDelagate) {
+        if let viewController = navigationController?.topViewController as? BuildingHeightMenuViewController {
             viewController.viewModel = viewModel
             return
         }
         guard let viewModel = viewModel,
               let viewController = BuildingHeightMenuViewController
-                .instantiate(viewModel: viewModel, coordinator: self) else {
-            return
-        }
-        self.navigationController?.pushViewController(viewController, animated: true)
+                .instantiate(viewModel: viewModel,
+                             coordinator: self,
+                             delegate: delegate) else {
+                    return
+                }
+        navigationController?.pushViewController(viewController, animated: true)
+        buldingHeightPickerViewController = viewController
     }
 }

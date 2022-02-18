@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,6 +32,30 @@ import CoreLocation
 import GroundSdk
 
 extension FlightPlanDataSetting {
+
+    private enum Constants {
+        static let readOnlyFreeSettingsKey = "read-only"
+        static let pgyProjectDeletedKey = "pgy-project-deleted"
+    }
+
+    var pgyProjectDeleted: Bool {
+        get {
+            notPropagatedSettings[Constants.pgyProjectDeletedKey].map { Bool($0) ?? false } ?? false
+        }
+        set {
+            notPropagatedSettings[Constants.pgyProjectDeletedKey] = newValue.description
+        }
+    }
+
+    var readOnly: Bool {
+        get {
+            freeSettings[Constants.readOnlyFreeSettingsKey].map { Bool($0) ?? false } ?? false
+        }
+        set {
+            freeSettings[Constants.readOnlyFreeSettingsKey] = newValue.description
+        }
+    }
+
     public var captureModeEnum: FlightPlanCaptureMode {
         get {
             guard let mode = captureMode,
@@ -134,6 +158,7 @@ extension FlightPlanDataSetting {
         }
     }
 
+    /// Gpslapse interval, in millimeters.
     var gpsLapseDistance: Int? {
         get {
             guard let value = captureSettings?[ClassicFlightPlanSettingType.gpsLapseDistance.rawValue] else {
@@ -166,7 +191,7 @@ extension FlightPlanDataSetting {
         case .gpsLapse:
             guard let distance = gpsLapseDistance else { return nil }
 
-            return MavlinkStandard.CameraTriggerDistanceCommand(distance: Double(distance),
+            return MavlinkStandard.CameraTriggerDistanceCommand(distance: Double(distance) / 1000,
                                                                 triggerOnceImmediately: true)
         }
     }
@@ -313,12 +338,6 @@ extension FlightPlanDataSetting {
             previousWayPoint?.nextWayPoint = wayPoint
             previousWayPoint = wayPoint
         }
-    }
-
-    /// Clear all waypoints and points of interest.
-    func clearPoints() {
-        self.wayPoints.removeAll()
-        self.pois.removeAll()
     }
 
     /// Updates capture setting.

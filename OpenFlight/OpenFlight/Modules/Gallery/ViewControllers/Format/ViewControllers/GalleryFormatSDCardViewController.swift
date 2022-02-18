@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -117,20 +116,23 @@ private extension GalleryFormatSDCardViewController {
 private extension GalleryFormatSDCardViewController {
     /// Sets up all the UI for the view controller.
     func setupUI() {
-        self.primaryLabel.text = L10n.galleryFormatSdCard
-        self.secondaryLabel.makeUp(with: .large, and: ColorName.disabledTextColor)
-        self.secondaryLabel.text = L10n.galleryFormatDataErased
-        self.mainView.applyCornerRadius(Style.largeCornerRadius, maskedCorners: [.layerMinXMinYCorner, .layerMaxXMinYCorner])
-        self.circleProgressView.bgStokeColor = ColorName.whiteAlbescent.color
-        self.circleProgressView.strokeColor = ColorName.highlightColor.color
-        self.quickFormatChoiceView.customCornered(corners: [.allCorners],
-                                                  radius: Style.largeCornerRadius,
-                                                  backgroundColor: .white,
-                                                  borderColor: .clear)
-        self.fullFormatChoiceView.customCornered(corners: [.allCorners],
-                                                 radius: Style.largeCornerRadius,
-                                                 backgroundColor: .white,
-                                                 borderColor: .clear)
+        primaryLabel.text = L10n.galleryFormatSdCard
+        primaryLabel.font = FontStyle.title.font(isRegularSizeClass)
+
+        secondaryLabel.font = FontStyle.readingText.font(isRegularSizeClass)
+        secondaryLabel.textColor = ColorName.disabledTextColor.color
+        secondaryLabel.text = L10n.galleryFormatDataErased
+        mainView.applyCornerRadius(Style.largeCornerRadius, maskedCorners: [.layerMinXMinYCorner, .layerMaxXMinYCorner])
+        circleProgressView.bgStokeColor = ColorName.whiteAlbescent.color
+        circleProgressView.strokeColor = ColorName.highlightColor.color
+        quickFormatChoiceView.customCornered(corners: [.allCorners],
+                                             radius: Style.largeCornerRadius,
+                                             backgroundColor: .white,
+                                             borderColor: .clear)
+        fullFormatChoiceView.customCornered(corners: [.allCorners],
+                                            radius: Style.largeCornerRadius,
+                                            backgroundColor: .white,
+                                            borderColor: .clear)
     }
 
     /// Binds the views to the view model.
@@ -156,14 +158,10 @@ private extension GalleryFormatSDCardViewController {
     func setupChoicesModels() {
         self.quickFormatChoiceView.model = GalleryFormatSDCardChoiceModel(image: Asset.Common.Icons.icSdCardFormatQuick.image,
                                                                           text: L10n.galleryFormatQuick,
-                                                                          textColor: ColorName.defaultTextColor,
-                                                                          subText: L10n.galleryFormatRecommended,
-                                                                          subTextColor: ColorName.highlightColor)
+                                                                          textColor: ColorName.defaultTextColor)
         self.fullFormatChoiceView.model = GalleryFormatSDCardChoiceModel(image: Asset.Common.Icons.icSdCardFormatFull.image,
                                                                          text: L10n.galleryFormatFull,
-                                                                         textColor: ColorName.defaultTextColor,
-                                                                         subText: L10n.galleryFormatWritingProblems,
-                                                                         subTextColor: ColorName.disabledTextColor)
+                                                                         textColor: ColorName.defaultTextColor)
         self.firstStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icErasing.image,
                                                                 text: L10n.galleryFormatErasingPartition,
                                                                 textColor: ColorName.disabledTextColor)

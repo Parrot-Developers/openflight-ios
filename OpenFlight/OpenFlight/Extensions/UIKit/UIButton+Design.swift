@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +33,7 @@ import UIKit
 
 extension UIButton {
     /// Style HUD round button with gray background and thin white border.
-    func applyHUDRoundButtonStyle(backgroundColor: UIColor = UIColor(named: .black80)) {
+    func applyHUDRoundButtonStyle(backgroundColor: UIColor = UIColor(named: .white90)) {
         applyRoundButtonStyle(backgroundColor: backgroundColor, borderWidth: Style.smallBorderWidth)
         setTitleColor(.white, for: .normal)
         setTitleColor(.white, for: .highlighted)
@@ -42,12 +42,26 @@ extension UIButton {
     }
 
     /// Style round button with given background color and border.
-    func applyRoundButtonStyle(backgroundColor: UIColor = UIColor(named: .black80),
+    func applyRoundButtonStyle(backgroundColor: UIColor = UIColor(named: .white90),
                                borderColor: UIColor = UIColor(named: .white20),
                                borderWidth: CGFloat = Style.smallBorderWidth) {
         self.backgroundColor = backgroundColor
         layer.cornerRadius = self.bounds.width / 2
         layer.borderColor = borderColor.cgColor
         layer.borderWidth = borderWidth
+    }
+
+    /// Sets a button's edge insets according to desired content insets and image padding.
+    ///
+    /// - Parameters:
+    ///    - contentEdgeInsets: The desired button's content edge insets.
+    ///    - imageTitlePadding: The padding between button's image and title.
+    func setInsets(contentEdgeInsets: UIEdgeInsets, imageTitlePadding: CGFloat = 0) {
+        self.contentEdgeInsets = contentEdgeInsets
+        self.contentEdgeInsets.right += imageTitlePadding
+        titleEdgeInsets = .init(top: 0,
+                                left: imageTitlePadding,
+                                bottom: 0,
+                                right: -imageTitlePadding)
     }
 }

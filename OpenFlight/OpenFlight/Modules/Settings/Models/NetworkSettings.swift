@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,8 +31,9 @@ import Foundation
 import GroundSdk
 
 // MARK: - Internal Enums
-enum SettingsWifiRangePreset {
+enum SettingsNetworkPreset {
     static let defaultWifiRange: SettingsWifiRange = .auto
+    static let defaultDriMode: Bool = true
 }
 
 /// Setting network model.
@@ -43,7 +44,7 @@ enum SettingsWifiRange: String, SettingMode, CaseIterable {
     static let allValues = SettingsWifiRange.allCases
 
     var key: String {
-        return self.rawValue
+        return rawValue
     }
 
     var localized: String {
@@ -70,10 +71,6 @@ enum SettingsCellularAvailability: String, SettingMode, CaseIterable {
         }
     }
 
-    var isCellularActivated: Bool {
-        return self == .cellularOn
-    }
-
     var key: String {
         return rawValue
     }
@@ -85,8 +82,8 @@ enum SettingsCellularAvailability: String, SettingMode, CaseIterable {
 
 /// Model for cellular selection setting.
 enum SettingsCellularSelection: String, SettingMode, CaseIterable {
-    case auto
     case manual
+    case auto
 
     var localized: String {
         switch self {
@@ -106,6 +103,29 @@ enum SettingsCellularSelection: String, SettingMode, CaseIterable {
     }
 }
 
+/// Model for direct connection setting.
+enum SettingsDirectConnection: String, SettingMode, CaseIterable {
+    case disabled
+    case enabled
+
+    var localized: String {
+        switch self {
+        case .disabled:
+            return L10n.commonNo
+        case .enabled:
+            return L10n.commonYes
+        }
+    }
+
+    var key: String {
+        return rawValue
+    }
+
+    static var allValues: [SettingMode] {
+        return SettingsDirectConnection.allCases
+    }
+}
+
 /// Setting related to broadcast DRI.
 enum BroadcastDRISettings: String, SettingMode, CaseIterable {
     case driOff
@@ -114,7 +134,7 @@ enum BroadcastDRISettings: String, SettingMode, CaseIterable {
     static let allValues = BroadcastDRISettings.allCases
 
     var key: String {
-        return self.rawValue
+        return rawValue
     }
 
     var localized: String {
@@ -132,7 +152,7 @@ enum BroadcastDRISettings: String, SettingMode, CaseIterable {
 extension Cellular {
     /// Returns current cellular availability state.
     var cellularAvailability: SettingsCellularAvailability {
-        switch self.mode.value {
+        switch mode.value {
         case .data:
             return .cellularOn
         default:
@@ -147,9 +167,9 @@ extension NetworkControlRoutingPolicy: SettingMode {
     var localized: String {
         switch self {
         case .cellular:
-            return L10n.settingsConnection4gOnly
+            return L10n.settingsConnection4gLabel
         case .wlan:
-            return L10n.settingsConnectionWifiPriority
+            return L10n.settingsConnectionWifiLabel
         case .automatic:
             return L10n.commonAuto
         default:

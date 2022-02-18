@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,6 +30,10 @@
 import GroundSdk
 import Combine
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "ReturnHomeBottomBarVM")
+}
+
 final class ReturnHomeBottomBarViewModel {
 
     /// Current target to RTH
@@ -58,6 +61,7 @@ final class ReturnHomeBottomBarViewModel {
     // MARK: - Internal Funcs
     /// Stops Return Home.
     func stopReturnHome() {
+        ULog.i(.tag, "stopReturnHome")
         currentDrone.drone.cancelReturnHome()
     }
 }

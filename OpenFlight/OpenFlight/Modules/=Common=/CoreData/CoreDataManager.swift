@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,19 +32,35 @@ import CoreData
 import Combine
 import GroundSdk
 
+/// CoreData Errors
+public enum CoreDataError: Error {
+    case unknownContext
+    case objectNotFound
+    case unableToDeleteObject
+    case unableToSaveContext
+    case unableToInsertObject
+}
+
 public protocol CoreDataService: AnyObject {
-
-    /// Publisher notifys new object to remove from Server and Coredata
-    var objectToRemovePublisher: AnyPublisher<Any, Never> { get }
-
-    /// Publisher notifys new object to upload to Server
-    var objectToUploadPublisher: AnyPublisher<Any, Never> { get }
-
     /// Batch delete all stored data entities in CoreData
     /// to use only when switch between users accounts
-    /// - Parameters:
-    ///     - removeUserEntity: Boolean to indicate if should keep the User entity with data or not
-    func batchDeleteData(_ removeUserEntity: Bool)
+    func batchDeleteData()
+
+    /// Batch delete all stored data of users
+    func deleteUsersData()
+
+    var latestFlightLocalModificationDatePublisher: AnyPublisher<Date, Never> { get }
+
+    var latestFlightPlanLocalModificationDatePublisher: AnyPublisher<Date, Never> { get }
+
+    var latestProjectLocalModificationDatePublisher: AnyPublisher<Date, Never> { get }
+
+    var latestPgyProjectLocalModificationDatePublisher: AnyPublisher<Date, Never> { get }
+
+    var latestThumbnailLocalModificationDatePublisher: AnyPublisher<Date, Never> { get }
+
+    var latestFPlanFlightLocalModificationDatePublisher: AnyPublisher<Date, Never> { get }
+
 }
 
 /// CoreData Service
@@ -60,102 +76,370 @@ public class CoreDataServiceImpl: CoreDataService {
     /// Returns array of `ProjectModel` subject
     public var projects = CurrentValueSubject<[ProjectModel], Never>([])
 
-    /// Contains a given object to remove from Server and Coredata
-    var objectToRemove = PassthroughSubject<Any, Never>()
+    /// Returns if Flights core data changed
+    public var flightsDidChangeSubject = CurrentValueSubject<Void, Never>(())
 
-    /// Publisher notifies new object to remove from Server and Coredata
-    public var objectToRemovePublisher: AnyPublisher<Any, Never> {
-        objectToRemove.eraseToAnyPublisher()
+    /// Returns if Project core data changed
+    public var projectsDidChangeSubject = CurrentValueSubject<Void, Never>(())
+
+    /// Returns if PgyProject core data changed
+    public var pgyProjectsDidChangeSubject = CurrentValueSubject<Void, Never>(())
+
+    /// Returns if Flight Plan core data changed
+    public var flightPlansDidChangeSubject = CurrentValueSubject<Void, Never>(())
+
+    /// Returns if Thumbnail core data changed
+    public var thumbnailsDidChangeSubject = CurrentValueSubject<Void, Never>(())
+
+    /// Returns if Paired Drone core data changed
+    public var dronesDidChangeSubject = CurrentValueSubject<Void, Never>(())
+
+    var latestFlightLocalModificationDate = PassthroughSubject<Date, Never>()
+    public var latestFlightLocalModificationDatePublisher: AnyPublisher<Date, Never> {
+        latestFlightLocalModificationDate.eraseToAnyPublisher()
     }
 
-    /// Contains a given object to upload to Server
-    var objectToUpload = PassthroughSubject<Any, Never>()
-
-    /// Publisher notifies new object to upload to Server
-    public var objectToUploadPublisher: AnyPublisher<Any, Never> {
-        objectToUpload.eraseToAnyPublisher()
+    var latestFlightPlanLocalModificationDate = PassthroughSubject<Date, Never>()
+    public var latestFlightPlanLocalModificationDatePublisher: AnyPublisher<Date, Never> {
+        latestFlightPlanLocalModificationDate.eraseToAnyPublisher()
     }
 
-    // MARK: - Public Funcs
+    var latestFPlanFlightLocalModificationDate = PassthroughSubject<Date, Never>()
+    public var latestFPlanFlightLocalModificationDatePublisher: AnyPublisher<Date, Never> {
+        latestFPlanFlightLocalModificationDate.eraseToAnyPublisher()
+    }
+
+    var latestProjectLocalModificationDate = PassthroughSubject<Date, Never>()
+    public var latestProjectLocalModificationDatePublisher: AnyPublisher<Date, Never> {
+        latestProjectLocalModificationDate.eraseToAnyPublisher()
+    }
+
+    var latestPgyProjectLocalModificationDate = PassthroughSubject<Date, Never>()
+    public var latestPgyProjectLocalModificationDatePublisher: AnyPublisher<Date, Never> {
+        latestPgyProjectLocalModificationDate.eraseToAnyPublisher()
+    }
+
+    var latestThumbnailLocalModificationDate = PassthroughSubject<Date, Never>()
+    public var latestThumbnailLocalModificationDatePublisher: AnyPublisher<Date, Never> {
+        latestThumbnailLocalModificationDate.eraseToAnyPublisher()
+    }
+
     public init(with persistentContainer: NSPersistentContainer, userInformation: UserInformation) {
         self.userInformation = userInformation
         self.persistentContainer = persistentContainer
         currentContext = persistentContainer.viewContext
         currentContext?.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(managedObjectContextDidChange),
-                                               name: NSNotification.Name.NSManagedObjectContextObjectsDidChange,
-                                               object: currentContext)
     }
 }
 
+// MARK: - Public
 extension CoreDataServiceImpl {
+    public func batchDeleteData() {
+        deleteAllUsersExceptAnonymous()
+        deleteUsersData()
+    }
 
-    public func batchDeleteData(_ removeUserEntity: Bool) {
-        guard let managedContext = currentContext else {
-            return
-        }
-
+    public func deleteUsersData() {
         var entityNames = persistentContainer.managedObjectModel.entities.compactMap({ $0.name })
-
-        if !removeUserEntity,
-           let indexOfUserEntity = entityNames.firstIndex(of: UserParrot.userParrotEntityName) {
+        if let indexOfUserEntity = entityNames.firstIndex(of: UserParrot.entityName) {
             entityNames.remove(at: indexOfUserEntity)
         }
 
         entityNames.forEach { entityName in
-            let deleteFetch = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: deleteFetch)
-
-            do {
-                try managedContext.execute(deleteRequest)
-                try managedContext.save()
-            } catch {
-                ULog.e(.dataModelTag, "An error is occured when batch delete entity in CoreData")
-            }
+            deleteAllData(ofEntityName: entityName)
         }
     }
 }
 
-extension CoreDataServiceImpl {
+// MARK: - Internal
+internal extension CoreDataServiceImpl {
+    // MARK: __ Context
+    /// Commit unsaved changes to registered objects to the context’s parent store.
+    /// - Parameters:
+    ///     - errorHandler: Called when an error is catched while saving changes.
+    func saveContext(_ completion: @escaping ((Result<Void, Error>) -> Void)) {
+        guard let context = currentContext else {
+            ULog.e(.dataModelTag, "Error saveContext: No current context found !")
+            completion(.failure(CoreDataError.unknownContext))
+            return
+        }
 
+        context.perform {
+            guard context.hasChanges else {
+                completion(.success())
+                return
+            }
+            do {
+                try context.save()
+
+                completion(.success())
+            } catch let error {
+                ULog.e(.dataModelTag, "Error saving CoreData : \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func performAndSave(_ task: @escaping ((_ context: NSManagedObjectContext) -> Bool), _ completion: ((Result<Void, Error>) -> Void)? = nil) {
+        guard let context = currentContext else {
+            ULog.e(.dataModelTag, "Error saveContext: No current context found !")
+            completion?(.failure(CoreDataError.unknownContext))
+            return
+        }
+
+        context.performAndWait {
+            if task(context) {
+                context.perform {
+                    guard context.hasChanges else {
+                        completion?(.success())
+                        return
+                    }
+                    do {
+                        try context.save()
+
+                        completion?(.success())
+                    } catch let error {
+                        ULog.e(.dataModelTag, "Error saving CoreData : \(error.localizedDescription)")
+                        completion?(.failure(error))
+                    }
+                }
+            }
+        }
+    }
+
+    /// Insert new NSManagedObject from entityName
+    /// - Parameter entityName: entity name of the NSManagedObject
+    func insertNewObject(entityName: String) -> NSManagedObject? {
+        guard let currentContext = currentContext else {
+            ULog.e(.dataModelTag, "Failed insertNewObject: No context found!")
+            return nil
+        }
+
+        return NSEntityDescription.insertNewObject(forEntityName: entityName, into: currentContext)
+    }
+
+    // MARK: __ Fetch
+    /// Fetch specified request
+    /// - Parameter request: NSFetchRequest to specidifed
+    /// - Returns list of NSManagedObject
+    func fetch<T: NSManagedObject>(request: NSFetchRequest<T>) -> [T] {
+        guard let currentContext = currentContext else {
+            ULog.e(.dataModelTag, "Failed fetch request: No context found!")
+            return []
+        }
+
+        var resultList: [T] = []
+
+        currentContext.performAndWait {
+            do {
+                resultList = try currentContext.fetch(request)
+            } catch let error {
+                ULog.e(.dataModelTag, "Failed fetch request: \(error.localizedDescription)")
+                resultList = []
+            }
+        }
+
+        return resultList
+    }
+
+    /// Fetch count specified request
+    /// - Parameter request: NSFetchRequest to specidifed
+    /// - Returns Count of objects found
+    func fetchCount<T: NSManagedObject>(request: NSFetchRequest<T>) -> Int {
+        guard let currentContext = currentContext else {
+            ULog.e(.dataModelTag, "Failed fetch count request: No context found!")
+            return 0
+        }
+
+        var countResult: Int = 0
+
+        currentContext.performAndWait {
+            do {
+                countResult = try currentContext.count(for: request)
+            } catch let error {
+                ULog.e(.dataModelTag, "Failed fetch count request: \(error.localizedDescription)")
+                countResult = 0
+            }
+        }
+
+        return countResult
+    }
+
+    /// Return objects according search criteria.
+    ///
+    /// - Parameters:
+    ///    - field: Field used to filter result.
+    ///    - values: Values used to filter result.
+    /// - Returns:
+    ///    - The objects list.
+    func objects<T: NSManagedObject>(filteredBy field: String? = nil,
+                                     _ values: [Any]? = nil) -> [T] {
+        guard let entityName = T.entity().name else { return [] }
+
+        let request = NSFetchRequest<T>(entityName: entityName)
+
+        if let field = field,
+           let values = values {
+            let predicates = values.map {
+                NSPredicate.equalPredicate(forField: field, andValue: $0)
+            }
+            request.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+        }
+
+        return fetch(request: request)
+    }
+
+    /// Return objects according specified query.
+    ///
+    /// - Parameters:
+    ///    - query: The quey to use as predicate (e.g. "key != nil").
+    /// - Returns:
+    ///    - The objects list.
+    func objects<T: NSManagedObject>(withQuery query: String) -> [T] {
+        guard let entityName = T.entity().name else { return [] }
+        let request = NSFetchRequest<T>(entityName: entityName)
+        request.predicate = NSPredicate(format: query)
+        return fetch(request: request)
+    }
+
+    // MARK: __ Delete
+    /// Delete a list of objects.
+    ///
+    /// - Parameters:
+    ///     - objects: The objects to delete.
+    func delete<T: NSManagedObject>(_ objects: [T], errorHandler: ((Error) -> Void)? = nil) {
+        deleteObjects(objects) {
+            if case .failure(let error) = $0 {
+                errorHandler?(error)
+            }
+        }
+    }
+
+    func deleteObjects<T: NSManagedObject>(_ objects: [T], completion: ((Result<Void, Error>) -> Void)? = nil) {
+        guard let context = currentContext else {
+            completion?(.failure(CoreDataError.unknownContext))
+            return
+        }
+
+        objects.forEach { context.delete($0) }
+
+        saveContext { [weak self] result in
+            switch result {
+            case .success:
+                if T.self is Flight.Type { self?.flightsDidChangeSubject.send() }
+                if T.self is Project.Type { self?.projectsDidChangeSubject.send() }
+                if T.self is PgyProject.Type { self?.pgyProjectsDidChangeSubject.send() }
+                if T.self is FlightPlan.Type { self?.flightPlansDidChangeSubject.send() }
+                if T.self is Thumbnail.Type { self?.thumbnailsDidChangeSubject.send() }
+                if T.self is DronesData.Type { self?.dronesDidChangeSubject.send() }
+            case .failure:
+                break
+            }
+
+            completion?(result)
+        }
+    }
+
+    @discardableResult
+    func deleteAllData() -> Error? {
+        let entityNames = persistentContainer.managedObjectModel.entities.compactMap({ $0.name })
+
+        var deleteError: Error?
+        entityNames.forEach { entityName in
+            if let error = deleteAllData(ofEntityName: entityName) {
+                deleteError = error
+            }
+        }
+
+        return deleteError
+    }
+
+    @discardableResult
+    func deleteAllData(ofEntityName entityName: String) -> Error? {
+        guard let context = currentContext else { return CoreDataError.unknownContext }
+
+        var deleteError: Error?
+        let deleteFetch = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: deleteFetch)
+
+        context.performAndWait {
+            do {
+                try context.execute(deleteRequest)
+                try context.save()
+
+                switch entityName {
+                case Flight.entityName:
+                    flightsDidChangeSubject.send()
+                case Project.entityName:
+                    projectsDidChangeSubject.send()
+                case PgyProject.entityName:
+                    pgyProjectsDidChangeSubject.send()
+                case FlightPlan.entityName:
+                    flightPlansDidChangeSubject.send()
+                case Thumbnail.entityName:
+                    thumbnailsDidChangeSubject.send()
+                case DronesData.entityName:
+                    dronesDidChangeSubject.send()
+                default:
+                    break
+                }
+            } catch let error {
+                ULog.e(.dataModelTag, "An error is occured when batch delete entity in CoreData : \(error.localizedDescription)")
+                deleteError = error
+            }
+        }
+
+        return deleteError
+    }
+
+    // MARK: __ Migration utils
     /// Migrate anonymous data to current logged user
     /// - Parameters:
     ///     - entityName: Name of the entity contains the data to migrate
     ///     - completion: Empty block indicates when the process is finished
-    internal func migrateAnonymousDataToLoggedUser(for entityName: String,
-                                                   _ completion: @escaping () -> Void) {
-        guard let managedContext = currentContext else {
+    func migrateAnonymousDataToLoggedUser(for entityName: String,
+                                          _ completion: @escaping () -> Void) {
+        guard let currentContext = currentContext else {
             completion()
             return
         }
-        guard userInformation.apcId != userInformation.anonymousString else {
+        guard userInformation.apcId != User.anonymousId else {
             ULog.e(.dataModelTag, "User must be logged in")
             completion()
             return
         }
 
-        let entity = NSEntityDescription.entity(forEntityName: entityName, in: managedContext)
+        let entity = NSEntityDescription.entity(forEntityName: entityName, in: currentContext)
         let request = NSFetchRequest<NSFetchRequestResult>()
         request.entity = entity
-        let predicate = NSPredicate(format: "%K == %@", "apcId", userInformation.anonymousString)
+        let predicate = NSPredicate(format: "%K == %@", "apcId", User.anonymousId)
         request.predicate = predicate
 
-        do {
-            if let fetchResults = try managedContext.fetch(request) as? [NSManagedObject] {
-                if !fetchResults.isEmpty {
-                    fetchResults.forEach { managedObject in
-                        managedObject.setValue(userInformation.apcId, forKey: "apcId")
+        currentContext.performAndWait {
+            do {
+                if let requestResult = try currentContext.fetch(request) as? [NSManagedObject] {
+                    if !requestResult.isEmpty {
+                        requestResult.forEach { managedObject in
+                            managedObject.setValue(userInformation.apcId, forKey: "apcId")
+                            managedObject.setValue(0, forKey: "synchroStatus")
+                            managedObject.setValue(Date(), forKey: "latestLocalModificationDate")
+                        }
+                    } else {
+                        ULog.i(.dataModelTag, "No ANONYMOUS data found in: \(entityName)")
                     }
-                    try managedContext.save()
-                } else {
-                    ULog.i(.dataModelTag, "No ANONYMOUS data found in: \(entityName)")
                 }
+            } catch let error {
+                ULog.e(.dataModelTag,
+                       "Migrate ANONYMOUS \(entityName) data to current logged User failed with error: \(error.localizedDescription)")
             }
-            completion()
+        }
 
-        } catch let error as NSError {
-            ULog.e(.dataModelTag, "Migrate ANONYMOUS \(entityName) data to current logged User failed with error: \(error.userInfo)")
+        saveContext {
+            if case .failure(let error) = $0 {
+                ULog.e(.dataModelTag,
+                       "Migrate ANONYMOUS \(entityName) data to current logged User save failed with error: \(error.localizedDescription)")
+            }
+
             completion()
         }
     }
@@ -164,34 +448,42 @@ extension CoreDataServiceImpl {
     /// - Parameters:
     ///     - entityName: Name of the entity contains the data to migrate
     ///     - completion: Empty block indicates when the process is finished
-    internal func migrateLoggedToAnonymous(for entityName: String,
-                                           _ completion: @escaping () -> Void) {
-        guard let managedContext = currentContext else {
+    func migrateLoggedToAnonymous(for entityName: String,
+                                  _ completion: @escaping () -> Void) {
+        guard let currentContext = currentContext else {
             completion()
             return
         }
         let apcId = userInformation.apcId
-        let entity = NSEntityDescription.entity(forEntityName: entityName, in: managedContext)
+        let entity = NSEntityDescription.entity(forEntityName: entityName, in: currentContext)
         let request = NSFetchRequest<NSFetchRequestResult>()
         request.entity = entity
         let predicate = NSPredicate(format: "%K == %@", "apcId", apcId)
         request.predicate = predicate
 
-        do {
-            if let fetchResults = try managedContext.fetch(request) as? [NSManagedObject] {
-                if !fetchResults.isEmpty {
-                    fetchResults.forEach { managedObject in
-                        managedObject.setValue(userInformation.anonymousString, forKey: "apcId")
+        currentContext.performAndWait {
+            do {
+                if let requestResult = try currentContext.fetch(request) as? [NSManagedObject] {
+                    if !requestResult.isEmpty {
+                        requestResult.forEach { managedObject in
+                            managedObject.setValue(User.anonymousId, forKey: "apcId")
+                        }
+                    } else {
+                        ULog.i(.dataModelTag, "No data found in: \(entityName) for user apcId: \(apcId)")
                     }
-                    try managedContext.save()
-                } else {
-                    ULog.i(.dataModelTag, "No data found in: \(entityName) for user apcId: \(apcId)")
                 }
+            } catch let error {
+                ULog.e(.dataModelTag,
+                       "Migrate logged user \(apcId) for \(entityName) to ANONYMOUS failed with error \(error.localizedDescription)")
             }
-            completion()
+        }
 
-        } catch let error as NSError {
-            ULog.e(.dataModelTag, "Migrate Data of user apcId \(apcId) for object: \(entityName) to current ANONYMOUS user failed with error \(error.userInfo)")
+        saveContext {
+            if case .failure(let error) = $0 {
+                ULog.e(.dataModelTag,
+                       "Migrate logged user \(apcId) for \(entityName) to ANONYMOUS save failed with error \(error.localizedDescription)")
+            }
+
             completion()
         }
     }

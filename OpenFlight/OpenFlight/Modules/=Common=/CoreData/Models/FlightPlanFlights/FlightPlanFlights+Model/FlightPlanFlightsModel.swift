@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,50 +29,71 @@
 
 import Foundation
 
+// TODO: Add a local unique identifier
+
 public struct FlightPlanFlightsModel {
-
-    // MARK: - Properties
-
-    public var flightUuid: String
-    public var flightplanUuid: String
-    public var dateExecutionFlight: Date
-
-    // MARK: - Synchro Properties
-
-    /// - apcId: to identify data's user
+    // MARK: __ User's ID
     public var apcId: String
 
-    /// - parrotCloudId: Id of FlightPlanFlight (linkId) on server: Set only if synchronized
-    public var parrotCloudId: Int64
+    // MARK: __ Academy
+    public var cloudId: Int
+    public var flightplanUuid: String
+    public var flightUuid: String
+    public var dateExecutionFlight: Date
 
-    /// - synchroStatus: Contains 0 if not yet synchronized, 1 if yes
-        /// statusCode if sync failed
-    public var synchroStatus: Int16?
-
-    /// - synchroDate: contains the Date of last synchro trying if is not succeeded
-    public var synchroDate: Date?
-
-    /// - parrotCloudToBeDeleted: True if a Delete Request was triguerred without success
-    public var parrotCloudToBeDeleted: Bool
+    // MARK: __ Synchronization
+    ///  Boolean to know if it delete locally but needs to be deleted on server
+    public var isLocalDeleted: Bool
+    ///  Synchro status
+    public var synchroStatus: SynchroStatus?
+    ///  Synchro error
+    public var synchroError: SynchroError?
+    ///  Date of last tried synchro
+    public var latestSynchroStatusDate: Date?
+    ///  Date of local modification
+    public var latestLocalModificationDate: Date?
 
     // MARK: - Public init
-
     public init(apcId: String,
-                flightUuid: String,
+                cloudId: Int,
                 flightplanUuid: String,
+                flightUuid: String,
                 dateExecutionFlight: Date,
-                synchroStatus: Int16? = 0,
-                synchroDate: Date? = nil,
-                parrotCloudId: Int64 = 0,
-                parrotCloudToBeDeleted: Bool = false) {
-
+                isLocalDeleted: Bool,
+                synchroStatus: SynchroStatus?,
+                synchroError: SynchroError?,
+                latestSynchroStatusDate: Date?,
+                latestLocalModificationDate: Date?) {
+        // User's ID
         self.apcId = apcId
-        self.flightUuid = flightUuid
+        // Academy
+        self.cloudId = cloudId
         self.flightplanUuid = flightplanUuid
+        self.flightUuid = flightUuid
         self.dateExecutionFlight = dateExecutionFlight
+        // Synchronization
+        self.isLocalDeleted = isLocalDeleted
         self.synchroStatus = synchroStatus
-        self.synchroDate = synchroDate
-        self.parrotCloudId = parrotCloudId
-        self.parrotCloudToBeDeleted = parrotCloudToBeDeleted
+        self.synchroError = synchroError
+        self.latestSynchroStatusDate = latestSynchroStatusDate
+        self.latestLocalModificationDate = latestLocalModificationDate
+    }
+}
+
+extension FlightPlanFlightsModel {
+    public init(apcId: String,
+                flightplanUuid: String,
+                flightUuid: String,
+                dateExecutionFlight: Date) {
+        self.init(apcId: apcId,
+                  cloudId: 0,
+                  flightplanUuid: flightplanUuid,
+                  flightUuid: flightUuid,
+                  dateExecutionFlight: dateExecutionFlight,
+                  isLocalDeleted: false,
+                  synchroStatus: .notSync,
+                  synchroError: .noError,
+                  latestSynchroStatusDate: nil,
+                  latestLocalModificationDate: nil)
     }
 }

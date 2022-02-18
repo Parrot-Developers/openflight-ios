@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,21 +30,6 @@
 import UIKit
 
 // MARK: - Internal Enums
-/// Type of event that could happen to drone stereo vision.
-enum DroneStereoVisionStatus {
-    case ready
-    case warning
-
-    var image: UIImage? {
-        switch self {
-        case .ready:
-            return Asset.Drone.icDroneStereoVisionOk.image
-        case .warning:
-            return Asset.Drone.icDroneStereoVisionWarning.image
-        }
-    }
-}
-
 /// Type of event that could happen to drone motors.
 enum DroneMotorStatus {
     case ready

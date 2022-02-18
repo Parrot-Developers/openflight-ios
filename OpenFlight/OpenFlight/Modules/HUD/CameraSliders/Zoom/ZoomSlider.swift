@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,8 +32,8 @@ import UIKit
 @IBDesignable
 class ZoomSlider: UISlider {
     // MARK: - Internal Properties
-    var underLimitColor = UIColor(named: .greenSpring).withAlphaComponent(0.6)
-    var overLimitColor = UIColor(named: .orangePeel).withAlphaComponent(0.6)
+    var underLimitColor = UIColor(named: .highlightColor)
+    var overLimitColor = UIColor(named: .warningColor)
     var overLimitValue: Float = 1.0 {
         didSet {
             drawSlider()

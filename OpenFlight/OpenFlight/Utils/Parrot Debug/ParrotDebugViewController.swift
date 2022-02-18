@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,6 +30,7 @@
 import SwiftyUserDefaults
 import GroundSdk
 import Combine
+import CoreGraphics
 
 /// Parrot Debug screen to activate, edit & share logs.
 class ParrotDebugViewController: UIViewController {
@@ -42,12 +42,13 @@ class ParrotDebugViewController: UIViewController {
     @IBOutlet private weak var enableStreamRecord: UIButton!
     @IBOutlet private weak var recordDisparitySwitch: UISwitch!
     @IBOutlet private weak var sendDebugTagButton: UIButton!
-    @IBOutlet private weak var sendDebugTagTextField: UITextField!
+    @IBOutlet private weak var sendDebugTagTextField: POFTextField!
+    // Allows to enable/disable the Flight Plan's thumbnail Cloud synchronization
+    @IBOutlet private weak var thumbnailSyncSwitch: UISwitch!
 
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
     private var drone: Drone?
-    private let groundSdk = GroundSdk()
     private weak var renameOkAction: UIAlertAction?
     private var nameToRename: String?
     private var documentInteractionController: UIDocumentInteractionController!
@@ -85,12 +86,13 @@ class ParrotDebugViewController: UIViewController {
         filesTableView.tableFooterView = UIView()
         filesTableView.refreshControl = refreshControl
         refreshControl.addTarget(self, action: #selector(refreshFileList(_:)), for: .valueChanged)
+        sendDebugTagTextField.setPlaceholderTitle("Debug tag...")
 
         Services.hub.currentDroneHolder.dronePublisher.sink { [unowned self] drone in
             self.drone = drone
             devToolboxRef = drone.getPeripheral(Peripherals.devToolbox) { [weak self] devToolbox in
                 if let debugSettings = devToolbox?.debugSettings,
-                    let cameraConf = debugSettings.first(where: { $0.name == Constants.oaRecordStartConfName }) as? BoolDebugSetting {
+                   let cameraConf = debugSettings.first(where: { $0.name == Constants.oaRecordStartConfName }) as? BoolDebugSetting {
                     self?.recordDisparitySwitch.isOn = cameraConf.value
                 }
             }
@@ -99,15 +101,15 @@ class ParrotDebugViewController: UIViewController {
     }
 
     override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.coordinator?.navigationController?.isNavigationBarHidden = true
+        self.navigationController?.setNavigationBarHidden(true, animated: animated)
 
+        thumbnailSyncSwitch.isOn = Defaults.isThumbnailSyncEnabled
         switchLog.isOn = ParrotDebug.activeLogFileName != nil
         loadFileList()
         displayInformations()
         updateStreamRecordDisplay()
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.debugLogs,
-                             logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.debugLogs))
+        super.viewWillAppear(animated)
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -122,12 +124,16 @@ class ParrotDebugViewController: UIViewController {
 // MARK: - Actions
 private extension ParrotDebugViewController {
     @IBAction func doneAction(_ sender: UIButton) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyDebugLogsButton.done, logType: .simpleButton)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyDebugLogsButton.done))
         dismiss(animated: true)
     }
 
     @IBAction private func toolBoxButtonTouchedUpInside(_ sender: AnyObject) {
         coordinator?.showDevToolbox()
+    }
+
+    @IBAction private func showPGYDebug(_ sender: AnyObject) {
+        coordinator?.showPhotogrammetryDebug()
     }
 
     @IBAction func enableStreamRecord(_ sender: UIButton) {
@@ -176,8 +182,8 @@ private extension ParrotDebugViewController {
     @IBAction private func sendDebugTagTouchedUpInside(_ sender: AnyObject) {
         guard let tagValue = self.sendDebugTagTextField.text,
               let devToolBox = self.drone?.getPeripheral(Peripherals.devToolbox) else {
-            return
-        }
+                  return
+              }
 
         _ = self.sendDebugTagTextField.resignFirstResponder()
         self.sendDebugTagTextField.text = ""
@@ -186,18 +192,22 @@ private extension ParrotDebugViewController {
         // Send debug tag
         devToolBox.sendDebugTag(tag: tagValue)
     }
+
+    @IBAction func thumbnailSyncSwitchChanged(_ sender: UISwitch) {
+        Defaults.isThumbnailSyncEnabled = sender.isOn
+    }
 }
 
 // MARK: - Private Funcs
 private extension ParrotDebugViewController {
     func displayInformations() {
-        #if DEBUG
+#if DEBUG
         // let debugBuild = true
         var messDebugBuild = L10n.debugLogBuildDebug
-        #else
+#else
         // let debugBuild = false
         var messDebugBuild = L10n.debugLogBuildRelease
-        #endif
+#endif
 
         if Bundle.main.isInHouseBuild {
             messDebugBuild.append(" (InHouse)")
@@ -214,7 +224,7 @@ private extension ParrotDebugViewController {
         }
 
         let messAutoCountry = "\(Defaults.debugC == true ? "*" : "")" +
-            "auto country(\(GroundSdkConfig.sharedInstance.autoSelectWifiCountry ? "Y" : "N"))" +
+        "auto country(\(GroundSdkConfig.sharedInstance.autoSelectWifiCountry ? "Y" : "N"))" +
         "\(drone?.getPeripheral(Peripherals.wifiAccessPoint)?.isoCountryCode.value ?? "?")"
 
         let messageInfo = "\(messDebugBuild) v\(messVersion) \(messAutoCountry)\(messFile)"
@@ -228,12 +238,13 @@ private extension ParrotDebugViewController {
         }
     }
 
-    func share(url: URL) {
+    func share(url: URL, sourceFrame: CGRect, coordinateSpace: UICoordinateSpace) {
         documentInteractionController = UIDocumentInteractionController()
         documentInteractionController.url = url
         documentInteractionController.uti = Constants.defaultShareUti
         documentInteractionController.name = url.lastPathComponent
-        documentInteractionController.presentOptionsMenu(from: self.view.frame, in: self.view, animated: true)
+        let from = coordinateSpace.convert(sourceFrame, to: self.view)
+        documentInteractionController.presentOptionsMenu(from: from, in: self.view, animated: true)
     }
 
     func rename(url: URL) {
@@ -310,7 +321,7 @@ extension ParrotDebugViewController: UITableViewDelegate, UITableViewDataSource 
             guard let strongSelf = self else {
                 return
             }
-            ParrotDebug.removeLogUrl(fileURL: strongSelf.fileListUrls[indexPath.row]) {
+            ParrotDebug.removeLogUrl(fileURL: strongSelf.fileListUrls[indexPath.row], srcVC: strongSelf) {
                 strongSelf.fileListUrls.remove(at: indexPath.row)
                 tableView.deleteRows(at: [indexPath], with: .fade)
             }
@@ -319,7 +330,10 @@ extension ParrotDebugViewController: UITableViewDelegate, UITableViewDataSource 
             guard let strongSelf = self else {
                 return
             }
-            strongSelf.share(url: strongSelf.fileListUrls[indexPath.row])
+            let sourceFrame = tableView.rectForRow(at: indexPath)
+            strongSelf.share(url: strongSelf.fileListUrls[indexPath.row],
+                             sourceFrame: sourceFrame,
+                             coordinateSpace: tableView)
         }
         shareAction.backgroundColor = UIColor.darkGray
         let renameAction = UITableViewRowAction(style: .default, title: L10n.commonRename) { [weak self] (_, indexPath) in

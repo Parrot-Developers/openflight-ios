@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "iconRthCopy.png",
+      "filename" : "iconSettingsRth.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "iconRthCopy@2x.png",
+      "filename" : "iconSettingsRth@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "iconRthCopy@3x.png",
+      "filename" : "iconSettingsRth@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

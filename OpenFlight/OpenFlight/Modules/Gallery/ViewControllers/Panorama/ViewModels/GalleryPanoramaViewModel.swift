@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
 // MARK: - Internal Enums
 /// Stores possible panorama qualities.
@@ -57,6 +57,7 @@ final class GalleryPanoramaViewModel: NSObject {
     }
 
     // MARK: - Private
+    private var cancellables = Set<AnyCancellable>()
     private weak var coordinator: GalleryCoordinator?
     private var panoramaQuality: PanoramaQuality {
         // Panorama quality may be tweaked in the future according to device model.
@@ -70,14 +71,6 @@ final class GalleryPanoramaViewModel: NSObject {
     private var generationProgressCheckTimer: Timer?
     private var mediaListener: GalleryMediaListener?
     private var currentStepIndex = 0
-    private var isDownloadingActiveStep: Bool {
-        guard currentStepIndex < generationStepModels.count else { return false }
-
-        switch generationStepModels[currentStepIndex].step {
-        case .download: return true
-        default: return false
-        }
-    }
 
     // Convenience Computed Properties
     private var media: GalleryMedia? {
@@ -89,6 +82,28 @@ final class GalleryPanoramaViewModel: NSObject {
         return galleryMediaViewModel?.deviceViewModel?.getMediaFromUid(media.uid)
     }
     private var isCurrentIndexValid: Bool { currentStepIndex < generationStepModels.count }
+    private var isDownloadingActiveStep: Bool {
+        guard currentStepIndex < generationStepModels.count else { return false }
+
+        switch generationStepModels[currentStepIndex].step {
+        case .download: return true
+        default: return false
+        }
+    }
+    private var isUploadingActiveStep: Bool {
+        guard currentStepIndex < generationStepModels.count else { return false }
+
+        switch generationStepModels[currentStepIndex].step {
+        case .upload: return true
+        default: return false
+        }
+    }
+    private var isFullProcessComplete: Bool {
+        galleryMediaViewModel?.mediaBrowsingViewModel.panoramaGenerationStatus != .success
+            && generationStepModels
+            .filter({ $0.status == .success })
+            .count == generationStepModels.count
+    }
 
     // MARK: - Init
     ///
@@ -106,13 +121,13 @@ final class GalleryPanoramaViewModel: NSObject {
         super.init()
 
         setupSteps()
+        listenToDownload()
         listenToMedia()
     }
 
     /// Sets up panorama generation steps according to sourceType/mediaType.
     func setupSteps() {
         guard let galleryMediaViewModel = galleryMediaViewModel,
-              let sourceType = galleryMediaViewModel.sourceType,
               let panoramaType = media?.type.toPanoramaType else {
             return
         }
@@ -125,11 +140,16 @@ final class GalleryPanoramaViewModel: NSObject {
             // 2 steps mandatory needed for drone's memory case: generation + upload.
             // Current version doesnot support upload.
             generationSteps = [
-                (.generate(panoramaType), generatePanorama)
+                (.generate(panoramaType), generatePanorama),
+                (.upload(galleryMediaViewModel.sourceType), uploadPanorama)
             ]
 
-            // Insert donwload step @0 if needed (if media has not been downloaded yet).
-            if media?.downloadState == .toDownload {
+            if let url = AssetUtils.shared.panoramaResourceUrlForMediaId(media?.uid) {
+                // Only keep upload step, as panorama has already been generated on device.
+                outputUrl = url
+                generationSteps.remove(at: 0)
+            } else if media?.downloadState == .toDownload {
+                // Insert donwload step @0 if needed (if media has not been downloaded yet).
                 generationSteps.insert((.download, downloadMedia), at: 0)
             }
         case .mobileDevice:
@@ -163,16 +183,27 @@ extension GalleryPanoramaViewModel {
 
 // MARK: - Listeners
 private extension GalleryPanoramaViewModel {
-    func listenToMedia() {
-        mediaListener = galleryMediaViewModel?.registerListener { [weak self] state in
-            // Ensure that active step is .download, as we may get progress updates from download
-            // while step has already been completed (success received from galleryMediaViewModel.downloadMedias.
-            guard let self = self,
-                  self.isDownloadingActiveStep else {
-                return
+    func listenToDownload() {
+        // Listen to drone's memory download state changes.
+        guard let galleryMediaViewModel = galleryMediaViewModel else { return }
+        galleryMediaViewModel.$downloadProgress.compactMap({ $0 })
+            .combineLatest(galleryMediaViewModel.$downloadStatus.compactMap({ $0 }))
+            .sink { [unowned self] (progress, status) in
+                updateDownloadProgress(progress: progress, status: status)
             }
+            .store(in: &cancellables)
+    }
 
-            self.updateMediaProgress(state: state)
+    func listenToMedia() {
+        mediaListener = galleryMediaViewModel?.registerListener { [unowned self] _ in
+            if isFullProcessComplete {
+                // Notify browsingVM of panorama completion for gallery refresh.
+                galleryMediaViewModel?.mediaBrowsingViewModel.didUpdatePanoramaGeneration(.success)
+                // Update local panorama URL with uploaded resource UID if needed.
+                updateLocalPanoramaUrlIfNeeded()
+                // Process complete => exit.
+                closeView()
+            }
         }
     }
 
@@ -195,11 +226,9 @@ private extension GalleryPanoramaViewModel {
 
         generationStepModels[currentStepIndex].status = status
 
-        guard generationStepModels
-                .filter({ $0.status == .success })
-                .count != generationStepModels.count else {
-            // All steps have been finished => complete process.
-            completeFullProcess()
+        guard !isFullProcessComplete else {
+            // All steps have been completed => Need to refresh gallery.
+            galleryMediaViewModel?.refreshMedias(source: media?.source)
             return
         }
 
@@ -218,37 +247,17 @@ private extension GalleryPanoramaViewModel {
         generationProgress = (stepProgress + Float(currentStepIndex)) / Float(generationStepModels.count)
     }
 
-    func completeFullProcess() {
-        galleryMediaViewModel?.refreshMedias(source: media?.source)
-        galleryMediaViewModel?.refreshMedias(source: .mobileDevice)
-        DispatchQueue.main.async {
-            // Notify browsingVM of panorama completion for gallery refresh.
-            self.galleryMediaViewModel?.mediaBrowsingViewModel.didUpdatePanoramaGeneration(.success)
-        }
-
-        if galleryMediaViewModel?.state.value.sourceType == .mobileDevice {
-            // Panorama has been generated from local memory.
-            // => Only have to check if immersive sphere pano screen needs to be opened.
-            if media?.type.toPanoramaType == .sphere {
-                showPanoramaVisualisationScreenAndDismiss(viewModel: galleryMediaViewModel)
-            } else {
-                dismiss()
-            }
-        } else {
-            // Panorama has been generated from drone's memory.
-            // => Switch to device's storage as upload is not available yet.
-            showPanoramaFromDeviceStorageAndDismiss()
-        }
-    }
-
-    func showPanoramaVisualisationScreenAndDismiss(viewModel: GalleryMediaViewModel?, delay: TimeInterval = Style.shortAnimationDuration) {
-        guard let viewModel = viewModel,
-              let url = self.outputUrl else {
+    func closeView() {
+        guard media?.type.toPanoramaType == .sphere,
+              let viewModel = galleryMediaViewModel,
+              let url = outputUrl else {
+            dismiss()
             return
         }
 
+        // Spherical panorama => need to call immersive screen display before dismissing.
         coordinator?.showPanoramaVisualisationScreen(viewModel: viewModel, url: url)
-        dismiss(delay: delay)
+        dismiss(delay: Style.shortAnimationDuration)
     }
 
     func cancelAllProcesses() {
@@ -262,6 +271,7 @@ private extension GalleryPanoramaViewModel {
 
     func dismiss(delay: TimeInterval = Style.shortAnimationDuration) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            self.galleryMediaViewModel?.mediaBrowsingViewModel.didUpdatePanoramaGeneration(.inactive)
             self.coordinator?.dismissPanoramaGenerationScreen()
             self.generationStepModels.removeAll()
         }
@@ -270,19 +280,19 @@ private extension GalleryPanoramaViewModel {
 
 // MARK: - Media Download
 private extension GalleryPanoramaViewModel {
-    func updateMediaProgress(state: GalleryMediaState) {
-        guard state.downloadStatus == .running || state.downloadStatus == .error else {
+    func updateDownloadProgress(progress: Float, status: MediaTaskStatus) {
+        guard status == .running || status == .error else {
             return
         }
 
-        if state.downloadStatus == .error {
+        if status == .error {
             // Keep current progress when .failure rises.
             // Update status and exit.
             updateCurrentStep(with: .failure)
             return
         }
 
-        updateGlobalProgress(Float(state.downloadProgress))
+        updateGlobalProgress(Float(progress))
     }
 
     func downloadMedia() {
@@ -316,7 +326,8 @@ private extension GalleryPanoramaViewModel {
               let type = mediaFromDevice.type.toPanoramaType,
               let mediaUrls = mediaFromDevice.urls,
               let mediaFolderPath = mediaFromDevice.folderPath,
-              let mediaPrefix = mediaFromDevice.url?.prefix else {
+              let mainMediaUrl = mediaFromDevice.url?.lastPathComponent else {
+            updateCurrentStep(with: .failure)
             return
         }
 
@@ -324,7 +335,7 @@ private extension GalleryPanoramaViewModel {
         let inputs = mediaUrls.filter({!panoramaRelatedEntries.contains(where: $0.lastPathComponent.contains)})
         let width: Int32 = type.width(forQuality: panoramaQuality)
         let height: Int32 = type.height(forQuality: panoramaQuality)
-        outputUrl = URL(string: String(mediaFolderPath + mediaPrefix + "-" + type.rawValue + ".JPG"))
+        outputUrl = URL(string: String(mediaFolderPath + "!" + type.rawValue + "_" + mainMediaUrl))
 
         photoPano = PhotoPano()
         generationProgressCheckTimer?.invalidate()
@@ -348,6 +359,13 @@ private extension GalleryPanoramaViewModel {
                                   estimationIn: nil,
                                   estimationOut: nil,
                                   description: nil) { [weak self] status in
+                if status == .success {
+                    // New panorama resource has been created.
+                    // => Need to update local mediaInfo dictionary.
+                    let mediaInfo = AssetUtils.MediaItemResourceInfo(mediaId: mediaFromDevice.uid,
+                                                                     isPanorama: true)
+                    AssetUtils.shared.addMediaInfoToLocalList(mediaInfo, url: self?.outputUrl)
+                }
                 DispatchQueue.main.async {
                     self?.panoramaGenerationCompletion(status: status)
                 }
@@ -364,6 +382,12 @@ private extension GalleryPanoramaViewModel {
             return
         }
 
+        if isSuccess {
+            // We may get .success info slightly before progress checking timer triggers.
+            // => Ensure to update progress.
+            updateGlobalProgress(1)
+        }
+
         terminatePanoramaGeneration()
         updateCurrentStep(with: isSuccess ? .success : .failure, activateNextStep: isSuccess)
     }
@@ -376,44 +400,59 @@ private extension GalleryPanoramaViewModel {
 
 // MARK: - Upload
 private extension GalleryPanoramaViewModel {
-    /// Shows generated panorama from device's storage.
-    /// Function will be removed when upload feature is available.
-    func showPanoramaFromDeviceStorageAndDismiss() {
-        galleryMediaViewModel?.state.value.sourceType = .mobileDevice
-        coordinator?.backToRoot()
-
-        guard let viewModel = galleryMediaViewModel,
-              let mediaFromDevice = mediaFromDevice else {
+    /// Uploads generated panorama to device.
+    func uploadPanorama() {
+        guard let outputUrl = outputUrl,
+              let galleryMediaViewModel = galleryMediaViewModel,
+              let mediaItem = media?.mainMediaItem else {
+            updateCurrentStep(with: .failure)
             return
         }
 
-        DispatchQueue.main.async {
-            guard let index = self.galleryMediaViewModel?.getMediaIndex(mediaFromDevice) else {
-                return
-            }
-
-            self.coordinator?.showMediaPlayer(viewModel: viewModel, index: index)
-
-            if mediaFromDevice.type.toPanoramaType == .sphere {
-                self.showPanoramaVisualisationScreenAndDismiss(viewModel: viewModel, delay: Style.longAnimationDuration)
-            } else {
-                self.dismiss(delay: Style.longAnimationDuration)
-            }
+        galleryMediaViewModel.uploadResources([outputUrl], mediaItem: mediaItem) { [weak self] (status, progress) in
+            self?.updateUploader(status: status, progress: progress)
         }
     }
 
-    func uploadMedia() {
-        // TODO: Add upload feature.
+    /// Updates upload progress according to uploader's state.
+    ///
+    /// - Parameters:
+    ///    - uploader: Resource uploader.
+    func updateUploader(status: MediaTaskStatus, progress: Float) {
+        // Ignore uploader state changes if upload is not active step.
+        guard isUploadingActiveStep else { return }
+
+        guard !progress.isNaN else {
+            updateCurrentStep(with: .failure)
+            return
+        }
+
+        switch status {
+        case .complete:
+            updateCurrentStep(with: .success)
+        case .error:
+            updateCurrentStep(with: .failure)
+        default:
+            updateGlobalProgress(progress)
+        }
     }
 
-    /// Delete current media.
-    func deleteCurrentMedia() {
-        guard let currentMedia = media else { return }
-
-        galleryMediaViewModel?.deleteMedias([currentMedia]) { [weak self] success in
-            guard success else { return }
-
-            self?.galleryMediaViewModel?.refreshMedias()
+    /// Updates local panorama URL if a corresponding resource is present in drone's memory.
+    /// A panorama generated on the device is stored using a local naming convention. It however needs to be updated if its corresponding resource
+    /// has been uploaded on the drone (app needs to be able to inform user that the drone's pano resource is also present on the device or can be downloaded).
+    func updateLocalPanoramaUrlIfNeeded() {
+        guard isUploadingActiveStep,
+              let localUrl = outputUrl,
+              let media = media,
+              let dronePanoResource = media.mediaResources?.first(where: { $0.type == .panorama }),
+              let droneId = galleryMediaViewModel?.drone?.uid,
+              let dstUrl = dronePanoResource.galleryURL(droneId: droneId, mediaType: media.type) else {
+            return
         }
+
+        MediaUtils.moveFile(srcUrl: localUrl, dstUrl: dstUrl)
+        AssetUtils.shared.updateMediaInfoUrlInLocalList(srcUrl: localUrl, dstUrl: dstUrl)
+        // Update outputUrl with new URL in order to be able to display immersive pano if needed.
+        outputUrl = dstUrl
     }
 }

@@ -1,4 +1,4 @@
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -28,20 +28,77 @@
 //    SUCH DAMAGE.
 
 import Foundation
+import GroundSdk
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "JSONDecoder")
+}
 
 public extension Decodable {
-    static func decode(_ data: Data) -> Result<Self, Error> {
+    static func decode(_ data: Data,
+                       usingDecoder decoder: JSONDecoder = JSONDecoder(),
+                       convertFromSnakeCase: Bool = false,
+                       dateFormatter: DateFormatter = DateFormatter.apiDateFormatter,
+                       replaceEmptyJsonByNullIfNeeded: Bool = false) -> Result<Self, Error> {
         do {
-            let decoder = JSONDecoder()
-
             // Date formatter
-            decoder.dateDecodingStrategy = .formatted(DateFormatter.apiDateFormatter)
+            decoder.dateDecodingStrategy = .formatted(dateFormatter)
 
-            let object = try decoder.decode(self, from: data)
+            // TODO: Update all `Codable` to always use `convertFromSnakeCase`
+            if convertFromSnakeCase {
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+            }
+
+            var dataToDecode = data
+            // Handle empty brackets
+            if replaceEmptyJsonByNullIfNeeded {
+                dataToDecode = data.emptyJsonConvertedToNull
+            }
+
+            let object = try decoder.decode(self, from: dataToDecode)
             return .success(object)
 
         } catch {
+            ULog.e(.tag, "Error while decoding response - \(Self.self) -: \(error)\nResponse: \(String(data: data, encoding: .utf8) ?? "")")
             return .failure(error)
         }
+    }
+}
+
+public extension Array where Element: Decodable {
+    static func decode(_ data: Data,
+                       usingDecoder decoder: JSONDecoder = JSONDecoder(),
+                       replaceEmptyJsonByNullIfNeeded: Bool = false) -> Result<Self, Error> {
+        do {
+            decoder.dateDecodingStrategy = .formatted(DateFormatter.apiDateFormatter)
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+            var dataToDecode = data
+            // Handle empty brackets
+            if replaceEmptyJsonByNullIfNeeded {
+                dataToDecode = data.emptyJsonConvertedToNull
+            }
+
+            let object = try decoder.decode(self, from: dataToDecode)
+            return .success(object)
+
+        } catch {
+            ULog.e(.tag, "Error while decoding response - \(Self.self) -: \(error)\nResponse: \(String(data: data, encoding: .utf8) ?? "")")
+            return .failure(error)
+        }
+    }
+}
+
+// MARK: - Workaround to fix cases where `{}` is returned instead of null
+private extension String {
+    var emptyJsonConvertedToNull: String {
+        replacingOccurrences(of: "{}", with: "null")
+    }
+}
+
+private extension Data {
+    var emptyJsonConvertedToNull: Data {
+        guard let string = String(data: self, encoding: .utf8) else { return self }
+        return string.emptyJsonConvertedToNull.data(using: .utf8) ?? self
     }
 }

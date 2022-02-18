@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,15 +37,6 @@ open class HighlightableUIControl: UIControl {
     override public var isHighlighted: Bool {
         didSet {
             self.alpha = isHighlighted ? 0.7 : 1
-        }
-    }
-}
-
-extension HighlightableUIControl {
-    func animateIsEnabled(_ isEnabled: Bool, duration: TimeInterval = 0.3) {
-        UIView.animate(withDuration: duration, delay: 0, options: .curveEaseOut) {
-            self.isEnabled = isEnabled
-            self.alphaWithEnabledState(isEnabled)
         }
     }
 }

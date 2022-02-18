@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +33,7 @@ import CoreData
 extension UserParrot {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<UserParrot> {
-        return NSFetchRequest<UserParrot>(entityName: UserParrot.userParrotEntityName)
+        return NSFetchRequest<UserParrot>(entityName: UserParrot.entityName)
     }
 
     // MARK: - Properties
@@ -48,10 +48,15 @@ extension UserParrot {
     @NSManaged public var lang: String!
     @NSManaged public var lastName: String?
     @NSManaged public var newsletterOption: Bool
-    @NSManaged public var shareDataOption: Bool
+    @NSManaged public var isSynchronizeFlightData: Bool
     @NSManaged public var syncWithCloud: Bool
     @NSManaged public var tmpApcUser: Bool
+    @NSManaged public var academyId: String?
+    @NSManaged public var pilotNumber: String?
     @NSManaged public var userInfoChanged: Bool
+    @NSManaged public var avatar: String?
+    @NSManaged public var isSynchronizeFlightDataExtended: Bool
+    @NSManaged public var isSynchronizeMedia: Bool
 
     // MARK: - Relationship
 
@@ -182,26 +187,4 @@ extension UserParrot {
     @objc(removeFlightPlanFlights:)
     @NSManaged public func removeFromFlightPlanFlights(_ values: NSSet)
 
-}
-
-// MARK: - Utils
-extension UserParrot {
-
-    /// Return User from UserParrot type of NSManagedObject
-    func model() -> User {
-        return User(firstName: firstName,
-                    lastName: lastName,
-                    birthday: birthday,
-                    lang: lang,
-                    email: email,
-                    apcId: apcId,
-                    apcToken: apcToken,
-                    tmpApcUser: tmpApcUser,
-                    userInfoChanged: userInfoChanged,
-                    syncWithCloud: syncWithCloud,
-                    agreementChanged: agreementChanged,
-                    newsletterOption: newsletterOption,
-                    shareDataOption: shareDataOption,
-                    freemiumProjectCounter: Int(freemiumProjectCounter))
-    }
 }

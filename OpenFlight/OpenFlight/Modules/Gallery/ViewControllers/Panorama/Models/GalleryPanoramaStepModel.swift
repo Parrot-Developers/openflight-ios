@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -40,9 +39,14 @@ enum GalleryPanoramaStepStatus {
     case failure
 
     func icon(_ defaultIcon: AssetImageTypeAlias?) -> AssetImageTypeAlias? {
-        self == .success
-            ? Asset.Common.Checks.icChecked.image
-            : defaultIcon
+        switch self {
+        case .success:
+            return Asset.Common.Checks.icChecked.image
+        case .active:
+            return Asset.Pairing.icloading.image
+        default:
+            return defaultIcon
+        }
     }
 
     var iconColor: ColorName {

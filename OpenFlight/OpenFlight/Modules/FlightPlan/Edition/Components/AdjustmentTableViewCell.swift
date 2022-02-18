@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,7 +31,7 @@ import UIKit
 import Reusable
 
 /// Cell with minus and plus buttons for settings update.
-final class AdjustmentTableViewCell: UITableViewCell, NibReusable, EditionSettingsCellModel {
+final class AdjustmentTableViewCell: MainTableViewCell, NibReusable, EditionSettingsCellModel {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var valueLabel: UILabel!
@@ -92,7 +91,7 @@ private extension AdjustmentTableViewCell {
     /// Inits the view.
     func initView() {
         titleLabel.makeUp(and: .defaultTextColor)
-        valueLabel.makeUp(and: ColorName.greenSpring)
+        valueLabel.makeUp(and: ColorName.highlightColor)
         minusButton.roundCorneredWith(backgroundColor: ColorName.white20.color)
         plusButton.roundCorneredWith(backgroundColor: ColorName.white20.color)
     }

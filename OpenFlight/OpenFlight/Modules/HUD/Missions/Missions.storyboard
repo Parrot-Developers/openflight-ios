@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="FRE-yj-bUT">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="FRE-yj-bUT">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -13,76 +12,81 @@
         <scene sceneID="kFw-iL-C12">
             <objects>
                 <viewController storyboardIdentifier="MissionProviderSelectorViewController" id="FRE-yj-bUT" customClass="MissionProviderSelectorViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="A47-RK-ZxU">
-                        <rect key="frame" x="0.0" y="0.0" width="175" height="414"/>
+                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="A47-RK-ZxU">
+                        <rect key="frame" x="0.0" y="0.0" width="220" height="414"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kx7-Mu-u34">
-                                <rect key="frame" x="0.0" y="0.0" width="175" height="414"/>
+                            <visualEffectView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kx7-Mu-u34">
+                                <rect key="frame" x="0.0" y="0.0" width="220" height="414"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="mIL-zb-aZS">
-                                    <rect key="frame" x="0.0" y="0.0" width="175" height="414"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="220" height="414"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </view>
                                 <color key="backgroundColor" name="white_70"/>
                                 <blurEffect style="light"/>
                             </visualEffectView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" text="Missions" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="oJc-Dr-V0d">
-                                <rect key="frame" x="16" y="16" width="143" height="20.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <view alpha="0.29999999999999999" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZR7-Tz-VIk">
-                                <rect key="frame" x="0.0" y="52.5" width="175" height="1"/>
-                                <color key="backgroundColor" name="default_text_color"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="1" id="HNP-5n-vcL"/>
-                                </constraints>
-                            </view>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Ua0-dG-gua">
-                                <rect key="frame" x="0.0" y="53.5" width="175" height="360.5"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                <connections>
-                                    <outlet property="dataSource" destination="FRE-yj-bUT" id="4hM-PT-ou9"/>
-                                    <outlet property="delegate" destination="FRE-yj-bUT" id="SIm-3I-SoL"/>
-                                </connections>
-                            </tableView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Gpb-fo-b2g">
+                                <rect key="frame" x="0.0" y="0.0" width="220" height="414"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="vvf-R5-COv" customClass="SideNavigationBarStackView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="220" height="50"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" text="Missions" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="oJc-Dr-V0d">
+                                                <rect key="frame" x="0.0" y="0.0" width="220" height="50"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <view alpha="0.29999999999999999" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZR7-Tz-VIk">
+                                        <rect key="frame" x="0.0" y="50" width="220" height="1"/>
+                                        <color key="backgroundColor" name="default_text_color"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="1" id="HNP-5n-vcL"/>
+                                        </constraints>
+                                    </view>
+                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ua0-dG-gua" customClass="SidePanelTableView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="51" width="220" height="363"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                        <connections>
+                                            <outlet property="dataSource" destination="FRE-yj-bUT" id="4hM-PT-ou9"/>
+                                            <outlet property="delegate" destination="FRE-yj-bUT" id="SIm-3I-SoL"/>
+                                        </connections>
+                                    </tableView>
+                                </subviews>
+                            </stackView>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="jPY-Va-LrD"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="oJc-Dr-V0d" firstAttribute="leading" secondItem="jPY-Va-LrD" secondAttribute="leading" constant="16" id="1ok-zN-HpF"/>
-                            <constraint firstAttribute="trailing" secondItem="Ua0-dG-gua" secondAttribute="trailing" id="850-32-Fng"/>
-                            <constraint firstAttribute="trailing" secondItem="ZR7-Tz-VIk" secondAttribute="trailing" id="FNY-j7-fsZ"/>
-                            <constraint firstItem="ZR7-Tz-VIk" firstAttribute="top" secondItem="oJc-Dr-V0d" secondAttribute="bottom" constant="16" id="FRk-ig-EVi"/>
-                            <constraint firstItem="Ua0-dG-gua" firstAttribute="leading" secondItem="A47-RK-ZxU" secondAttribute="leading" id="NWn-NS-FDe"/>
-                            <constraint firstItem="jPY-Va-LrD" firstAttribute="trailing" secondItem="oJc-Dr-V0d" secondAttribute="trailing" constant="16" id="NaH-oh-GND"/>
                             <constraint firstItem="kx7-Mu-u34" firstAttribute="leading" secondItem="A47-RK-ZxU" secondAttribute="leading" id="UDa-Or-s73"/>
-                            <constraint firstItem="ZR7-Tz-VIk" firstAttribute="leading" secondItem="A47-RK-ZxU" secondAttribute="leading" id="WUe-IT-YnG"/>
-                            <constraint firstAttribute="bottom" secondItem="Ua0-dG-gua" secondAttribute="bottom" id="Wdu-nv-ia4"/>
+                            <constraint firstItem="Gpb-fo-b2g" firstAttribute="top" secondItem="A47-RK-ZxU" secondAttribute="top" id="Vxr-JO-D1s"/>
                             <constraint firstAttribute="bottom" secondItem="kx7-Mu-u34" secondAttribute="bottom" id="f2j-Y1-C2K"/>
+                            <constraint firstAttribute="trailing" secondItem="Gpb-fo-b2g" secondAttribute="trailing" id="hh8-3I-EXS"/>
+                            <constraint firstAttribute="bottom" secondItem="Gpb-fo-b2g" secondAttribute="bottom" id="mDy-hy-T4G"/>
                             <constraint firstItem="kx7-Mu-u34" firstAttribute="top" secondItem="A47-RK-ZxU" secondAttribute="top" id="nBU-z2-U25"/>
-                            <constraint firstItem="oJc-Dr-V0d" firstAttribute="top" secondItem="A47-RK-ZxU" secondAttribute="top" constant="16" id="nU5-u8-74J"/>
-                            <constraint firstItem="Ua0-dG-gua" firstAttribute="top" secondItem="ZR7-Tz-VIk" secondAttribute="bottom" id="ufC-mg-AIO"/>
+                            <constraint firstItem="Gpb-fo-b2g" firstAttribute="leading" secondItem="A47-RK-ZxU" secondAttribute="leading" id="r2L-0U-jF3"/>
                             <constraint firstAttribute="trailing" secondItem="kx7-Mu-u34" secondAttribute="trailing" id="wqC-sN-fy8"/>
                         </constraints>
                     </view>
-                    <size key="freeformSize" width="175" height="414"/>
+                    <size key="freeformSize" width="220" height="414"/>
                     <connections>
+                        <outlet property="missionsTableView" destination="Ua0-dG-gua" id="4Gm-vn-cMV"/>
                         <outlet property="tableView" destination="Ua0-dG-gua" id="8sM-K5-Eh2"/>
+                        <outlet property="titleContainer" destination="vvf-R5-COv" id="ENj-Ef-XRp"/>
                         <outlet property="titleLabel" destination="oJc-Dr-V0d" id="uDg-OI-7EO"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cHQ-6r-ebs" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-296.37681159420293" y="-143.30357142857142"/>
+            <point key="canvasLocation" x="-263.768115942029" y="-143.30357142857142"/>
         </scene>
     </scenes>
     <resources>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="white_70">
             <color red="1" green="1" blue="1" alpha="0.69999998807907104" colorSpace="custom" customColorSpace="sRGB"/>

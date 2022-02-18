@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,9 +33,9 @@ import ArcGIS
 final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRelatedGraphic, PoiPointRelatedGraphic {
     // MARK: - Internal Properties
     /// Associated waypoint.
-    private(set) weak var wayPoint: WayPoint?
+    private(set) var wayPoint: WayPoint?
     /// Target point of interest, if any.
-    private(set) weak var poiPoint: PoiPoint?
+    private(set) var poiPoint: PoiPoint?
 
     /// Symbols
     private var arrow: AGSPictureMarkerSymbol?
@@ -49,7 +48,7 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
 
     // MARK: - Private Enums
     private enum Constants {
-        static let selectedColor: UIColor = ColorName.greenSpring.color
+        static let selectedColor: UIColor = ColorName.highlightColor.color
         static let arrowSizeHeight: CGFloat = 15.0
         static let arrowSizeWidth: CGFloat = 20.0
         static let outlineWidth: CGFloat = 2.0

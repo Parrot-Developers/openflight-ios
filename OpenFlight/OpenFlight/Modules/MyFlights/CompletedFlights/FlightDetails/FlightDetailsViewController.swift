@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,8 +38,6 @@ final class FlightDetailsViewController: UIViewController, FileShare {
         case info
         case status
         case settings
-        case flights
-        case executions
         case actions
     }
 
@@ -52,7 +49,7 @@ final class FlightDetailsViewController: UIViewController, FileShare {
     // MARK: - Outlets
     @IBOutlet private weak var backButton: UIButton!
     @IBOutlet weak var mapContainerView: UIView!
-    @IBOutlet weak var rightTableView: UITableView!
+    @IBOutlet weak var rightTableView: SidePanelTableView!
 
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
@@ -87,8 +84,7 @@ final class FlightDetailsViewController: UIViewController, FileShare {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.flightDetails,
-                             logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.flightDetails))
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -105,10 +101,6 @@ final class FlightDetailsViewController: UIViewController, FileShare {
         }
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
     }
@@ -116,12 +108,15 @@ final class FlightDetailsViewController: UIViewController, FileShare {
     // MARK: - Constants
     enum Constants {
         static let tableViewHeaderLineHeight: CGFloat = 1
-        static let tableViewHeaderLineTopMargin: CGFloat = 6
-        static let tableViewHeaderLineBottomMargin: CGFloat = 15
+        static let tableViewHeaderLineTopMargin: CGFloat = 0
         static let tableViewHeaderBottomMargin: CGFloat = 6
-        static let tableViewHeaderLabelSize: CGFloat = 30
-        static let tableViewHeaderLabelHorizontalMargin: CGFloat = 10
     }
+}
+
+/// Extension for layout spacing and margin values.
+private extension FlightDetailsViewController {
+    private var tableViewHeaderLineBottomMargin: CGFloat { Layout.mainSpacing(isRegularSizeClass) }
+    private var tableViewHeaderBottomMargin: CGFloat { Layout.mainSpacing(isRegularSizeClass) }
 }
 
 // MARK: - Actions
@@ -152,9 +147,10 @@ private extension FlightDetailsViewController {
         rightTableView.estimatedRowHeight = 70
         // Workaround to remove the top grouped tableview extra space.
         rightTableView.tableHeaderView =
-            UIView(frame: CGRect(origin: .zero,
-                                 size: CGSize(width: 0.0, height: Double.leastNormalMagnitude)))
+        UIView(frame: CGRect(origin: .zero,
+                             size: CGSize(width: 0.0, height: Double.leastNormalMagnitude)))
         rightTableView.delegate = self
+        rightTableView.dataSource = self
         registerTableViewCellTypes()
     }
 
@@ -162,16 +158,20 @@ private extension FlightDetailsViewController {
         rightTableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         rightTableView.register(cellType: FlightDetailsInfoCell.self)
         rightTableView.register(cellType: FlightDetailsActionCell.self)
-        rightTableView.register(cellType: FlightDetailsExecutionsCell.self)
         rightTableView.register(cellType: FlightExecutionDetailsSettingsCell.self)
-        rightTableView.register(cellType: FlightDetailsSectionHeaderCell.self)
-        rightTableView.register(cellType: FlightExecutionDetailsFlightsCell.self)
         rightTableView.register(cellType: FlightExecutionDetailsStatusCell.self)
     }
 
     /// Updates content regarding view model.
     func bindViewModel() {
-        rightTableView.dataSource = self
+        if case let .execution(executionViewModel) = viewModel {
+            executionViewModel
+                .flightPlanUiStateProviderPublisher
+                .sink { [unowned self] _ in
+                    rightTableView.reloadData()
+                }
+                .store(in: &cancellables)
+        }
     }
 
     /// Init map controller.
@@ -194,7 +194,7 @@ private extension FlightDetailsViewController {
         destinationContainerView.addSubview(mapViewController.view)
         mapViewController.view.frame = destinationContainerView.bounds
         mapController?.didMove(toParent: self)
-        self.view.layoutIfNeeded()
+        view.layoutIfNeeded()
     }
 
     /// Updates the current map display with current flight.
@@ -202,8 +202,8 @@ private extension FlightDetailsViewController {
         switch viewModel {
         case .details(let viewModel):
             if let mapViewController = mapController as? MapViewController {
-               mapViewController.displayFlightCourse(flightsPoints: [viewModel.flightPoints],
-                                                     hasAsmlAltitude: viewModel.hasAsmlAltitude)
+                mapViewController.displayFlightCourse(flightsPoints: [viewModel.flightPoints],
+                                                      hasAsmlAltitude: viewModel.hasAsmlAltitude)
             }
         case .execution(let viewModel):
             if let mapViewController = mapController as? MapViewController {
@@ -218,13 +218,6 @@ private extension FlightDetailsViewController {
     }
 }
 
-// MARK: - FlightDetailsDiagnosticViewDelegate
-extension FlightDetailsViewController: FlightDetailsDiagnosticViewDelegate {
-    func openSupportURL(_ url: URL) {
-        // TODO: open safari vc with URL.
-    }
-}
-
 extension FlightDetailsViewController: UITableViewDataSource {
 
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -235,18 +228,16 @@ extension FlightDetailsViewController: UITableViewDataSource {
         switch viewModel {
         case .details(let viewModel):
             switch Section(rawValue: section) {
-            case .none, .status, .settings, .flights:
+            case .none, .status, .settings:
                 return  0
             case .info:
                 return 1
-            case .executions:
-                return viewModel.flightPlans.count
             case .actions:
                 return viewModel.actions.count
             }
         case .execution(let viewModel):
             switch Section(rawValue: section) {
-            case .none, .executions:
+            case .none:
                 return  0
             case .info:
                 return 1
@@ -254,9 +245,6 @@ extension FlightDetailsViewController: UITableViewDataSource {
                 return 1
             case .settings:
                 return 1
-            case .flights:
-                // +1 row is for section header: Should be handled as TableView Header
-                return viewModel.executionInfoProvider.flights.isEmpty ? 0 : 1 + viewModel.executionInfoProvider.flights.count
             case .actions:
                 return viewModel.actions.count
             }
@@ -275,21 +263,15 @@ extension FlightDetailsViewController: UITableViewDataSource {
         case .info:
             return infoCell(forIndexPath: indexPath,
                             tableView: tableView)
-        case .executions:
-            return executionsCell(forIndexPath: indexPath,
-                                  tableView: tableView)
         case .settings:
             return settingsCell(forIndexPath: indexPath,
-                                tableView: tableView)
-        case .flights:
-            return flightsCell(forIndexPath: indexPath,
                                 tableView: tableView)
         case .actions:
             return actionsCell(forIndexPath: indexPath,
                                tableView: tableView)
         case .status:
             return statusCell(forIndexPath: indexPath,
-                               tableView: tableView)
+                              tableView: tableView)
         }
     }
 
@@ -307,18 +289,6 @@ extension FlightDetailsViewController: UITableViewDataSource {
         return cell
     }
 
-    private func executionsCell(forIndexPath indexPath: IndexPath,
-                                tableView: UITableView) -> UITableViewCell {
-        let cell: FlightDetailsExecutionsCell = tableView.dequeueReusableCell(for: indexPath)
-        switch viewModel {
-        case .details(let viewModel):
-            cell.fill(with: viewModel, at: indexPath.row)
-        default:
-            break
-        }
-        return cell
-    }
-
     private func settingsCell(forIndexPath indexPath: IndexPath,
                               tableView: UITableView) -> UITableViewCell {
         let cell: FlightExecutionDetailsSettingsCell = tableView.dequeueReusableCell(for: indexPath)
@@ -330,20 +300,6 @@ extension FlightDetailsViewController: UITableViewDataSource {
             break
         }
         return cell
-    }
-
-    private func flightsCell(forIndexPath indexPath: IndexPath,
-                             tableView: UITableView) -> UITableViewCell {
-        guard case .execution(let viewModel) = viewModel else { return UITableViewCell() }
-        if indexPath.row == 0 {
-            let header: FlightDetailsSectionHeaderCell = tableView.dequeueReusableCell(for: indexPath)
-            header.fill(with: viewModel.flightsSectionHeaderModel)
-            return header
-        } else {
-            let cell: FlightExecutionDetailsFlightsCell = tableView.dequeueReusableCell(for: indexPath)
-            cell.fill(with: viewModel.flightCellModelForFlight(at: indexPath.row - 1))
-            return cell
-        }
     }
 
     private func actionsCell(forIndexPath indexPath: IndexPath,
@@ -381,9 +337,6 @@ extension FlightDetailsViewController: UITableViewDelegate {
         case .status:
             guard case .execution = viewModel else { return nil }
             return header()
-        case .executions:
-            guard case let .details(viewModel) = viewModel, !viewModel.flightPlans.isEmpty else { return nil }
-            return header(with: L10n.dashboardMyFlightsSectionPlans)
         default:
             break
         }
@@ -401,21 +354,17 @@ extension FlightDetailsViewController: UITableViewDelegate {
         case .status:
             guard case .execution = viewModel else { return CGFloat.leastNonzeroMagnitude }
             return header().frame.height
-        case .executions:
-            guard case let .details(viewModel) = viewModel, !viewModel.flightPlans.isEmpty else { return CGFloat.leastNonzeroMagnitude }
-            return header(with: L10n.dashboardMyFlightsSectionPlans).frame.height
         default:
             break
         }
         return CGFloat.leastNonzeroMagnitude
     }
 
-    private func header(with title: String? = nil) -> UIView {
+    private func header() -> UIView {
         let headerSize = CGSize(width: rightTableView.frame.width,
                                 height: Constants.tableViewHeaderLineTopMargin +
-                                    Constants.tableViewHeaderLineHeight +
-                                    Constants.tableViewHeaderLineBottomMargin +
-                                    (title == nil ? 0 : Constants.tableViewHeaderLabelSize + Constants.tableViewHeaderBottomMargin ))
+                                Constants.tableViewHeaderLineHeight +
+                                tableViewHeaderLineBottomMargin)
 
         let header = UIView(frame: CGRect(origin: .zero,
                                           size: headerSize))
@@ -428,28 +377,18 @@ extension FlightDetailsViewController: UITableViewDelegate {
         line.backgroundColor = ColorName.defaultTextColor20.color
         header.addSubview(line)
 
-        if let title = title {
-            let label = UILabel(frame: CGRect(origin: CGPoint(x: Constants.tableViewHeaderLabelHorizontalMargin,
-                                                              y: Constants.tableViewHeaderLineTopMargin +
-                                                                Constants.tableViewHeaderLineHeight +
-                                                                Constants.tableViewHeaderLineBottomMargin),
-                                              size: CGSize(width: rightTableView.frame.width - Constants.tableViewHeaderLabelHorizontalMargin*2,
-                                                           height: Constants.tableViewHeaderLabelSize)))
-            label.makeUp(with: .largeMedium, and: .defaultTextColor80)
-            label.text = title
-            header.addSubview(label)
-        }
         return header
     }
 }
 
 extension FlightDetailsViewController: FlightDetailsActionCellDelegate {
-    func flightDetailsCellAction(_ action: FlightDetailsActionCellModel.Action) {
+    func flightDetailsCellAction(_ action: FlightDetailsActionCellModel.Action, srcView: UIView) {
         switch (viewModel, action) {
         case (.details(let viewModel), .share):
             shareFile(data: viewModel.shareFileData,
                       name: viewModel.shareFileName,
-                      fileExtension: GutmaConstants.extensionName)
+                      fileExtension: GutmaConstants.extensionName,
+                      srcView: srcView)
         case (.details(let viewModel), .delete):
             viewModel.askForDeletion()
         case (.execution(let viewModel), .delete):

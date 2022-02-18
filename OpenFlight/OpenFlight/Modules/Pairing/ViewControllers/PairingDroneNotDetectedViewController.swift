@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,14 +32,7 @@ import UIKit
 /// View Controller used when user do not find a drone with his remote.
 final class PairingDroneNotDetectedViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var panelView: UIView! {
-        didSet {
-            panelView.customCornered(corners: [.topLeft, .topRight],
-                                     radius: Style.largeCornerRadius,
-                                     backgroundColor: .white,
-                                     borderColor: .clear)
-        }
-    }
+    @IBOutlet private weak var panelView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var pairingDescriptionLabel: UILabel!
     @IBOutlet private weak var pairingEnterWifiLabel: UILabel!
@@ -59,26 +51,28 @@ final class PairingDroneNotDetectedViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        updateView()
+        initView()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingHowToConnectDroneTurnOn, logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.pairingHowToConnectDroneTurnOn))
 
         UIView.animate(withDuration: Style.shortAnimationDuration,
                        delay: Style.shortAnimationDuration,
                        animations: {
-                        self.view.backgroundColor = ColorName.nightRider.color
-                       })
+            self.view.backgroundColor = ColorName.nightRider80.color
+        })
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        view.backgroundColor = .clear
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -101,9 +95,20 @@ private extension PairingDroneNotDetectedViewController {
 // MARK: - Private Funcs
 private extension PairingDroneNotDetectedViewController {
     /// Update title and button view.
-    func updateView() {
+    func initView() {
         titleLabel.text = L10n.pairingConnectAutomaticalyDroneWifi
+        titleLabel.font = FontStyle.title.font(isRegularSizeClass)
+
         pairingDescriptionLabel.text = L10n.pairingPairAutomaticallyWithUsb
+        pairingDescriptionLabel.font = FontStyle.readingText.font(isRegularSizeClass)
+        pairingDescriptionLabel.textColor = ActionButtonStyle.validate.backgroundColor
+
         pairingEnterWifiLabel.text = L10n.pairingPairManuallyWithPassword
+        pairingEnterWifiLabel.font = FontStyle.readingText.font(isRegularSizeClass)
+
+        panelView.customCornered(corners: [.topLeft, .topRight],
+                                 radius: Style.largeCornerRadius,
+                                 backgroundColor: .white,
+                                 borderColor: .clear)
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,49 +30,66 @@
 import Foundation
 
 public struct PgyProjectModel {
-
-    // MARK: - Properties
-
+    // MARK: __ User's ID
+    public var apcId: String
+    // MARK: __ Academy
     public var pgyProjectId: Int64
     public var name: String
     public var projectDate: Date
     public var processingCalled: Bool
-
-    // MARK: - Synchro Properties
-
-    /// - To identify data user
-    public var apcId: String
-
-    /// - Contains the Date of last synchro trying if is not succeeded
-    public var synchroDate: Date?
-
-    /// - Contains
-    ///     - 0 Not synchronized,
-    ///     - 1 Synchronized
-    ///     - StatusCode if sync failed
-    public var synchroStatus: Int16?
-
-    /// - Set True if a Delete Request was triguerred without success
-    public var cloudToBeDeleted: Bool
+    // MARK: __ Synchronization
+    ///  Boolean to know if it delete locally but needs to be deleted on server
+    public var isLocalDeleted: Bool
+    ///  Synchro status
+    public var synchroStatus: SynchroStatus?
+    ///  Synchro error
+    public var synchroError: SynchroError?
+    ///  Date of last tried synchro
+    public var latestSynchroStatusDate: Date?
+    ///  Date of local modification
+    public var latestLocalModificationDate: Date?
 
     // MARK: - Public init
-
     public init(apcId: String,
-                pgyProjectId: Int64 = 0,
-                cloudToBeDeleted: Bool = false,
+                pgyProjectId: Int64,
                 name: String,
-                processingCalled: Bool = false,
                 projectDate: Date,
-                synchroDate: Date? = nil,
-                synchroStatus: Int16? = 0) {
-
+                processingCalled: Bool,
+                isLocalDeleted: Bool,
+                synchroStatus: SynchroStatus?,
+                synchroError: SynchroError?,
+                latestSynchroStatusDate: Date?,
+                latestLocalModificationDate: Date?) {
+        /// User's Id
         self.apcId = apcId
+        /// Academy
         self.pgyProjectId = pgyProjectId
         self.name = name
         self.projectDate = projectDate
         self.processingCalled = processingCalled
-        self.synchroDate = synchroDate
+        /// Synchronisation
+        self.isLocalDeleted = isLocalDeleted
         self.synchroStatus = synchroStatus
-        self.cloudToBeDeleted = cloudToBeDeleted
+        self.synchroError = synchroError
+        self.latestSynchroStatusDate = latestSynchroStatusDate
+        self.latestLocalModificationDate = latestLocalModificationDate
+    }
+}
+
+extension PgyProjectModel {
+    public init(apcId: String,
+                pgyProjectId: Int64,
+                name: String,
+                projectDate: Date) {
+        self.init(apcId: apcId,
+                  pgyProjectId: pgyProjectId,
+                  name: name,
+                  projectDate: projectDate,
+                  processingCalled: false,
+                  isLocalDeleted: false,
+                  synchroStatus: .notSync,
+                  synchroError: .noError,
+                  latestSynchroStatusDate: nil,
+                  latestLocalModificationDate: nil)
     }
 }

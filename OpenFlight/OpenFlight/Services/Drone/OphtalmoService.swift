@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,23 +32,50 @@ import Combine
 import GroundSdk
 import SwiftProtobuf
 
+typealias OpthamoMissionCalibrationStatus = Parrot_Missions_Ophtalmo_Airsdk_Messages_CalibrationStatus
+typealias OpthamoMissionCalibrationStep = Parrot_Missions_Ophtalmo_Airsdk_Messages_CalibrationStep
+private typealias OpthamoMissionConfig = Parrot_Missions_Ophtalmo_Airsdk_Messages_Config
+private typealias MissionCommand = Parrot_Missions_Ophtalmo_Airsdk_Messages_Command
+private typealias MissionEvent = Parrot_Missions_Ophtalmo_Airsdk_Messages_Event
+private typealias MissionEmptyMessage = SwiftProtobuf.Google_Protobuf_Empty
+
+// MARK: - Internal Enums
+/// List of alerts for Ophtalmo
+enum OphtalmoError: String {
+    case cannotStop
+
+    var label: String {
+        switch self {
+        case .cannotStop:
+            return L10n.ophtalmoStopLand
+        }
+    }
+}
+
 protocol OphtalmoService: AnyObject {
 
     /// The calibration progress of the mission
     var calibrationPercentagePublisher: AnyPublisher<Float?, Never> { get }
     /// The current status of the mission
-    var calibrationStatusPublisher: AnyPublisher<Parrot_Missions_Ophtalmo_Airsdk_Messages_CalibrationStatus?, Never> { get }
+    var calibrationStatusPublisher: AnyPublisher<OpthamoMissionCalibrationStatus?, Never> { get }
     /// The calibration ended state of the mission
     var calibrationEndedPublisher: AnyPublisher<CalibrationEndedState?, Never> { get }
     /// The current step of the calibration
-    var calibrationStepPublisher: AnyPublisher<Parrot_Missions_Ophtalmo_Airsdk_Messages_CalibrationStep, Never> { get }
+    var calibrationStepPublisher: AnyPublisher<OpthamoMissionCalibrationStep, Never> { get }
     /// Indicates if the drone is flying
     var isFlyingPublisher: AnyPublisher<Bool, Never> { get }
-    /// Indicates if the drone is landed
-    var isLandedPublisher: AnyPublisher<Bool, Never> { get }
     /// The current gps strength
     var gpsStrengthPublisher: AnyPublisher<GpsStrength, Never> { get }
-
+    /// The current ophtalmo error.
+    var errorAlertPublisher: AnyPublisher<OphtalmoError?, Never> { get }
+    /// Indicates if return home ending is set to landing
+    var endLandingPublisher: AnyPublisher<Bool, Never> { get }
+    /// The current flying status
+    var isFlyingValue: Bool { get }
+    /// The current state of the mission publisher.
+    var ophtalmoMissionStatePublisher: AnyPublisher<MissionState?, Never> { get }
+    /// The current state of the mission value.
+    var ophtalmoMissionState: MissionState? { get }
     /// Listens the ophtalmo mission
     func listenMission()
     /// Stops listening the ophtalmo mission
@@ -58,6 +85,8 @@ protocol OphtalmoService: AnyObject {
     /// Stop the mission
     func endMission()
 
+    var altitude: Float { get }
+
     /// Starts the ophtalmo mission
     /// - Parameter altitude: The altitude the drone will fly up to
     func startCalibration(altitude: Float)
@@ -65,40 +94,50 @@ protocol OphtalmoService: AnyObject {
     func cancelCalibration()
     /// Reset all the values of the ophtalmo service
     func resetValue()
+    /// Reset active mission
+    func resetActiveMission()
+    /// Updates error alert for ophtalmo mission.
+    func updateErrorAlert(_ message: OphtalmoError?)
 
 }
 
 final class OphtalmoServiceImpl {
 
-    private var protobufMissionManager: ProtobufMissionsManager
-    private var protobufMissionsListener: ProtobufMissionsListener
-    private var listener: ProtobufMissionListener?
+    private var airSdkMissionManager: AirSdkMissionsManager
+    private var airsdkMissionsListener: AirSdkMissionsListener
+    private var listener: AirSdkMissionListener?
     private let signature = OFMissionSignatures.ophtalmo
-    private var messageUidGenerator = ProtobufMissionMessageToSend.UidGenerator(0)
+    private var messageUidGenerator = AirSdkMissionMessageToSend.UidGenerator(0)
 
     private var calibrationPercentage = CurrentValueSubject<Float?, Never>(nil)
-    private var calibrationStatus = CurrentValueSubject<Parrot_Missions_Ophtalmo_Airsdk_Messages_CalibrationStatus?, Never>(nil)
+    private var calibrationAltitude = CurrentValueSubject<Float?, Never>(nil)
+    private var calibrationStatus = CurrentValueSubject<OpthamoMissionCalibrationStatus?, Never>(nil)
     private var calibrationEnded = CurrentValueSubject<CalibrationEndedState?, Never>(nil)
-    private var calibrationStep = CurrentValueSubject<Parrot_Missions_Ophtalmo_Airsdk_Messages_CalibrationStep, Never>(.idle)
+    private var calibrationStep = CurrentValueSubject<OpthamoMissionCalibrationStep, Never>(.idle)
     private var isFlying = CurrentValueSubject<Bool, Never>(false)
-    private var isLanded = CurrentValueSubject<Bool, Never>(true)
     private var gpsStrength = CurrentValueSubject<GpsStrength, Never>(.none)
+    private var errorAlert = CurrentValueSubject<OphtalmoError?, Never>(nil)
+    private var endLanding = CurrentValueSubject<Bool, Never>(false)
+    private var ophtalmoMissionStateCurrentValue = CurrentValueSubject<MissionState?, Never>(nil)
 
     private var gpsRef: Ref<Gps>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var returnHomePilotingRef: Ref<ReturnHomePilotingItf>?
     private var cancellables = Set<AnyCancellable>()
 
     init(connectedDroneHolder: ConnectedDroneHolder,
-         protobufMissionManager: ProtobufMissionsManager,
-         protobufMissionsListener: ProtobufMissionsListener) {
+         airSdkMissionManager: AirSdkMissionsManager,
+         airsdkMissionsListener: AirSdkMissionsListener) {
 
-        self.protobufMissionManager = protobufMissionManager
-        self.protobufMissionsListener = protobufMissionsListener
+        self.airSdkMissionManager = airSdkMissionManager
+        self.airsdkMissionsListener = airsdkMissionsListener
 
         connectedDroneHolder.dronePublisher
             .sink { [unowned self] drone in
                 listenGps(drone: drone)
                 listenFlyingState(drone: drone)
+                listenStatus(drone: drone)
+                listenReturnHome(drone: drone)
             }
             .store(in: &cancellables)
     }
@@ -106,14 +145,14 @@ final class OphtalmoServiceImpl {
 
 private extension OphtalmoServiceImpl {
 
-    /// Sends the protobuf command.
-    func send(command: Parrot_Missions_Ophtalmo_Airsdk_Messages_Command) {
+    /// Sends the airsdk command.
+    func send(command: MissionCommand) {
         guard let payload = try? command.serializedData() else { return }
 
-        let message = ProtobufMissionMessageToSend(mission: signature,
-                                                   payload: payload,
-                                                   messageUidGenerator: &messageUidGenerator)
-        protobufMissionManager.sendMessage(message: message)
+        let message = AirSdkMissionMessageToSend(mission: signature,
+                                                 payload: payload,
+                                                 messageUidGenerator: &messageUidGenerator)
+        airSdkMissionManager.sendMessage(message: message)
     }
 
     func listenGps(drone: Drone?) {
@@ -133,43 +172,73 @@ private extension OphtalmoServiceImpl {
         guard let drone = drone else { return }
 
         flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicator in
-            if flyingIndicator?.flyingState == .flying || flyingIndicator?.flyingState == .waiting {
-                isFlying.value = true
-                isLanded.value = false
-            } else if flyingIndicator?.state == .landed {
-                isLanded.value = true
+            guard let flyingIndicator = flyingIndicator else {
                 isFlying.value = false
+                return
             }
+            isFlying.value = flyingIndicator.state != .landed
+        }
+    }
+
+    func listenStatus(drone: Drone?) {
+        guard let drone = drone else {
+            ophtalmoMissionStateCurrentValue.value = nil
+            return
+        }
+        let missionManager = drone.getPeripheral(Peripherals.missionManager)
+        let missionOphtalmo = missionManager?.missions[signature.missionUID]
+        ophtalmoMissionStateCurrentValue.value = missionOphtalmo?.state
+    }
+
+    func listenReturnHome(drone: Drone?) {
+        guard let drone = drone else { return }
+
+        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] returnHome in
+            guard let self = self else { return }
+            self.endLanding.value = returnHome?.endingBehavior.behavior == .landing
         }
     }
 }
 
 extension OphtalmoServiceImpl: OphtalmoService {
 
-    var calibrationPercentagePublisher: AnyPublisher<Float?, Never> { calibrationPercentage.eraseToAnyPublisher() }
-
-    var calibrationStatusPublisher: AnyPublisher<Parrot_Missions_Ophtalmo_Airsdk_Messages_CalibrationStatus?, Never> {
-        calibrationStatus.eraseToAnyPublisher()
+    var altitude: Float {
+        calibrationAltitude.value ?? 0
     }
 
+    var calibrationPercentagePublisher: AnyPublisher<Float?, Never> { calibrationPercentage.eraseToAnyPublisher() }
+
+    var calibrationStatusPublisher: AnyPublisher<OpthamoMissionCalibrationStatus?, Never> {
+        calibrationStatus.eraseToAnyPublisher()
+    }
+    var isFlyingValue: Bool {
+        return isFlying.value
+    }
+    var ophtalmoMissionState: MissionState? { return ophtalmoMissionStateCurrentValue.value}
+
+    var ophtalmoMissionStatePublisher: AnyPublisher<MissionState?, Never> {
+        ophtalmoMissionStateCurrentValue.eraseToAnyPublisher()
+    }
     var calibrationEndedPublisher: AnyPublisher<CalibrationEndedState?, Never> { calibrationEnded.eraseToAnyPublisher() }
-    var calibrationStepPublisher: AnyPublisher<Parrot_Missions_Ophtalmo_Airsdk_Messages_CalibrationStep, Never> {
+    var calibrationStepPublisher: AnyPublisher<OpthamoMissionCalibrationStep, Never> {
         calibrationStep.eraseToAnyPublisher()
     }
     var isFlyingPublisher: AnyPublisher<Bool, Never> { isFlying.eraseToAnyPublisher() }
-    var isLandedPublisher: AnyPublisher<Bool, Never> { isLanded.eraseToAnyPublisher() }
     var gpsStrengthPublisher: AnyPublisher<GpsStrength, Never> { gpsStrength.eraseToAnyPublisher() }
+    var errorAlertPublisher: AnyPublisher<OphtalmoError?, Never> { errorAlert.eraseToAnyPublisher() }
+    var endLandingPublisher: AnyPublisher<Bool, Never> { endLanding.eraseToAnyPublisher() }
 
     func listenMission() {
-        listener = protobufMissionsListener.register(
+        listener = airsdkMissionsListener.register(
             for: signature,
             missionCallback: { [weak self] (state, message, _) in
                 if let message = message {
                     do {
-                        let event = try Parrot_Missions_Ophtalmo_Airsdk_Messages_Event(serializedData: message.payload)
-                        self?.calibrationStatus.value = event.state.calibrationStatus
+                        let event = try MissionEvent(serializedData: message.payload)
+                        self?.calibrationAltitude.value = event.state.config.altitude
                         self?.calibrationPercentage.value = Float(event.state.completionPercent)
                         self?.calibrationStep.value = event.state.calibrationStep
+                        self?.calibrationStatus.value = event.state.calibrationStatus
                     } catch {
                         // Nothing to do.
                     }
@@ -178,29 +247,27 @@ extension OphtalmoServiceImpl: OphtalmoService {
     }
 
     func unregisterListener() {
-        protobufMissionsListener.unregister(listener)
+        airsdkMissionsListener.unregister(listener)
     }
 
     func startMission() {
-        protobufMissionManager.activate(mission: signature)
+        airSdkMissionManager.activate(mission: signature)
     }
 
-    func endMission() {
-        protobufMissionManager.deactivate(mission: signature)
-    }
+    func endMission() {}
 
     func startCalibration(altitude: Float) {
-        var config = Parrot_Missions_Ophtalmo_Airsdk_Messages_Config()
+        var config = OpthamoMissionConfig()
         config.altitude = altitude
-        var startCommand = Parrot_Missions_Ophtalmo_Airsdk_Messages_Command()
+        var startCommand = MissionCommand()
         startCommand.id = .start(config)
 
         send(command: startCommand)
     }
 
     func cancelCalibration() {
-        var abortCommand = Parrot_Missions_Ophtalmo_Airsdk_Messages_Command()
-        abortCommand.id = .abort(Google_Protobuf_Empty())
+        var abortCommand = MissionCommand()
+        abortCommand.id = .abort(MissionEmptyMessage())
 
         send(command: abortCommand)
     }
@@ -210,5 +277,13 @@ extension OphtalmoServiceImpl: OphtalmoService {
         calibrationStatus.value = nil
         calibrationEnded.value = nil
         calibrationStep.value = .idle
+    }
+
+    func updateErrorAlert(_ message: OphtalmoError?) {
+        errorAlert.value = message
+    }
+
+    func resetActiveMission() {
+        ophtalmoMissionStateCurrentValue.value = nil
     }
 }

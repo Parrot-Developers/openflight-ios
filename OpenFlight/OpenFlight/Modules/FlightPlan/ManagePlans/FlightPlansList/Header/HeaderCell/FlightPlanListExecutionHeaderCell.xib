@@ -1,53 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view userInteractionEnabled="NO" contentMode="scaleToFill" id="WCJ-xq-HUP" customClass="FlightPlanListExecutionHeaderCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="519" height="60"/>
+            <rect key="frame" x="0.0" y="0.0" width="519" height="161"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
-                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="sAA-L3-ofM">
-                    <rect key="frame" x="10" y="5" width="499" height="50"/>
+                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="sAA-L3-ofM" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="0.0" width="519" height="161"/>
                     <subviews>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vFZ-Ds-9hZ" userLabel="title">
-                            <rect key="frame" x="0.0" y="0.0" width="499" height="29.5"/>
-                            <constraints>
-                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="15" id="5pV-ro-u2s"/>
-                            </constraints>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vFZ-Ds-9hZ" userLabel="title">
+                            <rect key="frame" x="0.0" y="0.0" width="519" height="140.5"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Q44-ZX-Zob" userLabel="description">
-                            <rect key="frame" x="0.0" y="29.5" width="499" height="20.5"/>
+                            <rect key="frame" x="0.0" y="140.5" width="519" height="20.5"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
                         </label>
                     </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 </stackView>
             </subviews>
-            <viewLayoutGuide key="safeArea" id="fYN-yX-pdN"/>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
-                <constraint firstItem="sAA-L3-ofM" firstAttribute="top" secondItem="WCJ-xq-HUP" secondAttribute="top" constant="5" id="O1h-cx-iZr"/>
-                <constraint firstAttribute="trailing" secondItem="sAA-L3-ofM" secondAttribute="trailing" constant="10" id="WO2-Vb-JBa"/>
-                <constraint firstItem="sAA-L3-ofM" firstAttribute="leading" secondItem="WCJ-xq-HUP" secondAttribute="leading" constant="10" id="dKB-TD-Fcd"/>
-                <constraint firstAttribute="bottom" secondItem="sAA-L3-ofM" secondAttribute="bottom" constant="5" id="kpn-9d-yHs"/>
+                <constraint firstItem="sAA-L3-ofM" firstAttribute="leading" secondItem="WCJ-xq-HUP" secondAttribute="leading" id="7Ou-S8-yUf"/>
+                <constraint firstAttribute="trailing" secondItem="sAA-L3-ofM" secondAttribute="trailing" id="8Do-tG-hzs"/>
+                <constraint firstItem="sAA-L3-ofM" firstAttribute="top" secondItem="WCJ-xq-HUP" secondAttribute="top" id="TTq-hI-gne"/>
+                <constraint firstAttribute="bottom" secondItem="sAA-L3-ofM" secondAttribute="bottom" id="haK-7f-d0h"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <connections>
+                <outlet property="cellStackView" destination="sAA-L3-ofM" id="tym-Az-lqN"/>
                 <outlet property="subtitleLabel" destination="Q44-ZX-Zob" id="KLb-wv-syH"/>
                 <outlet property="titleLabel" destination="vFZ-Ds-9hZ" id="tl8-0B-vIR"/>
             </connections>
-            <point key="canvasLocation" x="45.652173913043484" y="-499.88839285714283"/>
+            <point key="canvasLocation" x="45.652173913043484" y="-534.04017857142856"/>
         </view>
     </objects>
 </document>

@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,8 +33,14 @@ extension MapViewController: AGSGeoViewTouchDelegate {
     open func geoView(_ geoView: AGSGeoView,
                       didTapAtScreenPoint screenPoint: CGPoint,
                       mapPoint: AGSPoint) {
-        // Filter out invalid screen touches returned by AGSGeoView.
-        guard !screenPoint.isOriginPoint else { return }
+        // ArgCIS has a big bug. It does not handle well a drag gesture that gets out of the bounds
+        // of the ArcGIS geo view (a cancelled touch event). This causes this callback to be called
+        // with a 'nil'/unitialized mapPoint. AGSPoint being a objc object it can be nil and anyway
+        // be branched in Swift as a non-nil object.
+        // The workaround consist of declaring a local optional variable and then testing it for
+        // nullity.
+        let potentiallyNullMapPoint: AGSPoint? = mapPoint
+        guard !screenPoint.isOriginPoint, potentiallyNullMapPoint != nil else { return }
 
         switch currentMapMode {
         case .flightPlanEdition:
@@ -49,8 +55,14 @@ extension MapViewController: AGSGeoViewTouchDelegate {
     }
 
     open func geoView(_ geoView: AGSGeoView, didLongPressAtScreenPoint screenPoint: CGPoint, mapPoint: AGSPoint) {
-        // Filter out invalid screen touches returned by AGSGeoView.
-        guard !screenPoint.isOriginPoint else { return }
+        // ArgCIS has a big bug. It does not handle well a drag gesture that gets out of the bounds
+        // of the ArcGIS geo view (a cancelled touch event). This causes this callback to be called
+        // with a 'nil'/unitialized mapPoint. AGSPoint being a objc object it can be nil and anyway
+        // be branched in Swift as a non-nil object.
+        // The workaround consist of declaring a local optional variable and then testing it for
+        // nullity.
+        let potentiallyNullMapPoint: AGSPoint? = mapPoint
+        guard !screenPoint.isOriginPoint, potentiallyNullMapPoint != nil else { return }
 
         switch currentMapMode {
         case .flightPlanEdition:
@@ -68,8 +80,14 @@ extension MapViewController: AGSGeoViewTouchDelegate {
                       didTouchDownAtScreenPoint screenPoint: CGPoint,
                       mapPoint: AGSPoint,
                       completion: @escaping (Bool) -> Void) {
-        // Filter out invalid screen touches returned by AGSGeoView.
-        guard !screenPoint.isOriginPoint else { return }
+        // ArgCIS has a big bug. It does not handle well a drag gesture that gets out of the bounds
+        // of the ArcGIS geo view (a cancelled touch event). This causes this callback to be called
+        // with a 'nil'/unitialized mapPoint. AGSPoint being a objc object it can be nil and anyway
+        // be branched in Swift as a non-nil object.
+        // The workaround consist of declaring a local optional variable and then testing it for
+        // nullity.
+        let potentiallyNullMapPoint: AGSPoint? = mapPoint
+        guard !screenPoint.isOriginPoint, potentiallyNullMapPoint != nil else { return }
 
         viewModel.disableAutoCenter(true)
         switch currentMapMode {
@@ -88,8 +106,15 @@ extension MapViewController: AGSGeoViewTouchDelegate {
     }
 
     open func geoView(_ geoView: AGSGeoView, didTouchDragToScreenPoint screenPoint: CGPoint, mapPoint: AGSPoint) {
-        // Filter out invalid screen touches returned by AGSGeoView.
-        guard !screenPoint.isOriginPoint else { return }
+        // ArgCIS has a big bug. It does not handle well a drag gesture that gets out of the bounds
+        // of the ArcGIS geo view (a cancelled touch event). This causes this callback to be called
+        // with a 'nil'/unitialized mapPoint. AGSPoint being a objc object it can be nil and anyway
+        // be branched in Swift as a non-nil object.
+        // The workaround consist of declaring a local optional variable and then testing it for
+        // nullity.
+        let potentiallyNullMapPoint: AGSPoint? = mapPoint
+        guard !screenPoint.isOriginPoint, potentiallyNullMapPoint != nil else { return }
+
         switch currentMapMode {
         case .flightPlanEdition:
             flightPlanHandleTouchDrag(geoView, didTouchDragToScreenPoint: screenPoint, mapPoint: mapPoint)
@@ -101,8 +126,15 @@ extension MapViewController: AGSGeoViewTouchDelegate {
     }
 
     open func geoView(_ geoView: AGSGeoView, didTouchUpAtScreenPoint screenPoint: CGPoint, mapPoint: AGSPoint) {
-        // Filter out invalid screen touches returned by AGSGeoView.
-        guard !screenPoint.isOriginPoint else { return }
+        // ArgCIS has a big bug. It does not handle well a drag gesture that gets out of the bounds
+        // of the ArcGIS geo view (a cancelled touch event). This causes this callback to be called
+        // with a 'nil'/unitialized mapPoint. AGSPoint being a objc object it can be nil and anyway
+        // be branched in Swift as a non-nil object.
+        // The workaround consist of declaring a local optional variable and then testing it for
+        // nullity.
+        let potentiallyNullMapPoint: AGSPoint? = mapPoint
+        guard !screenPoint.isOriginPoint, potentiallyNullMapPoint != nil else { return }
+
         switch currentMapMode {
         case .flightPlanEdition:
             flightPlanHandleTouchUp(geoView, didTouchUpAtScreenPoint: screenPoint, mapPoint: mapPoint)

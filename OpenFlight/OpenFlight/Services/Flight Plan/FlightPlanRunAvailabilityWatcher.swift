@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,16 +31,36 @@ import Foundation
 import Combine
 import GroundSdk
 
-public enum FlightPlanStartUnavailableReason: Equatable {
+public enum FlightPlanStartUnavailableReason: Equatable, CustomStringConvertible {
     case pilotingItfUnavailable(Set<FlightPlanUnavailabilityReason>)
     case droneDisconnected
+
+    public var description: String {
+        switch self {
+        case .droneDisconnected:
+            return ".droneDisconnected"
+        case .pilotingItfUnavailable(let reasons):
+            return ".pilotingItfUnavailable(\(reasons))"
+        }
+    }
 }
 
 /// The availability of the drone to **send the Mavlink** in order to run a flight plan
-public enum FlightPlanStartAvailability: Equatable {
+public enum FlightPlanStartAvailability: Equatable, CustomStringConvertible {
     case available
     case unavailable(FlightPlanStartUnavailableReason)
     case alreadyRunning
+
+    public var description: String {
+        switch self {
+        case .available:
+            return ".available"
+        case .alreadyRunning:
+            return ".alreadyRunning"
+        case .unavailable(let reason):
+            return ".unavailable(\(reason.description))"
+        }
+    }
 }
 
 public protocol FlightPlanStartAvailabilityWatcher {
@@ -63,30 +82,35 @@ public class FlightPlanStartAvailabilityWatcherImpl {
     private var deviceStateRef: Ref<DeviceState>?
 
     init(currentDroneHolder: CurrentDroneHolder) {
-        currentDroneHolder.dronePublisher.sink { [unowned self] in
-            itfRef = $0.getPilotingItf(PilotingItfs.flightPlan) { [unowned self] in
+        currentDroneHolder.dronePublisher.sink { [unowned self] drone in
+            itfRef = drone.getPilotingItf(PilotingItfs.flightPlan) { [unowned self] in
+                let oldValue = droneConnected
                 guard let itf = $0 else {
                     droneConnected = false
-                    publishNewState()
+                    unavailabilityReasons = []
+                    if oldValue != droneConnected {
+                        publishNewState()
+                    }
                     return
                 }
-                pilotingItfState = itf.state
-                unavailabilityReasons = itf.unavailabilityReasons
-                publishNewState()
+                if pilotingItfState != itf.state || unavailabilityReasons != itf.unavailabilityReasons {
+                    pilotingItfState = itf.state
+                    unavailabilityReasons = itf.unavailabilityReasons
+                    publishNewState()
+                }
             }
-            deviceStateRef = $0.getState { [unowned self] in
-                guard let state = $0 else {
+            deviceStateRef = drone.getState { [unowned self] state in
+                let oldValue = droneConnected
+                switch state?.connectionState {
+                case .none, .disconnected, .connecting, .disconnecting:
                     droneConnected = false
-                    publishNewState()
-                    return
-                }
-                switch state.connectionState {
-                case .disconnected, .connecting, .disconnecting:
-                    droneConnected = false
+                    unavailabilityReasons = []
                 case .connected:
                     droneConnected = true
                 }
-                publishNewState()
+                if oldValue != droneConnected {
+                    publishNewState()
+                }
             }
         }
         .store(in: &cancellables)

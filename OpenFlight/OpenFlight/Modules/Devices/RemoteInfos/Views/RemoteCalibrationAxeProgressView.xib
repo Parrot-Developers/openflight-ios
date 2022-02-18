@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -21,18 +20,18 @@
             </connections>
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <view contentMode="scaleToFill" id="kYT-D2-4gw">
+        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="kYT-D2-4gw">
             <rect key="frame" x="0.0" y="0.0" width="375" height="105"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="Cnh-0I-f4C">
-                    <rect key="frame" x="8" y="0.0" width="359" height="105"/>
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="105"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9gU-wB-Eds">
-                            <rect key="frame" x="0.0" y="0.0" width="359" height="52.5"/>
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="52.5"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UcL-X2-gEp">
-                                    <rect key="frame" x="161" y="17.5" width="37" height="17.5"/>
+                                    <rect key="frame" x="169" y="17.5" width="37" height="17.5"/>
                                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                     <color key="textColor" name="default_text_color"/>
                                     <nil key="highlightedColor"/>
@@ -45,10 +44,10 @@
                             </constraints>
                         </view>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="de3-Bi-pce">
-                            <rect key="frame" x="0.0" y="52.5" width="359" height="52.5"/>
+                            <rect key="frame" x="0.0" y="52.5" width="375" height="52.5"/>
                             <subviews>
                                 <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Mf2-VX-yzH">
-                                    <rect key="frame" x="0.0" y="0.0" width="359" height="21"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="21"/>
                                     <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="progressTintColor" name="highlight_color"/>
                                     <color key="trackTintColor" name="white_albescent"/>
@@ -65,13 +64,12 @@
                     </subviews>
                 </stackView>
             </subviews>
-            <viewLayoutGuide key="safeArea" id="NUE-zA-NT2"/>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
                 <constraint firstAttribute="bottom" secondItem="Cnh-0I-f4C" secondAttribute="bottom" id="HyJ-pc-5b7"/>
-                <constraint firstAttribute="trailing" secondItem="Cnh-0I-f4C" secondAttribute="trailing" constant="8" id="ILj-gY-Sgo"/>
+                <constraint firstAttribute="trailing" secondItem="Cnh-0I-f4C" secondAttribute="trailing" id="ILj-gY-Sgo"/>
                 <constraint firstItem="Cnh-0I-f4C" firstAttribute="top" secondItem="kYT-D2-4gw" secondAttribute="top" id="VY7-a6-RUq"/>
-                <constraint firstItem="Cnh-0I-f4C" firstAttribute="leading" secondItem="kYT-D2-4gw" secondAttribute="leading" constant="8" id="gD4-zW-JWL"/>
+                <constraint firstItem="Cnh-0I-f4C" firstAttribute="leading" secondItem="kYT-D2-4gw" secondAttribute="leading" id="gD4-zW-JWL"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <point key="canvasLocation" x="34.5" y="-227.5"/>
@@ -79,7 +77,7 @@
     </objects>
     <resources>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>

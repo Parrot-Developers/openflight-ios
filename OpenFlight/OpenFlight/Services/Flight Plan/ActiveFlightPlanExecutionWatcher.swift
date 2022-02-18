@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -71,8 +70,6 @@ public protocol ActiveFlightPlanExecutionWatcher: AnyObject {
 
 /// Implementation for ActiveFlightPlanExecutionWatcher
 public class ActiveFlightPlanExecutionWatcherImpl {
-    /// Combine cancellables
-    private var cancellables = Set<AnyCancellable>()
     /// Flight plan repository
     private unowned var flightPlanRepository: FlightPlanRepository
     /// Subject holding active flight plan's id if any
@@ -94,7 +91,7 @@ public class ActiveFlightPlanExecutionWatcherImpl {
 // MARK: ULogTag
 private extension ULogTag {
     /// Tag for this file
-    static let tag = ULogTag(name: "ActiveFlightPlanWatcher")
+    static let tag = ULogTag(name: "FPActiveFlightPlanWatcher")
 }
 
 // MARK: Private functions
@@ -104,7 +101,7 @@ private extension ActiveFlightPlanExecutionWatcherImpl {
     /// - Parameter uuid: the flight plan's uuid
     /// - Returns: the matching flight plan if any
     func flightPlanFor(uuid: String) -> FlightPlanModel? {
-        if let flightPlan = flightPlanRepository.loadFlightPlans("uuid", uuid).first {
+        if let flightPlan = flightPlanRepository.getFlightPlan(withUuid: uuid) {
             return flightPlan
         }
         return nil
@@ -165,23 +162,23 @@ extension ActiveFlightPlanExecutionWatcherImpl: ActiveFlightPlanExecutionWatcher
     }
 
     public func flightPlanWillBeActivated(_ flightPlan: FlightPlanModel) {
-        ULog.i(.tag, "Flight plan will be activated. Uuid: \(flightPlan.uuid)")
+        ULog.i(.tag, "Flight plan will be activated '\(flightPlan.uuid)'")
         activatingFlightPlanUuidSubject.value = flightPlan.uuid
     }
 
     public func flightPlanActivationFailed(_ flightPlan: FlightPlanModel) {
-        ULog.i(.tag, "Flight plan activation failed. Uuid: \(flightPlan.uuid)")
+        ULog.i(.tag, "Flight plan activation failed '\(flightPlan.uuid)'")
         activatingFlightPlanUuidSubject.value = nil
     }
 
     public func flightPlanActivationSucceeded(_ flightPlan: FlightPlanModel) {
-        ULog.i(.tag, "Flight plan is active. Uuid: \(flightPlan.uuid)")
+        ULog.i(.tag, "Flight plan is active '\(flightPlan.uuid)'")
         activeFlightPlanUuidSubject.value = flightPlan.uuid
         activatingFlightPlanUuidSubject.value = nil
     }
 
     public func flightPlanDidStop(_ flightPlan: FlightPlanModel) {
-        ULog.i(.tag, "Flight plan did finish. Uuid: \(flightPlan.uuid)")
+        ULog.i(.tag, "Flight plan did finish '\(flightPlan.uuid)'")
         activeFlightPlanUuidSubject.value = nil
     }
 }

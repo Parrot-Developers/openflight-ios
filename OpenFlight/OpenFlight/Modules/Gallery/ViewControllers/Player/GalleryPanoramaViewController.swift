@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -133,10 +132,6 @@ final class GalleryPanoramaViewController: UIViewController {
         panoramaView.touchUp()
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
     }
@@ -189,7 +184,7 @@ private extension GalleryPanoramaViewController {
         motionManager?.startDeviceMotionUpdates(using: .xMagneticNorthZVertical)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(addDisplayLink),
-                                               name: UIApplication.willEnterForegroundNotification,
+                                               name: UIApplication.didBecomeActiveNotification,
                                                object: nil)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(removeDisplayLink),

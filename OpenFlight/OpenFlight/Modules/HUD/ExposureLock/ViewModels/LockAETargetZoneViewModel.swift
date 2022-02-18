@@ -1,4 +1,4 @@
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -42,7 +42,7 @@ final class LockAETargetZoneViewModel {
     var lockRegionPublisher: AnyPublisher<ExposureLockRegion?, Never> {
         exposureLockService.lockRegionPublisher
     }
-    /// Current exposure lock state value..
+    /// Current exposure lock state value.
     var stateValue: ExposureLockState {
         exposureLockService.stateValue
     }
@@ -52,9 +52,7 @@ final class LockAETargetZoneViewModel {
     }
     /// Whether tap events must be ignored.
     var tapEventsIgnored: Bool {
-        return exposureLockService.stateValue == .unavailable
-            || exposureLockService.stateValue.locking
-            || manualMode
+        !lockOnRegionAvailable || exposureLockService.stateValue.locking
     }
 
     // MARK: - Private Properties
@@ -64,17 +62,32 @@ final class LockAETargetZoneViewModel {
     private unowned var exposureService: ExposureService
     /// Camera exposure lock service.
     private unowned var exposureLockService: ExposureLockService
+    /// Panorama service.
+    private unowned var panoramaService: PanoramaService
     /// Whether exposure mode is manual.
     private var manualMode = false
+    /// Whether lock on region is available.
+    ///
+    /// Lock on region is available when exposure lock is not unvailable and
+    /// exposure is not in manual mode and no panorama is ongoing.
+    private var lockOnRegionAvailable: Bool {
+        exposureLockService.stateValue != .unavailable
+        && !manualMode
+        && !panoramaService.panoramaOngoing
+    }
 
     /// Constructor.
     ///
     /// - Parameters:
     ///   - exposureService: exposure service
     ///   - exposureLockService: exposure lock service
-    init(exposureService: ExposureService, exposureLockService: ExposureLockService) {
+    ///   - panoramaService: panorama mode service
+    init(exposureService: ExposureService,
+         exposureLockService: ExposureLockService,
+         panoramaService: PanoramaService) {
         self.exposureService = exposureService
         self.exposureLockService = exposureLockService
+        self.panoramaService = panoramaService
 
         exposureService.modePublisher
             .sink { [unowned self] mode in
@@ -83,17 +96,13 @@ final class LockAETargetZoneViewModel {
             .store(in: &cancellables)
     }
 
-    /// Unlocks exposure.
-    func unlock() {
-        exposureLockService.unlock()
-    }
-
     /// Locks exposure on region according to selection values in stream screen.
     ///
     /// - Parameters:
     ///   - centerX: horizontal position in the video (relative position, from left (0.0) to right (1.0))
     ///   - centerY: vertical position in the video (relative position, from bottom (0.0) to top (1.0))
     func lockOnRegion(centerX: Double, centerY: Double) {
+        guard lockOnRegionAvailable else { return }
         exposureLockService.lockOnRegion(centerX: centerX, centerY: centerY)
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -121,6 +120,7 @@ private extension RecordingTimeViewModel {
                  .stopping(reason: .errorInternal, savedMediaId: nil):
                 self?.stopRecordingTimeTimer()
                 copy?.recordingTime = nil
+                copy?.remainingRecordTime = nil
             default:
                 break
             }
@@ -149,17 +149,22 @@ private extension RecordingTimeViewModel {
             return
         }
 
-        let copy = self.state.value.copy()
+        let copy = state.value.copy()
 
         switch camera.recording?.state {
-        case .started(let startTime, let bitrate, _):
+        case .started(let startTime, let bitrate, let mediaStorage):
             copy.recordingTime = camera.recording?.state.getDuration(startTime: startTime)
-            copy.remainingRecordTime = StorageUtils.remainingTime(availableSpace: drone.availableStorageSpace,
-                                                                  bitrate: Int64(bitrate))
+            if let mediaStorage = mediaStorage {
+                let availableStorageSpace = drone.availableStorageSpace(mediaStorage: mediaStorage)
+                copy.remainingRecordTime = StorageUtils.remainingTime(availableSpace: availableStorageSpace,
+                                                                      bitrate: Int64(bitrate))
+            } else {
+                copy.remainingRecordTime = nil
+            }
         default:
             break
         }
 
-        self.state.set(copy)
+        state.set(copy)
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,10 +30,18 @@
 import UIKit
 import Reusable
 
+// MARK: - Protocols
+protocol DashboardLogoCellDelegate: AnyObject {
+    /// Dismisses the dashboard when we touch the fly button.
+    func startLayoutGridManagerScreen()
+}
+
 /// Custom View used for the header of the Dashboard.
 final class DashboardLogoCell: UICollectionViewCell, NibReusable {
 
     @IBOutlet private weak var logoImageView: UIImageView!
+    // MARK: - Internal Properties
+    weak var delegate: DashboardLogoCellDelegate?
 
     var logoImage: UIImage = Asset.Logo.icLogoParrotApp.image {
         didSet {
@@ -45,5 +52,15 @@ final class DashboardLogoCell: UICollectionViewCell, NibReusable {
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
+
+        if AppUtils.isLayoutGridAuthorized {
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showLayoutGridManagerScreen))
+            tapGesture.numberOfTapsRequired = 3
+            addGestureRecognizer(tapGesture)
+        }
+    }
+
+    @objc func showLayoutGridManagerScreen() {
+        delegate?.startLayoutGridManagerScreen()
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -34,56 +33,69 @@ import SwiftyUserDefaults
 /// Class which provides log methods.
 public class LogEvent {
     // MARK: - Public Enums
-    /// Enumerates all logs type in the app.
-    public enum LogType {
-        case button
-        case screen
-        case simpleButton
+    /// Enumerates all log events types.
+    public enum Event {
+        /// Button press event with only name and no value.
+        case simpleButton(_ itemName: String)
+        /// Button press event with name and value.
+        case button(item: String, value: String)
+        /// A screen open event.
+        case screen(_ screenName: String)
+        /// App lifecycle event.
+        case lifecycle(_ event: String, info: [String: String]? = nil)
+        /// 3rd party integrations event.
+        case thirdParty(event: String, party: String, info: [String: String]? = nil)
 
         /// Log name according to event type.
-        var logName: String {
+        var name: String {
             switch self {
             case .button, .simpleButton:
                 return "BUTTON"
             case .screen:
                 return "SCREEN"
+            case .lifecycle:
+                return "LIFECYCLE"
+            case .thirdParty:
+                return "3RD_PARTY"
             }
         }
     }
 
-    /// Log info when user do actions on an item or displays a new screen.
+    /// Log event when user do actions on an item or displays a new screen.
     ///
     /// - Parameters:
-    ///     - screen: name of the screen to log
-    ///     - itemName: name of the item taped to log
-    ///     - newValue: item new value to log
-    ///     - logType: Determines type of log
-    public static func logAppEvent(screen: String? = nil,
-                                   itemName: String? = nil,
-                                   newValue: String? = nil,
-                                   logType: LogType) {
+    ///     - event: Determines type of event to be logged.
+    public static func log(_ event: Event) {
         let gsdk: GroundSdk = GroundSdk()
         let peripheral = gsdk.getFacility(Facilities.eventLogger)
-        var message: String = ""
+        let message: String
 
-        switch logType {
-        case .screen:
-            guard let screenString = screen else { return }
-
-            message = "EVT:\(logType.logName);name='\(screenString)'"
-        case .simpleButton:
-            guard let itemNameString = itemName else { return }
-
-            message = "EVT:\(logType.logName);name='\(itemNameString)'"
-        default:
-            guard let itemNameString = itemName,
-                  let newValueString = newValue else {
-                return
-            }
-
-            message = "EVT:\(logType.logName);name='\(itemNameString)';value='\(newValueString)'"
+        switch event {
+        case .screen(let screen):
+            message = "EVT:\(event.name);name='\(screen)'"
+        case .simpleButton(let item):
+            message = "EVT:\(event.name);name='\(item)'"
+        case let .lifecycle(lifecycleEvent, info):
+            message = "EVT:\(event.name);event='\(lifecycleEvent)'" + formatInfo(info)
+        case let .button(item, value):
+            message = "EVT:\(event.name);name='\(item)';value='\(value)'"
+        case let .thirdParty(event: kind, party: party, info: info):
+            message = "EVT:\(event.name);name='\(kind)';value='\(party)'" + formatInfo(info)
         }
         peripheral?.log(message.trimmingCharacters(in: .whitespaces))
+    }
+
+    /// Formats optional info values.
+    ///
+    /// - Parameter info: values to format
+    private static func formatInfo(_ info: [String: String]?) -> String {
+        if let info = info {
+            return info
+                .map { tuple in ";\(tuple.key)='\(tuple.value)'" }
+                .joined()
+        } else {
+            return ""
+        }
     }
 
     /// Get new value of setting for logs according to setting type.

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -44,7 +43,7 @@ final class SettingsRthActionView: UIView {
     // MARK: - Private Enums
     private enum Constants {
         static let homeHeightRatio: CGFloat = 1.3
-        static let pointImageAreaRatio: CGFloat = 2.0
+        static let pointImageAreaRatio: CGFloat = 4.0
         static let margin: CGFloat = 8.0
         static let arrowLength: CGFloat = 5.0
         static let dashedLineWidth: CGFloat = 1.0
@@ -58,6 +57,7 @@ final class SettingsRthActionView: UIView {
     private var pointerHalfWidth: CGFloat = 0.0
     private var minHeight: CGFloat = 0.0
     private var viewModel: SettingsRthActionViewModel = SettingsRthActionViewModel()
+    private var initialCenter: CGPoint = .zero
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
@@ -113,7 +113,7 @@ final class SettingsRthActionView: UIView {
 
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         let pointImageArea = CGRect(center: pointImage.center,
-                                    width: Constants.pointImageAreaRatio * pointImage.frame.width,
+                                    width: droneImage.center.x - homeImage.center.x,
                                     height: Constants.pointImageAreaRatio * pointImage.frame.height)
 
         guard pointImageArea.contains(point) else {
@@ -124,13 +124,13 @@ final class SettingsRthActionView: UIView {
     }
 
     // MARK: - Internal Funcs
-    /// Updates pointer view.
-    func updatePointerView() {
+    /// Updates view.
+    func updateView() {
         // Convert meters in points.
         let altitudePercent = SettingsGridView.reverseExponentialLike(value: viewModel.state.value.altitude,
                                                                       max: viewModel.state.value.maxAltitude,
                                                                       min: viewModel.state.value.minAltitude)
-        let deltaHeight = Double(self.bounds.height - minHeight)
+        let deltaHeight = Double(bounds.height - minHeight)
         let posY = deltaHeight - ((altitudePercent / Values.oneHundred) * deltaHeight)
         // Update display.
         updatePointerLocation(CGPoint(x: 0.0, y: posY))
@@ -146,41 +146,47 @@ private extension SettingsRthActionView {
 
         // Init recognizers.
         let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
-        self.addGestureRecognizer(panRecognizer)
+        addGestureRecognizer(panRecognizer)
     }
 
     /// Listens the view model.
     func listenViewModel() {
         viewModel.state.valueChanged = { [weak self] _ in
-            self?.updatePointerView()
+            self?.updateView()
         }
+        updateView()
+        showViews()
     }
 
     /// Handle pan gesture.
     @objc func handlePan(recognizer: UIPanGestureRecognizer) {
         var shouldSaveValue: Bool = false
         var location = recognizer.location(in: self)
-
-        // Prevent from out of limits location.
-        if recognizer.state != UIGestureRecognizer.State.began {
+        let translation = recognizer.translation(in: self)
+        switch recognizer.state {
+        case .began:
+            initialCenter = pointImage.center
+        case .ended:
+            // Position is saved only when the gesture ends.
+            shouldSaveValue = true
+            fallthrough
+        case .changed:
+            location = CGPoint(x: location.x, y: initialCenter.y + translation.y)
+            // Prevent from out of limits location.
             // Bottom.
-            if location.y > self.bounds.height - minHeight {
-                location = CGPoint(x: location.x, y: self.bounds.height - minHeight)
+            if location.y > bounds.height - minHeight {
+                location = CGPoint(x: location.x, y: bounds.height - minHeight)
             }
             // Top.
             if location.y < 0.0 {
                 location = CGPoint(x: location.x, y: 0.0)
             }
+            // Set new location to image.
+            updatePointerLocation(location,
+                                  shouldSaveValue: shouldSaveValue)
+        default:
+            break
         }
-
-        if recognizer.state == UIGestureRecognizer.State.ended {
-            // Position is saved only when the gesture ends.
-            shouldSaveValue = true
-        }
-
-        // Set new location to image.
-        updatePointerLocation(location,
-                              shouldSaveValue: shouldSaveValue)
     }
 
     /// Update new location to drone image.
@@ -190,8 +196,8 @@ private extension SettingsRthActionView {
     ///    - shouldSaveValue: used know if this new location should be saved
     func updatePointerLocation(_ location: CGPoint,
                                shouldSaveValue: Bool = false) {
-        let revertPosition = self.bounds.height - location.y
-        let gridXCenter = homeImage.center.x + (droneImage.center.x - homeImage.center.x) / 2
+        let revertPosition = bounds.height - location.y
+        let gridXCenter = (droneImage.center.x + homeImage.center.x) / 2
 
         // Set position view position.
         positionView.frame = CGRect(x: homeImage.center.x,
@@ -205,7 +211,7 @@ private extension SettingsRthActionView {
                                 height: revertPosition - pointerHalfWidth)
 
         // Set Label position and value.
-        let deltaHeight = Double(self.bounds.height - minHeight)
+        let deltaHeight = Double(bounds.height - minHeight)
         let altitudePercent: Double = Double(revertPosition - minHeight) / (deltaHeight / Values.oneHundred)
         let altitude = SettingsGridView.computeExponentialLike(value: altitudePercent,
                                                                max: viewModel.state.value.maxAltitude,
@@ -226,10 +232,18 @@ private extension SettingsRthActionView {
             viewModel.saveRth(altitude: altitude)
         }
     }
+
+    /// Show all views
+    func showViews() {
+        positionView.isHidden = false
+        lineView.isHidden = false
+        infoLabel.isHidden = false
+        pointImage.isHidden = false
+    }
 }
 
 /// Settings return to home cell.
-final class SettingsRthCell: UITableViewCell, NibReusable {
+final class SettingsRthCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var gridViewHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var gridView: SettingsGridView!
@@ -249,6 +263,5 @@ final class SettingsRthCell: UITableViewCell, NibReusable {
     ///     - maxGridHeight: Maxium height for grid
     func configureCell(maxGridHeight: CGFloat) {
         gridViewHeightConstraint.constant = maxGridHeight
-        actionView.updatePointerView()
     }
 }

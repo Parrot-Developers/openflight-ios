@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,7 +31,7 @@ import UIKit
 import Reusable
 
 /// Cell which displays a centered ruler.
-public class CenteredRulerTableViewCell: UITableViewCell, NibReusable, EditionSettingsCellModel {
+public class CenteredRulerTableViewCell: SidePanelSettingTableViewCell, NibReusable, EditionSettingsCellModel {
     // MARK: - Outlets
     @IBOutlet private(set) weak var titleLabel: UILabel!
     @IBOutlet private(set) weak var settingValueRulerViewContainer: UIView!
@@ -53,7 +52,9 @@ public class CenteredRulerTableViewCell: UITableViewCell, NibReusable, EditionSe
 
     public override func prepareForReuse() {
         super.prepareForReuse()
-        resetView()
+        titleLabel.text = nil
+        settingValueRulerViewContainer.removeSubViews()
+        initView()
     }
 
     // MARK: - Internal Funcs
@@ -69,16 +70,12 @@ public class CenteredRulerTableViewCell: UITableViewCell, NibReusable, EditionSe
 
     /// Inits the view.
     public func initView() {
+        cellSettingType = .slider
         titleLabel.makeUp(with: .small, and: .defaultTextColor)
         let ruler = SettingValueRulerView(orientation: .horizontal)
         ruler.delegate = self
         centeredRulerBarView = ruler
         settingValueRulerViewContainer.addWithConstraints(subview: ruler)
-    }
-
-    /// Resets view.
-    public func resetView() {
-        titleLabel.text = nil
     }
 
     /// Set ruler bar model displaying custom values.

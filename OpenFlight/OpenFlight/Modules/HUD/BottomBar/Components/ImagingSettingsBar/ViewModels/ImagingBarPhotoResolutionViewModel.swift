@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -65,19 +64,16 @@ final class ImagingBarPhotoResolutionViewModel: BarButtonViewModel<ImagingBarSta
 private extension ImagingBarPhotoResolutionViewModel {
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
-            guard let camera = camera,
-                let copy = self?.state.value.copy(),
-                let availableResolutions = self?.availableResolutions else {
-                    return
-            }
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
+            guard let camera = camera else { return }
 
+            let copy = state.value.copy()
             copy.mode = camera.config[Camera2Params.photoResolution]?.value
             copy.supportedModes = camera.config[Camera2Params.photoResolution]?.overallSupportedValues
                 // Several resolution values must be ignored.
                 .intersection(availableResolutions)
                 .sorted()
-            self?.state.set(copy)
+            state.set(copy)
         }
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -62,6 +61,11 @@ final class FlightsViewController: UIViewController {
         tableView.delegate = self
         tableView.estimatedRowHeight = 200.0
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.contentInset = UIEdgeInsets(top: Layout.mainSpacing(isRegularSizeClass),
+                                              left: 0,
+                                              bottom: 0,
+                                              right: 0)
+        tableView.insetsContentViewsToSafeArea = false
         tableView.register(cellType: FlightTableViewCell.self)
         emptyFlightsTitleLabel.text = L10n.dashboardMyFlightsEmptyListTitle
         emptyFlightsDecriptionLabel.text = L10n.dashboardMyFlightsEmptyListDesc
@@ -76,10 +80,6 @@ final class FlightsViewController: UIViewController {
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     /// Update display when orientation changed.
@@ -97,6 +97,19 @@ final class FlightsViewController: UIViewController {
 
     override var prefersStatusBarHidden: Bool {
         return true
+    }
+
+    func selectFlight(_ flight: FlightModel) {
+        viewModel.didSelectFlight(flight)
+    }
+
+    func scrollToSelectedFlight(animated: Bool = false) {
+        if let selectedFlight = viewModel.selectedFlight,
+           let index = flightItems.firstIndex(where: { $0.uuid == selectedFlight.uuid }) {
+            tableView.scrollToRow(at: IndexPath(row: index, section: 0),
+                                  at: .middle,
+                                  animated: animated)
+        }
     }
 }
 

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -107,7 +106,7 @@ private struct Constants {
         photoDynamicRange: .hdr8,
         photoFileFormat: .jpeg,
         photoFormat: .rectilinear,
-        photoGpslapseInterval: GpsLapseMode.preset.value.map { Double($0) } ?? 10,
+        photoGpslapseInterval: GpsLapseMode.preset.interval,
         photoMode: .single,
         photoResolution: Camera2PhotoResolution.defaultResolution,
         photoStreamingMode: .continuous,
@@ -201,9 +200,18 @@ public extension Camera2Editor {
             autoComplete()
         }
 
-        if !commit() {
+        // notify camera configuration watcher that the configuration will be applied
+        let cameraConfigWatcher = Services.hub.drone.cameraConfigWatcher
+        cameraConfigWatcher.willApplyConfig(config: self)
+
+        // apply configuration changes
+        let success = commit()
+        if !success {
             ULog.e(.tag, "Failed to commit camera config")
         }
+
+        // notify camera configuration watcher that the configuration has been applied
+        cameraConfigWatcher.didApplyConfig(success: success)
     }
 }
 
@@ -464,7 +472,7 @@ private extension Camera2Editor {
 
         // best choice for gpslapse interval is default interval or lowest interval
         applyValueIfUndefined(Camera2Params.photoGpslapseInterval, config.photoGpslapseInterval)
-        let gpslapseValues = GpsLapseMode.allValues.compactMap { ($0 as? GpsLapseMode)?.value.map { Double($0) } }
+        let gpslapseValues = GpsLapseMode.allValues.compactMap { ($0 as? GpsLapseMode)?.interval }
         applyFirstValueIfUndefined(Camera2Params.photoGpslapseInterval, gpslapseValues)
 
         // best choice for timelapse interval is default interval or lowest interval

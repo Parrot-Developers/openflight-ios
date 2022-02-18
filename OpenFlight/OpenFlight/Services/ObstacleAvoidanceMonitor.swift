@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -103,7 +102,7 @@ public class ObstacleAvoidanceMonitorImpl {
                 return value
             }
 
-            return .standard
+            return .disabled
         }
         set {
             Defaults.preferredObstacleAvoidanceMode = newValue.rawValue

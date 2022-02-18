@@ -1,4 +1,4 @@
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -42,18 +42,63 @@ public protocol PanoramaService: AnyObject {
 
     /// Whether current camera capture mode is a panorama mode.
     var panoramaModeActiveValue: Bool { get set }
+
+    /// Whether a panorama is ongoing.
+    var panoramaOngoing: Bool { get }
+
+    /// Publisher for panorama alerts.
+    var alertsPublisher: AnyPublisher<[HUDAlertType], Never> { get }
+
+    /// Starts a panorama photo capture.
+    ///
+    /// - Parameters:
+    ///    - mode: panorama mode
+    func startPanorama(mode: PanoramaMode)
+
+    /// Stops ongoing panorama photo capture, if any.
+    func cancelPanorama()
 }
 
 /// Implementation of `PanoramaService`.
 public class PanoramaServiceImpl {
 
+    // MARK: - Private Enums
+    private enum Constants {
+        /// Panorama alerts reset delay in seconds.
+        static let alertsResetDelay = 3
+    }
+
     // MARK: Private properties
+    /// Current drone holder service.
+    private unowned let currentDroneHolder: CurrentDroneHolder
     /// Whether current camera capture mode is a panorama mode.
     private var panoramaModeActiveSubject = CurrentValueSubject<Bool, Never>(false)
+    /// Panorama alerts subject.
+    private var alertsSubject = PassthroughSubject<[HUDAlertType], Never>()
+    /// Alerts reset task.
+    private var alertsReset: AnyCancellable?
+    /// Reference to drone flying indicators instrument.
+    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
+
+    /// Constructor.
+    ///
+    /// - Parameter currentDroneHolder: current drone holder service
+    init(currentDroneHolder: CurrentDroneHolder) {
+        self.currentDroneHolder = currentDroneHolder
+
+        // listen to drone changes
+        listen(dronePublisher: currentDroneHolder.dronePublisher)
+    }
 }
 
 // MARK: PanoramaService protocol conformance
 extension PanoramaServiceImpl: PanoramaService {
+
+    public var alertsPublisher: AnyPublisher<[HUDAlertType], Never> {
+        alertsSubject.eraseToAnyPublisher()
+    }
 
     public var panoramaModeActivePublisher: AnyPublisher<Bool, Never> {
         panoramaModeActiveSubject.eraseToAnyPublisher()
@@ -67,6 +112,84 @@ extension PanoramaServiceImpl: PanoramaService {
             ULog.i(.tag, "Panorama mode active \(newValue)")
             Defaults.isPanoramaModeActivated = newValue
             panoramaModeActiveSubject.value = newValue
+        }
+    }
+
+    public var panoramaOngoing: Bool {
+        guard let animationItf = currentDroneHolder.drone.getPilotingItf(PilotingItfs.animation),
+              let animation = animationItf.animation else {
+                  return false
+              }
+        switch animation.type {
+        case .horizontalPanorama,
+                .sphericalPhotoPanorama,
+                .vertical180PhotoPanorama,
+                .horizontal180PhotoPanorama,
+                .superWidePhotoPanorama:
+            return true
+        default:
+            return false
+        }
+    }
+
+    public func startPanorama(mode: PanoramaMode) {
+        guard let animationItf = currentDroneHolder.drone.getPilotingItf(PilotingItfs.animation) else {
+            ULog.i(.tag, "Cannot start panorama: piloting interface not available")
+            return
+        }
+
+        // check preconditions for panorama animation
+        if mode.requireDroneFlying,
+           !currentDroneHolder.drone.isStateFlying {
+            ULog.i(.tag, "Cannot start panorama: drone not flying")
+            alertsReset?.cancel()
+            // notify take off required alert
+            alertsSubject.send([HUDBannerAdviceslertType.takeOff])
+            // reset alert after a delay
+            alertsReset = Just(true)
+                .delay(for: .seconds(Constants.alertsResetDelay), scheduler: DispatchQueue.main)
+                .sink { [unowned self] _ in
+                    alertsSubject.send([])
+                }
+        } else {
+            ULog.i(.tag, "Start panorama \(mode.rawValue)")
+            // start panorama animation
+            _ = animationItf.startAnimation(config: mode.animationConfig)
+        }
+    }
+
+    public func cancelPanorama() {
+        guard let animationItf = currentDroneHolder.drone.getPilotingItf(PilotingItfs.animation),
+              panoramaOngoing else {
+                  return
+              }
+        ULog.i(.tag, "Cancel panorama")
+        _ = animationItf.abortCurrentAnimation()
+    }
+}
+
+// MARK: Private functions
+private extension PanoramaServiceImpl {
+
+    /// Listens for the current drone.
+    ///
+    /// - Parameter dronePublisher: the drone publisher
+    func listen(dronePublisher: AnyPublisher<Drone, Never>) {
+        dronePublisher.sink { [unowned self] drone in
+            listenFlyingIndicators(drone: drone)
+        }
+        .store(in: &cancellables)
+    }
+
+    /// Listens flying indicators instrument.
+    ///
+    /// - Parameter drone: the current drone
+    func listenFlyingIndicators(drone: Drone) {
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicators in
+            if flyingIndicators?.state == .flying {
+                // reset take off required alert
+                alertsSubject.send([])
+            }
         }
     }
 }

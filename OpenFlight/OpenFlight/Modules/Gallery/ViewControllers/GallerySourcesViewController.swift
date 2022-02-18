@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,8 +40,6 @@ protocol GallerySourcesViewDelegate: AnyObject {
 final class GallerySourcesViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var collection: UICollectionView!
-    @IBOutlet private weak var internalLabel: UILabel!
-    @IBOutlet private weak var internalImageView: UIImageView!
 
     // MARK: - Private Properties
     private var dataSource: [GallerySource] = []
@@ -99,7 +96,10 @@ final class GallerySourcesViewController: UIViewController {
             guard let strongSelf = self else { return }
 
             if let previousStorage = strongSelf.dataSource.first(where: { $0.type == .droneSdCard }),
-                previousStorage.storageUsed.rounded(toPlaces: 1) == state.storageUsed.rounded(toPlaces: 1) {
+               previousStorage.isOffline == (state.physicalStorageState != .available),
+               previousStorage.storageUsed.rounded(toPlaces: 1) == state.storageUsed.rounded(toPlaces: 1) {
+                // No change on SD card connection state or storageUsed size.
+                // => No data source update needed.
                 return
             }
 
@@ -110,7 +110,10 @@ final class GallerySourcesViewController: UIViewController {
             guard let strongSelf = self else { return }
 
             if let previousStorage = strongSelf.dataSource.first(where: { $0.type == .droneInternal }),
-                previousStorage.storageUsed.rounded(toPlaces: 1) == state.storageUsed.rounded(toPlaces: 1) {
+               previousStorage.isOffline == (state.physicalStorageState != .available),
+               previousStorage.storageUsed.rounded(toPlaces: 1) == state.storageUsed.rounded(toPlaces: 1) {
+                // No change on internal connection state or storageUsed size.
+                // => No data source update needed.
                 return
             }
 
@@ -121,7 +124,9 @@ final class GallerySourcesViewController: UIViewController {
             guard let strongSelf = self else { return }
 
             if let previousStorage = strongSelf.dataSource.first(where: { $0.type == .mobileDevice }),
-                previousStorage.storageUsed.rounded(toPlaces: 1) == state.storageUsed.rounded(toPlaces: 1) {
+               previousStorage.storageUsed.rounded(toPlaces: 1) == state.storageUsed.rounded(toPlaces: 1) {
+                // No change on device storageUsed size.
+                // => No data source update needed.
                 return
             }
 
@@ -139,10 +144,6 @@ final class GallerySourcesViewController: UIViewController {
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     /// Update display when orientation changed.
@@ -196,17 +197,15 @@ private extension GallerySourcesViewController {
 
         switch type {
         case .droneSdCard:
-            if let sdState = gallerySDMediaViewModel?.state.value {
-                storageUsed = sdState.storageUsed
-                storageCapacity = sdState.capacity
-                isOffline = !(sdState.isConnected() && sdState.physicalStorageState == .available)
-            }
+            guard let sdState = gallerySDMediaViewModel?.state.value else { return }
+            storageUsed = sdState.storageUsed
+            storageCapacity = sdState.capacity
+            isOffline = sdState.physicalStorageState != .available
         case .droneInternal:
-            if let internalState = galleryInternalMediaViewModel?.state.value {
-                storageUsed = internalState.storageUsed
-                storageCapacity = internalState.capacity
-                isOffline = !(internalState.isConnected() && internalState.physicalStorageState == .available)
-            }
+            guard let internalState = galleryInternalMediaViewModel?.state.value else { return }
+            storageUsed = internalState.storageUsed
+            storageCapacity = internalState.capacity
+            isOffline = internalState.physicalStorageState != .available
         case .mobileDevice:
             storageUsed = UIDevice.current.usedStorageAsDouble
             storageCapacity = UIDevice.current.capacityAsDouble
@@ -219,31 +218,6 @@ private extension GallerySourcesViewController {
                                    storageCapacity: storageCapacity,
                                    isOffline: isOffline)
         dataSource.append(source)
-
-        if isSingleRowDisplayEnabled {
-            updateInternalStateLabel()
-        }
-    }
-
-    func updateInternalStateLabel() {
-        if let internalState = galleryInternalMediaViewModel?.state.value {
-            let freeInternalState = max(0, internalState.capacity - internalState.storageUsed)
-            let internalStorageString = String(format: "\(L10n.gallerySourceDroneInternal) %.1lf/%.1lf %@",
-                                               freeInternalState,
-                                               internalState.capacity,
-                                               L10n.galleryMemoryFree)
-            internalLabel.text = internalStorageString
-
-            let colorName = ColorName.disabledTextColor
-            internalLabel.makeUp(and: colorName)
-            internalImageView.tintColor = colorName.color
-
-            let isVisible = viewModel?.sourceType == .droneSdCard
-                && internalState.storageUsed != 0
-                && viewModel?.isSdCardReady ?? false
-            internalImageView.alphaHidden(!isVisible)
-            internalLabel.alphaHidden(!isVisible)
-        }
     }
 }
 
@@ -297,7 +271,7 @@ extension GallerySourcesViewController: UICollectionViewDelegateFlowLayout {
         var collectionViewHeight = collectionView.frame.height - 2 * Constants.itemSpacing
         // Handle safe area screens (bottom).
         collectionViewHeight -= UIApplication.shared.keyWindow?.safeAreaInsets.bottom ?? 0.0
-        let height = UIApplication.isLandscape ? Constants.cellHeight : collectionViewHeight
+        let height = Layout.buttonIntrinsicHeight(isRegularSizeClass) + Layout.mainSpacing(isRegularSizeClass)
         // Remove left and right insets (2 * Constants.itemSpacing)
         var collectionViewWidth = collectionView.frame.width - 2 * Constants.itemSpacing
         // Handle safe area screens (left).

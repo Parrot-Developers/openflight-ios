@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -27,6 +26,7 @@
 //    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
+
 import SwiftyUserDefaults
 
 // MARK: - Protocols
@@ -46,9 +46,8 @@ public protocol FlightPlanManagerCoordinator: AnyObject {
     /// Starts Flight Plan history modal.
     ///
     /// - Parameters:
-    ///     - projectModel: Flight Plan project
+    ///    - projectModel: Flight Plan project
     func startFlightPlanHistory(projectModel: ProjectModel)
-
 }
 
 /// Coordinator for flight plan planel.
@@ -56,14 +55,13 @@ public final class FlightPlanPanelCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
     public weak var flightPlanEditionViewController: FlightPlanEditionViewController?
     // MARK: - Private Properties
     private let services: ServiceHub
-    private let topBarHiderIdentifier = "FlightPlanPanelCoordinator"
     private var splitControls: SplitControls?
     private var rightPanelContainerControls: RightPanelContainerControls?
-    private var managePlansViewModel: ManagePlansViewModel?
+    private var managePlansCoordinator: ManagePlansCoordinator?
 
     // MARK: - Public Funcs
     public func start() {
@@ -77,8 +75,8 @@ public final class FlightPlanPanelCoordinator: Coordinator {
     /// Starts the coordinator with the flight plan panel view controller.
     ///
     /// - Parameters:
-    ///     - splitControls: split controls
-    ///     - rightPanelContainerControls: flight plan controls
+    ///    - splitControls: split controls
+    ///    - rightPanelContainerControls: flight plan controls
     public func start(splitControls: SplitControls,
                       rightPanelContainerControls: RightPanelContainerControls) {
 
@@ -91,89 +89,95 @@ public final class FlightPlanPanelCoordinator: Coordinator {
         let flightPlanPanelVC = FlightPlanPanelViewController.instantiate(flightPlanPanelViewModel: viewModel)
 
         self.splitControls = splitControls
+        rightPanelContainerControls.splitControls = splitControls
         self.rightPanelContainerControls = rightPanelContainerControls
-        self.navigationController = NavigationController(rootViewController: flightPlanPanelVC)
-        self.navigationController?.isNavigationBarHidden = true
+        navigationController = NavigationController(rootViewController: flightPlanPanelVC)
+        navigationController?.isNavigationBarHidden = true
     }
 }
 
 // MARK: - FlightPlanEditionViewControllerDelegate
 public extension FlightPlanPanelCoordinator {
-    func startFlightPlanEdition(shouldCenter: Bool = false) {
+    func startFlightPlanEdition(centerMapOnDroneOrUser: Bool = false) {
         guard let splitControls = splitControls,
               let mapViewController = splitControls.mapViewController else { return }
-        if shouldCenter {
+        if centerMapOnDroneOrUser {
             mapViewController.centerMapOnDroneOrUser()
         }
-        rightPanelContainerControls?.viewModel.forceHidePanel(true)
 
-        self.startFlightPlanEdition(mapViewController: mapViewController,
-                                    mapViewRestorer: splitControls)
+        startFlightPlanEdition(mapViewController: mapViewController)
     }
 
     func centerMapViewController() {
         guard let splitControls = splitControls,
-            let mapViewController = splitControls.mapViewController else { return }
+              let mapViewController = splitControls.mapViewController else { return }
         mapViewController.centerMapOnDroneOrUser()
     }
 
     func back(animated: Bool = true) {
-        services.ui.hudTopBarService.allowTopBarDisplay(hiderIdentifier: topBarHiderIdentifier)
         navigationController?.popViewController(animated: animated)
+    }
+
+    func resetPopupConfirmation(_ resetConfirmed: @escaping () -> Void) {
+        guard services.flightPlan.edition.hasChanges else {
+            resetConfirmed()
+            return
+        }
+        let cancel = AlertAction(title: L10n.commonNo,
+                                 style: .default2)
+        let action = AlertAction(title: L10n.commonYes,
+                                 style: .destructive,
+                                 actionHandler: resetConfirmed)
+        let controller = AlertViewController.instantiate(title: L10n.flightPlanDiscardChangesTitle,
+                                                         message: L10n.flightPlanDiscardChangesDescription,
+                                                         messageColor: .defaultTextColor,
+                                                         closeButtonStyle: .none,
+                                                         cancelAction: cancel,
+                                                         validateAction: action)
+        presentModal(viewController: controller)
     }
 }
 
 // MARK: - FlightPlanManagerCoordinator
 extension FlightPlanPanelCoordinator: FlightPlanManagerCoordinator {
     public func startManagePlans() {
-        guard let fpProvider = Services.hub.currentMissionManager.mode.flightPlanProvider,
-              let stateMachine = Services.hub.currentMissionManager.mode.stateMachine else { return }
+        guard let fpProvider = services.currentMissionManager.mode.flightPlanProvider,
+              let stateMachine = services.currentMissionManager.mode.stateMachine else { return }
         let viewModel = ManagePlansViewModel(
             delegate: self,
             flightPlanProvider: fpProvider,
-            manager: Services.hub.flightPlan.projectManager,
+            manager: services.flightPlan.projectManager,
             stateMachine: stateMachine,
-            currentMission: Services.hub.currentMissionManager
+            currentMission: services.currentMissionManager
         )
-
-        let flightPlanListviewModel = FlightPlansListViewModel(manager: Services.hub.flightPlan.projectManager,
-                                                               flightPlanTypeStore: Services.hub.flightPlan.typeStore,
-                                                               cloudSynchroWatcher: Services.hub.cloudSynchroWatcher)
+        let flightPlanListviewModel = FlightPlansListViewModel(manager: services.flightPlan.projectManager,
+                                                               flightPlanTypeStore: services.flightPlan.typeStore,
+                                                               navigationStack: services.ui.navigationStack,
+                                                               cloudSynchroWatcher: services.cloudSynchroWatcher)
         viewModel.setupFlightPlanListviewModel(viewModel: flightPlanListviewModel)
-
-        let viewController = ManagePlansViewController.instantiate(viewModel: viewModel)
-        let coordinator: Coordinator
-        if let child = self.childCoordinators.first(where: { $0 is FlightPlanEditionCoordinator }) {
-            coordinator = child
-        } else {
-            coordinator = self
-        }
+        let coordinator = ManagePlansCoordinator()
+        coordinator.parentCoordinator = self
+        coordinator.start(viewModel: viewModel)
+        guard let viewController = coordinator.navigationController else { return }
+        managePlansCoordinator = coordinator
 
         // Add right presentation animation.
         // This could be improved by writing a custom modal presentation.
-        let transition = CATransition()
-        transition.duration = Style.shortAnimationDuration
-        transition.type = CATransitionType.moveIn
-        transition.subtype = .fromRight
-        transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
-        coordinator.navigationController?.view.window?.layer.add(transition, forKey: kCATransition)
-
-        coordinator.presentModal(viewController: viewController, animated: false)
+        applyMoveInTransition(with: .fromRight, to: navigationController)
+        presentModal(viewController: viewController, animated: false)
         services.ui.uiComponentsDisplayReporter.modalIsPresented()
-
-        self.managePlansViewModel = viewModel // Just retaining
     }
 
     public func startFlightPlanHistory(projectModel: ProjectModel) {
-        services.ui.hudTopBarService.forbidTopBarDisplay(hiderIdentifier: topBarHiderIdentifier)
+        services.ui.hudTopBarService.forbidTopBarDisplay()
         let viewController = ExecutionsListViewController.instantiate(
             delegate: self,
-            flightPlanHandler: Services.hub.flightPlan.manager,
+            flightPlanHandler: services.flightPlan.manager,
+            projectManager: services.flightPlan.projectManager,
             projectModel: projectModel,
-            tableType: .miniHistory)
+            flightService: services.flight.service)
         navigationController?.pushViewController(viewController, animated: true)
     }
-
 }
 
 // MARK: - Privates Funcs
@@ -182,32 +186,26 @@ private extension FlightPlanPanelCoordinator {
     ///
     /// - Parameters:
     ///    - mapViewController: controller for the map
-    ///    - mapViewRestorer: restorer for the map
-    ///
-    /// Note: these parameters are needed because, when entering
-    /// Flight Plan edition, map view is transferred to the new
-    /// view controller. Map is restored back to its original
-    /// container afterwards with `MapViewRestorer` protocol.
-    func startFlightPlanEdition(mapViewController: MapViewController,
-                                mapViewRestorer: MapViewRestorer) {
-        let flightPlanEditionCoordinator = FlightPlanEditionCoordinator()
-        flightPlanEditionCoordinator.parentCoordinator = self
-        flightPlanEditionCoordinator.start(panelCoordinator: self,
-                                           mapViewController: mapViewController,
-                                           mapViewRestorer: mapViewRestorer)
-        self.present(childCoordinator: flightPlanEditionCoordinator, animated: false)
+    func startFlightPlanEdition(mapViewController: MapViewController) {
+        let viewController = mapViewController
+            .editionProvider(panelCoordinator: self,
+                             flightPlanServices: services.flightPlan)
+        navigationController?.pushViewController(viewController, animated: true)
+        navigationController?.transitionCoordinator?.animate(alongsideTransition: { (_) in
+            mapViewController.flightPlanEditionViewControllerBackButton.isHidden = false
+        }, completion: nil)
     }
 }
 
 extension FlightPlanPanelCoordinator: ManagePlansViewModelDelegate {
     func displayDeletePopup(actionHandler: @escaping () -> Void) {
         let goBackAction = AlertAction(title: L10n.cancel,
-                                       style: .cancel,
+                                       style: .default2,
                                        actionHandler: nil)
         let continueAction = AlertAction(title: L10n.commonDelete,
                                          style: .destructive,
                                          actionHandler: actionHandler)
-        let type = Services.hub.currentMissionManager.mode.flightPlanProvider?.projectTitle ?? ""
+        let type = services.currentMissionManager.mode.flightPlanProvider?.projectTitle ?? ""
         let goBackConnectionAlert = AlertViewController
             .instantiate(title: L10n.flightPlanDelete(type),
                          message: L10n.flightPlanDeleteDescription(type),
@@ -221,46 +219,30 @@ extension FlightPlanPanelCoordinator: ManagePlansViewModelDelegate {
         } else {
             goBackConnectionAlert.modalPresentationStyle = .automatic
         }
-        goBackConnectionAlert.preferredOrientation = self.navigationController?.preferredInterfaceOrientationForPresentation ?? .unknown
-        goBackConnectionAlert.supportedOrientation = self.navigationController?.supportedInterfaceOrientations ?? .landscape
+        goBackConnectionAlert.preferredOrientation = navigationController?.preferredInterfaceOrientationForPresentation ?? .unknown
+        goBackConnectionAlert.supportedOrientation = navigationController?.supportedInterfaceOrientations ?? .landscape
         presentPopup(goBackConnectionAlert)
     }
 
     /// Closes manage plans view.
     ///
     /// - Parameters:
-    ///     - editionPreference: should start flight plan edition
-    ///     - shouldCenter: should center position on map
+    ///    - editionPreference: should start flight plan edition
+    ///    - shouldCenter: should center position on map
     func endManagePlans(editionPreference: ManagePlansViewModel.EndManageEditionPreference, shouldCenter: Bool) {
-        let coordinator: Coordinator
-        if let child = self.childCoordinators.first(where: { $0 is FlightPlanEditionCoordinator }) {
-            coordinator = child
-        } else {
-            coordinator = self
-        }
-        coordinator.dismiss(animated: false) { [weak self] in
-            let isInEdition = (coordinator is FlightPlanEditionCoordinator)
+        applyTransition(type: .reveal, direction: .fromLeft, to: navigationController)
+        dismiss(animated: false) { [weak self] in
+            self?.managePlansCoordinator = nil
             switch editionPreference {
             case .start:
-                if !isInEdition {
-                    self?.startFlightPlanEdition()
-                }
-            case .stop:
-                if isInEdition {
-                    self?.flightPlanEditionViewController?.endEdition()
-                }
-            case .keep:
-                if Services.hub.flightPlan.projectManager.currentProject == nil, isInEdition {
-                    self?.flightPlanEditionViewController?.endEdition()
-                }
+                self?.startFlightPlanEdition()
+            default:
+                break
             }
             if shouldCenter {
                 self?.centerMapViewController()
             }
         }
-
-        // Release the VM
-        self.managePlansViewModel = nil
         services.ui.uiComponentsDisplayReporter.modalWasDismissed()
     }
 }
@@ -271,15 +253,14 @@ extension FlightPlanPanelCoordinator: ExecutionsListDelegate {
         services.flightPlan.projectManager.loadEverythingAndOpen(flightPlan: flightPlan)
     }
 
-    public func startFlightExecutionDetails(_ flightPlan: FlightPlanModel) {
-        back()
-        if let hudCoordinator = parentCoordinator as? HUDCoordinator {
-            hudCoordinator.startFlightExecutionDetails(flightPlan)
-        }
-    }
-
-    public func handleHistoryCellAction(with: FlightPlanModel, actionType: HistoryMediasActionType?) {
-        // TODO
+    public func startFlightExecutionDetails(_ flightPlan: FlightPlanModel, animated: Bool) {
+        let flightPlanExecutionCoordinator =  FlightPlanExecutionDetailsCoordinator(flightPlan: flightPlan,
+                                                                                    flightServices: services.flight,
+                                                                                    flightPlanServices: services.flightPlan,
+                                                                                    uiServices: services.ui,
+                                                                                    repos: services.repos,
+                                                                                    drone: services.currentDroneHolder)
+        presentModallyCoordinatorWithAnimator(childCoordinator: flightPlanExecutionCoordinator)
     }
 
     public func backDisplay() {

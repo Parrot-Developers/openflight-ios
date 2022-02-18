@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,10 +33,8 @@ import Foundation
 public enum ArcGISStyle {
     /// Defines envelop margin, as dimension factor.
     static let envelopMarginFactor: Double = 1.2
-    /// Defines default envelop width, as degree.
-    static let defaultEnvelopWidth: Double = 0.001
-    /// Defines minimum flight length, in meters.
-    static let minimumFlightLineLength: Double = 50.0
+    /// Minimal envelope width, in degrees.
+    static let minEnvelopeWidth: Double = 0.0002
 }
 
 /// Define AGS key constants.

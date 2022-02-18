@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -66,7 +65,6 @@ class GimbalTiltServiceImpl {
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
     private var gimbalRef: Ref<Gimbal>?
-    private var deviceStateRef: Ref<DeviceState>?
     private unowned var activeFlightPlanWatcher: ActiveFlightPlanExecutionWatcher
     private var tiltIsAvailableSubject = CurrentValueSubject<Bool, Never>(false)
     private var currentTiltSubject = CurrentValueSubject<Double, Never>(0)
@@ -92,6 +90,7 @@ class GimbalTiltServiceImpl {
             .store(in: &cancellables)
         connectedDroneHolder.dronePublisher.sink { [unowned self] in
             guard let drone = $0 else {
+                gimbalRef = nil
                 setAvailability()
                 return
             }

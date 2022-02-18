@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -78,8 +77,8 @@ final class SettingsRthViewModel: DroneStateViewModel<DeviceConnectionState>, Se
 private extension SettingsRthViewModel {
     /// Starts watcher for Return Home.
     func listenReturnHome(_ drone: Drone) {
-        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] _ in
-            self?.notifyChange()
+        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] _ in
+            notifyChange()
         }
     }
 

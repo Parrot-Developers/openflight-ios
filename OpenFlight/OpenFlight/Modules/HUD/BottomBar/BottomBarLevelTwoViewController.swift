@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -120,8 +119,8 @@ final class BottomBarLevelTwoViewController: UIViewController {
 private extension BottomBarLevelTwoViewController {
     /// Initializes interfaces.
     func initUI() {
-        self.view.translatesAutoresizingMaskIntoConstraints = false
+        view.translatesAutoresizingMaskIntoConstraints = false
         // Sets up corners
-        self.view.customCornered(corners: [.allCorners], radius: Style.fitLargeCornerRadius)
+        view.customCornered(corners: [.allCorners], radius: Style.fitLargeCornerRadius)
     }
 }

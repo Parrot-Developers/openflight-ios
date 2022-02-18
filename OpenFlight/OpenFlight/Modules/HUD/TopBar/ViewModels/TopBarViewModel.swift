@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -58,20 +57,18 @@ open class TopBarViewModel {
             .eraseToAnyPublisher()
     }
 
-    open var shouldHideTelemetryPublisher: AnyPublisher<Bool, Never> {
-        shouldHideDroneActionPublisher
-            .combineLatest(uiComponentsDisplay.isMissionMenuDisplayedPublisher)
-            .map { (shouldHideDroneAction, missionMenuDisplayed) in
-                !shouldHideDroneAction && missionMenuDisplayed
-            }
-            .eraseToAnyPublisher()
-    }
-
     open var shouldHideRadarPublisher: AnyPublisher<Bool, Never> {
         shouldHideDroneActionPublisher
             .map { !$0 }
             .eraseToAnyPublisher()
     }
 
+    open var isBackButtonDisplayedPublisher: AnyPublisher<Bool, Never> {
+        service.isBackButtonDisplayedPublisher.eraseToAnyPublisher()
+    }
+
+    open var isBackButtonDisplayed: Bool { service.isBackButtonDisplayed }
+
     public var showTopBarPublisher: AnyPublisher<Bool, Never> { service.showTopBarPublisher }
+
 }

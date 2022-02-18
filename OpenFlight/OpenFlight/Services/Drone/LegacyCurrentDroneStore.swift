@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,21 +32,12 @@ import Combine
 
 /// Legacy class that performs side-effects on drone connection
 public final class LegacyCurrentDroneStore {
-    // MARK: - Internal Enums
-    enum NotificationKeys {
-        static let flightPlanRunningNotificationKey: String = "flightPlanRunningNotificationKey"
-    }
-
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
     private var stateRef: Ref<DeviceState>?
-    private var mediaMetadataRef: Ref<Camera2MediaMetadata>?
-    private var isFlightPlanAlreadyShown: Bool = false
-    private unowned var currentMissionManager: CurrentMissionManager
 
     // MARK: - Init
-    public init(droneHolder: CurrentDroneHolder, currentMissionManager: CurrentMissionManager) {
-        self.currentMissionManager = currentMissionManager
+    public init(droneHolder: CurrentDroneHolder) {
         droneHolder.dronePublisher.sink { [unowned self] drone in
             listenState(drone)
         }
@@ -72,7 +63,8 @@ private extension LegacyCurrentDroneStore {
         }
 
         if let flightCameraRecorder = drone.getPeripheral(Peripherals.flightCameraRecorder) {
-            flightCameraRecorder.activePipelines.value = flightCameraRecorder.activePipelines.supportedValues
+            let pipelines = flightCameraRecorder.activePipelines.supportedValues.filter { $0 != .fcamFollowme }
+            flightCameraRecorder.activePipelines.value = pipelines
         }
     }
 }

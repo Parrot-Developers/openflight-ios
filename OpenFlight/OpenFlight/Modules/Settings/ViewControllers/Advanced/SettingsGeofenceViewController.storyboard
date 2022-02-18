@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ALf-eV-b3G">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ALf-eV-b3G">
     <device id="ipad9_7" orientation="portrait" layout="fullscreen" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -12,50 +11,26 @@
         <scene sceneID="CI0-SF-9bI">
             <objects>
                 <viewController storyboardIdentifier="SettingsGeofenceViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ALf-eV-b3G" customClass="SettingsGeofenceViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" opaque="NO" contentMode="scaleToFill" id="N7n-hf-LSO">
+                    <view key="view" opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="N7n-hf-LSO">
                         <rect key="frame" x="0.0" y="0.0" width="601" height="330"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" indicatorStyle="white" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="IKR-g9-ybj">
-                                <rect key="frame" x="15" y="0.0" width="571" height="330"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" indicatorStyle="white" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IKR-g9-ybj">
+                                <rect key="frame" x="0.0" y="0.0" width="601" height="330"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="600" id="FRm-AR-foX">
-                                        <variation key="heightClass=compact-widthClass=compact" constant="480"/>
-                                    </constraint>
-                                </constraints>
-                                <variation key="heightClass=regular-widthClass=regular">
-                                    <mask key="constraints">
-                                        <exclude reference="FRm-AR-foX"/>
-                                    </mask>
-                                </variation>
                                 <connections>
                                     <outlet property="dataSource" destination="ALf-eV-b3G" id="TXi-QR-tVx"/>
                                     <outlet property="delegate" destination="ALf-eV-b3G" id="3qZ-ph-zyZ"/>
                                 </connections>
                             </tableView>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="Wlg-oh-usO"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="IKR-g9-ybj" firstAttribute="leading" secondItem="Wlg-oh-usO" secondAttribute="leading" constant="15" id="MlQ-04-HhJ"/>
-                            <constraint firstItem="IKR-g9-ybj" firstAttribute="top" secondItem="Wlg-oh-usO" secondAttribute="top" id="WNe-w7-1UL"/>
-                            <constraint firstItem="Wlg-oh-usO" firstAttribute="trailing" secondItem="IKR-g9-ybj" secondAttribute="trailing" constant="15" id="b8t-tk-hcg"/>
-                            <constraint firstItem="IKR-g9-ybj" firstAttribute="centerX" secondItem="Wlg-oh-usO" secondAttribute="centerX" id="iaj-yX-dPS"/>
-                            <constraint firstItem="IKR-g9-ybj" firstAttribute="bottom" secondItem="N7n-hf-LSO" secondAttribute="bottom" id="k4q-1u-aS6"/>
+                            <constraint firstItem="IKR-g9-ybj" firstAttribute="leading" secondItem="N7n-hf-LSO" secondAttribute="leading" id="AVp-69-DhC"/>
+                            <constraint firstItem="IKR-g9-ybj" firstAttribute="top" secondItem="N7n-hf-LSO" secondAttribute="topMargin" id="Edx-Y9-XWO"/>
+                            <constraint firstAttribute="bottom" secondItem="IKR-g9-ybj" secondAttribute="bottom" id="iu0-JG-OOC"/>
+                            <constraint firstAttribute="trailing" secondItem="IKR-g9-ybj" secondAttribute="trailing" id="oDx-aW-T2i"/>
                         </constraints>
-                        <variation key="default">
-                            <mask key="constraints">
-                                <exclude reference="b8t-tk-hcg"/>
-                                <exclude reference="MlQ-04-HhJ"/>
-                            </mask>
-                        </variation>
-                        <variation key="heightClass=regular-widthClass=regular">
-                            <mask key="constraints">
-                                <include reference="b8t-tk-hcg"/>
-                                <include reference="MlQ-04-HhJ"/>
-                            </mask>
-                        </variation>
                     </view>
                     <size key="freeformSize" width="601" height="330"/>
                     <connections>

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -79,20 +78,17 @@ final class ImagingBarWhiteBalanceViewModel: BarButtonViewModel<ImagingBarState>
 private extension ImagingBarWhiteBalanceViewModel {
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
-            guard let camera = camera,
-                let copy = self?.state.value.copy()
-                else {
-                    return
-            }
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
+            guard let camera = camera else { return }
 
+            let copy = state.value.copy()
             copy.mode = camera.config[Camera2Params.whiteBalanceMode]?.value
             copy.subMode = camera.config[Camera2Params.whiteBalanceTemperature]?.value
             copy.supportedModes = camera.config[Camera2Params.whiteBalanceMode]?.currentSupportedValues
                 .sorted()
                 // Automatic is displayed outside segmented bar view.
                 .filter({ $0 != .automatic })
-            self?.state.set(copy)
+            state.set(copy)
         }
     }
 }

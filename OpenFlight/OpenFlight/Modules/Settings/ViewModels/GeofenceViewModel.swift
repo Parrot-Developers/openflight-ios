@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,25 +40,23 @@ final class GeofenceState: DeviceConnectionState {
             Defaults.maxAltitudeSetting = altitude
         }
     }
+    var isUpdating: Bool
     var distance: Double
-    /// Max altitude is not provided by the drone, it's a preset.
-    var maxAltitude: Double {
-        return GeofencePreset.maxAltitude
-    }
+    var minDistance: Double
     var maxDistance: Double
     var minAltitude: Double
-    var minDistance: Double
-    var isUpdating: Bool
+    /// Max altitude is not provided by the drone, it's a preset.
+    let maxAltitude: Double = GeofencePreset.maxAltitude
 
     // MARK: - Init
 
     required init() {
-        isGeofenceActivated = true
+        isGeofenceActivated = GeofencePreset.geofenceMode.isGeofenceActive
         altitude = Defaults.maxAltitudeSetting ?? GeofencePreset.defaultAltitude
         distance = GeofencePreset.defaultDistance
+        minDistance = GeofencePreset.minDistance
         maxDistance = GeofencePreset.maxDistance
         minAltitude = GeofencePreset.minAltitude
-        minDistance = GeofencePreset.minDistance
         isUpdating = false
         super.init()
     }
@@ -71,37 +68,41 @@ final class GeofenceState: DeviceConnectionState {
             return false
         }
         return super.isEqual(to: other) &&
-            self.isGeofenceActivated == other.isGeofenceActivated &&
-            self.altitude == other.altitude &&
-            self.distance == other.distance &&
-            self.maxAltitude == other.maxAltitude &&
-            self.maxDistance == other.maxDistance &&
-            self.minAltitude == other.minAltitude &&
-            self.minDistance == other.minDistance &&
-            self.isUpdating == other.isUpdating
+            isGeofenceActivated == other.isGeofenceActivated &&
+            altitude == other.altitude &&
+            distance == other.distance &&
+            maxAltitude == other.maxAltitude &&
+            maxDistance == other.maxDistance &&
+            minAltitude == other.minAltitude &&
+            minDistance == other.minDistance &&
+            isUpdating == other.isUpdating
     }
 
     override func copy() -> GeofenceState {
         let copy = GeofenceState()
-        copy.isGeofenceActivated = self.isGeofenceActivated
-        copy.altitude = self.altitude
-        copy.distance = self.distance
-        copy.maxDistance = self.maxDistance
-        copy.minAltitude = self.minAltitude
-        copy.minDistance = self.minDistance
-        copy.isUpdating = self.isUpdating
+        copy.isGeofenceActivated = isGeofenceActivated
+        copy.altitude = altitude
+        copy.distance = distance
+        copy.maxDistance = maxDistance
+        copy.minAltitude = minAltitude
+        copy.minDistance = minDistance
+        copy.isUpdating = isUpdating
         return copy
     }
 }
 
 /// Geofence setting view model.
 
-final class GeofenceViewModel: DroneWatcherViewModel<GeofenceState> {
+final class GeofenceViewModel: DroneStateViewModel<GeofenceState> {
     // MARK: - Private Properties
     private var geofenceRef: Ref<Geofence>?
     private var geofenceDistanceRef: Ref<Geofence>?
 
     // MARK: - Internal Properties
+    var isUpdating: Bool? {
+        return false
+    }
+
     var settingEntries: [SettingEntry] {
         let geofence = drone?.getPeripheral(Peripherals.geofence)
         return [SettingEntry(setting: GeofenceViewModel.geofenceModeModel(geofence: geofence),
@@ -123,17 +124,17 @@ final class GeofenceViewModel: DroneWatcherViewModel<GeofenceState> {
     ///     - altitude: altitude to save
     ///     - distance: distance to save
     func saveGeofence(altitude: Double, distance: Double) {
-        let geofence = drone?.getPeripheral(Peripherals.geofence)
-        geofence?.maxAltitude.value = altitude
-        geofence?.maxDistance.value = distance
+        guard let geofence = geofenceRef?.value else { return }
+        geofence.maxAltitude.value = altitude
+        geofence.maxDistance.value = distance
     }
 
     /// Reset geofence settings to default.
     func resetSettings() {
-        let geofence = drone?.getPeripheral(Peripherals.geofence)
-        geofence?.maxAltitude.value = GeofencePreset.defaultAltitude
-        geofence?.maxDistance.value = GeofencePreset.defaultDistance
-        geofence?.mode.value = GeofencePreset.geofence
+        guard let geofence = geofenceRef?.value else { return }
+        geofence.maxAltitude.value = GeofencePreset.defaultAltitude
+        geofence.maxDistance.value = GeofencePreset.defaultDistance
+        geofence.mode.value = GeofencePreset.geofenceMode
         Defaults.maxAltitudeSetting = GeofencePreset.defaultAltitude
     }
 
@@ -170,13 +171,13 @@ final class GeofenceViewModel: DroneWatcherViewModel<GeofenceState> {
 private extension GeofenceViewModel {
     /// Listen geofence.
     func listenGeofence(_ drone: Drone) {
-        geofenceRef = drone.getPeripheral(Peripherals.geofence) { [weak self] geofence in
+        geofenceRef = drone.getPeripheral(Peripherals.geofence) { [unowned self] geofence in
             if let altitude = geofence?.maxAltitude.value,
-                let minAltitude = geofence?.maxAltitude.min,
-                let minDistance = geofence?.maxDistance.min,
-                let maxDistance = geofence?.maxDistance.max,
-                let copy = self?.state.value.copy() {
-                copy.isGeofenceActivated = geofence?.mode.value.isGeofenceActive ?? false
+               let minAltitude = geofence?.maxAltitude.min,
+               let minDistance = geofence?.maxDistance.min,
+               let maxDistance = geofence?.maxDistance.max {
+                let copy = state.value.copy()
+                copy.isGeofenceActivated = geofence?.mode.value.isGeofenceActive ?? GeofencePreset.geofenceMode.isGeofenceActive
                 if copy.isGeofenceActivated {
                     // Update only altitude. Distance must not be updated here.
                     copy.altitude = altitude
@@ -186,19 +187,19 @@ private extension GeofenceViewModel {
                 copy.minAltitude = minAltitude
                 copy.minDistance = minDistance
                 copy.isUpdating = geofence?.mode.updating ?? false
-                self?.state.set(copy)
+                state.set(copy)
             }
         }
     }
 
     /// Listen geofence, dedicated to distance.
     func listenDistanceGeofence(_ drone: Drone) {
-        geofenceDistanceRef = drone.getPeripheral(Peripherals.geofence) { [weak self] geofence in
+        geofenceDistanceRef = drone.getPeripheral(Peripherals.geofence) { [unowned self] geofence in
             if let distance = geofence?.maxDistance.value {
-                let copy = self?.state.value.copy()
+                let copy = state.value.copy()
                 // Update only distance. Altitude must not be updated here.
-                copy?.distance = distance
-                self?.state.set(copy)
+                copy.distance = distance
+                state.set(copy)
             }
         }
     }

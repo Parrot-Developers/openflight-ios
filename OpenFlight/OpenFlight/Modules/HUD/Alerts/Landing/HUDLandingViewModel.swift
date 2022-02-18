@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,114 +28,97 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
-/// State for `HUDLandingViewModel`.
-final class HUDLandingState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    /// Tells if the drone is returning home.
-    var isReturnHomeActive: Bool = false
-    /// Tells if the drone is landing.
-    var isLanding: Bool = false
-    /// Is landing.
-    var isLandingOrRth: Bool {
-        return isReturnHomeActive || isLanding
-    }
-    var image: UIImage? {
-        if isReturnHomeActive {
-            return Asset.Alertes.Rth.icRthHUD.image
-        } else if isLanding {
-            return Asset.Common.Icons.landing.image
-        } else {
-            return nil
-        }
-    }
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - connectionState: device connection state
-    ///    - isReturnHomeActive: tells if drone is returning to home
-    ///    - isLanding: tells if drone is landing
-    init(connectionState: DeviceState.ConnectionState,
-         isReturnHomeActive: Bool,
-         isManualLanding: Bool) {
-        super.init(connectionState: connectionState)
-
-        self.isReturnHomeActive = isReturnHomeActive
-        self.isLanding = isManualLanding
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? HUDLandingState else { return false }
-
-        return super.isEqual(to: other)
-            && self.isReturnHomeActive == other.isReturnHomeActive
-            && self.isLanding == other.isLanding
-    }
-
-    override func copy() -> HUDLandingState {
-        return HUDLandingState(connectionState: connectionState,
-                               isReturnHomeActive: isReturnHomeActive,
-                               isManualLanding: isLanding)
-    }
+private extension ULogTag {
+    static let tag = ULogTag(name: "HUDLandingVM")
 }
 
 /// View model which observes landing state.
-final class HUDLandingViewModel: DroneStateViewModel<HUDLandingState> {
+final class HUDLandingViewModel {
+
     // MARK: - Private Properties
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
 
-    // MARK: - Deinit
-    deinit {
-        returnHomeRef = nil
-        flyingIndicatorsRef = nil
+    private var connectedDroneHolder = Services.hub.connectedDroneHolder
+    private var cancellables = Set<AnyCancellable>()
+
+    private(set) var isReturnHomeActive = CurrentValueSubject<Bool, Never>(false)
+    private(set) var isLanding = CurrentValueSubject<Bool, Never>(false)
+
+    /// Drone current landed state.
+    private var landedState: FlyingIndicatorsLandedState = .none
+
+    var isLandingOrRth: Bool {
+        isReturnHomeActive.value || isLanding.value
     }
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-
-        listenReturnHome(drone: drone)
-        listenFlyingIndicators(drone: drone)
+    var isReturHomeActiveValue: Bool {
+        isReturnHomeActive.value
     }
+
+    var image: AnyPublisher<UIImage?, Never> {
+        isReturnHomeActive
+            .removeDuplicates()
+            .combineLatest(isLanding.removeDuplicates())
+            .map { (isReturnHomeActive, isLanding) in
+                if isLanding {
+                    return Asset.Common.Icons.landing.image
+                }
+                if isReturnHomeActive {
+                    return Asset.Alertes.Rth.icRthHUD.image
+                }
+                return nil
+            }
+            .eraseToAnyPublisher()
+    }
+
+    init() {
+        connectedDroneHolder.dronePublisher
+            .compactMap { $0 }
+            .sink { [unowned self] drone in
+                listenDrone(drone: drone)
+            }
+            .store(in: &cancellables)
+    }
+
 }
 
 // MARK: - Private Funcs
 private extension HUDLandingViewModel {
+
+    func listenDrone(drone: Drone) {
+        listenFlyingIndicators(drone: drone)
+        listenReturnHome(drone: drone)
+    }
+
     /// Starts watcher for flying indicators.
     func listenFlyingIndicators(drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
-            self?.updateLandingState()
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicators in
+            updateLandingState(flyingIndicators: flyingIndicators)
         }
-        updateLandingState()
     }
 
     /// Starts watcher for Return Home.
     func listenReturnHome(drone: Drone) {
-        returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] _ in
-            self?.updateReturnHomeState()
+        returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] _ in
+            updateReturnHomeState(drone: drone)
         }
-        updateReturnHomeState()
+        updateReturnHomeState(drone: drone)
     }
 
     /// Updates return home state.
-    func updateReturnHomeState() {
-        let copy = state.value.copy()
-        copy.isReturnHomeActive = drone?.isReturningHome == true
-        state.set(copy)
+    func updateReturnHomeState(drone: Drone) {
+        ULog.i(.tag, "updateReturnHomeState isReturningHome: \(drone.isReturningHome) isForceLandingInProgress: \(drone.isForceLandingInProgress)")
+        // Bypass `drone.isReturningHome` value if a force landing is in progress.
+        isReturnHomeActive.value = drone.isReturningHome && !drone.isForceLandingInProgress
     }
 
     /// Updates landing state.
-    func updateLandingState() {
-        let copy = state.value.copy()
-        copy.isLanding = drone?.isLanding == true
-        state.set(copy)
+    func updateLandingState(flyingIndicators: FlyingIndicators?) {
+        // ignore landing state if previous state was hand launch
+        isLanding.value = flyingIndicators?.flyingState == .landing && landedState != .waitingUserAction
+        landedState = flyingIndicators?.landedState ?? .none
     }
 }

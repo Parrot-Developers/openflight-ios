@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -100,7 +99,7 @@ final class MagnetometerCalibrationViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.magnetometerCalibration, logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.magnetometerCalibration))
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -111,10 +110,6 @@ final class MagnetometerCalibrationViewController: UIViewController {
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -134,9 +129,8 @@ private extension MagnetometerCalibrationViewController {
         self.calibrateButton.isHidden = true
         self.droneCalibrationAxesView.isHidden = false
         self.viewModel.startCalibration()
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyDroneDetailsCalibrationButton.magnetometerCalibrationCalibrate,
-                             newValue: self.viewModel.state.value.calibrationProcessState?.failed.description,
-                             logType: .button)
+        LogEvent.log(.button(item: LogEvent.LogKeyDroneDetailsCalibrationButton.magnetometerCalibrationCalibrate,
+                             value: self.viewModel.state.value.calibrationProcessState?.failed.description ?? ""))
     }
 
     /// Function called when the ok button is clicked.
@@ -168,8 +162,8 @@ private extension MagnetometerCalibrationViewController {
         guard let currentBundle = Bundle.currentBundle(for: MagnetometerCalibrationViewController.self),
               let jsonUrl = currentBundle.url(forResource: calibrationType.animationFileName,
                                               withExtension: calibrationType.animationFormat) else {
-            return
-        }
+                  return
+              }
 
         instructionsView.playAnimation(filePath: jsonUrl.path)
     }

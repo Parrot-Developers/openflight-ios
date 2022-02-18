@@ -6,6 +6,19 @@
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
 	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Mavlink File</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.parrot.openflight.mavlink.file</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIdentifier</key>
@@ -35,22 +48,19 @@
 		<string>$(GSDK_INTERNAL_UPDATE_URL)</string>
 		<key>FlightDataQuotaMb</key>
 		<integer>200</integer>
-		<key>flightCameraRecordQuotaMb</key>
-		<integer>200</integer>
 		<key>FlightLogQuotaMb</key>
 		<integer>100</integer>
 		<key>SupportedDevices</key>
 		<array>
 			<string>anafi2</string>
-			<string>anafi4k</string>
-			<string>anafiThermal</string>
-			<string>skyCtrl3</string>
 			<string>skyCtrl4</string>
 		</array>
 		<key>Usb</key>
 		<true/>
 		<key>Wifi</key>
 		<true/>
+		<key>flightCameraRecordQuotaMb</key>
+		<integer>200</integer>
 	</dict>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
@@ -97,6 +107,7 @@
 		<string>Rajdhani-Medium.ttf</string>
 		<string>Rajdhani-Regular.ttf</string>
 		<string>Rajdhani-SemiBold.ttf</string>
+		<string>Rajdhani-SemiBold-Ext.ttf</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
@@ -119,9 +130,30 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationLandscapeRight</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Mavlink File</string>
+			<key>UTTypeIconFiles</key>
+			<array/>
+			<key>UTTypeIdentifier</key>
+			<string>com.parrot.freeflight7.mavlink.file</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>mavlink</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

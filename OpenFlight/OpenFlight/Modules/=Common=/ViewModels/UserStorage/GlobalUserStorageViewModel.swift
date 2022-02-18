@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -120,6 +119,8 @@ final class GlobalUserStorageState: ViewModelState, EquatableState, Copying {
 final class GlobalUserStorageViewModel: DroneWatcherViewModel<GlobalUserStorageState> {
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
+    private var recordingRef: Ref<Camera2Recording>?
+    private var captureRef: Ref<Camera2PhotoCapture>?
     private var removableUserStorageRef: Ref<RemovableUserStorage>?
     private var internalUserStorageRef: Ref<InternalUserStorage>?
     private var oldInternalStorageAvailableSpace: Int64?
@@ -146,42 +147,73 @@ final class GlobalUserStorageViewModel: DroneWatcherViewModel<GlobalUserStorageS
 // MARK: - Private Funcs
 private extension GlobalUserStorageViewModel {
     /// Starts watcher for camera.
+    ///
+    /// - Parameters:
+    ///     - drone: the drone.
     func listenCamera(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] camera in
-            guard let camera = camera,
-                let copy = self?.state.value.copy() else {
-                    return
-            }
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] in
+            guard let camera = $0 else { return }
 
-            // Handles insufficient storage space/speed error.
-            if let recordingState = camera.recording?.state {
-                switch recordingState {
-                case .stopping(let reason, _):
-                    switch reason {
-                    case .errorInsufficientStorageSpeed:
-                        copy.hasInsufficientStorageSpeedError = true
-                    case .errorInsufficientStorageSpace:
-                        copy.hasInsufficientStorageSpaceError = true
-                    default:
-                        break
-                    }
-                default:
-                    break
-                }
-            }
-
-            if let photoCaptureState = camera.photoCapture?.state {
-                switch photoCaptureState {
-                case .stopping(let reason, _) where reason == .errorInsufficientStorageSpace:
-                    copy.hasInsufficientStorageSpaceError = true
-                default:
-                    break
-                }
-            }
-
-            // Updates state.
-            self?.state.set(copy)
+            listenRecording(camera)
+            listenCapture(camera)
         }
+    }
+
+    /// Starts watcher for camera recording.
+    ///
+    /// - Parameters:
+    ///     - camera: drone camera
+    func listenRecording(_ camera: MainCamera2) {
+        guard recordingRef?.value == nil else { return }
+
+        recordingRef = camera.getComponent(Camera2Components.recording) { [unowned self] recording in
+            guard let recordingState = recording?.state else { return }
+            updateRecordingState(recordingState: recordingState)
+        }
+    }
+
+    /// Starts watcher for camera photo capture.
+    ///
+    /// - Parameters:
+    ///     - camera: drone camera
+    func listenCapture(_ camera: MainCamera2) {
+        guard captureRef?.value == nil else { return }
+
+        captureRef = camera.getComponent(Camera2Components.photoCapture) { [unowned self] photoCapture in
+            guard let photoCaptureState = photoCapture?.state else { return }
+            updatePhotoCaptureState(photoCaptureState: photoCaptureState)
+        }
+    }
+
+    /// Updates storage errors according to recording state.
+    ///
+    /// - Parameters:
+    ///    - recordingState: the camera recording state
+    func updateRecordingState(recordingState: Camera2RecordingState) {
+        guard case .stopping(let reason, _) = recordingState else { return }
+
+        let copy = state.value.copy()
+        switch reason {
+        case .errorInsufficientStorageSpace:
+            copy.hasInsufficientStorageSpaceError = true
+        case .errorInsufficientStorageSpeed:
+            copy.hasInsufficientStorageSpeedError = true
+        default:
+            return
+        }
+        state.set(copy)
+    }
+
+    /// Updates storage error according to photo capture state.
+    ///
+    /// - Parameters:
+    ///    - recordingState: the photo capture state
+    func updatePhotoCaptureState(photoCaptureState: Camera2PhotoCaptureState) {
+        guard case .stopping(let reason, _) = photoCaptureState, reason == .errorInsufficientStorageSpace else { return }
+
+        let copy = state.value.copy()
+        copy.hasInsufficientStorageSpaceError = true
+        state.set(copy)
     }
 
     /// Starts watcher for removable user storage.

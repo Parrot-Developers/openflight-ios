@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,8 +32,42 @@ import CoreData
 
 @objc(UserParrot)
 public class UserParrot: NSManagedObject {
+    // MARK: - Utils
+    func model() -> User {
+        return User(academyId: academyId,
+                    firstName: firstName,
+                    lastName: lastName,
+                    birthday: birthday,
+                    lang: lang,
+                    email: email,
+                    apcId: apcId,
+                    apcToken: apcToken,
+                    avatar: avatar,
+                    pilotNumber: pilotNumber,
+                    tmpApcUser: tmpApcUser,
+                    userInfoChanged: userInfoChanged,
+                    syncWithCloud: syncWithCloud,
+                    agreementChanged: agreementChanged,
+                    isSynchronizeFlightDataExtended: isSynchronizeFlightDataExtended,
+                    freemiumProjectCounter: Int(freemiumProjectCounter))
+    }
 
-    // MARK: - Constant
-    static let userParrotEntityName = "UserParrot"
-
+    func update(fromUser user: User) {
+        academyId = user.academyId
+        firstName = user.firstName
+        lastName = user.lastName
+        birthday = user.birthday
+        lang = user.lang
+        email = user.email
+        apcId = user.apcId
+        apcToken = user.apcToken
+        avatar = user.avatar
+        tmpApcUser = user.tmpApcUser
+        userInfoChanged = user.userInfoChanged
+        syncWithCloud = user.syncWithCloud
+        agreementChanged = user.agreementChanged
+        isSynchronizeFlightDataExtended = user.isSynchronizeFlightDataExtended
+        freemiumProjectCounter = user.freemiumProjectCounter
+        pilotNumber = user.pilotNumber
+    }
 }

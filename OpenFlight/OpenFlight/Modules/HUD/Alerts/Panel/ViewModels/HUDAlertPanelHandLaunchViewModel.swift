@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -28,6 +27,7 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Combine
 import GroundSdk
 
 /// State for `HUDAlertPanelHandLaunchViewModel`.
@@ -60,11 +60,12 @@ public final class HUDAlertPanelHandLaunchState: DeviceConnectionState, AlertPan
         return Asset.Alertes.HandLaunch.icHandLaunch.image
     }
     public var animationImages: [UIImage]? {
-        return Asset.Alertes.HandLaunch.Animation.allValues.compactMap { $0.image }
+        return countdown == 0 ? Asset.Alertes.HandLaunch.Animation.allValues.compactMap { $0.image } : []
     }
     public var state: AlertPanelCurrentState?
     public var isAlertForceHidden: Bool = false
     public var countdown: Int?
+    public var initialCountdown: TimeInterval?
     public var startViewIsVisible: Bool {
         return state == .started
     }
@@ -81,18 +82,18 @@ public final class HUDAlertPanelHandLaunchState: DeviceConnectionState, AlertPan
     /// Should be shown if it is available and if it is not in force hidden state.
     public var shouldShowAlertPanel: Bool {
         return connectionState == .connected
-            && state != nil
-            && state != .unavailable
-            && !isAlertForceHidden
+        && state != nil
+        && state != .unavailable
+        && !isAlertForceHidden
     }
     public var hasAnimation: Bool {
         return false
     }
-    public var hasProgressView: Bool {
+    public var hasTextCountdown: Bool {
         return true
     }
-    public var countdownMessage: ((Int) -> String)? {
-        return nil
+    public var countdownMessage: ((Int) -> String)? = { countdown in
+        return countdown == 0 ? L10n.alertHandLaunchLaunch : countdown.description
     }
 
     // MARK: - Init
@@ -100,7 +101,7 @@ public final class HUDAlertPanelHandLaunchState: DeviceConnectionState, AlertPan
         super.init()
     }
 
-    /// Init.
+    /// Constructor.
     ///
     /// - Parameters:
     ///    - connectionState: drone connection state
@@ -123,34 +124,44 @@ public final class HUDAlertPanelHandLaunchState: DeviceConnectionState, AlertPan
         guard let other = other as? HUDAlertPanelHandLaunchState else { return false }
 
         return super.isEqual(to: other)
-            && self.state == other.state
-            && self.isAlertForceHidden == other.isAlertForceHidden
-            && self.countdown == other.countdown
+        && state == other.state
+        && isAlertForceHidden == other.isAlertForceHidden
+        && countdown == other.countdown
     }
 
     public override func copy() -> HUDAlertPanelHandLaunchState {
-        return HUDAlertPanelHandLaunchState(connectionState: self.connectionState,
-                                            state: self.state,
-                                            isAlertForceHidden: self.isAlertForceHidden,
-                                            countdown: self.countdown)
+        return HUDAlertPanelHandLaunchState(connectionState: connectionState,
+                                            state: state,
+                                            isAlertForceHidden: isAlertForceHidden,
+                                            countdown: countdown)
     }
 }
 
 /// View model for hand launch alert.
-
 final class HUDAlertPanelHandLaunchViewModel: DroneStateViewModel<HUDAlertPanelHandLaunchState> {
     // MARK: - Private Properties
+    private var handLaunchService: HandLaunchService
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var manualPilotingRef: Ref<ManualCopterPilotingItf>?
     private var timer: Timer?
-    private var cancelTimer: Timer?
-    private var criticalAlertViewModel: HUDCriticalAlertViewModel = HUDCriticalAlertViewModel()
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
         static let countDownDuration: Int = 3
         static let countDownInterval: TimeInterval = 1.0
-        static let cancelTimerDuration: TimeInterval = 30.0
+    }
+
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///    - handLaunchService: hand launch service
+    init(handLaunchService: HandLaunchService) {
+        self.handLaunchService = handLaunchService
+        super.init()
+
+        listenHandLaunchService()
     }
 
     // MARK: - Override Funcs
@@ -162,22 +173,13 @@ final class HUDAlertPanelHandLaunchViewModel: DroneStateViewModel<HUDAlertPanelH
         updateHandLaunchAvailability()
     }
 
-    override func droneConnectionStateDidChange() {
-        // Reset force hidden when drone disconnects.
-        if state.value.connectionState == .disconnected {
-            let copy = state.value.copy()
-            copy.isAlertForceHidden = false
-            self.state.set(copy)
-        }
-    }
-
     // MARK: - Deinit
     deinit {
         timer?.invalidate()
         timer = nil
         let copy = state.value.copy()
         copy.countdown = nil
-        self.state.set(copy)
+        state.set(copy)
     }
 }
 
@@ -185,16 +187,24 @@ final class HUDAlertPanelHandLaunchViewModel: DroneStateViewModel<HUDAlertPanelH
 private extension HUDAlertPanelHandLaunchViewModel {
     /// Starts watcher for flying indicators.
     func listenFlyingIndicators(drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
-            self?.updateHandLaunchAvailability()
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] _ in
+            updateHandLaunchAvailability()
         }
     }
 
     /// Starts watcher for manual piloting.
     func listenManualPiloting(drone: Drone) {
-        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [weak self] _ in
-            self?.updateHandLaunchAvailability()
+        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [unowned self] _ in
+            updateHandLaunchAvailability()
         }
+    }
+
+    func listenHandLaunchService() {
+        handLaunchService.canStartPublisher
+            .sink { [unowned self] _ in
+                updateHandLaunchAvailability()
+            }
+            .store(in: &cancellables)
     }
 
     /// Update current hand launch availability.
@@ -207,7 +217,7 @@ private extension HUDAlertPanelHandLaunchViewModel {
             return
         }
 
-        if drone.isHandLaunchAvailable {
+        if handLaunchService.canStart {
             copy.state = .available
         } else if drone.isHandLaunchReady {
             copy.state = .started
@@ -215,18 +225,30 @@ private extension HUDAlertPanelHandLaunchViewModel {
             copy.state = .unavailable
         }
 
-        self.state.set(copy)
+        // whether handlaunch is turned to `started` state
+        let starting = state.value.state != .started && copy.state == .started
+
+        state.set(copy)
+
+        if starting {
+            // show starting countdown
+            startCountdown()
+        }
     }
 
     /// Starts or stops hand launch depending current state.
     func toggleHandLaunch() {
         guard let drone = drone else { return }
 
-        NotificationCenter.default.post(name: .takeOffRequestedDidChange,
-                                        object: nil,
-                                        userInfo: [HUDCriticalAlertConstants.takeOffRequestedNotificationKey: true])
-        if criticalAlertViewModel.state.value.canTakeOff {
-            drone.startHandLaunch()
+        if state.value.state == .started {
+            manualPilotingRef?.value?.land()
+        } else {
+            NotificationCenter.default.post(name: .takeOffRequestedDidChange,
+                                            object: nil,
+                                            userInfo: [HUDCriticalAlertConstants.takeOffRequestedNotificationKey: true])
+            if Services.hub.ui.criticalAlert.canTakeOff {
+                drone.startHandLaunch()
+            }
         }
     }
 
@@ -254,41 +276,23 @@ private extension HUDAlertPanelHandLaunchViewModel {
 // MARK: - AlertPanelActionType
 extension HUDAlertPanelHandLaunchViewModel: AlertPanelActionType {
     func startAction() {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.start.name,
-                             newValue: state.value.state?.description,
-                             logType: .button)
+        LogEvent.log(.button(item: LogEvent.LogKeyHUDPanelButton.start.name,
+                             value: state.value.state?.description ?? ""))
         guard state.value.state == .available else { return }
 
         toggleHandLaunch()
-        startCountdown()
     }
 
     func cancelAction() {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyHUDPanelButton.cancel.name,
-                             newValue: state.value.state?.description,
-                             logType: .button)
+        LogEvent.log(.button(item: LogEvent.LogKeyHUDPanelButton.cancel.name,
+                             value: state.value.state?.description ?? ""))
         switch state.value.state {
         case .available:
-            let copy = state.value.copy()
-            copy.isAlertForceHidden = true
-            self.state.set(copy)
-            // 30s timer before displaying the panel again.
-            startTimer()
+            handLaunchService.disabledByUser()
         case .started:
             toggleHandLaunch()
         default:
             break
-        }
-    }
-
-    func startTimer() {
-        cancelTimer = Timer.scheduledTimer(withTimeInterval: Constants.cancelTimerDuration, repeats: false) { _ in
-            let copy = self.state.value.copy()
-            copy.isAlertForceHidden = false
-            self.state.set(copy)
-            self.updateHandLaunchAvailability()
-            self.cancelTimer?.invalidate()
-            self.cancelTimer = nil
         }
     }
 }

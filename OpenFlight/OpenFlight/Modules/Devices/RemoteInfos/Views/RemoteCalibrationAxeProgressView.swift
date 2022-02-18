@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -71,5 +70,6 @@ private extension RemoteCalibrationAxeProgressView {
     /// Common init.
     func commonInitRemoteCalibrationAxeProgressView() {
         self.loadNibContent()
+        progressBarLabel.font = FontStyle.big.font(isRegularSizeClass)
     }
 }

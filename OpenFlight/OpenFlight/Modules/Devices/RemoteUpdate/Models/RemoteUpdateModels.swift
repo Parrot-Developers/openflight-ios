@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,11 +35,14 @@ enum RemoteUpdateStep {
     case none
     case downloadStarted
     case downloadCompleted
+    case downloadFailed
     case updateStarted
     case uploading
     case processing
     case rebooting
     case updateCompleted
+    case updateFailed
+    case cancelled
 
     /// Returns true if operation can be cancelled.
     var canCancelProcess: Bool {
@@ -54,14 +56,6 @@ enum RemoteUpdateStep {
             return true
         }
     }
-}
-
-/// Type of event that could happen during a firmware update process.
-enum RemoteUpdateEvent {
-    case downloadFailed
-    case downloadCanceled
-    case updateFailed
-    case updateCanceled
 }
 
 /// Enum describing update type according to the device.

@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -77,18 +77,5 @@ public extension CGRect {
         let computedX = (point.x - origin.x) / width
         let computedY = (point.y - origin.y) / height
         return (computedX, computedY)
-    }
-
-    /// Computes given rect absolute coordinates from its relative position inside CGRect.
-    ///
-    /// - Parameters:
-    ///    - centerX: center relative X position inside CGRect
-    ///    - centerY: center relative Y position inside CGRect
-    ///    - width: rect relative width inside CGRect
-    ///    - height: rect relative height inside CGRect
-    /// - Returns: given rect absolute coordinates
-    func rectAt(_ centerX: CGFloat, _ centerY: CGFloat, _ width: CGFloat, _ height: CGFloat) -> CGRect {
-        let center = pointAt(relX: centerX, relY: centerY)
-        return CGRect(center: center, width: width * self.width, height: height * self.height)
     }
 }

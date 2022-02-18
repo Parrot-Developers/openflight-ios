@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -40,7 +39,6 @@ final class RemoteControlGrabManager: RemoteControlStateViewModel<DeviceConnecti
     private var grabbedAxis = [SkyCtrl4Axis]()
     private var eventsForButton: [SkyCtrl4ButtonEvent: [String: ((SkyCtrl4ButtonEventState) -> Void)]] = [:]
     private var eventsForAxis: [SkyCtrl4AxisEvent: [String: ((Int) -> Void)]] = [:]
-    private var isRemoteControlDisabled: Bool = false
 
     // MARK: - Override Funcs
     override func remoteControlStateDidChange(state: DeviceState) {
@@ -54,17 +52,6 @@ final class RemoteControlGrabManager: RemoteControlStateViewModel<DeviceConnecti
 
 // MARK: - Internal Funcs
 extension RemoteControlGrabManager {
-    /// Completely disables SkyController actions, overriding any other grab.
-    func disableRemoteControl() {
-        isRemoteControlDisabled = true
-        updateGrabRemoteControl()
-    }
-
-    /// Re-enables SkyController actions, restoring previously overriden grabs.
-    func enableRemoteControl() {
-        isRemoteControlDisabled = false
-        updateGrabRemoteControl()
-    }
 
     /// Grabs given axis.
     ///
@@ -166,18 +153,12 @@ private extension RemoteControlGrabManager {
             return
         }
 
-        if isRemoteControlDisabled {
-            skyController.grab(buttons: SkyCtrl4Button.allCases, axes: SkyCtrl4Axis.allCases)
-            skyController.axisEventListener = nil
-            skyController.buttonEventListener = nil
-        } else {
-            skyController.grab(buttons: Set(grabbedButtons), axes: Set(grabbedAxis))
-            skyController.axisEventListener = { [weak self] newEvent, newState in
-                self?.eventsForAxis[newEvent]?.forEach { $0.value(newState) }
-            }
-            skyController.buttonEventListener = { [weak self] newEvent, newState in
-                self?.eventsForButton[newEvent]?.forEach { $0.value(newState) }
-            }
+        skyController.grab(buttons: Set(grabbedButtons), axes: Set(grabbedAxis))
+        skyController.axisEventListener = { [weak self] newEvent, newState in
+            self?.eventsForAxis[newEvent]?.forEach { $0.value(newState) }
+        }
+        skyController.buttonEventListener = { [weak self] newEvent, newState in
+            self?.eventsForButton[newEvent]?.forEach { $0.value(newState) }
         }
     }
 }

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -40,6 +39,7 @@ extension LogEvent {
         /// Mission modes.
         static let classic: String = "Classic"
         static let flightPlan: String = "FlightPlan"
+        static let touchAndFly: String = "Touch & Fly"
         /// Classic submodes.
         static let manual: String = "Manual"
     }

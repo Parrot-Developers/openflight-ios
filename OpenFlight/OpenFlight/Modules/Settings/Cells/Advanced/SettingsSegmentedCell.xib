@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -15,128 +15,106 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="SettingsSegmentedCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsSegmentedCell" rowHeight="111" id="RIC-UX-aqk" customClass="SettingsSegmentedCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="601" height="112"/>
+        <tableViewCell opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="SettingsSegmentedCell" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsSegmentedCell" rowHeight="109" id="RIC-UX-aqk" customClass="SettingsSegmentedCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="605" height="110"/>
             <autoresizingMask key="autoresizingMask"/>
-            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="RIC-UX-aqk" id="Dsm-W2-s55">
-                <rect key="frame" x="0.0" y="0.0" width="601" height="112"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="RIC-UX-aqk" id="Dsm-W2-s55">
+                <rect key="frame" x="0.0" y="0.0" width="605" height="110"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PFX-pe-4V0">
-                        <rect key="frame" x="0.0" y="5" width="601" height="102"/>
+                    <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PFX-pe-4V0" customClass="TableViewCellContainerView" customModule="OpenFlight" customModuleProvider="target">
+                        <rect key="frame" x="16" y="0.0" width="573" height="99"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="glo-6Q-IPq">
-                                <rect key="frame" x="16" y="8" width="577" height="86"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" distribution="fillProportionally" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="glo-6Q-IPq">
+                                <rect key="frame" x="8" y="8" width="557" height="83"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="NSB-10-X62">
-                                        <rect key="frame" x="0.0" y="24" width="288.5" height="38"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="NSB-10-X62">
+                                        <rect key="frame" x="0.0" y="26.5" width="60" height="30"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tgt-Mh-30q">
-                                                <rect key="frame" x="0.0" y="0.0" width="288.5" height="22"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="60" height="15"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
+                                                <variation key="heightClass=regular-widthClass=regular">
+                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="18"/>
+                                                </variation>
                                             </label>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="R6g-95-YxT">
-                                                <rect key="frame" x="0.0" y="22" width="288.5" height="16"/>
-                                                <subviews>
-                                                    <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Info" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="65N-KA-0di">
-                                                        <rect key="frame" x="0.0" y="0.0" width="120" height="16"/>
-                                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="16" id="9DR-Fe-9gH"/>
-                                                            <constraint firstAttribute="width" constant="120" id="ArD-QY-jz9"/>
-                                                        </constraints>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="default_text_color"/>
-                                                        <nil key="highlightedColor"/>
-                                                    </label>
-                                                </subviews>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstItem="65N-KA-0di" firstAttribute="leading" secondItem="R6g-95-YxT" secondAttribute="leading" id="6l6-3g-jri"/>
-                                                    <constraint firstItem="65N-KA-0di" firstAttribute="top" secondItem="R6g-95-YxT" secondAttribute="top" id="Fdh-uW-7Fz"/>
-                                                    <constraint firstAttribute="bottom" secondItem="65N-KA-0di" secondAttribute="bottom" id="GMD-lP-Rkl"/>
-                                                    <constraint firstAttribute="height" constant="16" id="WMq-NZ-gDM"/>
-                                                </constraints>
-                                            </view>
+                                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Info" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="65N-KA-0di">
+                                                <rect key="frame" x="0.0" y="15" width="60" height="15"/>
+                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                <color key="textColor" name="default_text_color"/>
+                                                <nil key="highlightedColor"/>
+                                                <variation key="heightClass=regular-widthClass=regular">
+                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                </variation>
+                                            </label>
                                         </subviews>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="38" id="3DB-M4-hJV"/>
-                                        </constraints>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="bottom" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="IoH-cz-uwt">
-                                        <rect key="frame" x="288.5" y="8" width="288.5" height="70"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="bottom" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="IoH-cz-uwt">
+                                        <rect key="frame" x="60" y="0.0" width="497" height="83"/>
                                         <subviews>
-                                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="1QW-Pg-x9u">
-                                                <rect key="frame" x="157.5" y="0.0" width="131" height="33"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="f16-5D-hDp" customClass="SettingsSegmentedControl" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="321" y="0.0" width="176" height="44"/>
                                                 <color key="backgroundColor" name="default_bgcolor"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="32" id="Bfh-iZ-1x5"/>
-                                                </constraints>
-                                                <segments>
-                                                    <segment title="First"/>
-                                                    <segment title="Second"/>
-                                                </segments>
-                                                <color key="selectedSegmentTintColor" name="highlight_color"/>
-                                                <connections>
-                                                    <action selector="segmentDidChange:" destination="RIC-UX-aqk" eventType="valueChanged" id="vcL-Fj-54n"/>
-                                                </connections>
-                                            </segmentedControl>
+                                                <color key="tintColor" name="default_text_color"/>
+                                            </stackView>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Iip-L9-aq7">
-                                                <rect key="frame" x="0.0" y="40" width="288.5" height="30"/>
+                                                <rect key="frame" x="220.5" y="54" width="276.5" height="29"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5qT-M2-AVF">
-                                                        <rect key="frame" x="7" y="7.5" width="274.5" height="15.5"/>
+                                                        <rect key="frame" x="8" y="8" width="260.5" height="13"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                         <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
+                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                        </variation>
                                                     </label>
                                                 </subviews>
                                                 <color key="backgroundColor" name="default_bgcolor"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="trailing" secondItem="5qT-M2-AVF" secondAttribute="trailing" constant="7" id="CFk-fX-H5l"/>
-                                                    <constraint firstAttribute="height" constant="30" id="cMN-mt-joa"/>
-                                                    <constraint firstItem="5qT-M2-AVF" firstAttribute="leading" secondItem="Iip-L9-aq7" secondAttribute="leading" constant="7" id="orC-8A-GSl"/>
-                                                    <constraint firstItem="5qT-M2-AVF" firstAttribute="centerY" secondItem="Iip-L9-aq7" secondAttribute="centerY" id="zn5-qY-iNF"/>
+                                                    <constraint firstAttribute="trailingMargin" secondItem="5qT-M2-AVF" secondAttribute="trailing" id="CFk-fX-H5l"/>
+                                                    <constraint firstAttribute="bottomMargin" secondItem="5qT-M2-AVF" secondAttribute="bottom" id="N4o-ye-oAq"/>
+                                                    <constraint firstItem="5qT-M2-AVF" firstAttribute="top" secondItem="Iip-L9-aq7" secondAttribute="topMargin" id="gns-AV-vOe"/>
+                                                    <constraint firstItem="5qT-M2-AVF" firstAttribute="leading" secondItem="Iip-L9-aq7" secondAttribute="leadingMargin" id="orC-8A-GSl"/>
                                                 </constraints>
                                             </view>
                                         </subviews>
+                                        <variation key="heightClass=regular-widthClass=regular" spacing="15"/>
                                     </stackView>
                                 </subviews>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstAttribute="bottom" secondItem="glo-6Q-IPq" secondAttribute="bottom" constant="8" id="2zz-Aq-Spr"/>
-                            <constraint firstItem="glo-6Q-IPq" firstAttribute="leading" secondItem="PFX-pe-4V0" secondAttribute="leading" constant="16" id="MjP-L9-zup"/>
-                            <constraint firstAttribute="trailing" secondItem="glo-6Q-IPq" secondAttribute="trailing" constant="8" id="WM1-Io-51h"/>
-                            <constraint firstItem="glo-6Q-IPq" firstAttribute="top" secondItem="PFX-pe-4V0" secondAttribute="top" constant="8" id="a5D-St-7B1"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="glo-6Q-IPq" secondAttribute="bottom" id="2zz-Aq-Spr"/>
+                            <constraint firstItem="glo-6Q-IPq" firstAttribute="leading" secondItem="PFX-pe-4V0" secondAttribute="leadingMargin" id="MjP-L9-zup"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="glo-6Q-IPq" secondAttribute="trailing" id="WM1-Io-51h"/>
+                            <constraint firstItem="glo-6Q-IPq" firstAttribute="top" secondItem="PFX-pe-4V0" secondAttribute="topMargin" id="a5D-St-7B1"/>
                         </constraints>
                     </view>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="PFX-pe-4V0" firstAttribute="leading" secondItem="Dsm-W2-s55" secondAttribute="leading" id="iEQ-tm-Fg2"/>
-                    <constraint firstAttribute="trailing" secondItem="PFX-pe-4V0" secondAttribute="trailing" id="oVe-pN-sK0"/>
-                    <constraint firstItem="PFX-pe-4V0" firstAttribute="top" secondItem="Dsm-W2-s55" secondAttribute="top" constant="5" id="sKF-eI-PpZ"/>
-                    <constraint firstAttribute="bottom" secondItem="PFX-pe-4V0" secondAttribute="bottom" constant="5" id="yhI-2b-e5X"/>
+                    <constraint firstItem="PFX-pe-4V0" firstAttribute="leading" secondItem="Dsm-W2-s55" secondAttribute="leadingMargin" id="iEQ-tm-Fg2"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="PFX-pe-4V0" secondAttribute="trailing" id="oVe-pN-sK0"/>
+                    <constraint firstItem="PFX-pe-4V0" firstAttribute="top" secondItem="Dsm-W2-s55" secondAttribute="top" id="sKF-eI-PpZ"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="PFX-pe-4V0" secondAttribute="bottom" id="yhI-2b-e5X"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
             <connections>
                 <outlet property="bgView" destination="PFX-pe-4V0" id="fui-by-5le"/>
                 <outlet property="infoLabel" destination="65N-KA-0di" id="1vf-gP-zKO"/>
-                <outlet property="leadingConstraint" destination="MjP-L9-zup" id="rSd-43-Zau"/>
-                <outlet property="segmentControl" destination="1QW-Pg-x9u" id="wtq-gv-Z5V"/>
+                <outlet property="segmentControl" destination="f16-5D-hDp" id="q4Z-Yh-ZUW"/>
                 <outlet property="subtitleLabel" destination="5qT-M2-AVF" id="lt5-WJ-ApJ"/>
                 <outlet property="subtitleView" destination="Iip-L9-aq7" id="RCG-h2-Xt0"/>
                 <outlet property="titleLabel" destination="Tgt-Mh-30q" id="0aW-FL-2uT"/>
-                <outlet property="trailingConstraint" destination="WM1-Io-51h" id="ZUG-Qf-ZI0"/>
-                <outlet property="viewContentInfos" destination="R6g-95-YxT" id="tHD-Zu-prd"/>
             </connections>
-            <point key="canvasLocation" x="175.19999999999999" y="198.80059970014995"/>
+            <point key="canvasLocation" x="178.40000000000001" y="207.79610194902551"/>
         </tableViewCell>
     </objects>
     <resources>
@@ -144,10 +122,7 @@
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="highlight_color">
-            <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

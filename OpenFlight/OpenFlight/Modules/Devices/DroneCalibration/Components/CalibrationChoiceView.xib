@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -22,60 +21,60 @@
             </connections>
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <view userInteractionEnabled="NO" contentMode="scaleToFill" id="iB9-KZ-GbD">
-            <rect key="frame" x="0.0" y="0.0" width="375" height="352"/>
+        <view userInteractionEnabled="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="iB9-KZ-GbD">
+            <rect key="frame" x="0.0" y="0.0" width="190" height="151"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7uh-lj-Kqm">
-                    <rect key="frame" x="0.0" y="0.0" width="375" height="352"/>
+                    <rect key="frame" x="0.0" y="0.0" width="190" height="151"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 </view>
                 <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icDroneDetailsAvailable" translatesAutoresizingMaskIntoConstraints="NO" id="cm4-Pa-1Sd">
-                    <rect key="frame" x="49.5" y="20" width="276" height="276"/>
+                    <rect key="frame" x="43.5" y="5" width="103" height="103"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
                         <constraint firstAttribute="width" secondItem="cm4-Pa-1Sd" secondAttribute="height" multiplier="1:1" id="Xl3-OZ-6ty"/>
                     </constraints>
                 </imageView>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Igg-Lq-evX">
-                    <rect key="frame" x="171" y="316" width="33.5" height="15"/>
+                    <rect key="frame" x="78.5" y="113" width="33.5" height="15"/>
                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                     <color key="textColor" name="default_text_color"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="rUw-8N-Ixg">
-                    <rect key="frame" x="10" y="336" width="355" height="0.0"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="subLabel" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="rUw-8N-Ixg">
+                    <rect key="frame" x="5" y="133" width="180" height="13"/>
                     <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                     <color key="textColor" name="error_color"/>
                     <nil key="highlightedColor"/>
                 </label>
             </subviews>
-            <viewLayoutGuide key="safeArea" id="rD5-RA-nJK"/>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="rUw-8N-Ixg" secondAttribute="trailing" constant="10" id="4cB-pb-nFG"/>
+                <constraint firstAttribute="trailing" secondItem="rUw-8N-Ixg" secondAttribute="trailing" constant="5" id="4cB-pb-nFG"/>
                 <constraint firstAttribute="bottom" secondItem="7uh-lj-Kqm" secondAttribute="bottom" id="6Nt-V7-nFe"/>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Igg-Lq-evX" secondAttribute="trailing" constant="10" id="BxU-3F-U7e"/>
                 <constraint firstItem="rUw-8N-Ixg" firstAttribute="centerX" secondItem="iB9-KZ-GbD" secondAttribute="centerX" id="FIM-KO-ATp"/>
                 <constraint firstItem="Igg-Lq-evX" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="iB9-KZ-GbD" secondAttribute="leading" constant="10" id="JpC-Zc-oDj"/>
                 <constraint firstItem="Igg-Lq-evX" firstAttribute="centerX" secondItem="iB9-KZ-GbD" secondAttribute="centerX" id="Lmx-Ce-tor"/>
-                <constraint firstItem="rD5-RA-nJK" firstAttribute="bottom" secondItem="rUw-8N-Ixg" secondAttribute="bottom" constant="16" id="Tas-R1-17T"/>
-                <constraint firstItem="rUw-8N-Ixg" firstAttribute="leading" secondItem="iB9-KZ-GbD" secondAttribute="leading" constant="10" id="Tpk-VY-gL8"/>
+                <constraint firstAttribute="bottom" secondItem="rUw-8N-Ixg" secondAttribute="bottom" constant="5" id="Tas-R1-17T"/>
+                <constraint firstItem="rUw-8N-Ixg" firstAttribute="leading" secondItem="iB9-KZ-GbD" secondAttribute="leading" constant="5" id="Tpk-VY-gL8"/>
                 <constraint firstItem="cm4-Pa-1Sd" firstAttribute="centerX" secondItem="iB9-KZ-GbD" secondAttribute="centerX" id="anU-JH-vPQ"/>
-                <constraint firstItem="Igg-Lq-evX" firstAttribute="top" secondItem="cm4-Pa-1Sd" secondAttribute="bottom" constant="20" id="dZP-0i-M0y"/>
+                <constraint firstItem="Igg-Lq-evX" firstAttribute="top" secondItem="cm4-Pa-1Sd" secondAttribute="bottom" constant="5" id="dZP-0i-M0y"/>
                 <constraint firstAttribute="trailing" secondItem="7uh-lj-Kqm" secondAttribute="trailing" id="hYo-ba-MLI"/>
                 <constraint firstItem="7uh-lj-Kqm" firstAttribute="leading" secondItem="iB9-KZ-GbD" secondAttribute="leading" id="iT7-rv-kIm"/>
                 <constraint firstItem="rUw-8N-Ixg" firstAttribute="top" secondItem="Igg-Lq-evX" secondAttribute="bottom" constant="5" id="mcy-eo-6jf"/>
-                <constraint firstItem="cm4-Pa-1Sd" firstAttribute="top" secondItem="rD5-RA-nJK" secondAttribute="top" constant="20" id="shW-UJ-cQx"/>
+                <constraint firstItem="cm4-Pa-1Sd" firstAttribute="top" secondItem="iB9-KZ-GbD" secondAttribute="top" constant="5" id="shW-UJ-cQx"/>
                 <constraint firstItem="7uh-lj-Kqm" firstAttribute="top" secondItem="iB9-KZ-GbD" secondAttribute="top" id="z2a-Dj-SJT"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <point key="canvasLocation" x="32.799999999999997" y="-358.02098950524743"/>
+            <point key="canvasLocation" x="-115.2" y="-448.42578710644682"/>
         </view>
     </objects>
     <resources>
         <image name="icDroneDetailsAvailable" width="332" height="332"/>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="error_color">
             <color red="0.8901960784313725" green="0.30980392156862746" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

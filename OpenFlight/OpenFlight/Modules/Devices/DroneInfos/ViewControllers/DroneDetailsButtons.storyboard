@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="GD6-ss-0eY">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="GD6-ss-0eY">
     <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -17,20 +17,22 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="n2B-Wh-zmR">
-                                <rect key="frame" x="89.5" y="43" width="806.5" height="328"/>
+                                <rect key="frame" x="0.0" y="43" width="896" height="328"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="naE-FZ-7Cg" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="806.5" height="60"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="896" height="60"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="60" id="eFf-Kz-Pcr"/>
+                                            <constraint firstAttribute="height" constant="60" id="eFf-Kz-Pcr">
+                                                <variation key="heightClass=regular-widthClass=regular" constant="66"/>
+                                            </constraint>
                                         </constraints>
                                         <connections>
                                             <action selector="cellularAccessButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="Dma-is-OYi"/>
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="G1H-BN-fL2" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="67" width="806.5" height="60"/>
+                                        <rect key="frame" x="0.0" y="67" width="896" height="60"/>
                                         <subviews>
                                             <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="M77-Se-NVD">
                                                 <rect key="frame" x="8" y="8" width="44" height="44"/>
@@ -51,21 +53,21 @@
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FAu-et-3jF" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="134" width="806.5" height="60"/>
+                                        <rect key="frame" x="0.0" y="134" width="896" height="60"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <action selector="calibrationButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="R48-gj-Xcs"/>
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vWN-fC-h5d" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="201" width="806.5" height="60"/>
+                                        <rect key="frame" x="0.0" y="201" width="896" height="60"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <action selector="firmwareUpdateButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="Ba6-4P-dAy"/>
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sdQ-bX-ago" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="268" width="806.5" height="60"/>
+                                        <rect key="frame" x="0.0" y="268" width="896" height="60"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <action selector="passwordEditionButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="fw5-Z0-jMz"/>
@@ -83,12 +85,12 @@
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="hwW-HJ-cXi"/>
                         <constraints>
+                            <constraint firstItem="n2B-Wh-zmR" firstAttribute="leading" secondItem="EOh-q9-b83" secondAttribute="leading" id="1BI-um-6UL"/>
                             <constraint firstAttribute="trailing" secondItem="n2B-Wh-zmR" secondAttribute="trailing" id="F3J-L6-aFg"/>
                             <constraint firstItem="n2B-Wh-zmR" firstAttribute="top" relation="greaterThanOrEqual" secondItem="EOh-q9-b83" secondAttribute="top" id="LKe-Tf-Adg"/>
                             <constraint firstItem="n2B-Wh-zmR" firstAttribute="centerY" secondItem="EOh-q9-b83" secondAttribute="centerY" id="Qb0-Qt-02g"/>
                             <constraint firstItem="n2B-Wh-zmR" firstAttribute="leading" secondItem="EOh-q9-b83" secondAttribute="leading" id="Y2b-Oa-ekY"/>
                             <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="n2B-Wh-zmR" secondAttribute="bottom" id="iyz-2w-eNX"/>
-                            <constraint firstItem="n2B-Wh-zmR" firstAttribute="width" secondItem="EOh-q9-b83" secondAttribute="width" multiplier="0.9" id="pRd-vE-IOh"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
@@ -98,7 +100,6 @@
                         <variation key="heightClass=regular-widthClass=compact">
                             <mask key="constraints">
                                 <include reference="Y2b-Oa-ekY"/>
-                                <exclude reference="pRd-vE-IOh"/>
                             </mask>
                         </variation>
                     </view>

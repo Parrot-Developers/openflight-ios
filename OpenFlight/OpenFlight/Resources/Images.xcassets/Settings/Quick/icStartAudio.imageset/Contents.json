@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "icStartAudio-2.png",
+      "filename" : "iconStartAudio.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "icStartAudio-1.png",
+      "filename" : "iconStartAudio@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "icStartAudio.png",
+      "filename" : "iconStartAudio@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

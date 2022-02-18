@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -48,7 +47,7 @@ extension MyFlightsPanelType {
     /// Gives panel regarding index.
     static func type(at index: Int) -> MyFlightsPanelType {
         guard index >= 0, index < MyFlightsPanelType.allCases.count
-            else { return MyFlightsPanelType.defaultPanel }
+        else { return MyFlightsPanelType.defaultPanel }
         return MyFlightsPanelType.allCases[index]
     }
 
@@ -79,17 +78,18 @@ final class MyFlightsViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var containerView: UIView!
     @IBOutlet private weak var segmentedControl: UISegmentedControl!
-    @IBOutlet private weak var topBar: UIView!
+    @IBOutlet private weak var topBar: FileNavigationStackView!
     private weak var viewAccount: MyFlightsAccountView?
 
     // MARK: - Private Properties
     private var flightsViewController: FlightsViewController?
     private var flightPlanViewController: FlightPlanDashboardListViewController?
-    private var numberOfFlights: Int = 0
-    private weak var coordinator: DashboardCoordinator?
+    private weak var coordinator: MyFlightsCoordinator?
     private var selectedPanel: MyFlightsPanelType {
         MyFlightsPanelType.type(at: segmentedControl?.selectedSegmentIndex ?? 0)
     }
+    private var defaultSelectedProject: ProjectModel?
+    private var defaultSelectedFlight: FlightModel?
 
     // MARK: - Private Enums
     private enum Constants {
@@ -98,9 +98,13 @@ final class MyFlightsViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: DashboardCoordinator) -> MyFlightsViewController {
+    static func instantiate(coordinator: MyFlightsCoordinator,
+                            defaultSelectedProject: ProjectModel?,
+                            defaultSelectedFlight: FlightModel?) -> MyFlightsViewController {
         let viewController = StoryboardScene.MyFlightsViewController.initialScene.instantiate()
         viewController.coordinator = coordinator
+        viewController.defaultSelectedProject = defaultSelectedProject
+        viewController.defaultSelectedFlight = defaultSelectedFlight
 
         return viewController
     }
@@ -116,18 +120,13 @@ final class MyFlightsViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         viewAccount?.viewWillAppear()
-        LogEvent.logAppEvent(screen: selectedPanel == .completedFlights
-                                ? LogEvent.EventLoggerScreenConstants.myFlightsFlightList
-                                : LogEvent.EventLoggerScreenConstants.myFlightsPlans,
-                             logType: .screen)
+        LogEvent.log(.screen(selectedPanel == .completedFlights
+                             ? LogEvent.Screen.myFlightsFlightList
+                             : LogEvent.Screen.myFlightsPlans))
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -139,16 +138,15 @@ final class MyFlightsViewController: UIViewController {
 private extension MyFlightsViewController {
     /// Close button clicked.
     @IBAction func closeButtonTouchedUpInside(_ sender: AnyObject) {
-        self.coordinator?.back()
+        self.coordinator?.dismissMyFlights()
     }
 
     /// UISegmentedControl's segment changed.
     @IBAction func segmentDidChange(_ sender: UISegmentedControl) {
         reloadContainerView()
-        LogEvent.logAppEvent(screen: selectedPanel == .completedFlights
-                                ? LogEvent.EventLoggerScreenConstants.myFlightsFlightList
-                                : LogEvent.EventLoggerScreenConstants.myFlightsPlans,
-                             logType: .screen)
+        LogEvent.log(.screen(selectedPanel == .completedFlights
+                             ? LogEvent.Screen.myFlightsFlightList
+                             : LogEvent.Screen.myFlightsPlans))
     }
 }
 
@@ -156,10 +154,10 @@ private extension MyFlightsViewController {
 private extension MyFlightsViewController {
     /// Instantiate basic UI.
     func initUI() {
-        topBar.addLightShadow()
         setupSegmentedControl()
-        reloadContainerView()
+        reloadContainerView(animated: false)
         setupAccountView()
+        updateUIForDefaultSelectedProjectOrFlight()
     }
 
     /// Setup account view.
@@ -170,7 +168,8 @@ private extension MyFlightsViewController {
             viewAccount.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(viewAccount)
             NSLayoutConstraint.activate([
-                viewAccount.trailingAnchor.constraint(equalTo: topBar.trailingAnchor, constant: Constants.trailingAccountView),
+                viewAccount.trailingAnchor.constraint(equalTo: topBar.layoutMarginsGuide.trailingAnchor,
+                                                      constant: -Layout.mainPadding(isRegularSizeClass)),
                 viewAccount.heightAnchor.constraint(equalToConstant: Constants.heightAccountView),
                 viewAccount.centerYAnchor.constraint(equalTo: topBar.centerYAnchor),
                 viewAccount.leadingAnchor.constraint(equalTo: segmentedControl.trailingAnchor)
@@ -192,7 +191,8 @@ private extension MyFlightsViewController {
     }
 
     /// Remove all child views and viewControllers and insert the new ones
-    func insertContainerView(controller: UIViewController) {
+    func insertContainerView(controller: UIViewController, direction: CATransitionSubtype? = nil) {
+
         for view in containerView.subviews {
             view.removeFromSuperview()
         }
@@ -201,12 +201,20 @@ private extension MyFlightsViewController {
         }
         addChild(controller)
         controller.view.frame = containerView.bounds
+
+        if let direction = direction {
+            let transition = CATransition()
+            transition.type = .push
+            transition.subtype = direction
+            containerView.layer.add(transition, forKey: nil)
+        }
+
         containerView.addSubview(controller.view)
         controller.didMove(toParent: self)
     }
 
     /// Reload container view.
-    func reloadContainerView() {
+    func reloadContainerView(animated: Bool = true) {
         switch selectedPanel {
         case .completedFlights:
             var controller: FlightsViewController
@@ -215,12 +223,16 @@ private extension MyFlightsViewController {
             } else {
                 // Initial case
                 guard let coordinator = coordinator else { return }
-                let viewModel = FlightsViewModel(service: Services.hub.flight.service, coordinator: coordinator)
+                // TODO: wrong injection
+                let viewModel = FlightsViewModel(service: Services.hub.flight.service,
+                                                 coordinator: coordinator,
+                                                 navigationStack: Services.hub.ui.navigationStack)
                 let newViewController = FlightsViewController.instantiate(viewModel: viewModel)
                 self.flightsViewController = newViewController
                 controller = newViewController
             }
-            insertContainerView(controller: controller)
+            insertContainerView(controller: controller,
+                                direction: animated ? .fromLeft : nil)
         case .plans:
             var controller: FlightPlanDashboardListViewController
             if let flightPlanViewController = self.flightPlanViewController {
@@ -228,16 +240,35 @@ private extension MyFlightsViewController {
             } else {
                 // Initial case
                 let newViewController = StoryboardScene.FlightPlansDashboardList.flightPlansListViewController.instantiate()
+                // TODO: wrong injection
                 newViewController.setupViewModel(with: FlightPlansListViewModel(manager: Services.hub.flightPlan.projectManager,
                                                                                 flightPlanTypeStore: Services.hub.flightPlan.typeStore,
+                                                                                navigationStack: Services.hub.ui.navigationStack,
                                                                                 cloudSynchroWatcher: Services.hub.cloudSynchroWatcher),
                                                  delegate: self)
                 self.flightPlanViewController = newViewController
                 controller = newViewController
             }
-            insertContainerView(controller: controller)
+            insertContainerView(controller: controller,
+                                direction: animated ? .fromRight : nil)
         }
+        // Reset navigation stack
+        if animated {
+            coordinator?.resetNavigationStack(selectedPanel: selectedPanel)
+        }
+    }
 
+    func updateUIForDefaultSelectedProjectOrFlight() {
+        // If default project is selected, switch to executed project tab then select the project
+        if let defaultSelectedProject = defaultSelectedProject {
+            segmentedControl.selectedSegmentIndex = MyFlightsPanelType.index(for: .plans)
+            reloadContainerView(animated: false)
+            flightPlanViewController?.didSelectProject(defaultSelectedProject)
+        } else if let defaultSelectedFlight = defaultSelectedFlight {
+            // A default flight is selected, hightlight it
+            flightsViewController?.selectFlight(defaultSelectedFlight)
+            flightsViewController?.scrollToSelectedFlight()
+        }
     }
 }
 

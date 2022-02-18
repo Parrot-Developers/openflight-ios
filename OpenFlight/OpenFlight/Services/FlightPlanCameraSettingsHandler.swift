@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -60,7 +59,7 @@ private struct CameraSettings: Codable {
 // MARK: ULogTag
 private extension ULogTag {
     /// Tag for this file
-    static let tag = ULogTag(name: "FlightPlanCameraSettingsHandler")
+    static let tag = ULogTag(name: "FPCameraSettingsHandler")
 }
 
 /// User defaults keys for this handler
@@ -91,8 +90,6 @@ class FlightPlanCameraSettingsHandlerImpl {
 
     /// Current drone holder
     private unowned var droneHolder: CurrentDroneHolder
-    /// Cancellables
-    private var cancellables = Set<AnyCancellable>()
     /// State
     private var state: State = .unknown
 
@@ -110,6 +107,8 @@ class FlightPlanCameraSettingsHandlerImpl {
         }
     }
 
+    private var cancellables: Set<AnyCancellable> = []
+
     /// Init
     /// - Parameters:
     ///   - activeFlightPlanWatcher: the active flight plan watcher
@@ -123,6 +122,7 @@ class FlightPlanCameraSettingsHandlerImpl {
         activeFlightPlanWatcher.activeFlightPlanPublisher
             .combineLatest(activeFlightPlanWatcher.activatingFlightPlanPublisher)
             .sink { [unowned self] (activeFlightPlan, activatingFlightPlan) in
+                ULog.d(.tag, "FP update: Active: \(activeFlightPlan?.uuid ?? "nil") / Activing: \(activatingFlightPlan?.uuid ?? "nil")")
                 if let flightPlan = activatingFlightPlan {
                     // Save user settings
                     // and send the FP camera settings when the FP is activating
@@ -140,18 +140,25 @@ class FlightPlanCameraSettingsHandlerImpl {
 
 // MARK: Private functions
 private extension FlightPlanCameraSettingsHandlerImpl {
+
+    private func updateState(with newState: State) {
+        ULog.i(.tag, "Updating to state: \(newState) (previous: \(state))")
+        state = newState
+    }
+
     /// Manage when there's no active flight plan
     func handleNoActiveFlightPlan() {
         switch state {
         case .unknown:
-            state = .noActiveFlightPlan
+            updateState(with: .noActiveFlightPlan)
         case .noActiveFlightPlan:
+            ULog.d(.tag, "handleNoActiveFlightPlan: Do nothing. Current state \(state)")
             return
         case .activatingFlightPlan, .activeFlightPlan:
             resetMediaMetadata()
             // We previously had an active flight plan, let's restore the potentially saved settings
             restoreSavedCameraSettings()
-            state = .noActiveFlightPlan
+            updateState(with: .noActiveFlightPlan)
         }
     }
 
@@ -159,41 +166,40 @@ private extension FlightPlanCameraSettingsHandlerImpl {
     func handleActivatingFlightPlan(_ flightPlan: FlightPlanModel) {
         switch state {
         case .unknown:
-            state = .activatingFlightPlan
+            updateState(with: .activatingFlightPlan)
         case .activatingFlightPlan, .activeFlightPlan:
+            ULog.d(.tag, "handleActivatingFlightPlan: Do nothing. Current state \(state)")
             return
         case .noActiveFlightPlan:
             saveCameraSettings()
             if let dataSetting = flightPlan.dataSetting {
-                setFlightPlanCameraSettingsToDrone(dataSetting)
+                sendFlightPlanCameraSettingsToDrone(dataSetting)
             }
             setMediaMetadata(flightPlan)
-            state = .activatingFlightPlan
+            updateState(with: .activatingFlightPlan)
         }
     }
 
     func handleActiveFlightPlan(_ flightPlan: FlightPlanModel) {
-        // Currently nothing to be done 
-        state = .activeFlightPlan
+        // Currently nothing to be done
+        updateState(with: .activeFlightPlan)
     }
 
     func setMediaMetadata(_ flightPlan: FlightPlanModel) {
         guard let mediaMetadata = droneHolder.drone.getPeripheral(Peripherals.mainCamera2)?.mediaMetadata else {
-            ULog.w(.tag, "setMediaMetadata: Unable to get mediaMetadata")
+            ULog.e(.tag, "setMediaMetadata: Unable to get mediaMetadata")
             return
         }
         // Sets the custom Id and the custom title of the drone media metadata for the flight plan execution.
         // To get media title + index that belong to the flight plan execution.
-        var executions = 0
-        if let project = projectManager.project(for: flightPlan) {
-            executions = projectManager.executedFlightPlans(for: project).count
-        }
         mediaMetadata.customId = flightPlan.uuid
-        mediaMetadata.customTitle = "\(flightPlan.customTitle)" + " (\(executions))"
+        mediaMetadata.customTitle = flightPlan.customTitle
+        ULog.i(.tag, "setMediaMetadata: customId = \(mediaMetadata.customId), customTitle = \(mediaMetadata.customTitle)")
     }
 
     func resetMediaMetadata() {
         droneHolder.drone.getPeripheral(Peripherals.mainCamera2)?.resetCustomMediaMetadata()
+        ULog.i(.tag, "resetMediaMetadata")
     }
 
     /// Save the current camera settings
@@ -229,7 +235,7 @@ private extension FlightPlanCameraSettingsHandlerImpl {
 
     /// Send flight plan's camera settings to drone
     /// - Parameter flightPlan: the flight plan
-    func setFlightPlanCameraSettingsToDrone(_ flightPlanData: FlightPlanDataSetting) {
+    func sendFlightPlanCameraSettingsToDrone(_ flightPlanData: FlightPlanDataSetting) {
         // camera mode and photo mode, deduced from capture mode
         var cameraMode: Camera2Mode
         var photoMode: Camera2PhotoMode?
@@ -248,7 +254,7 @@ private extension FlightPlanCameraSettingsHandlerImpl {
         let timelapseInterval = flightPlanData.timeLapseCycle.map { Double($0) / 1000 }
 
         // gpslapse value in meters
-        let gpslapseInterval = flightPlanData.gpsLapseDistance.map { Double($0) }
+        let gpslapseInterval = flightPlanData.gpsLapseDistance.map { Double($0) / 1000 }
 
         // get current signature configuration
         var photoSignature = droneHolder.drone.getPeripheral(Peripherals.mainCamera2)?
@@ -274,24 +280,28 @@ private extension FlightPlanCameraSettingsHandlerImpl {
                                       timelapseInterval: timelapseInterval,
                                       gpslapseInterval: gpslapseInterval)
         ULog.i(.tag, "Sending settings \(settings)")
-        setCameraSettings(settings)
+        // Do not change camera mode immediately. The drone will do it automatically as its first action
+        setCameraSettings(settings, shouldChangeCameraMode: false)
     }
 
     /// Restore saved camera settings after flight plan execution
     func restoreSavedCameraSettings() {
         guard let settings = storedSettings else { return }
         ULog.i(.tag, "Restoring settings \(settings)")
-        setCameraSettings(settings)
+        setCameraSettings(settings, shouldChangeCameraMode: true)
         storedSettings = nil
     }
 
     /// Set camera settings to the drone
     /// - Parameter settings: the settings to apply
-    func setCameraSettings(_ settings: CameraSettings) {
+    func setCameraSettings(_ settings: CameraSettings, shouldChangeCameraMode: Bool) {
         guard let camera = droneHolder.drone.getPeripheral(Peripherals.mainCamera2) else { return }
+        ULog.d(.tag, "setCameraSettings \(settings)")
         // Edit camera configuration from scratch.
         let editor = camera.config.edit(fromScratch: true)
-        editor.applyValueNotForced(Camera2Params.mode, settings.cameraMode)
+        if shouldChangeCameraMode {
+            editor.applyValueNotForced(Camera2Params.mode, settings.cameraMode)
+        }
         editor.applyValueNotForced(Camera2Params.photoMode, settings.photoMode)
         editor.applyValueNotForced(Camera2Params.videoRecordingFramerate, settings.framerate)
         editor.applyValueNotForced(Camera2Params.videoRecordingResolution, settings.resolution)

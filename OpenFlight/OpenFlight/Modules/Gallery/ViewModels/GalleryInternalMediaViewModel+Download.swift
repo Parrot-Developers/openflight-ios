@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -66,6 +65,7 @@ extension GalleryInternalMediaViewModel {
                     }
 
                     AssetUtils.shared.addMediaItemToLocalList(currentMedia, for: droneId)
+                    AssetUtils.shared.addMediaInfoToLocalList(media: currentMedia, url: mediaDownloader?.fileUrl)
                 default:
                     break
                 }
@@ -158,6 +158,8 @@ extension GalleryInternalMediaViewModel {
         }
 
         AssetUtils.shared.addMediaItemToLocalList(media, for: droneId)
+        AssetUtils.shared.addMediaInfoToLocalList(media: media, url: destinationUrl)
+
         if let url = destinationUrl {
             MediaUtils.saveMediaRunUid(media.runUid, withUrl: url)
         }

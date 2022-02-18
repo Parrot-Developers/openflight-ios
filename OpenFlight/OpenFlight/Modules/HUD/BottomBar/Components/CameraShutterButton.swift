@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -64,6 +63,10 @@ final class CameraShutterButton: UIControl, NibOwnerLoadable {
     // MARK: - Private Properties
     private var isBlinking: Bool = false
     private var currentProgress: CGFloat = 0.0
+    private var photosCount = 0
+    private var recordingColor: UIColor {
+        isEnabled ? Constants.defaultRecordingColor : Constants.unavailableRecordingColor
+    }
 
     // MARK: - Private Enums
     private enum Constants {
@@ -75,25 +78,33 @@ final class CameraShutterButton: UIControl, NibOwnerLoadable {
         static let takePhotoCaptureColor = ColorName.white20.color
         static let unavailablePhotoCaptureColor = ColorName.white20.color
         static let lapseInProgressPhotoCaptureColor = ColorName.black.color
-        static let defaultRecordingColor = ColorName.redTorch.color
-        static let activeRecordingColor = ColorName.redTorch50.color
-        static let unavailableRecordingColor = ColorName.redTorch25.color
-        static let restartRecordingBackgroundColor = ColorName.redTorch25.color
+        static let defaultRecordingColor = ColorName.errorColor.color
+        static let activeRecordingColor = ColorName.errorColor.color.withAlphaComponent(0.5)
+        static let unavailableRecordingColor = ColorName.disabledErrorColor.color
+        static let restartRecordingBackgroundColor = ColorName.disabledErrorColor.color
         static let countDownRestartRecordingColor = ColorName.white.color
         static let countDownLapseColor = ColorName.black.color
         static let maxCountdown: Float = 5.0
         static let maxAnimationProgress: Float = 1.0
     }
 
+    // MARK: - Override Properties
+    override var isEnabled: Bool {
+        didSet {
+            isBlinking = false
+            updateButton()
+        }
+    }
+
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitCameraShutterButton()
+        commonInitCameraShutterButton()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitCameraShutterButton()
+        commonInitCameraShutterButton()
     }
 }
 
@@ -101,14 +112,16 @@ final class CameraShutterButton: UIControl, NibOwnerLoadable {
 private extension CameraShutterButton {
     /// Common init.
     func commonInitCameraShutterButton() {
-        self.loadNibContent()
-        self.setBorder(borderColor: Constants.defaultBorderColor, borderWidth: Constants.defaultBorderWidth)
-        self.backgroundColor = Constants.defaultBackgroundColor
+        loadNibContent()
+        setBorder(borderColor: Constants.defaultBorderColor, borderWidth: Constants.defaultBorderWidth)
+        backgroundColor = Constants.defaultBackgroundColor
         shutterButtonProgressView.clipsToBounds = true
-        self.clipsToBounds = true
+        clipsToBounds = true
         shutterButtonProgressView.applyCornerRadius(Style.largeCornerRadius)
         circleProgressView.strokeColor = .white
         circleProgressView.borderWidth = Style.largeBorderWidth
+        recordingTimeLabel.font = FontStyle.current.font(isRegularSizeClass, monospacedDigits: true)
+        remainingRecordTimeLabel.font = FontStyle.caps.font(isRegularSizeClass, monospacedDigits: true)
     }
 
     /// Updates button with current model.
@@ -185,16 +198,9 @@ private extension CameraShutterButton {
         }
 
         switch (model.photoFunctionState, model.cameraCaptureMode) {
-        case (.stopping, .timelapse):
-            switch model.photoFunctionState {
-            case .stopping(let reason, _):
-                if reason == .captureDone {
-                    break
-                } else {
-                    applyPhotoCaptureUnavailableStyle()
-                }
-            default:
-                break
+        case (.stopping(let reason, _), .timelapse):
+            if reason != .captureDone {
+                applyPhotoCaptureUnavailableStyle()
             }
         case (_, .panorama):
             guard let state = model.panoramaModeState else {
@@ -202,16 +208,19 @@ private extension CameraShutterButton {
                 return
             }
             updatePhotoCapturePanoramaStyle(with: state)
-        case (.started, .timelapse),
-             (.started, .gpslapse):
+        case (.started, .timelapse):
             guard let state = model.lapseModeState else { return }
-            updateLapseModeProgressView(with: state)
+            updateTimeLapseModeProgressView(with: state)
+        case (.started, .gpslapse):
+            guard let state = model.lapseModeState else { return }
+            updateGpsLapseModeProgressView(with: state)
         case (.stopped, .timelapse),
              (.stopped, .gpslapse):
             shutterButtonProgressView.isHidden = true
             applyLapseModeStyle(labelText: nil)
             model.lapseModeState?.currentProgress = 0.0
             currentProgress = 0.0
+            photosCount = 0
         case (.started, _):
             applyPhotoCaptureTakePhotoStyle()
         case (.stopping(reason: Camera2PhotoCaptureState.StopReason.errorInternal, savedMediaId: nil), _):
@@ -242,25 +251,24 @@ private extension CameraShutterButton {
                      stopViewHidden: Bool = true,
                      image: UIImage? = nil,
                      labelText: String? = nil) {
-        self.centerLabel.text = labelText
-        self.infoImageView.image = image
-        self.infoImageView.isHidden = image == nil
+        centerLabel.text = labelText
+        infoImageView.image = image
+        infoImageView.isHidden = image == nil
         if image == nil {
-            self.infoImageView.alpha = 0.0
+            infoImageView.alpha = 0.0
         }
-        self.recordingTimeStackView.isHidden = recordingTimeHidden
-        self.addCornerRadiusAnimation(toValue: outerCornerRadius ?? self.frame.height / 2,
-                                      duration: Constants.defaultAnimationDuration)
-        self.innerView.addCornerRadiusAnimation(toValue: innerCornerRadius ?? self.innerView.frame.height / 2,
-                                                duration: Constants.defaultAnimationDuration)
+        recordingTimeStackView.isHidden = recordingTimeHidden
+        addCornerRadiusAnimation(toValue: outerCornerRadius ?? frame.height / 2,
+                                 duration: Constants.defaultAnimationDuration)
+        innerView.addCornerRadiusAnimation(toValue: innerCornerRadius ?? innerView.frame.height / 2,
+                                           duration: Constants.defaultAnimationDuration)
         UIView.animate(withDuration: Constants.defaultAnimationDuration) {
             self.innerView.backgroundColor = innerBackgroundColor
             self.infoImageView.alpha = 1.0
             self.stopView.alpha = stopViewHidden ? 0.0 : 1.0
             guard let model = self.model else { return }
             let canShowProgressView = model.photoFunctionState.isStarted
-                && (model.cameraCaptureMode == .timelapse
-                        || model.cameraCaptureMode == .gpslapse)
+                && model.cameraCaptureMode == .timelapse
             self.shutterButtonProgressView.isHidden = !canShowProgressView
             self.innerView.setBorder(borderColor: canShowProgressView ? .black : .clear,
                                      borderWidth: canShowProgressView ? Style.mediumBorderWidth : 0.0)
@@ -294,7 +302,7 @@ private extension CameraShutterButton {
                     innerBackgroundColor: Constants.activeRecordingColor,
                     recordingTimeHidden: false)
         if !isBlinking {
-            startBlinking(with: Constants.defaultRecordingColor,
+            startBlinking(with: recordingColor,
                           and: Constants.activeRecordingColor)
         }
     }
@@ -304,7 +312,8 @@ private extension CameraShutterButton {
     /// - Parameters:
     ///     - labelText: shutter button text
     func applyRecordingStoppedStyle(labelText: String? = nil) {
-        updateStyle(innerBackgroundColor: Constants.defaultRecordingColor,
+        setBorder(borderColor: Constants.defaultBorderColor, borderWidth: Constants.defaultBorderWidth)
+        updateStyle(innerBackgroundColor: recordingColor,
                     labelText: labelText)
         isBlinking = false
     }
@@ -364,6 +373,7 @@ private extension CameraShutterButton {
     /// - Parameters:
     ///     - labelText: shutter button text
     func applyPhotoCaptureStyle(labelText: String? = nil) {
+        setBorder(borderColor: Constants.defaultBorderColor, borderWidth: Constants.defaultBorderWidth)
         updateStyle(innerBackgroundColor: Constants.defaultPhotoCaptureColor,
                     labelText: labelText)
         isBlinking = false
@@ -396,16 +406,23 @@ private extension CameraShutterButton {
 // MARK: CameraShutterButton Progress View
 /// Private extension for Shutter button progress view. Used for Timelapse and Gpslapse mode.
 private extension CameraShutterButton {
-    /// Update progress view for lapse photo modes.
+    /// Updates progress view for timelapse photo mode.
     ///
     /// - Parameters:
-    ///     - state: current gpslapse or timelapse state
-    func updateLapseModeProgressView(with state: PhotoLapseState) {
-        let progress = CGFloat(state.currentProgress) / CGFloat(state.selectedValue)
-        if progress > currentProgress &&  currentProgress >= 0.0 {
-            shutterButtonProgressView.resetProgress()
-        }
-        applyLapseModeInProgressStyle(progress: progress, photoCount: state.photosNumber)
+    ///     - state: current timelapse state
+    func updateTimeLapseModeProgressView(with state: PhotoLapseState) {
+        applyLapseModeInProgressStyle(photosCount: state.photosNumber)
+        guard state.photosNumber > photosCount else { return }
+        photosCount = state.photosNumber
+        shutterButtonProgressView.animateProgress(duration: TimeInterval(state.selectedValue) - Style.mediumAnimationDuration)
+    }
+
+    /// Updates progress view for gpslapse photo mode.
+    ///
+    /// - Parameters:
+    ///     - state: current gpslapse state
+    func updateGpsLapseModeProgressView(with state: PhotoLapseState) {
+        applyLapseModeInProgressStyle(photosCount: state.photosNumber)
     }
 
     /// Apply style for timelapse and gpslapse mode.
@@ -413,25 +430,22 @@ private extension CameraShutterButton {
     /// - Parameters:
     ///     - labelText: shutter button text
     func applyLapseModeStyle(labelText: String? = nil) {
-        self.setBorder(borderColor: Constants.defaultBorderColor, borderWidth: Constants.defaultBorderWidth)
+        setBorder(borderColor: Constants.defaultBorderColor, borderWidth: Constants.defaultBorderWidth)
         updateStyle(innerBackgroundColor: Constants.defaultPhotoCaptureColor,
                     labelText: labelText)
         shutterButtonProgressView.resetProgress()
         centerLabel.textColor = Constants.countDownLapseColor
     }
 
-    /// Apply style for timelapse and gpslapse mode.
+    /// Apply in progress style for timelapse and gpslapse mode.
     ///
     /// - Parameters:
-    ///     - progress: capture progress
     ///     - photoCount: number of photos taken during the session
-    func applyLapseModeInProgressStyle(progress: CGFloat, photoCount: Int) {
-        self.setBorder(borderColor: .clear, borderWidth: Style.noBorderWidth)
+    func applyLapseModeInProgressStyle(photosCount: Int) {
+        setBorder(borderColor: .clear, borderWidth: Style.noBorderWidth)
         updateStyle(outerCornerRadius: Style.largeCornerRadius,
                     innerCornerRadius: Style.mediumCornerRadius,
                     innerBackgroundColor: Constants.defaultPhotoCaptureColor,
-                    labelText: String(photoCount))
-        shutterButtonProgressView.setProgress(Float(progress), duration: Style.mediumAnimationDuration)
-        currentProgress = progress
+                    labelText: String(photosCount))
     }
 }

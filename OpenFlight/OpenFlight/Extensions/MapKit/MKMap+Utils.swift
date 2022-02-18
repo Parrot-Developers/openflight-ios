@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -38,31 +38,28 @@ extension MKMapSnapshotter.Snapshot {
     ///     - polyline: the polyline
     ///     - color: line color
     ///     - lineWidth: lineWidth
-    func drawPolyline(_ polyline: MKPolyline, color: UIColor, lineWidth: CGFloat) -> UIImage? {
-        UIGraphicsBeginImageContext(self.image.size)
-        let rectForImage = CGRect(origin: CGPoint(),
-                                  size: self.image.size)
+    func drawPolyline(_ polyline: MKPolyline, color: UIColor, lineWidth: CGFloat) -> UIImage {
+        let image = self.image
+        let bounds = CGRect(origin: CGPoint(),
+                                  size: image.size)
+        let renderer = UIGraphicsImageRenderer(size: image.size)
+        return renderer.image { context in
+            let cgContext = context.cgContext
+            // Draw initial map image.
+            image.draw(in: bounds)
+            // Turn MKMapPoint into CGPoints.
+            var pointsToDraw = UnsafeBufferPointer(start: polyline.points(), count: polyline.pointCount)
+                .map { self.point(for: $0.coordinate) }
 
-        // Draw initial map image.
-        self.image.draw(in: rectForImage)
+            // Draw lines.
+            cgContext.setLineWidth(lineWidth)
 
-        // Make MKMapPoint array.
-        let safePoints = Array(UnsafeBufferPointer(start: polyline.points(), count: polyline.pointCount))
-        // Turn coordinates into CGPoints.
-        var pointsToDraw: [CGPoint] = safePoints.map { self.point(for: $0.coordinate) }
+            let firstPoint = pointsToDraw.removeFirst()
+            cgContext.move(to: firstPoint)
+            pointsToDraw.forEach { cgContext.addLine(to: $0) }
 
-        // Draw lines.
-        let context = UIGraphicsGetCurrentContext()
-        context?.setLineWidth(lineWidth)
-
-        let firstPoint = pointsToDraw.removeFirst()
-        context?.move(to: firstPoint)
-        pointsToDraw.forEach { context?.addLine(to: $0) }
-
-        context?.setStrokeColor(color.cgColor)
-        context?.strokePath()
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return image
+            cgContext.setStrokeColor(color.cgColor)
+            cgContext.strokePath()
+        }
     }
 }

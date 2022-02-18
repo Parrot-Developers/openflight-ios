@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -50,8 +49,11 @@ final class RulerBarLabelCollectionViewCell: UICollectionViewCell, NibReusable {
     func fill(with mode: RulerDisplayable, isEnabled: Bool) {
         mainLabel.text = mode.rulerText
         mainLabel.backgroundColor = mode.rulerBackgroundColor ?? .clear
-        mainLabel.textColor = mode.rulerBackgroundColor == nil ? ColorName.defaultTextColor.color : ColorName.white.color
-        self.isUserInteractionEnabled = isEnabled
-        self.mainLabel.alphaWithEnabledState(isEnabled)
+        let textColor = mode.rulerBackgroundColor == nil
+                        ? ColorName.defaultTextColor
+                        : ColorName.white
+        mainLabel.makeUp(with: .big, color: textColor)
+        isUserInteractionEnabled = isEnabled
+        mainLabel.alphaWithEnabledState(isEnabled)
     }
 }

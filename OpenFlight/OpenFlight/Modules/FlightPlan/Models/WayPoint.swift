@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -173,7 +172,6 @@ public final class WayPoint: Codable, Equatable {
     }
 
     private enum Constants {
-        static let defaultPoiIndex: Int = -1
         static let defaultSpeed: Double = 5.0
         static let defaultAltitude: Double = 5.0
         static let defaultTilt: Double = 0.0

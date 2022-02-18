@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,16 +32,14 @@ import Combine
 
 /// Describes FlightPlansList ViewController display mode.
 enum FlightPlansListDisplayMode {
-    /// Full screen.
-    case full
     /// Part of a sub view controller.
     case compact
     /// Part of of the view controller is visible but all executions should be loaded
     case dashboard
 }
 
-/// Struct used in order to pass the necessary information to the `CellFlightPlanList`
-struct CellFlightPlanListProvider {
+/// Struct used in order to pass the necessary information to the `FlightPlanCollectionViewCell`
+struct CellProjectListProvider {
     /// Selected state
     var isSelected: Bool
     /// project model
@@ -65,23 +62,33 @@ protocol FlightPlansListViewModelUIInput {
     /// Displaying Controller on `Compact` or `Full`
     var displayMode: FlightPlansListDisplayMode { get }
 
-    /// Publisher that give new value of UUID
+    /// Publisher that give new UUID value of selected project.
     var uuidPublisher: AnyPublisher<String?, Never> { get }
 
-    /// Publisher that give  value of changed array of `ProjectModel`
-    var allFlightPlansPublisher: AnyPublisher<[ProjectModel], Never> { get }
+    /// Publisher that give value of changed array of `ProjectModel`
+    var allProjectsPublisher: AnyPublisher<[ProjectModel], Never> { get }
 
-    /// Select flight plan from flight Plans array.
+    /// Select a project, from the filtered projects list, via his index.
     ///
     /// - Parameters:
-    ///     - index: Choosed index
-    func selectedItem(at index: Int)
+    ///    - index: Project's index.
+    ///
+    /// - Returns:
+    ///    - The selected `ProjectModel` if exists, or nil.
+    @discardableResult
+    func selectProject(at index: Int) -> ProjectModel?
 
     /// Select project.
     ///
     /// - Parameters:
     ///     - project: The project model
-    func selectedProject(_ project: ProjectModel)
+    func selectProject(_ project: ProjectModel)
+
+    /// Return the index of a project in the current projects list.
+    ///
+    /// - Parameters:
+    ///     - project: The project model
+    func indexOfProject(_ project: ProjectModel) -> Int
 
     /// Deselect project.
     func deselectProject()
@@ -90,7 +97,7 @@ protocol FlightPlansListViewModelUIInput {
     ///
     /// - Parameters:
     ///     - execution: the flight plan model representing the execution
-    func selectedExecution(_ execution: FlightPlanModel)
+    func selectExecution(_ execution: FlightPlanModel)
 
     /// Setup corresponding delegate of type `FlightPlansListViewModelDelegate`
     ///
@@ -105,7 +112,7 @@ protocol FlightPlansListViewModelUIInput {
     ///
     /// - Parameters:
     ///     - delegate: Handle selection of flight plan
-    func getFlightPlan(at index: Int) -> CellFlightPlanListProvider?
+    func projectProvider(at index: Int) -> CellProjectListProvider?
 
     /// Retrieve flight plan executions from project.
     ///
@@ -114,10 +121,10 @@ protocol FlightPlansListViewModelUIInput {
     func flightPlanExecutions(ofProject project: ProjectModel) -> [FlightPlanModel]
 
     /// Return number of flight plan available
-    func modelsCount() -> Int
+    func projectsCount() -> Int
 
     /// Return corresponding Header provider to display it on Header
-    func getHeaderProvider() -> [FlightPlanListHeaderCellProvider]
+    func headerCellProvider() -> [FlightPlanListHeaderCellProvider]
 
     /// Double tap on a flight plan
     ///
@@ -135,12 +142,6 @@ protocol FlightPlansListViewModelParentInput {
     ///     - uuid: Optioanl String value, to update new uuid
     func updateUUID(with uuid: String?)
 
-    /// Update array of flight plans
-    ///
-    /// - Parameters:
-    ///     - models: Array of `ProjectModel`
-    func setupProjects(with models: [ProjectModel])
-
     /// Setup new display mode to corresponding View
     ///
     /// - Parameters:
@@ -152,36 +153,53 @@ protocol FlightPlansListViewModelParentInput {
     /// - Parameters:
     ///     - delegate: Handle selection of flight plan
     func setupDelegate(with delegate: FlightPlansListViewModelDelegate)
+
+    /// Update the Navigation Stack.
+    ///
+    /// - Parameters:
+    ///    - selectedProject: current selected project
+    func updateNavigationStack(with selectedProject: ProjectModel?)
 }
 
 final class FlightPlansListViewModel {
 
     // MARK: - Private variables
     @Published private var uuid: String?
-    @Published private var filteredFlightPlan: [ProjectModel] = [ProjectModel]()
-    private var allFlightPlans: [ProjectModel] = [ProjectModel]()
+    private var filteredProjects = CurrentValueSubject<[ProjectModel], Never>([])
+    private var allProjects = CurrentValueSubject<[ProjectModel], Never>([])
     private var headerProvider: [FlightPlanListHeaderCellProvider] = []
-    private(set) var displayMode: FlightPlansListDisplayMode = .full
+    private(set) var displayMode: FlightPlansListDisplayMode = .compact
     private weak var delegate: FlightPlansListViewModelDelegate?
     private var flightPlanTypeStore: FlightPlanTypeStore
     private let manager: ProjectManager
-    private var cancellable = Set<AnyCancellable>()
+    private let navigationStack: NavigationStackService
+    private var cancellables = Set<AnyCancellable>()
 
     init(manager: ProjectManager,
          flightPlanTypeStore: FlightPlanTypeStore,
+         navigationStack: NavigationStackService,
          cloudSynchroWatcher: CloudSynchroWatcher?) {
         self.manager = manager
         self.flightPlanTypeStore = flightPlanTypeStore
+        self.navigationStack = navigationStack
 
-        cloudSynchroWatcher?.isSynchronizingDataPublisher.sink(receiveValue: { [unowned self] isSynchronizingData in
-            if !isSynchronizingData {
-                self.initViewModel()
+        cloudSynchroWatcher?.isSynchronizingDataPublisher
+            .receive(on: RunLoop.main)
+            .sink(receiveValue: { [weak self] isSynchronizingData in
+                if !isSynchronizingData {
+                    self?.initViewModel()
+                }
+            }).store(in: &cancellables)
+
+        manager.projectsDidChangePublisher
+            .sink { [unowned self] in
+                initViewModel()
             }
-        }).store(in: &cancellable)
+            .store(in: &cancellables)
     }
 
     // MARK: - Private funcs
-    private func getAllFlightPlans() -> [ProjectModel] {
+    private func loadAllProjects() -> [ProjectModel] {
         if displayMode == .compact {
             return manager.loadProjects(type: Services.hub.currentMissionManager.mode.flightPlanProvider?.projectType)
         } else {
@@ -203,7 +221,7 @@ final class FlightPlansListViewModel {
             // Return array of `FlightPlanListHeaderCellProvider`
             .reduce([FlightPlanListHeaderCellProvider](), { result, value in
                 // Updating cell provider if existing
-                let flightStoreProvider = getFligthPlanType(with: manager.lastFlightPlan(for: value)?.type)
+                let flightStoreProvider = flightPlanType(forType: manager.lastFlightPlan(for: value)?.type)
                 if let provider = result.first(where: { $0.missionType == flightStoreProvider?.missionProvider.mission.name }) {
                     var otherProvider = provider
                     otherProvider.count = provider.count + 1
@@ -226,6 +244,10 @@ final class FlightPlansListViewModel {
                 return otherResult
             })
     }
+
+    private func isSelected(uuid: String) -> Bool {
+        return self.uuid == uuid
+    }
 }
 
 // MARK: - FlightPlansListViewModelUIInput
@@ -235,7 +257,7 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
         manager.executedFlightPlans(for: project)
     }
 
-    func selectedProject(_ project: ProjectModel) {
+    func selectProject(_ project: ProjectModel) {
         didSelect(project: project)
     }
 
@@ -244,26 +266,38 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
     }
 
     func openProject(at index: Int) {
-        self.selectedItem(at: index)
-        self.delegate?.didDoubleTap(on: filteredFlightPlan[index])
+        // Select the project, if not yet done, and ensure it still exists.
+        guard let project = selectProject(at: index) else { return }
+        // Ask the delegate to open the project.
+        delegate?.didDoubleTap(on: project)
     }
 
     var uuidPublisher: AnyPublisher<String?, Never> {
         $uuid.eraseToAnyPublisher()
     }
 
-    var allFlightPlansPublisher: AnyPublisher<[ProjectModel], Never> {
-        $filteredFlightPlan.eraseToAnyPublisher()
+    var allProjectsPublisher: AnyPublisher<[ProjectModel], Never> {
+        filteredProjects.eraseToAnyPublisher()
     }
 
-    func selectedItem(at index: Int) {
-        guard index < filteredFlightPlan.count else { return }
-        let flightPlan = filteredFlightPlan[index]
-        didSelect(project: flightPlan)
-        delegate?.didSelect(project: flightPlan)
+    func indexOfProject(_ project: ProjectModel) -> Int {
+        allProjects.value.firstIndex(where: { project.uuid == $0.uuid }) ?? 0
     }
 
-    func selectedExecution(_ execution: FlightPlanModel) {
+    @discardableResult
+    func selectProject(at index: Int) -> ProjectModel? {
+        // Ensure index is not out of range.
+        guard index < filteredProjects.value.count else { return nil }
+        // Get the project from the filtered list.
+        let project = filteredProjects.value[index]
+        // Publish the selected project's `uuid`.
+        didSelect(project: project)
+        // Inform the delegate about the selection.
+        delegate?.didSelect(project: project)
+        return project
+    }
+
+    func selectExecution(_ execution: FlightPlanModel) {
         delegate?.didSelect(execution: execution)
     }
 
@@ -272,46 +306,45 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
     }
 
     func initViewModel() {
-        let flight = getAllFlightPlans()
+        let projects = loadAllProjects()
         switch displayMode {
-        case .full, .dashboard:
-            allFlightPlans = flight
-            buildHeader(allFlightPlans)
-            filteredFlightPlan = allFlightPlans
+        case .dashboard:
+            allProjects.value = projects
+            buildHeader(projects)
+            filteredProjects.value = projects
         case .compact:
-            filteredFlightPlan = flight
+            filteredProjects.value = projects
         }
     }
 
-    func getFlightPlan(at index: Int) -> CellFlightPlanListProvider? {
-        if index < filteredFlightPlan.count {
-            let project = filteredFlightPlan[index]
-            let isSelected = displayMode == .full ? false : uuid == project.uuid
-            return CellFlightPlanListProvider(isSelected: isSelected, project: project)
+    func projectProvider(at index: Int) -> CellProjectListProvider? {
+        if index < filteredProjects.value.count {
+            let project = filteredProjects.value[index]
+            let isSelected = isSelected(uuid: project.uuid)
+            return CellProjectListProvider(isSelected: isSelected, project: project)
         }
-
         return nil
     }
 
-    func modelsCount() -> Int {
-        filteredFlightPlan.count
+    func projectsCount() -> Int {
+        filteredProjects.value.count
     }
 
-    func getHeaderProvider() -> [FlightPlanListHeaderCellProvider] {
+    func headerCellProvider() -> [FlightPlanListHeaderCellProvider] {
         return headerProvider
+    }
+
+    func updateNavigationStack(with selectedProject: ProjectModel?) {
+        navigationStack.updateLast(with: .myFlightsExecutedProjects(selectedProject: selectedProject))
     }
 }
 
 // MARK: - FlightPlansListViewModelParentInput
 extension FlightPlansListViewModel: FlightPlansListViewModelParentInput {
     func updateUUID(with selectedUUID: String?) {
-        uuid = selectedUUID
-    }
-
-    func setupProjects(with models: [ProjectModel]) {
-        allFlightPlans = getAllFlightPlans()
-        buildHeader(getAllFlightPlans())
-        filteredFlightPlan = allFlightPlans
+        if uuid != selectedUUID {
+            uuid = selectedUUID
+        }
     }
 
     func setupDisplayMode(with mode: FlightPlansListDisplayMode) {
@@ -338,21 +371,21 @@ extension FlightPlansListViewModel: FlightPlanListHeaderDelegate {
 
         // if `currentProvider` was `false` before selection then filter the flight plans
         if currentProvider.isSelected == false {
-            filteredFlightPlan = allFlightPlans.filter {
-                let type = getFligthPlanType(with: manager.lastFlightPlan(for: $0)?.type)
+            filteredProjects.value = allProjects.value.filter {
+                let type = flightPlanType(forType: manager.lastFlightPlan(for: $0)?.type)
                 return provider.missionType == type?.missionProvider.mission.name
             }
         }
 
         // if `currentProvider` was `true` before selection then rollback to all flight plan
         else {
-            filteredFlightPlan = allFlightPlans
+            filteredProjects.value = allProjects.value
         }
     }
 }
 
 private extension FlightPlansListViewModel {
-    func getFligthPlanType(with type: String?) -> FlightPlanType? {
+    func flightPlanType(forType type: String?) -> FlightPlanType? {
         return Services.hub.flightPlan.typeStore.typeForKey(type)
     }
 }

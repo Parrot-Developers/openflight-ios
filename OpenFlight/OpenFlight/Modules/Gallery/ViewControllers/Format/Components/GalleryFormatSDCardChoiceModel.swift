@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -40,10 +39,6 @@ struct GalleryFormatSDCardChoiceModel {
     var text: String
     /// Choice main text color.
     var textColor: ColorName
-    /// Choice subtitle text.
-    var subText: String?
-    /// Choice subtitle text color.
-    var subTextColor: ColorName
 
     // MARK: - Init
     /// Init.
@@ -56,13 +51,9 @@ struct GalleryFormatSDCardChoiceModel {
     ///    - subTextColor: subtitle text color.
     init(image: UIImage,
          text: String,
-         textColor: ColorName = ColorName.white,
-         subText: String? = nil,
-         subTextColor: ColorName = ColorName.white50) {
+         textColor: ColorName = ColorName.white) {
         self.image = image
         self.text = text
         self.textColor = textColor
-        self.subText = subText
-        self.subTextColor = subTextColor
     }
 }

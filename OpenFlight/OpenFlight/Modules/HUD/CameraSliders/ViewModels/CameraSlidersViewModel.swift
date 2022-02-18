@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,7 +40,6 @@ class CameraSlidersViewModel {
     private var showInfoTiltLabelTimer: Timer?
     private var cancellables = Set<AnyCancellable>()
     private var bottomBarModeObserver: Any?
-    private var splitModeObserver: Any?
     private unowned var joysticksAvailabilityService: JoysticksAvailabilityService
     private unowned var zoomService: ZoomService
     private unowned var tiltService: GimbalTiltService
@@ -66,7 +64,7 @@ class CameraSlidersViewModel {
         }
     }
     @Published private(set) var zoomButtonTitle = "N/A"
-    @Published private(set) var zoomButtonColor = ColorName.defaultIconColor.color
+    @Published private(set) var zoomButtonColor = ColorName.defaultTextColor.color
     var zoomButtonEnabled: AnyPublisher<Bool, Never> {
         zoomService.maxZoomPublisher
             .map { [unowned self] in $0 <= zoomService.minZoom }
@@ -109,12 +107,11 @@ class CameraSlidersViewModel {
         self.tiltService = tiltService
         listenBottomBarModeChanges()
         listenJoysticks()
-        listenSplitModeChanges()
         listenZoom()
     }
 
     deinit {
-        NotificationCenter.default.remove(observer: splitModeObserver)
+        NotificationCenter.default.remove(observer: bottomBarModeObserver)
     }
 }
 
@@ -150,7 +147,7 @@ private extension CameraSlidersViewModel {
             .combineLatest(zoomService.maxLosslessZoomPublisher)
             .sink { [unowned self] (currentZoom, maxLosslessZoom) in
                 zoomButtonTitle = String(format: "%.01f", currentZoom) + Style.multiplySign
-                zoomButtonColor = UIColor(named: currentZoom > maxLosslessZoom ? .orangePeel : ColorName.defaultIconColor)
+                zoomButtonColor = UIColor(named: currentZoom > maxLosslessZoom ? .warningColor : ColorName.defaultTextColor)
             }
             .store(in: &cancellables)
     }
@@ -163,18 +160,6 @@ private extension CameraSlidersViewModel {
                                                                        queue: nil) { [weak self] notification in
             guard let bottomBarMode = notification.userInfo?[BottomBarMode.notificationKey] as? BottomBarMode else { return }
             self?.bottomBarOpened = bottomBarMode != .closed
-        }
-    }
-
-    /// Listen for split mode changes
-    func listenSplitModeChanges() {
-        // TODO: seems like missing UI service
-        splitModeObserver = NotificationCenter.default.addObserver(forName: .splitModeDidChange,
-                                                                   object: nil,
-                                                                   queue: nil) { [unowned self] notification in
-            if let splitMode = notification.userInfo?[SplitControlsConstants.splitScreenModeKey] as? SplitScreenMode {
-                showZoomSlider = splitMode != .secondary
-            }
         }
     }
 }

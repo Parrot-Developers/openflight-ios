@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,9 +40,9 @@ final class DroneCalibrationViewModel {
     /// Drone's gimbal state.
     @Published private(set) var gimbalState: CalibratableGimbalState?
     /// Drone's front stereo gimbal state.
-    @Published private(set) var frontStereoGimbalState: FrontStereoGimbalCalibrationState?
+    @Published private(set) var frontStereoGimbalState: CalibratableGimbalState?
     /// Drone's stereo vision sensors state.
-    @Published private(set) var stereoVisionSensorsState: StereoVisionSensorsCalibrationState?
+    @Published private(set) var stereoVisionSensorsState: StereoVisionSensorCalibrationState?
     /// Drone's magnetometer state.
     @Published private(set) var magnetometerState: DroneMagnetometerCalibrationState?
     /// Drone's flying state.
@@ -61,16 +60,15 @@ final class DroneCalibrationViewModel {
     /// Tells if a strereo calibration is launched
     @Published private(set) var isStereoCalibrationLaunched: Bool = false
     /// gimbalCalibrationState to represent model
-    @Published private(set) var gimbalCalibrationState: CalibratableGimbalState?
+    @Published private(set) var gimbalCalibrationProcessState: GimbalCalibrationProcessState = .none
     /// frontStereoGimbalCalibrationState object to represent model.
-    @Published private(set) var frontStereoGimbalCalibrationState: FrontStereoGimbalCalibrationState?
+    @Published private(set) var frontStereoGimbalCalibrationProcessState: GimbalCalibrationProcessState = .none
 
     private var cancellables = Set<AnyCancellable>()
     private var connectedDroneHolder = Services.hub.connectedDroneHolder
 
     // MARK: - Private Properties
 
-    private var stateRef: Ref<DeviceState>?
     private var gimbalRef: Ref<Gimbal>?
     private var magnetometerRef: Ref<MagnetometerWith3StepCalibration>?
     private var frontStereoGimbalRef: Ref<FrontStereoGimbal>?
@@ -93,6 +91,7 @@ final class DroneCalibrationViewModel {
 
     /// Starts Gimbal calibration.
     func startGimbalCalibration() {
+        gimbalCalibrationProcessState = GimbalCalibrationProcessState.none
         connectedDroneHolder.drone?.getPeripheral(Peripherals.gimbal)?.startCalibration()
     }
 
@@ -103,17 +102,13 @@ final class DroneCalibrationViewModel {
 
     /// Starts Front Stereo Gimbal calibration.
     func startFrontStereoGimbalCalibration() {
+        frontStereoGimbalCalibrationProcessState = GimbalCalibrationProcessState.none
         connectedDroneHolder.drone?.getPeripheral(Peripherals.frontStereoGimbal)?.startCalibration()
     }
 
     /// Cancels Front Stereo Gimbal calibration.
     func cancelFrontStereoGimbalCalibration() {
         connectedDroneHolder.drone?.getPeripheral(Peripherals.frontStereoGimbal)?.cancelCalibration()
-    }
-
-    /// Updates the front Stereo Gimbal Calibration State
-    func updateFrontStereoGimbalCalibrationState(state: FrontStereoGimbalCalibrationState) {
-        frontStereoGimbalCalibrationState = state
     }
 
     /// Updates the value of isStereoCalibrationLaunched
@@ -148,31 +143,13 @@ private extension DroneCalibrationViewModel {
 
     /// Updates gimbal states and attributes.
     func updateGimbalState(gimbal: Gimbal?) {
-        guard let gimbal = gimbal else {
-            gimbalState = .calibrated
-            gimbalCalibrationDescription = ""
-            gimbalCalibrationTitleColor = .defaultTextColor
-            gimbalCalibrationSubtitleColor = .defaultTextColor
-            gimbalCalibrationBackgroundColor = .white
-            return
-        }
-
-        gimbalState = gimbal.state
-        gimbalCalibrationDescription = gimbal.calibrationStateDescription
-        gimbalCalibrationTitleColor = gimbal.titleColor
-        gimbalCalibrationSubtitleColor = gimbal.subtitleColor
-        gimbalCalibrationBackgroundColor = gimbal.backgroundColor
-
-        switch gimbal.calibrationProcessState {
-        case .success:
-            isCalibrationRequested = false
-            self.gimbalCalibrationState = .calibrated
-        case .failure:
-            isCalibrationRequested = true
-            self.gimbalCalibrationState = .needed
-        default :
-            break
-        }
+        gimbalState = gimbal?.state ?? .calibrated
+        gimbalCalibrationProcessState = gimbal?.calibrationProcessState ?? GimbalCalibrationProcessState.none
+        gimbalCalibrationDescription = gimbal?.state.description ?? ""
+        gimbalCalibrationTitleColor = gimbal?.titleColor ?? .defaultTextColor
+        gimbalCalibrationSubtitleColor = gimbal?.subtitleColor ?? .defaultTextColor
+        gimbalCalibrationBackgroundColor = gimbal?.backgroundColor ?? .white
+        updateCalibrationRequested(gimbalCalibrationProcessState)
     }
 
     /// Starts watcher for gimbal front stereo sensors.
@@ -184,33 +161,9 @@ private extension DroneCalibrationViewModel {
 
     /// Updates the front stereo gimbal sensor of the drone.
     func updateFrontStereoGimbal(frontStereoGimbal: FrontStereoGimbal?) {
-
-        guard let frontStereoGimbal = frontStereoGimbal else {
-            frontStereoGimbalState = .calibrated
-            frontStereoGimbalCalibrationState = .calibrated
-            return
-        }
-
-        switch (frontStereoGimbal.calibrated, frontStereoGimbal.currentErrors.isEmpty) {
-        case (false, true),
-             (_, false):
-            frontStereoGimbalState = .needed
-        default:
-            frontStereoGimbalState = .calibrated
-        }
-
-        switch frontStereoGimbal.calibrationProcessState {
-        case .success:
-            isCalibrationRequested = false
-            self.frontStereoGimbalCalibrationState = .calibrated
-        case .failure:
-            isCalibrationRequested = true
-            self.frontStereoGimbalCalibrationState = .needed
-        case .calibrating:
-            self.frontStereoGimbalCalibrationState = .calibrating
-        default :
-            break
-        }
+        frontStereoGimbalState = frontStereoGimbal?.state ?? .calibrated
+        frontStereoGimbalCalibrationProcessState = frontStereoGimbal?.calibrationProcessState ?? GimbalCalibrationProcessState.none
+        updateCalibrationRequested(frontStereoGimbalCalibrationProcessState)
     }
 
     /// Starts watcher for stereo vision sensor.
@@ -220,14 +173,16 @@ private extension DroneCalibrationViewModel {
         }
     }
 
-    /// Updates stereo vision sensor calibration state.
-    func updateStereoVisionSensorCalibrationState(stereoVisionSensor: StereoVisionSensor?) {
-        guard let stereoVisionSensor = stereoVisionSensor else {
-            stereoVisionSensorsState = .calibrated
-            return
+    /// Updates the calibration requested flag.
+    func updateCalibrationRequested(_ processState: GimbalCalibrationProcessState) {
+        switch processState {
+        case .success:
+            isCalibrationRequested = false
+        case .failure:
+            isCalibrationRequested = true
+        default :
+            break
         }
-
-        stereoVisionSensorsState = stereoVisionSensor.isCalibrated ? .calibrated : .needed
     }
 
     /// Starts watcher for magnetometer.
@@ -235,6 +190,11 @@ private extension DroneCalibrationViewModel {
         magnetometerRef = drone.getPeripheral(Peripherals.magnetometerWith3StepCalibration) { [weak self] magnetometer in
             self?.updateMagnetometerCalibrationState(magnetometer: magnetometer)
         }
+    }
+
+    /// Updates stereo vision sensor calibration state.
+    func updateStereoVisionSensorCalibrationState(stereoVisionSensor: StereoVisionSensor?) {
+        stereoVisionSensorsState = stereoVisionSensor?.state ?? .calibrated
     }
 
     /// Updates magnetometer calibration state.

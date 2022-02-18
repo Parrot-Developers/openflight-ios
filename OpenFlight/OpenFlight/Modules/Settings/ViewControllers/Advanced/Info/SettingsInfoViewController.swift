@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -83,32 +82,15 @@ final class SettingsInfoViewController: UIViewController, StoryboardBased {
         }
     }
     @IBOutlet private weak var imageTop: UIImageView!
-    @IBOutlet private weak var imageBottom: UIImageView!
     @IBOutlet private weak var topStackView: UIView!
-    @IBOutlet private weak var bottomStackView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var titleDescriptionLabelTop: UILabel!
     @IBOutlet private weak var descriptionLabelTop: UILabel!
     @IBOutlet private weak var imageHeightConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var titleDescriptionLabelBottom: UILabel! {
-        didSet {
-            titleDescriptionLabelBottom.text = L10n.settingsBehaviourInfosHorizonLineFollow
-        }
-    }
-    @IBOutlet private weak var descriptionLabelBottom: UILabel! {
-        didSet {
-            descriptionLabelBottom.text = L10n.settingsBehaviourInfosHorizonLineFollowDescription
-        }
-    }
 
     // MARK: - Private Properties
     private var coordinator: SettingsCoordinator?
     private var infoType: BehaviourInfoTypeModel = BehaviourInfoTypeModel.bankedTurn
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let bankedImageScreenRatio: CGFloat = 0.6
-    }
 
     // MARK: - Init
     static func instantiate(coordinator: SettingsCoordinator, infoType: BehaviourInfoTypeModel) -> SettingsInfoViewController {
@@ -128,21 +110,23 @@ final class SettingsInfoViewController: UIViewController, StoryboardBased {
         self.titleDescriptionLabelTop.text = infoType.titleDescription
         self.descriptionLabelTop.text = infoType.description
         self.imageTop.image = infoType.image
-
-        if infoType == .bankedTurn {
-            // BankedTurn do not need bottom views.
-            self.bottomStackView.isHidden = true
-            self.imageHeightConstraint.constant = self.view.frame.height * Constants.bankedImageScreenRatio
-        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: infoType == .bankedTurn
-                                ? LogEvent.EventLoggerScreenConstants.settingsBankedTurnInfo
-                                : LogEvent.EventLoggerScreenConstants.settingsHorizonLineInfo,
-                             logType: .screen)
+        LogEvent.log(.screen(infoType == .bankedTurn
+                             ? LogEvent.Screen.settingsBankedTurnInfo
+                             : LogEvent.Screen.settingsHorizonLineInfo))
+
+        UIView.animate(withDuration: Style.shortAnimationDuration, delay: Style.shortAnimationDuration) {
+            self.view.backgroundColor = ColorName.nightRider80.color
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        view.backgroundColor = .clear
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -158,6 +142,6 @@ final class SettingsInfoViewController: UIViewController, StoryboardBased {
 private extension SettingsInfoViewController {
     /// Close action.
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
-        self.coordinator?.back()
+        self.coordinator?.dismiss()
     }
 }

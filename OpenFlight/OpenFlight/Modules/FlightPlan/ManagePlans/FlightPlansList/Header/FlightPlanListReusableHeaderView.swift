@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -59,7 +58,7 @@ class FlightPlanListReusableHeaderView: UICollectionReusableView {
         addSubview(headerCollectionView.view)
         NSLayoutConstraint.activate([
             headerCollectionView.view.topAnchor.constraint(equalTo: topAnchor),
-            headerCollectionView.view.bottomAnchor.constraint(equalTo: bottomAnchor),
+            headerCollectionView.view.heightAnchor.constraint(equalToConstant: Layout.fileFilterCollectionViewCellHeight(isRegularSizeClass)),
             headerCollectionView.view.leadingAnchor.constraint(equalTo: leadingAnchor),
             headerCollectionView.view.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])

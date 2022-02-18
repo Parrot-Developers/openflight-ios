@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +32,7 @@ final class DroneFirmwaresCoordinator: Coordinator {
     // MARK: - Internal Properties
     var navigationController: NavigationController?
     var childCoordinators = [Coordinator]()
-    var parentCoordinator: Coordinator?
+    weak var parentCoordinator: Coordinator?
 
     // MARK: - Internal Funcs
     func start() {
@@ -46,6 +45,7 @@ final class DroneFirmwaresCoordinator: Coordinator {
 
     /// Quits the update processes.
     func quitUpdateProcesses() {
+        FirmwareAndMissionsInteractor.shared.manuallyBrowse()
         self.parentCoordinator?.dismissChildCoordinator()
     }
 
@@ -58,10 +58,10 @@ final class DroneFirmwaresCoordinator: Coordinator {
         case .firmware:
             let viewController = FirmwareUpdatingViewController.instantiate(coordinator: self)
             push(viewController)
-        case .protobufMissions:
-            let viewController = ProtobufMissionsUpdatingViewController.instantiate(coordinator: self)
+        case .airSdkMissions:
+            let viewController = AirSdkMissionsUpdatingViewController.instantiate(coordinator: self)
             push(viewController)
-        case .firmwareAndProtobufMissions:
+        case .firmwareAndAirSdkMissions:
             let viewController = FirmwareAndMissionsUpdateViewController.instantiate(coordinator: self)
             push(viewController)
         }

@@ -1,6 +1,4 @@
-//
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,40 +29,46 @@
 
 import Foundation
 import Combine
+import SwiftyUserDefaults
 
 public class ProjectManagerViewModel {
 
     // MARK: - Public properties
-    public var allProjects: AnyPublisher<[ProjectModel], Never> { manager.projectsPublisher }
-//    public var filteredProjects: AnyPublisher<[ProjectModel], Never> { manager.projectsPublisher }
     public var isSynchronizingData: AnyPublisher<Bool, Never> { isSynchronizingSubject.eraseToAnyPublisher() }
     public var isFlightPlanProjectType: AnyPublisher<Bool, Never> { isFlightPlanProjectTypeSubject.eraseToAnyPublisher() }
     public var projectDidUpdate: AnyPublisher<ProjectModel?, Never> { projectDidUpdateSubject.eraseToAnyPublisher() }
     public var projectAdded: AnyPublisher<ProjectModel?, Never> { projectAddedSubject.eraseToAnyPublisher() }
+    public var segmentedControlSelectedIndex: Int {
+        (!isFlightPlanProjectTypeSubject.value).toInt
+    }
 
     let manager: ProjectManager
     let cloudSynchroWatcher: CloudSynchroWatcher?
 
     // MARK: - Private properties
-    private let coordinator: DashboardCoordinator?
+    private let coordinator: ProjectManagerCoordinator?
     private let projectManagerUiProvider: ProjectManagerUiProvider!
+    private let flightPlanStateMachine: FlightPlanStateMachine?
     private var isSynchronizingSubject = CurrentValueSubject<Bool, Never>(false)
-    private var isFlightPlanProjectTypeSubject = CurrentValueSubject<Bool, Never>(true)
+    private var isFlightPlanProjectTypeSubject = CurrentValueSubject<Bool, Never>(Defaults.isFlightPlanProjectType)
     private var projectDidUpdateSubject = CurrentValueSubject<ProjectModel?, Never>(nil)
     private var projectAddedSubject = CurrentValueSubject<ProjectModel?, Never>(nil)
     private var idFlyingProject: String?
     private var cancellables = Set<AnyCancellable>()
 
-    init(coordinator: DashboardCoordinator?,
+    init(coordinator: ProjectManagerCoordinator?,
          manager: ProjectManager,
          cloudSynchroWatcher: CloudSynchroWatcher?,
-         projectManagerUiProvider: ProjectManagerUiProvider) {
+         projectManagerUiProvider: ProjectManagerUiProvider,
+         flightPlanStateMachine: FlightPlanStateMachine?) {
         self.manager = manager
         self.cloudSynchroWatcher = cloudSynchroWatcher
         self.coordinator = coordinator
         self.projectManagerUiProvider = projectManagerUiProvider
+        self.flightPlanStateMachine = flightPlanStateMachine
 
         listenDataSynchronization()
+        listenFlightPlanStateMachine()
     }
 
     // MARK: - Private funcs
@@ -77,15 +81,14 @@ public class ProjectManagerViewModel {
     }
 
     private func listenFlightPlanStateMachine() {
-        Services.hub.flightPlan.stateMachine.statePublisher
-            .sink(receiveValue: { [unowned self] state in
-                switch state {
-                case let .flying(flightPlan):
+        flightPlanStateMachine?.statePublisher
+            .sink { [unowned self] state in
+                if case .flying(let flightPlan) = state {
                     idFlyingProject = flightPlan.projectUuid
-                default:
+                } else {
                     idFlyingProject = nil
                 }
-            })
+            }
             .store(in: &cancellables)
     }
 
@@ -94,6 +97,7 @@ public class ProjectManagerViewModel {
 extension ProjectManagerViewModel {
     func updateProjectType(_ projectType: ProjectManagerUiParameters.ProjectType) {
         isFlightPlanProjectTypeSubject.value = projectType.isStantardFlightPlan
+        Defaults.isFlightPlanProjectType = projectType.isStantardFlightPlan
     }
 
     var projectTypes: [ProjectManagerUiParameters.ProjectType] { projectManagerUiProvider.uiParameters().projectTypes }
@@ -107,13 +111,18 @@ extension ProjectManagerViewModel {
         guard let index = index else { return projectTypes.first }
         return projectTypes[min(max(index, 0), projectTypes.count)]
     }
+
+    func projectTypeIndex(of project: ProjectModel?) -> Int? {
+        guard let project = project else { return nil }
+        return projectTypes.firstIndex(where: { $0.flightPlanProvider?.projectType == project.type })
+    }
 }
 
 // MARK: - Project actions
 extension ProjectManagerViewModel {
 
     func openProject(_ project: ProjectModel) {
-        coordinator?.open(project: project)
+        coordinator?.open(project: project, startEdition: false)
     }
 
     func renameProject(_ project: ProjectModel, with title: String?) {
@@ -122,16 +131,18 @@ extension ProjectManagerViewModel {
     }
 
     func duplicateProject(_ project: ProjectModel) {
-        manager.duplicate(project: project)
+        let duplicatedProject = manager.duplicate(project: project)
         projectAddedSubject.value = manager.currentProject
+        coordinator?.open(project: duplicatedProject, startEdition: false)
    }
 
     func createNewProject(for flightPlanProvider: FlightPlanProvider) {
         let project = manager.newProject(flightPlanProvider: flightPlanProvider)
         projectAddedSubject.value = project
+        coordinator?.open(project: project, startEdition: true)
     }
 
-    func shhowDeletionConfirmation(for project: ProjectModel) {
+    func showDeletionConfirmation(for project: ProjectModel) {
         coordinator?.showDeleteProjectPopupConfirmation(didTapDelete: {
             self.deleteProject(project)
         })

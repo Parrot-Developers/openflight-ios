@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,43 +39,19 @@ extension UIViewController {
     ///     - message: alert message
     ///     - cancelAction: alert cancel action
     ///     - validateAction: alert validate action
+    ///     - secondaryAction: alert secondary action
     func showAlert(title: String,
                    message: String,
                    cancelAction: AlertAction = AlertAction(title: L10n.cancel),
-                   validateAction: AlertAction? = nil) {
+                   validateAction: AlertAction? = nil,
+                   secondaryAction: AlertAction? = nil) {
         let alert = AlertViewController.instantiate(title: title,
                                                     message: message,
+                                                    closeButtonStyle: .cross,
                                                     cancelAction: cancelAction,
-                                                    validateAction: validateAction)
+                                                    validateAction: validateAction,
+                                                    secondaryAction: secondaryAction)
         self.present(alert, animated: true, completion: nil)
-    }
-
-    /// Display an alert popup.
-    ///
-    /// - Parameters:
-    ///     - title: alert title
-    ///     - message: alert message
-    ///     - cancelAction: alert cancel action
-    ///     - validateAction: alert validate action
-    public func displayAlert(title: String,
-                             message: String,
-                             cancelAction: AlertAction,
-                             validateAction: AlertAction? = nil) {
-        self.showAlert(title: title,
-                       message: message,
-                       cancelAction: cancelAction,
-                       validateAction: validateAction)
-    }
-
-    /// Show alert view controller with only one `Ok` button.
-    ///
-    /// - Parameters:
-    ///     - title: alert title
-    ///     - message: alert message
-    func showAlertInfo(title: String, message: String) {
-        self.showAlert(title: title,
-                       message: message,
-                       cancelAction: AlertAction(title: L10n.ok, actionHandler: nil))
     }
 
     /// Show toast message which is automatically dismissed.
@@ -86,7 +62,7 @@ extension UIViewController {
     func showToast(message: String, duration: Double = Style.longAnimationDuration) {
         // Creating toast label.
         let toastLabel = UILabel(frame: CGRect())
-        toastLabel.makeUp(with: .large, and: ColorName.greenSpring)
+        toastLabel.makeUp(with: .large, and: ColorName.highlightColor)
         toastLabel.translatesAutoresizingMaskIntoConstraints = false
         toastLabel.numberOfLines = 0
         toastLabel.textAlignment = .center
@@ -127,5 +103,14 @@ extension UIViewController {
                 toastContainer.removeFromSuperview()
             })
         })
+    }
+
+    // In order to display actionSheet on iPad, sourceView should be different from UIViewController.view
+    func presentSheet(viewController: UIViewController, sourceView: UIView) {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            viewController.popoverPresentationController?.sourceView = sourceView
+            viewController.popoverPresentationController?.sourceRect = sourceView.bounds
+        }
+        present(viewController, animated: true, completion: nil)
     }
 }

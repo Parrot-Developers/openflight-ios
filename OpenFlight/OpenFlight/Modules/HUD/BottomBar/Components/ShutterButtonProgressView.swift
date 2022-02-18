@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,9 +40,8 @@ final class ShutterButtonProgressView: UIView, NibOwnerLoadable {
     // MARK: - Private Enums
     private enum Constants {
         static let layerAnimationKey: String = "strokeEnd"
-        static let borderWidth: CGFloat = 2.0
-        static let hugeBorderWidth: CGFloat = 50.0
-        static let strokeColor: UIColor = UIColor(named: .greenSpring)
+        static let borderWidth: CGFloat = 10.0
+        static let strokeColor: UIColor = UIColor(named: .highlightColor)
         static let backgroundStrokeColor: UIColor = UIColor(named: .white20)
         static let startAngle: CGFloat = CGFloat(Float.pi / -2.0)
     }
@@ -51,21 +49,12 @@ final class ShutterButtonProgressView: UIView, NibOwnerLoadable {
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInit()
+        commonInit()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInit()
-    }
-
-    // MARK: - Override Funcs
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        progressLayer.removeFromSuperlayer()
-        progressLayerBackground.removeFromSuperlayer()
-        drawProgressLayer()
-        drawBackgroundProgressLayer()
+        commonInit()
     }
 
     // MARK: - Internal Funcs
@@ -80,6 +69,15 @@ final class ShutterButtonProgressView: UIView, NibOwnerLoadable {
         animateProgressLayer(duration: duration)
     }
 
+    /// Animates progress from 0 to 1.
+    ///
+    /// - Parameters:
+    ///     - duration: duration of the animation
+    func animateProgress(duration: TimeInterval) {
+        drawProgressLayer(progress: 0, animated: true)
+        animateProgressLayer(duration: duration, from: 0)
+    }
+
     /// Reset progress.
     func resetProgress() {
         progressLayer.removeFromSuperlayer()
@@ -91,9 +89,8 @@ final class ShutterButtonProgressView: UIView, NibOwnerLoadable {
 private extension ShutterButtonProgressView {
     /// Init view.
     func commonInit() {
-        self.loadNibContent()
+        loadNibContent()
         drawBackgroundProgressLayer()
-        drawProgressLayer()
     }
 
     /// Draws the progress layer.
@@ -102,20 +99,13 @@ private extension ShutterButtonProgressView {
     ///     - progress: current progress value
     ///     - animated: tells if the view need to be animated
     func drawProgressLayer(progress: CGFloat = 0.0, animated: Bool = false) {
-        let center = CGPoint(x: frame.width / 2.0, y: frame.height / 2.0)
-        let progressPath = UIBezierPath(arcCenter: center,
-                                        radius: Style.largeCornerRadius,
-                                        startAngle: Constants.startAngle,
-                                        endAngle: Constants.startAngle + 2.0 * CGFloat.pi,
-                                        clockwise: true)
-
         CATransaction.begin()
         CATransaction.setDisableActions(!animated)
         progressLayer.path = progressPath.cgPath
         progressLayer.strokeColor = Constants.strokeColor.cgColor
         progressLayer.fillColor = UIColor.clear.cgColor
-        progressLayer.lineWidth = Constants.hugeBorderWidth
-        progressLayer.strokeEnd = progress == 0.0 ? Constants.startAngle : 1.0 - progress
+        progressLayer.lineWidth = Constants.borderWidth
+        progressLayer.strokeEnd = 1.0 - progress
         CATransaction.commit()
         if progressLayer.superlayer == nil {
             layer.addSublayer(progressLayer)
@@ -124,16 +114,10 @@ private extension ShutterButtonProgressView {
 
     /// Draws the background progress layer.
     func drawBackgroundProgressLayer() {
-        let center = CGPoint(x: frame.width / 2.0, y: frame.height / 2.0)
-        let progressPath = UIBezierPath(arcCenter: center,
-                                        radius: Style.largeCornerRadius,
-                                        startAngle: Constants.startAngle,
-                                        endAngle: Constants.startAngle + 2.0 * CGFloat.pi,
-                                        clockwise: true)
         progressLayerBackground.path = progressPath.cgPath
         progressLayerBackground.strokeColor = Constants.backgroundStrokeColor.cgColor
         progressLayerBackground.fillColor = UIColor.clear.cgColor
-        progressLayerBackground.lineWidth = Constants.hugeBorderWidth
+        progressLayerBackground.lineWidth = Constants.borderWidth
         layer.addSublayer(progressLayerBackground)
     }
 
@@ -141,10 +125,12 @@ private extension ShutterButtonProgressView {
     ///
     /// - Parameters:
     ///     - duration: animation duration
-    func animateProgressLayer(duration: TimeInterval) {
+    ///     - from: animation fromValue if not nil (`progressLayer` current strokeEnd will be used as fromValue otherwise)
+    func animateProgressLayer(duration: TimeInterval, from: CGFloat? = nil) {
         animation.duration = duration
-        if let presentationStrokeEnd = progressLayer.presentation()?.strokeEnd,
-            presentationStrokeEnd != 0.0 {
+        if let fromValue = from {
+            animation.fromValue = fromValue
+        } else if let presentationStrokeEnd = progressLayer.presentation()?.strokeEnd {
             animation.fromValue = presentationStrokeEnd
         } else {
             animation.fromValue = progressLayer.strokeEnd
@@ -152,5 +138,39 @@ private extension ShutterButtonProgressView {
         animation.toValue = progressLayer.strokeEnd
         animation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)
         progressLayer.add(animation, forKey: Constants.layerAnimationKey)
+    }
+
+    /// The rounded rectangle bezier path with a midX top starting point.
+    var progressPath: UIBezierPath {
+        let path = UIBezierPath()
+        let cornerRadius = Style.largeCornerRadius
+        path.move(to: CGPoint(x: frame.midX, y: 0))
+        path.addLine(to: CGPoint(x: frame.width - cornerRadius, y: 0))
+        path.addArc(withCenter: CGPoint(x: frame.width - cornerRadius, y: cornerRadius),
+                    radius: cornerRadius,
+                    startAngle: -.pi / 2,
+                    endAngle: 0,
+                    clockwise: true)
+        path.addLine(to: CGPoint(x: frame.width, y: frame.height - cornerRadius))
+        path.addArc(withCenter: CGPoint(x: frame.width - cornerRadius, y: frame.height - cornerRadius),
+                    radius: cornerRadius,
+                    startAngle: 0,
+                    endAngle: .pi / 2,
+                    clockwise: true)
+        path.addLine(to: CGPoint(x: cornerRadius, y: frame.height))
+        path.addArc(withCenter: CGPoint(x: cornerRadius, y: frame.height - cornerRadius),
+                    radius: cornerRadius,
+                    startAngle: .pi / 2,
+                    endAngle: .pi,
+                    clockwise: true)
+        path.addLine(to: CGPoint(x: 0, y: cornerRadius))
+        path.addArc(withCenter: CGPoint(x: cornerRadius, y: cornerRadius),
+                    radius: cornerRadius,
+                    startAngle: .pi,
+                    endAngle: .pi * 3 / 2,
+                    clockwise: true)
+        path.close()
+
+        return path
     }
 }

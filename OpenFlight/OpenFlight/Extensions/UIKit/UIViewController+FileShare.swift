@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -39,14 +39,14 @@ protocol FileShare: AnyObject {
     ///     - data: data to share
     ///     - name: file name
     ///     - fileExtension: file extension
-    func shareFile(data: Data?, name: String?, fileExtension: String)
+    func shareFile(data: Data?, name: String?, fileExtension: String, srcView: UIView)
     /// Clean temporary file. Must be call on deinit, not before.
     func cleanTemporaryFile()
 }
 
 /// UIViewController FileShare code.
 extension FileShare where Self: UIViewController {
-    func shareFile(data: Data?, name: String?, fileExtension: String) {
+    func shareFile(data: Data?, name: String?, fileExtension: String, srcView: UIView) {
         // Prepare data in background thread.
         DispatchQueue.global(qos: .background).async { [weak self] in
             if self?.temporaryShareUrl != nil {
@@ -70,8 +70,7 @@ extension FileShare where Self: UIViewController {
             DispatchQueue.main.sync {
                 // Show ActivityViewController.
                 let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-                activityViewController.popoverPresentationController?.sourceView = self?.view
-                self?.present(activityViewController, animated: true, completion: {})
+                self?.presentSheet(viewController: activityViewController, sourceView: srcView)
             }
         }
     }

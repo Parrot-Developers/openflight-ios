@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 // MARK: - Protocols
 /// Protocol used to show and hide bottom bar levels.
@@ -48,10 +48,10 @@ protocol BottomBarContainerDelegate: AnyObject {
 final class BottomBarContainerViewController: UIViewController {
 
     // MARK: - Outlets
-    @IBOutlet private weak var bottomBarContainerView: UIView!
+    @IBOutlet private weak var containerStackView: MainContainerStackView!
     @IBOutlet private weak var levelOneContainerView: UIView!
     @IBOutlet private weak var levelTwoContainerView: UIView!
-    @IBOutlet private weak var panoramaProgressView: PanoramaProgressBarView!
+    @IBOutlet private weak var panoramaProgressBarContainer: MainContainerStackView!
 
     // MARK: - Internal Properties
     weak var coordinator: HUDCoordinator?
@@ -60,10 +60,12 @@ final class BottomBarContainerViewController: UIViewController {
     private var levelOneViewController: BottomBarLevelViewController!
     private var levelTwoViewController: BottomBarLevelTwoViewController!
     private let panoramaModeViewModel = PanoramaModeViewModel()
+    private var cancellables = Set<AnyCancellable>()
+
     private var isPanoramaInProgress: Bool = false {
         didSet {
-            self.bottomBarContainerView.isHidden = isPanoramaInProgress
-            self.panoramaProgressView.isHidden = !isPanoramaInProgress
+            containerStackView.showFromEdge(.bottom, show: !isPanoramaInProgress, fadeFrom: 1)
+            panoramaProgressBarContainer.showFromEdge(.bottom, show: isPanoramaInProgress, fadeFrom: 1)
         }
     }
     private var bottomBarMode: BottomBarMode = .preset {
@@ -76,17 +78,21 @@ final class BottomBarContainerViewController: UIViewController {
         }
     }
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let animationDuration: TimeInterval = 0.1
-    }
-
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
         view.translatesAutoresizingMaskIntoConstraints = false
-        self.listenPanoramaMode()
+        listenPanoramaMode()
+        listenToMissionPanel()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        // Bottom bar snaps to safe area (if available) or main padding guide.
+        containerStackView.hasMinLeftPadding = true
+        panoramaProgressBarContainer.hasMinLeftPadding = true
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -103,20 +109,35 @@ final class BottomBarContainerViewController: UIViewController {
 
 // MARK: - Private Funcs
 private extension BottomBarContainerViewController {
+    /// Listens to missions panel display state changes.
+    func listenToMissionPanel() {
+        guard let coordinator = coordinator else { return }
+        coordinator.showMissionLauncherPublisher.sink { [unowned self] isShown in
+            containerStackView.screenBorders = isShown ? [.bottom] : [.left, .bottom]
+        }
+        .store(in: &cancellables)
+    }
 
     /// Starts watcher for panorama mode.
     func listenPanoramaMode() {
-        self.panoramaModeViewModel.state.valueChanged = { [weak self] state in
-            guard let strongSelf = self,
-                  strongSelf.isPanoramaInProgress != state.inProgress else {
-                return
+        panoramaModeViewModel.$status
+            .sink { [unowned self] status in
+                self.updatePanoramaBarState(status: status)
             }
-            if state.progress == Int(Values.oneHundred) {
-                self?.panoramaProgressView.finishProgressBar()
-            }
+            .store(in: &cancellables)
+    }
 
-            strongSelf.isPanoramaInProgress = state.inProgress
+    func updatePanoramaBarState(status: PanoramaModeViewModel.PanoramaStatus) {
+        guard panoramaModeViewModel.status != .success else {
+            // Delay progress bar success status update, as last panorama notifications may arrive too fast to be distinguished.
+            // (e.g. 20 last percents of animation + switch to idle state may occur in a few milliseconds.)
+            DispatchQueue.main.asyncAfter(deadline: .now() + Style.mediumAnimationDuration) {
+                self.isPanoramaInProgress = status == .inProgress
+            }
+            return
         }
+
+        isPanoramaInProgress = status != .idle
     }
 
     /// Hides the level two bar.
@@ -124,13 +145,10 @@ private extension BottomBarContainerViewController {
         guard levelTwoContainerView.isHidden == false else {
             return
         }
-        UIView.animate(withDuration: Constants.animationDuration,
-                       animations: {
-                        self.levelTwoContainerView.isHidden = true
-                        self.levelTwoContainerView.alpha = 0.0
-                       }, completion: { _ in
-                        self.levelTwoViewController.removeLevelView()
-                       })
+
+        levelTwoContainerView.animateIsHidden(true, duration: Style.fastAnimationDuration) { _ in
+            self.levelTwoViewController.removeLevelView()
+        }
     }
 }
 
@@ -145,12 +163,8 @@ extension BottomBarContainerViewController: BottomBarContainerDelegate {
         default:
             levelOneViewController.addSegmentedBar(viewModel: viewModel)
         }
-        self.levelOneContainerView.alpha = 0.0
-        UIView.animate(withDuration: Constants.animationDuration,
-                       animations: {
-                        self.levelOneContainerView.isHidden = false
-                        self.levelOneContainerView.alpha = 1.0
-                       })
+
+        levelOneContainerView.animateIsHidden(false, duration: Style.fastAnimationDuration)
 
         // Autohide level two when a new level one bar is displayed.
         hideLevelTwo()
@@ -162,19 +176,16 @@ extension BottomBarContainerViewController: BottomBarContainerDelegate {
             return
         }
 
-        UIView.animate(withDuration: Constants.animationDuration,
-                       animations: {
-                        self.levelOneContainerView.isHidden = true
-                        self.levelOneContainerView.alpha = 0.0
-                       }, completion: { _ in
-                        switch viewModel {
-                        case is CameraWidgetViewModel:
-                            self.levelOneViewController.removeImagingSettingsBar()
-                        default:
-                            self.levelOneViewController.removeLevelView()
-                        }
-                        self.bottomBarMode = .closed
-                       })
+        levelOneContainerView.animateIsHidden(true, duration: Style.fastAnimationDuration) { _ in
+            switch viewModel {
+            case is CameraWidgetViewModel:
+                self.levelOneViewController.removeImagingSettingsBar()
+            default:
+                self.levelOneViewController.removeLevelView()
+            }
+            self.bottomBarMode = .closed
+        }
+
         // Autohide level two when level one is hidden.
         hideLevelTwo()
     }
@@ -193,12 +204,8 @@ extension BottomBarContainerViewController: BottomBarContainerDelegate {
         default:
             levelTwoViewController.addSegmentedBar(viewModel: viewModel)
         }
-        self.levelTwoContainerView.alpha = 0.0
-        UIView.animate(withDuration: Constants.animationDuration,
-                       animations: {
-                        self.levelTwoContainerView.isHidden = false
-                        self.levelTwoContainerView.alpha = 1.0
-                       })
+
+        levelTwoContainerView.animateIsHidden(false, duration: Style.fastAnimationDuration)
     }
 
     func hideLevelTwo<T: BarButtonState>(viewModel: BarButtonViewModel<T>) {

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,20 +29,50 @@
 
 import UIKit
 import Reusable
+import Combine
 
 /// Header menu TableViewCell.
 final class HeaderMenuTableViewCell: UITableViewHeaderFooterView, NibReusable {
     // MARK: - Outlets
+    @IBOutlet private weak var separatorView: UIView!
     @IBOutlet private weak var sectionTitle: UILabel!
+    @IBOutlet private weak var bottomConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var topConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var leadingConstraint: NSLayoutConstraint!
+    private var tapGestureSubscriberHandle: AnyCancellable?
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-        sectionTitle.makeUp(with: .small, and: .defaultTextColor)
+        separatorView.backgroundColor = ColorName.defaultTextColor20.color
+        sectionTitle.makeUp(with: .small, and: .disabledTextColor)
+        bottomConstraint.constant = Layout.mainSpacing(isRegularSizeClass)
+        topConstraint.constant = Layout.mainSpacing(isRegularSizeClass)
+        leadingConstraint.constant = Layout.mainPadding(isRegularSizeClass)
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+
+        tapGestureSubscriberHandle?.cancel()
     }
 
     // MARK: - Public Funcs
-    func setup(with title: String?) {
+    func setup(with title: String?, action: (() -> Void)? = nil) {
         sectionTitle.text = title
+        sectionTitle.isHidden = title?.isEmpty ?? true
+        if title?.isEmpty ?? true {
+            sectionTitle.isHidden = true
+            topConstraint.constant = 0
+        } else {
+            sectionTitle.isHidden = false
+            topConstraint.constant = Layout.mainSpacing(isRegularSizeClass)
+        }
+
+        if let action = action {
+            tapGestureSubscriberHandle = tapGesturePublisher.sink { _ in
+                action()
+            }
+        }
     }
 }

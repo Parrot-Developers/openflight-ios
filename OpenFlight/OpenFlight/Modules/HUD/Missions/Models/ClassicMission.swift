@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,29 +29,26 @@
 
 import UIKit
 
-// MARK: - Internal Enums
-/// Constants for all missions.
-enum MissionConstants {
-    static let classicMissionManualKey: String = "classicManual"
-}
-
 // MARK: - Internal Structs
 /// Classic mission provider struct.
 struct ClassicMission: MissionProvider {
     // MARK: - Internal Properties
     var mission: Mission
 
-    var signature: ProtobufMissionSignature = DefaultMissionSignature()
+    var signature: AirSdkMissionSignature = DefaultMissionSignature()
 
     // MARK: - Static content
-    static var manualModeConf = MissionModeConfigurator(key: MissionConstants.classicMissionManualKey,
+    static var manualModeConf = MissionModeConfigurator(key: MissionsConstants.classicMissionManualKey,
                                                         name: L10n.missionModeManual,
                                                         icon: Asset.MissionModes.icClassicMissionMode.image,
                                                         logName: LogEvent.LogKeyHUDMissionProviderSelectorButton.manual,
                                                         preferredSplitMode: .splited,
                                                         isMapRequired: false,
                                                         isRightPanelRequired: false,
-                                                        isTrackingMode: false)
+                                                        isTrackingMode: false,
+                                                        isAeLockEnabled: true,
+                                                        isInstallationRequired: true,
+                                                        isCameraShutterButtonEnabled: true)
     static var manualMode = MissionMode(configurator: manualModeConf,
                                         bottomBarLeftStack: { () -> [UIView] in
                                             return [BehaviourModeView()]

@@ -531,7 +531,7 @@ struct Vmeta_DroneMetadata {
   /// axis is guaranteed to point down.
   /// The position is initialized at first take off. This position is
   /// guaranteed not to jump, even when a new absolute position (usually
-  /// GPS) is avaiable. Instead, the origin of the local frame jumps in
+  /// GPS) is available. Instead, the origin of the local frame jumps in
   /// order to ensure the continuity of the local position.
   var localPosition: Vmeta_Vector3 {
     get {return _storage._localPosition ?? Vmeta_Vector3()}
@@ -614,6 +614,24 @@ struct Vmeta_CameraMetadata {
   var hasQuat: Bool {return _storage._quat != nil}
   /// Clears the value of `quat`. Subsequent reads from it will return its default value.
   mutating func clearQuat() {_uniqueStorage()._quat = nil}
+
+  /// Estimated position of the camera in the local frame (m).
+  /// The local frame is not NED: X and Y axis are arbitrary, but the Z
+  /// axis is guaranteed to point down.
+  /// The position is initialized at first take off. This position is
+  /// guaranteed not to jump, even when a new absolute position (usually
+  /// GPS) is available. Instead, the origin of the local frame jumps in
+  /// order to ensure the continuity of the local position.
+  /// This position is not available on all cameras. If not available,
+  /// the Drone.local_position metadata should be used instead.
+  var localPosition: Vmeta_Vector3 {
+    get {return _storage._localPosition ?? Vmeta_Vector3()}
+    set {_uniqueStorage()._localPosition = newValue}
+  }
+  /// Returns true if `localPosition` has been explicitly set.
+  var hasLocalPosition: Bool {return _storage._localPosition != nil}
+  /// Clears the value of `localPosition`. Subsequent reads from it will return its default value.
+  mutating func clearLocalPosition() {_uniqueStorage()._localPosition = nil}
 
   /// Frame exposure time (ms) 
   var exposureTime: Float {
@@ -1277,30 +1295,34 @@ extension Vmeta_DroneMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      if let v = _storage._quat {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._quat {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-      }
-      if let v = _storage._location {
+      } }()
+      try { if let v = _storage._location {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      }
+      } }()
       if _storage._groundDistance != 0 {
         try visitor.visitSingularDoubleField(value: _storage._groundDistance, fieldNumber: 3)
       }
-      if let v = _storage._speed {
+      try { if let v = _storage._speed {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-      }
+      } }()
       if _storage._batteryPercentage != 0 {
         try visitor.visitSingularSInt32Field(value: _storage._batteryPercentage, fieldNumber: 5)
       }
       if _storage._flyingState != .fsLanded {
         try visitor.visitSingularEnumField(value: _storage._flyingState, fieldNumber: 7)
       }
-      if let v = _storage._position {
+      try { if let v = _storage._position {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
-      }
-      if let v = _storage._localPosition {
+      } }()
+      try { if let v = _storage._localPosition {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
-      }
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1335,6 +1357,7 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     11: .standard(proto: "utc_timestamp_accuracy"),
     2: .standard(proto: "base_quat"),
     3: .same(proto: "quat"),
+    12: .standard(proto: "local_position"),
     4: .standard(proto: "exposure_time"),
     5: .standard(proto: "iso_gain"),
     6: .standard(proto: "awb_r_gain"),
@@ -1349,6 +1372,7 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     var _utcTimestampAccuracy: UInt32 = 0
     var _baseQuat: Vmeta_Quaternion? = nil
     var _quat: Vmeta_Quaternion? = nil
+    var _localPosition: Vmeta_Vector3? = nil
     var _exposureTime: Float = 0
     var _isoGain: UInt32 = 0
     var _awbRGain: Float = 0
@@ -1366,6 +1390,7 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       _utcTimestampAccuracy = source._utcTimestampAccuracy
       _baseQuat = source._baseQuat
       _quat = source._quat
+      _localPosition = source._localPosition
       _exposureTime = source._exposureTime
       _isoGain = source._isoGain
       _awbRGain = source._awbRGain
@@ -1401,6 +1426,7 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
         case 9: try { try decoder.decodeSingularFloatField(value: &_storage._vfov) }()
         case 10: try { try decoder.decodeSingularUInt64Field(value: &_storage._utcTimestamp) }()
         case 11: try { try decoder.decodeSingularUInt32Field(value: &_storage._utcTimestampAccuracy) }()
+        case 12: try { try decoder.decodeSingularMessageField(value: &_storage._localPosition) }()
         default: break
         }
       }
@@ -1409,15 +1435,19 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
       if _storage._timestamp != 0 {
         try visitor.visitSingularUInt64Field(value: _storage._timestamp, fieldNumber: 1)
       }
-      if let v = _storage._baseQuat {
+      try { if let v = _storage._baseQuat {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      }
-      if let v = _storage._quat {
+      } }()
+      try { if let v = _storage._quat {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-      }
+      } }()
       if _storage._exposureTime != 0 {
         try visitor.visitSingularFloatField(value: _storage._exposureTime, fieldNumber: 4)
       }
@@ -1442,6 +1472,9 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       if _storage._utcTimestampAccuracy != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._utcTimestampAccuracy, fieldNumber: 11)
       }
+      try { if let v = _storage._localPosition {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1456,6 +1489,7 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
         if _storage._utcTimestampAccuracy != rhs_storage._utcTimestampAccuracy {return false}
         if _storage._baseQuat != rhs_storage._baseQuat {return false}
         if _storage._quat != rhs_storage._quat {return false}
+        if _storage._localPosition != rhs_storage._localPosition {return false}
         if _storage._exposureTime != rhs_storage._exposureTime {return false}
         if _storage._isoGain != rhs_storage._isoGain {return false}
         if _storage._awbRGain != rhs_storage._awbRGain {return false}
@@ -1536,9 +1570,13 @@ extension Vmeta_TrackingMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if let v = self._target {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._target {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    }
+    } }()
     if self.timestamp != 0 {
       try visitor.visitSingularUInt64Field(value: self.timestamp, fieldNumber: 2)
     }
@@ -1743,8 +1781,9 @@ extension Vmeta_LinkMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every case branch when no optimizations are
-    // enabled. https://github.com/apple/swift-protobuf/issues/1034
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     switch self.`protocol` {
     case .wifi?: try {
       guard case .wifi(let v)? = self.`protocol` else { preconditionFailure() }
@@ -1793,21 +1832,25 @@ extension Vmeta_TimedMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if let v = self._drone {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._drone {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    }
-    if let v = self._camera {
+    } }()
+    try { if let v = self._camera {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }
+    } }()
     if !self.links.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.links, fieldNumber: 3)
     }
-    if let v = self._tracking {
+    try { if let v = self._tracking {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-    }
-    if let v = self._proposal {
+    } }()
+    try { if let v = self._proposal {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-    }
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,7 +31,7 @@ import CoreLocation
 
 /// Utility extension for `CLPlacemark`.
 
-extension CLPlacemark {
+public extension CLPlacemark {
     /// Returns address description.
     var addressDescription: String? {
         guard let country = self.country

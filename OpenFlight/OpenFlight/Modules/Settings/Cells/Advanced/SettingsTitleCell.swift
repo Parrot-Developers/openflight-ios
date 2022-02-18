@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,17 +30,10 @@
 import Reusable
 
 /// Settings Title Cell.
-final class SettingsTitleCell: UITableViewCell, NibReusable {
+final class SettingsTitleCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var titleImageView: UIImageView!
-    @IBOutlet private weak var topConstraint: NSLayoutConstraint!
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let firstTopConstraint: CGFloat = 5.0
-        static let topConstraint: CGFloat = 20
-    }
 
     // MARK: - Internal Funcs
     /// Configure cell.
@@ -49,10 +41,9 @@ final class SettingsTitleCell: UITableViewCell, NibReusable {
     /// - Parameters:
     ///    - cellTitle: cell title
     ///    - cellImage: cell image
-    func configureCell(cellTitle: String?, cellImage: UIImage?, isFirst: Bool = false) {
+    func configureCell(cellTitle: String?, cellImage: UIImage?) {
         titleLabel.text = cellTitle
         titleImageView.isHidden = cellImage == nil
         titleImageView.image = cellImage
-        topConstraint.constant = isFirst ? Constants.firstTopConstraint : Constants.topConstraint
     }
 }

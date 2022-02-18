@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,4 +33,40 @@ import CoreData
 @objc(Project)
 public class Project: NSManagedObject {
 
+    // MARK: - Constant
+    /// Project's UUID key identifier used in predicates
+    public static let uuidKey = "uuid"
+
+    // MARK: - Utils
+    func model() -> ProjectModel {
+        return ProjectModel(apcId: apcId,
+                            cloudId: Int(cloudId),
+                            uuid: uuid,
+                            title: title,
+                            type: type,
+                            latestCloudModificationDate: latestCloudModificationDate,
+                            lastUpdated: lastUpdated,
+                            isLocalDeleted: isLocalDeleted,
+                            synchroStatus: SynchroStatus(status: synchroStatus),
+                            synchroError: SynchroError(rawValue: synchroError),
+                            latestSynchroStatusDate: latestSynchroStatusDate,
+                            latestLocalModificationDate: latestLocalModificationDate)
+    }
+
+    func update(fromProjectModel projectModel: ProjectModel) {
+        apcId = projectModel.apcId
+        cloudId = Int64(projectModel.cloudId)
+        uuid = projectModel.uuid
+        title = projectModel.title
+        type = projectModel.type
+        latestCloudModificationDate = projectModel.latestCloudModificationDate
+
+        lastUpdated = projectModel.lastUpdated
+
+        isLocalDeleted = projectModel.isLocalDeleted
+        latestSynchroStatusDate = projectModel.latestSynchroStatusDate
+        latestLocalModificationDate = projectModel.latestLocalModificationDate
+        synchroStatus = projectModel.synchroStatus?.rawValue ?? 0
+        synchroError = projectModel.synchroError?.rawValue ?? 0
+    }
 }

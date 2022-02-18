@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import GroundSdk
 
 /// Class which displays remote control update.
 final class RemoteUpdateViewController: UIViewController {
@@ -39,7 +39,7 @@ final class RemoteUpdateViewController: UIViewController {
     @IBOutlet private weak var rebootingStepView: UpdateStepView!
     @IBOutlet private weak var progressView: RemoteImageView!
     @IBOutlet private weak var backButton: UIButton!
-    @IBOutlet private weak var continueButton: UIButton!
+    @IBOutlet private weak var continueButton: ActionButton!
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
@@ -49,6 +49,8 @@ final class RemoteUpdateViewController: UIViewController {
     private var isDownloadOnly: Bool = false
     /// Tells whether target firmware is already downloaded.
     private var isFirmwareAlreadyDownloaded: Bool = false
+    /// Tells whether an applicable firmware is locally available (it may not be the ideal version).
+    private var isLocalUpdateAvailable: Bool = false
     private var isUpdateCancelledAlertShown: Bool = false
 
     // MARK: - Private Enums
@@ -84,20 +86,19 @@ final class RemoteUpdateViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.firmwareUpdate,
-                             logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.firmwareUpdate))
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
@@ -127,9 +128,7 @@ private extension RemoteUpdateViewController {
         titleLabel.text = L10n.remoteUpdateControllerUpdate
         backButton.setTitle(L10n.cancel, for: .normal)
         progressView.updateRemoteImage(image: Asset.Remote.icRemoteUpdate.image)
-        continueButton.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
-                                          borderColor: .clear,
-                                          radius: Style.largeCornerRadius)
+        continueButton.isHidden = true
     }
 
     /// Update device update steps.
@@ -139,9 +138,9 @@ private extension RemoteUpdateViewController {
     func updateStepView(_ step: RemoteUpdateStep) {
         switch step {
         case .downloadStarted:
-            downloadingStepView.model.state = .doing
+            downloadingStepView.model.step = .doing
         case .downloadCompleted:
-            downloadingStepView?.model.state = .done
+            downloadingStepView?.model.step = .done
             if isDownloadOnly {
                 isUpdateFinished = true
                 updateButtonView()
@@ -151,18 +150,32 @@ private extension RemoteUpdateViewController {
                 // Launch update when download is finish.
                 viewModel?.startUpdateProcess()
             }
+        case .downloadFailed:
+            downloadingStepView?.model.step = .error
+            if !isDownloadOnly,
+               let targetVersion = viewModel?.latestApplicableFirmwareVersion {
+                ULog.d(.remoteUpdateTag, "download of firmware \(viewModel?.state.value.idealFirmwareVersion ?? "")"
+                       + " failed, start update with local firmware \(targetVersion)")
+                sendingStepView?.model.title = L10n.firmwareMissionUpdateSendingToRemoteControl(targetVersion)
+                viewModel?.startUpdate()
+            } else {
+                isUpdateFinished = false
+                updateButtonView()
+            }
         case .updateStarted,
-             .uploading:
-            downloadingStepView?.model.state = .done
-            sendingStepView?.model.state = .doing
+                .uploading:
+            sendingStepView?.model.step = .doing
         case .processing,
-             .rebooting:
-            downloadingStepView?.model.state = .done
-            sendingStepView?.model.state = .done
-            rebootingStepView?.model.state = .doing
+                .rebooting:
+            sendingStepView?.model.step = .done
+            rebootingStepView?.model.step = .doing
         case .updateCompleted:
-            rebootingStepView?.model.state = .done
+            rebootingStepView?.model.step = .done
             isUpdateFinished = true
+            updateButtonView()
+        case .updateFailed:
+            sendingStepView?.model.step = .error
+            isUpdateFinished = false
             updateButtonView()
         default:
             break
@@ -188,33 +201,13 @@ private extension RemoteUpdateViewController {
                 updateProgress(progress: progress)
             }
         case .updateStarted,
-             .uploading:
+                .uploading:
             updateProgress(progress: progress)
         case .processing,
-             .rebooting:
+                .rebooting:
             progressView.lockCompleteProgress(Constants.afterRebootProgressValue, duration: Constants.rebootDuration)
         case .updateCompleted:
             progressView.lockCompleteProgress(Constants.maxProgressValue, duration: Constants.progressDuration)
-        default:
-            break
-        }
-    }
-
-    /// Observes errors during the update process.
-    ///
-    /// - Parameters:
-    ///     - event: event during the update
-    func listenErrorEvents(_ event: RemoteUpdateEvent?) {
-        switch event {
-        case .downloadFailed, .updateFailed:
-            isUpdateFinished = false
-            viewModel?.cancelUpdateProcess()
-            updateButtonView()
-            if event == .downloadFailed {
-                downloadingStepView?.model.state = .error
-            } else {
-                sendingStepView?.model.state = .error
-            }
         default:
             break
         }
@@ -243,14 +236,11 @@ private extension RemoteUpdateViewController {
 
     /// Updates button view.
     func updateButtonView() {
-        continueButton.setTitle(isUpdateFinished
-                                    ? L10n.commonContinue
-                                    : L10n.commonRetry,
-                                for: .normal)
-        continueButton.setTitleColor(isUpdateFinished ? .white : ColorName.defaultTextColor.color, for: .normal)
-        continueButton.cornerRadiusedWith(backgroundColor: isUpdateFinished ? ColorName.highlightColor.color : ColorName.whiteAlbescent.color,
-                                          borderColor: .clear,
-                                          radius: Style.largeCornerRadius)
+        if isUpdateFinished {
+            continueButton.setup(title: L10n.commonContinue, style: .validate)
+        } else {
+            continueButton.setup(title: L10n.commonRetry, style: .default2)
+        }
         continueButton.isHidden = false
     }
 
@@ -294,15 +284,16 @@ private extension RemoteUpdateViewController {
     func initViewModel() {
         viewModel = RemoteUpdateViewModel()
         isDownloadOnly = viewModel?.needDownload() == true
-            && viewModel?.state.value.remoteControlConnectionState?.isConnected() == false
+        && viewModel?.state.value.remoteControlConnectionState?.isConnected() == false
         isFirmwareAlreadyDownloaded = viewModel?.needDownload() == false
+        isLocalUpdateAvailable = viewModel?.isLocalUpdateAvailable() == true
 
         let version = viewModel?.state.value.idealFirmwareVersion ?? ""
-        downloadingStepView.model = UpdateStepModel(state: .todo,
+        downloadingStepView.model = UpdateStepModel(step: .todo,
                                                     title: L10n.firmwareMissionUpdateDownloadingFirmware(version))
-        sendingStepView.model = UpdateStepModel(state: .todo,
+        sendingStepView.model = UpdateStepModel(step: .todo,
                                                 title: L10n.firmwareMissionUpdateSendingToRemoteControl(version))
-        rebootingStepView.model = UpdateStepModel(state: .todo, title: L10n.firmwareMissionUpdateRebootAndUpdate)
+        rebootingStepView.model = UpdateStepModel(step: .todo, title: L10n.firmwareMissionUpdateRebootAndUpdate)
 
         viewModel?.state.valueChanged = { [weak self] state in
             self?.updateDeviceUpdateState(state)
@@ -336,15 +327,15 @@ private extension RemoteUpdateViewController {
             && state.deviceUpdateStep.value == .uploading {
             showUpdateCancelledAlert()
         }
-        if !isFirmwareAlreadyDownloaded,
-           state.isNetworkReachable == false {
+        if !isFirmwareAlreadyDownloaded
+            && !isLocalUpdateAvailable
+            && state.isNetworkReachable == false {
             // Display connection error alerts.
             showConnectionUnreachableAlert()
         }
 
         updateProgressView(step: state.deviceUpdateStep.value,
                            progress: state.currentProgress)
-        listenErrorEvents(state.deviceUpdateEvent)
     }
 
     /// Called when the app enters background.

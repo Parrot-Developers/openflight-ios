@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,10 +32,10 @@ import Foundation
 class FlightPlanEditionMenuViewModel {
 
     @Published private(set) var viewState: ViewState?
-    private var manager: ProjectManager
+    private var editionService: FlightPlanEditionService
 
-    init(manager: ProjectManager) {
-        self.manager = manager
+    init(editionService: FlightPlanEditionService) {
+        self.editionService = editionService
     }
 
     enum ViewState {
@@ -51,8 +51,38 @@ class FlightPlanEditionMenuViewModel {
         viewState = .refresh
     }
 
-    func getCurrentTitle(with flightPlan: FlightPlanModel?) -> String? {
-        guard let flightPlan = flightPlan else { return nil }
-        return manager.project(for: flightPlan)?.title
+    func projectNameCellProvider(forFlightPlan flightPlan: FlightPlanModel?) -> ProjectNameMenuTableViewCellProvider {
+        ProjectNameCellProvider(flightPlan: flightPlan,
+                                editionService: editionService)
+    }
+}
+
+private protocol ProjectNameProvider {
+    func title(ofFlightPlan flightPlan: FlightPlanModel?) -> String
+    func update(title: String, ofFlightPlan flightPlan: FlightPlanModel?)
+}
+
+private struct ProjectNameCellProvider: ProjectNameMenuTableViewCellProvider, ProjectNameProvider {
+
+    var flightPlan: FlightPlanModel?
+    var editionService: FlightPlanEditionService
+
+    var title: String {
+        get {
+            title(ofFlightPlan: flightPlan)
+        }
+        set {
+            update(title: newValue, ofFlightPlan: flightPlan)
+        }
+    }
+
+    func title(ofFlightPlan flightPlan: FlightPlanModel?) -> String {
+        guard let flightPlan = flightPlan else { return "" }
+        return flightPlan.customTitle
+    }
+
+    func update(title: String, ofFlightPlan flightPlan: FlightPlanModel?) {
+        guard let flightPlan = flightPlan else { return }
+        editionService.rename(flightPlan, title: title)
     }
 }

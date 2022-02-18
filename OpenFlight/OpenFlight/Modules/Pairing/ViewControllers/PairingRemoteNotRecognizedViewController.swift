@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -61,27 +60,28 @@ final class PairingRemoteNotRecognizedViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        updateView()
+        initView()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.pairingHowToConnectRemoteToPhone,
-                             logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.pairingHowToConnectRemoteToPhone))
 
         UIView.animate(withDuration: Style.shortAnimationDuration,
                        delay: Style.shortAnimationDuration,
                        animations: {
-                        self.view.backgroundColor = ColorName.nightRider.color
-                       })
+            self.view.backgroundColor = ColorName.nightRider80.color
+        })
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        view.backgroundColor = .clear
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -104,10 +104,17 @@ private extension PairingRemoteNotRecognizedViewController {
 // MARK: - Private Funcs
 private extension PairingRemoteNotRecognizedViewController {
     /// Update the view.
-    func updateView() {
+    func initView() {
         titleLabel.text = L10n.pairingHowToConnectRemote
+        titleLabel.font = FontStyle.title.font(isRegularSizeClass)
+
         firstStepLabel.text = L10n.pairingPlugUsbCable
+        firstStepLabel.font = FontStyle.big.font(isRegularSizeClass)
+
         secondStepLabel.text = L10n.pairingMakeSureBatteryCharged
+        secondStepLabel.font = FontStyle.big.font(isRegularSizeClass)
+
         thirdStepLabel.text = L10n.pairingTryDifferentCable
+        thirdStepLabel.font = FontStyle.big.font(isRegularSizeClass)
     }
 }

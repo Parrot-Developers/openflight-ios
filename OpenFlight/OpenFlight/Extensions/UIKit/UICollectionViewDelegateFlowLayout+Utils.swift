@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -43,18 +42,5 @@ extension UICollectionViewFlowLayout {
             + self.sectionInset.right
             + self.minimumInteritemSpacing * CGFloat(cellsPerRow - 1)
         return ((width - horizontalMarginAndInsets) / CGFloat(cellsPerRow)).rounded(.down)
-    }
-
-    /// Get height of the cell dynamicaly.
-    ///
-    /// - Parameters:
-    ///     - cellsPerRow: targeted cell number per row
-    ///     - height: collection view height
-    ///     - count: items number
-    func getDynamicCellHeight(cellsPerRow: Int, height: CGFloat, count: Int) -> CGFloat {
-        let verticalMarginAndInsets = self.sectionInset.top
-            + self.sectionInset.bottom
-            + self.minimumLineSpacing * CGFloat(count / cellsPerRow - 1)
-        return ((height - verticalMarginAndInsets) / CGFloat(count / cellsPerRow)).rounded(.down)
     }
 }

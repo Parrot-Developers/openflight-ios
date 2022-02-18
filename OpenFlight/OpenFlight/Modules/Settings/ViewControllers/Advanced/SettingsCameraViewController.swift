@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,8 +35,30 @@ final class SettingsCameraViewController: SettingsContentViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        resetCellLabel = L10n.settingsCameraReset
+        initView()
+        setupViewModel()
+    }
 
+    /// Reset to default settings.
+    override func resetSettings() {
+        LogEvent.log(.simpleButton(LogEvent.LogKeyAdvancedSettings.resetRecordingSettings))
+
+        viewModel?.resetSettings()
+    }
+}
+
+// MARK: - Private Funcs
+private extension SettingsCameraViewController {
+
+    /// Initializes view.
+    func initView() {
+        view.directionalLayoutMargins = Layout.mainContainerInnerMargins(isRegularSizeClass,
+                                                                         screenBorders: [.top, .bottom])
+        resetCellLabel = L10n.settingsCameraReset
+    }
+
+    /// Sets up view model.
+    func setupViewModel() {
         // Setup view model.
         // TODO wrong injection, viewModel should be prepared one level up (coordinator or upper VM)
         viewModel = SettingsCameraViewModel(flightPlanCameraSettingsHandler: Services.hub.flightPlan.cameraSettingsHandler)
@@ -47,15 +68,5 @@ final class SettingsCameraViewController: SettingsContentViewController {
 
         // Inital data source update.
         updateDataSource()
-    }
-
-    /// Reset to default settings.
-    override func resetSettings() {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced,
-                             itemName: LogEvent.LogKeyAdvancedSettings.resetRecordingSettings,
-                             newValue: nil,
-                             logType: LogEvent.LogType.button)
-
-        viewModel?.resetSettings()
     }
 }

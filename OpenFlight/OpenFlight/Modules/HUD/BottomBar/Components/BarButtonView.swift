@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,12 +36,12 @@ public class BarButtonView: UIControl, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var title: UILabel! {
         didSet {
-            title.makeUp(with: .small, and: .defaultTextColor)
+            title.makeUp(with: .caps, color: .defaultTextColor)
         }
     }
     @IBOutlet public weak var currentMode: UILabel! {
         didSet {
-            currentMode.makeUp(and: .defaultTextColor)
+            currentMode.makeUp(with: .current, color: .defaultTextColor)
         }
     }
     @IBOutlet private weak var subTitle: UILabel! {
@@ -74,6 +73,17 @@ public class BarButtonView: UIControl, NibOwnerLoadable {
         customInitBarButtonView()
     }
 
+    // MARK: - Override Properties
+    open override var isEnabled: Bool {
+        didSet {
+            guard model != nil else { return }
+            updateIcon()
+            updateTextColor()
+            updateBackgroundColor()
+            updateModeView(with: model)
+        }
+    }
+
     // MARK: - Override Funcs
     open override var isSelected: Bool {
         didSet {
@@ -97,8 +107,7 @@ private extension BarButtonView {
         title.text = viewModel.title
         currentMode.text = viewModel.subtext
         subTitle.text = viewModel.subtitle
-        modeView.isHidden = viewModel.singleMode ||
-            (viewModel.title?.isEmpty == true && viewModel.subtext?.isEmpty == true && viewModel.subtitle?.isEmpty == true)
+        updateModeView(with: viewModel)
         updateAlpha()
         updateIcon()
         updateTextColor()
@@ -117,23 +126,44 @@ private extension BarButtonView {
     func updateIcon() {
         imageView.image = model.subMode?.image ?? model.image
         imageView.isHidden = model.image == nil
-        imageView.tintColor = model.isSelected.value ? .white : ColorName.defaultTextColor.color
+        imageView.tintColor = isEnabled
+                                ? model.isSelected.value
+                                    ? .white
+                                    : ColorName.defaultTextColor.color
+                                : ColorName.disabledTextColor2.color
     }
 
     func updateTextColor() {
-        let textColor = model.isSelected.value ? .white : ColorName.defaultTextColor.color
+        let textColor = isEnabled
+                        ? model.isSelected.value
+                            ? .white
+                            :ColorName.defaultTextColor.color
+                        : ColorName.disabledTextColor2.color
+
         title.textColor = textColor
         currentMode.textColor = textColor
         subTitle.textColor = textColor
     }
 
     func updateBackgroundColor() {
-        let isSelected = model.isSelected.value == true
-        let backgroundColor = isSelected ? ColorName.highlightColor.color : ColorName.white90.color
+        let backgroundColor = isEnabled
+                                ? model.isSelected.value
+                                    ? ColorName.highlightColor.color
+                                    : ColorName.white90.color
+                                : ColorName.disabledBgcolor.color
+
         customCornered(corners: roundedCorners,
                        radius: Style.largeCornerRadius,
                        backgroundColor: backgroundColor,
                        borderColor: .clear,
                        borderWidth: Style.noBorderWidth)
+    }
+
+    func updateModeView(with model: BarButtonState) {
+        modeView.isHidden = !isEnabled
+        || model.singleMode
+        || (model.title?.isEmpty == true
+            && model.subtext?.isEmpty == true
+            && model.subtitle?.isEmpty == true)
     }
 }

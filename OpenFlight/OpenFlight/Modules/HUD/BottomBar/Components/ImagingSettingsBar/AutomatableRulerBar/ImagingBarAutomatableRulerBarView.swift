@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -52,12 +51,12 @@ final class ImagingBarAutomatableRulerBarView<T: AutomatableRulerImagingBarState
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitImagingBarShutterSpeedBarView()
+        commonInitImagingBarShutterSpeedBarView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitImagingBarShutterSpeedBarView()
+        commonInitImagingBarShutterSpeedBarView()
     }
 
     // MARK: - Internal Funcs
@@ -87,7 +86,7 @@ final class ImagingBarAutomatableRulerBarView<T: AutomatableRulerImagingBarState
 private extension ImagingBarAutomatableRulerBarView {
     /// Common init.
     func commonInitImagingBarShutterSpeedBarView() {
-        self.loadNibContent()
+        loadNibContent()
     }
 
     /// Add ruler displaying current mode values.

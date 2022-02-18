@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,7 +30,18 @@
 import GroundSdk
 
 /// View Model which manages left slider.
-final class LeftSliderViewModel: DroneStateViewModel<DeviceConnectionState> { }
+final class LeftSliderViewModel: DroneStateViewModel<DeviceConnectionState> {
+    /// Gimbal tilt service
+    public let gimbalTiltService: GimbalTiltService
+
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///    - gimbalTiltService: gimbal tilt service
+    init(gimbalTiltService: GimbalTiltService) {
+        self.gimbalTiltService = gimbalTiltService
+    }
+}
 
 // MARK: - Internal Funcs
 extension LeftSliderViewModel {
@@ -51,7 +61,6 @@ private extension LeftSliderViewModel {
     /// - Parameters:
     ///     - newValue: new tilt velocity value
     func updateCameraTilt(newValue: Double) {
-        // TODO: Wrong injection
-        Services.hub.drone.gimbalTiltService.setTiltVelocity(newValue)
+        gimbalTiltService.setTiltVelocity(newValue)
     }
 }

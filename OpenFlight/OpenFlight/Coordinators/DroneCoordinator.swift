@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +32,7 @@ public final class DroneCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
-    public var parentCoordinator: Coordinator?
+    public weak var parentCoordinator: Coordinator?
 
     private let services: ServiceHub
 
@@ -46,9 +45,9 @@ public final class DroneCoordinator: Coordinator {
     public func start() {
         let viewController = DroneDetailsViewController.instantiate(coordinator: self)
         viewController.modalPresentationStyle = .fullScreen
-        self.navigationController = NavigationController(rootViewController: viewController)
-        self.navigationController?.isNavigationBarHidden = true
-        self.navigationController?.modalPresentationStyle = .fullScreen
+        navigationController = NavigationController(rootViewController: viewController)
+        navigationController?.isNavigationBarHidden = true
+        navigationController?.modalPresentationStyle = .fullScreen
     }
 }
 
@@ -65,27 +64,29 @@ extension DroneCoordinator {
         droneCalibrationCoordinator.parentCoordinator = self
         droneCalibrationCoordinator.delegate = self
         droneCalibrationCoordinator.start()
-        self.present(childCoordinator: droneCalibrationCoordinator,
-                     overFullScreen: true)
+        present(childCoordinator: droneCalibrationCoordinator,
+                overFullScreen: true)
     }
 
+    /// Displays cellular information screen.
     func displayDroneDetailsCellular() {
         let viewModel = DroneDetailCellularViewModel(coordinator: self,
                                                      currentDroneHolder: services.currentDroneHolder,
                                                      cellularPairingService: services.drone.cellularPairingService,
                                                      connectedRemoteControlHolder: services.connectedRemoteControlHolder,
-                                                     connectedDroneHolder: services.connectedDroneHolder)
+                                                     connectedDroneHolder: services.connectedDroneHolder,
+                                                     networkService: services.systemServices.networkService
+        )
         let viewController = DroneDetailsCellularViewController.instantiate(viewModel: viewModel)
         presentModal(viewController: viewController)
     }
 
-    /// Displays reboot alert
+    /// Displays reboot alert.
     func displayAlertReboot(action: @escaping () -> Void) {
         let cancelAction = AlertAction(title: L10n.cancel,
-                                       style: .cancel,
-                                       cancelCustomColor: ColorName.errorColor)
+                                       style: .destructive)
 
-        let validateAction = AlertAction(title: L10n.firmwareMissionUpdateReboot, style: .default, cancelCustomColor: ColorName.emerald) {
+        let validateAction = AlertAction(title: L10n.firmwareMissionUpdateReboot, style: .validate) {
             action()
         }
 
@@ -98,6 +99,7 @@ extension DroneCoordinator {
 
         presentPopup(alertViewController)
     }
+
     /// Displays cellular pin code modal.
     func displayCellularPinCode() {
         presentModal(viewController: CellularAccessCardPinViewController.instantiate(coordinator: self))
@@ -105,9 +107,9 @@ extension DroneCoordinator {
 
     /// Displays cellular debug logs.
     func displayCellularDebug() {
-        let viewController = CellularDebugLogsViewController.instantiate(coordinator: self,
-                                                                         viewModel: CellularDebugLogsViewModel())
-        push(viewController)
+        let viewModel = CellularDebugLogsViewModel(coordinator: self)
+        let viewController = CellularDebugLogsViewController.instantiate(viewModel: viewModel)
+        navigationController?.present(viewController, animated: true, completion: nil)
     }
 
     /// Dismisses current coordinator.
@@ -117,7 +119,7 @@ extension DroneCoordinator {
 
     /// Pops to root coordinator in order to display pairing process.
     func pairUser() {
-        self.popToRootCoordinator(coordinator: parentCoordinator)
+        popToRootCoordinator(coordinator: parentCoordinator)
     }
 
     /// Displays drone password edition setting.
@@ -130,13 +132,13 @@ extension DroneCoordinator {
         presentModal(viewController: viewController)
     }
 
-    /// Starts the Firmware and Protobuf Missions updates process.
-    func startFimwareAndProtobufMissionsUpdate() {
+    /// Starts the Firmware and AirSdk Missions updates process.
+    func startFimwareAndAirSdkMissionsUpdate() {
         let coordinator = DroneFirmwaresCoordinator()
         coordinator.parentCoordinator = self
         coordinator.start()
-        self.present(childCoordinator: coordinator,
-                     overFullScreen: true)
+        present(childCoordinator: coordinator,
+                overFullScreen: true)
     }
 }
 
@@ -144,6 +146,6 @@ extension DroneCoordinator {
 extension DroneCoordinator: DroneCalibrationCoordinatorDelegate {
     func firmwareUpdateRequired() {
         dismissChildCoordinator()
-        startFimwareAndProtobufMissionsUpdate()
+        startFimwareAndAirSdkMissionsUpdate()
     }
 }

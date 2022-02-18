@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,16 +34,15 @@ import Reusable
 final class PanoramaProgressBarView: UIView, NibOwnerLoadable {
 
     // MARK: - Outlets
-    @IBOutlet private weak var progressBarBackView: UIView!
-    @IBOutlet private weak var progressBarView: UIView!
+    @IBOutlet private weak var progressBarContainer: UIView!
+    @IBOutlet private weak var progressView: UIProgressView!
     @IBOutlet private weak var panoramaTypeImage: UIImageView!
     @IBOutlet private weak var panoramaTypeLabel: UILabel!
     @IBOutlet private weak var progressLabel: UILabel!
-    @IBOutlet private weak var progressBarWidthConstraint: NSLayoutConstraint!
     @IBOutlet private weak var stopView: StopView! {
         didSet {
-            self.stopView.delegate = self
-            self.stopView.style = .panorama
+            stopView.delegate = self
+            stopView.style = .panorama
         }
     }
 
@@ -54,42 +52,40 @@ final class PanoramaProgressBarView: UIView, NibOwnerLoadable {
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitPanoramaProgressBarView()
+        commonInitPanoramaProgressBarView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitPanoramaProgressBarView()
-    }
-
-    func finishProgressBar() {
-        self.progressBarWidthConstraint.constant = self.progressBarBackView.frame.width * (CGFloat(Values.oneHundred) / CGFloat(Values.oneHundred))
+        commonInitPanoramaProgressBarView()
     }
 }
 
 // MARK: - Private Funcs
 private extension PanoramaProgressBarView {
     func commonInitPanoramaProgressBarView() {
-        self.loadNibContent()
-        self.initUI()
-        self.listenPanoramaMode()
+        loadNibContent()
+        initUI()
+        listenPanoramaMode()
     }
 
     /// Initalize UI for the view.
     func initUI() {
-        self.progressBarBackView.cornerRadiusedWith(backgroundColor: ColorName.black60.color,
-                                                    borderColor: .clear,
-                                                    radius: Style.largeCornerRadius)
-        self.progressBarView.backgroundColor = ColorName.greenSpring20.color
+        panoramaTypeImage.tintColor = ColorName.defaultTextColor.color
+        panoramaTypeLabel.textColor = ColorName.defaultTextColor.color
+        progressLabel.textColor = ColorName.disabledTextColor.color
+        progressBarContainer.layer.cornerRadius = Style.largeCornerRadius
+        progressView.tintColor = ColorName.highlightColor.color
+        progressView.setProgress(0, animated: false)
     }
 
     /// Starts watcher for panorama mode.
     func listenPanoramaMode() {
-        self.panoramaModeViewModel.state.valueChanged = { [weak self] state in
+        panoramaModeViewModel.state.valueChanged = { [weak self] state in
             self?.updateProgressBar(state: state)
         }
 
-        self.updateProgressBar(state: panoramaModeViewModel.state.value)
+        updateProgressBar(state: panoramaModeViewModel.state.value)
     }
 
     /// Updates elements of the progress bar.
@@ -97,18 +93,22 @@ private extension PanoramaProgressBarView {
     /// - Parameters:
     ///    - state: panorama mode state
     func updateProgressBar(state: PanoramaModeState) {
-        self.panoramaTypeImage.image = state.mode.image
-        self.panoramaTypeLabel.text = state.mode.title
+        panoramaTypeImage.image = state.mode.image
+        panoramaTypeLabel.text = state.mode.title
         // TODO: Replace by image count when it will be ready on GSDK.
-        self.progressLabel.text = "\(state.progress) %"
-        self.progressBarWidthConstraint.constant = self.progressBarBackView.frame.width * (CGFloat(state.progress) / CGFloat(Values.oneHundred))
-        self.progressBarView.layoutIfNeeded()
+        progressLabel.text = "\(state.progress) %"
+        progressLabel.animateIsHiddenInStackView(state.progress < 0)
+
+        guard state.inProgress else { return }
+
+        let progressValue = Float(state.progress) / Float(Values.oneHundred)
+        progressView.setProgress(progressValue, animated: state.progress > 0)
     }
 }
 
 // MARK: - StopViewDelegate
 extension PanoramaProgressBarView: StopViewDelegate {
     func didClickOnStop() {
-        self.panoramaModeViewModel.cancelPanoramaPhotoCapture()
+        panoramaModeViewModel.cancelPanoramaPhotoCapture()
     }
 }

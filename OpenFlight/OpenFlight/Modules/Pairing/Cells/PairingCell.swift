@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -61,19 +60,15 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
     @IBOutlet private weak var modelImageView: UIImageView!
     // Description view.
     @IBOutlet private weak var stateDescriptionLabel: UILabel!
-    @IBOutlet private weak var stateDescriptionView: UIView!
     // Cell view.
-    @IBOutlet private weak var cellView: UIView!
     @IBOutlet private weak var bgView: UIView!
-    // Loading view.
-    @IBOutlet private weak var loadingView: UIView!
-    @IBOutlet private weak var loadingImageView: UIImageView!
+
     // Action view.
     @IBOutlet private weak var actionView: UIView!
-    @IBOutlet private weak var actionButton: UIButton!
+    @IBOutlet private weak var actionButton: ActionButton!
     // Error view.
     @IBOutlet private weak var errorView: UIView!
-    @IBOutlet private weak var errorButton: UIButton!
+    @IBOutlet private weak var errorButton: ActionButton!
     // Check icon.
     @IBOutlet private weak var checkView: UIView!
 
@@ -87,7 +82,7 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
         static let remoteNotRecognizedTaskKey: String = "remoteNotRecognized"
         static let droneWaitingDelay: Double = 2.0
         static let droneWaitingTaskKey: String = "droneWaiting"
-        static let droneNotDetectedDelay: Double = 5.0
+        static let droneNotDetectedDelay: Double = 15.0
         static let droneNotDetectedTaskKey: String = "droneNotDetected"
         static let droneConnectedDelay: Double = 2.0
         static let droneConnectedTaskKey: String = "droneConnected"
@@ -112,15 +107,6 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
         cancelDelayedTask(key: Constants.droneConnectedTaskKey)
     }
 
-    override func willMove(toWindow newWindow: UIWindow?) {
-        // Restart animation when we come back to the view.
-        if newWindow != nil,
-            loadingView.isHidden == false,
-            self.window == nil {
-            loadingImageView.startRotate()
-        }
-    }
-
     // MARK: - Internal Funcs
     /// Setup function which is responsaible of updating each cell of the pairing view.
     ///
@@ -135,8 +121,6 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
         updateDescriptionLabel(title: entry.title)
         updateErrorButton(isHidden: true, title: nil)
         updateActionButton(title: entry.actionTitle)
-        loadingImageView.stopRotate()
-        loadingView.isHidden = true
         checkView.isHidden = !taskIsDone
         indexLabel.isHidden = taskIsDone
 
@@ -154,13 +138,6 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
         } else if let entry = entry as? DroneWithRemotePairingModel {
             if taskIsDoing {
                 removeUserInteraction()
-                // Show an indication if the drone is not connected after 2s.
-                setupDelayedTask({
-                    self.loadingView.isHidden = !(taskIsDoing)
-                    self.loadingImageView.startRotate()},
-                                 delay: Constants.droneWaitingDelay,
-                                 key: Constants.droneWaitingTaskKey)
-
                 // Show an error button if the drone is not connected after 15s.
                 setupDelayedTask({
                     self.updateErrorButton(isHidden: !(taskIsDoing), title: entry.errorMessage)
@@ -185,12 +162,7 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
             }
         } else if let entry = entry as? DroneWithoutRemotePairingModel {
             removeUserInteraction()
-            updateErrorButton(isHidden: !taskIsDoing, title: entry.errorMessage, titleColor: entry.errorTextColor)
-            // Set the radius and the border for error and wifi settings buttons.
-            errorButton.cornerRadiusedWith(backgroundColor: entry.errorBackgroundColor,
-                                           borderColor: entry.errorBorderColor,
-                                           radius: Style.largeCornerRadius,
-                                           borderWidth: Style.mediumBorderWidth)
+            updateErrorButton(isHidden: !taskIsDoing, title: entry.errorMessage, style: .validate)
             if taskIsDoing {
                 removeUserInteraction()
                 errorButton.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.switchOnDroneDone)))
@@ -211,13 +183,8 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
 private extension PairingCell {
     /// Init view of the cell.
     func initView() {
-        errorButton.setTitleColor(UIColor(named: .defaultTextColor), for: .normal)
         checkView.roundCornered()
-        // Set the radius and color of action button.
-        actionButton.cornerRadiusedWith(backgroundColor: UIColor(named: .whiteAlbescent),
-                                        borderColor: .clear,
-                                        radius: Style.largeCornerRadius,
-                                        borderWidth: Style.noBorderWidth)
+        stateDescriptionLabel.font = FontStyle.current.font(isRegularSizeClass)
     }
 
     /// Update the index and the view.
@@ -252,7 +219,7 @@ private extension PairingCell {
     ///    - title: title for the label. If title is nil, the button will be hidden.
     func updateActionButton(title: String?) {
         actionView.isHidden = title == nil
-        actionButton.setTitle(title, for: .normal)
+        actionButton.setup(title: title, style: .default2)
     }
 
     /// Update the error button which gives info to user.
@@ -260,16 +227,10 @@ private extension PairingCell {
     /// - Parameters:
     ///    - isHidden: specify if we need to hide the current view
     ///    - title: title for the button
-    func updateErrorButton(isHidden: Bool, title: String?, titleColor: UIColor = ColorName.defaultTextColor.color) {
+    ///    - style: button style to apply, default is `secondary`
+    func updateErrorButton(isHidden: Bool, title: String?, style: ActionButtonStyle = .secondary1) {
         errorButton.isHidden = isHidden
-        errorButton.setTitle(title, for: .normal)
-        errorButton.setTitleColor(titleColor, for: .normal)
-
-        // Set the radius and the border for error button.
-        errorButton.cornerRadiusedWith(backgroundColor: .clear,
-                                       borderColor: UIColor(named: .defaultTextColor),
-                                       radius: Style.largeCornerRadius,
-                                       borderWidth: Style.mediumBorderWidth)
+        errorButton.setup(title: title ?? "", style: style)
     }
 
     /// Remove all user interaction on error button.

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -90,6 +89,11 @@ private extension SeparatorView {
 
 /// Utility extension for `UIStackView`.
 public extension UIStackView {
+    /// Hides stackView if empty, shows it otherwise.
+    func hideIfEmpty() {
+        isHiddenInStackView = subviews.isEmpty
+    }
+
     /// Updates separators view.
     func updateSeparators() {
         removeSeparators()

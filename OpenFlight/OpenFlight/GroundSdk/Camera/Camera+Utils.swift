@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -57,7 +56,7 @@ public extension Camera2 {
     /// Returns `GpsLapseMode` depending on drone current GPS Lapse capture interval value.
     var gpsLapseMode: GpsLapseMode? {
         guard let gpslapseCaptureInterval = config[Camera2Params.photoGpslapseInterval]?.value else { return nil }
-        return GpsLapseMode(rawValue: Int(gpslapseCaptureInterval))
+        return GpsLapseMode(interval: gpslapseCaptureInterval)
     }
 
     /// Returns true if Hdr is activated.
@@ -170,6 +169,19 @@ extension Camera2RecordingState {
     func getDuration(startTime: Date) -> TimeInterval {
         return Date().timeIntervalSince(startTime)
     }
+
+    /// The alert type according to recording stopping reason.
+    var alertType: HUDCriticalAlertType? {
+        switch self {
+        case .stopping(let reason, _):
+            switch reason {
+            case .errorInsufficientStorageSpace: return .insufficientStorageSpace
+            case .errorInsufficientStorageSpeed: return .insufficientStorageSpeed
+            default: return nil
+            }
+        default: return nil
+        }
+    }
 }
 
 /// Utility extension for `Camera2ZoomVelocityControlQualityMode`.
@@ -189,6 +201,14 @@ extension Camera2PhotoCaptureState {
             return true
         default:
             return false
+        }
+    }
+
+    /// The alert type according to capture stopping reason.
+    var alertType: HUDCriticalAlertType? {
+        switch self {
+        case .stopping(.errorInsufficientStorageSpace, _): return .insufficientStorageSpace
+        default: return nil
         }
     }
 }

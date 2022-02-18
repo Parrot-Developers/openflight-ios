@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -37,10 +37,16 @@ final class CellularDebugLogsViewController: UIViewController {
 
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var logsTextView: UITextView!
+    @IBOutlet weak var panelContainer: UIView! {
+        didSet {
+            panelContainer.backgroundColor = ColorName.white.color
+            panelContainer.customCornered(corners: [.topLeft, .topRight],
+                                          radius: Style.largeCornerRadius)
+        }
+    }
 
     // MARK: - Private Properties
 
-    private var coordinator: Coordinator!
     private var viewModel: CellularDebugLogsViewModel!
     private var cancellables = Set<AnyCancellable>()
     /// Whether autoscroll is enabled.
@@ -51,15 +57,12 @@ final class CellularDebugLogsViewController: UIViewController {
     /// Instantiates the view controller.
     ///
     /// - Parameters:
-    ///     - coordinator: controllers coordinaor
     ///     - viewModel: the view model used by the controller
     ///
     /// - Returns: a new view controller
-    static func instantiate(coordinator: Coordinator,
-                            viewModel: CellularDebugLogsViewModel) -> CellularDebugLogsViewController {
+    static func instantiate(viewModel: CellularDebugLogsViewModel) -> CellularDebugLogsViewController {
         let viewController = StoryboardScene.CellularDebugLogs.cellularDebugLogsViewController.instantiate()
         viewController.viewModel = viewModel
-        viewController.coordinator = coordinator
         return viewController
     }
 
@@ -75,8 +78,18 @@ final class CellularDebugLogsViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.debugLogs,
-                             logType: .screen)
+        UIView.animate(
+            withDuration: Style.shortAnimationDuration,
+            delay: Style.shortAnimationDuration) {
+                self.view.backgroundColor = ColorName.nightRider80.color
+            }
+
+        LogEvent.log(.screen(LogEvent.Screen.debugLogs))
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        view.backgroundColor = .clear
     }
 
     override func viewDidLayoutSubviews() {
@@ -95,11 +108,10 @@ final class CellularDebugLogsViewController: UIViewController {
         return true
     }
 
-    /// Function called when the back button is pressed.
-    @IBAction func backButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.LogKeyCommonButton.back,
-                             logType: .button)
-        coordinator.back()
+    /// Function called when you dismiss the view.
+    @IBAction func dismissPanelTouchedUpInside(_ sender: Any) {
+        LogEvent.log(.simpleButton( LogEvent.LogKeyCommonButton.back))
+        viewModel.dismissView()
     }
 }
 
@@ -113,6 +125,7 @@ private extension CellularDebugLogsViewController {
         logsTextView.backgroundColor = .white
         logsTextView.indicatorStyle = .black
         logsTextView.delegate = self
+        view.backgroundColor = .clear
     }
 
     func bindViewModel() {

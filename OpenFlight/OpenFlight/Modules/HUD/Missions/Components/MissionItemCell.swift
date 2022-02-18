@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,14 +31,28 @@ import UIKit
 import Reusable
 
 /// Model for `MissionItemCell`
-public struct MissionItemCellModel {
-    var title: String
-    var image: UIImage
+public class MissionItemCellModel {
+    let title: String
+    let image: UIImage
     var isSelected: Bool
+    let isSelectable: Bool
+    let provider: MissionProvider
+
+    init(title: String,
+         image: UIImage,
+         isSelected: Bool,
+         isSelectable: Bool,
+         provider: MissionProvider) {
+        self.title = title
+        self.image = image
+        self.isSelected = isSelected
+        self.isSelectable = isSelectable
+        self.provider = provider
+    }
 }
 
 /// TableView Cell to display a mission in launcher list.
-final class MissionItemCell: UITableViewCell, NibReusable {
+final class MissionItemCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var missionLabel: UILabel! {
         didSet {
@@ -52,15 +65,6 @@ final class MissionItemCell: UITableViewCell, NibReusable {
             customBackgroundView.cornerRadiusedWith(backgroundColor: ColorName.white20.color,
                                                     borderColor: .clear,
                                                     radius: Style.largeCornerRadius)
-        }
-    }
-
-    // MARK: - Internal Properties
-    var model: MissionItemCellModel? {
-        didSet {
-            guard let model = model else { return }
-
-            setup(with: model)
         }
     }
 
@@ -77,12 +81,22 @@ final class MissionItemCell: UITableViewCell, NibReusable {
     /// - Parameters:
     ///     - model: model for mission launcher
     func setup(with model: MissionItemCellModel) {
+        screenBorders = [.left] // Cell snaps to device's left border.
         missionLabel?.text = model.title
+        missionLabel?.font = FontStyle.current.font(isRegularSizeClass)
         missionImage?.image = model.image
-        let bgColor = model.isSelected ? ColorName.highlightColor.color : ColorName.white90.color
-        let textColor = model.isSelected ? .white : ColorName.defaultTextColor.color
+        let bgColor = model.isSelectable
+                        ? model.isSelected ? ColorName.highlightColor.color : ColorName.white90.color
+                        : ColorName.whiteAlbescent.color
+        let textColor = model.isSelectable
+                        ? model.isSelected ? .white : ColorName.defaultTextColor.color
+                        : ColorName.defaultTextColor80.color
         customBackgroundView.backgroundColor = bgColor
         missionLabel?.textColor = textColor
         missionImage?.tintColor = textColor
+        let opacity = model.isSelectable ? 1 : 0.5
+        missionLabel.alpha = opacity
+        missionImage.alpha = opacity
+        customBackgroundView.alpha = opacity
     }
 }

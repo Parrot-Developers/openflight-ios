@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,10 +32,10 @@ import Reusable
 import CoreLocation
 
 /// View representing current drone position relative to user in a radar.
-
 final class HUDRadarView: UIView, NibOwnerLoadable {
 
     // MARK: - Outlets
+    @IBOutlet private weak var cardinalDirectionsBkgView: LDGradientView!
     @IBOutlet private weak var cardinalDirectionsView: CardinalDirectionsView!
     @IBOutlet private weak var cardinalContentView: UIView!
     @IBOutlet private weak var droneImageView: UIImageView!
@@ -45,6 +44,7 @@ final class HUDRadarView: UIView, NibOwnerLoadable {
     @IBOutlet private weak var leftArrowView: SimpleArrowView!
     @IBOutlet private weak var rightArrowView: SimpleArrowView!
     @IBOutlet private weak var droneImageViewCenterConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var cardinalContentHeightConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var state: HUDRadarState? {
@@ -69,6 +69,9 @@ final class HUDRadarView: UIView, NibOwnerLoadable {
         static let gradientEndX: CGFloat = 1.0
         static let gradientY: CGFloat = 0.5
         static let droneBackgroundAlpha: CGFloat = 0.3
+        static let cardinalDirectionsGradientStartColor: UIColor = .init(white: 0.3, alpha: 1)
+        static let cardinalDirectionsGradientEndColor: UIColor = .init(white: 0.8, alpha: 1)
+        static let cardinalDirecionsGradientAngle: CGFloat = 90
     }
 
     // MARK: - Init
@@ -93,13 +96,18 @@ final class HUDRadarView: UIView, NibOwnerLoadable {
 private extension HUDRadarView {
     /// Common init.
     func commonInit() {
-        self.loadNibContent()
+        loadNibContent()
         topArrowView.orientation = .bottom
         leftArrowView.orientation = .left
         rightArrowView.orientation = .right
-        leftArrowView.color = ColorName.redTorch.color
-        rightArrowView.color = ColorName.redTorch.color
+        leftArrowView.color = ColorName.errorColor.color
+        rightArrowView.color = ColorName.errorColor.color
         updateColor(AlertLevel.none.radarColor)
+        cardinalDirectionsBkgView.startColor = Constants.cardinalDirectionsGradientStartColor
+        cardinalDirectionsBkgView.endColor = Constants.cardinalDirectionsGradientEndColor
+        cardinalDirectionsBkgView.angle = Constants.cardinalDirecionsGradientAngle
+        cardinalDirectionsBkgView.layer.cornerRadius = Style.smallCornerRadius
+        cardinalDirectionsBkgView.clipsToBounds = true
     }
 
     /// Updates the view with current model.

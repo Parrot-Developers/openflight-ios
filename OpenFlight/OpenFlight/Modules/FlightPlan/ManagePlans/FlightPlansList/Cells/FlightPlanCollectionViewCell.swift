@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,35 +30,19 @@
 import UIKit
 import Reusable
 
-protocol FlightPlanCollectionDelegate: AnyObject {
-    /// handles double tap cell
-    ///
-    /// -index: row of indexPath of cell
-    func didDoubleTap(index: Int)
-}
-
 final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var backgroundImageView: UIImageView!
     @IBOutlet private weak var gradientView: UIView!
-    @IBOutlet private weak var titleLabel: UILabel! {
-        didSet {
-            titleLabel.makeUp()
-        }
-    }
-    @IBOutlet private weak var dateLabel: UILabel! {
-        didSet {
-            dateLabel.makeUp(and: .greySilver)
-        }
-    }
+    @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet private weak var dateLabel: UILabel!
     @IBOutlet private weak var typeImage: UIImageView!
     @IBOutlet private weak var selectedView: UIView!
-
-    weak var delegate: FlightPlanCollectionDelegate?
-    private var index: Int?
+    @IBOutlet private weak var projectExecutedIcon: UIImageView!
 
     // MARK: - Private Enums
     private enum Constants {
+        static let selectedItemBorderWidth = Style.selectedItemBorderWidth
         /// Gradient layer start alpha.
         static let gradientStartAlpha: CGFloat = 0.0
         /// Gradient layer end alpha.
@@ -69,19 +52,7 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     // MARK: - Init
     override func awakeFromNib() {
         super.awakeFromNib()
-        self.applyCornerRadius(Style.largeCornerRadius)
-        selectedView.cornerRadiusedWith(backgroundColor: .clear,
-                                        borderColor: ColorName.greenSpring.color,
-                                        radius: Style.largeCornerRadius,
-                                        borderWidth: Style.largeBorderWidth)
-        let gesture = UITapGestureRecognizer(target: self, action: #selector(didDoubleTap))
-        gesture.numberOfTapsRequired = 2
-        contentView.addGestureRecognizer(gesture)
-    }
-
-    @objc func didDoubleTap() {
-        guard let index = index else { return }
-        delegate?.didDoubleTap(index: index)
+        setupUI()
     }
 
     override func layoutSublayers(of layer: CALayer) {
@@ -91,14 +62,21 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
                                  superview: self)
     }
 
-    override var isHighlighted: Bool {
-        didSet {
-            if self.isHighlighted {
-                gradientView.backgroundColor = ColorName.white50.color
-            } else {
-                gradientView.backgroundColor = .clear
-            }
-        }
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        selectedView.isHidden = true
+        projectExecutedIcon.isHidden = true
+    }
+
+    func setupUI() {
+        titleLabel.makeUp()
+        dateLabel.makeUp(and: .greySilver)
+        applyCornerRadius(Style.largeCornerRadius)
+        selectedView.cornerRadiusedWith(backgroundColor: .clear,
+                                        borderColor: ColorName.highlightColor.color,
+                                        radius: Style.largeCornerRadius,
+                                        borderWidth: Constants.selectedItemBorderWidth)
+        selectedView.isHidden = true
     }
 
     // MARK: - Internal Funcs
@@ -107,12 +85,12 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     /// - Parameters:
     ///     - project: project model
     ///     - isSelected: Whether cell is selected.
-    ///     - index: cell current index
-    func configureCell(project: ProjectModel, isSelected: Bool, index: Int) {
-        let lastFlightPlan = Services.hub.flightPlan.projectManager.lastFlightPlan(for: project)
-        self.index = index
+    func configureCell(project: ProjectModel, isSelected: Bool) {
+        // TODO: wrong injection
+        let projectManager = Services.hub.flightPlan.projectManager
+        let lastFlightPlan = projectManager.lastFlightPlan(for: project)
         titleLabel.text = project.title ?? lastFlightPlan?.dataSetting?.coordinate?.coordinatesDescription
-        dateLabel.text = project.lastUpdated.shortWithTimeFormattedString
+        dateLabel.text = project.lastUpdated.shortWithTimeFormattedString(timeStyle: .medium)
 
         backgroundImageView.image = lastFlightPlan?.thumbnail?.thumbnailImage ?? UIImage(asset: Asset.MyFlights.projectPlaceHolder)
 
@@ -126,6 +104,9 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
             typeImage.isHidden = true
         }
 
+        projectExecutedIcon.isHidden = projectManager.executedFlightPlans(for: project).isEmpty
+
+        gradientView.backgroundColor = isSelected ? ColorName.white50.color : .clear
         selectedView.isHidden = !isSelected
     }
 

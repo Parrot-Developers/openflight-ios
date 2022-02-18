@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -48,17 +47,13 @@ protocol SettingsSliderCellDelegate: AnyObject {
 }
 
 /// Common settings slider cell.
-final class SettingsSliderCell: UITableViewCell, NibReusable {
+final class SettingsSliderCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var bgView: UIView!
     @IBOutlet private weak var settingImage: UIImageView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var percentLabel: UILabel!
     @IBOutlet private weak var slider: SettingsSlider!
-    /// Leading constraint used for the stack view.
-    @IBOutlet private weak var stackViewLeadingConstraint: NSLayoutConstraint!
-    /// Trailing constraint used for the slider.
-    @IBOutlet private weak var sliderTrailingConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var delegate: SettingsSliderCellDelegate?
@@ -71,9 +66,8 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
     private var indexPath: IndexPath!
     private var isEnabled: Bool = true {
         didSet {
-            titleLabel.textColor = self.isEnabled ? ColorName.defaultTextColor.color : ColorName.defaultTextColor80.color
-            updateSliderView()
-            slider.isEnabled = self.isEnabled
+            slider.isEnabled = isEnabled
+            titleLabel.isEnabled = isEnabled
         }
     }
     /// Returns formated value according to setting unit.
@@ -86,18 +80,12 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
         }
     }
 
-    // MARK: - Private Enums
-    private enum Constants {
-        static let defaultLeadingConstraint: CGFloat = 16.0
-        static let defaultTrailingConstraint: CGFloat = 8.0
-    }
-
     // MARK: - Init
     override func awakeFromNib() {
         super.awakeFromNib()
 
         // Add double tap on cell to reset slider to default value.
-        self.addGestureRecognizer(doubleTapGestureRecognizer())
+        addGestureRecognizer(doubleTapGestureRecognizer())
     }
 
     // MARK: - Override Funcs
@@ -116,27 +104,21 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
     ///     - settingEntry: cell setting entry
     ///     - indexPath: indexPath
     ///     - shouldShowBackground: tells if we must show the background
-    ///    - leadingConstraint: leading constraint for the slider
-    ///    - trailingConstraint: trailing constraint for the slider
     func configureCell(settingEntry: SettingEntry,
                        atIndexPath indexPath: IndexPath,
-                       shouldShowBackground: Bool = true,
-                       leadingConstraint: CGFloat = Constants.defaultLeadingConstraint,
-                       trailingConstraint: CGFloat = Constants.defaultTrailingConstraint) {
+                       shouldShowBackground: Bool = true) {
         setupBackground(shouldShow: shouldShowBackground)
 
         self.settingEntry = settingEntry
+        self.indexPath = indexPath
         titleLabel.text = settingEntry.title
         currentUnit = settingEntry.unit ?? UnitType.none
-        self.indexPath = indexPath
 
         sliderOverLimitValue = settingEntry.overLimitValue
         slider.overLimitValue = settingEntry.overLimitValue
         slider.maximumTrackTintColor = settingEntry.bgColor ?? ColorName.defaultTextColor.color
         sliderDefaultValue = settingEntry.defaultValue
         addImage(settingEntry.image)
-        isEnabled = settingEntry.isEnabled
-        slider.isEnabled = settingEntry.isEnabled
 
         if let setting = settingEntry.setting as? DoubleSetting {
             slider.maximumValue = Float(setting.max)
@@ -144,8 +126,7 @@ final class SettingsSliderCell: UITableViewCell, NibReusable {
             slider.value = settingEntry.savedValue ?? Float(setting.value)
         }
 
-        stackViewLeadingConstraint.constant = leadingConstraint
-        sliderTrailingConstraint.constant = trailingConstraint
+        isEnabled = settingEntry.isEnabled
         updateSliderView()
     }
 
@@ -165,7 +146,7 @@ private extension SettingsSliderCell {
         let limitIntervalChange = settingStepperSlider.limitIntervalChange
         let leftIntervalStep = settingStepperSlider.leftIntervalStep
         let rightIntervalStep = settingStepperSlider.rightIntervalStep
-        var currentValueSlider = self.slider.value
+        var currentValueSlider = slider.value
         if (minValueSlider...limitIntervalChange).contains(currentValueSlider) {
             currentValueIntervalStep = leftIntervalStep
         } else {
@@ -230,8 +211,8 @@ private extension SettingsSliderCell {
     func setupBackground(shouldShow: Bool) {
         bgView.applyCornerRadius(Style.largeCornerRadius)
         bgView.backgroundColor = shouldShow
-            ? ColorName.white.color
-            : .clear
+        ? ColorName.white.color
+        : .clear
     }
 }
 
@@ -251,10 +232,8 @@ private extension SettingsSliderCell {
         delegate?.settingsSliderCellSliderDidFinishEditing(value: slider.value,
                                                            atIndexPath: indexPath)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.advanced,
-                             itemName: settingEntry?.itemLogKey ?? "" + SettingsBehavioursMode.current.logKey ,
-                             newValue: formattedValue,
-                             logType: LogEvent.LogType.button)
+        LogEvent.log(.button(item: settingEntry?.itemLogKey ?? "" + SettingsBehavioursMode.current.logKey ,
+                             value: formattedValue))
     }
 
     @IBAction func sliderTouchCancelled(_ sender: Any) {

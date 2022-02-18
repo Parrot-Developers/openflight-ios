@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -69,7 +68,7 @@ public final class StopView: UIView, NibOwnerLoadable {
     public weak var delegate: StopViewDelegate?
     public var style: StopViewStyle = .classic {
         didSet {
-            self.updateStyle()
+            updateStyle()
         }
     }
 
@@ -81,12 +80,12 @@ public final class StopView: UIView, NibOwnerLoadable {
     // MARK: - Override Funcs
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitStopView()
+        commonInitStopView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitStopView()
+        commonInitStopView()
     }
 }
 
@@ -95,59 +94,59 @@ private extension StopView {
 
     /// Basic init for the view.
     func commonInitStopView() {
-        self.loadNibContent()
-        self.initUI()
+        loadNibContent()
+        initUI()
     }
 
     /// Initalize UI for the view.
     func initUI() {
-        self.backView.backgroundColor = ColorName.black.color
-        self.redView.backgroundColor = ColorName.errorColor.color
-        self.centerView.cornerRadiusedWith(backgroundColor: ColorName.white.color,
-                                           borderColor: .clear,
-                                           radius: Style.tinyCornerRadius)
-        self.updateStyle()
+        backView.backgroundColor = ColorName.black.color
+        redView.backgroundColor = ColorName.errorColor.color
+        centerView.cornerRadiusedWith(backgroundColor: ColorName.white.color,
+                                      borderColor: .clear,
+                                      radius: Style.tinyCornerRadius)
+        updateStyle()
     }
 
     /// Update the UI depending on the currentStyle.
     func updateStyle() {
-        self.updateRedViewConstraints()
+        updateRedViewConstraints()
         cancelImageView.isHidden = !style.isCancelAlert
         centerView.isHidden = style.isCancelAlert
-        self.redView.backgroundColor = style.isCancelAlert ? .clear : ColorName.errorColor.color
+        redView.backgroundColor = style.isCancelAlert ? .clear : ColorName.errorColor.color
 
         switch style {
         case .classic:
-            self.backView.cornerRadiusedWith(backgroundColor: ColorName.black.color,
-                                             borderColor: ColorName.white.color,
-                                             radius: Style.largeCornerRadius,
-                                             borderWidth: Style.mediumBorderWidth)
-            self.redView.applyCornerRadius(Style.mediumCornerRadius)
+            backView.cornerRadiusedWith(backgroundColor: ColorName.black.color,
+                                        borderColor: ColorName.white.color,
+                                        radius: Style.largeCornerRadius,
+                                        borderWidth: Style.mediumBorderWidth)
+            redView.applyCornerRadius(Style.mediumCornerRadius)
         case .bottomBar:
-            self.customCornered(corners: [.topRight, .bottomRight],
-                                radius: Style.largeCornerRadius,
-                                backgroundColor: ColorName.errorColor.color,
-                                borderColor: .clear)
+            customCornered(corners: [.topRight, .bottomRight],
+                           radius: Style.largeCornerRadius,
+                           backgroundColor: ColorName.errorColor.color,
+                           borderColor: .clear)
         case .panorama:
-            self.backView.cornerRadiusedWith(backgroundColor: ColorName.black.color,
-                                             borderColor: ColorName.white.color,
-                                             radius: Style.largeCornerRadius,
-                                             borderWidth: Style.mediumBorderWidth)
-            self.redView.applyCornerRadius(Style.mediumCornerRadius)
+            backView.cornerRadiusedWith(backgroundColor: ColorName.black.color,
+                                        borderColor: ColorName.white.color,
+                                        radius: Style.largeCornerRadius,
+                                        borderWidth: Style.mediumBorderWidth)
+            redView.applyCornerRadius(Style.mediumCornerRadius)
         case .cancelAlert:
-            self.redView.applyCornerRadius(Style.mediumCornerRadius)
-            self.backView.cornerRadiusedWith(backgroundColor: .white,
-                                             radius: Style.largeCornerRadius)
+            redView.applyCornerRadius(Style.mediumCornerRadius)
+            backView.cornerRadiusedWith(backgroundColor: .white,
+                                        radius: Style.largeCornerRadius)
         }
     }
 
     /// Update contraints for the red view.
     func updateRedViewConstraints() {
         let inset = (style == .panorama ? Constants.insetSpacePanorama : 0.0)
-        self.redViewTopConstraint.constant = inset
-        self.redViewBottomConstraint.constant = inset
-        self.redViewLeadingConstraint.constant = inset
-        self.redViewTrailingConstraint.constant = inset
+        redViewTopConstraint.constant = inset
+        redViewBottomConstraint.constant = inset
+        redViewLeadingConstraint.constant = inset
+        redViewTrailingConstraint.constant = inset
     }
 }
 
@@ -155,6 +154,6 @@ private extension StopView {
 private extension StopView {
     /// Function called when user click on stop view.
     @IBAction func stopButtonTouchedUpInside() {
-        self.delegate?.didClickOnStop()
+        delegate?.didClickOnStop()
     }
 }

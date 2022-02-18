@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,4 +33,30 @@ import CoreData
 @objc(PgyProject)
 public class PgyProject: NSManagedObject {
 
+    // MARK: - Utils
+    func model() -> PgyProjectModel {
+        return PgyProjectModel(apcId: apcId,
+                               pgyProjectId: pgyProjectId,
+                               name: name,
+                               projectDate: projectDate,
+                               processingCalled: processingCalled,
+                               isLocalDeleted: isLocalDeleted,
+                               synchroStatus: SynchroStatus(status: synchroStatus),
+                               synchroError: SynchroError(rawValue: synchroError),
+                               latestSynchroStatusDate: latestSynchroStatusDate,
+                               latestLocalModificationDate: latestLocalModificationDate)
+    }
+
+    func update(fromPgyProjectModel pgyProjectModel: PgyProjectModel) {
+        apcId = pgyProjectModel.apcId
+        isLocalDeleted = pgyProjectModel.isLocalDeleted
+        pgyProjectId = pgyProjectModel.pgyProjectId
+        name = pgyProjectModel.name
+        processingCalled = pgyProjectModel.processingCalled
+        projectDate = pgyProjectModel.projectDate
+        latestSynchroStatusDate = pgyProjectModel.latestSynchroStatusDate
+        latestLocalModificationDate = pgyProjectModel.latestLocalModificationDate
+        synchroStatus = pgyProjectModel.synchroStatus?.rawValue ?? 0
+        synchroError = pgyProjectModel.synchroError?.rawValue ?? 0
+    }
 }

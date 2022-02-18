@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -32,9 +32,6 @@ import Reusable
 
 // MARK: - Protocols
 protocol DashboardFooterCellDelegate: AnyObject {
-    /// Starts confidentiality from dashboard.
-    func startConfidentiality()
-
     /// Starts parrot debug screen from dashboard.
     func startParrotDebugScreen()
 }
@@ -43,7 +40,6 @@ protocol DashboardFooterCellDelegate: AnyObject {
 final class DashboardFooterCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var versionLabel: UILabel!
-    @IBOutlet private weak var dataConfidentialityButton: UIButton!
     @IBOutlet private weak var droneVersionLabel: UILabel!
     @IBOutlet private weak var controllerVersionLabel: UILabel!
     @IBOutlet private weak var versionTitleLabel: UILabel!
@@ -76,13 +72,6 @@ final class DashboardFooterCell: UICollectionViewCell, NibReusable {
     }
 }
 
-// MARK: - Actions
-private extension DashboardFooterCell {
-    @IBAction func dataConfidentialityButtonTouchedUpInside(_ sender: Any) {
-        delegate?.startConfidentiality()
-    }
-}
-
 // MARK: - Private Funcs
 private extension DashboardFooterCell {
     /// Update text for version number and buttons.
@@ -91,15 +80,12 @@ private extension DashboardFooterCell {
         controllerTitleLabel.text = L10n.commonController
         droneTitleLabel.text = L10n.commonDrone
         versionLabel.text = AppUtils.version
-        dataConfidentialityButton.titleLabel?.numberOfLines = 2
-        dataConfidentialityButton.titleLabel?.adjustsFontSizeToFitWidth = true
-        dataConfidentialityButton.titleLabel?.minimumScaleFactor = 0.6
-        dataConfidentialityButton.setTitle(L10n.dashboardFooterDataConfidentiality,
-                                           for: .normal)
     }
 
     /// Shows the Parrot debug screen.
     @objc func showParrotDebugScreen() {
-        delegate?.startParrotDebugScreen()
+        if AppUtils.isDebugScreenAuthorized {
+            delegate?.startParrotDebugScreen()
+        }
     }
 }

@@ -1,124 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="FlightDetailsInfoCell" rowHeight="160" id="llg-1v-v9Z" customClass="FlightDetailsInfoCell" customModule="OpenFlight" customModuleProvider="target">
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="default" indentationWidth="10" reuseIdentifier="FlightDetailsInfoCell" rowHeight="160" id="llg-1v-v9Z" customClass="FlightDetailsInfoCell" customModule="OpenFlight" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="419" height="200"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="llg-1v-v9Z" id="zIC-6B-igt">
                 <rect key="frame" x="0.0" y="0.0" width="419" height="200"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="JgG-rX-RiI">
-                        <rect key="frame" x="0.0" y="0.0" width="419" height="200"/>
+                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" alignment="top" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="JgG-rX-RiI" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                        <rect key="frame" x="20" y="0.0" width="379" height="189"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="ylF-Ln-C08">
-                                <rect key="frame" x="20" y="0.0" width="379" height="65"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="ylF-Ln-C08" userLabel="nameStackView" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="379" height="114"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" horizontalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fdx-7p-tF4" customClass="FlightTagHeaderView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="379" height="15"/>
+                                    <view contentMode="scaleToFill" horizontalHuggingPriority="251" placeholderIntrinsicWidth="379" placeholderIntrinsicHeight="47" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fdx-7p-tF4" customClass="FlightTagHeaderView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="379" height="47"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="15" id="1pM-X3-3k3"/>
-                                        </constraints>
                                     </view>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="rXx-UV-Td7">
-                                        <rect key="frame" x="0.0" y="21" width="379" height="17.5"/>
+                                        <rect key="frame" x="0.0" y="55" width="379" height="28"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="28" id="dbk-fg-Sh9"/>
+                                        </constraints>
                                         <color key="textColor" name="default_text_color"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="19"/>
                                         <textInputTraits key="textInputTraits" returnKeyType="done"/>
                                     </textField>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="gHb-lF-cyI">
-                                        <rect key="frame" x="0.0" y="44.5" width="379" height="20.5"/>
-                                        <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iPn-wZ-qMD" userLabel="name">
-                                                <rect key="frame" x="0.0" y="0.0" width="335" height="20.5"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="20" id="tQU-sn-9Z3"/>
-                                                </constraints>
-                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                <color key="textColor" name="default_text_color"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ICq-cs-LOj">
-                                                <rect key="frame" x="335" y="0.0" width="44" height="20.5"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="44" id="7sg-YL-CQs"/>
-                                                </constraints>
-                                                <color key="tintColor" name="default_text_color"/>
-                                                <state key="normal" image="iconEdit"/>
-                                            </button>
-                                        </subviews>
-                                    </stackView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iPn-wZ-qMD" userLabel="name">
+                                        <rect key="frame" x="0.0" y="91" width="46" height="23"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="19"/>
+                                        <color key="textColor" name="default_text_color"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstItem="rXx-UV-Td7" firstAttribute="leading" secondItem="ylF-Ln-C08" secondAttribute="leading" id="EMp-M9-kzJ"/>
-                                    <constraint firstItem="gHb-lF-cyI" firstAttribute="leading" secondItem="ylF-Ln-C08" secondAttribute="leading" id="LqC-vV-sWJ"/>
                                     <constraint firstAttribute="trailing" secondItem="rXx-UV-Td7" secondAttribute="trailing" id="Tkh-hN-8Yv"/>
-                                    <constraint firstAttribute="trailing" secondItem="gHb-lF-cyI" secondAttribute="trailing" id="x2D-Yh-Cdq"/>
                                 </constraints>
                             </stackView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="cDR-3D-CGX">
-                                <rect key="frame" x="20" y="80" width="379" height="45"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="cDR-3D-CGX" userLabel="dateLocationStackView">
+                                <rect key="frame" x="0.0" y="129" width="379" height="20"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tt8-cA-E3i" customClass="FlightDetailsIconLabelView" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="379" height="20"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="20" id="vPj-sx-Qco"/>
-                                        </constraints>
-                                    </view>
-                                    <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gYY-2I-Ml7" customClass="FlightDetailsIconLabelView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="25" width="379" height="20"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="20" id="sun-hc-1cr"/>
+                                            <constraint firstAttribute="height" constant="20" placeholder="YES" id="vPj-sx-Qco"/>
                                         </constraints>
                                     </view>
                                 </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
                             <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sbN-Ru-h83" customClass="FlightDetailsSummaryView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="20" y="140" width="379" height="60"/>
+                                <rect key="frame" x="0.0" y="164" width="379" height="25"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="60" id="GWc-4n-aw5"/>
-                                </constraints>
                             </view>
                         </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="ylF-Ln-C08" firstAttribute="leading" secondItem="JgG-rX-RiI" secondAttribute="leading" constant="20" id="Xo8-ap-H8u"/>
-                            <constraint firstAttribute="trailing" secondItem="sbN-Ru-h83" secondAttribute="trailing" constant="20" id="cuN-oy-AZy"/>
-                            <constraint firstItem="sbN-Ru-h83" firstAttribute="leading" secondItem="JgG-rX-RiI" secondAttribute="leading" constant="20" id="lqZ-Re-1oj"/>
-                            <constraint firstAttribute="trailing" secondItem="ylF-Ln-C08" secondAttribute="trailing" constant="20" id="r6m-Ew-a0M"/>
+                            <constraint firstItem="ylF-Ln-C08" firstAttribute="leading" secondItem="JgG-rX-RiI" secondAttribute="leading" id="Xo8-ap-H8u"/>
+                            <constraint firstAttribute="trailing" secondItem="sbN-Ru-h83" secondAttribute="trailing" id="cuN-oy-AZy"/>
+                            <constraint firstItem="sbN-Ru-h83" firstAttribute="leading" secondItem="JgG-rX-RiI" secondAttribute="leading" id="lqZ-Re-1oj"/>
+                            <constraint firstAttribute="trailing" secondItem="ylF-Ln-C08" secondAttribute="trailing" id="r6m-Ew-a0M"/>
                         </constraints>
                     </stackView>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstAttribute="bottom" secondItem="JgG-rX-RiI" secondAttribute="bottom" id="ATY-a6-ryb"/>
-                    <constraint firstAttribute="trailing" secondItem="JgG-rX-RiI" secondAttribute="trailing" id="GD1-GN-Ypw"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="JgG-rX-RiI" secondAttribute="bottom" id="ATY-a6-ryb"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="JgG-rX-RiI" secondAttribute="trailing" id="GD1-GN-Ypw"/>
                     <constraint firstItem="JgG-rX-RiI" firstAttribute="top" secondItem="zIC-6B-igt" secondAttribute="top" id="MJs-xl-T4g"/>
-                    <constraint firstItem="JgG-rX-RiI" firstAttribute="leading" secondItem="zIC-6B-igt" secondAttribute="leading" id="z66-PJ-SfM"/>
+                    <constraint firstItem="JgG-rX-RiI" firstAttribute="leading" secondItem="zIC-6B-igt" secondAttribute="leadingMargin" id="z66-PJ-SfM"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
                 <outlet property="dateView" destination="Tt8-cA-E3i" id="QnP-Fk-Rnz"/>
-                <outlet property="editNameButton" destination="ICq-cs-LOj" id="WeR-cF-CKy"/>
-                <outlet property="locationView" destination="gYY-2I-Ml7" id="qdp-Cy-fxb"/>
                 <outlet property="nameLabel" destination="iPn-wZ-qMD" id="TFw-y3-SrC"/>
-                <outlet property="nameStackView" destination="gHb-lF-cyI" id="Sun-g7-8Uz"/>
                 <outlet property="nameTextField" destination="rXx-UV-Td7" id="5Ic-w3-0Nz"/>
                 <outlet property="summaryView" destination="sbN-Ru-h83" id="4im-6d-rdL"/>
                 <outlet property="tagHeaderView" destination="Fdx-7p-tF4" id="cjb-mD-Gcn"/>
@@ -127,9 +98,8 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="iconEdit" width="16.5" height="16.5"/>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -49,15 +49,17 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
         case calibrationNeeded
         /// Update available state.
         case updateAvailable
+        /// Update required state.
+        case updateRequired
 
         fileprivate var backgroundColor: Color {
             switch self {
-            case .updateAvailable:
+            case .calibrationNeeded,
+                 .updateAvailable:
                 return ColorName.warningColor.color
-            case .calibrationRequired:
+            case .calibrationRequired,
+                 .updateRequired:
                 return ColorName.errorColor.color
-            case .calibrationNeeded:
-                return ColorName.orangePeel.color
             case .disconnected:
                 return ColorName.clear.color
             default:
@@ -68,6 +70,7 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
         fileprivate var leftImageTintColor: Color {
             switch self {
             case .updateAvailable,
+                 .updateRequired,
                  .calibrationRequired,
                  .calibrationNeeded:
                 return .white
@@ -81,7 +84,13 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
         }
 
         fileprivate var leftImage: UIImage? {
-            return self == .updateAvailable ? Asset.Drone.iconDownload.image : nil
+            switch self {
+            case .updateAvailable,
+                 .updateRequired:
+                return Asset.Drone.iconDownload.image
+            default:
+                return nil
+            }
         }
     }
 
@@ -113,7 +122,7 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
     ///   - status: the button status
     ///   - title: the button title
     func update(with status: Status, title: String) {
-        stateLabel.text = title.localizedLowercase
+        stateLabel.text = title
         stateLabel.textColor = status.textColor
         updateImageView.image = status.leftImage
         updateImageView.tintColor = status.leftImageTintColor

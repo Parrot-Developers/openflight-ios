@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -50,19 +49,18 @@ final class SettingsPresetsView: UIView, NibOwnerLoadable {
     private enum Constants {
         static let buttonWidth: CGFloat = 96.0
         static let imageEdgeInsets: CGFloat = 8.0
+        static let buttonFontSize: (compact: CGFloat, regular: CGFloat) = (13, 16)
     }
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-
-        self.commonInitPresetsView()
+        commonInitPresetsView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-
-        self.commonInitPresetsView()
+        commonInitPresetsView()
     }
 
     // MARK: - Internal Funcs
@@ -97,7 +95,9 @@ final class SettingsPresetsView: UIView, NibOwnerLoadable {
             let textColor: ColorName = item == selectedMode ? .white : .defaultTextColor
             button.backgroundColor = item == selectedMode ? ColorName.highlightColor.color : .white
             button.tintColor = textColor.color
-            button.makeup(color: textColor)
+            button.setTitleColor(textColor.color, for: .normal)
+            let fontSize = isRegularSizeClass ? Constants.buttonFontSize.regular : Constants.buttonFontSize.compact
+            button.titleLabel?.font = UIFont.rajdhaniSemiBold(size: fontSize)
             presetStackView.addArrangedSubview(button)
         }
     }
@@ -127,6 +127,6 @@ private extension SettingsPresetsView {
 private extension SettingsPresetsView {
     /// Init content.
     func commonInitPresetsView() {
-        self.loadNibContent()
+        loadNibContent()
     }
 }

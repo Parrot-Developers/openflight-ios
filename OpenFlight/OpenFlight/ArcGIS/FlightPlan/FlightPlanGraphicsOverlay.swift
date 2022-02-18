@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,13 +40,6 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     /// Returns a graphic is currently selected inside Flight Plan.
     var currentSelection: FlightPlanGraphic? {
         return flightPlanGraphics.first(where: { $0.isSelected })
-    }
-
-    /// Returns index of selected waypoint.
-    var selectedWayPointIndex: Int? {
-        let selection = wayPoints.first(where: { $0.isSelected })
-
-        return selection?.wayPointIndex
     }
 
     /// Returns all Flight Plan's waypoint arrows.
@@ -92,9 +84,9 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
         return graphics.compactMap { $0 as? FlightPlanInsertWayPointGraphic }.first
     }
     /// Drone location graphic.
-    private var droneGraphic: AGSGraphic?
+    private var droneGraphic: FlightPlanLocationGraphic?
     /// User location graphic.
-    private var userGraphic: AGSGraphic?
+    private var userGraphic: FlightPlanLocationGraphic?
 
     // MARK: - Private Enums
     private enum Constants {
@@ -525,6 +517,7 @@ extension FlightPlanGraphicsOverlay {
         case .insertWayPoint,
              .waypointArrow,
              .lineWayPointToPoi,
+             .location,
              .none:
             return nil
         }
@@ -547,6 +540,7 @@ extension FlightPlanGraphicsOverlay {
         case .insertWayPoint,
              .waypointArrow,
              .lineWayPointToPoi,
+             .location,
              .none:
             return nil
         }
@@ -560,12 +554,14 @@ extension FlightPlanGraphicsOverlay {
         cameraHeading = heading
         wayPoints.forEach { $0.update(heading: heading) }
         poiPoints.forEach { $0.update(heading: heading) }
+        droneGraphic?.update(cameraHeading: heading)
+        userGraphic?.update(cameraHeading: heading)
     }
 
     /// Sets drone location graphic.
     ///
     /// - Parameter graphic: drone location graphic
-    func setDroneGraphic(_ graphic: AGSGraphic?) {
+    func setDroneGraphic(_ graphic: FlightPlanLocationGraphic?) {
         if let graphic = graphic {
             graphics.add(graphic)
             sortGraphicsDelayed()
@@ -578,7 +574,7 @@ extension FlightPlanGraphicsOverlay {
     /// Sets user location graphic.
     ///
     /// - Parameter graphic: user location graphic
-    func setUserGraphic(_ graphic: AGSGraphic?) {
+    func setUserGraphic(_ graphic: FlightPlanLocationGraphic?) {
         if let graphic = graphic {
             graphics.add(graphic)
             sortGraphicsDelayed()

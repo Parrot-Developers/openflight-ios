@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -88,10 +87,6 @@ final class GalleryFiltersViewController: UIViewController {
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
@@ -119,9 +114,9 @@ private extension GalleryFiltersViewController {
         flowLayout.minimumLineSpacing = Constants.cellSpacing
         flowLayout.scrollDirection = .vertical
         flowLayout.sectionInset = .init(top: Constants.cellSpacing,
-                                        left: Constants.cellSpacing,
+                                        left: 0,
                                         bottom: Constants.cellSpacing,
-                                        right: Constants.cellSpacing)
+                                        right: 0)
         collection.collectionViewLayout = flowLayout
     }
 
@@ -176,6 +171,10 @@ extension GalleryFiltersViewController: GalleryViewDelegate {
         types.forEach { type in
             let item = GalleryFilterItem(type: type, count: state.medias.filter({ $0.type == type }).count)
             self.dataSource.append(item)
+        }
+        let remainingSelectedMediaTypes = state.selectedMediaTypes.filter { types.contains($0) }
+        if remainingSelectedMediaTypes.count < state.selectedMediaTypes.count {
+            viewModel?.setSelectedMediaTypes(types: remainingSelectedMediaTypes)
         }
         self.collection.reloadData()
         DispatchQueue.main.async {

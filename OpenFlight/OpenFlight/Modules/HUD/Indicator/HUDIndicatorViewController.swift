@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -81,10 +80,6 @@ final class HUDIndicatorViewController: UIViewController {
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
     }
@@ -103,10 +98,10 @@ private extension HUDIndicatorViewController {
     func initView() {
         // Update text.
         pairingButton.setTitle(L10n.pairingHowToConnectTitle, for: .normal)
-        pairingButton.setTitleColor(UIColor(named: .greenSpring), for: .normal)
+        pairingButton.setTitleColor(UIColor(named: .highlightColor), for: .normal)
         // Set the radius and the border fot the content view.
         pairingButton.cornerRadiusedWith(backgroundColor: UIColor.clear,
-                                         borderColor: UIColor(named: .greenSpring),
+                                         borderColor: UIColor(named: .highlightColor),
                                          radius: Style.largeCornerRadius,
                                          borderWidth: Constants.borderWidth)
         shouldHidePairingView(needToHide: indicatorViewModel?.state.value.shouldHideIndicator.value ?? false)

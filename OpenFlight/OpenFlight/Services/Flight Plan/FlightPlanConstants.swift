@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -28,8 +28,10 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Foundation
 
 // MARK: - Public Enums
 public enum FlightPlanConstants {
     public static let defaultDroneModel: Drone.Model = .anafi2
+    public static let timerTolerance: TimeInterval = 0.2
 }

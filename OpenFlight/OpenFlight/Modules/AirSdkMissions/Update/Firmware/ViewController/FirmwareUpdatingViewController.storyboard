@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Firmware Updating View Controller-->
+        <scene sceneID="gAF-Wg-Bhz">
+            <objects>
+                <viewController storyboardIdentifier="FirmwareUpdatingViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="FirmwareUpdatingViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="gOj-HT-iXx"/>
+                        <viewControllerLayoutGuide type="bottom" id="lyw-W1-rV8"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="CyA-w5-NCd">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="fun-5q-ELu" userLabel="Main Stack View">
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="394"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WBt-EN-Kee" userLabel="Top Bar" customClass="DeviceNavigationView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="896" height="56"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4rK-bV-KcZ">
+                                                <rect key="frame" x="72" y="14.5" width="41" height="27"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <state key="normal" title="Cancel">
+                                                    <color key="titleColor" name="default_text_color"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="cancelButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="yE4-4f-YNP"/>
+                                                </connections>
+                                            </button>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qkC-lH-RYK">
+                                                <rect key="frame" x="427" y="18.5" width="42" height="19"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                <color key="textColor" name="default_text_color"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="qkC-lH-RYK" firstAttribute="centerY" secondItem="WBt-EN-Kee" secondAttribute="centerY" id="RKd-c3-vK3"/>
+                                            <constraint firstItem="qkC-lH-RYK" firstAttribute="centerX" secondItem="WBt-EN-Kee" secondAttribute="centerX" id="Suc-6S-F7c"/>
+                                            <constraint firstItem="4rK-bV-KcZ" firstAttribute="leading" secondItem="WBt-EN-Kee" secondAttribute="leadingMargin" constant="20" id="cQs-Uv-V70"/>
+                                            <constraint firstAttribute="height" constant="56" placeholder="YES" id="kqy-BA-Cv0"/>
+                                            <constraint firstItem="4rK-bV-KcZ" firstAttribute="centerY" secondItem="WBt-EN-Kee" secondAttribute="centerY" id="nlc-kP-a16"/>
+                                        </constraints>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="6pg-PI-IZ8">
+                                        <rect key="frame" x="0.0" y="56" width="896" height="338"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WJn-A8-WOh" customClass="FirmwareAndMissionProgressView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="448" height="338"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </view>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="UGL-fE-eUv">
+                                                <rect key="frame" x="448" y="26.5" width="448" height="285"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="56f-1Y-5X8" customClass="UpdatingSuccessHeader" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="448" height="30"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="30" id="j6A-nv-HZ1"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="FdU-cy-eGF" customClass="UpdatingTableView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="30" width="448" height="200"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    </tableView>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hos-PP-v6a" customClass="UpdatingDoneFooter" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="230" width="448" height="55"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="55" id="oWv-kQ-qdh"/>
+                                                        </constraints>
+                                                    </view>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                        <variation key="heightClass=regular-widthClass=compact" axis="vertical"/>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" name="default_bgcolor"/>
+                        <constraints>
+                            <constraint firstItem="fun-5q-ELu" firstAttribute="top" secondItem="CyA-w5-NCd" secondAttribute="top" id="awY-DV-53U"/>
+                            <constraint firstAttribute="bottom" secondItem="fun-5q-ELu" secondAttribute="bottom" constant="20" id="gTc-KN-H5K"/>
+                            <constraint firstItem="fun-5q-ELu" firstAttribute="leading" secondItem="CyA-w5-NCd" secondAttribute="leading" id="glY-xr-uUw"/>
+                            <constraint firstAttribute="trailing" secondItem="fun-5q-ELu" secondAttribute="trailing" id="rYX-I4-dmO"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="cancelButton" destination="4rK-bV-KcZ" id="e9G-lE-8WS"/>
+                        <outlet property="continueView" destination="hos-PP-v6a" id="ugh-ab-QuG"/>
+                        <outlet property="progressView" destination="WJn-A8-WOh" id="7hm-BF-NrK"/>
+                        <outlet property="reportView" destination="56f-1Y-5X8" id="n5O-X4-TTT"/>
+                        <outlet property="tableView" destination="FdU-cy-eGF" id="Avy-VG-9Wf"/>
+                        <outlet property="titleLabel" destination="qkC-lH-RYK" id="BzX-tM-hwG"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-718" y="215"/>
+        </scene>
+    </scenes>
+    <resources>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

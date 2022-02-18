@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -42,19 +41,20 @@ protocol SettingsCellularDataDelegate: AnyObject {
 
 /// Settings cell for cellular data.
 /// User can configure cellular acces, network preference and network selection.
-final class SettingsCellularDataCell: UITableViewCell, NibReusable {
+final class SettingsCellularDataCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var cellularAccessAndNetworkModeStackView: UIStackView!
     @IBOutlet private weak var networkSelectionStackView: UIStackView!
     @IBOutlet private weak var accessNameTextField: UITextField!
     @IBOutlet private weak var usernameTextField: UITextField!
     @IBOutlet private weak var passwordTextField: UITextField!
-    @IBOutlet private weak var segmentedControl: UISegmentedControl!
     @IBOutlet private weak var bgView: UIView!
-    @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var manualSelectionView: UIView!
-    @IBOutlet private weak var networkSelectionViewHeightConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var manualSelectionViewHeightConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var fieldTextHeightConstraint: NSLayoutConstraint!
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let fieldTextHeight: (compact: CGFloat, regular: CGFloat) = (35, 45)
+    }
 
     // MARK: - Internal Properties
     weak var delegate: SettingsCellularDataDelegate?
@@ -63,29 +63,18 @@ final class SettingsCellularDataCell: UITableViewCell, NibReusable {
     private let viewModel = SettingsCellularDataViewModel()
     private var cellularAccessSegment: SettingsSegmentedCell = SettingsSegmentedCell.loadFromNib()
     private var connectionNetworkModeSegment: SettingsSegmentedCell = SettingsSegmentedCell.loadFromNib()
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let segmentWidth: CGFloat = 78.0
-        static let smallTextLength: Int = 10
-        static let networkSelectionViewHeightConstraint: CGFloat = 62.0
-        static let manualSelectionViewHeightConstraint: CGFloat = 88.0
-    }
+    private var connectionNetworkSelectionSegment: SettingsSegmentedCell = SettingsSegmentedCell.loadFromNib()
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
 
         initView()
-        initSegmentedControl()
         initViewModel()
     }
-}
 
-// MARK: - Actions
-private extension SettingsCellularDataCell {
-    @IBAction func segmentDidChange(_ sender: UISegmentedControl) {
-        viewModel.switchSelectionMode()
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
@@ -93,26 +82,27 @@ private extension SettingsCellularDataCell {
 private extension SettingsCellularDataCell {
     /// Inits the view.
     func initView() {
-        configureCellularAccessCell()
-        configureConnectionNetworkModeCell()
-        configureConnectionNetworkSelectionCell()
-
+        cellularAccessSegment.delegate = self
+        connectionNetworkModeSegment.delegate = self
+        connectionNetworkSelectionSegment.delegate = self
+        fieldTextHeightConstraint.constant = isRegularSizeClass ? Constants.fieldTextHeight.regular : Constants.fieldTextHeight.compact
         bgView.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
-        [accessNameTextField, usernameTextField, passwordTextField].forEach { textField in
-            textField?.delegate = self
-        }
+        accessNameTextField.delegate = self
         accessNameTextField.attributedPlaceholder = NSAttributedString(string: L10n.settingsConnectionApn,
                                                                        attributes: [NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor80.color])
+        usernameTextField.delegate = self
         usernameTextField.attributedPlaceholder = NSAttributedString(string: L10n.settingsConnectionUserName,
                                                                      attributes: [NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor80.color])
+        passwordTextField.delegate = self
         passwordTextField.attributedPlaceholder = NSAttributedString(string: L10n.commonPassword,
                                                                      attributes: [NSAttributedString.Key.foregroundColor: ColorName.defaultTextColor80.color])
-    }
+        networkSelectionStackView.layoutMargins = Layout.tableViewCellContainerInset(isRegularSizeClass)
+        networkSelectionStackView.isLayoutMarginsRelativeArrangement = true
 
-    /// Inits segmented control.
-    func initSegmentedControl() {
-        segmentedControl.applyCornerRadius(Style.largeCornerRadius)
-        segmentedControl.customMakeup()
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardWillHide(sender:)),
+                                               name: UIResponder.keyboardWillHideNotification,
+                                               object: nil)
     }
 
     /// Inits the view model.
@@ -128,16 +118,13 @@ private extension SettingsCellularDataCell {
     func updateView() {
         // Adds/removes cell segments if cellular data access is activated/desactivated
         cellularAccessAndNetworkModeStackView.removeSubViews()
+        configureCellularAccessCell()
+        configureConnectionNetworkModeCell()
+        configureConnectionNetworkSelectionCell()
         cellularAccessAndNetworkModeStackView.addArrangedSubview(cellularAccessSegment.contentView)
         cellularAccessAndNetworkModeStackView.addArrangedSubview(connectionNetworkModeSegment.contentView)
+        cellularAccessAndNetworkModeStackView.addArrangedSubview(connectionNetworkSelectionSegment.contentView)
         cellularAccessAndNetworkModeStackView.addSeparators(backColor: ColorName.defaultBgcolor.color)
-
-        networkSelectionStackView.isHidden = false
-        networkSelectionViewHeightConstraint.constant = Constants.networkSelectionViewHeightConstraint
-        manualSelectionViewHeightConstraint.constant = Constants.manualSelectionViewHeightConstraint
-        configureConnectionNetworkSelectionCell()
-
-        self.segmentedControl.isEnabled = viewModel.state.value.isSelectionUpdating == false
     }
 
     /// Configures the cellular segment.
@@ -148,10 +135,11 @@ private extension SettingsCellularDataCell {
             cellularAccessSegment.configureCell(cellTitle: settingCellularAccessEntry.title,
                                                 segmentModel: settingCellularAccessSegment,
                                                 subtitle: settingCellularAccessEntry.subtitle,
+                                                isEnabled: settingCellularAccessEntry.isEnabled,
                                                 subtitleColor: settingCellularAccessEntry.subtitleColor,
                                                 atIndexPath: IndexPath(item: 0, section: 0),
                                                 shouldShowBackground: false)
-            cellularAccessSegment.delegate = self
+            cellularAccessSegment.enabledMargins = []
         }
     }
 
@@ -163,42 +151,53 @@ private extension SettingsCellularDataCell {
             connectionNetworkModeSegment.configureCell(cellTitle: settingConnectionNetworkModeEntry.title,
                                                        segmentModel: settingConnectionNetworkModeSegment,
                                                        subtitle: settingConnectionNetworkModeEntry.subtitle,
+                                                       isEnabled: settingConnectionNetworkModeEntry.isEnabled,
                                                        subtitleColor: settingConnectionNetworkModeEntry.subtitleColor,
                                                        atIndexPath: IndexPath(item: 1, section: 0),
                                                        shouldShowBackground: false)
-            connectionNetworkModeSegment.delegate = self
+            connectionNetworkModeSegment.enabledMargins = []
         }
     }
 
     /// Configures the network selection segment.
     func configureConnectionNetworkSelectionCell() {
-        accessNameTextField.text = viewModel.state.value.networkUrl
-        usernameTextField.text = viewModel.state.value.username
-        passwordTextField.text = viewModel.state.value.password
-        segmentedControl.removeAllSegments()
-        titleLabel.text = viewModel.connectionNetworkSelectionEntry.title
-        self.manualSelectionView.isHidden = viewModel.state.value.selectionMode == .auto
+        let settingConnectionNetworkSelectionEntry = viewModel.connectionNetworkSelectionEntry
 
-        guard let segmentModel = viewModel.connectionNetworkSelectionEntry.segmentModel else { return }
-
-        for segmentItem: SettingsSegment in segmentModel.segments {
-            segmentedControl.insertSegment(withTitle: segmentItem.title,
-                                           at: self.segmentedControl.numberOfSegments,
-                                           animated: false)
-            segmentedControl.setEnabled(!segmentItem.disabled,
-                                        forSegmentAt: self.segmentedControl.numberOfSegments - 1)
-            // Set fixed size for small item to align items, automatic dimension will be set otherwise.
-            if segmentItem.title.count < Constants.smallTextLength {
-                segmentedControl.setWidth(Constants.segmentWidth, forSegmentAt: self.segmentedControl.numberOfSegments - 1)
-            }
-
-            segmentedControl.selectedSegmentIndex = segmentModel.selectedIndex
+        if let settingConnectionNetworkSelectionSegment: SettingsSegmentModel = settingConnectionNetworkSelectionEntry.segmentModel {
+            connectionNetworkSelectionSegment.configureCell(cellTitle: settingConnectionNetworkSelectionEntry.title,
+                                                            segmentModel: settingConnectionNetworkSelectionSegment,
+                                                            subtitle: settingConnectionNetworkSelectionEntry.subtitle,
+                                                            isEnabled: settingConnectionNetworkSelectionEntry.isEnabled,
+                                                            subtitleColor: settingConnectionNetworkSelectionEntry.subtitleColor,
+                                                            atIndexPath: IndexPath(item: 2, section: 0),
+                                                            shouldShowBackground: false)
+            connectionNetworkSelectionSegment.enabledMargins = []
         }
+
+        // updates network selection view
+        accessNameTextField.text = viewModel.state.value.cellularNetworkUrl
+        accessNameTextField.isEnabled = settingConnectionNetworkSelectionEntry.isEnabled
+        accessNameTextField.alphaWithEnabledState(settingConnectionNetworkSelectionEntry.isEnabled)
+        usernameTextField.text = viewModel.state.value.cellularNetworkUsername
+        usernameTextField.isEnabled = settingConnectionNetworkSelectionEntry.isEnabled
+        usernameTextField.alphaWithEnabledState(settingConnectionNetworkSelectionEntry.isEnabled)
+        passwordTextField.text = viewModel.state.value.cellularNetworkPassword
+        passwordTextField.isEnabled = settingConnectionNetworkSelectionEntry.isEnabled
+        passwordTextField.alphaWithEnabledState(settingConnectionNetworkSelectionEntry.isEnabled)
+        networkSelectionStackView.isHidden = viewModel.state.value.cellularSelectionMode == .auto
+    }
+
+    /// Update values when the keyboard will hide.
+    @objc func keyboardWillHide(sender: NSNotification) {
+        viewModel.updateAllManualValues(url: accessNameTextField.text ?? "",
+                                              username: usernameTextField.text ?? "",
+                                              password: passwordTextField.text ?? "")
     }
 }
 
 // MARK: - UITextField Delegate
 extension SettingsCellularDataCell: UITextFieldDelegate {
+
     func textFieldDidBeginEditing(_ textField: UITextField) {
         delegate?.didStartSelectionEditing()
     }
@@ -206,20 +205,15 @@ extension SettingsCellularDataCell: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         switch textField {
         case accessNameTextField:
-            viewModel.updateManualValue(value: accessNameTextField.text,
-                                        manualSelectionField: .apnUrl)
             usernameTextField.becomeFirstResponder()
         case usernameTextField:
-            viewModel.updateManualValue(value: usernameTextField.text,
-                                        manualSelectionField: .username)
             passwordTextField.becomeFirstResponder()
         case passwordTextField:
-            viewModel.updateManualValue(value: passwordTextField.text,
-                                        manualSelectionField: .password)
             textField.resignFirstResponder()
         default:
             break
         }
+
         return true
     }
 }
@@ -232,6 +226,8 @@ extension SettingsCellularDataCell: SettingsSegmentedCellDelegate {
             viewModel.cellularAccessEntry.save(at: selectedSegmentIndex)
         case 1:
             viewModel.connectionNetworkModeEntry.save(at: selectedSegmentIndex)
+        case 2:
+            viewModel.connectionNetworkSelectionEntry.save(at: selectedSegmentIndex)
         default:
             break
         }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -48,66 +48,64 @@
                         <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nwT-Q9-z3E">
                             <rect key="frame" x="79" y="0.0" width="521" height="100"/>
                             <subviews>
-                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="H59-PC-Ygm">
+                                <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YnG-bc-baW">
                                     <rect key="frame" x="0.0" y="0.0" width="521" height="100"/>
                                     <subviews>
-                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MEf-U7-02H">
-                                            <rect key="frame" x="0.0" y="0.0" width="521" height="100"/>
+                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dvD-xL-ihn">
+                                            <rect key="frame" x="0.0" y="0.0" width="421" height="100"/>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         </view>
-                                        <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YnG-bc-baW">
-                                            <rect key="frame" x="0.0" y="0.0" width="521" height="0.0"/>
+                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bO8-ln-wkg" customClass="HighlightableUIControl" customModule="OpenFlight" customModuleProvider="target">
+                                            <rect key="frame" x="421" y="0.0" width="100" height="100"/>
                                             <subviews>
-                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dvD-xL-ihn">
-                                                    <rect key="frame" x="0.0" y="0.0" width="421" height="0.0"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                </view>
-                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bO8-ln-wkg" customClass="HighlightableUIControl" customModule="OpenFlight" customModuleProvider="target">
-                                                    <rect key="frame" x="421" y="0.0" width="100" height="0.0"/>
+                                                <stackView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="kMK-ce-er3">
+                                                    <rect key="frame" x="0.0" y="53.5" width="100" height="38.5"/>
                                                     <subviews>
-                                                        <stackView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="kMK-ce-er3">
-                                                            <rect key="frame" x="0.0" y="-46.5" width="100" height="38.5"/>
-                                                            <subviews>
-                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconWbPresets" translatesAutoresizingMaskIntoConstraints="NO" id="82D-Le-dwA">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="100" height="10"/>
-                                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                    <color key="tintColor" name="default_text_color"/>
-                                                                </imageView>
-                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="epQ-pH-tAF">
-                                                                    <rect key="frame" x="0.0" y="18" width="100" height="20.5"/>
-                                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                    <color key="textColor" name="default_text_color"/>
-                                                                    <nil key="highlightedColor"/>
-                                                                </label>
-                                                            </subviews>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconWbPresets" translatesAutoresizingMaskIntoConstraints="NO" id="82D-Le-dwA">
+                                                            <rect key="frame" x="0.0" y="0.0" width="100" height="10"/>
                                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        </stackView>
+                                                            <color key="tintColor" name="default_text_color"/>
+                                                        </imageView>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="epQ-pH-tAF">
+                                                            <rect key="frame" x="0.0" y="18" width="100" height="20.5"/>
+                                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                            <color key="textColor" name="default_text_color"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
                                                     </subviews>
-                                                    <color key="backgroundColor" name="white_90"/>
-                                                    <constraints>
-                                                        <constraint firstItem="kMK-ce-er3" firstAttribute="leading" secondItem="bO8-ln-wkg" secondAttribute="leading" id="2U4-Fm-9YX"/>
-                                                        <constraint firstAttribute="width" constant="100" id="32a-Ik-jds"/>
-                                                        <constraint firstAttribute="trailing" secondItem="kMK-ce-er3" secondAttribute="trailing" id="3c5-iE-O61"/>
-                                                        <constraint firstAttribute="bottom" secondItem="kMK-ce-er3" secondAttribute="bottom" constant="8" id="Qnj-pi-nSF"/>
-                                                    </constraints>
-                                                    <connections>
-                                                        <action selector="presetButtonTouchedUpInside:" destination="-1" eventType="touchUpInside" id="vaS-Xg-3LI"/>
-                                                    </connections>
-                                                </view>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                </stackView>
                                             </subviews>
-                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        </stackView>
+                                            <color key="backgroundColor" name="white_90"/>
+                                            <constraints>
+                                                <constraint firstItem="kMK-ce-er3" firstAttribute="leading" secondItem="bO8-ln-wkg" secondAttribute="leading" id="2U4-Fm-9YX"/>
+                                                <constraint firstAttribute="width" constant="100" id="32a-Ik-jds"/>
+                                                <constraint firstAttribute="trailing" secondItem="kMK-ce-er3" secondAttribute="trailing" id="3c5-iE-O61"/>
+                                                <constraint firstAttribute="bottom" secondItem="kMK-ce-er3" secondAttribute="bottom" constant="8" id="Qnj-pi-nSF"/>
+                                            </constraints>
+                                            <connections>
+                                                <action selector="presetButtonTouchedUpInside:" destination="-1" eventType="touchUpInside" id="vaS-Xg-3LI"/>
+                                            </connections>
+                                        </view>
                                     </subviews>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </stackView>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MEf-U7-02H">
+                                    <rect key="frame" x="0.0" y="0.0" width="521" height="100"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </view>
                             </subviews>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
-                                <constraint firstItem="H59-PC-Ygm" firstAttribute="top" secondItem="nwT-Q9-z3E" secondAttribute="top" id="Yq9-WR-txH"/>
-                                <constraint firstItem="H59-PC-Ygm" firstAttribute="leading" secondItem="nwT-Q9-z3E" secondAttribute="leading" id="hyB-Hb-a9F"/>
-                                <constraint firstAttribute="bottom" secondItem="H59-PC-Ygm" secondAttribute="bottom" id="or0-e3-Q4s"/>
-                                <constraint firstAttribute="trailing" secondItem="H59-PC-Ygm" secondAttribute="trailing" id="qs5-nr-MVg"/>
+                                <constraint firstItem="YnG-bc-baW" firstAttribute="top" secondItem="nwT-Q9-z3E" secondAttribute="top" id="0lJ-SV-M6I"/>
+                                <constraint firstAttribute="bottom" secondItem="YnG-bc-baW" secondAttribute="bottom" id="ALL-b1-Ocl"/>
+                                <constraint firstItem="MEf-U7-02H" firstAttribute="leading" secondItem="nwT-Q9-z3E" secondAttribute="leading" id="PfN-Jo-86L"/>
+                                <constraint firstAttribute="trailing" secondItem="YnG-bc-baW" secondAttribute="trailing" id="RH0-ib-wWU"/>
+                                <constraint firstAttribute="bottom" secondItem="MEf-U7-02H" secondAttribute="bottom" id="Wh1-jG-4av"/>
+                                <constraint firstItem="MEf-U7-02H" firstAttribute="top" secondItem="nwT-Q9-z3E" secondAttribute="top" id="YB4-Nk-Dah"/>
+                                <constraint firstAttribute="trailing" secondItem="MEf-U7-02H" secondAttribute="trailing" id="tGo-7w-EZs"/>
+                                <constraint firstItem="YnG-bc-baW" firstAttribute="leading" secondItem="nwT-Q9-z3E" secondAttribute="leading" id="xW7-Sh-wCU"/>
                             </constraints>
                         </view>
                     </subviews>
@@ -130,7 +128,7 @@
         <image name="iconAutoLarge" width="35" height="18"/>
         <image name="iconWbPresets" width="49" height="10"/>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="white_90">
             <color red="1" green="1" blue="1" alpha="0.89999997615814209" colorSpace="custom" customColorSpace="sRGB"/>

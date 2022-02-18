@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -84,7 +83,6 @@ final class RemoteDetailsInformationsState: DeviceConnectionState {
 final class RemoteDetailsInformationsViewModel: RemoteControlStateViewModel<RemoteDetailsInformationsState> {
     // MARK: - Private Properties
     private var systemInfoRef: Ref<SystemInfo>?
-    private let groundSdk = GroundSdk()
 
     // MARK: - Override Funcs
     override func listenRemoteControl(remoteControl: RemoteControl) {

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,6 +40,18 @@ public struct AllFlightsSummary {
     public let totalFlightsDuration: String
     /// Total flights distance.
     public let totalFlightsDistance: String
+
+    /// Init
+    public init(numberOfFlights: Int = 0,
+                totalDuration: Double = 0,
+                totalDistance: Double = 0) {
+        self.numberOfFlights = numberOfFlights
+        self.totalFlightsDuration = totalDuration.formattedHmsString ?? Style.dash
+        self.totalFlightsDistance = UnitHelper.stringDistanceWithDouble(totalDistance)
+    }
+
+    /// `AllFlightsSummary`'s default values
+    public static let defaultValues = AllFlightsSummary()
 }
 
 public protocol FlightService: AnyObject {
@@ -49,12 +60,18 @@ public protocol FlightService: AnyObject {
     var allFlights: AnyPublisher<[FlightModel], Never> { get }
     var allFlightsSummary: AnyPublisher<AllFlightsSummary, Never> { get }
     var allFlightsCount: Int { get }
+    var flightsDidChange: AnyPublisher<Void, Never> { get }
     func updateFlights()
     func update(flight: FlightModel, title: String) -> FlightModel
     func delete(flight: FlightModel)
     func save(gutmaOutput: [Gutma.Model])
     func thumbnail(flight: FlightModel, _ completion: @escaping (UIImage?) -> Void)
     func flightPlans(flight: FlightModel) -> [FlightPlanModel]
+    func gutma(flight: FlightModel) -> Gutma?
+    /// Gutma from data. Bypasses cache, don't use except on first retrieval from drone
+    /// - Parameter data: gutma's data
+    func gutma(data: Data) -> Gutma?
+    func handleFlightsUnknownLocationTitle() async
 }
 
 open class FlightServiceImpl {
@@ -65,21 +82,28 @@ open class FlightServiceImpl {
     private var thumbnailsRequests = [String: [((UIImage?) -> Void)]]()
     private var allFlightsSubject = CurrentValueSubject<[FlightModel], Never>([])
     private var cancellable = Set<AnyCancellable>()
+    private var gutmaCache = NSCache<NSString, Gutma>()
+    private let flightPlanRunManager: FlightPlanRunManager
 
     init(repo: FlightRepository,
          fpFlightRepo: FlightPlanFlightsRepository,
          thumbnailRepo: ThumbnailRepository,
          userInformation: UserInformation,
-         cloudSynchroWatcher: CloudSynchroWatcher?) {
+         cloudSynchroWatcher: CloudSynchroWatcher?,
+         flightPlanRunManager: FlightPlanRunManager) {
         self.repo = repo
         self.fpFlightRepo = fpFlightRepo
         self.thumbnailRepo = thumbnailRepo
         self.userInformation = userInformation
+        self.flightPlanRunManager = flightPlanRunManager
         updateFlights()
         cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { isSynchronizingData in
             if !isSynchronizingData {
                 self.updateFlights()
             }
+        }.store(in: &cancellable)
+        repo.flightsDidChangePublisher.sink {
+            self.updateFlights()
         }.store(in: &cancellable)
     }
 }
@@ -108,18 +132,43 @@ private extension FlightServiceImpl {
             let image = snapshot?.image
             let thumbnail = ThumbnailModel(apcId: userInformation.apcId,
                                            uuid: UUID().uuidString,
-                                           thumbnailImage: image,
-                                           flightUuid: uuid)
-            thumbnailRepo.persist(thumbnail, true)
+                                           flightUuid: uuid,
+                                           thumbnailImage: image)
+            // Flight's thumbnail is not synced with the Cloud.
+            // `latestLocalModificationDate` should not be set
+            thumbnailRepo.saveOrUpdateThumbnail(thumbnail, byUserUpdate: false, toSynchro: false)
             thumbnailsRequests[uuid]?.forEach { $0(image) }
             thumbnailsRequests[uuid] = []
+        }
+    }
+
+    func getTitleLocation(forFlight flight: FlightModel) async -> String {
+        let flightTitle = flight.title ?? ""
+
+        guard flightTitle.isEmpty else {
+            return flightTitle
+        }
+
+        let location = CLLocation(latitude: flight.startLatitude, longitude: flight.startLongitude)
+
+        do {
+            let placemarks = try await CLGeocoder().reverseGeocodeLocation(location)
+            var title = ""
+
+            if let place = placemarks.first, let placeTitle = place.addressDescription {
+                title = placeTitle
+            }
+
+            return title
+        } catch {
+            return ""
         }
     }
 }
 
 extension FlightServiceImpl: FlightService {
     public func updateFlights() {
-        allFlightsSubject.value = repo.loadAllFlights()
+        allFlightsSubject.value = repo.getAllFlights()
     }
 
     public var allFlightsCount: Int {
@@ -134,13 +183,11 @@ extension FlightServiceImpl: FlightService {
         allFlights
             .map { flights in
                 let numberOfFlights = flights.count
-                let distance = Double(flights.reduce(0) { $0 + $1.distance })
-                let totalFlightsDistance = UnitHelper.stringDistanceWithDouble(distance)
                 let duration = Double(flights.reduce(0) { $0 + $1.duration })
-                let totalFlightsDuration = duration.formattedHmsString ?? Style.dash
+                let distance = Double(flights.reduce(0) { $0 + $1.distance })
                 return AllFlightsSummary(numberOfFlights: numberOfFlights,
-                                         totalFlightsDuration: totalFlightsDuration,
-                                         totalFlightsDistance: totalFlightsDistance)
+                                         totalDuration: duration,
+                                         totalDistance: distance)
             }
             .eraseToAnyPublisher()
     }
@@ -149,33 +196,57 @@ extension FlightServiceImpl: FlightService {
         allFlightsSubject.eraseToAnyPublisher()
     }
 
+    public var flightsDidChange: AnyPublisher<Void, Never> {
+        repo.flightsDidChangePublisher.eraseToAnyPublisher()
+    }
+
     public func update(flight: FlightModel, title: String) -> FlightModel {
         var flight = flight
-        flight.title = title
-        repo.persist(flight, true)
+        flight.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        repo.saveOrUpdateFlight(flight,
+                                byUserUpdate: true,
+                                toSynchro: true,
+                                withFileUploadNeeded: false)
         updateFlights()
         return flight
     }
 
     public func delete(flight: FlightModel) {
-        repo.performRemoveFlight(flight)
+        repo.deleteOrFlagToDeleteFlight(withUuid: flight.uuid)
         updateFlights()
     }
 
     public func save(gutmaOutput: [Gutma.Model]) {
-        for flight in gutmaOutput {
+        var shouldUpdateFlights = true
+
+        for gutma in gutmaOutput {
             // Flights are never updated once created
-            guard repo.loadFlight(flight.flight.uuid) == nil else { return }
-            repo.persist(flight.flight, true)
-            for fpFlight in flight.flightPlanFlights {
-                fpFlightRepo.persist(fpFlight, true)
+            if repo.getFlight(withUuid: gutma.flight.uuid) == nil {
+                Task {
+                    do {
+                        var flight = gutma.flight
+                        flight.title = await getTitleLocation(forFlight: gutma.flight)
+
+                        repo.saveOrUpdateFlight(flight,
+                                                byUserUpdate: true,
+                                                toSynchro: true,
+                                                withFileUploadNeeded: true)
+                        fpFlightRepo.saveOrUpdateFPlanFlights(gutma.flightPlanFlights, byUserUpdate: true, toSynchro: true)
+                    }
+                }
+            } else {
+                shouldUpdateFlights = false
+                break
             }
         }
-        updateFlights()
+
+        if shouldUpdateFlights {
+            updateFlights()
+        }
     }
 
     public func thumbnail(flight: FlightModel, _ completion: @escaping (UIImage?) -> Void) {
-        if let thumbnail = thumbnailRepo.thumbnail(for: flight) {
+        if let thumbnail = thumbnailRepo.getThumbnail(withFlightUuid: flight.uuid) {
             completion(thumbnail.thumbnailImage)
             return
         }
@@ -188,6 +259,55 @@ extension FlightServiceImpl: FlightService {
     }
 
     public func flightPlans(flight: FlightModel) -> [FlightPlanModel] {
-        repo.loadFlightPlans(for: flight)
+        repo.getFlightPlans(ofFlightModel: flight)
+            .filter { $0.uuid != flightPlanRunManager.playingFlightPlan?.uuid } // Exclude flying FP
+    }
+
+    public func gutma(flight: FlightModel) -> Gutma? {
+        if let gutma = gutmaCache.object(forKey: flight.uuid as NSString) {
+            return gutma
+        }
+        if let data = flight.gutmaFile,
+           let gutma = gutma(data: data) {
+            gutmaCache.setObject(gutma, forKey: flight.uuid as NSString)
+            return gutma
+        }
+        return nil
+    }
+
+    public func gutma(data: Data) -> Gutma? {
+        do {
+            return try JSONDecoder().decode(Gutma.self, from: data)
+        } catch {
+            // Hack for Gutma encoding issue.
+            if let data = String(data: data, encoding: String.Encoding.ascii)?
+                .data(using: String.Encoding.utf8) {
+                return try? JSONDecoder().decode(Gutma.self, from: data)
+            }
+        }
+        return nil
+    }
+
+    public func handleFlightsUnknownLocationTitle() async {
+        var modifiedFlights: [FlightModel] = []
+        let flightsWithUnknownLocation = allFlightsSubject.value.filter({ flight in
+            let flightTitle = flight.title ?? ""
+            return (flightTitle.isEmpty && flight.startLatitude != 0 && flight.startLongitude != 0)
+        })
+
+        for var flightItem in flightsWithUnknownLocation {
+            do {
+                let locationTitle = await getTitleLocation(forFlight: flightItem)
+
+                if !locationTitle.isEmpty {
+                    flightItem.title = locationTitle
+                    modifiedFlights.append(flightItem)
+                }
+            }
+        }
+
+        if !modifiedFlights.isEmpty {
+            repo.saveOrUpdateFlights(modifiedFlights, byUserUpdate: true, toSynchro: true)
+        }
     }
 }

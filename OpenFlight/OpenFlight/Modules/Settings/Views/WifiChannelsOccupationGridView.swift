@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -30,6 +29,7 @@
 
 import UIKit
 import GroundSdk
+import Combine
 
 // MARK: - Protocols
 /// Wifi Channels Occupation Grid Delegate.
@@ -53,6 +53,15 @@ final class WifiChannelsOccupationGridView: WifiChannelsOccupationView {
     var currentChannel: WifiChannel?
     var currentChannelUpdating: Bool?
     weak var delegate: WifiChannelsOccupationGridViewDelegate?
+    private var cancellables = Set<AnyCancellable>()
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        tapGesturePublisher.sink { [weak self] gesture in
+            self?.handleTap(gesture)
+        }
+        .store(in: &cancellables)
+    }
 
     // MARK: - Overrides Funcs
     override func draw(_ rect: CGRect) {
@@ -125,7 +134,7 @@ final class WifiChannelsOccupationGridView: WifiChannelsOccupationView {
             // Draw dotted line.
             for index in Int(range / 2.0)...Int(rect.size.width - range / 2.0) where index % 2 == 0 {
                 let rectangle = CGRect(x: CGFloat(index),
-                                       y: self.frame.size.height - 1.0,
+                                       y: frame.size.height - 1.0,
                                        width: Constants.dotSize.width,
                                        height: Constants.dotSize.height)
                 context.setFillColor(ColorName.defaultTextColor.color.cgColor)
@@ -135,16 +144,14 @@ final class WifiChannelsOccupationGridView: WifiChannelsOccupationView {
         }
     }
 
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            let point = touch.location(in: self)
-            let range = frame.size.width / CGFloat(channelsOccupations.count + 1)
+    func handleTap(_ gesture: UITapGestureRecognizer) {
+        let point = gesture.location(in: self)
+        let range = frame.size.width / CGFloat(channelsOccupations.count + 1)
 
-            let channelPosition = point.x / range + Constants.extraRoundingPosition
-            let channelIndex = Int(channelPosition) - 1
-            if sortedChannels.indices.contains(channelIndex) {
-                delegate?.userDidSelectChannel(sortedChannels[channelIndex])
-            }
+        let channelPosition = point.x / range + Constants.extraRoundingPosition
+        let channelIndex = Int(channelPosition) - 1
+        if sortedChannels.indices.contains(channelIndex) {
+            delegate?.userDidSelectChannel(sortedChannels[channelIndex])
         }
     }
 }

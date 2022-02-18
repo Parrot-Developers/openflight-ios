@@ -38,7 +38,7 @@
                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                             <inset key="titleEdgeInsets" minX="0.0" minY="0.0" maxX="0.0" maxY="-4"/>
                             <state key="normal" title="+">
-                                <color key="titleColor" name="default_icon_color"/>
+                                <color key="titleColor" name="default_text_color"/>
                             </state>
                             <connections>
                                 <action selector="plusButtonHoldDown:" destination="-1" eventType="touchDown" id="UC0-LR-3fS"/>
@@ -74,7 +74,7 @@
                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                             <inset key="titleEdgeInsets" minX="0.0" minY="2" maxX="0.0" maxY="0.0"/>
                             <state key="normal" title="-">
-                                <color key="titleColor" name="default_icon_color"/>
+                                <color key="titleColor" name="default_text_color"/>
                             </state>
                             <connections>
                                 <action selector="minusButtonHoldDown:" destination="-1" eventType="touchDown" id="6MP-rn-PAx"/>
@@ -102,7 +102,7 @@
         </designable>
     </designables>
     <resources>
-        <namedColor name="default_icon_color">
+        <namedColor name="default_text_color">
             <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="white_90">

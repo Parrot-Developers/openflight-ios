@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -75,7 +74,6 @@ class LocationsTrackerImpl {
     private var userLocationRef: Ref<UserLocation>?
     private var userHeadingRef: Ref<UserHeading>?
     private var remoteControlCompassRef: Ref<Compass>?
-    private var orientationObserver: Any?
     private var oldLandscapeInterfaceOrientation: UIInterfaceOrientation = .landscapeLeft
     private var takeOffAltitude: Double?
 
@@ -120,8 +118,6 @@ class LocationsTrackerImpl {
             }
             .eraseToAnyPublisher()
     }
-    /// Current remote control heading.
-    private var remoteControlHeadingSubject = CurrentValueSubject<Double, Never>(0.0)
     /// Drone heading storage
     private var droneHeadingStorage: Double {
         get { Defaults.lastDroneHeading ?? 0.0 }
@@ -180,6 +176,10 @@ class LocationsTrackerImpl {
                 listenCompass(remoteControl: remoteControl)
             }
             .store(in: &cancellables)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
@@ -244,7 +244,8 @@ private extension LocationsTrackerImpl {
     /// Listen for device's orientation changes
     func listenDeviceOrientation() {
         NotificationCenter.default.addObserver(self, selector: #selector(handleOrientationChange),
-                                               name: UIDevice.orientationDidChangeNotification, object: nil)
+                                               name: UIDevice.orientationDidChangeNotification,
+                                               object: nil)
     }
 
     /// Handle device's orientation changes
@@ -271,6 +272,7 @@ private extension LocationsTrackerImpl {
 
 /// `LocationsTracker` conformance
 extension LocationsTrackerImpl: LocationsTracker {
+
     var userLocation: OrientedLocation {
         if let location = userLocationSubject.value {
             return OrientedLocation(coordinates: Location3D(coordinate: location.coordinate,

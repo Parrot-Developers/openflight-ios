@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,7 +32,7 @@ import GroundSdk
 
 // MARK: - Internal Enums
 /// Enum defining camera modes.
-public enum CameraCaptureMode: String, BarItemMode, CaseIterable {
+public enum CameraCaptureMode: String, BarItemMode, CaseIterable, Equatable {
     case video
     case photo
     case timelapse

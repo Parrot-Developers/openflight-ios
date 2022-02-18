@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -48,6 +47,15 @@ final class CameraWidgetView: UIControl, NibOwnerLoadable {
         }
     }
 
+    // MARK: - Override Properties
+    override var isEnabled: Bool {
+        didSet {
+            guard model != nil else { return }
+            updateTextColor()
+            updateBackgroundColor()
+        }
+    }
+
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -63,11 +71,12 @@ final class CameraWidgetView: UIControl, NibOwnerLoadable {
 // MARK: - Private Funcs
 private extension CameraWidgetView {
     func customInitCameraWidgetView() {
-        self.loadNibContent()
-        cameraWidgetLabel1.textColor = ColorName.defaultTextColor80.color
-        cameraWidgetSubLabel1.textColor = ColorName.defaultTextColor80.color
+        loadNibContent()
+        let textColor = ColorName.defaultTextColor80
+        cameraWidgetLabel1.makeUp(with: .current, color: textColor)
+        cameraWidgetSubLabel1.makeUp(with: .current, color: textColor)
         cameraWidgetSubLabelView.applyCornerRadius(Style.verySmallCornerRadius)
-        cameraWidgetLabel2.textColor = ColorName.defaultTextColor.color
+        cameraWidgetLabel2.makeUp(with: .current, color: .defaultTextColor)
     }
 
     /// Fills the UI elements of the view with given model.
@@ -97,18 +106,38 @@ private extension CameraWidgetView {
 
     func updateTextColor() {
         let isSelected = model.isSelected.value
-        cameraWidgetLabel1.textColor = isSelected ? .white : ColorName.defaultTextColor80.color
-        cameraWidgetSubLabel1.textColor = model.exposureTextColor
-        cameraWidgetLabel2.textColor = isSelected ? .white : ColorName.defaultTextColor.color
+        cameraWidgetLabel1.textColor = isEnabled
+                                        ? isSelected
+                                            ? .white
+                                            : ColorName.defaultTextColor80.color
+                                        : ColorName.disabledTextColor2.color
+
+        cameraWidgetSubLabel1.textColor = isEnabled
+                                            ? model.exposureTextColor
+                                            : ColorName.disabledTextColor2.color
+
+        cameraWidgetLabel2.textColor = isEnabled
+                                        ? isSelected
+                                            ? .white
+                                            : ColorName.defaultTextColor.color
+                                        : ColorName.disabledTextColor2.color
     }
 
     func updateBackgroundColor() {
         let isSelected = model.isSelected.value
-        let backgroundColor = isSelected ? ColorName.highlightColor.color : ColorName.white90.color
+        let backgroundColor = isEnabled
+                                ? isSelected
+                                    ? ColorName.highlightColor.color
+                                    : ColorName.white90.color
+                                : ColorName.disabledBgcolor.color
+
         customCornered(corners: [.topRight, .bottomRight],
                        radius: Style.largeCornerRadius,
                        backgroundColor: backgroundColor,
                        borderColor: .clear)
-        cameraWidgetSubLabelView.backgroundColor = model.exposureBackgroundColor
+
+        cameraWidgetSubLabelView.backgroundColor = isEnabled
+                                                    ? model.exposureBackgroundColor
+                                                    : ColorName.clear.color
     }
 }

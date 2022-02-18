@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -41,6 +41,10 @@ protocol FlightPlanExecutionInfoCellProvider {
     var location: CLLocationCoordinate2D { get }
     var flights: [FlightModel] { get }
     var executionTitle: String { get }
+    var flightPlan: FlightPlanModel { get }
+    var flightService: FlightService { get }
+
+    var summaryProvider: FlightDetailsSummaryViewProvider { get }
 }
 
 open class FlightPlanExecutionViewModel {
@@ -51,33 +55,39 @@ open class FlightPlanExecutionViewModel {
     }
 
     let flightPlan: FlightPlanModel
-    private let coordinator: DashboardCoordinator?
+    private unowned let coordinator: FlightPlanExecutionDetailsCoordinator
     private let flightPlanExecutionDetailsSettingsProvider: FlightPlanExecutionDetailsSettingsProvider
     private unowned let flightRepository: FlightRepository
     private let flightPlanUiStateProvider: FlightPlanUiStateProvider
+    private let flightService: FlightService
+    private let navigationStack: NavigationStackService
 
     init(flightPlan: FlightPlanModel,
          flightRepository: FlightRepository,
-         coordinator: DashboardCoordinator?,
+         coordinator: FlightPlanExecutionDetailsCoordinator,
          flightPlanExecutionDetailsSettingsProvider: FlightPlanExecutionDetailsSettingsProvider,
-         flightPlanUiStateProvider: FlightPlanUiStateProvider) {
+         flightPlanUiStateProvider: FlightPlanUiStateProvider,
+         flightService: FlightService,
+         navigationStack: NavigationStackService) {
         self.flightPlan = flightPlan
         self.coordinator = coordinator
         self.flightPlanExecutionDetailsSettingsProvider = flightPlanExecutionDetailsSettingsProvider
         self.flightRepository = flightRepository
         self.flightPlanUiStateProvider = flightPlanUiStateProvider
+        self.flightService = flightService
+        self.navigationStack = navigationStack
     }
 
     /// Back button tapped.
     func didTapBack() {
-        coordinator?.back()
+        coordinator.dismissDetails()
     }
 
     /// Ask confirmation to delete flight.
     func askForDeletion() {
-        coordinator?.showDeleteFlightPopupConfirmation(didTapDelete: {
-            Services.hub.flightPlan.manager.delete(flightPlan: self.flightPlan)
-            self.coordinator?.back()
+        coordinator.showDeleteFlightPopupConfirmation(didTapDelete: { [unowned self] in
+            Services.hub.flightPlan.manager.delete(flightPlan: flightPlan)
+            coordinator.dismissDetails()
         })
      }
 
@@ -89,10 +99,8 @@ open class FlightPlanExecutionViewModel {
     }
 
     var executionInfoProvider: FlightPlanExecutionInfoCellProvider {
-        let flights = flightPlan.flightPlanFlights?
-            .map { $0.flightUuid }
-            .compactMap(flightRepository.loadFlight)
-            ?? []
+        let flightUuids = flightPlan.flightPlanFlights?.map({ $0.flightUuid }) ?? []
+        let flights = flightRepository.getFlights(withUuids: flightUuids)
         let project = Services.hub.flightPlan.projectManager.project(for: flightPlan)
 
         let title = project?.title ?? Style.dash
@@ -109,25 +117,16 @@ open class FlightPlanExecutionViewModel {
 
         return FlightPlanExecutionInfoCellProviderImpl(title: title,
                                                        executionTitle: executionTitle,
+                                                       flightPlan: flightPlan,
                                                        date: date,
                                                        location: location,
-                                                       flights: flights)
+                                                       flights: flights,
+                                                       flightService: flightService)
     }
 
     var actions: [FlightDetailsActionCellModel] {
         [FlightDetailsActionCellModel(buttonTitle: L10n.dashboardMyFlightDeleteExecution,
                                       action: .delete)]
-    }
-
-    var flightsSectionHeaderModel: FlightDetailsSectionHeaderCellModel {
-        FlightDetailsSectionHeaderCellModel(title: L10n.dashboardMyFlightPlanExecutionFlights,
-                                            count: executionInfoProvider.flights.count)
-    }
-
-    func flightCellModelForFlight(at index: Int) -> FlightExecutionDetailsFlightsCellModel {
-        let flight = executionInfoProvider.flights[index]
-        return FlightExecutionDetailsFlightsCellModel(coordinator: coordinator,
-                                                      flight: flight)
     }
 
     var statusCellModel: FlightExecutionDetailsStatusCellModel {
@@ -136,38 +135,27 @@ open class FlightPlanExecutionViewModel {
                                               coordinator: coordinator)
     }
 
-    /// Gutma data of flights peformed for flight plan execution.
-    var gutmas: [Gutma] {
-        flightPlan.flightPlanFlights?
-            .map { $0.flightUuid }
-            .compactMap(flightRepository.loadFlight)
-            .map { $0.gutmaFile }
-            .compactMap(Gutma.instantiate)
-        ?? []
+    var flightPlanUiStateProviderPublisher: AnyPublisher<FlightPlanStateUiParameters, Never> {
+        flightPlanUiStateProvider
+            .uiStatePublisher(for: flightPlan)
+            .eraseToAnyPublisher()
     }
 
     /// Flights trajectories points.
     public var flightsPoints: [[TrajectoryPoint]] {
-        flightPlan.flightPlanFlights?
-            .map { $0.flightUuid }
-            .compactMap(flightRepository.loadFlight)
-            .map { $0.gutmaFile }
-            .compactMap(Gutma.instantiate)
-            .map {
-                // start time of trajectory to draw
-                let startTime = $0.flightPlanStartTimestamp(flightPlanUuid: flightPlan.uuid)
-                // end time of trajectory to draw
-                let endTime = $0.flightPlanEndTimestamp(flightPlanUuid: flightPlan.uuid)
-                return $0.points(startTime: startTime, endTime: endTime)
+        let flightUuids = flightPlan.flightPlanFlights?.map({ $0.flightUuid }) ?? []
+        return flightRepository.getFlights(withUuids: flightUuids)
+            .compactMap { flightService.gutma(flight: $0) }
+            .map { gutma in
+                gutma.flightPlanPoints(flightPlan)
             }
-        ?? []
     }
 
     /// Whether trajectory points altitudes are in ASML.
     public var hasAsmlAltitude: Bool {
         if let flightPlanFlight = flightPlan.flightPlanFlights?.first,
-           let flight = flightRepository.loadFlight(flightPlanFlight.flightUuid),
-           let gutma = Gutma.instantiate(with: flight.gutmaFile) {
+           let flight = flightRepository.getFlight(withUuid: flightPlanFlight.flightUuid),
+           let gutma = flightService.gutma(flight: flight) {
             return gutma.hasAsmlAltitude
         } else {
             return false
@@ -178,9 +166,35 @@ open class FlightPlanExecutionViewModel {
 private struct FlightPlanExecutionInfoCellProviderImpl: FlightPlanExecutionInfoCellProvider {
     let title: String
     let executionTitle: String
+    let flightPlan: FlightPlanModel
     let date: Date
     let location: CLLocationCoordinate2D
     let flights: [FlightModel]
+    let flightService: FlightService
+
+    var summaryProvider: FlightDetailsSummaryViewProvider {
+        // An execution can span multiple flights. The (duration,power,distance)
+        // related to an execution thus constists of the sum of sub-executions
+        // in all flights related with the execution.
+        let sum = flights.reduce((duration: 0.0, battery: 0.0, distance: 0.0)) { sum, flight in
+            let gutma = flightService.gutma(flight: flight)
+            let duration = gutma?.flightPlanDuration(flightPlan) ?? 0
+            let battery = gutma?.flightPlanBatteryConsumption(flightPlan) ?? 0
+            let distance = gutma?.flightPlanDistance(flightPlan) ?? 0
+            return (duration: sum.duration + duration,
+                    battery: sum.battery + battery,
+                    distance: sum.distance + distance)
+        }
+        return FlightExecutionSummaryProvider(duration: sum.duration,
+                                              batteryConsumption: Int(sum.battery),
+                                              distance: sum.distance)
+    }
+}
+
+private struct FlightExecutionSummaryProvider: FlightDetailsSummaryViewProvider {
+    let duration: Double
+    let batteryConsumption: Int
+    let distance: Double
 }
 
 private struct CellProviderImpl: FlightExecutionDetailsSettingsCellProvider {

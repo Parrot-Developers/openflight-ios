@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -33,6 +33,7 @@ import Combine
 /// View Controller used to display content of the Dashboard.
 final class DashboardViewController: UIViewController {
     // MARK: - Outlets
+    @IBOutlet private weak var stackViewContainer: MainContainerStackView!
     @IBOutlet private weak var collectionView: UICollectionView!
 
     // MARK: - Private Properties
@@ -59,13 +60,9 @@ final class DashboardViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        self.collectionView.reloadData()
-        self.setNeedsStatusBarAppearanceUpdate()
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.dashboard, logType: .screen)
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
+        collectionView.reloadData()
+        setNeedsStatusBarAppearanceUpdate()
+        LogEvent.log(.screen(LogEvent.Screen.dashboard))
     }
 
     override var shouldAutorotate: Bool {
@@ -77,8 +74,8 @@ final class DashboardViewController: UIViewController {
         super.traitCollectionDidChange(previousTraitCollection)
 
         // Better use invalidateLayout to trigger layout update
-        self.collectionView.collectionViewLayout.invalidateLayout()
-        self.setNeedsStatusBarAppearanceUpdate()
+        collectionView.collectionViewLayout.invalidateLayout()
+        setNeedsStatusBarAppearanceUpdate()
     }
 
     /// We should show status bar in portrait mode.
@@ -95,7 +92,7 @@ final class DashboardViewController: UIViewController {
 private extension DashboardViewController {
     /// Come back to HUD when user tap on back button.
     @IBAction func flyButtonTouchedUpInside(_ sender: Any) {
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.hud, logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.hud))
         dimissDashboard()
     }
 }
@@ -105,27 +102,25 @@ extension DashboardViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 
         // item from dataSource subscript
-        let item = self.viewModel.dataSource[indexPath.section, indexPath.item]
+        let item = viewModel.dataSource[indexPath.section, indexPath.item]
 
         switch item {
         case .content(.myFlights):
             logEvent(with: LogEvent.LogKeyDashboardButton.myFlights)
-            self.coordinator?.startMyFlights()
+            coordinator?.startMyFlights()
         case .content(.remoteInfos):
             logEvent(with: LogEvent.LogKeyDashboardButton.controllerDetails)
-            self.coordinator?.startRemoteInfos()
+            coordinator?.startRemoteInformation()
         case .content(.droneInfos):
             logEvent(with: LogEvent.LogKeyDashboardButton.droneDetails)
-            self.coordinator?.startDroneInfos()
+            coordinator?.startDroneInformation()
         case .content(.galleryMedia):
             logEvent(with: LogEvent.LogKeyDashboardButton.gallery)
-            self.coordinator?.startMedias()
-        case .content(.photogrammetryDebug):
-            self.coordinator?.startPhotogrammetryDebug()
+            coordinator?.startMedias()
         case .content(.settings):
-            self.coordinator?.startSettings()
+            coordinator?.startSettings()
         case .content(.projectManager):
-            self.coordinator?.startProjectManager()
+            coordinator?.startProjectManager()
         default:
             break
         }
@@ -138,7 +133,7 @@ extension DashboardViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         var cell: UICollectionViewCell = UICollectionViewCell()
         // item from dataSource subscript
-        guard let item = self.viewModel.dataSource[indexPath.section, indexPath.item] else { return UICollectionViewCell() }
+        guard let item = viewModel.dataSource[indexPath.section, indexPath.item] else { return UICollectionViewCell() }
 
         switch item {
         case .header(.header):
@@ -156,32 +151,30 @@ extension DashboardViewController: UICollectionViewDataSource {
 
     /// Func used to define the number of sections in the collection view.
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return self.viewModel.dataSource.sections.count
+        return viewModel.dataSource.sections.count
     }
 
     /// Func used to define the number of items in each section of the collection view.
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let items = self.viewModel.dataSource[section]
+        let items = viewModel.dataSource[section]
         return items.count
     }
 
     // MARK: - Helpers
     /// Create the content of cells for the section 1.
     private func createContentCell(_ indexPath: IndexPath) -> UICollectionViewCell {
-        let contentType = self.viewModel.dataSource[indexPath.section, indexPath.item]
+        let contentType = viewModel.dataSource[indexPath.section, indexPath.item]
         switch contentType {
         case .content(.dashboardMyAccount):
-            return createDashboardAccountCell(self.viewModel.dashboardMyAccountViewModel, indexPath)
+            return createDashboardAccountCell(viewModel.dashboardMyAccountViewModel, indexPath)
         case .content(.remoteInfos):
-            return createRemoteCell(self.viewModel.remoteInfosViewModel, indexPath)
+            return createRemoteCell(viewModel.remoteInfosViewModel, viewModel.userDeviceViewModel, indexPath)
         case .content(.droneInfos):
-            return createDroneCell(self.viewModel.droneInfosViewModel, indexPath)
+            return createDroneCell(viewModel.droneInfosViewModel, indexPath)
         case .content(.galleryMedia):
-            return createMediasCell(self.viewModel.galleryMediaViewModel, indexPath)
+            return createMediasCell(viewModel.galleryMediaViewModel, indexPath)
         case .content(.myFlights):
-            return createMyFlightsCell(indexPath)
-        case .content(.photogrammetryDebug):
-            return createPhotogrammetryDebugCell(indexPath: indexPath)
+            return createMyFlightsCell(viewModel.myFlightsCellModel, indexPath)
         case .content(.settings):
             return createSettingsCell(indexPath: indexPath)
         case .content(.projectManager):
@@ -199,31 +192,34 @@ extension DashboardViewController: UICollectionViewDelegateFlowLayout {
     /// Func used to define size of each item in the collection view.
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
 
-        guard let item = self.viewModel?.dataSource[indexPath.section, indexPath.item] else { return .zero}
+        guard let item = viewModel?.dataSource[indexPath.section, indexPath.item] else { return .zero}
 
-        return item.getComputedSize(width: collectionView.frame.width, height: collectionView.frame.height, isRegularSizeClass: self.isRegularSizeClass)
+        return item.getComputedSize(width: collectionView.frame.width, height: collectionView.frame.height, isRegularSizeClass: isRegularSizeClass)
     }
 
     /// Func used to define top, left, bottom and right insets between sections.
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
-        guard let section = self.viewModel?.dataSource.sections[section] else { return .zero }
-        return section.getComputedInsets(width: collectionView.frame.width, height: collectionView.frame.height, isRegularSizeClass: self.isRegularSizeClass)
+        guard let section = viewModel?.dataSource.sections[section] else { return .zero }
+        return section.getComputedInsets(width: collectionView.frame.width,
+                                         height: collectionView.frame.height,
+                                         isRegularSizeClass: isRegularSizeClass,
+                                         section: section)
     }
 
     /// Func used to define spacing between different lines for each section.
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return self.viewModel.dataSource.sections[section].minimumLineSpacing
+        return viewModel.dataSource.sections[section].getMinimumCellSpacing(isRegularSizeClass)
     }
 
     /// Func used to define spacing between different items for each section.
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return self.viewModel.dataSource.sections[section].minimumInteritemSpacing
+        return viewModel.dataSource.sections[section].getMinimumCellSpacing(isRegularSizeClass)
     }
 }
 
@@ -248,6 +244,7 @@ private extension DashboardViewController {
     /// - Returns: DashboardLogoCell
     func createDashboardLogoCell(logoImage: UIImage, indexPath: IndexPath) -> DashboardLogoCell {
         let dashboardLogoCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardLogoCell
+        dashboardLogoCell.delegate = self
         dashboardLogoCell.logoImage = logoImage
         return dashboardLogoCell
     }
@@ -259,7 +256,7 @@ private extension DashboardViewController {
     ///    - indexPath: index of the cell
     /// - Returns: DashboardProfileCell
     func createDashboardAccountCell(_ viewModel: DashboardMyAccountViewModel, _ indexPath: IndexPath) -> DashboardMyAccountCell {
-        let dashboardMyAccountCell = self.collectionView.dequeueReusableCell(for: indexPath) as DashboardMyAccountCell
+        let dashboardMyAccountCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardMyAccountCell
 
         let accountView = AccountManager.shared.currentAccount?.dashboardAccountView ?? MyAccountView()
         accountView.dashboardCoordinator = coordinator
@@ -268,26 +265,15 @@ private extension DashboardViewController {
         return dashboardMyAccountCell
     }
 
-    /// Instantiate the User Device Cell.
-    ///
-    /// - Parameters:
-    ///    - viewModel: ViewModel for the cell
-    /// - Returns: DashboardDeviceCell
-    func createUserDeviceCell(_ viewModel: UserDeviceViewModel, _ indexPath: IndexPath) -> DashboardDeviceCell {
-        let userDeviceCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardDeviceCell
-        userDeviceCell.setup(state: viewModel.state.value)
-
-        return userDeviceCell
-    }
-
     /// Instantiate the Remote Cell.
     ///
     /// - Parameters:
     ///    - viewModel: ViewModel for the cell
     /// - Returns: DashboardDeviceCell
-    func createRemoteCell(_ viewModel: RemoteInfosViewModel, _ indexPath: IndexPath) -> DashboardDeviceCell {
+    func createRemoteCell(_ viewModel: RemoteInfosViewModel, _ deviceViewModel: UserDeviceViewModel, _ indexPath: IndexPath) -> DashboardDeviceCell {
         let remoteCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardDeviceCell
         remoteCell.setup(state: viewModel.state.value)
+        remoteCell.setup(state: deviceViewModel.state.value)
         remoteCell.setup(delegate: self)
         return remoteCell
     }
@@ -322,9 +308,8 @@ private extension DashboardViewController {
     /// - Parameters:
     ///    - viewModel: ViewModel for the cell
     /// - Returns: DashboardInfosCell
-    func createMyFlightsCell(_ indexPath: IndexPath) -> DashboardMyFlightsCell {
+    func createMyFlightsCell(_ viewModel: DashboardMyFlightsCellModel, _ indexPath: IndexPath) -> DashboardMyFlightsCell {
         let myFlightCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardMyFlightsCell
-        let viewModel = DashboardMyFlightsCellModel(service: Services.hub.flight.service)
         myFlightCell.setup(viewModel: viewModel)
         return myFlightCell
     }
@@ -339,13 +324,6 @@ private extension DashboardViewController {
         let projectManagerCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardProjectManagerCell
         projectManagerCell.setup(viewModel: viewModel)
         return projectManagerCell
-    }
-
-    func createPhotogrammetryDebugCell(indexPath: IndexPath) -> DashboardPhotogrammetryDebugCell {
-        let cell = collectionView.dequeueReusableCell(for: indexPath) as
-            DashboardPhotogrammetryDebugCell
-        cell.delegate = self
-        return cell
     }
 
     func createSettingsCell(indexPath: IndexPath) -> DashboardSettingsCell {
@@ -370,12 +348,22 @@ private extension DashboardViewController {
 
     /// Comes back to the HUD.
     @objc func dimissDashboard() {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .button)
+        LogEvent.log(.simpleButton(LogEvent.LogKeyCommonButton.back))
         coordinator?.dismissDashboard()
     }
 
     /// Inits the view.
     func initView() {
+        // Set stackView margins
+        stackViewContainer.margins = Layout.dashboardContainerInnerMargins(isRegularSizeClass)
+
+        // Disable safe area margins
+        collectionView.insetsLayoutMarginsFromSafeArea = false
+        collectionView.contentInsetAdjustmentBehavior = .never
+        if let collectionViewLayout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            collectionViewLayout.sectionInsetReference = .fromContentInset
+        }
+
         // Register cells which will be displayed in the collection view.
         collectionView.register(cellType: DashboardHeaderCell.self)
         collectionView.register(cellType: DashboardLogoCell.self)
@@ -388,15 +376,17 @@ private extension DashboardViewController {
         collectionView.register(cellType: DashboardPhotogrammetryDebugCell.self)
         collectionView.register(cellType: DashboardSettingsCell.self)
         collectionView.register(cellType: DashboardProjectManagerCell.self)
+
+        view.backgroundColor = ColorName.defaultBgcolor.color
     }
 
     /// bind View Model.
     func bindViewModel() {
-        self.viewModel?.$viewState
+        viewModel?.$viewState
             .sink(receiveValue: { [unowned self] value in
                 switch value {
                 case .reloadData:
-                    self.collectionView.reloadData()
+                    collectionView.reloadData()
                 default:
                     break
                 }
@@ -409,8 +399,7 @@ private extension DashboardViewController {
     /// - Parameters:
     ///     - itemName: Button name
     func logEvent(with itemName: String) {
-        LogEvent.logAppEvent(itemName: itemName,
-                             logType: .simpleButton)
+        LogEvent.log(.simpleButton(itemName))
     }
 }
 
@@ -418,8 +407,8 @@ private extension DashboardViewController {
 extension DashboardViewController: DashboardDeviceCellDelegate {
     func startUpdate(_ model: DeviceUpdateModel) {
         logEvent(with: model == .drone
-                    ? LogEvent.LogKeyDashboardButton.droneUpdate
-                    : LogEvent.LogKeyDashboardButton.remoteUpdate)
+                 ? LogEvent.LogKeyDashboardButton.droneUpdate
+                 : LogEvent.LogKeyDashboardButton.remoteUpdate)
         coordinator?.startUpdate(model: model)
     }
 }
@@ -427,22 +416,15 @@ extension DashboardViewController: DashboardDeviceCellDelegate {
 // MARK: - DashboardHeaderCellDelegate
 extension DashboardViewController: DashboardHeaderCellDelegate {
     func dismissDasboard() {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .button)
+        LogEvent.log(.simpleButton( LogEvent.LogKeyCommonButton.back))
         coordinator?.dismissDashboard()
     }
 }
 
 // MARK: - DashboardFooterCellDelegate
 extension DashboardViewController: DashboardFooterCellDelegate {
-    func startConfidentiality() {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyDashboardDataConfidentialityButton.dataConfidentiality.name,
-                             logType: .simpleButton)
-        coordinator?.startConfidentiality()
-    }
-
     func startParrotDebugScreen() {
-        LogEvent.logAppEvent(itemName: LogEvent.EventLoggerScreenConstants.debugLogs,
-                             logType: .simpleButton)
+        LogEvent.log(.simpleButton( LogEvent.Screen.debugLogs))
         coordinator?.startParrotDebug()
     }
 }
@@ -450,5 +432,12 @@ extension DashboardViewController: DashboardFooterCellDelegate {
 extension DashboardViewController: DashboardPhotogrammetryDebugCellDelegate {
     func startPhotogrammetryDebug() {
         coordinator?.startPhotogrammetryDebug()
+    }
+}
+
+// MARK: - DashboardHeaderCellDelegate
+extension DashboardViewController: DashboardLogoCellDelegate {
+    func startLayoutGridManagerScreen() {
+        coordinator?.startLayoutGridManagerScreen()
     }
 }

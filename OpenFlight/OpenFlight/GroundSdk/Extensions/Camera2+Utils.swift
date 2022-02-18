@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -103,18 +102,6 @@ extension PhotoFormatMode {
             return .jpeg
         case .fullFrameDngJpeg, .rectilinearDngJpeg:
             return .dngAndJpeg
-        }
-    }
-
-    /// Returns `StartPhotoCaptureCommand.Format` associated with current mode.
-    var photoCaptureCommandFormat: StartPhotoCaptureCommand.Format {
-        switch self {
-        case .rectilinearJpeg, .rectilinearDngJpeg:
-            return .rectilinear
-        case .fullFrameJpeg:
-            return .fullFrame
-        case .fullFrameDngJpeg:
-            return .fullFrameDng
         }
     }
 }
@@ -262,5 +249,20 @@ extension Camera2Params {
         // so set camera mode in configuration editor to photo
         editor[Camera2Params.mode]?.value = .photo
         return editor[Camera2Params.photoTimelapseInterval]?.currentSupportedValues
+    }
+
+    /// Gets range of supported photo capture gpslapse interval in current configuration,
+    /// considering camera mode is photo and photo mode is gpslapse.
+    ///
+    /// - Returns: range of supported values for gpslapse interval, `nil` if not supported
+    static func currentSupportedGpslapseInterval() -> ClosedRange<Double>? {
+        // create configuration editor starting from current configuration
+        guard let editor = currentCameraConfig()?.edit(fromScratch: false) else { return nil }
+
+        // gpslapse values are available only in photo mode and gpslapse mode,
+        // so set camera mode and photo mode in configuration editor
+        editor[Camera2Params.mode]?.value = .photo
+        editor[Camera2Params.photoMode]?.value = .gpsLapse
+        return editor[Camera2Params.photoGpslapseInterval]?.currentSupportedValues
     }
 }

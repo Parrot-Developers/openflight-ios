@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -31,53 +30,43 @@
 import UIKit
 import Reusable
 
-// MARK: - Protocol
-/// Settings grid action view delegate.
-protocol SettingsGridActionViewDelegate: AnyObject {
-    /// Notifies when user is dragging the view.
-    func userIsDragging(_ isDragging: Bool)
-}
-
 /// Manages drone gesture and display.
 class SettingsGridActionView: UIView {
     // MARK: - Outlets
     @IBOutlet private weak var positionView: UIView!
     @IBOutlet private weak var userImage: UIImageView!
-    @IBOutlet private weak var droneImage: UIImageView!
+    @IBOutlet private weak var pointImage: UIImageView!
     @IBOutlet private weak var heightLabel: UILabel!
     @IBOutlet private weak var distanceLabel: UILabel!
+    @IBOutlet private weak var yAxisView: UIView!
 
     // MARK: - Private Properties
-    private weak var delegate: SettingsGridActionViewDelegate?
     private var dashedLinePath = UIBezierPath()
     private var droneHalfWidth: CGFloat = 0.0
-    private var userTopLimit: CGFloat = 0.0
-    private var userLeftLimit: CGFloat = 0.0
     private var maxAltitude: Double {
-        return viewModel?.state.value.maxAltitude ?? GeofencePreset.maxAltitude
+        return viewModel.state.value.maxAltitude
     }
     private var maxDistance: Double {
-        return viewModel?.state.value.maxDistance ?? GeofencePreset.maxDistance
+        return viewModel.state.value.maxDistance
     }
     private var minAltitude: Double {
-        return viewModel?.state.value.minAltitude ?? GeofencePreset.minAltitude
+        return viewModel.state.value.minAltitude
     }
     private var minDistance: Double {
-        return viewModel?.state.value.minDistance ?? GeofencePreset.minDistance
+        return viewModel.state.value.minDistance
     }
-    private var viewModel: GeofenceViewModel?
+    private var viewModel = GeofenceViewModel()
 
     var isEnabled: Bool = false {
         didSet {
             let textColor = isEnabled ? ColorName.highlightColor.color : ColorName.disabledHighlightColor.color
-            let imageAlpha: CGFloat = isEnabled ? 1.0 : 0.5
+            let imageAlpha: CGFloat = isEnabled ? 1.0 : Style.disabledAlpha
             heightLabel.textColor = textColor
             distanceLabel.textColor = textColor
-            positionView.backgroundColor = isEnabled ? ColorName.disabledHighlightColor.color : ColorName.defaultTextColor80.color
-            positionView.alpha = isEnabled ? 1.0 : 0.1
-            droneImage.alpha = imageAlpha
+            positionView.alpha = isEnabled ? Style.disabledAlpha : Style.disabledAlpha / 2.0
+            yAxisView.alpha = isEnabled ? 1.0 : Style.disabledAlpha
+            pointImage.alpha = imageAlpha
             userImage.alpha = imageAlpha
-            setNeedsDisplay()
         }
     }
 
@@ -87,25 +76,15 @@ class SettingsGridActionView: UIView {
         static let labelSize: CGSize = CGSize(width: 100.0, height: 25.0)
         static let dashedLineWidth: CGFloat = 1.0
         static let dashes: [CGFloat] = [2.0, 2.0]
-        static let droneImageAreaRatio: CGFloat = 3.0 / 2.0
+        static let pointImageAreaRatio: CGFloat = 2.0
     }
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        droneHalfWidth = droneImage.frame.width / 2.0
-
-        // Init recognizers.
-        let dronePanRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
-        dronePanRecognizer.delegate = self
-        self.addGestureRecognizer(dronePanRecognizer)
-
-        let touchDownRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleTap))
-        touchDownRecognizer.delegate = self
-        // Set minimumPressDuration = 0 to use LongPressGestureRecognizer as touchDownRecognizer.
-        touchDownRecognizer.minimumPressDuration = 0
-        self.addGestureRecognizer(touchDownRecognizer)
+        initView()
+        listenViewModel()
     }
 
     override func draw(_ rect: CGRect) {
@@ -114,11 +93,11 @@ class SettingsGridActionView: UIView {
         dashedLinePath.lineWidth = Constants.dashedLineWidth
 
         var start = CGPoint(x: 0.0, y: positionView.frame.origin.y)
-        var end = CGPoint(x: droneImage.center.x, y: positionView.frame.origin.y)
+        var end = CGPoint(x: pointImage.center.x - pointImage.frame.width / 2.0, y: positionView.frame.origin.y)
         dashedLinePath.move(to: start)
         dashedLinePath.addLine(to: end)
-        start = CGPoint(x: droneImage.center.x, y: positionView.frame.origin.y)
-        end = CGPoint(x: droneImage.center.x, y: self.bounds.height)
+        start = CGPoint(x: pointImage.center.x, y: positionView.frame.origin.y + pointImage.frame.height / 2.0)
+        end = CGPoint(x: pointImage.center.x, y: bounds.height)
         dashedLinePath.move(to: start)
         dashedLinePath.addLine(to: end)
 
@@ -126,16 +105,16 @@ class SettingsGridActionView: UIView {
 
         dashedLinePath.lineCapStyle = .butt
         dashedLinePath.close()
-        isEnabled ? ColorName.highlightColor.color.setStroke() : ColorName.disabledHighlightColor.color.setStroke()
+        isEnabled ? ColorName.defaultTextColor.color.setStroke() : ColorName.disabledTextColor.color.setStroke()
         dashedLinePath.stroke()
     }
 
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        let droneImageArea = CGRect(center: droneImage.center,
-                                    width: Constants.droneImageAreaRatio * droneImage.frame.width,
-                                    height: Constants.droneImageAreaRatio * droneImage.frame.height)
+        let droneImageArea = CGRect(center: pointImage.center,
+                                    width: Constants.pointImageAreaRatio * pointImage.frame.width,
+                                    height: Constants.pointImageAreaRatio * pointImage.frame.height)
 
-        guard droneImageArea.contains(point) else {
+        guard isEnabled, droneImageArea.contains(point) else {
             return superview
         }
 
@@ -143,88 +122,58 @@ class SettingsGridActionView: UIView {
     }
 
     // MARK: - Internal Funcs
-    /// Sets up table view cell.
-    ///
-    /// - Parameters:
-    ///     - viewModel: geofence view model
-    ///     - delegate: the action view delegate
-    func setup(viewModel: GeofenceViewModel, delegate: SettingsGridActionViewDelegate?) {
-        self.delegate = delegate
-        userTopLimit = userImage.frame.origin.y - Constants.labelSize.height
-        userLeftLimit = userImage.frame.origin.x + userImage.frame.size.width + Constants.margin
-
-        self.viewModel = viewModel
+    /// Updates view.
+    func updateView() {
         // Convert meters in points.
         let altitudePercent = SettingsGridView.reverseExponentialLike(value: viewModel.state.value.altitude,
                                                                       max: maxAltitude,
                                                                       min: minAltitude)
-        let posY = Double(self.bounds.height) - ((altitudePercent / Values.oneHundred) * Double(self.bounds.height))
+        let posY = Double(bounds.height) - ((altitudePercent / Values.oneHundred) * Double(bounds.height))
         let distancePercent = SettingsGridView.reverseExponentialLike(value: viewModel.state.value.distance,
                                                                       max: maxDistance,
                                                                       min: minDistance)
-        let posX = (distancePercent / Values.oneHundred) * Double(self.bounds.width - droneHalfWidth)
+        let posX = (distancePercent / Values.oneHundred) * Double(bounds.width - droneHalfWidth)
+        enableView(isEnabled: viewModel.state.value.isGeofenceActivated)
         updateDroneLocation(CGPoint(x: posX, y: posY))
-    }
-}
-
-// MARK: - UIGestureRecognizer Delegate
-extension SettingsGridActionView: UIGestureRecognizerDelegate {
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return true
     }
 }
 
 // MARK: - Private Funcs
 private extension SettingsGridActionView {
-    /// Handle tap gesture.
-    @objc func handleTap(recognizer: UILongPressGestureRecognizer) {
-        if recognizer.state == .began {
-            // Call updateDroneLocation and force recognizerState
-            // to ended to save position on touched down.
-            updateDroneLocation(recognizer.location(in: self),
-                                recognizerState: .ended)
-            delegate?.userIsDragging(true)
-        } else {
-            delegate?.userIsDragging(false)
+    /// Inits the view.
+    func initView() {
+        droneHalfWidth = pointImage.frame.width / 2.0
+
+        // Init recognizers.
+        let dronePanRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
+        addGestureRecognizer(dronePanRecognizer)
+    }
+
+    /// Listens the view model.
+    func listenViewModel() {
+        viewModel.state.valueChanged = { [weak self] _ in
+            self?.updateView()
         }
+        updateView()
+        showViews()
     }
 
     /// Handle pan gesture.
     @objc func handlePan(recognizer: UIPanGestureRecognizer) {
-        let location = recognizer.location(in: self)
-        // Set new location to image.
-        updateDroneLocation(location,
-                            recognizerState: recognizer.state)
-    }
-
-    /// Update new location to drone image.
-    ///
-    /// - Parameters:
-    ///    - newLocation: new drone location
-    ///    - recognizerState: used know if this new location should be saved or checked
-    func updateDroneLocation(_ newLocation: CGPoint,
-                             recognizerState: UIGestureRecognizer.State = .changed) {
-        // Used to know if the min Y is reached.
-        var isMinAltitudeReached: Bool = false
-        // Used to know if the min X is reached.
-        var isMinDistanceReached: Bool = false
-
-        // Prevent from out of limits location.
-        var location: CGPoint = newLocation
-        if recognizerState != UIGestureRecognizer.State.began {
+        var shouldSaveValue: Bool = false
+        var location = recognizer.location(in: self)
+        if recognizer.state != UIGestureRecognizer.State.began {
             // Right.
-            if location.x + droneHalfWidth > self.bounds.width {
-                location = CGPoint(x: self.bounds.width - droneHalfWidth, y: location.y)
+            if location.x + droneHalfWidth > bounds.width {
+                location = CGPoint(x: bounds.width - droneHalfWidth, y: location.y)
             }
             // Bottom.
-            if location.y + droneHalfWidth > self.bounds.height {
-                location = CGPoint(x: location.x, y: self.bounds.height - droneHalfWidth)
-                isMinAltitudeReached = true
+            if location.y + droneHalfWidth > bounds.height {
+                location = CGPoint(x: location.x, y: bounds.height - droneHalfWidth)
             }
             // Left.
             if location.x < droneHalfWidth {
                 location = CGPoint(x: droneHalfWidth, y: location.y)
-                isMinDistanceReached = true
             }
             // Top.
             if location.y < 0.0 {
@@ -232,11 +181,37 @@ private extension SettingsGridActionView {
             }
         }
 
+        if recognizer.state == UIGestureRecognizer.State.ended {
+            // Position is saved only when the gesture ends.
+            shouldSaveValue = true
+        }
+
+        // Set new location to image.
+        updateDroneLocation(location,
+                            shouldSaveValue: shouldSaveValue)
+    }
+
+    /// Enable or not the view.
+    ///
+    /// - Parameters:
+    ///     - isEnabled: Is enable
+    func enableView(isEnabled: Bool) {
+        self.isEnabled = isEnabled
+    }
+
+    /// Update new location to drone image.
+    ///
+    /// - Parameters:
+    ///    - location: new drone location
+    ///    - shouldSaveValue: used know if this new location should be saved
+    func updateDroneLocation(_ location: CGPoint,
+                             shouldSaveValue: Bool = false) {
+
         // Used to ease computation because origin Y position is a the bottom of the view.
-        let revertPosition = self.bounds.height - location.y
+        let revertPosition = bounds.height - location.y
 
         // Set drone image position.
-        droneImage.center = location
+        pointImage.center = location
         // Set position view position.
         positionView.frame = CGRect(x: 0.0,
                                     y: location.y,
@@ -244,40 +219,22 @@ private extension SettingsGridActionView {
                                     height: revertPosition)
 
         // Convert position into meter value.
-        let altitudePercent: Double = Double(revertPosition) / (Double(self.bounds.height) / Values.oneHundred)
-        let distancePercent: Double = Double(location.x) / (Double(self.bounds.width - droneHalfWidth) / Values.oneHundred)
-        let altitude = isMinAltitudeReached ?
-            GeofencePreset.minAltitude :
-            SettingsGridView.computeExponentialLike(value: altitudePercent,
-                                                    max: maxAltitude,
-                                                    min: minAltitude)
-        let distance = isMinDistanceReached ?
-            GeofencePreset.minDistance :
-            SettingsGridView.computeExponentialLike(value: distancePercent,
-                                                    max: maxDistance,
-                                                    min: minDistance)
+        let altitudePercent: Double = Double(revertPosition) / (Double(bounds.height) / Values.oneHundred)
+        let distancePercent: Double = Double(location.x) / (Double(bounds.width - droneHalfWidth) / Values.oneHundred)
+        let altitude = SettingsGridView.computeExponentialLike(value: altitudePercent,
+                                                               max: maxAltitude,
+                                                               min: minAltitude)
+        let distance = SettingsGridView.computeExponentialLike(value: distancePercent,
+                                                               max: maxDistance,
+                                                               min: minDistance)
         heightLabel.text = UnitHelper.stringDistanceWithDouble(altitude)
         distanceLabel.text = UnitHelper.stringDistanceWithDouble(distance)
-
-        // Position is saved only when the gesture ends.
-        if recognizerState == .ended {
-            // Save new postion if needed.
-            viewModel?.saveGeofence(altitude: altitude, distance: distance)
-        }
 
         // Update userImage visibility regarding drone position.
         var xDelta: CGFloat
         var yDelta: CGFloat
-        let halfDroneImageSize = CGSize(width: droneImage.frame.width / 2.0,
-                                        height: droneImage.frame.height / 2.0)
-        let hiddenLimitSize = CGSize(width: userImage.frame.origin.x +
-                                        userImage.frame.width +
-                                        Constants.margin,
-                                     height: userImage.frame.height +
-                                        Constants.margin)
-        userImage.isHidden = positionView.frame.width < hiddenLimitSize.width ||
-            positionView.frame.height < hiddenLimitSize.height
-
+        let halfDroneImageSize = CGSize(width: pointImage.frame.width / 2.0,
+                                        height: pointImage.frame.height / 2.0)
         // Computes distance label position.
         var checkXDroneImage = false
         var checkYDroneImage = false
@@ -313,7 +270,7 @@ private extension SettingsGridActionView {
 
         // Updates labels position
         distanceLabel.frame = CGRect(x: positionView.frame.size.width - xDelta,
-                                     y: self.bounds.height - distanceLabel.frame.height,
+                                     y: bounds.height - distanceLabel.frame.height,
                                      width: distanceLabel.textWidth(),
                                      height: distanceLabel.frame.height)
         distanceLabel.textAlignment = distanceAlignment
@@ -323,58 +280,36 @@ private extension SettingsGridActionView {
                                    width: Constants.labelSize.width,
                                    height: Constants.labelSize.height)
         setNeedsDisplay()
+
+        if shouldSaveValue {
+            // Save new geofence if needed.
+            viewModel.saveGeofence(altitude: altitude, distance: distance)
+        }
+    }
+
+    /// Show all views
+    func showViews() {
+        positionView.isHidden = false
+        distanceLabel.isHidden = false
+        heightLabel.isHidden = false
+        pointImage.isHidden = false
     }
 }
 
 /// Settings Grid TableView Cell.
-final class SettingsGridTableViewCell: UITableViewCell, NibReusable {
+final class SettingsGridTableViewCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var gridViewHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var gridView: SettingsGridView!
     @IBOutlet private weak var actionView: SettingsGridActionView!
 
-    // MARK: - Private Properties
-    /// View used to apply disable style (grayed) on the cell.
-    private weak var delegate: SettingsGridActionViewDelegate?
-
-    // MARK: - Override Funcs
-    override func awakeFromNib() {
-        super.awakeFromNib()
-
-        enableView(isEnabled: false)
-    }
-
     // MARK: - Internal Funcs
     /// Configure cell.
     ///
     /// - Parameters:
-    ///     - viewModel: Geofence view model
     ///     - maxGridHeight: The max grid height
-    func configureCell(viewModel: GeofenceViewModel,
-                       maxGridHeight: CGFloat,
-                       delegate: SettingsGridActionViewDelegate?) {
+    func configureCell(maxGridHeight: CGFloat) {
+        gridView.isYAxisHidden = true
         gridViewHeightConstraint.constant = maxGridHeight
-        enableView(isEnabled: viewModel.state.value.isGeofenceActivated)
-        actionView.setup(viewModel: viewModel, delegate: self)
-        self.delegate = delegate
-    }
-}
-
-// MARK: - Private Funcs
-private extension SettingsGridTableViewCell {
-    /// Enable or not the view.
-    ///
-    /// - Parameters:
-    ///     - isEnabled: Is enable
-    func enableView(isEnabled: Bool) {
-        actionView.isEnabled = isEnabled
-        self.isUserInteractionEnabled = isEnabled
-    }
-}
-
-// MARK: - Settings Grid Action View Delegate
-extension SettingsGridTableViewCell: SettingsGridActionViewDelegate {
-    func userIsDragging(_ isDragging: Bool) {
-        delegate?.userIsDragging(isDragging)
     }
 }

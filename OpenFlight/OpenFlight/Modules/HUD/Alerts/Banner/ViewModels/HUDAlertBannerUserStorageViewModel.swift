@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -48,9 +47,7 @@ private extension HUDAlertBannerUserStorageViewModel {
     func listenUserStorage() {
         userStorageViewModel.state.valueChanged = { [weak self] state in
             // TODO: implement internal memory errors when available
-            if state.hasInsufficientStorageSpaceError {
-                self?.state.set(HUDAlertBannerSubState(alerts: [HUDBannerCriticalAlertType.sdFull]))
-            } else if state.hasInsufficientStorageSpeedError || state.isErrorState {
+            if state.isErrorState {
                 self?.state.set(HUDAlertBannerSubState(alerts: [HUDBannerCriticalAlertType.sdError]))
             } else if state.isUserRemovableStorageTooSlow {
                 self?.state.set(HUDAlertBannerSubState(alerts: [HUDBannerCriticalAlertType.sdTooSlow]))

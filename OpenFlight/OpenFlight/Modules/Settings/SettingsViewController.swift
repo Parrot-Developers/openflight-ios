@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -36,32 +36,15 @@ import UIKit
 final class SettingsViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var leftPanelContainerView: UIView!
-    @IBOutlet private weak var sectionsTableView: UITableView! {
-        didSet {
-            sectionsTableView.backgroundColor = .white
-        }
-    }
+    @IBOutlet private weak var sectionsTableView: UITableView!
     @IBOutlet private weak var containerView: UIView!
-    @IBOutlet private weak var segmentedControl: UISegmentedControl! {
-        didSet {
-            segmentedControl.customMakeup()
-        }
-    }
-    @IBOutlet private weak var topBar: UIView! {
-        didSet {
-            topBar.addLightShadow()
-        }
-    }
+    @IBOutlet private weak var segmentedControl: SettingsSegmentedControl!
 
     // MARK: - Private Properties
     private var selectedSection: SettingsType = SettingsType.defaultType
-    private var selectedPanel: SettingsPanelType {
-        SettingsPanelType.type(at: segmentedControl?.selectedSegmentIndex ?? 0)
-    }
+    private var selectedPanel: SettingsPanelType = SettingsPanelType.defaultPanel
     private weak var coordinator: SettingsCoordinator?
     fileprivate var sections = [SettingsType]()
-
-    private let viewModel = DroneStateViewModel<DeviceConnectionState>()
 
     // MARK: - Init
     /// init view controller with coordinator and settings type
@@ -89,7 +72,7 @@ final class SettingsViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        LogEvent.logAppEvent(screen: LogEvent.EventLoggerScreenConstants.settings, logType: .screen)
+        LogEvent.log(.screen(LogEvent.Screen.settings))
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -102,10 +85,6 @@ final class SettingsViewController: UIViewController {
         return true
     }
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .landscape
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
     }
@@ -115,14 +94,8 @@ final class SettingsViewController: UIViewController {
 private extension SettingsViewController {
     /// Close button clicked.
     @IBAction func closeButtonTouchedUpInside(_ sender: AnyObject) {
-        LogEvent.logAppEvent(itemName: LogEvent.LogKeyCommonButton.back, logType: .simpleButton)
-        self.cleanContainerContent()
-        self.coordinator?.dismissSettings()
-    }
-
-    /// UISegmentedControl's segment changed.
-    @IBAction func segmentDidChange(_ sender: UISegmentedControl) {
-        reloadPanelContent()
+        LogEvent.log(.simpleButton(LogEvent.LogKeyCommonButton.back))
+        coordinator?.dismissSettings()
     }
 }
 
@@ -131,25 +104,22 @@ private extension SettingsViewController {
 
     /// Initializes view controller
     func initView() {
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.refreshContent(state)
-        }
-
+        sectionsTableView.rowHeight = Layout.buttonIntrinsicHeight(isRegularSizeClass)
         sectionsTableView.register(cellType: SettingsSectionCell.self)
 
         setupSegmentedControl()
         reloadPanelContent(settingsType: selectedSection)
     }
 
-    /// Setup segmented control.
+    /// Setup segmented control
     func setupSegmentedControl() {
-        self.segmentedControl.removeAllSegments()
-        for panelType in SettingsPanelType.allCases {
-            self.segmentedControl.insertSegment(withTitle: panelType.title,
-                                                at: self.segmentedControl.numberOfSegments,
-                                                animated: false)
-        }
-        self.segmentedControl.selectedSegmentIndex = SettingsPanelType.type(for: selectedSection).index
+        let segments = SettingsPanelType.allCases.map { SettingsSegment(title: $0.title, disabled: false, image: nil) }
+        segmentedControl.delegate = self
+        segmentedControl.segmentModel = SettingsSegmentModel(segments: segments,
+                                                             selectedIndex: SettingsPanelType.type(for: selectedSection).index,
+                                                             isBoolean: false)
+
+        select(panel: SettingsPanelType.type(for: selectedSection), settings: selectedSection)
     }
 
     /// Reload panel content.
@@ -159,11 +129,6 @@ private extension SettingsViewController {
     func reloadPanelContent(settingsType: SettingsType? = nil) {
         // Update selected section if defined (advanced segment has multiple sections).
         selectedSection = settingsType ?? selectedPanel.defaultSettings
-        // Select segment associated with settingsType (if specified).
-        if let settingsType = settingsType {
-            self.segmentedControl.selectedSegmentIndex = SettingsPanelType.type(for: settingsType).rawValue
-        }
-
         reloadTableViewSections()
         reloadContainerView()
     }
@@ -174,9 +139,20 @@ private extension SettingsViewController {
         sectionsTableView?.reloadData()
     }
 
+    /// Select a panel and a section
+    ///
+    /// - Parameters:
+    ///    - panel: panel to select.
+    ///    - settings: settings to display.
+    func select(panel: SettingsPanelType, settings: SettingsType? = nil) {
+        selectedPanel = panel
+        reloadPanelContent(settingsType: settings)
+    }
+
     /// Reload container view.
     func reloadContainerView() {
         let controller: UIViewController
+
         switch selectedSection {
         case .interface:
             controller = StoryboardScene.SettingsInterfaceViewController.initialScene.instantiate()
@@ -197,14 +173,13 @@ private extension SettingsViewController {
         }
 
         if let controller = controller as? SettingsContentViewController {
-            controller.coordinator = self.coordinator
+            controller.coordinator = coordinator
         }
 
-        self.cleanContainerContent()
+        cleanContainerContent()
 
         addChild(controller)
-        controller.view.frame = containerView.bounds
-        containerView.addSubview(controller.view)
+        containerView.addWithConstraints(subview: controller.view)
         controller.didMove(toParent: self)
     }
 
@@ -215,7 +190,7 @@ private extension SettingsViewController {
     func refreshContent(_ state: DeviceConnectionState) {
         if state.isConnected() {
             // Update content but keep current selected section.
-            self.reloadPanelContent(settingsType: self.selectedSection)
+            reloadPanelContent(settingsType: selectedSection)
         }
     }
 
@@ -259,5 +234,12 @@ extension SettingsViewController: UITableViewDelegate {
         if oldCurrentScrollPosition != tableView.contentOffset.y {
             tableView.scrollToRow(at: indexPath, at: .top, animated: false)
         }
+    }
+}
+
+// MARK: - SettingsSegmentedControlDelegate
+extension SettingsViewController: SettingsSegmentedControlDelegate {
+    func settingsSegmentedControlDidChange(sender: SettingsSegmentedControl, selectedSegmentIndex: Int) {
+        select(panel: SettingsPanelType.type(at: selectedSegmentIndex))
     }
 }

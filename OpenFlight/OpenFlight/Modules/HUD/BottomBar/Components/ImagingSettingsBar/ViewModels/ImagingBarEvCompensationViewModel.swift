@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -79,11 +78,10 @@ final class ImagingBarEvCompensationViewModel: BarButtonViewModel<ImagingBarStat
 
     override func update(mode: BarItemMode) {
         guard let camera = drone?.currentCamera,
-            !camera.config.updating,
-            let evCompensation = mode as? Camera2EvCompensation
-            else {
-                return
-        }
+              !camera.config.updating,
+              let evCompensation = mode as? Camera2EvCompensation else {
+                  return
+              }
         let currentEditor = camera.currentEditor
         currentEditor[Camera2Params.exposureCompensation]?.value = evCompensation
         currentEditor.saveSettings(currentConfig: camera.config)

@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2021 Parrot Drones SAS.
+//    Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -59,44 +58,42 @@ class StartedNotFlyingTests: XCTestCase {
         let identifier = UUID().uuidString
         let title = "editedFP"
         let openFP = FlightPlanModell(type: "",
-                                         uuid: identifier,
-                                         version: "",
-                                         customTitle: "title",
-                                         thumbnailUuid: nil,
-                                         projectUuid: UUID().uuidString,
-                                         dataStringType: "",
-                                         dataString: "",
-                                         pgyProjectId: nil,
-                                         mediaCustomId: nil,
-                                         state: .editable,
-                                         lastMissionItemExecuted: 0,
-                                         recoveryId: nil,
-                                         mediaCount: 0,
-                                         uploadedMediaCount: 0,
-                                         lastUpdate: Date(),
-                                         thumbnail: nil)
-        
+                                      uuid: identifier,
+                                      version: "",
+                                      customTitle: "title",
+                                      thumbnailUuid: nil,
+                                      projectUuid: UUID().uuidString,
+                                      dataStringType: "",
+                                      dataString: "",
+                                      pgyProjectId: nil,
+                                      state: .editable,
+                                      lastMissionItemExecuted: 0,
+                                      recoveryId: nil,
+                                      mediaCount: 0,
+                                      uploadedMediaCount: 0,
+                                      lastUpdate: Date(),
+                                      thumbnail: nil)
+
         sut.currentFlightPlan = openFP
 
         // when
         // user edits the flightplan
         let editedFP = FlightPlanModell(type: "",
-                                         uuid: identifier,
-                                         version: "",
-                                         customTitle: title,
-                                         thumbnailUuid: nil,
-                                         projectUuid: UUID().uuidString,
-                                         dataStringType: "",
-                                         dataString: "",
-                                         pgyProjectId: nil,
-                                         mediaCustomId: nil,
-                                         state: .editable,
-                                         lastMissionItemExecuted: 0,
-                                         recoveryId: nil,
-                                         mediaCount: 0,
-                                         uploadedMediaCount: 0,
-                                         lastUpdate: Date(),
-                                         thumbnail: nil)
+                                        uuid: identifier,
+                                        version: "",
+                                        customTitle: title,
+                                        thumbnailUuid: nil,
+                                        projectUuid: UUID().uuidString,
+                                        dataStringType: "",
+                                        dataString: "",
+                                        pgyProjectId: nil,
+                                        state: .editable,
+                                        lastMissionItemExecuted: 0,
+                                        recoveryId: nil,
+                                        mediaCount: 0,
+                                        uploadedMediaCount: 0,
+                                        lastUpdate: Date(),
+                                        thumbnail: nil)
         sut.start(flightPlan: editedFP)
 
         // then
