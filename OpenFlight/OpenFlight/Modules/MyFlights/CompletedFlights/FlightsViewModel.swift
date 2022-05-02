@@ -36,7 +36,10 @@ class FlightsViewModel {
     private let navigationStack: NavigationStackService
     private weak var coordinator: MyFlightsCoordinator?
 
-    var flights: AnyPublisher<[FlightModel], Never> { service.allFlights }
+    var flights: AnyPublisher<[FlightModel], Never> {
+        flightsSubject.eraseToAnyPublisher()
+    }
+    private var flightsSubject = CurrentValueSubject<[FlightModel], Never>([])
     @Published private(set) var selectedFlight: FlightModel?
     private var cancellable = Set<AnyCancellable>()
 
@@ -46,15 +49,16 @@ class FlightsViewModel {
         self.service = service
         self.coordinator = coordinator
         self.navigationStack = navigationStack
+        self.flightsSubject.value = service.getAllFlights()
 
-        Services.hub.cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { isSynchronizingData in
-            if !isSynchronizingData {
-                Task {
-                    do {
-                        await self.service.handleFlightsUnknownLocationTitle()
-                    }
-                }
-            }
+        Services.hub.cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { [weak self] in
+            // Ensure there is no sync on-going.
+            guard let self = self, !$0  else { return }
+            Task { await self.service.handleFlightsUnknownLocationTitle() }
+        }.store(in: &cancellable)
+
+        service.flightsDidChangePublisher.sink { [weak self] in
+            self?.flightsSubject.value = service.getAllFlights()
         }.store(in: &cancellable)
     }
 

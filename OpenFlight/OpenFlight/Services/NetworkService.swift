@@ -67,7 +67,7 @@ class NetworkServiceImpl {
 }
 
 extension NetworkServiceImpl: NetworkService {
-    var networkReachable: AnyPublisher<Bool, Never> { networkReachableSubject.eraseToAnyPublisher() }
+    var networkReachable: AnyPublisher<Bool, Never> { networkReachableSubject.removeDuplicates().eraseToAnyPublisher() }
     var networkIsReachable: Bool { networkReachableSubject.value }
     var currentPathUsed: NWPath { monitor.currentPath }
 }

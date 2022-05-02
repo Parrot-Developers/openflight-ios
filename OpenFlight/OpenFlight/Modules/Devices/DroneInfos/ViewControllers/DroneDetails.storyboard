@@ -90,13 +90,10 @@
                                 <variation key="heightClass=regular-widthClass=compact" axis="vertical"/>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="eSM-Qd-wwW" customClass="NavigationStackView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="0.0" width="22" height="22"/>
+                                <rect key="frame" x="0.0" y="0.0" width="21" height="28.333333333333332"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KBK-UV-BdE">
-                                        <rect key="frame" x="0.0" y="0.0" width="22" height="22"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" secondItem="KBK-UV-BdE" secondAttribute="height" multiplier="1:1" id="d0l-e9-Wft"/>
-                                        </constraints>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KBK-UV-BdE" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="21" height="28.333333333333332"/>
                                         <color key="tintColor" name="default_text_color"/>
                                         <state key="normal" image="ic_back"/>
                                         <connections>
@@ -137,7 +134,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="ic_back" width="21" height="21"/>
+        <image name="ic_back" width="21" height="28.333333969116211"/>
         <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

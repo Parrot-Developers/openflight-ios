@@ -64,7 +64,6 @@ final class BottomBarViewController: UIViewController {
     @IBOutlet private weak var bottomBarView: UIView!
     @IBOutlet private weak var mainStackView: MainStackView!
     @IBOutlet private weak var behaviorStackView: UIStackView!
-    @IBOutlet private weak var subBehaviorStackView: UIStackView!
     @IBOutlet private weak var missionLauncherButton: MissionLauncherButton!
     @IBOutlet private weak var rightStackView: UIStackView!
     @IBOutlet private weak var cameraWidgetView: CameraWidgetView!
@@ -121,20 +120,17 @@ final class BottomBarViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         missionLauncherButton.model = missionLauncherButtonModel
-        deselectableViewModels = [missionLauncherButtonModel as Deselectable, cameraWidgetViewModel, cameraCaptureModeViewModel]
+        deselectableViewModels = [cameraWidgetViewModel, cameraCaptureModeViewModel]
         observeViewModels()
         initViewModelsState()
         observeViewModelsIsSelectedChange()
         view.translatesAutoresizingMaskIntoConstraints = false
-
-        let missionMode = bottomBarViewModel.state.value.missionMode
-        updateView(for: missionMode)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
-        rightStackView.updateSeparators()
+        let missionMode = bottomBarViewModel.state.value.missionMode
+        updateView(for: missionMode)
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -196,18 +192,10 @@ private extension BottomBarViewController {
     func behaviorStackView(for missionMode: MissionMode?) {
         // Remove all views in left stackView.
         behaviorStackView.safelyRemoveArrangedSubviews()
-        subBehaviorStackView.safelyRemoveArrangedSubviews()
-
-        let isReturnHomeActive = landingStates.isReturHomeActiveValue == true
-
-        if isReturnHomeActive {
-            let view = ReturnHomeBottomBarView()
-            view.addBlurEffect()
-            subBehaviorStackView.addArrangedSubview(view)
-        }
 
         // Add views for a specific mission.
         // If RTH is enabled, add only mandatory views.
+        let isReturnHomeActive = landingStates.isReturHomeActiveValue == true
         let views = missionMode?.bottomBarLeftStack?()
             .filter { isReturnHomeActive ? $0 is MandatoryBottomBarView : true } ?? []
 
@@ -227,8 +215,6 @@ private extension BottomBarViewController {
                 deselectableViewModels.append(barButtonView.viewModel)
 
                 behaviorStackView.addArrangedSubview(barButtonView)
-            } else {
-                subBehaviorStackView.addArrangedSubview(view)
             }
         }
 
@@ -247,20 +233,19 @@ private extension BottomBarViewController {
             return
         }
 
-        if let _ = missionMode.flightPlanProvider {
+        var isHidden = false
+        if missionMode.flightPlanProvider != nil {
             switch runningState {
-            case .playing(droneConnected: _, flightPlan: _, rth: _),
-                 .paused(flightPlan: _, startAvailability: _):
-                if !isMissionLauncherShown {
-                    rightStackView.isHidden = false
-                    shutterButtonView.isHidden = false
-                }
+            case .playing,
+                 .paused:
+                isHidden = isMissionLauncherShown
             default:
-                rightStackView.isHidden = true
-                shutterButtonView.isHidden = true
-                return
+                isHidden = true
             }
         }
+        rightStackView.isHidden = isHidden
+        shutterButtonView.isHidden = isHidden
+        guard !isHidden else { return }
 
         let rightStack = missionMode.bottomBarRightStack
         cameraModeView.alpha = rightStack.contains(.cameraMode) ? 1 : Constants.fadeValue
@@ -287,7 +272,7 @@ private extension BottomBarViewController {
         shutterButtonView?.isHidden = isMissionLauncherShown
 
         let missionMode = bottomBarViewModel.state.value.missionMode
-        if let _ = missionMode.flightPlanProvider {
+        if missionMode.flightPlanProvider != nil {
             updateView(for: missionMode)
         }
     }
@@ -327,6 +312,7 @@ private extension BottomBarViewController {
     func initViewModelsState() {
         cameraWidgetView.model = cameraWidgetViewModel.state.value
         cameraModeView.model = cameraCaptureModeViewModel.state.value
+        cameraShutterButton.layoutIfNeeded()
         cameraShutterButton.model = cameraShutterButtonViewModel.state.value
     }
 
@@ -357,7 +343,7 @@ private extension BottomBarViewController {
     func listenStateMachine(missionMode: MissionMode) {
         stateMachineCancellable = missionMode.stateMachine?.statePublisher
             .combineLatest(runManager.statePublisher)
-            .sink(receiveValue: { [weak self] (stateMachineState, runningState) in
+            .sink(receiveValue: { [weak self] (_, runningState) in
                 guard let self = self else { return }
                 self.runningState = runningState
                 self.loadRightStack(for: missionMode)

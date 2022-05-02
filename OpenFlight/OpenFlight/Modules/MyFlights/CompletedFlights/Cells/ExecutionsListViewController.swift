@@ -60,21 +60,30 @@ final class ExecutionsListViewController: UIViewController {
     private var selectedFlightItem: FlightPlanModel?
     private var projectModel: ProjectModel!
     private var flightService: FlightService!
+    private var flightPlanRepo: FlightPlanRepository!
+    private var topBarService: HudTopBarService!
     private weak var delegate: ExecutionsListDelegate?
     private var cancellables: [AnyCancellable] = []
+    private var backButtonPublisher: AnyPublisher<Void, Never>?
 
     // MARK: - Setup
     static func instantiate(delegate: ExecutionsListDelegate?,
                             flightPlanHandler: FlightPlanManager,
                             projectManager: ProjectManager,
                             projectModel: ProjectModel,
-                            flightService: FlightService) -> ExecutionsListViewController {
+                            flightService: FlightService,
+                            flightPlanRepo: FlightPlanRepository,
+                            topBarService: HudTopBarService,
+                            backButtonPublisher: AnyPublisher<Void, Never>) -> ExecutionsListViewController {
         let viewController = StoryboardScene.ExecutionsListViewController.initialScene.instantiate()
         viewController.delegate = delegate
         viewController.flightPlanHandler = flightPlanHandler
         viewController.projectManager = projectManager
         viewController.projectModel = projectModel
         viewController.flightService = flightService
+        viewController.flightPlanRepo = flightPlanRepo
+        viewController.topBarService = topBarService
+        viewController.backButtonPublisher = backButtonPublisher
         return viewController
     }
 
@@ -83,6 +92,7 @@ final class ExecutionsListViewController: UIViewController {
         super.viewDidLoad()
 
         setupUI()
+        bindViewModel()
 
         // Setup tableView.
         tableView.dataSource = self
@@ -97,14 +107,14 @@ final class ExecutionsListViewController: UIViewController {
         tableView.backgroundColor = ColorName.defaultBgcolor.color
         tableView.insetsContentViewsToSafeArea = false // Safe area is handled in this VC, not in content
         tableView.allowsSelection = true
+        loadAllExecutions()
         listenBackDisplay()
-        listenFlightsChange()
+        listenExecutionsChange()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
-        self.tableView.reloadData()
+        loadAllExecutions()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -130,7 +140,7 @@ final class ExecutionsListViewController: UIViewController {
 
     // MARK: - Public Funcs
     /// Load all flights saved in local database.
-    public func loadAllFlights() {
+    public func loadAllExecutions() {
         flightItems = Services.hub.flightPlan.projectManager.executedFlightPlans(for: projectModel)
         emptyLabelStack.isHidden = !flightItems.isEmpty
         tableView.isHidden = flightItems.isEmpty
@@ -151,11 +161,13 @@ final class ExecutionsListViewController: UIViewController {
     }
 
     /// Reload flights when there is a change
-    private func listenFlightsChange() {
-        flightService.flightsDidChange
+    private func listenExecutionsChange() {
+        // Update the executions list when FPs (added or removed) or Flights (new Gutma available) have changed.
+        flightPlanRepo.flightPlansDidChangePublisher
+            .combineLatest(flightService.flightsDidChangePublisher)
             .debounce(for: .seconds(1), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.loadAllFlights()
+                self?.loadAllExecutions()
             }
             .store(in: &cancellables)
     }
@@ -174,6 +186,17 @@ extension ExecutionsListViewController {
         titleLabel.makeUp(with: .huge, and: .defaultTextColor)
         emptyFlightsTitleLabel.makeUp(with: .huge, and: .defaultTextColor)
         emptyFlightsDecriptionLabel.makeUp(with: .large, and: .defaultTextColor)
+    }
+
+    /// Binds view model.
+    private func bindViewModel() {
+        // Listen to back button publisher.
+        backButtonPublisher?.sink { [weak self] in
+            guard let self = self else { return }
+            self.delegate?.backDisplay()
+            self.topBarService.goBack()
+        }
+        .store(in: &cancellables)
     }
 }
 

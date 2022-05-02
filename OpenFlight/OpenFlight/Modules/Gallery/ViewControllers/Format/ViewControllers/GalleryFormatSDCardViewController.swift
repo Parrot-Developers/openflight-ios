@@ -55,6 +55,7 @@ final class GalleryFormatSDCardViewController: UIViewController {
     private weak var coordinator: GalleryCoordinator?
     private var viewModel: GalleryFormatSDCardViewModel?
     private var cancellables = Set<AnyCancellable>()
+    private var confirmationAlert: AlertViewController?
 
     // MARK: - Setup
     /// Instantiate view controller.
@@ -98,7 +99,7 @@ final class GalleryFormatSDCardViewController: UIViewController {
 private extension GalleryFormatSDCardViewController {
     /// Function called when a choice view is clicked.
     @IBAction func choiceViewTouchedUpInside(_ view: GalleryFormatSDCardChoiceView) {
-        startFormatting(view == quickFormatChoiceView ? .quick : .full)
+        showConfirmationPopup(type: view == quickFormatChoiceView ? .quick : .full)
     }
 
     /// Function called when the back button is clicked.
@@ -144,6 +145,8 @@ private extension GalleryFormatSDCardViewController {
                     quickFormatChoiceView.isEnabled = false
                     fullFormatChoiceView.isEnabled = false
                     choicesStackView.alpha = 0.7
+                    confirmationAlert?.dismissAlert()
+                    confirmationAlert = nil
                 } else {
                     secondaryLabel.text = L10n.galleryFormatDataErased
                     quickFormatChoiceView.isEnabled = true
@@ -175,7 +178,12 @@ private extension GalleryFormatSDCardViewController {
 
     /// Sets up main view model.
     func setupViewModel() {
-        viewModel?.startListeningToFormattingProgress({ step, progress, formattingState in
+        viewModel?.startListeningToFormattingProgress({ [weak self] step, progress, formattingState in
+            guard let self = self else { return }
+
+            // Update close modal capability according to formatting state.
+            self.updateCloseModalState(canClose: formattingState != .inProgress)
+
             switch step {
             case .partitioning:
                 self.firstStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icErasing.image,
@@ -197,6 +205,33 @@ private extension GalleryFormatSDCardViewController {
         })
     }
 
+    /// Shows a format confirmation popup.
+    ///
+    /// - Parameter type: the selected formatting type
+    func showConfirmationPopup(type: FormattingType) {
+        let formatAction = AlertAction(title: L10n.commonFormat,
+                                       style: .destructive,
+                                       isActionDelayedAfterDismissal: false,
+                                       actionHandler: { [weak self] in
+            self?.startFormatting(type)
+        })
+        let cancelAction = AlertAction(title: L10n.cancel,
+                                       style: .default2,
+                                       actionHandler: {})
+        confirmationAlert = showAlert(title: L10n.galleryFormatSdCard,
+                                      message: L10n.galleryFormatSdCardConfirmationDesc,
+                                      cancelAction: cancelAction,
+                                      validateAction: formatAction)
+    }
+
+    /// Updates close modal state.
+    ///
+    /// - Parameter canClose: whether the popup can be closed
+    func updateCloseModalState(canClose: Bool) {
+        closeButton.isEnabled = canClose
+        backgroundButton.isEnabled = canClose
+    }
+
     /// Called when the formatting needs to start.
     ///
     /// - Parameters:
@@ -206,6 +241,9 @@ private extension GalleryFormatSDCardViewController {
             viewModel.canFormat else {
                 return
         }
+
+        // Formatting will start, disable modal closing ability as formatting cannot be interrupted.
+        updateCloseModalState(canClose: false)
 
         choicesStackView.isHidden = true
         formattingView.isHidden = false

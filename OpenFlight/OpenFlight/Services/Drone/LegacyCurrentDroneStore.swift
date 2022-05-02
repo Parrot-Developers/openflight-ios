@@ -63,8 +63,8 @@ private extension LegacyCurrentDroneStore {
         }
 
         if let flightCameraRecorder = drone.getPeripheral(Peripherals.flightCameraRecorder) {
-            let pipelines = flightCameraRecorder.activePipelines.supportedValues.filter { $0 != .fcamFollowme }
-            flightCameraRecorder.activePipelines.value = pipelines
+            // Id 0xffffffffffffffff to active all FCR pipelines.
+            flightCameraRecorder.pipelines.id = UInt64.max
         }
     }
 }

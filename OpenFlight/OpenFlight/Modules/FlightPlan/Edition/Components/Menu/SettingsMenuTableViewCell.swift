@@ -41,8 +41,8 @@ final class SettingsMenuTableViewCell: MainTableViewCell, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        settingsKey.makeUp(and: .defaultTextColor)
-        settingsValue.makeUp(and: .defaultTextColor)
+        settingsKey.makeUp(with: .current, color: .defaultTextColor)
+        settingsValue.makeUp(with: .current, color: .defaultTextColor)
     }
 }
 
@@ -59,8 +59,6 @@ internal extension SettingsMenuTableViewCell {
            descriptions.count > current {
             // Use valueDescriptions if setting is custom.
             settingsValue.text = descriptions[current]
-        } else if setting.type == .choice {
-            settingsValue.text = setting.currentValue == 0 ? L10n.commonYes : L10n.commonNo
         } else if let currentValueDescription = setting.currentValueDescription {
             settingsValue.text = currentValueDescription
         } else {

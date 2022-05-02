@@ -56,13 +56,9 @@ public extension DefaultsKeys {
     var lastCameraIsoValue: DefaultsKey<String?> { .init("key_lastCameraIsoValue") }
     var highDynamicRangeSetting: DefaultsKey<String?> { .init("key_highDynamicRangeSetting") }
 
-    // is User Connected to My Parrot
-    var isUserConnected: DefaultsKey<Bool> { .init("key_isUserConnected", defaultValue: false) }
-
     // MARK: - Parrot Debug
     var activatedLog: DefaultsKey<Bool> { .init("key_activatedLog", defaultValue: false) }
     var debugC: DefaultsKey<Bool> { .init("key_checkC", defaultValue: false) }
-    var isThumbnailSyncEnabled: DefaultsKey<Bool> { .init("key_isThumbnailSyncEnabled", defaultValue: false) }
 
     // MARK: - Gallery
     var localMediaCounts: DefaultsKey<[String: Any]?> { .init("key_localMediaCounts") }
@@ -132,6 +128,11 @@ public extension DefaultsKeys {
     }
     var latestSuccessfulSynchroMultiSessionDate: DefaultsKey<Date?> {
         DefaultsKey<Date?>.init("cloudSync.service.latestSuccessfulMultiSession")
+    }
+
+    // - Incremental
+    var shouldLaunchSynchroIncremental: DefaultsKey<Bool> {
+        .init("cloudSync.service.shouldLaunchSynchroIncremental", defaultValue: true)
     }
 }
 

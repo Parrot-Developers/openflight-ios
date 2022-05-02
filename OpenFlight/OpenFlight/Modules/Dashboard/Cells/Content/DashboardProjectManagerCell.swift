@@ -75,17 +75,15 @@ class DashboardProjectManagerCell: UICollectionViewCell, NibReusable {
                 self?.projectsCountLabel.text = String($0.numberOfProjects)
                 self?.fpProjectsCountLabel.text = String($0.numberOfFPProjects)
                 self?.otherProjectsCountLabel.text = String($0.numberOfOtherProjects)
-                self?.otherProjectIcon.image = $0.ortherProjectsIcon
-                self?.otherProjectIcon.isHidden = $0.ortherProjectsIcon == nil
-                self?.otherProjectsCountLabel.isHidden = $0.ortherProjectsIcon == nil
+                self?.otherProjectIcon.image = $0.otherProjectsIcon
+                self?.otherProjectIcon.isHidden = $0.otherProjectsIcon == nil
+                self?.otherProjectsCountLabel.isHidden = $0.otherProjectsIcon == nil
             }
             .store(in: &cancellables)
 
         viewModel.isSynchronizingData
             .sink { [weak self] isSync in
                 guard let self = self else { return }
-                viewModel.reloadAllProjects()
-
                 isSync ? self.syncLoaderImageView.startRotate() : self.syncLoaderImageView.stopRotate()
                 self.syncLoaderImageView.isHidden = !isSync
             }

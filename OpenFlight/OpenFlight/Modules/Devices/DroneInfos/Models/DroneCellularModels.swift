@@ -70,10 +70,7 @@ extension DetailsCellularStatus {
             return L10n.drone4gSimLocked
         case .userNotPaired:
             return L10n.cellularDetailsNotPaired
-        case .notRegistered,
-             .networkStatusError,
-             .networkStatusDenied,
-             .connectionFailed:
+        case .networkStatusError:
             return L10n.cellularDetailsNoConnection
         case .airplaneMode:
             return L10n.cellularErrorNoInternetTitle
@@ -81,7 +78,10 @@ extension DetailsCellularStatus {
             return L10n.cellularDetailsDataDisabled
         case .cellularConnected:
             return L10n.connected
-        case .cellularConnecting:
+        case .cellularConnecting,
+             .notRegistered,
+             .networkStatusDenied,
+             .connectionFailed:
             return L10n.connecting
         case .noState, .initializing:
             return Style.dash
@@ -101,11 +101,15 @@ extension DetailsCellularStatus {
             return L10n.drone4gEnterPin
         case .userNotPaired:
             return L10n.cellularDetailsUserNotPaired
-        case .notRegistered,
-             .networkStatusError,
-             .networkStatusDenied,
-             .connectionFailed:
+        case .networkStatusError:
             return L10n.cellularConnectionUnableToConnect
+        case .connectionFailed,
+             .notRegistered,
+             .networkStatusDenied,
+             .noState,
+             .initializing,
+             .cellularConnecting:
+            return L10n.connecting
         case .airplaneMode:
             return L10n.cellularErrorNoInternetMessage
         case .modemStatusOff:
@@ -114,10 +118,6 @@ extension DetailsCellularStatus {
             return L10n.cellularDetailsDataDisabled
         case .cellularConnected:
             return L10n.connected
-        case .cellularConnecting:
-            return L10n.connecting
-        case .noState, .initializing:
-            return nil
         }
     }
 
@@ -134,10 +134,10 @@ extension DetailsCellularStatus {
              .airplaneMode,
              .modemStatusOff,
              .simNotRecognized,
-             .connectionFailed:
+             .connectionFailed,
+             .noState:
             return .errorColor
         case .noData,
-             .noState,
              .cellularConnecting,
              .initializing:
             return .defaultTextColor

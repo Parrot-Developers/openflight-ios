@@ -174,14 +174,17 @@ final class FlightPlansListViewModel {
     private let manager: ProjectManager
     private let navigationStack: NavigationStackService
     private var cancellables = Set<AnyCancellable>()
+    private var selectedHeaderUuid: String?
 
     init(manager: ProjectManager,
          flightPlanTypeStore: FlightPlanTypeStore,
          navigationStack: NavigationStackService,
-         cloudSynchroWatcher: CloudSynchroWatcher?) {
+         cloudSynchroWatcher: CloudSynchroWatcher?,
+         selectedHeaderUuid: String?) {
         self.manager = manager
         self.flightPlanTypeStore = flightPlanTypeStore
         self.navigationStack = navigationStack
+        self.selectedHeaderUuid = selectedHeaderUuid
 
         cloudSynchroWatcher?.isSynchronizingDataPublisher
             .receive(on: RunLoop.main)
@@ -237,7 +240,7 @@ final class FlightPlansListViewModel {
                     count: 1,
                     missionType: flightStoreProvider?.missionProvider.mission.name,
                     logo: flightStoreProvider?.missionProvider.mission.icon,
-                    isSelected: false
+                    isSelected: value.uuid == selectedHeaderUuid
                 )
                 var otherResult = result
                 otherResult.append(provider)
@@ -311,7 +314,7 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
         case .dashboard:
             allProjects.value = projects
             buildHeader(projects)
-            filteredProjects.value = projects
+            updateFilteredProjects()
         case .compact:
             filteredProjects.value = projects
         }
@@ -330,12 +333,25 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
         filteredProjects.value.count
     }
 
+    func updateFilteredProjects() {
+        if selectedHeaderUuid != nil,
+           let provider = headerProvider.first(where: { $0.uuid == selectedHeaderUuid }) {
+            filteredProjects.value = allProjects.value.filter {
+                                let type = flightPlanType(forType: manager.lastFlightPlan(for: $0)?.type)
+                                return provider.missionType == type?.missionProvider.mission.name
+                            }
+        } else {
+            filteredProjects.value = allProjects.value
+        }
+    }
+
     func headerCellProvider() -> [FlightPlanListHeaderCellProvider] {
         return headerProvider
     }
 
     func updateNavigationStack(with selectedProject: ProjectModel?) {
-        navigationStack.updateLast(with: .myFlightsExecutedProjects(selectedProject: selectedProject))
+        navigationStack.updateLast(with: .myFlightsExecutedProjects(selectedProject: selectedProject,
+                                                                    selectedHeaderUuid: selectedHeaderUuid))
     }
 }
 
@@ -368,19 +384,11 @@ extension FlightPlansListViewModel: FlightPlanListHeaderDelegate {
 
         // Set selected element on current selected value
         headerProvider[index].isSelected = provider.isSelected
-
-        // if `currentProvider` was `false` before selection then filter the flight plans
-        if currentProvider.isSelected == false {
-            filteredProjects.value = allProjects.value.filter {
-                let type = flightPlanType(forType: manager.lastFlightPlan(for: $0)?.type)
-                return provider.missionType == type?.missionProvider.mission.name
-            }
-        }
-
-        // if `currentProvider` was `true` before selection then rollback to all flight plan
-        else {
-            filteredProjects.value = allProjects.value
-        }
+        selectedHeaderUuid = provider.isSelected ? headerProvider[index].uuid : nil
+        // update the selection
+        updateFilteredProjects()
+        // update navigation stack to save the current filter
+        updateNavigationStack(with: filteredProjects.value.first { $0.uuid == uuid })
     }
 }
 

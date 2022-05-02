@@ -45,15 +45,17 @@ public protocol UserRepository: AnyObject {
     func updateTokenForAnonymousUser(_ token: String)
 
     // MARK: __ Get
-    /// Get current logged User from CoreData
+    /// Get user from CoreData
+    /// - Parameters:
+    ///    - apcId: the apcId of the user to get
     /// - Returns
-    ///     - Current logged user
-    func getCurrentUser() -> User?
+    ///     - The user with given apcId
+    func getUser(from apcId: String) -> User?
 
     /// Load Anonymous User from CoreData
     /// - Returns
     ///     - Anonymous user
-    func getAnonymousUser() -> User?
+    func getAnonymousUser() -> User
 
     /// Boolean to know if user in core data is new from previous logged one
     /// - Parameters:
@@ -64,6 +66,11 @@ public protocol UserRepository: AnyObject {
 
     /// Delete all users except for anonymous user
     func deleteAllUsersExceptAnonymous()
+
+    /// Delete all other users from apcId except for anonymous user
+    /// - Parameters:
+    ///     - apcId: ApcId to check other users
+    func deleteAllOtherUsersExceptAnonymous(fromApcId apcId: String)
 }
 
 // MARK: - Implementation
@@ -102,27 +109,23 @@ extension CoreDataServiceImpl: UserRepository {
     }
 
     public func updateTokenForAnonymousUser(_ token: String) {
-        guard var anonymousUser = getAnonymousUser() else {
-            return
-        }
+        var anonymousUser = getAnonymousUser()
         anonymousUser.apcToken = token
         saveOrUpdateUser(anonymousUser)
     }
 
     // MARK: __ Get
-    public func getCurrentUser() -> User? {
-        getUserCD(fromApcId: userInformation.apcId)?.model()
+    public func getUser(from apcId: String) -> User? {
+        getUserCD(fromApcId: apcId)?.model()
     }
 
-    public func getAnonymousUser() -> User? {
-        var anonymousUser = getUserCD(fromApcId: User.anonymousId)?.model()
-
-        if anonymousUser == nil {
-            anonymousUser = User.createAnonymous(withToken: nil)
-            if let anonymousUser = anonymousUser {
-                saveOrUpdateUser(anonymousUser)
-            }
+    public func getAnonymousUser() -> User {
+        guard let anonymousUser = getUserCD(fromApcId: User.anonymousId)?.model() else {
+            let anonymousUser = User.createAnonymous(withToken: nil)
+            saveOrUpdateUser(anonymousUser)
+            return anonymousUser
         }
+
         return anonymousUser
     }
 
@@ -144,6 +147,21 @@ extension CoreDataServiceImpl: UserRepository {
         let fetchRequest = UserParrot.fetchRequest()
         let anonymousPredicate = NSPredicate(format: "apcId != %@", User.anonymousId)
         fetchRequest.predicate = anonymousPredicate
+
+        let users = fetch(request: fetchRequest)
+        delete(users) { error in
+            ULog.e(.dataModelTag, "Error deleteAllUsersExceptAnonymous: \(error.localizedDescription)")
+        }
+    }
+
+    public func deleteAllOtherUsersExceptAnonymous(fromApcId apcId: String) {
+        let fetchRequest = UserParrot.fetchRequest()
+        let apcIdPredicate = NSPredicate(format: "apcId != %@", apcId)
+        let anonymousPredicate = NSPredicate(format: "apcId != %@", User.anonymousId)
+
+        let subPredicateList: [NSPredicate] = [apcIdPredicate, anonymousPredicate]
+        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+        fetchRequest.predicate = compoundPredicates
 
         let users = fetch(request: fetchRequest)
         delete(users) { error in

@@ -69,44 +69,31 @@ public extension Date {
     /// Returns date's formatted string with given style.
     func formattedString(dateStyle: DateFormatter.Style,
                          timeStyle: DateFormatter.Style,
-                         doesRelativeFormatting: Bool = false) -> String {
+                         doesRelativeFormatting: Bool = false,
+                         showTimePrefix: Bool = true) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = dateStyle
-        formatter.timeStyle = timeStyle
         formatter.doesRelativeDateFormatting = doesRelativeFormatting
-        return formatter.string(from: self)
+        formatter.timeStyle = showTimePrefix ? timeStyle : .none
+
+        return showTimePrefix
+            ? formatter.string(from: self)
+            : addTimeTo(stringDate: formatter.string(from: self))
     }
 
-    /// Returns short formatted date.
-    ///
-    /// - Parameters:
-    ///    - timeStyle: Date formatter style
-    ///
-    /// - Returns: Date as string
-    func shortFormattedString(timeStyle: DateFormatter.Style) -> String? {
-        if self.isToday {
-            return L10n.commonToday
-        } else if self.isYesterday {
-            return L10n.commonYesterday
-        } else {
-            return self.formattedString(dateStyle: .short, timeStyle: timeStyle)
-        }
+    /// Short formatted date.
+    var shortFormattedString: String? {
+        formattedString(dateStyle: .medium, timeStyle: .medium)
     }
 
     /// Returns short formatted date, always with time.
     ///
     /// - Parameters:
-    ///    - timeStyle: Date formatter style
+    ///    - showTimePrefix: Indicates if the time has a prefix
     ///
     /// - Returns: Date as string
-    func shortWithTimeFormattedString(timeStyle: DateFormatter.Style) -> String? {
-        if self.isToday {
-            return addTimeTo(stringDate: L10n.commonToday)
-        } else if self.isYesterday {
-            return addTimeTo(stringDate: L10n.commonYesterday)
-        } else {
-            return self.formattedString(dateStyle: .short, timeStyle: timeStyle)
-        }
+    func shortWithTimeFormattedString(showTimePrefix: Bool = true) -> String? {
+        formattedString(dateStyle: .medium, timeStyle: .short, showTimePrefix: showTimePrefix)
     }
 
     /// Add time to formatted date.

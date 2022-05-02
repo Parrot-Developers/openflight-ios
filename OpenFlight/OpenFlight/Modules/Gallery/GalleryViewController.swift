@@ -213,6 +213,13 @@ final class GalleryViewController: UIViewController {
         LogEvent.log(.screen(LogEvent.Screen.gallery))
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Init loading view state at didAppear, as `showFromEdge` needs to be aware
+        // of its actual height in order to correctly hide/show it.
+        loadingView.setProgress(viewModel?.downloadProgress, status: viewModel?.downloadStatus)
+    }
+
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
@@ -306,7 +313,7 @@ private extension GalleryViewController {
     /// Sets up side panel action buttons: download/share, delete, format SD, select.
     func setupPanelButtons() {
         deleteButton.setup(title: L10n.commonDelete, style: .destructive)
-        formatSDButton.setup(title: L10n.galleryFormat, style: .secondary1)
+        formatSDButton.setup(title: L10n.galleryFormatSdCard, style: .secondary1)
         sdCardErrorLabel.makeUp(with: .regular, and: .errorColor)
         sdCardErrorLabel.font = FontStyle.current.font(isRegularSizeClass)
         sdCardErrorIcon.tintColor = ColorName.errorColor.color
@@ -418,7 +425,7 @@ private extension GalleryViewController {
 
         guard !isHidden else { return }
 
-        let isEnabled = sdCardViewModel.state.value.canFormat && (viewModel.drone?.isConnected ?? false)
+        let isEnabled = sdCardViewModel.state.value.canFormat
         formatSDButton.isEnabled = isEnabled
     }
 
@@ -480,17 +487,28 @@ private extension GalleryViewController {
     /// Sets up view model.
     func setupViewModel() {
         viewModel = GalleryMediaViewModel(onMediaStateUpdate: { [weak self] state in
-            self?.updateStates()
-            self?.filtersViewController?.stateDidChange(state: state)
-            self?.mediaViewController?.stateDidChange(state: state)
+            guard let self = self else { return }
+            self.updateStates()
+            self.filtersViewController?.stateDidChange(state: state)
+            self.mediaViewController?.stateDidChange(state: state)
         })
 
         // Listen to drone's memory download state changes.
         guard let viewModel = viewModel else { return }
         viewModel.$downloadProgress
             .combineLatest(viewModel.$downloadStatus)
-            .sink { [unowned self] (progress, status) in
-                loadingView.setProgress(progress, status: status)
+            .sink { [weak self] (progress, status) in
+                self?.loadingView.setProgress(progress, status: status)
+            }
+            .store(in: &cancellables)
+
+        // Listen to formatting capability state.
+        // `GallerySDMediaViewModel.canFormat` state can either be updated by SD peripheral events
+        // or by flyingIndicators instruments (SD card formatting is forbidden when drone is flying).
+        viewModel.$canFormat
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                self?.updateFormatSDButtonState()
             }
             .store(in: &cancellables)
     }

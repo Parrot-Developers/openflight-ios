@@ -77,37 +77,10 @@ public class SecureKeyStorage {
     /// Secure storage keychain.
     public let keychain = Keychain(service: Constants.secureKeyStorage)
 
-    private let temporaryTokenSubject = CurrentValueSubject<String, Never>("")
-
-    public var temporaryTokenPublisher: AnyPublisher<String, Never> { temporaryTokenSubject.eraseToAnyPublisher() }
-
-    /// Secure storage temporary token.
-    public var temporaryToken: String {
-        get {
-            return keychain.get(Constants.temporaryToken) ?? ""
-        }
-        set {
-            keychain.set(key: Constants.temporaryToken, newValue)
-            temporaryTokenSubject.value = newValue
-        }
-    }
-
-    // MARK: - Internal Properties
-    /// Returns true if a temporary account has been created.
-    var isTemporaryAccountCreated: Bool {
-        return !temporaryToken.isEmpty
-    }
-
     // MARK: - Private Enums
     /// Stores some keys for the keychain.
     private enum Constants {
         /// Current service constant used to instantiate the keychain object.
         static let secureKeyStorage: String = "secureKeyStorage"
-        static let temporaryToken: String = "temporaryToken"
-    }
-
-    // MARK: - Init
-    public init() {
-        temporaryTokenSubject.value = temporaryToken
     }
 }

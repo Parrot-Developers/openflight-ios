@@ -266,7 +266,7 @@ private extension HUDAlertBannerViewModel {
 
     /// Updates special conditions alerts.
     func updateConditionsAlerts(_ drone: Drone) {
-        alertList.cleanAlerts(withCategories: [.conditions, .conditionsWind])
+        alertList.cleanAlerts(withCategories: [.conditions, .conditionsWind, .componentsCamera])
         if let alerts = drone.getInstrument(Instruments.alarms)?.conditionsAlerts(drone: drone) {
             alertList.addAlerts(alerts)
         }
@@ -294,6 +294,9 @@ private extension HUDAlertBannerViewModel {
         if checklist.getAlarm(kind: TakeoffAlarm.Kind.batteryGaugeUpdateRequired).level == .on
             || checklist.getAlarm(kind: TakeoffAlarm.Kind.batteryIdentification).level == .on {
             alertList.addAlerts([HUDBannerCriticalAlertType.takeoffUnavailable])
+        }
+        if checklist.getAlarm(kind: TakeoffAlarm.Kind.magnetoCalibration).level == .on {
+            alertList.addAlerts([HUDBannerCriticalAlertType.needCalibration])
         }
     }
 

@@ -37,6 +37,8 @@ final class FlightPlanPanelViewModel {
 
     @Published private(set) var titleProject: String?
 
+    @Published private(set) var titleExecution: String?
+
     @Published private(set) var newButtonTitle: String?
 
     @Published private(set) var createFirstTitle: String?
@@ -84,21 +86,21 @@ final class FlightPlanPanelViewModel {
         stateMachine?.start()
     }
 
-    /// Stops current runnning flight plan.
+    /// Stops current running flight plan.
     func stopFlightPlan() {
         stateMachine?.stop()
     }
 
     func newFlightplan(flightPlanProvider: FlightPlanProvider) {
-        let project = projectManager.newProject(flightPlanProvider: flightPlanProvider)
-        projectManager.loadEverythingAndOpen(project: project)
+        projectManager.newProject(flightPlanProvider: flightPlanProvider) { [weak self] project in
+            guard let project = project else { return }
+            self?.projectManager.loadEverythingAndOpen(project: project, isBrandNew: true)
+        }
     }
 
     func startEditionMode(_ centerMapOnDroneOrUser: Bool) {
         stateMachine?.forceEditable()
         coordinator?.startFlightPlanEdition(centerMapOnDroneOrUser: centerMapOnDroneOrUser)
-        splitControls?.hideCameraSliders(hide: true)
-        splitControls?.hideBottomBar(hide: true)
     }
 
     func getFlightPlanProvider() -> FlightPlanProvider? {
@@ -234,6 +236,7 @@ private extension FlightPlanPanelViewModel {
                         break
                     }
                 case .flying:
+                    self.titleExecution = runManager.playingFlightPlan?.customTitle
                     switch state.run {
                     case let .playing(_, _, rth) where rth:
                         if viewState == .rth { return }
@@ -260,7 +263,7 @@ private extension FlightPlanPanelViewModel {
                     progressModel = isNavigatingToStartingPoint ?
                     navigatingToStartingPointProgressModel() :
                     progressModel(runState: state.run,
-                                  statMachine: state.machine,
+                                  stateMachine: state.machine,
                                   progress: fpProgress.progress,
                                   distance: fpProgress.distance)
                 default:
@@ -278,7 +281,7 @@ private extension FlightPlanPanelViewModel {
                         }
                     } else {
                         progressModel = progressModel(runState: state.run,
-                                                      statMachine: state.machine,
+                                                      stateMachine: state.machine,
                                                       progress: fpProgress.progress,
                                                       distance: fpProgress.distance)
                     }
@@ -304,13 +307,13 @@ private extension FlightPlanPanelViewModel {
     }
 
     func progressModel(runState: FlightPlanRunningState,
-                       statMachine: FlightPlanStateMachineState,
+                       stateMachine: FlightPlanStateMachineState,
                        progress: Double,
                        distance: Double) -> FlightPlanPanelProgressModel {
-        switch statMachine {
+        switch stateMachine {
         case .flying:
             // State machine is in .flying state
-            // Check the FP runnning state in case of FP paused by a Drone's event.
+            // Check the FP running state in case of FP paused by a Drone's event.
             let unavailabilityReasons = pilotingIterfaceUnavailabilityReasons(for: runState)
             if !unavailabilityReasons.isEmpty {
                 return FlightPlanPanelProgressModel(mainText: unavailabilityReasons.errorText ?? L10n.error,
@@ -325,8 +328,8 @@ private extension FlightPlanPanelViewModel {
         case let .resumable(_, startAvailability),
              let .editable(_, startAvailability):
             switch startAvailability {
-            case .available:
-                return FlightPlanPanelProgressModel(mainText: L10n.flightPlanInfoDroneReady)
+            case let .available(isRthActive):
+                return FlightPlanPanelProgressModel(mainText: isRthActive ? "" : L10n.flightPlanInfoDroneReady)
             case let .unavailable(reason):
                 switch reason {
                 case .droneDisconnected:
@@ -427,16 +430,20 @@ private extension FlightPlanPanelViewModel {
         case .machineStarted, .initialized, .end:
             buttonInfo = .defaultInfo
         case let .editable(flightPlan, startAvailability):
-            let buttonsAreEnabled = startAvailability == .available && flightPlan.isEmpty == false
+            let buttonsAreEnabled = startAvailability == .available(false) && flightPlan.isEmpty == false
             buttonInfo = ButtonsInformation(startButtonState: .canPlay, areEnabled: buttonsAreEnabled)
         case .resumable(_, startAvailability: let startAvailability):
-            buttonInfo = ButtonsInformation(startButtonState: .paused, areEnabled: startAvailability == .available)
+            var areEnabled = false
+            if case .available = startAvailability { areEnabled = true }
+            buttonInfo = ButtonsInformation(startButtonState: .paused, areEnabled: areEnabled)
         case .startedNotFlying:
             buttonInfo = ButtonsInformation(startButtonState: .canPlay, areEnabled: false)
         case .flying:
             switch runState {
             case .paused(_, let startAvailability):
-                buttonInfo = ButtonsInformation(startButtonState: .paused, areEnabled: startAvailability == .available)
+                var areEnabled = false
+                if case .available = startAvailability { areEnabled = true }
+                buttonInfo = ButtonsInformation(startButtonState: .paused, areEnabled: areEnabled)
             case let .playing(droneConnected, _, _):
                 buttonInfo = ButtonsInformation(startButtonState: .canPlay, areEnabled: droneConnected)
             default:

@@ -112,7 +112,7 @@ private extension DroneDetailsMapViewController {
     func initView() {
         mainView.customCornered(corners: [.topLeft, .topRight],
                                 radius: Style.largeCornerRadius)
-        containerView?.isUserInteractionEnabled = false
+        containerView?.isUserInteractionEnabled = true
         coordinateView.layer.cornerRadius = Style.largeCornerRadius
         bellStackView.layer.cornerRadius = Style.largeCornerRadius
         lastPositionTitleLabel.text = L10n.droneDetailsLastKnownPosition

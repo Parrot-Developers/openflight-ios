@@ -54,8 +54,14 @@ typealias GalleryMediaListenerClosure = (GalleryMediaState) -> Void
 
 final class GalleryMediaState: GalleryContentState {
     // MARK: - Private Properties
+    /// Array of Medias
+    private(set) var filteredMedias: [GalleryMedia] = []
     /// Medias sorted by date.
-    private(set) var mediasByDate: [(key: Date, medias: [GalleryMedia])] = []
+    private(set) var mediasByDate: [(key: Date, medias: [GalleryMedia])] = [] {
+        didSet {
+            filteredMedias = sortedFilteredMedias()
+        }
+    }
     /// Selected media type.
     fileprivate(set) var selectedMediaTypes: [GalleryMediaType] = [] {
         didSet {
@@ -186,10 +192,8 @@ private extension GalleryMediaState {
     /// - Returns: list of medias ordered by date and possibly filtered by type.
     func sortMediasByDate() -> [(key: Date, medias: [GalleryMedia])] {
         var sortedItems: [(key: Date, medias: [GalleryMedia])] = []
-        var sortedData = medias.sorted(by: { $0.date > $1.date })
-        if !selectedMediaTypes.isEmpty {
-            sortedData = sortedData.filter({selectedMediaTypes.contains($0.type)})
-        }
+        let sortedData = sortedFilteredMedias()
+
         for item in sortedData {
             if let currentDate = sortedItems.first(where: { $0.key.isSameDay(date: item.date) }) {
                 var newDateTuple = currentDate
@@ -202,6 +206,18 @@ private extension GalleryMediaState {
         }
         return sortedItems
     }
+
+    /// Sort medias by date with selected type
+    ///
+    /// - Returns: list of medias ordered by date and possibly filtered by type.
+    func sortedFilteredMedias() -> [GalleryMedia] {
+        var filteredMedias =  medias.sorted(by: { $0.date > $1.date })
+        if !selectedMediaTypes.isEmpty {
+            filteredMedias = filteredMedias.filter({selectedMediaTypes.contains($0.type)})
+        }
+
+        return filteredMedias
+    }
 }
 
 /// ViewModel for Gallery Media Item.
@@ -210,6 +226,7 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
     @Published private(set) var downloadProgress: Float?
     @Published private(set) var downloadStatus: MediaTaskStatus?
     @Published private(set) var downloadingItem: MediaItem?
+    @Published private(set) var canFormat: Bool = true
 
     // MARK: - Private Properties
     private var mediaListener: Set<GalleryMediaListener> = []
@@ -260,7 +277,10 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
     }
     /// Number of medias according to source type.
     public var numberOfMedias: Int {
-        return self.state.value.medias.count
+        state.value.medias.count
+    }
+    public var numberOfFilteredMedias: Int {
+        state.value.filteredMedias.count
     }
     public var isSdCardActive: Bool {
         isSdCardReady || !isInternalReady
@@ -570,6 +590,18 @@ extension GalleryMediaViewModel {
         return nil
     }
 
+    /// Get a media from sortedFilteredMedias with specified index
+    ///
+    /// - Parameters:
+    ///    - index: Media index in the sorted filtered media
+    /// - Returns: gallery media.
+    func getFilteredMedia(index: Int) -> GalleryMedia? {
+        guard index < state.value.filteredMedias.count else {
+            return nil
+        }
+        return state.value.filteredMedias[index]
+    }
+
     /// Get a media index.
     ///
     /// - Parameters:
@@ -710,6 +742,8 @@ private extension GalleryMediaViewModel {
             }
             copy.isFormatNeeded = state.isConnected() && state.fileSystemStorageState == .needFormat
             strongSelf.state.set(copy)
+            // Publish canFormat state.
+            strongSelf.canFormat = state.canFormat
         })
 
         // Listen to download state changes.

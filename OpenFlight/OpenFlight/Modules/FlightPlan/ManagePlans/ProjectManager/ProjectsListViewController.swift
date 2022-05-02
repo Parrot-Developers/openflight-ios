@@ -57,15 +57,19 @@ final class ProjectsListViewController: UIViewController {
         viewModel.$filteredProjects
             .receive(on: RunLoop.main)
             .sink { [weak self] projects in
-                self?.collectionView?.reloadData()
-                self?.emptyLabelStack.isHidden = !projects.isEmpty
+                guard let self = self else { return }
+
+                self.collectionView?.reloadData()
+                self.emptyLabelStack.isHidden = !projects.isEmpty
+                self.scrollToSelectedProject()
             }
             .store(in: &cancellables)
 
         viewModel.$selectedProject
             .receive(on: RunLoop.main)
             .sink { [weak self] _  in
-                self?.collectionView?.reloadData()
+                guard let collectionView = self?.collectionView else { return }
+                collectionView.reloadData()
             }
             .store(in: &cancellables)
 
@@ -90,14 +94,16 @@ final class ProjectsListViewController: UIViewController {
         collectionView.reloadData()
     }
 
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        // Update layout when orientation changed.
-        collectionView.collectionViewLayout.invalidateLayout()
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
+    }
+
+    func scrollToSelectedProject() {
+        if let index = viewModel.getSelectedProjectIndex() {
+            collectionView.scrollToItem(at: IndexPath(row: index, section: 0),
+                                              at: .centeredVertically,
+                                              animated: false)
+        }
     }
 }
 

@@ -173,7 +173,7 @@ public final class WayPoint: Codable, Equatable {
 
     private enum Constants {
         static let defaultSpeed: Double = 5.0
-        static let defaultAltitude: Double = 5.0
+        static let defaultAltitude: Double = 50.0
         static let defaultTilt: Double = 0.0
         static let customYawDelta: Double = 5.0
     }

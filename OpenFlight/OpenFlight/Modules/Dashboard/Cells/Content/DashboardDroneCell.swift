@@ -78,7 +78,8 @@ class DashboardDroneCell: UICollectionViewCell, NibReusable {
             .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
                 self?.firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel
                 self?.setDeviceStateButton(with: firmwareAndMissionToUpdateModel,
-                                           and: self?.viewModel?.requiredCalibrationSubject.value ?? false)
+                                           self?.viewModel?.requiredCalibrationSubject.value ?? false,
+                                           self?.viewModel?.recommendedCalibrationSubject.value ?? false)
             }
     }
 
@@ -161,10 +162,13 @@ private extension DashboardDroneCell {
         guard let viewModel = viewModel else { return }
 
         viewModel.$connectionState
-            .combineLatest(viewModel.requiredCalibrationSubject)
-            .sink { [unowned self] _, calibrationIsRequired in
+            .combineLatest(viewModel.requiredCalibrationSubject,
+                           viewModel.recommendedCalibrationSubject)
+            .sink { [unowned self] _, calibrationIsRequired, calibrationIsRecommended in
                 if let firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel {
-                    setDeviceStateButton(with: firmwareAndMissionToUpdateModel, and: calibrationIsRequired)
+                    setDeviceStateButton(with: firmwareAndMissionToUpdateModel,
+                                         calibrationIsRequired,
+                                         calibrationIsRecommended)
                 }
             }
             .store(in: &cancellables)
@@ -194,8 +198,11 @@ private extension DashboardDroneCell {
     ///
     /// - Parameters:
     ///    - firmwareAndMissionToUpdateModel: The firmware and mission update model
+    ///    - calibrationIsRequired: True if a calibration is required
+    ///    - calibrationIsRecommended: True if a calibration is recommended
     func setDeviceStateButton(with firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel,
-                              and calibrationIsRequired: Bool = false) {
+                              _ calibrationIsRequired: Bool = false,
+                              _ calibrationIsRecommended: Bool = false) {
         guard let droneInfosViewModel = viewModel else { return }
 
         let connectionState = droneInfosViewModel.connectionState
@@ -212,10 +219,13 @@ private extension DashboardDroneCell {
                 title = firmwareAndMissionToUpdateModel.stateButtonTitle
             } else if calibrationIsRequired {
                 status = .calibrationRequired
-                title = L10n.remoteCalibrationRequired
+                title = L10n.droneCalibrationRequired
             } else if firmwareAndMissionToUpdateModel.needUpdate {
                 status = .updateAvailable
                 title = firmwareAndMissionToUpdateModel.stateButtonTitle
+            } else if calibrationIsRecommended {
+                status = .calibrationIsRecommended
+                title = L10n.droneCalibrationAdvised
             } else {
                 status = .notDisconnected
                 title = connectionState.title

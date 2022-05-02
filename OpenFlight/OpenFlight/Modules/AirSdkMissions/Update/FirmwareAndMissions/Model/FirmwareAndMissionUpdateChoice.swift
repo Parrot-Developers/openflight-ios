@@ -37,7 +37,8 @@ enum FirmwareAndMissionUpdateChoice: Comparable {
     case airSdkMission(AirSdkMissionToUpdateData,
                        missionOnDrone: AirSdkMissionBasicInformation?,
                        compatibility: FirmwareCompatibility)
-    case upToDateAirSdkMission(AirSdkMissionBasicInformation)
+    case upToDateAirSdkMission(AirSdkMissionBasicInformation,
+                               isLastBuiltIn: Bool = false)
     case firmware(FirmwareToUpdateData)
 
     // MARK: - Comparable
@@ -61,11 +62,25 @@ enum FirmwareAndMissionUpdateChoice: Comparable {
         switch (lhs, rhs) {
         case (.firmwareAndAirSdkMissions, _):
             return true
-        case (.firmware, .airSdkMission):
+        case (_, .firmwareAndAirSdkMissions):
+            return false
+        case (.firmware, _):
             return true
+        case (_, .firmware):
+            return false
+        case (.upToDateAirSdkMission, .airSdkMission):
+            return true
+        case (.airSdkMission, .upToDateAirSdkMission):
+            return false
+        case (let .upToDateAirSdkMission(mission1, _), let .upToDateAirSdkMission(mission2, _)):
+            if mission1.isBuiltIn != mission2.isBuiltIn {
+                return mission1.isBuiltIn
+            } else {
+                return mission1.missionUID < mission2.missionUID
+            }
         case (let .airSdkMission(mission1, missionOnDrone: _, compatibility: _),
               let .airSdkMission(mission2, missionOnDrone: _, compatibility: _)):
-            return mission1.missionName < mission2.missionName
+            return mission1.missionUID < mission2.missionUID
         default:
             return false
         }
@@ -143,7 +158,7 @@ extension FirmwareAndMissionUpdateChoice {
         case let .airSdkMission(_, missionOnDrone, _):
             return missionOnDrone?.isCompatible != false ?
                 ColorName.defaultTextColor.color : ColorName.disabledTextColor.color
-        case let .upToDateAirSdkMission(missionOnDrone):
+        case let .upToDateAirSdkMission(missionOnDrone, _):
             return missionOnDrone.isCompatible ? ColorName.defaultTextColor.color : ColorName.disabledTextColor.color
         }
     }

@@ -97,9 +97,18 @@ final class TargetView: UIView {
     private enum Constants {
         static let dashPattern: [NSNumber] = [6, 2]
         static let selectionBorderSize: CGFloat = 2.0
+        static let minSize: CGFloat = 44.0
     }
 
     // MARK: - Init
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        let rect = CGRect(center: bounds.center,
+                          width: bounds.width > Constants.minSize ? bounds.width : Constants.minSize,
+                          height: bounds.height > Constants.minSize ? bounds.height: Constants.minSize)
+        let result = rect.contains(point)
+        return result
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         drawState()

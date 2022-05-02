@@ -130,7 +130,13 @@ extension AirSdkMissionsUpdaterManager {
 
         for listener in listeners
         where listener.missionToUpdateData == mission.missionToUpdateData {
-            listener.missionToUpdateCallback(.waitingForUpdate)
+            // The mission might have already been uploaded if an error has occurred during update and reboot has not
+            // been triggered. We won't upload the mission again in this case, because this should cause an error.
+            let status: AirSdkMissionToUpdateStatus =
+                airSdkMissionsUpdaterWrapper.isAlreadyUploaded(mission.missionToUpdateData)
+                ? .updateDone
+                : .waitingForUpdate
+            listener.missionToUpdateCallback(status)
         }
     }
 

@@ -38,6 +38,7 @@ final class HelloWorldBottomView: UIView, NibOwnerLoadable {
         didSet {
             stateView.currentMode.adjustsFontSizeToFitWidth = true
             stateView.currentMode.minimumScaleFactor = Style.minimumScaleFactor
+            stateView.roundedCorners = [.topLeft, .bottomLeft]
         }
     }
 

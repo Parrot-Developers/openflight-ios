@@ -54,11 +54,8 @@
                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7cM-1b-gqb" customClass="NavigationStackView" customModule="OpenFlight" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="0.0" width="896" height="56"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bLD-tE-nlA">
-                                        <rect key="frame" x="0.0" y="0.0" width="56" height="56"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" secondItem="bLD-tE-nlA" secondAttribute="height" multiplier="1:1" id="gQB-ZU-Iw7"/>
-                                        </constraints>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bLD-tE-nlA" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="53.5" height="56"/>
                                         <color key="tintColor" name="default_text_color"/>
                                         <state key="normal" image="ic_back"/>
                                         <connections>
@@ -66,23 +63,23 @@
                                         </connections>
                                     </button>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MyR-9A-ttg">
-                                        <rect key="frame" x="56" y="0.0" width="346" height="56"/>
+                                        <rect key="frame" x="53.5" y="0.0" width="346" height="56"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="B9B-U9-5W6">
-                                        <rect key="frame" x="402" y="0.0" width="42" height="56"/>
+                                        <rect key="frame" x="399.5" y="0.0" width="47" height="56"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="ERi-jq-TzT">
-                                                <rect key="frame" x="0.0" y="9" width="42" height="38"/>
+                                                <rect key="frame" x="0.0" y="5.5" width="47" height="45"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ldT-7q-yiL">
-                                                        <rect key="frame" x="0.0" y="0.0" width="42" height="19"/>
+                                                        <rect key="frame" x="0.5" y="0.0" width="46.5" height="22.5"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                                         <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0MA-ii-NyH">
-                                                        <rect key="frame" x="6.5" y="19" width="29" height="19"/>
+                                                        <rect key="frame" x="7.5" y="22.5" width="32" height="22.5"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                         <color key="textColor" name="user_profil_value"/>
                                                         <nil key="highlightedColor"/>
@@ -92,7 +89,7 @@
                                         </subviews>
                                     </stackView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mpF-G1-COn">
-                                        <rect key="frame" x="444" y="0.0" width="452" height="56"/>
+                                        <rect key="frame" x="446.5" y="0.0" width="449.5" height="56"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </view>
                                 </subviews>

@@ -99,7 +99,6 @@ public struct TouchAndFlyMission: MissionProvider {
         let missionMode = MissionMode(
             configurator: touchAndFlyModeConf,
             missionActivationModel: TouchAndFlyActivationModel(),
-            mapMode: .standard(force2D: true),
             bottomBarLeftStack: { () -> [UIView] in
                 return []
             },

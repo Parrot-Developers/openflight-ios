@@ -31,6 +31,11 @@ import Foundation
 import Combine
 
 public protocol UIComponentsDisplayReporter {
+    func actionWidgetIsShown()
+    func actionWidgetIsHidden()
+    var isActionWidgetShownPublisher: AnyPublisher<Bool, Never> { get }
+    var isActionWidgetShown: Bool { get }
+
     func modalIsPresented()
     func modalWasDismissed()
     var isModalPresentedPublisher: AnyPublisher<Bool, Never> { get }
@@ -41,11 +46,22 @@ public protocol UIComponentsDisplayReporter {
 }
 
 open class UIComponentsDisplayReporterImpl {
+    private var isActionWidgetShownSubject = CurrentValueSubject<Bool, Never>(false)
     private var isModalPresentedSubject = CurrentValueSubject<Bool, Never>(false)
     private var isMissionMenuDisplayedSubject = CurrentValueSubject<Bool, Never>(false)
 }
 
 extension UIComponentsDisplayReporterImpl: UIComponentsDisplayReporter {
+    public func actionWidgetIsShown() {
+        isActionWidgetShownSubject.value = true
+    }
+
+    public func actionWidgetIsHidden() {
+        isActionWidgetShownSubject.value = false
+    }
+
+    public var isActionWidgetShownPublisher: AnyPublisher<Bool, Never> { isActionWidgetShownSubject.eraseToAnyPublisher() }
+    public var isActionWidgetShown: Bool { isActionWidgetShownSubject.value }
 
     public func modalIsPresented() {
         isModalPresentedSubject.value = true

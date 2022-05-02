@@ -56,11 +56,14 @@ protocol ManagePlansViewModelInput {
     /// Publisher that give new value of flight plan state
     var statePublisher: AnyPublisher<ManagePlansState, Never> { get }
 
-    /// User asks for a flight plan renaming
+    /// Publisher that give new value of current selected project
+    var currentProject: ProjectModel? { get }
+
+    /// Rename the selected project
     ///
     /// - Parameters:
-    ///     - name: String value of corresponding name
-    func renameSelectedFlightPlan(_ name: String?)
+    ///    - name: the new project name
+    func renameSelectedProject(_ name: String)
 
     /// User asks for opening the currently selected flight plan
     func openSelectedFlightPlan()
@@ -112,9 +115,6 @@ class ManagePlansViewModel {
 
     /// State of flight plan
     @Published private var state: ManagePlansState = .none
-
-    /// Current search query name
-    @Published private var searchQuery: String?
 
     /// Any Cancellables
     private var cancellables = [AnyCancellable]()
@@ -179,13 +179,6 @@ class ManagePlansViewModel {
                 }
             })
             .store(in: &cancellables)
-
-        $searchQuery
-            .debounce(for: 0.3, scheduler: DispatchQueue.main)
-            .sink(receiveValue: { [unowned self] text in
-                storeCurrentText(text)
-            })
-            .store(in: &cancellables)
     }
 }
 
@@ -202,8 +195,13 @@ extension ManagePlansViewModel: ManagePlansViewModelInput {
         $state.eraseToAnyPublisher()
     }
 
-    func renameSelectedFlightPlan(_ name: String?) {
-        searchQuery = name
+    var currentProject: ProjectModel? { selectedProject.value }
+
+    func renameSelectedProject(_ name: String) {
+        // If there is no project selected (should never occurs), continue normally.
+        guard let project = selectedProject.value else { return }
+        // Rename the project with the new name.
+        manager.rename(project, title: name)
     }
 
     func openSelectedFlightPlan() {
@@ -253,21 +251,16 @@ extension ManagePlansViewModel: ManagePlansViewModelInput {
     }
 
     func newFlightPlan() {
-        let newProject = manager.newProject(flightPlanProvider: flightPlanProvider)
-        manager.loadEverythingAndOpenWhileNotSettingAsLastUsed(project: newProject)
-        delegate?.endManagePlans(editionPreference: .start, shouldCenter: true)
+        manager.newProject(flightPlanProvider: flightPlanProvider) { [weak self] newProject in
+            guard let self = self,
+                  let newProject = newProject else { return }
+            self.manager.loadEverythingAndOpen(project: newProject, isBrandNew: true)
+            self.delegate?.endManagePlans(editionPreference: .start, shouldCenter: true)
+        }
     }
 
     func setToCompactMode() {
         flightPlanListviewModel.setupDisplayMode(with: .compact)
-    }
-
-    private func storeCurrentText(_ text: String?) {
-        if let text = text,
-           !text.isEmpty,
-           let project = selectedProject.value {
-            manager.rename(project, title: text)
-        }
     }
 
     private func setSelectedProject(_ project: ProjectModel?) {

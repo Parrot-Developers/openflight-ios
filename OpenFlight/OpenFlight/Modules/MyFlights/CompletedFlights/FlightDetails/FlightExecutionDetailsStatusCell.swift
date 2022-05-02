@@ -71,7 +71,7 @@ class FlightExecutionDetailsStatusCell: MainTableViewCell, NibReusable {
     }
 
     func setupUI() {
-        statusTitleLabel.makeUp(with: .caps, color: .defaultTextColor80)
+        statusTitleLabel.makeUp(with: .caps, color: .disabledTextColor)
         statusTitleLabel.text = L10n.flightPlanDetailsStatusTitle.uppercased()
         statusLabel.makeUp(with: .current, color: .defaultTextColor)
         statusLabel.isHidden = true
@@ -119,7 +119,7 @@ extension FlightExecutionDetailsStatusCell {
                 if let statusText = $0,
                    let statusTextColor = $1 {
                     self.updateStatus(text: statusText,
-                                 textColor: statusTextColor)
+                                      textColor: statusTextColor)
                 } else {
                     self.hideStatus()
                 }
@@ -133,9 +133,9 @@ extension FlightExecutionDetailsStatusCell {
                 if let uploadingPhotosCount = $0,
                    let uploadingProgressText = $1 {
                     self.showUploadingInfo(photoCount: uploadingPhotosCount,
-                                      extraIcon: viewModel.uploadingExtraIcon,
-                                      extraIconColor: viewModel.uploadingExtraIconColor,
-                                      progressText: uploadingProgressText)
+                                           extraIcon: viewModel.uploadingExtraIcon,
+                                           extraIconColor: viewModel.uploadingExtraIconColor,
+                                           progressText: uploadingProgressText)
                 } else {
                     self.hideUploadingInfo()
                 }
@@ -155,8 +155,8 @@ extension FlightExecutionDetailsStatusCell {
                 guard let self = self else { return }
                 if let uploadPausedText = uploadPausedText {
                     self.showUploadPausedInfo(text: uploadPausedText,
-                                         textColor: viewModel.uploadPausedTextColor,
-                                         progressText: viewModel.uploadPausedProgressText)
+                                              textColor: viewModel.uploadPausedTextColor,
+                                              progressText: viewModel.uploadPausedProgressText)
                 } else {
                     self.hideUploadPausedInfo()
                 }
@@ -181,12 +181,12 @@ extension FlightExecutionDetailsStatusCell {
                    let actionButtonTextColor = textColor,
                    let actionButtonColor = buttonColor {
                     self.showActionButton(icon: viewModel.actionButtonIcon,
-                                     text: actionButtonText,
-                                     textColor: actionButtonTextColor,
-                                     backgroundColor: actionButtonColor,
-                                     progress: viewModel.actionButtonProgress,
-                                     progressColor: viewModel.actionButtonProgressColor,
-                                     action: viewModel.actionButtonAction)
+                                          text: actionButtonText,
+                                          textColor: actionButtonTextColor,
+                                          backgroundColor: actionButtonColor,
+                                          progress: viewModel.actionButtonProgress,
+                                          progressColor: viewModel.actionButtonProgressColor,
+                                          action: viewModel.actionButtonAction)
                 } else {
                     self.hideActionButton()
                 }
@@ -199,7 +199,7 @@ extension FlightExecutionDetailsStatusCell {
                 guard let self = self else { return }
                 self.hideUploadPausedInfo()
                 self.updateActionButtonProgress(to: progress,
-                                           progressColor: viewModel.actionButtonProgressColor)
+                                                progressColor: viewModel.actionButtonProgressColor)
             }
             .store(in: &cancellables)
     }
@@ -284,7 +284,7 @@ extension FlightExecutionDetailsStatusCell {
         uploadPausedProgressLabel.text = progressText
         uploadPausedProgressLabel.isHidden = progressText == nil
         uploadPausedStack.isHidden = false
-   }
+    }
 
     /// Hide the  upload  paused indicator.
     func hideUploadPausedInfo() {
@@ -359,6 +359,5 @@ extension FlightExecutionDetailsStatusCell {
         actionButton.isHidden = true
         actionButtonProgressView.isHidden = true
         tapGestureSubscriber?.cancel()
-   }
-
- }
+    }
+}

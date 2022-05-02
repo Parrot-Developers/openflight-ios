@@ -182,19 +182,15 @@ final class MavlinkToFlightPlanParser {
                                     takeOffActions: [Action],
                                     pois: [PoiPoint],
                                     waypoints: [WayPoint]) -> FlightPlanDataSetting {
-        FlightPlanDataSetting(product: FlightPlanConstants.defaultDroneModel,
-                              settings: flightPlan.dataSetting?.settings ?? [],
-                              freeSettings: flightPlan.dataSetting?.freeSettings ?? [:],
-                              polygonPoints: flightPlan.dataSetting?.polygonPoints,
-                              mavlinkDataFile: nil,
-                              takeoffActions: takeOffActions,
-                              pois: pois,
-                              wayPoints: waypoints,
-                              disablePhotoSignature: flightPlan.dataSetting?.disablePhotoSignature ?? false)
+        let newDataSetting = flightPlan.dataSetting!.copy()
+        newDataSetting.takeoffActions = takeOffActions
+        newDataSetting.pois = pois
+        newDataSetting.wayPoints = waypoints
+        return newDataSetting
     }
 
     static private func derivedFligthPlan(fromFlightPlan flightPlan: FlightPlanModel, dataSetting: FlightPlanDataSetting) -> FlightPlanModel {
-        FlightPlanModel(apcId: Services.hub.userInformation.apcId,
+        FlightPlanModel(apcId: Services.hub.userService.currentUser.apcId,
                         type: flightPlan.type,
                         uuid: flightPlan.uuid,
                         version: flightPlan.version,

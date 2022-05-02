@@ -36,6 +36,7 @@ public class RightPanelContainerControls: NSObject {
     @IBOutlet weak var rightPanelContainerView: UIView!
     @IBOutlet private weak var stackView: UIView!
     @IBOutlet private weak var rightPanelContainerWidthConstraint: NSLayoutConstraint!
+    @IBOutlet private var actionWidgetBottomConstraint: NSLayoutConstraint!
 
     public var splitControls: SplitControls?
 
@@ -65,6 +66,8 @@ public class RightPanelContainerControls: NSObject {
             }
         }
         .store(in: &cancellables)
+
+        setupConstraint()
     }
 
     /// Stops view model's callback if needed.
@@ -76,12 +79,21 @@ public class RightPanelContainerControls: NSObject {
 
 // MARK: - Private Funcs
 private extension RightPanelContainerControls {
+    // Sets up action widget bottom constraint.
+    func setupConstraint() {
+        // Align action widget container with bottom bar level1.
+        let isRegularSizeClass = stackView.isRegularSizeClass
+        actionWidgetBottomConstraint.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass) + 2 * Layout.mainPadding(isRegularSizeClass)
+    }
+
     /// Shows HUD's flight plan right panel.
     func showFlightPlanPanel() {
 
         let isRegularSizeClass = UIViewController().isRegularSizeClass
         splitControls?.adaptSecondaryContainerTrailing(width: Layout.sidePanelWidth(isRegularSizeClass))
         rightPanelContainerWidthConstraint.constant = Layout.sidePanelWidth(isRegularSizeClass)
+        // Action widget container does not follow bottom bar level1 and remains at the right bottom.
+        actionWidgetBottomConstraint.isActive = false
         stackView.layoutIfNeeded()
     }
 
@@ -92,6 +104,8 @@ private extension RightPanelContainerControls {
     func hideFlightPlanPanel(completion: (() -> Void)? = nil) {
         splitControls?.adaptSecondaryContainerTrailing(width: 0)
         rightPanelContainerWidthConstraint.constant = 0.0
+        // Action widget follows bottom bar level1 (needs to go up if bottom bar is expanded).
+        actionWidgetBottomConstraint.isActive = true
         stackView.layoutIfNeeded()
     }
 }

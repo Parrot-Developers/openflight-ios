@@ -39,9 +39,9 @@ public class ProjectsListViewModel {
     private var allProjects: [ProjectModel] = [ProjectModel]()
 
     let manager: ProjectManager
-    private let projectManagerViewModel: ProjectManagerViewModel?
+    private weak var projectManagerViewModel: ProjectManagerViewModel?
     private let cloudSynchroWatcher: CloudSynchroWatcher?
-    private let coordinator: ProjectManagerCoordinator?
+    private weak var coordinator: ProjectManagerCoordinator?
     private var isFlightPlanProjectType: Bool = Defaults.isFlightPlanProjectType
     private var cancellables = Set<AnyCancellable>()
 
@@ -119,7 +119,7 @@ public class ProjectsListViewModel {
     }
 
     func didSelect(project: ProjectModel) {
-        selectedProject = project
+        selectedProject = self.project(with: project.uuid) ?? project
     }
 
     func didDeselectProject() {
@@ -128,5 +128,9 @@ public class ProjectsListViewModel {
 
     func isProjectSelected(_ project: ProjectModel) -> Bool {
         project.uuid == selectedProject?.uuid
+    }
+
+    func getSelectedProjectIndex() -> Int? {
+        return filteredProjects.firstIndex(where: { $0.uuid == selectedProject?.uuid })
     }
 }

@@ -71,6 +71,7 @@ final class HUDTopBarViewController: UIViewController {
     @IBOutlet private weak var settingsButton: UIButton!
     @IBOutlet private weak var topBarView: UIView!
     @IBOutlet private weak var telemetryBarViewController: UIView!
+    @IBOutlet private weak var backButtonWidthConstraint: NSLayoutConstraint!
 
     // MARK: - Internal Properties
     weak var navigationDelegate: HUDTopBarViewControllerNavigation?
@@ -90,12 +91,6 @@ final class HUDTopBarViewController: UIViewController {
     private enum Constants {
         /// Minimum width of main view for which the radar is displayed.
         static let minimumViewWidthForRadar: CGFloat = 667.0
-        /// Gradient layer start alpha.
-        static let gradientStartAlpha: CGFloat = 0.7
-        /// Gradient layer end alpha.
-        static let gradientEndAlpha: CGFloat = 0.0
-        /// Default animation duration.
-        static let defaultAnimationDuration: TimeInterval = 0.35
     }
 
     // MARK: - Override Funcs
@@ -104,13 +99,6 @@ final class HUDTopBarViewController: UIViewController {
 
         setupView()
 
-        topBarViewModel.showTopBarPublisher
-            .sink { [unowned self] show in
-                UIView.animate(withDuration: Constants.defaultAnimationDuration) {
-                    self.topBarView.alphaHidden(!show)
-                }
-            }
-            .store(in: &cancellables)
         topBarViewModel.shouldHideRadarPublisher
             .sink { [unowned self] in
                 hideRadarView = $0
@@ -126,6 +114,13 @@ final class HUDTopBarViewController: UIViewController {
             .sink { [weak self] in
                 let iconAsset = $0 ? Asset.Common.Icons.icBack : Asset.Common.Icons.icDashboard
                 self?.dashboardButton.setImage(iconAsset.image, for: .normal)
+            }
+            .store(in: &cancellables)
+        // Listen view model to know if we need to leave the view.
+        topBarViewModel.goBackPublisher
+            .sink { [weak self] in
+                // Return to previous view in the stack.
+                self?.navigationDelegate?.back()
             }
             .store(in: &cancellables)
     }
@@ -145,14 +140,6 @@ final class HUDTopBarViewController: UIViewController {
                                                    bottom: 0,
                                                    trailing: Layout.hudTopBarInnerMargins(isRegularSizeClass).trailing)
         stackView.isLayoutMarginsRelativeArrangement = true
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        view.addGradient(startAlpha: Constants.gradientStartAlpha,
-                         endAlpha: Constants.gradientEndAlpha,
-                         superview: view)
     }
 
     override func viewDidLayoutSubviews() {
@@ -200,6 +187,7 @@ private extension HUDTopBarViewController {
     /// Sets up view.
     func setupView() {
         dashboardButton.tintColor = .white
+        backButtonWidthConstraint.constant = Layout.backButtonIntrinsicWidth(isRegularSizeClass)
         hudHeightConstraint.constant = Layout.hudTopBarHeight(isRegularSizeClass)
         infoPanelWidthConstraint.constant = Layout.hudTopBarPanelWidth(isRegularSizeClass)
         infoPanelWidthConstraint.isActive = view.bounds.width > Constants.minimumViewWidthForRadar
@@ -231,9 +219,13 @@ extension HUDTopBarViewController: TelemetryBarViewControllerNavigation {
     func openGeofenceSettings() {
         navigationDelegate?.openSettings(SettingsType.geofence)
     }
+
+    func openQuickSettings() {
+        navigationDelegate?.openSettings(SettingsType.quick)
+    }
 }
 
-// MARK: - HUDDroneInfoViewControllerNavigation
+// MARK: - HUDControlsInfoViewControllerNavigation
 extension HUDTopBarViewController: HUDControlsInfoViewControllerNavigation {
     func openRemoteControlInfos() {
         navigationDelegate?.openRemoteControlInfos()
@@ -241,5 +233,9 @@ extension HUDTopBarViewController: HUDControlsInfoViewControllerNavigation {
 
     func openDroneInfos() {
         navigationDelegate?.openDroneInfos()
+    }
+
+    func openNetworkSettings() {
+        navigationDelegate?.openSettings(SettingsType.network)
     }
 }

@@ -49,7 +49,9 @@ class CameraBarButtonState: BarButtonState, EquatableState, Copying {
     var enabled: Bool = true
     var isSelected: Observable<Bool> = Observable(false)
     var unavailableReason: [String: String] = [:]
-    var maxItems: Int?
+    var maxItems: Int? {
+        return 9
+    }
     var singleMode = false
 
     // MARK: - Init

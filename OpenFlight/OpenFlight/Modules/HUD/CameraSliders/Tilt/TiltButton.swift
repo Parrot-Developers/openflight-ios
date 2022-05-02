@@ -32,7 +32,7 @@ import Reusable
 
 /// Button displaying current tilt position.
 
-final class TiltButton: HighlightableUIControl, NibOwnerLoadable {
+final class TiltButton: InsetHitAreaButton, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet private weak var progressView: TiltButtonProgressView!
     @IBOutlet private weak var cameraImageView: UIImageView!

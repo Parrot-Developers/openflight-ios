@@ -40,13 +40,15 @@ private enum Constants {
 struct ClassicFlightPlanProvider: FlightPlanProvider {
 
     // MARK: - Internal Properties
-    var projectType: String { "classic" }
+    var projectType: ProjectType { .classic }
 
     var projectTitle: String { L10n.flightPlanTitle }
 
     var newButtonTitle: String { L10n.flightPlanNewFlightPlan }
 
     var createFirstTitle: String { L10n.flightPlanCreateFirst }
+
+    var defaultProjectName: String { L10n.defaultFlightPlanProjectName }
 
     var typeKey: String { Constants.defaultType }
 
@@ -121,6 +123,7 @@ public enum ClassicFlightPlanType: String, FlightPlanType, CaseIterable {
 public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIterable {
     case continueMode
     case lastPointRth
+    case disconnectionRth
     case obstacleAvoidance
     case imageMode
     case resolution
@@ -135,9 +138,11 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     public var title: String {
         switch self {
         case .continueMode:
-            return L10n.flightPlanSettingsProgressiveRace
+            return L10n.flightPlanSettingsProgressiveOrientation
         case .lastPointRth:
-            return L10n.flightPlanSettingsRthOnLastPoint
+            return L10n.flightPlanSettingsRthFinal
+        case .disconnectionRth:
+            return L10n.flightPlanSettingsRthAfterDisconnection
         case .obstacleAvoidance:
             return L10n.flightPlanSettingsAvoidance
         case .imageMode:
@@ -162,9 +167,11 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     public var shortTitle: String? {
         switch self {
         case .continueMode:
-            return L10n.flightPlanSettingsProgressiveRaceShort
+            return L10n.flightPlanSettingsProgressiveOrientationShort
         case .lastPointRth:
-            return L10n.flightPlanSettingsRthOnLastPointShort
+            return L10n.flightPlanSettingsRthFinal
+        case .disconnectionRth:
+            return L10n.flightPlanSettingsRthAfterDisconnection
         case .obstacleAvoidance:
             return L10n.flightPlanSettingsAvoidanceShort
         case .imageMode,
@@ -220,6 +227,7 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         switch self {
         case .continueMode,
              .lastPointRth,
+             .disconnectionRth,
              .obstacleAvoidance:
             return [L10n.commonYes, L10n.commonNo]
         case .framerate:
@@ -269,6 +277,8 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             return dataSetting.shouldContinue == true ? 0 : 1
         case .lastPointRth:
             return dataSetting.lastPointRth == true ? 0 : 1
+        case .disconnectionRth:
+            return dataSetting.disconnectionRth == true ? 0 : 1
         case .obstacleAvoidance:
             /// Obstacle avoidance enabled by default.
             return dataSetting.obstacleAvoidanceActivated ? 0 : 1
@@ -286,13 +296,11 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             guard let value = dataSetting.gpsLapseDistance else {
                 return allValues.first ?? 0
             }
-
             return value
         case .timeLapseCycle:
             guard let value = dataSetting.timeLapseCycle else {
                 return allValues.first ?? 0
             }
-
             return value
         case .exposure:
             let value = dataSetting.exposure
@@ -310,6 +318,7 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         switch self {
         case .continueMode,
              .lastPointRth,
+             .disconnectionRth,
              .resolution,
              .imageMode,
              .whiteBalance,
@@ -438,6 +447,8 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
             currentFlightPlan?.dataSetting?.setShouldContinue(value)
         case ClassicFlightPlanSettingType.lastPointRth.key:
             currentFlightPlan?.dataSetting?.setLastPointRth(value)
+        case ClassicFlightPlanSettingType.disconnectionRth.key:
+            currentFlightPlan?.dataSetting?.setDisconnectionRth(value)
         case ClassicFlightPlanSettingType.obstacleAvoidance.key:
             currentFlightPlan?.dataSetting?.obstacleAvoidanceActivated = value
         default:
@@ -450,6 +461,7 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
             [ClassicFlightPlanSettingType.obstacleAvoidance.toFlightPlanSetting(),
             ClassicFlightPlanSettingType.continueMode.toFlightPlanSetting(),
             ClassicFlightPlanSettingType.lastPointRth.toFlightPlanSetting(),
+            ClassicFlightPlanSettingType.disconnectionRth.toFlightPlanSetting(),
             ClassicFlightPlanSettingType.imageMode.toFlightPlanSetting()]
 
         switch flightPlan.dataSetting?.captureModeEnum {
@@ -728,6 +740,14 @@ final class TiltAngleSettingType: FlightPlanSettingType {
     // MARK: - Internal Properties
     var title: String {
         return L10n.flightPlanPointSettingsCameraAngle
+    }
+
+    var leftIconImage: UIImage? {
+        return Asset.MyFlights.cameraTiltDown.image
+    }
+
+    var rightIconImage: UIImage? {
+        return Asset.MyFlights.cameraTiltUp.image
     }
 
     var allValues: [Int] {

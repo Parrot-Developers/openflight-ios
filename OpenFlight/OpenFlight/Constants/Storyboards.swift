@@ -12,6 +12,11 @@ import UIKit
 
 // swiftlint:disable explicit_type_interface identifier_name line_length type_body_length type_name
 internal enum StoryboardScene {
+  internal enum ActionWidgetContainer: StoryboardType {
+    internal static let storyboardName = "ActionWidgetContainer"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.ActionWidgetContainerViewController>(storyboard: ActionWidgetContainer.self)
+  }
   internal enum AirSdkMissionsUpdating: StoryboardType {
     internal static let storyboardName = "AirSdkMissionsUpdating"
 
@@ -327,11 +332,6 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.StereoVisionBlendedViewController>(storyboard: LoveBlended.self)
 
     internal static let loveBlendedViewController = SceneType<OpenFlight.StereoVisionBlendedViewController>(storyboard: LoveBlended.self, identifier: "LoveBlendedViewController")
-  }
-  internal enum ManagePlans: StoryboardType {
-    internal static let storyboardName = "ManagePlans"
-
-    internal static let initialScene = InitialSceneType<OpenFlight.ManagePlansViewController>(storyboard: ManagePlans.self)
   }
   internal enum Map: StoryboardType {
     internal static let storyboardName = "Map"

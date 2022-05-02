@@ -48,7 +48,7 @@ final class FlightDetailsIconLabelView: UIView, NibOwnerLoadable {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        label.makeUp(with: .current, color: .defaultTextColor)
+        label.makeUp(with: .title, color: .defaultTextColor)
         icon.tintColor = ColorName.defaultTextColor.color
     }
 }

@@ -47,14 +47,15 @@ public enum FlightPlanStartUnavailableReason: Equatable, CustomStringConvertible
 
 /// The availability of the drone to **send the Mavlink** in order to run a flight plan
 public enum FlightPlanStartAvailability: Equatable, CustomStringConvertible {
-    case available
+    /// Start availability is available with boolean tells if rth is active
+    case available(Bool)
     case unavailable(FlightPlanStartUnavailableReason)
     case alreadyRunning
 
     public var description: String {
         switch self {
-        case .available:
-            return ".available"
+        case .available(let isRthActive):
+            return ".available(rth is \(isRthActive ? "" : "not ")active"
         case .alreadyRunning:
             return ".alreadyRunning"
         case .unavailable(let reason):
@@ -74,14 +75,17 @@ public class FlightPlanStartAvailabilityWatcherImpl {
     private var pilotingItfState: ActivablePilotingItfState = .idle
     private var unavailabilityReasons = Set<FlightPlanUnavailabilityReason>()
     private var droneConnected = false
-
+    private var isRthActive = false
     private var availabilityForSendingMavlinkSubject = CurrentValueSubject<FlightPlanStartAvailability, Never>(.unavailable(.droneDisconnected))
     private var availabilityForRunningSubject = CurrentValueSubject<FlightPlanStartAvailability, Never>(.unavailable(.droneDisconnected))
-
+    private let rthService: RthService!
     private var itfRef: Ref<FlightPlanPilotingItf>?
     private var deviceStateRef: Ref<DeviceState>?
 
-    init(currentDroneHolder: CurrentDroneHolder) {
+    init(currentDroneHolder: CurrentDroneHolder,
+         rthService: RthService) {
+        self.rthService = rthService
+
         currentDroneHolder.dronePublisher.sink { [unowned self] drone in
             itfRef = drone.getPilotingItf(PilotingItfs.flightPlan) { [unowned self] in
                 let oldValue = droneConnected
@@ -99,6 +103,7 @@ public class FlightPlanStartAvailabilityWatcherImpl {
                     publishNewState()
                 }
             }
+
             deviceStateRef = drone.getState { [unowned self] state in
                 let oldValue = droneConnected
                 switch state?.connectionState {
@@ -114,6 +119,15 @@ public class FlightPlanStartAvailabilityWatcherImpl {
             }
         }
         .store(in: &cancellables)
+
+        self.rthService.isActivePublisher
+            .removeDuplicates()
+            .sink { [unowned self] in
+                guard isRthActive != $0 else { return }
+                isRthActive = $0
+                publishNewState()
+            }
+            .store(in: &cancellables)
     }
 
     private func publishNewState() {
@@ -124,8 +138,8 @@ public class FlightPlanStartAvailabilityWatcherImpl {
         }
         switch pilotingItfState {
         case .idle:
-            availabilityForSendingMavlinkSubject.value = .available
-            availabilityForRunningSubject.value = .available
+            availabilityForSendingMavlinkSubject.value = .available(isRthActive)
+            availabilityForRunningSubject.value = .available(isRthActive)
         case .active:
             availabilityForSendingMavlinkSubject.value = .alreadyRunning
             availabilityForRunningSubject.value = .alreadyRunning
@@ -133,7 +147,7 @@ public class FlightPlanStartAvailabilityWatcherImpl {
             availabilityForRunningSubject.value = .unavailable(.pilotingItfUnavailable(unavailabilityReasons))
             let filteredReasons = unavailabilityReasons.filter { $0 != .missingFlightPlanFile }
             if filteredReasons.isEmpty {
-                availabilityForSendingMavlinkSubject.value = .available
+                availabilityForSendingMavlinkSubject.value = .available(isRthActive)
             } else {
                 availabilityForSendingMavlinkSubject.value = .unavailable(.pilotingItfUnavailable(filteredReasons))
             }
@@ -147,6 +161,7 @@ extension FlightPlanStartAvailabilityWatcherImpl: FlightPlanStartAvailabilityWat
         availabilityForSendingMavlinkSubject.eraseToAnyPublisher()
     }
 
-    public var availabilityForRunningPublisher: AnyPublisher<FlightPlanStartAvailability, Never> { availabilityForRunningSubject.eraseToAnyPublisher() }
-
+    public var availabilityForRunningPublisher: AnyPublisher<FlightPlanStartAvailability, Never> {
+        availabilityForRunningSubject.eraseToAnyPublisher()
+    }
 }

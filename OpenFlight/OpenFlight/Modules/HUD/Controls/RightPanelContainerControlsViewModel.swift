@@ -48,8 +48,6 @@ final class RightPanelContainerControlsState: ViewModelState, EquatableState, Co
     /// Boolean describing if flight plan panel should be opened.
     var shouldDisplayRightPanel: Bool {
         return isRightPanelRequired
-            && !isMissionMenuDisplayed
-            && alertPanelMode == .closed
             && !forceHidePanel
     }
 

@@ -35,7 +35,7 @@ public enum NavigationStackScreen {
     case dashboard
     case projectManager(selectedProject: ProjectModel?)
     case myFlights(selectedFlight: FlightModel?)
-    case myFlightsExecutedProjects(selectedProject: ProjectModel?)
+    case myFlightsExecutedProjects(selectedProject: ProjectModel?, selectedHeaderUuid: String?)
     case flightDetails(flight: FlightModel)
     case flightPlanDetails(flightPlan: FlightPlanModel)
 
@@ -47,8 +47,8 @@ public enum NavigationStackScreen {
             return "projectManager (selectedProject: \(selectedProject?.uuid ?? ""))"
         case .myFlights(let selectedFlight):
             return "myFlights (selectedFlight: \(selectedFlight?.uuid ?? ""))"
-        case .myFlightsExecutedProjects(let selectedProject):
-            return "myFlights (selectedProject: \(selectedProject?.uuid ?? ""))"
+        case .myFlightsExecutedProjects(let selectedProject, let selectedHeaderUuid):
+            return "myFlights (selectedProject: \(selectedProject?.uuid ?? ""), selectedHeader: \(selectedHeaderUuid ?? "") )"
         case .flightDetails(let flight):
             return "flightDetails (flight: \(flight.uuid))"
         case .flightPlanDetails(let flightPlan):
@@ -163,13 +163,14 @@ extension NavigationStackScreen {
                                         repos: services.repos,
                                         drone: services.currentDroneHolder,
                                         defaultSelectedFlight: selectedFlight)
-        case .myFlightsExecutedProjects(let selectedProject):
+        case .myFlightsExecutedProjects(let selectedProject, let selectedHeaderUuid):
             return MyFlightsCoordinator(flightServices: services.flight,
                                         flightPlanServices: services.flightPlan,
                                         uiServices: services.ui,
                                         repos: services.repos,
                                         drone: services.currentDroneHolder,
-                                        defaultSelectedProject: selectedProject)
+                                        defaultSelectedProject: selectedProject,
+                                        defaultSelectedHeaderUuid: selectedHeaderUuid)
         case .flightDetails(let flight):
             return FlightDetailsCoordinator(flight: flight,
                                             flightServices: services.flight,

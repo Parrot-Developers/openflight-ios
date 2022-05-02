@@ -126,7 +126,7 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
     ///    - frame: frame drawn by the user
     func sendSelectionToDrone(frame: CGRect) {
         guard let frameTimeStamp = frameTimeStamp,
-              let onboardTracker = onboardTracker else {
+              let onboardTracker = onboardTracker, onboardTracker.trackingEngineState == .activated else {
                   return
               }
 
@@ -146,7 +146,7 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
     ///    - proposalId: proposal selected by the user
     func sendProposalToDrone(proposalId: UInt) {
         guard let frameTimeStamp = frameTimeStamp,
-              let onboardTracker = onboardTracker else {
+              let onboardTracker = onboardTracker, onboardTracker.trackingEngineState == .activated else {
                   return
               }
 

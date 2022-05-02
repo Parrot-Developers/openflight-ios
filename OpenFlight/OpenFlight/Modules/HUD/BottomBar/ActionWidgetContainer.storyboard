@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Y6W-OH-hqX">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Action Widget Container View Controller-->
+        <scene sceneID="s0d-6b-0kx">
+            <objects>
+                <viewController id="Y6W-OH-hqX" customClass="ActionWidgetContainerViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="5EZ-qb-Rvc">
+                        <rect key="frame" x="0.0" y="0.0" width="715" height="80"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tGw-7K-s5C">
+                                <rect key="frame" x="0.0" y="0.0" width="715" height="80"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="896" placeholderIntrinsicHeight="50" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hEZ-8y-Dw0" customClass="PanoramaProgressBarView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="715" height="80"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UpU-70-Cg3" customClass="ReturnHomeBottomBarView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="715" height="80"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="76e-6l-ia3"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="tGw-7K-s5C" secondAttribute="trailing" id="0cu-pf-Xtc"/>
+                            <constraint firstItem="UpU-70-Cg3" firstAttribute="top" secondItem="5EZ-qb-Rvc" secondAttribute="top" id="9DZ-ro-3Sm"/>
+                            <constraint firstAttribute="bottom" secondItem="UpU-70-Cg3" secondAttribute="bottom" id="CFR-Z9-geT"/>
+                            <constraint firstItem="tGw-7K-s5C" firstAttribute="top" secondItem="5EZ-qb-Rvc" secondAttribute="top" id="G8n-HF-y6H"/>
+                            <constraint firstAttribute="bottom" secondItem="tGw-7K-s5C" secondAttribute="bottom" id="Rpe-O0-vTD"/>
+                            <constraint firstAttribute="trailing" secondItem="UpU-70-Cg3" secondAttribute="trailing" id="Rpf-FX-N8F"/>
+                            <constraint firstItem="tGw-7K-s5C" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" id="afh-sm-hhe"/>
+                            <constraint firstAttribute="bottom" secondItem="hEZ-8y-Dw0" secondAttribute="bottom" id="dpk-hA-v4O"/>
+                            <constraint firstItem="hEZ-8y-Dw0" firstAttribute="top" secondItem="5EZ-qb-Rvc" secondAttribute="top" id="efa-PF-G5f"/>
+                            <constraint firstAttribute="trailing" secondItem="hEZ-8y-Dw0" secondAttribute="trailing" id="xf1-Dw-Fq9"/>
+                            <constraint firstItem="UpU-70-Cg3" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" id="y3g-DC-XMV"/>
+                            <constraint firstItem="hEZ-8y-Dw0" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" id="zEV-0U-66a"/>
+                        </constraints>
+                    </view>
+                    <size key="freeformSize" width="715" height="80"/>
+                    <connections>
+                        <outlet property="missionWidgetsContainerView" destination="tGw-7K-s5C" id="GXb-bl-183"/>
+                        <outlet property="panoramaProgressBar" destination="hEZ-8y-Dw0" id="Nz0-9U-iDL"/>
+                        <outlet property="returnHomeView" destination="UpU-70-Cg3" id="cJm-q4-s3c"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="299.27536231884062" y="-138.61607142857142"/>
+        </scene>
+    </scenes>
+</document>

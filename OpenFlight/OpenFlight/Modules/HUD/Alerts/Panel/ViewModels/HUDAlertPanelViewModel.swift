@@ -40,6 +40,8 @@ open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
     fileprivate(set) public var handLandState = HUDAlertPanelHandLandState()
     /// Return Home state.
     fileprivate(set) public var returnHomeState = HUDAlertPanelReturnHomeState()
+    /// Obstacle Avoidance state.
+    fileprivate(set) public var obstacleAvoidanceState = HUDAlertPanelObstacleAvoidanceState()
     /// Is mission menu displayed
     fileprivate(set) public var isMissionMenuDisplayed = false
     /// Boolean describing if an overcontext modal is presented.
@@ -53,9 +55,10 @@ open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
 
     /// Tells if an alert is available.
     open var shouldShowAlertPanel: Bool {
-        return handLaunchState.shouldShowAlertPanel
-            || handLandState.shouldShowAlertPanel
-            || returnHomeState.shouldShowAlertPanel
+        handLaunchState.shouldShowAlertPanel
+        || handLandState.shouldShowAlertPanel
+        || returnHomeState.shouldShowAlertPanel
+        || obstacleAvoidanceState.shouldShowAlertPanel
     }
 
     /// Returns alert to display by priority.
@@ -69,6 +72,9 @@ open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
         if handLaunchState.shouldShowAlertPanel {
             return handLaunchState
         }
+        if obstacleAvoidanceState.shouldShowAlertPanel {
+            return obstacleAvoidanceState
+        }
         return nil
     }
 
@@ -81,36 +87,41 @@ open class HUDAlertPanelState: ViewModelState, EquatableState, Copying {
     ///    - handLaunchState: current Hand Launch state
     ///    - handLandState: current Hand Land state
     ///    - returnHomeState: current Return Home state
+    ///    - obstacleAvoidanceState: current Obstacle Avoidance state
     ///    - isMissionMenuDisplayed: is mission menu displayed
     ///    - isOverContextModalPresented: hand launch visibility state when modal is presented
     public init(handLaunchState: HUDAlertPanelHandLaunchState,
                 handLandState: HUDAlertPanelHandLandState,
                 returnHomeState: HUDAlertPanelReturnHomeState,
+                obstacleAvoidanceState: HUDAlertPanelObstacleAvoidanceState,
                 isMissionMenuDisplayed: Bool,
                 isOverContextModalPresented: Bool) {
         self.handLaunchState = handLaunchState
         self.handLandState = handLandState
         self.returnHomeState = returnHomeState
+        self.obstacleAvoidanceState = obstacleAvoidanceState
         self.isMissionMenuDisplayed = isMissionMenuDisplayed
         self.isOverContextModalPresented = isOverContextModalPresented
     }
 
     // MARK: - Equatable
     open func isEqual(to other: HUDAlertPanelState) -> Bool {
-        return self.handLaunchState == other.handLaunchState
-            && self.handLandState == other.handLandState
-            && self.returnHomeState == other.returnHomeState
-            && self.isMissionMenuDisplayed == other.isMissionMenuDisplayed
-            && self.isOverContextModalPresented == other.isOverContextModalPresented
+        handLaunchState == other.handLaunchState
+        && handLandState == other.handLandState
+        && returnHomeState == other.returnHomeState
+        && obstacleAvoidanceState == other.obstacleAvoidanceState
+        && isMissionMenuDisplayed == other.isMissionMenuDisplayed
+        && isOverContextModalPresented == other.isOverContextModalPresented
     }
 
     // MARK: - Copying
     open func copy() -> Self {
-        if let copy = HUDAlertPanelState(handLaunchState: self.handLaunchState,
-                                         handLandState: self.handLandState,
-                                         returnHomeState: self.returnHomeState,
-                                         isMissionMenuDisplayed: self.isMissionMenuDisplayed,
-                                         isOverContextModalPresented: self.isOverContextModalPresented) as? Self {
+        if let copy = HUDAlertPanelState(handLaunchState: handLaunchState,
+                                         handLandState: handLandState,
+                                         returnHomeState: returnHomeState,
+                                         obstacleAvoidanceState: obstacleAvoidanceState,
+                                         isMissionMenuDisplayed: isMissionMenuDisplayed,
+                                         isOverContextModalPresented: isOverContextModalPresented) as? Self {
             return copy
         } else {
             fatalError("Must override")
@@ -124,17 +135,20 @@ open class HUDAlertPanelViewModel<T: HUDAlertPanelState>: BaseViewModel<T> {
     private var handLaunchViewModel: HUDAlertPanelHandLaunchViewModel
     private var handLandViewModel: HUDAlertPanelHandLandViewModel = HUDAlertPanelHandLandViewModel()
     private var returnHomeViewModel: HUDAlertPanelReturnHomeViewModel = HUDAlertPanelReturnHomeViewModel()
+    private var obstacleAvoidanceModel: HUDAlertPanelObstacleAvoidanceViewModel
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     public init(services: ServiceHub) {
         handLaunchViewModel = HUDAlertPanelHandLaunchViewModel(handLaunchService: services.drone.handLaunchService)
+        obstacleAvoidanceModel = .init(obstacleAvoidanceMonitor: services.obstacleAvoidanceMonitor)
 
         super.init()
 
         listenHandLaunch()
         listenHandLand()
         listenReturnHome()
+        listenObstacleAvoidance()
         listenMissionMenuDisplayedChanges()
         observeModalPresentation()
     }
@@ -146,6 +160,8 @@ open class HUDAlertPanelViewModel<T: HUDAlertPanelState>: BaseViewModel<T> {
             handLaunchViewModel.startAction()
         } else if returnHomeViewModel.state.value.state == .available {
             returnHomeViewModel.startAction()
+        } else if obstacleAvoidanceModel.state.value.state == .available {
+            obstacleAvoidanceModel.startAction()
         }
     }
 
@@ -184,6 +200,16 @@ private extension HUDAlertPanelViewModel {
             let copy = self?.state.value.copy()
             copy?.returnHomeState = state
             self?.state.set(copy)
+        }
+    }
+
+    /// Starts watcher for obstacle avoidance issues.
+    func listenObstacleAvoidance() {
+        obstacleAvoidanceModel.state.valueChanged = { [weak self] state in
+            guard let self = self else { return }
+            let copy = self.state.value.copy()
+            copy.obstacleAvoidanceState = state
+            self.state.set(copy)
         }
     }
 

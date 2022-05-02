@@ -9,6 +9,9 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
+        <array key="Rajdhani-Regular.ttf">
+            <string>Rajdhani-Regular</string>
+        </array>
         <array key="Rajdhani-SemiBold.ttf">
             <string>Rajdhani-Semibold</string>
         </array>
@@ -60,20 +63,26 @@
                                                 <rect key="frame" x="58" y="0.0" width="192" height="50"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="vh6-1O-IlW">
-                                                        <rect key="frame" x="0.0" y="9.6666666666666643" width="192" height="31"/>
+                                                        <rect key="frame" x="0.0" y="2" width="192" height="46"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="PROJECT" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="n64-Z7-I4S">
-                                                                <rect key="frame" x="0.0" y="0.0" width="192" height="11.666666666666666"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="192" height="10"/>
                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="10"/>
                                                                 <color key="textColor" name="sambuca"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="PROJECT" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="R1B-yG-VxF">
-                                                                <rect key="frame" x="0.0" y="15.666666666666664" width="192" height="15.333333333333336"/>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="PROJECT" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="R1B-yG-VxF">
+                                                                <rect key="frame" x="0.0" y="14" width="192" height="13"/>
                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                                 <color key="textColor" name="sambuca"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Execution 01" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fdL-YG-PF7">
+                                                                <rect key="frame" x="0.0" y="31" width="192" height="15"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="15"/>
+                                                                <nil key="textColor"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                         </subviews>
@@ -235,6 +244,7 @@
                         <outlet property="cameraStreamingContainerView" destination="06f-DL-mtH" id="6yT-uH-70c"/>
                         <outlet property="createButton" destination="ad2-zS-DZf" id="vdK-fE-rKi"/>
                         <outlet property="editButton" destination="YtV-aR-PHY" id="0Pr-Sd-eiB"/>
+                        <outlet property="executionNameLabel" destination="fdL-YG-PF7" id="loW-Nr-cs3"/>
                         <outlet property="folderButton" destination="6pa-cU-K7c" id="c5b-En-OT9"/>
                         <outlet property="gestureView" destination="Taj-zs-OJt" id="5LS-20-RmQ"/>
                         <outlet property="historyButton" destination="K0k-Jy-fvY" id="EPJ-pi-Jy6"/>

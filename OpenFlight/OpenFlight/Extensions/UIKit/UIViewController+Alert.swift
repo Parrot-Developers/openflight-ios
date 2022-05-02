@@ -40,11 +40,13 @@ extension UIViewController {
     ///     - cancelAction: alert cancel action
     ///     - validateAction: alert validate action
     ///     - secondaryAction: alert secondary action
+    /// - Returns the alert view controller to dismiss if needed
+    @discardableResult
     func showAlert(title: String,
                    message: String,
                    cancelAction: AlertAction = AlertAction(title: L10n.cancel),
                    validateAction: AlertAction? = nil,
-                   secondaryAction: AlertAction? = nil) {
+                   secondaryAction: AlertAction? = nil) -> AlertViewController {
         let alert = AlertViewController.instantiate(title: title,
                                                     message: message,
                                                     closeButtonStyle: .cross,
@@ -52,6 +54,7 @@ extension UIViewController {
                                                     validateAction: validateAction,
                                                     secondaryAction: secondaryAction)
         self.present(alert, animated: true, completion: nil)
+        return alert
     }
 
     /// Show toast message which is automatically dismissed.

@@ -52,6 +52,10 @@ public extension FlightModel {
         duration.longFormattedString
     }
 
+    var shortFormattedDuration: String {
+        duration.formattedString
+    }
+
     var coordinateDescription: String {
         location.coordinate.coordinatesDescription
     }

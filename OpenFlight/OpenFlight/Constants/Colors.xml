@@ -32,10 +32,18 @@
     <color name="blue_dodger">#00b7ff</color>
     <color name="blue_dodger_50">#00b7ff80</color>
     <color name="blue_navy">#146ed8</color>
+    <color name="light_blue">#72d8f9</color>
+    <color name="green">#76c959</color>
+    <color name="yellow">#f9db72</color>
+    <color name="orange">#f9a272</color>
+    <color name="pink">#f97292</color>
+    <color name="purple">#7d72f9</color>
+    <color name="green_spring">#00ff8a</color>
     <color name="error_color">#e34f45</color>
     <color name="disabled_error_color">#e34f454d</color>
     <color name="warning_color">#ff7145</color>
     <color name="disabled_warning_color">#ff714533</color>
+    <color name="flight_completed_color">#00ff8aff</color>
     <color name="takeoff_indicator_color">#00ff8a33</color>
     <color name="landing_indicator_color">#ff9b0080</color>
     <color name="yellow_sea">#ffdc02</color>
@@ -45,4 +53,5 @@
     <color name="night_rider_80">#2f2f2fcc</color>
     <color name="grey_light_return">#DFD8C7</color>
     <color name="separator">#B9B5AD</color>
+    <color name="cell_selection_color">#8a8a8a80</color>
 </resources>

@@ -43,13 +43,13 @@ public protocol CellularPairingAvailabilityService: AnyObject {
 
 class CellularPairingAvailabilityServiceImpl {
 
-    private var cellularRef: Ref<Cellular>?
     private var pairingModalObserver: DefaultsDisposable?
     private var academyApiService: AcademyApiService
     private var dronesPairedObserver: DefaultsDisposable?
     private var currentDroneHolder: CurrentDroneHolder
     private var connectedDroneHolder: ConnectedDroneHolder
     private var cellularPairingService: CellularPairingService
+    private let cellularService: CellularService
     private var cancellables = Set<AnyCancellable>()
 
     var isPairingProcessDismissedSubject = CurrentValueSubject<Bool, Never>(false)
@@ -59,19 +59,19 @@ class CellularPairingAvailabilityServiceImpl {
     init(currentDroneHolder: CurrentDroneHolder,
          connectedDroneHolder: ConnectedDroneHolder,
          academyApiService: AcademyApiService,
-         cellularPairingService: CellularPairingService) {
+         cellularPairingService: CellularPairingService,
+         cellularService: CellularService) {
         self.currentDroneHolder = currentDroneHolder
         self.connectedDroneHolder = connectedDroneHolder
         self.academyApiService = academyApiService
         self.cellularPairingService = cellularPairingService
+        self.cellularService = cellularService
         listenDronesPairedList()
         listenPairingModalDefaults()
-        listenPairingAvailability()
 
         connectedDroneHolder.dronePublisher
             .compactMap { $0 }
-            .sink { [unowned self] drone in
-                listenCellular(drone)
+            .sink { [unowned self] _ in
                 updatePairedDronesIfNeeded()
             }
             .store(in: &cancellables)
@@ -83,7 +83,6 @@ extension CellularPairingAvailabilityServiceImpl: CellularPairingAvailabilitySer
     // MARK: - Internal Funcs
     /// Updates cellular pairing process availability state.
     func updateAvailabilityState() {
-        updateCellularAvailability(with: connectedDroneHolder.drone?.getPeripheral(Peripherals.cellular))
         updateDronePairingState()
     }
 }
@@ -106,22 +105,6 @@ private extension CellularPairingAvailabilityServiceImpl {
         }
 
         updateVisibilityState()
-    }
-
-    /// Starts watcher for Cellular.
-    func listenCellular(_ drone: Drone) {
-        cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] cellular in
-            self?.updateCellularAvailability(with: cellular)
-        }
-        updateCellularAvailability(with: drone.getPeripheral(Peripherals.cellular))
-    }
-
-    /// Updates cellular availability state.
-    ///
-    /// - Parameters:
-    ///     - cellular: current cellular reference's value
-    func updateCellularAvailability(with cellular: Cellular?) {
-        isCellularAvailableSubject.value = cellular?.isSimCardInserted == true
     }
 
     /// Update local paired drone list with Academy call.
@@ -163,20 +146,6 @@ private extension CellularPairingAvailabilityServiceImpl {
             self?.updateDronePairingState()
             self?.updatePairedDronesIfNeeded()
         }
-    }
-
-    /// When pairing is available, start a pairing process
-    func listenPairingAvailability() {
-        connectedDroneHolder.dronePublisher
-            .combineLatest(isCellularAvailablePublisher.removeDuplicates(),
-                           isDroneAlreadyPairedPublisher.removeDuplicates())
-            .sink { [unowned self] (drone, isCellularAvailable, isDroneAlreadyPaired) in
-                guard isCellularAvailable,
-                      drone?.state.connectionState == .connected,
-                      !isDroneAlreadyPaired else { return }
-                cellularPairingService.startPairingProcessRequest()
-            }
-            .store(in: &cancellables)
     }
 }
 

@@ -53,6 +53,20 @@ enum PhotoFormatMode: String, BarItemMode, CaseIterable {
         }
     }
 
+    var shortTitle: String {
+        switch self {
+        case .rectilinearJpeg:
+            return L10n.photoSettingsFormatJpegRect
+        case .fullFrameJpeg:
+            return L10n.photoSettingsFormatJpegWide
+        case .rectilinearDngJpeg:
+            return L10n.photoSettingsFormatDngJpegRectShort
+        case .fullFrameDngJpeg:
+            return L10n.photoSettingsFormatDngJpegShort
+
+        }
+    }
+
     var image: UIImage? {
         switch self {
         case .rectilinearJpeg:

@@ -40,7 +40,8 @@ class SettingsGridView: UIView {
     private var gridSize: CGFloat {
         return bounds.height / gridSizeDivisor
     }
-    private var gridSizeDivisor : CGFloat {
+
+    private var gridSizeDivisor: CGFloat {
         let divisor = isRegularSizeClass ? Constants.gridAverageSizeRegular : Constants.gridAverageSize
         return round(bounds.height / divisor)
     }

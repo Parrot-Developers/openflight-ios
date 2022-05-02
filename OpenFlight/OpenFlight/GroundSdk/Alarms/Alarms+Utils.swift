@@ -67,6 +67,10 @@ extension Alarms {
             alerts.append(HUDBannerCriticalAlertType.tooMuchWind)
         }
 
+        if getAlarm(kind: .stereoCameraDecalibrated).hasError {
+            alerts.append(HUDBannerCriticalAlertType.stereoCameraDecalibrated)
+        }
+
         return alerts
     }
 
@@ -80,9 +84,13 @@ extension Alarms {
 
         // Checks alert for sensors failure.
         if getAlarm(kind: Alarm.Kind.obstacleAvoidanceDisabledStereoFailure).hasError
-            || getAlarm(kind: Alarm.Kind.obstacleAvoidanceDisabledStereoLensFailure).hasError
-            || getAlarm(kind: Alarm.Kind.obstacleAvoidanceDisabledGimbalFailure).hasError {
+            || getAlarm(kind: Alarm.Kind.obstacleAvoidanceDisabledStereoLensFailure).hasError {
             alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceSensorsFailure)
+        }
+
+        // Check alert for OA gimbal stabilization failure.
+        if getAlarm(kind: Alarm.Kind.obstacleAvoidanceDisabledGimbalFailure).hasError {
+            alerts.append(HUDBannerCriticalAlertType.obstacleAvoidanceGimbalFailure)
         }
 
         // Checks alert for stereo sensors calibration.

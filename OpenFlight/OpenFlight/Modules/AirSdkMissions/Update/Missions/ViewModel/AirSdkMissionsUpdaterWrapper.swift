@@ -98,6 +98,7 @@ final class AirSdkMissionsUpdaterWrapper: DroneStateViewModel<AirSdkMissionsUpda
     private(set) var cancelableTasks: [String: CancelableCore] = [:]
 
     // MARK: - Private Properties
+    private var missionManagerRef: Ref<MissionManager>?
     private var missionsUpdaterRef: Ref<MissionUpdater>?
     private var missionsUpdater: MissionUpdater?
     private var isFirstTimeListeningToMissionUpdater = true
@@ -111,6 +112,7 @@ final class AirSdkMissionsUpdaterWrapper: DroneStateViewModel<AirSdkMissionsUpda
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
 
+        listenAirSdkMissionsManager(drone: drone)
         listenAirSdkMissionsUpdater(drone: drone)
     }
 
@@ -134,9 +136,16 @@ final class AirSdkMissionsUpdaterWrapper: DroneStateViewModel<AirSdkMissionsUpda
     /// Triggers manual reboot.
     func triggerManualReboot() {
         ULog.d(.missionUpdateTag, "Missions manual reboot triggered")
-        guard let missionsUpdater = self.missionsUpdater else { return  }
+        guard let missionsUpdater = self.missionsUpdater else { return }
 
         missionsUpdater.complete()
+    }
+
+    /// Tells if the given mission is already uploaded.
+    ///
+    /// - Parameter mission: the mission to check
+    func isAlreadyUploaded(_ mission: AirSdkMissionToUpdateData) -> Bool {
+        return missionsUpdater?.missions[mission.missionUID]?.version == mission.missionVersion
     }
 
     /// Uploads a mission to the server.
@@ -194,6 +203,17 @@ final class AirSdkMissionsUpdaterWrapper: DroneStateViewModel<AirSdkMissionsUpda
 
 // MARK: - Private Funcs
 private extension AirSdkMissionsUpdaterWrapper {
+    /// Listens to the `MissionsManager` peripheral.
+    func listenAirSdkMissionsManager(drone: Drone) {
+        missionManagerRef = drone.getPeripheral(Peripherals.missionManager) { [weak self] missionManager in
+            guard let self = self,
+                  let missionManager = missionManager else {
+                      return
+                  }
+            self.updateAllMissions(missionManager: missionManager)
+        }
+    }
+
     /// Listens to the `MissionsUpdater` peripheral.
     func listenAirSdkMissionsUpdater(drone: Drone) {
         missionsUpdaterRef = drone.getPeripheral(Peripherals.missionsUpdater) { [weak self] missionsUpdater in
@@ -222,10 +242,28 @@ private extension AirSdkMissionsUpdaterWrapper {
 
 /// Utils for updating states of `AirSdkMissionsUpdaterState`.
 private extension AirSdkMissionsUpdaterWrapper {
+    /// Updates all missions on drone.
+    ///
+    /// - Note: we want to get all missions that are fully installed and activable, so we use `MissionManager` instead
+    ///         of `MissionUpdater` which reports missions uploaded on the drone but not necessarily fully installed.
+    ///
+    /// - Parameters:
+    ///     - missionManager: The `MissionManager`
+    func updateAllMissions(missionManager: MissionManager) {
+        let copy = self.state.value.copy()
+        copy.allMissionsOnDrone = missionManager.missions.values
+            .filter { $0.uid != OFMissionSignatures.defaultMission.missionUID }
+            .map { (mission) -> AirSdkMissionBasicInformation in
+                return AirSdkMissionBasicInformation(missionUID: mission.uid,
+                                                     missionVersion: mission.version)
+            }
+        self.state.set(copy)
+    }
+
     /// Updates all the states.
     ///
     /// - Parameters:
-    ///     - missionUpdater: The  `MissionUpdater`
+    ///     - missionUpdater: The `MissionUpdater`
     func updateAllStates(missionUpdater: MissionUpdater) {
         let copy = self.state.value.copy()
 
@@ -237,12 +275,6 @@ private extension AirSdkMissionsUpdaterWrapper {
             copy.currentUpdatingFilePath = currentUpdatingFilePath
         }
 
-        let allMissionsOnDrone = missionUpdater.missions.values
-            .map { (mission) -> AirSdkMissionBasicInformation in
-                return AirSdkMissionBasicInformation(missionUID: mission.uid,
-                                                     missionVersion: mission.version)
-            }
-        copy.allMissionsOnDrone = allMissionsOnDrone
         self.state.set(copy)
         let stateValue = String(describing: state.value.currentUpdatingState)
         let progressValue = state.value.currentUpdatingProgress

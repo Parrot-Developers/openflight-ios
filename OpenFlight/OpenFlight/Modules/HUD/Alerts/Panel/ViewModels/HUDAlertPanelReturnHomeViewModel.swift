@@ -47,6 +47,7 @@ public final class HUDAlertPanelReturnHomeState: DevicesConnectionState, AlertPa
             return L10n.alertReturnHomeTitle
         }
     }
+    public var titleImage: UIImage?
     public var icon: UIImage? {
         switch currentAlert {
         case .autoLandingAlert:

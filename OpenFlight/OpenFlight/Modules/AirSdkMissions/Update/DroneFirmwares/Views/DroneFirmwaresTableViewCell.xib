@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina6_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -22,33 +22,18 @@
                 <rect key="frame" x="44" y="0.0" width="663" height="44"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <stackView opaque="NO" contentMode="scaleToFill" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="LkF-MF-dk2">
-                        <rect key="frame" x="15" y="14.666666666666664" width="203.33333333333334" height="15"/>
-                        <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NlW-79-IzF">
-                                <rect key="frame" x="0.0" y="0.0" width="140" height="15"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="140" id="Hzl-4y-YGX"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                <color key="textColor" name="default_text_color"/>
-                                <nil key="highlightedColor"/>
-                                <variation key="heightClass=regular-widthClass=compact">
-                                    <mask key="constraints">
-                                        <exclude reference="Hzl-4y-YGX"/>
-                                    </mask>
-                                </variation>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BdC-Us-08R">
-                                <rect key="frame" x="170" y="0.0" width="33.333333333333343" height="15"/>
-                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                <color key="textColor" name="default_text_color"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                        </subviews>
-                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <variation key="heightClass=regular-widthClass=compact" axis="vertical" spacing="10"/>
-                    </stackView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NlW-79-IzF">
+                        <rect key="frame" x="15" y="14.666666666666664" width="33.333333333333336" height="15"/>
+                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                        <color key="textColor" name="default_text_color"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BdC-Us-08R">
+                        <rect key="frame" x="240.00000000000003" y="14.666666666666664" width="33.333333333333343" height="15"/>
+                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                        <color key="textColor" name="default_text_color"/>
+                        <nil key="highlightedColor"/>
+                    </label>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Gog-qg-YV2" customClass="DroneFirmwaresStartView" customModule="OpenFlight" customModuleProvider="target">
                         <rect key="frame" x="552" y="7" width="140" height="30"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -59,21 +44,32 @@
                             <constraint firstAttribute="width" constant="140" id="2KJ-0g-Rrb"/>
                         </constraints>
                     </view>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="emS-7C-ZXn" userLabel="Separator View">
+                        <rect key="frame" x="0.0" y="43" width="707" height="1"/>
+                        <color key="backgroundColor" name="default_text_color_20"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="1" id="B6Z-qk-oG5"/>
+                        </constraints>
+                    </view>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="LkF-MF-dk2" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="1n5-6t-S9l"/>
-                    <constraint firstItem="Gog-qg-YV2" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="LkF-MF-dk2" secondAttribute="trailing" constant="5" id="79M-Ax-J0G"/>
-                    <constraint firstItem="LkF-MF-dk2" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="15" id="BpI-da-2mG"/>
-                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="LkF-MF-dk2" secondAttribute="bottom" constant="5" id="I4q-bg-4yj"/>
+                    <constraint firstItem="BdC-Us-08R" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="1lS-Mi-tzO"/>
+                    <constraint firstItem="emS-7C-ZXn" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="KBC-cO-9HS"/>
                     <constraint firstItem="Gog-qg-YV2" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="PMj-uz-VWF"/>
+                    <constraint firstItem="BdC-Us-08R" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="240" id="QtL-DZ-uKe"/>
                     <constraint firstAttribute="trailing" secondItem="Gog-qg-YV2" secondAttribute="trailing" constant="15" id="TPj-Gc-kXV"/>
-                    <constraint firstItem="LkF-MF-dk2" firstAttribute="top" relation="greaterThanOrEqual" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="cBn-Tb-p1U"/>
+                    <constraint firstItem="NlW-79-IzF" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="YqC-HV-jmP"/>
+                    <constraint firstItem="NlW-79-IzF" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="15" id="Z5C-S3-HBw"/>
+                    <constraint firstAttribute="trailing" secondItem="emS-7C-ZXn" secondAttribute="trailing" id="a0l-OK-wyL"/>
+                    <constraint firstAttribute="bottom" secondItem="emS-7C-ZXn" secondAttribute="bottom" id="cSr-iV-T9a"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
             <connections>
+                <outlet property="ContainerView" destination="H2p-sc-9uM" id="PtK-lY-VkM"/>
+                <outlet property="separatorView" destination="emS-7C-ZXn" id="C2r-KW-aWi"/>
                 <outlet property="startUpdateView" destination="Gog-qg-YV2" id="Hew-D0-WG3"/>
                 <outlet property="titleLabel" destination="NlW-79-IzF" id="X6e-5d-yvM"/>
                 <outlet property="versionLabel" destination="BdC-Us-08R" id="fe2-Ql-jEC"/>
@@ -84,6 +80,9 @@
     <resources>
         <namedColor name="default_text_color">
             <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color_20">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="0.20000000298023224" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

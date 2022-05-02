@@ -182,7 +182,8 @@ private extension StereoCalibrationViewController {
         quickCalibrationButton.setAttributedTitle(quickAttributedString, for: .normal)
 
         alertView.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
-        alertLabel.font = UIFont.rajdhaniSemiBold(size: Layout.titleFontSize(isRegularSizeClass))
+        alertLabel.makeUp(with: .large)
+        alertLabel.textColor = .black
     }
 
     func bindViewModel() {

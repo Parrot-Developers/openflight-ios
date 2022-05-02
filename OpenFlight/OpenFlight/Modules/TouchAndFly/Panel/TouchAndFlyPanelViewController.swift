@@ -37,11 +37,10 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
     // Container buttons
     @IBOutlet private weak var containerbuttonsPlayDelete: UIStackView!
     @IBOutlet private weak var containerButtonsStop: UIStackView!
-    @IBOutlet private weak var containerButtonsProgressView: UIStackView!
+
     // Buttons
     @IBOutlet private weak var playButton: ActionButton!
     @IBOutlet private weak var deleteButton: ActionButton!
-    @IBOutlet private weak var trackingButton: ActionButton!
     @IBOutlet private weak var stopButtonPOI: ActionButton!
     @IBOutlet private weak var buttonsStackView: MainContainerStackView!
 
@@ -120,6 +119,7 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
         setupTableView()
         setupProgressBar()
         bindViewModel()
+        listenToActionWidgets()
 
         shadowView.addShadow(shadowOffset: CGSize(width: 0, height: -2))
 
@@ -136,6 +136,7 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
                                                name: UIApplication.willEnterForegroundNotification,
                                                object: nil)
         tableView.tableHeaderView = tableView.tableHeaderView
+        setProgressView(progressViewDisplay: viewModel.progressViewDisplay)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -233,64 +234,62 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
 
     // MARK: - Deinit
     deinit {
-        self.viewModel.showMap()
+        viewModel.showMap()
         NotificationCenter.default.removeObserver(self)
     }
+}
 
+extension TouchAndFlyPanelViewController {
     // MARK: - Funcs
     func bindViewModel() {
         // SECTION BUTTON
-        viewModel.$buttonsDisplay
-            .sink { [unowned self] buttonsDisplay in
+        viewModel.buttonsDisplayPublisher
+            .removeDuplicates()
+            .sink { [weak self] buttonsDisplay in
+                guard let self = self else { return }
                 switch buttonsDisplay {
                 case .standard(playEnabled: let playEnabled, deleteEnabled: let deleteEnabled):
-                    setButtonsStandard(playEnabled, deleteEnabled)
+                    self.setButtonsStandard(playEnabled, deleteEnabled)
                 case .runningWaypoint, .runningPoi:
-                    hideAllContainers()
-                    containerButtonsProgressView.isHidden = false
+                    self.hideAllContainers()
+                    self.containerButtonsStop.isHidden = false
                 }
             }
             .store(in: &cancellables)
 
         // SECTION INFO STATUS
         viewModel.$infoStatusDrone
-            .sink { [unowned self] infoDrone  in
-                messageStatusDrone.text = infoDrone.message
-                messageStatusDrone.textColor = infoDrone.color
+            .sink { [weak self] infoDrone  in
+                guard let self = self else { return }
+                self.messageStatusDrone.text = infoDrone.message
+                self.messageStatusDrone.textColor = infoDrone.color
             }
             .store(in: &cancellables)
 
         // SECTION DISPLAY DASHBOARD
-        viewModel.displayOnMapPublisher.sink { [unowned self] _ in
-            tableView.reloadData()
+        viewModel.displayOnMapPublisher
+            .removeDuplicates()
+            .sink { [weak self] _ in
+            self?.tableView.reloadData()
         }
         .store(in: &cancellables)
 
         // PROGRESS BAR VALUE
         viewModel.progressValue
-            .sink { [unowned self] progressValue in
+            .sink { [weak self] progressValue in
+                guard let self = self else { return }
+
                 guard let progressValue = progressValue else {
-                    progressViewBar.progress = 0.0
+                    self.progressViewBar.progress = 0.0
                     return
                 }
-                progressViewBar.progress = Float(progressValue)
+                self.progressViewBar.progress = Float(progressValue)
             }
             .store(in: &cancellables)
 
-        // PROGRESS TIMER VALUE
-        viewModel.progressTimer
-            .sink { [unowned self] timer in
-                guard let timer = timer else {
-                    trackingButton.setTitle("  00:00", for: .normal)
-                    return
-                }
-                let timerFormatted = timer.formattedString
-                trackingButton.setTitle("  \(timerFormatted)", for: .normal)
-            }
-            .store(in: &cancellables)
         viewModel.$progressViewDisplay
-            .sink { [unowned self] progressViewDisplay in
-                setProgressView(progressViewDisplay: progressViewDisplay)
+            .sink { [weak self] progressViewDisplay in
+                self?.setProgressView(progressViewDisplay: progressViewDisplay)
             }
             .store(in: &cancellables)
     }
@@ -299,21 +298,22 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
         setUi()
     }
 
-    // MARK: - Action Outlet
-    @IBAction func deleteButtonAction(_ sender: UIButton) {
-        viewModel.clear()
+    /// Listens to action widgets and hide controls if needed.
+    func listenToActionWidgets() {
+        Services.hub.ui.uiComponentsDisplayReporter.isActionWidgetShownPublisher.sink { [weak self] isWidgetShown in
+            // Buttons stack view needs to be hidden if an action widget is displayed.
+            self?.buttonsStackView.animateScaleAndAlpha(show: !isWidgetShown)
+        }
+        .store(in: &cancellables)
     }
 
+    // MARK: - Action Outlet
     @IBAction func playButtonAction(_ sender: UIButton) {
         viewModel.play()
     }
 
     @IBAction func stopButtonAction(_ sender: UIButton) {
         viewModel.stop()
-    }
-
-    @IBAction func trackingButton(_ sender: Any) {
-        viewModel.pause()
     }
 
     // MARK: - EditionSettingsCellModelDelegate
@@ -373,15 +373,10 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
     private func registerCell() {
         tableView.register(cellType: CenteredRulerTableViewCell.self)
     }
-}
 
-extension TouchAndFlyPanelViewController {
     @objc func setUi() {
         playButton.setup(image: Asset.Common.Icons.play.image, style: .validate)
         deleteButton.setup(image: Asset.Common.Icons.stop.image, style: .destructive)
-        trackingButton.model = ActionButtonModel(image: Asset.Common.Icons.pause.image,
-                                                 isMonospacedDigitsFont: true,
-                                                 style: .default1)
         stopButtonPOI.setup(image: Asset.Common.Icons.stop.image, style: .destructive)
         constraintButtonStackView.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass)
         buttonsStackView.screenBorders = [.bottom]
@@ -414,7 +409,6 @@ extension TouchAndFlyPanelViewController {
         // Hides all container button
         containerbuttonsPlayDelete.isHidden = true
         containerButtonsStop.isHidden = true
-        containerButtonsProgressView.isHidden = true
     }
 
     // Buttons

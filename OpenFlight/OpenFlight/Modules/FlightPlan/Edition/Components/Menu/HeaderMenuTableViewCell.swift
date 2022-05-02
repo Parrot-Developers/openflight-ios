@@ -45,7 +45,7 @@ final class HeaderMenuTableViewCell: UITableViewHeaderFooterView, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
         separatorView.backgroundColor = ColorName.defaultTextColor20.color
-        sectionTitle.makeUp(with: .small, and: .disabledTextColor)
+        sectionTitle.makeUp(with: .caps, color: .disabledTextColor)
         bottomConstraint.constant = Layout.mainSpacing(isRegularSizeClass)
         topConstraint.constant = Layout.mainSpacing(isRegularSizeClass)
         leadingConstraint.constant = Layout.mainPadding(isRegularSizeClass)

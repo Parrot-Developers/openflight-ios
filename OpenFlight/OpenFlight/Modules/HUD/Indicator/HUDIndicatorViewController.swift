@@ -45,8 +45,7 @@ final class HUDIndicatorViewController: UIViewController {
     var indicatorViewControllerNavigation: HUDIndicatorViewControllerNavigation?
 
     // MARK: - Private Properties
-    private weak var coordinator: Coordinator?
-    private var indicatorViewModel: HUDIndicatorViewModel?
+    private var indicatorViewModel: HUDIndicatorViewModel!
 
     // MARK: - Private Enums
     private enum Constants {
@@ -56,24 +55,26 @@ final class HUDIndicatorViewController: UIViewController {
         static let pairingButtonMarginRatio: CGFloat = 0.1
     }
 
-    // MARK: - Setup
-    static func instantiate(coordinator: Coordinator) -> HUDIndicatorViewController {
-        let viewController = StoryboardScene.HUDIndicator.initialScene.instantiate()
-        viewController.coordinator = coordinator
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        initViewModel()
+    }
 
-        return viewController
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        initViewModel()
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        indicatorViewModel = HUDIndicatorViewModel()
+        initView()
+
         // Update the view when shouldHideIndicator state changes.
         indicatorViewModel?.state.value.shouldHideIndicator.valueChanged = { [weak self] shouldHideIndicator in
             self?.shouldHidePairingView(needToHide: shouldHideIndicator)
         }
-        initView()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -105,6 +106,11 @@ private extension HUDIndicatorViewController {
                                          radius: Style.largeCornerRadius,
                                          borderWidth: Constants.borderWidth)
         shouldHidePairingView(needToHide: indicatorViewModel?.state.value.shouldHideIndicator.value ?? false)
+    }
+
+    /// Inits view model.
+    func initViewModel() {
+        self.indicatorViewModel = HUDIndicatorViewModel()
     }
 
     /// Change pairing view visibility.

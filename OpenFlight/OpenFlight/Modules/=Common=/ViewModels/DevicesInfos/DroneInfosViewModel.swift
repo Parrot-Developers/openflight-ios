@@ -88,6 +88,9 @@ final class DroneInfosViewModel {
     /// Returns true if drone currently required a calibration.
     private(set) var requiredCalibrationSubject = CurrentValueSubject<Bool, Never>(false)
 
+    /// Returns true if a drone calibration is recommended.
+    private(set) var recommendedCalibrationSubject = CurrentValueSubject<Bool, Never>(false)
+
     init() {
         // TODO inject
         Services.hub.currentDroneHolder.dronePublisher
@@ -116,6 +119,7 @@ final class DroneInfosViewModel {
             .combineLatest($magnetometerStatus, $stereoVisionStatus)
             .sink { [unowned self] in
                 requiredCalibrationSubject.value = $0 == .needed || $1 == MagnetometerCalibrationState.required || $2 == .needed
+                recommendedCalibrationSubject.value = $1 == MagnetometerCalibrationState.recommended
             }
             .store(in: &cancellables)
     }

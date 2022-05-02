@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import ArcGIS
+import UIKit
 
 // MARK: - Internal Enums
 /// Public constants for flight plan display with ArcGIS.
@@ -41,13 +42,13 @@ enum FlightPlanAGSConstants {
     /// Key to store destination WayPoint index (for lines).
     static let lineDestinationWayPointAttributeKey = "lineDestinationWayPointIndex"
     /// Set of colors for point of interest's related graphcis.
-    // TODO: define point of interest's colors.
-    private static let colors: [UIColor] = [.orange,
-                                            .systemPink,
-                                            .yellow,
-                                            .red,
-                                            .purple]
-
+    private static let colors: [UIColor] = [ColorName.lightBlue.color,
+                                            ColorName.green.color,
+                                            ColorName.yellowSea.color,
+                                            ColorName.orange.color,
+                                            ColorName.pink.color,
+                                            ColorName.purple.color,
+                                            ColorName.blueDodger.color]
     /// Returns color associated with given point of interest's index.
     ///
     /// - Parameters:

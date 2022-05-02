@@ -149,7 +149,7 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
         coordinator.start()
         present(childCoordinator: coordinator, completion: completion)
         if let selectedProject = selectedProject {
-            addToNavigationStack(.myFlightsExecutedProjects(selectedProject: selectedProject))
+            addToNavigationStack(.myFlightsExecutedProjects(selectedProject: selectedProject, selectedHeaderUuid: nil))
         } else {
             addToNavigationStack(.myFlights(selectedFlight: selectedFlight))
         }

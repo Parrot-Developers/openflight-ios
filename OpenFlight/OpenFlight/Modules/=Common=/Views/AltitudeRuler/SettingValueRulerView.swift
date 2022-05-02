@@ -156,11 +156,13 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
     public var model: SettingValueRulerModel = SettingValueRulerModel() {
         didSet {
             collectionView.reloadData()
-            collectionView.scrollToItem(at: indexPathForSelectedValue,
-                                        at: orientation.isHorizontal
-                                            ? .centeredHorizontally
-                                            : .centeredVertically,
-                                        animated: true)
+            if indexPathForSelectedValue.row < collectionView.numberOfItems(inSection: 0) {
+                collectionView.scrollToItem(at: indexPathForSelectedValue,
+                                            at: orientation.isHorizontal
+                                                ? .centeredHorizontally
+                                                : .centeredVertically,
+                                            animated: true)
+            }
             titleLabel.text = model.title
             horizontalSelectionView.backgroundColor = model.displayType.selectorBackgroundColor
             verticalSelectionView.backgroundColor = model.displayType.selectorBackgroundColor
@@ -177,7 +179,10 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
 
     // MARK: - Private Properties
     private var indexPathForSelectedValue: IndexPath {
-        return IndexPath(row: model.values.firstIndex(of: model.value) ?? 0, section: 0)
+        let index = model.values.firstIndex(of: model.value) ??
+        model.values.closestIndex(of: model.value) ?? 0
+
+        return IndexPath(row: index, section: 0)
     }
     /// Property which updates the ruler view according to its orientation.
     private var orientation: RulerOrientation = .vertical
@@ -195,12 +200,12 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInitSettingValueRulerView()
+        commonInitSettingValueRulerView()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInitSettingValueRulerView()
+        commonInitSettingValueRulerView()
     }
 
     /// Init.
@@ -210,28 +215,32 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
     public init(orientation: RulerOrientation = .vertical) {
         self.orientation = orientation
         super.init(frame: CGRect.zero)
-        self.commonInitSettingValueRulerView()
+        commonInitSettingValueRulerView()
     }
 
     public override func layoutSublayers(of layer: CALayer) {
         super.layoutSublayers(of: layer)
 
         if orientation.isHorizontal {
-            self.collectionView.contentInset = UIEdgeInsets(top: 0.0,
-                                                            left: self.collectionView.frame.size.width/2.0 - self.safeAreaInsets.left,
-                                                            bottom: 0.0,
-                                                            right: (self.collectionView.frame.size.width)/2.0 - self.safeAreaInsets.right)
-            self.collectionView.scrollToItem(at: indexPathForSelectedValue,
-                                             at: .centeredHorizontally,
-                                             animated: false)
+            collectionView.contentInset = UIEdgeInsets(top: 0.0,
+                                                       left: collectionView.frame.size.width/2.0 - safeAreaInsets.left,
+                                                       bottom: 0.0,
+                                                       right: (collectionView.frame.size.width)/2.0 - safeAreaInsets.right)
+            if indexPathForSelectedValue.row < collectionView.numberOfItems(inSection: 0) {
+                collectionView.scrollToItem(at: indexPathForSelectedValue,
+                                            at: .centeredHorizontally,
+                                            animated: false)
+            }
         } else {
-            self.collectionView.contentInset = UIEdgeInsets(top: self.collectionView.frame.size.height/2.0,
-                                                            left: 0.0,
-                                                            bottom: self.collectionView.frame.size.height/2.0,
-                                                            right: 0.0)
-            self.collectionView.scrollToItem(at: indexPathForSelectedValue,
-                                             at: .centeredVertically,
-                                             animated: true)
+            collectionView.contentInset = UIEdgeInsets(top: collectionView.frame.size.height/2.0,
+                                                       left: 0.0,
+                                                       bottom: collectionView.frame.size.height/2.0,
+                                                       right: 0.0)
+            if indexPathForSelectedValue.row < collectionView.numberOfItems(inSection: 0) {
+                collectionView.scrollToItem(at: indexPathForSelectedValue,
+                                            at: .centeredVertically,
+                                            animated: true)
+            }
         }
         addGradientLayer()
     }
@@ -349,14 +358,14 @@ extension SettingValueRulerView: UICollectionViewDelegate {
         let indexPath = orientation.isHorizontal
             ? collectionView.closestToHorizontalCenterIndexPath
             : collectionView.closestToVerticalCenterIndexPath
-        updateValue(indexPath: indexPath ?? self.indexPathForSelectedValue)
+        updateValue(indexPath: indexPath ?? indexPathForSelectedValue)
     }
 
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         let indexPath = orientation.isHorizontal
             ? collectionView.closestToHorizontalCenterIndexPath
             : collectionView.closestToVerticalCenterIndexPath
-        updateValue(indexPath: indexPath ?? self.indexPathForSelectedValue)
+        updateValue(indexPath: indexPath ?? indexPathForSelectedValue)
     }
 }
 

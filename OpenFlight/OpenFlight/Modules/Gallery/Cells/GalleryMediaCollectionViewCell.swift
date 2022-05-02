@@ -51,6 +51,7 @@ final class GalleryMediaCollectionViewCell: UICollectionViewCell, NibReusable {
     @IBOutlet private weak var downloadButton: DownloadButton!
     @IBOutlet private weak var selectionView: UIView!
     @IBOutlet private weak var selectionCheckmarkView: UIView!
+    @IBOutlet private weak var nameLabel: UILabel!
 
     // MARK: - Internal Properties
     weak var delegate: GalleryMediaCellDelegate?
@@ -137,8 +138,10 @@ internal extension GalleryMediaCollectionViewCell {
         downloadButton.isHidden = media.source == .mobileDevice
         selectionView.isHidden = !selected
         selectionCheckmarkView.isHidden = !selected
-        setBorder(borderColor: ColorName.highlightColor.color, borderWidth: selected ? 2.0 : 0.0)
+        selectionView.setBorder(borderColor: ColorName.highlightColor.color, borderWidth: selected ? 2.0 : 0.0)
+        selectionView.backgroundColor = ColorName.cellSelectionColor.color
         internalStorageIcon.applyCornerRadius(Style.mediumCornerRadius)
         internalStorageIcon.isHidden = media.source != .droneInternal
+        nameLabel.text = media.cellTitle
     }
 }

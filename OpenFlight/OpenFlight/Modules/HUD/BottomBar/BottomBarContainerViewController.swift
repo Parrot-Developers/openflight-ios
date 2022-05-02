@@ -51,7 +51,6 @@ final class BottomBarContainerViewController: UIViewController {
     @IBOutlet private weak var containerStackView: MainContainerStackView!
     @IBOutlet private weak var levelOneContainerView: UIView!
     @IBOutlet private weak var levelTwoContainerView: UIView!
-    @IBOutlet private weak var panoramaProgressBarContainer: MainContainerStackView!
 
     // MARK: - Internal Properties
     weak var coordinator: HUDCoordinator?
@@ -65,7 +64,6 @@ final class BottomBarContainerViewController: UIViewController {
     private var isPanoramaInProgress: Bool = false {
         didSet {
             containerStackView.showFromEdge(.bottom, show: !isPanoramaInProgress, fadeFrom: 1)
-            panoramaProgressBarContainer.showFromEdge(.bottom, show: isPanoramaInProgress, fadeFrom: 1)
         }
     }
     private var bottomBarMode: BottomBarMode = .preset {
@@ -92,7 +90,6 @@ final class BottomBarContainerViewController: UIViewController {
 
         // Bottom bar snaps to safe area (if available) or main padding guide.
         containerStackView.hasMinLeftPadding = true
-        panoramaProgressBarContainer.hasMinLeftPadding = true
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

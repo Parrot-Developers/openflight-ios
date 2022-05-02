@@ -27,36 +27,41 @@
                                 <color key="backgroundColor" name="default_bgcolor"/>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jor-Uw-gxu" userLabel="Navigation bar" customClass="NavigationStackView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="0.0" width="896" height="40"/>
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="m41-im-gmV">
-                                        <rect key="frame" x="0.0" y="0.0" width="40" height="40"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="40" placeholder="YES" id="Vfc-gl-68e"/>
-                                            <constraint firstAttribute="width" secondItem="m41-im-gmV" secondAttribute="height" multiplier="1:1" id="Xix-u9-8aB"/>
-                                        </constraints>
+                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="m41-im-gmV" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="21" height="50"/>
                                         <color key="tintColor" name="default_text_color"/>
                                         <state key="normal" image="ic_back"/>
                                         <connections>
                                             <action selector="backButtonTouchedUpInside:" destination="wjy-Iz-wWc" eventType="touchUpInside" id="Ynv-Xb-eID"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NKh-gC-fVL" userLabel="Title">
-                                        <rect key="frame" x="40" y="0.0" width="856" height="40"/>
-                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
-                                        <color key="textColor" name="default_text_color"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kc4-HP-qgT">
+                                        <rect key="frame" x="21" y="0.0" width="875" height="50"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NKh-gC-fVL" userLabel="Title">
+                                                <rect key="frame" x="414.5" y="14" width="46.5" height="22.5"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                <color key="textColor" name="default_text_color"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="NKh-gC-fVL" firstAttribute="centerY" secondItem="kc4-HP-qgT" secondAttribute="centerY" id="5U5-vN-FGH"/>
+                                        </constraints>
+                                    </view>
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="89O-Tg-FvA">
-                                <rect key="frame" x="44" y="60" width="808" height="333"/>
+                                <rect key="frame" x="44" y="70" width="808" height="323"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9Sx-ZZ-cDr" userLabel="View connection">
                                         <rect key="frame" x="688" y="0.0" width="120" height="60"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vU3-PM-kgy">
-                                                <rect key="frame" x="5" y="16.5" width="110" height="27"/>
+                                                <rect key="frame" x="5" y="15" width="110" height="30"/>
                                                 <color key="backgroundColor" name="highlight_color"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="Z45-yd-ScY"/>
@@ -80,11 +85,11 @@
                                                 </connections>
                                             </button>
                                             <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icloading" translatesAutoresizingMaskIntoConstraints="NO" id="Kzw-SG-gn3">
-                                                <rect key="frame" x="48.5" y="19.5" width="21" height="21"/>
+                                                <rect key="frame" x="52" y="19.5" width="21" height="21"/>
                                                 <color key="tintColor" name="highlight_color"/>
                                             </imageView>
                                             <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="osb-WA-oJg">
-                                                <rect key="frame" x="10" y="19.5" width="33.5" height="21"/>
+                                                <rect key="frame" x="10" y="19.5" width="37" height="21"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="textColor" name="highlight_color"/>
                                                 <nil key="highlightedColor"/>
@@ -259,6 +264,7 @@
                             <constraint firstItem="dyL-X2-kjt" firstAttribute="trailing" secondItem="89O-Tg-FvA" secondAttribute="trailing" id="huh-Kp-8UE"/>
                             <constraint firstAttribute="trailing" secondItem="jor-Uw-gxu" secondAttribute="trailing" id="jgT-Ux-Xp2"/>
                             <constraint firstItem="89O-Tg-FvA" firstAttribute="leading" secondItem="dyL-X2-kjt" secondAttribute="leading" id="rJE-s7-Tlq"/>
+                            <constraint firstItem="NKh-gC-fVL" firstAttribute="centerX" secondItem="kc4-HP-qgT" secondAttribute="centerX" id="uaB-PH-fMY"/>
                         </constraints>
                     </view>
                     <connections>

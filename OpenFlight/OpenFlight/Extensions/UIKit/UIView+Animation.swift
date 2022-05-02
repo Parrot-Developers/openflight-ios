@@ -32,6 +32,10 @@ import UIKit
 /// Animation extension for `UIView`.
 
 public extension UIView {
+    private enum Constants {
+        static let slightScale: CGFloat = 0.8
+    }
+
     // Start rotation animation on a UIView.
     func startRotate() {
         let rotation: CABasicAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
@@ -60,14 +64,15 @@ public extension UIView {
     /// Animates showing/hiding of the view from one of its edges.
     ///
     /// - Parameters:
-    ///    - edge: Edge to animate the view from/to.
-    ///    - offset: An optional offset to add the the translation.
-    ///    - show: Show view if `true`, hide it else.
-    ///    - fadeFrom: View's opacity will be animated from 0 to `fadeFrom` value if not nil.
-    ///    - animate: Animate showing/hiding if `true`, directly apply transform else.
-    ///    - duration: Animation duration.
-    ///    - delay: Delay for the animation.
-    ///    - initialTransform: Translation transform will be concatenated to `initialTransform` if specified.
+    ///    - edge: edge to animate the view from/to
+    ///    - offset: an optional offset to add the the translation
+    ///    - show: show view if `true`, hide it otherwise
+    ///    - fadeFrom: view's opacity will be animated from 0 to `fadeFrom` value if not nil
+    ///    - animate: animate showing/hiding if `true`, directly apply transform otherwise
+    ///    - duration: animation duration
+    ///    - delay: delay for the animation
+    ///    - initialTransform: translation transform will be concatenated to `initialTransform` if specified
+    ///    - completion: the completion block
     func showFromEdge(_ edge: UIRectEdge,
                       offset: CGFloat = 0,
                       show: Bool,
@@ -75,7 +80,8 @@ public extension UIView {
                       animate: Bool = true,
                       duration: TimeInterval = Style.shortAnimationDuration,
                       delay: TimeInterval = 0,
-                      initialTransform: CGAffineTransform = .identity) {
+                      initialTransform: CGAffineTransform = .identity,
+                      completion: (() -> Void)? = nil) {
         let translation: CGPoint
 
         switch edge {
@@ -98,9 +104,12 @@ public extension UIView {
         if animate {
             UIView.animate(withDuration: duration, delay: 0, options: .curveEaseOut) {
                 transformBlock()
+            } completion: { _ in
+                completion?()
             }
         } else {
             transformBlock()
+            completion?()
         }
     }
 
@@ -165,5 +174,15 @@ public extension UIView {
                 self.alphaHidden(isHidden, withAlpha: alpha)
             }
         }, completion: completion)
+    }
+
+    /// Animates view showing/hiding with opacity and slight scale.
+    ///
+    /// - Parameter show: whether the view should be shown or hidden
+    func animateScaleAndAlpha(show: Bool) {
+        UIView.animate {
+            self.transform = show ? .identity : .init(scaleX: Constants.slightScale, y: Constants.slightScale)
+            self.alphaHidden(!show)
+        }
     }
 }

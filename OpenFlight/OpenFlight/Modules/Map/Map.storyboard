@@ -23,16 +23,42 @@
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
+                            <view hidden="YES" contentMode="scaleToFill" placeholderIntrinsicWidth="667" placeholderIntrinsicHeight="60" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="diZ-DP-QfY" customClass="HudTopBarGradientView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="667" height="60"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="3eF-qZ-cVS" customClass="SideNavigationBarStackView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="21" height="22"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nH1-mk-R4B" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="21" height="22"/>
+                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <state key="normal" image="ic_back"/>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="3eF-qZ-cVS" firstAttribute="leading" secondItem="diZ-DP-QfY" secondAttribute="leading" id="Im8-ds-YwV"/>
+                                    <constraint firstItem="3eF-qZ-cVS" firstAttribute="top" secondItem="diZ-DP-QfY" secondAttribute="top" id="au1-f2-nDm"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="diZ-DP-QfY" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="Bz5-MJ-LyM"/>
                             <constraint firstAttribute="bottom" secondItem="rZi-Mi-6wZ" secondAttribute="bottom" id="FdG-2k-kYQ"/>
                             <constraint firstItem="rZi-Mi-6wZ" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="H9L-R3-Hf9"/>
                             <constraint firstAttribute="trailing" secondItem="rZi-Mi-6wZ" secondAttribute="trailing" id="TZq-Q3-SMl"/>
+                            <constraint firstItem="diZ-DP-QfY" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="XnG-uz-3LN"/>
                             <constraint firstItem="rZi-Mi-6wZ" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="ghN-nL-1lU"/>
+                            <constraint firstAttribute="trailing" secondItem="diZ-DP-QfY" secondAttribute="trailing" id="iNd-Yy-Vct"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="backButton" destination="nH1-mk-R4B" id="qH0-hm-If2"/>
+                        <outlet property="navBarStackView" destination="3eF-qZ-cVS" id="qBA-vd-Np1"/>
+                        <outlet property="navBarView" destination="diZ-DP-QfY" id="BYe-HV-FHn"/>
                         <outlet property="sceneView" destination="rZi-Mi-6wZ" id="w50-og-xYR"/>
                     </connections>
                 </viewController>
@@ -41,4 +67,12 @@
             <point key="canvasLocation" x="-720.08995502248877" y="213.59999999999999"/>
         </scene>
     </scenes>
+    <designables>
+        <designable name="diZ-DP-QfY">
+            <size key="intrinsicContentSize" width="667" height="60"/>
+        </designable>
+    </designables>
+    <resources>
+        <image name="ic_back" width="21" height="21"/>
+    </resources>
 </document>

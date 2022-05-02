@@ -31,7 +31,7 @@ import Foundation
 import Combine
 
 /// Summary about all projects.
-public struct AllProjectsSummary {
+public struct ProjectsSummary {
     /// Total number of projects.
     public let numberOfProjects: Int
     /// Total number of FP projects.
@@ -39,27 +39,27 @@ public struct AllProjectsSummary {
     /// Total number of other projects.
     public let numberOfOtherProjects: Int
     /// The other projects' icon.
-    public let ortherProjectsIcon: UIImage?
+    public let otherProjectsIcon: UIImage?
 
-    static let zero = AllProjectsSummary(numberOfProjects: 0,
-                                         numberOfFPProjects: 0,
-                                         numberOfOtherProjects: 0,
-                                         ortherProjectsIcon: nil)
+    static let zero = ProjectsSummary(numberOfProjects: 0,
+                                      numberOfFPProjects: 0,
+                                      numberOfOtherProjects: 0,
+                                      otherProjectsIcon: nil)
 }
 
 public class DashboardProjectManagerCellModel {
 
     // MARK: - Public properties
-    public var summary: AnyPublisher<AllProjectsSummary, Never> { summarySubject.eraseToAnyPublisher() }
+    public var summary: AnyPublisher<ProjectsSummary, Never> { summarySubject.eraseToAnyPublisher() }
     public var isSynchronizingData: AnyPublisher<Bool, Never> { isSynchronizingSubject.eraseToAnyPublisher() }
 
     // MARK: - Private properties
     private let manager: ProjectManager
     private let cloudSynchroWatcher: CloudSynchroWatcher?
     private let projectManagerUiProvider: ProjectManagerUiProvider!
-    private var summarySubject = CurrentValueSubject<AllProjectsSummary, Never>(AllProjectsSummary.zero)
+    private var summarySubject = CurrentValueSubject<ProjectsSummary, Never>(ProjectsSummary.zero)
     private var isSynchronizingSubject = CurrentValueSubject<Bool, Never>(false)
-    private var cancellable = Set<AnyCancellable>()
+    private var cancellables = Set<AnyCancellable>()
 
     init(manager: ProjectManager,
          cloudSynchroWatcher: CloudSynchroWatcher?,
@@ -71,18 +71,18 @@ public class DashboardProjectManagerCellModel {
         listenProjectsPublisher()
         listenDataSynchronization()
 
-        summarySubject.value = projectsSummary(for: manager.loadAllProjects())
+        refreshProjectsSummary(from: manager.allProjectsSummary)
     }
 
     // MARK: - Private funcs
     private func listenProjectsPublisher() {
-        manager.projectsDidChangePublisher
+
+        manager.allProjectsSummaryPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] in
                 guard let self = self else { return }
-                self.summarySubject.value = self.projectsSummary(for: self.manager.loadAllProjects())
-        }.store(in: &cancellable)
-
+                self.refreshProjectsSummary(from: $0)
+        }.store(in: &cancellables)
     }
 
     private func listenDataSynchronization() {
@@ -91,22 +91,16 @@ public class DashboardProjectManagerCellModel {
             .sink { [weak self] isSynch in
                 self?.isSynchronizingSubject.value = isSynch
             }
-            .store(in: &cancellable)
+            .store(in: &cancellables)
     }
 
-    func reloadAllProjects() {
-        summarySubject.value = projectsSummary(for: manager.loadAllProjects())
-    }
-
-    func projectsSummary(for projects: [ProjectModel]) -> AllProjectsSummary {
-        let fpProjects = projects.filter { $0.isSimpleFlightPlan }
-        let otherProjects = projects.filter { !$0.isSimpleFlightPlan }
+    func refreshProjectsSummary(from allProjectsSummary: AllProjectsSummary) {
         let projectTypes = projectManagerUiProvider.uiParameters().projectTypes
-        let ortherProjectsIcon = projectTypes.count > 1 ? projectTypes[1].icon : nil
+        let otherProjectsIcon = projectTypes.count > 1 ? projectTypes[1].icon : nil
 
-        return AllProjectsSummary(numberOfProjects: projects.count,
-                                  numberOfFPProjects: fpProjects.count,
-                                  numberOfOtherProjects: otherProjects.count,
-                                  ortherProjectsIcon: ortherProjectsIcon)
+        summarySubject.value = ProjectsSummary(numberOfProjects: allProjectsSummary.numberOfProjects,
+                                               numberOfFPProjects: allProjectsSummary.totalFlightPlan,
+                                               numberOfOtherProjects: allProjectsSummary.totalPgy,
+                                               otherProjectsIcon: otherProjectsIcon)
     }
 }

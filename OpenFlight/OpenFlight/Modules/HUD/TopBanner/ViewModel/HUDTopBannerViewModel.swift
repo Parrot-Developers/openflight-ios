@@ -84,7 +84,7 @@ final class HUDTopBannerViewModel {
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
     private let alertBannerViewModel = HUDAlertBannerViewModel()
-    private var shouldShowHomeSetInfo: Bool = true
+    private var shouldShowHomeSetInfo: Bool = false
     private var isAutoModeActive: Bool = false
     private let autoModeViewModel: ImagingBarAutoModeViewModel
     /// Combine cancellables.
@@ -102,9 +102,6 @@ final class HUDTopBannerViewModel {
 
         currentDroneHolder.dronePublisher
             .sink { [unowned self] drone in
-                if drone.isStateFlying {
-                    shouldShowHomeSetInfo = false
-                }
                 listenAutoModeViewModel(drone: drone)
                 listenCamera(drone: drone)
                 listenPreciseHome(drone: drone)
@@ -168,15 +165,15 @@ private extension HUDTopBannerViewModel {
     /// Starts watcher for flying indicators.
     func listenFlyingIndicators(drone: Drone) {
         flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicators in
-            if flyingIndicators?.state == .landed {
-                // Reset home info on land.
-                self?.shouldShowHomeSetInfo = true
-                self?.isLanded = true
-            } else {
-                self?.isLanded = false
+            guard let self = self else { return }
+            if flyingIndicators?.flyingState == .takingOff {
+                self.shouldShowHomeSetInfo = true
+            } else if flyingIndicators?.state != .flying {
+                self.shouldShowHomeSetInfo = false
             }
 
-            self?.updateHomeStates(drone: drone)
+            self.isLanded = flyingIndicators?.state == .landed
+            self.updateHomeStates(drone: drone)
         }
     }
 
@@ -225,7 +222,7 @@ private extension HUDTopBannerViewModel {
     /// Checks for home position set.
     func checkHomePositionSet(drone: Drone) {
         guard shouldShowHomeSetInfo,
-              drone.getInstrument(Instruments.gps)?.fixed == true,
+              drone.getPilotingItf(PilotingItfs.returnHome)?.homeLocation != nil,
               drone.getInstrument(Instruments.flyingIndicators)?.flyingState.isFlyingOrWaiting == true else {
                   return
               }

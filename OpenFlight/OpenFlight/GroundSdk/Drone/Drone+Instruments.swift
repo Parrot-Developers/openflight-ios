@@ -32,6 +32,12 @@ import GroundSdk
 /// Instrument utility extension for Drone.
 public extension Drone {
     // MARK: - Internal Properties
+    /// Returns true if drone is flying (taking off, flying and landing state) at call time
+    var isFlying: Bool {
+        let state = getInstrument(Instruments.flyingIndicators)?.state
+        return state != .landed && state != .emergency
+    }
+
     /// Returns true if drone has flying state at call time.
     var isStateFlying: Bool {
         let state = getInstrument(Instruments.flyingIndicators)?.state

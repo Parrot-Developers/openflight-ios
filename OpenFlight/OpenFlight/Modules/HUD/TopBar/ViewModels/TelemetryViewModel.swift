@@ -174,12 +174,12 @@ private extension TelemetryViewModel {
 
     /// Computes current speed and updates TelemetryState accordingly.
     func computeSpeed() {
-        guard let horizontalSpeed = drone?.getInstrument(Instruments.speedometer)?.groundSpeed,
-            let verticalSpeed = drone?.getInstrument(Instruments.altimeter)?.verticalSpeed,
-            !horizontalSpeed.isNaN, !verticalSpeed.isNaN
-            else {
-                state.value.speed.set(TelemetryValueModel(currentValue: nil, alertLevel: .none))
-                return
+        guard let drone = drone, drone.state.connectionState == .connected,
+              let horizontalSpeed = drone.getInstrument(Instruments.speedometer)?.groundSpeed,
+              let verticalSpeed = drone.getInstrument(Instruments.altimeter)?.verticalSpeed,
+              !horizontalSpeed.isNaN, !verticalSpeed.isNaN else {
+            state.value.speed.set(TelemetryValueModel(currentValue: nil, alertLevel: .none))
+            return
         }
         let speed = sqrt(pow(horizontalSpeed, 2) + pow(verticalSpeed, 2)).rounded(toPlaces: Constants.speedDigitPrecision)
         state.value.speed.set(TelemetryValueModel(currentValue: speed, alertLevel: .none))
@@ -187,20 +187,20 @@ private extension TelemetryViewModel {
 
     /// Computes current altitude and updates TelemetryState accordingly.
     func computeAltitude() {
-        guard let altitude = drone?.getInstrument(Instruments.altimeter)?.takeoffRelativeAltitude,
-            !altitude.isNaN
-            else {
-                state.value.altitude.set(TelemetryValueModel(currentValue: nil, alertLevel: .none))
-                return
+        guard let drone = drone, drone.state.connectionState == .connected,
+              let altitude = drone.getInstrument(Instruments.altimeter)?.takeoffRelativeAltitude,
+              !altitude.isNaN
+        else {
+            state.value.altitude.set(TelemetryValueModel(currentValue: nil, alertLevel: .none))
+            return
         }
-        let alertLevel: AlertLevel = drone?.isAltitudeGeofenceReached == true ? .warning : .none
-        state.value.altitude.set(TelemetryValueModel(currentValue: altitude.rounded(toPlaces: Constants.altitudeDigitPrecision),
-                                                     alertLevel: alertLevel))
+        let alertLevel: AlertLevel = drone.isAltitudeGeofenceReached == true ? .warning : .none
+        state.value.altitude.set(TelemetryValueModel(currentValue: altitude.rounded(toPlaces: Constants.altitudeDigitPrecision), alertLevel: alertLevel))
     }
 
     /// Computes current distance and updates TelemetryState accordingly.
     func computeDistance() {
-        guard let drone = drone else {
+        guard let drone = drone, drone.state.connectionState == .connected else {
             state.value.distance.set(TelemetryValueModel(currentValue: nil, alertLevel: .none))
             return
         }

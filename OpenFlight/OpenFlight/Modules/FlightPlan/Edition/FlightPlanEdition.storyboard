@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina6_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -106,15 +106,18 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dba-uz-dLb" customClass="BottomGradientView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="384" width="245" height="30"/>
+                                <rect key="frame" x="0.0" y="377" width="245" height="37"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
-                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="ZKL-Em-A7r" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="384" width="245" height="30"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZKL-Em-A7r" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="377" width="245" height="37"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rIt-5N-twX" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="122.66666666666667" height="30"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="37" height="37"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" secondItem="rIt-5N-twX" secondAttribute="height" id="O3O-Pp-ulK"/>
+                                        </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <state key="normal" title="Undo">
                                             <color key="titleColor" name="default_text_color"/>
@@ -123,8 +126,12 @@
                                             <action selector="undoButtonTouchedUpInside:" destination="l6C-73-gMO" eventType="touchUpInside" id="X0M-0H-XMr"/>
                                         </connections>
                                     </button>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="E2R-Gt-jRB" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="37" y="0.0" width="163" height="37"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    </view>
                                     <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fYp-zW-LmG" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="122.66666666666669" y="0.0" width="122.33333333333331" height="30"/>
+                                        <rect key="frame" x="200" y="0.0" width="45" height="37"/>
                                         <color key="backgroundColor" name="highlight_color"/>
                                         <state key="normal" title="Delete">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -154,6 +161,7 @@
                     <navigationItem key="navigationItem" id="Ztf-Fn-bqf"/>
                     <connections>
                         <outlet property="bottomGradientView" destination="dba-uz-dLb" id="Mf5-eU-dhW"/>
+                        <outlet property="buttonSpacerView" destination="E2R-Gt-jRB" id="NIc-yt-YTn"/>
                         <outlet property="buttonsStackView" destination="ZKL-Em-A7r" id="OpW-8O-TRn"/>
                         <outlet property="deleteButton" destination="fYp-zW-LmG" id="ee8-Ku-PW2"/>
                         <outlet property="stackView" destination="USo-da-8tQ" id="Q7v-TI-nNq"/>
@@ -199,15 +207,18 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UXs-9Z-fIY" customClass="BottomGradientView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="384" width="245" height="30"/>
+                                <rect key="frame" x="0.0" y="377" width="245" height="37"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
-                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="ThT-ux-eIb" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="384" width="245" height="30"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ThT-ux-eIb" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="377" width="245" height="37"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3jS-g9-JKC" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="122.66666666666667" height="30"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="37" height="37"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" secondItem="3jS-g9-JKC" secondAttribute="height" id="oKM-mQ-F8w"/>
+                                        </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <state key="normal" title="Undo">
                                             <color key="titleColor" name="default_text_color"/>
@@ -217,7 +228,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="d3L-Xg-59f" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="122.66666666666669" y="0.0" width="122.33333333333331" height="30"/>
+                                        <rect key="frame" x="37" y="0.0" width="208" height="37"/>
                                         <color key="backgroundColor" name="highlight_color"/>
                                         <state key="normal" title="Done">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -390,14 +401,14 @@
                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="F0u-hr-TpJ">
                                 <rect key="frame" x="0.0" y="0.0" width="245" height="20"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleAspectFit" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kRi-kC-3yO">
+                                    <button opaque="NO" contentMode="scaleAspectFit" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kRi-kC-3yO" customClass="InsetHitAreaButton" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="kRi-kC-3yO" secondAttribute="height" multiplier="1:1" id="uxl-aB-uAR"/>
                                         </constraints>
                                         <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="plain" image="ic_back"/>
+                                        <buttonConfiguration key="configuration" style="plain" image="icCloseMedium"/>
                                     </button>
                                     <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="obK-gY-Jvz" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="19.999999999999996" y="0.0" width="52.666666666666657" height="20"/>
@@ -447,7 +458,7 @@
         <segue reference="hA7-7O-0Ej"/>
     </inferredMetricsTieBreakers>
     <resources>
-        <image name="ic_back" width="21" height="28.333333969116211"/>
+        <image name="icCloseMedium" width="17" height="17"/>
         <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

@@ -62,7 +62,11 @@ public class FlightPlanActivationModel: MissionActivationModel {
         projectManager.setLastOpenedProjectAsCurrent(type: projectType)
         guard let project = projectManager.currentProject,
               let flightPlan = projectManager.lastFlightPlan(for: project) else { return }
-        Services.hub.flightPlan.stateMachine.open(flightPlan: flightPlan)
+        // if editing  an FP (the editor is open in an edit state) avoid re-opening a stale one from
+        // the database
+        if Services.hub.flightPlan.edition.currentFlightPlanValue?.uuid != flightPlan.uuid {
+            Services.hub.flightPlan.stateMachine.open(flightPlan: flightPlan)
+        }
     }
 
     public func stopMissionIfNeeded() {

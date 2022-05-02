@@ -53,9 +53,14 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     @IBOutlet private weak var AELockContainerView: UIView!
     @IBOutlet private weak var indicatorContainerView: UIView!
     @IBOutlet private weak var topStackView: UIStackView!
+    @IBOutlet private weak var infoBannerTopConstraint: NSLayoutConstraint!
     @IBOutlet private weak var dismissMissionLauncherButton: UIButton!
     @IBOutlet private weak var cameraSlidersLeadingConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var missionLauncherWidthConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var actionWidgetBottomConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var actionWidgetStackView: RightSidePanelStackView!
+    @IBOutlet private weak var actionWidgetContainerView: UIView!
+    @IBOutlet private weak var centerButtonHeightConstraint: NSLayoutConstraint!
+    @IBOutlet private var centerButtonBottomConstraint: NSLayoutConstraint!
 
     // MARK: - Public Properties
     var customControls: CustomHUDControls?
@@ -98,7 +103,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Private Enums
     private enum Constants {
         static let indicatorDelay: Double = 2.0
-        static let cameraSlidersButtonWidth: CGFloat = 31
+        static let cameraSlidersButtonWidth: CGFloat = 51
         static let cellularIndicatorTaskKey: String = "cellularIndicatorTaskKey"
         static let orientationKeyWord: String = "orientation"
     }
@@ -124,12 +129,14 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         customControls = Services.hub.ui.touchAndFly
         customControls?.start()
         setupAlertPanel()
+        setupActionWidgetContainer()
 
         listenMissionMode()
         listenTopBarChanges()
         listenRemoteShutdownAlert()
         listenPinCode()
         listenMissionLauncherState()
+        listenToActionWidgets()
 
         // Handle rotation when coming from Onboarding.
         let value = UIInterfaceOrientation.landscapeRight.rawValue
@@ -270,8 +277,11 @@ private extension HUDViewController {
 
     func listenTopBarChanges() {
         topBarService.showTopBarPublisher
-            .sink { [unowned self] in
-                topStackView.isHidden = !$0
+            .sink { [weak self] show in
+                guard let self = self else { return }
+                UIView.animate {
+                    self.topStackView.alphaHidden(!show)
+                }
             }
             .store(in: &cancellables)
     }
@@ -286,6 +296,29 @@ private extension HUDViewController {
                 }
             }
             .store(in: &cancellables)
+    }
+
+    /// Listens to action widgets.
+    func listenToActionWidgets() {
+        guard let coordinator = coordinator else { return }
+        coordinator.services.ui.uiComponentsDisplayReporter.isActionWidgetShownPublisher.sink { [weak self] isWidgetShown in
+            guard let self = self else { return }
+            // Disable user interaction if no action widget is displayed.
+            // Do not use isHidden in order to allow hiding animations.
+            self.actionWidgetStackView.isUserInteractionEnabled = isWidgetShown
+            self.updateCenterButtonBottomConstraint()
+        }
+        .store(in: &cancellables)
+    }
+
+    /// Updates center button bottom constraint depending on layout state.
+    func updateCenterButtonBottomConstraint() {
+        let isActionWidgetShown = coordinator?.services.ui.uiComponentsDisplayReporter.isActionWidgetShown ?? false
+        let isRightPanelRequired = currentMissionManager.mode.isRightPanelRequired
+        // Center button bottom constraint (relative to action widget container) should only be
+        // active if a widget is displayed and no right panel is required.
+        // Top lower priority constraint (relative to bottom bar) will apply if bottom constraint is disabled.
+        centerButtonBottomConstraint.isActive = isActionWidgetShown && !isRightPanelRequired
     }
 
     /// Displays the cellular card pin modal
@@ -318,8 +351,18 @@ private extension HUDViewController {
 
     /// Sets up constraints.
     func setupConstraints() {
-        missionLauncherWidthConstraint.constant = Layout.leftSidePanelWidth(isRegularSizeClass)
+        infoBannerTopConstraint.constant = Layout.hudTopBarHeight(isRegularSizeClass) + Layout.mainSpacing(isRegularSizeClass)
+        centerButtonHeightConstraint.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass)
+        centerButtonBottomConstraint.constant = -Layout.mainPadding(isRegularSizeClass)
+        missionControls.updateConstraints(animated: false)
+        alertControls.updateConstraints(animated: false)
         updateCameraSlidersConstraint()
+
+        // Use a bottom constraint instead of stackView inner margins, as action widget
+        // container either needs to snap to the bottom or follow bottom bar level 1
+        // depending on right panel display (goes up with bottom bar level 1 if no panel
+        // is displayed, remains snapped to the bottom otherwise).
+        actionWidgetBottomConstraint.constant = Layout.mainBottomMargin(isRegularSizeClass) - Layout.mainPadding(isRegularSizeClass)
     }
 
     /// Camera sliders alignment.
@@ -348,6 +391,7 @@ private extension HUDViewController {
             customControls?.mapViewController = map
             self.splitControls.addMap(map, parent: self)
         }
+        updateCenterButtonBottomConstraint()
     }
 
     /// Sets up left panel for proactive alerts.
@@ -358,6 +402,17 @@ private extension HUDViewController {
         self.addChild(alertPanel)
         alertPanel.view.removeFromSuperview()
         alertPanelContainerView.addWithConstraints(subview: alertPanel.view)
+    }
+
+    /// Sets up action widget container.
+    func setupActionWidgetContainer() {
+        guard let coordinator = coordinator else { return }
+        let viewModel = ActionWidgetViewModel(rthService: coordinator.services.drone.rthService,
+                                              panoramaService: coordinator.services.panoramaService,
+                                              currentMissionManager: coordinator.services.currentMissionManager)
+        let actionWidgetContainerVC = ActionWidgetContainerViewController.instantiate(viewModel: viewModel)
+        addChild(actionWidgetContainerVC)
+        actionWidgetContainerView.addWithConstraints(subview: actionWidgetContainerVC.view)
     }
 
     /// Changes joysticks visibility regarding view model state.

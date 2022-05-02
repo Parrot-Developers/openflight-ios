@@ -41,15 +41,13 @@ private extension ULogTag {
 public protocol CellularPairingService: AnyObject {
 
     func retryPairingProcess()
-    func startPairingProcessRequest()
+    func startPairingProcessRequest(with uid: String?)
     func startUnpairProcessRequest()
     func updateGsdkUserAccount()
-    func updateAnonymousDroneList(token: String)
+    func startProcess(with uid: String)
 
-    var pairingProcessErrorPublisher: AnyPublisher<PairingProcessError?, Never> { get }
+    var pairingProcessErrorPublisher: AnyPublisher<PairingProcessError, Never> { get }
     var pairingProcessStepPublisher: AnyPublisher<PairingProcessStep?, Never> { get }
-    var operatorNamePublisher: AnyPublisher<String?, Never> { get }
-    var cellularStatusPublisher: AnyPublisher<DetailsCellularStatus, Never> { get }
     var unpairDroneStatePublisher: AnyPublisher<UnpairDroneState, Never> { get }
 
     var isWaitingAutoRetry: Bool { get }
@@ -62,51 +60,53 @@ public enum PairingAction {
 
 class CellularPairingServiceImpl: CellularPairingService {
 
-    var pairingProcessErrorSubject = CurrentValueSubject<PairingProcessError?, Never>(nil)
+    var pairingProcessErrorSubject = CurrentValueSubject<PairingProcessError, Never>(.noError)
     var pairingProcessStepSubject = CurrentValueSubject<PairingProcessStep?, Never>(nil)
-    var operatorNameSubject = CurrentValueSubject<String?, Never>(nil)
-    var cellularStatusSubject = CurrentValueSubject<DetailsCellularStatus, Never>(.noState)
     var unpairDroneStateSubject = CurrentValueSubject<UnpairDroneState, Never>(.notStarted)
 
     var isWaitingPairingAutoRetry = false
 
     // MARK: - Private Properties
-    private var cellularRef: Ref<Cellular>?
     private var secureElementRef: Ref<SecureElement>?
-    private var networkControlRef: Ref<NetworkControl>?
     private unowned let networkService: NetworkService
     private var academyApiService: AcademyApiService
-    private var apcAPIManager = APCApiManager()
-    private var isUserLogged: Bool { Defaults.isUserConnected || SecureKeyStorage.current.isTemporaryAccountCreated }
+    private var userService: UserService
+    private var apcAPIManager: APCApiManager
+    private var isUserLogged: Bool { userService.currentUser.apcToken != nil }
     private var signedChallengeToken: String?
     private var challenge: String?
-    private var isSimLocked: Bool = true
     private var cancellables = Set<AnyCancellable>()
     private let currentDroneHolder: CurrentDroneHolder
     private let connectedDroneHolder: ConnectedDroneHolder
-    private let userRepo: UserRepository
+    private let cellularService: CellularService
     private var pairingAction: PairingAction = .pairUser
+    private var isFirstPairing: Bool = true
     private var processErrorSubscription: AnyCancellable?
-    private var userInformation: UserInformation { Services.hub.userInformation }
 
     /// Retry Pairing timer
     private var retryPairingTimer: Timer?
 
     init(currentDroneHolder: CurrentDroneHolder,
-         userRepo: UserRepository,
+         apcApiManager: APCApiManager,
          connectedDroneHolder: ConnectedDroneHolder,
          academyApiService: AcademyApiService,
-         networkService: NetworkService) {
+         networkService: NetworkService,
+         userService: UserService,
+         cellularService: CellularService) {
         self.currentDroneHolder = currentDroneHolder
-        self.userRepo = userRepo
+        self.apcAPIManager = apcApiManager
         self.connectedDroneHolder = connectedDroneHolder
         self.academyApiService = academyApiService
         self.networkService = networkService
+        self.userService = userService
+        self.cellularService = cellularService
 
         networkService.networkReachable
             .removeDuplicates()
-            .sink { [weak self] reachable in
+            .combineLatest(connectedDroneHolder.dronePublisher)
+            .sink { [weak self] (reachable, drone) in
                 guard let self = self else { return }
+                guard drone != nil else { return }
                 if reachable {
                     if self.pairingAction == .pairUser,
                        self.pairingProcessErrorSubject.value != .noError {
@@ -124,8 +124,6 @@ class CellularPairingServiceImpl: CellularPairingService {
             .compactMap { $0 }
             .sink { [unowned self] drone in
                 listenSecureElement(drone)
-                listenCellular(drone)
-                listenNetworkControl(drone)
             }
             .store(in: &cancellables)
 
@@ -134,8 +132,11 @@ class CellularPairingServiceImpl: CellularPairingService {
             .sink { [unowned self] error in
                 let decodedError = AcademyApiService.ApiError.error4xx(error)
                 if decodedError == .authenticationError || decodedError == .accessDenied {
-                    SecureKeyStorage.current.temporaryToken =  ""
-                    retryPairingProcess()
+                    createTemporaryAccount { [weak self] error in
+                        guard let self = self else { return }
+                        guard error == nil else { return }
+                        self.retryPairingProcess()
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -151,6 +152,37 @@ class CellularPairingServiceImpl: CellularPairingService {
                 updateUnpairDroneStatus(with: .notStarted)
             }
             .store(in: &cancellables)
+
+        userService.userEventPublisher
+            .removeDuplicates()
+            .combineLatest(cellularService.isCellularAvailablePublisher.removeDuplicates(),
+                           connectedDroneHolder.dronePublisher.removeDuplicates(),
+                           userService.currentUserPublisher.map { $0.isAnonymous }.removeDuplicates())
+            .sink { [weak self] (event, isCellularAvailable, drone, isAnonymous) in
+                guard let self = self else { return }
+                guard isCellularAvailable else {
+                    ULog.i(.tag, "Cellular unavailable")
+                    return
+                }
+                guard drone != nil else {
+                    ULog.i(.tag, "Drone not connected")
+                    return
+                }
+                if isAnonymous {
+                    ULog.i(.tag, "Anonymous will start pairing process")
+                    self.startPairingProcessRequest(with: nil)
+                } else {
+                    switch event {
+                    case .didLogin, .didLogout:
+                            ULog.i(.tag, "Switch account")
+                        self.startPairingProcessRequest(with: nil)
+
+                    default:
+                        return
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Constants
@@ -162,8 +194,6 @@ class CellularPairingServiceImpl: CellularPairingService {
 extension CellularPairingServiceImpl {
 
     /// Retry pairing process if there is an error.
-    // TODO: Discuss about the wished behavior when an unpair process fails.
-    //       (As the drone must be restarted, we can't do this in background)
     func retryPairingProcess() {
         ULog.i(.tag, "retryPairingProcess")
         retryPairingTimer?.invalidate()
@@ -221,7 +251,7 @@ extension CellularPairingServiceImpl {
     ///
     ///  - Note: `CellularPairingAvailabilityService` is responsable to update the local paired list
     ///           when a drone is connected and to call this method if needed.
-    func startPairingProcessRequest() {
+    func startPairingProcessRequest(with uid: String? = nil) {
         ULog.i(.tag, "startPairingProcessRequest")
         let startProcesses = { [unowned self] in
             Defaults.dronesListPairingProcessHidden.removeAll(where: { $0 == connectedDroneHolder.drone?.uid })
@@ -234,72 +264,67 @@ extension CellularPairingServiceImpl {
         }
 
         academyApiService.performPairedDroneListRequest { [unowned self] droneList in
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [unowned self] in
                 guard let droneList = droneList,
-                      let jsonString = ParserUtils.jsonString(droneList),
-                      let userAccount = GroundSdk().getFacility(Facilities.userAccount) else {
+                    ParserUtils.jsonString(droneList) != nil else {
                           startProcesses()
                           return
                       }
 
-                guard droneList.contains(where: { $0.serial == connectedDroneHolder.drone?.uid && $0.pairedFor4G }) else {
-                    startProcesses()
-                    return
-                }
-
-                userAccount.set(droneList: jsonString)
+                guard droneList.contains(where: { $0.serial == connectedDroneHolder.drone?.uid && $0.pairedFor4G
+                    || $0.serial == uid && $0.pairedFor4G  }) else {
+                        startProcesses()
+                        return
+                    }
             }
         }
+    }
+
+    func startProcess(with uid: String) {
+        resetProcessStates()
+        startPairingProcessRequest(with: uid)
     }
 
     /// Triggers an unpair process
     func startUnpairProcessRequest() {
         ULog.i(.tag, "startUnpairProcessRequest")
-        resetProcessStates()
-        retryPairingTimer?.invalidate()
-        pairingAction = .unpairUser
-        startProcess(action: .unpairUser)
+
+        academyApiService.performPairedDroneListRequest { [unowned self] droneList in
+            DispatchQueue.main.async { [unowned self] in
+                guard let droneList = droneList,
+                      ParserUtils.jsonString(droneList) != nil else {
+                    updateUnpairDroneStatus(with: .done)
+                    return
+                }
+
+                guard droneList.contains(where: { $0.serial == connectedDroneHolder.drone?.uid && $0.pairedFor4G }) else {
+                    updateUnpairDroneStatus(with: .done)
+                    return
+                }
+
+                resetProcessStates()
+                retryPairingTimer?.invalidate()
+                pairingAction = .unpairUser
+                startProcess(action: .unpairUser)
+            }
+        }
     }
 
     /// Updates GroundSdk user account with drone list retrieved from Academy.
     func updateGsdkUserAccount() {
         ULog.i(.tag, "updateGsdkUserAccount")
         academyApiService.performPairedDroneListRequest { droneList in
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [unowned self] in
                 guard droneList != nil,
                       let jsonString = ParserUtils.jsonString(droneList),
                       let userAccount = GroundSdk().getFacility(Facilities.userAccount) else {
 
-                          self.updateProcessError(error: .unableToConnect)
+                          updateProcessError(error: .unableToConnect)
                           return
                       }
 
                 userAccount.set(droneList: jsonString)
-                self.updateProcessStep(step: .pairingProcessSuccess)
-            }
-        }
-    }
-
-    func updateAnonymousDroneList(token: String) {
-        ULog.i(.tag, "updateAnonymousDroneList with \(token)")
-        apcAPIManager.updateGsdkUserAccount(token: token)
-
-        if let userAccount = GroundSdk().getFacility(Facilities.userAccount) {
-            userAccount.set(droneList: "")
-        }
-
-        academyApiService.performPairedDroneListRequest { droneList in
-            DispatchQueue.main.async {
-                guard droneList != nil,
-                      let jsonString = ParserUtils.jsonString(droneList),
-                      let userAccount = GroundSdk().getFacility(Facilities.userAccount) else {
-
-                          self.updateProcessError(error: .unableToConnect)
-                          return
-                      }
-
-                userAccount.set(droneList: jsonString)
-                self.updateProcessStep(step: .pairingProcessSuccess)
+                updateProcessStep(step: .pairingProcessSuccess)
             }
         }
     }
@@ -323,7 +348,7 @@ private extension CellularPairingServiceImpl {
             case .pairUser:
                 // ... create a temporary account to manage pairing process
                 // with his dedicated apc token.
-                createTemporaryAccount()
+                createTemporaryAccount { _ in }
                 return
 
             case .unpairUser:
@@ -336,30 +361,28 @@ private extension CellularPairingServiceImpl {
     }
 
     /// Creates a temporary account in order to pair the drone without a real MyParrot account.
-    func createTemporaryAccount() {
+    func createTemporaryAccount(completion: @escaping (_ error: PairingProcessError?) -> Void) {
         ULog.i(.tag, "createTemporaryAccount")
         guard networkService.networkIsReachable else {
             updateProcessError(error: .connectionUnreachable)
+            completion(.connectionUnreachable)
             return
         }
 
-        apcAPIManager.createTemporaryAccount(completion: { (isAccountCreated, token, error) in
-            DispatchQueue.main.async {
-                guard error == nil,
-                      isAccountCreated == true,
-                      let token = token,
-                      !token.isEmpty else {
-                          self.updateProcessError(error: .serverError)
-                          return
-                      }
+        userService.refreshAnonymousToken { error in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                guard error == nil else {
+                    self.updateProcessError(error: .serverError)
+                    completion(.serverError)
+                    return
+                }
 
                 self.updateProcessError(error: .noError)
-                SecureKeyStorage.current.temporaryToken = token
-                self.userInformation.token = token
-                self.userRepo.updateTokenForAnonymousUser(token)
                 self.startProcess(action: .pairUser)
+                completion(nil)
             }
-        })
+        }
     }
 
     /// Performs challenge AcademyV request.
@@ -426,7 +449,7 @@ private extension CellularPairingServiceImpl {
         }
 
         academyApiService.performAssociationRequest(token: token) { [unowned self] result in
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [unowned self] in
                 switch result {
                 case .failure(let error):
                     // If it's an 'Error 4xx', its useless to retry continuously the same step.
@@ -438,7 +461,7 @@ private extension CellularPairingServiceImpl {
 
                 case .success:
                     updateProcessStep(step: .associationRequestSuccess)
-                    addToPairedListDroneUid(self.currentDroneHolder.drone.uid)
+                    addToPairedListDroneUid(currentDroneHolder.drone.uid)
                     updateGsdkUserAccount()
                 }
             }
@@ -519,7 +542,6 @@ private extension CellularPairingServiceImpl {
                             }
 
                             self.updateUnpairDroneStatus(with: .done)
-                            self.updateCellularSubject(with: .userNotPaired)
                         }
                     }
                 }
@@ -600,34 +622,12 @@ extension CellularPairingServiceImpl {
         self.challenge = challenge
     }
 
-    /// Starts watcher for Cellular.
-    func listenCellular(_ drone: Drone) {
-        cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] _ in
-            self?.updateCellularState()
-            self?.updateCellularStatus(drone: drone)
-        }
-        updateCellularState()
-        updateCellularStatus(drone: drone)
-    }
-
-    /// Starts watcher for drone network control.
-    func listenNetworkControl(_ drone: Drone) {
-        networkControlRef = drone.getPeripheral(Peripherals.networkControl) { [weak self] _ in
-            self?.updateCellularStatus(drone: drone)
-        }
-    }
-
     /// Starts watcher for Secure Element.
     func listenSecureElement(_ drone: Drone) {
         secureElementRef = drone.getPeripheral(Peripherals.secureElement) { [weak self] _ in
             self?.updateSecureElementState()
         }
         updateSecureElementState()
-    }
-
-    func updateCellularState() {
-        let simLocked: Bool = currentDroneHolder.drone.getPeripheral(Peripherals.cellular)?.simStatus == .locked
-        isSimLocked = simLocked
     }
 
     /// Drone's SecureElement state Handler
@@ -669,79 +669,6 @@ extension CellularPairingServiceImpl {
             updateProcessError(error: .unableToConnect)
         }
     }
-
-    /// Updates cellular state.
-    func updateCellularStatus(drone: Drone) {
-        var status: DetailsCellularStatus = .noState
-        var operatorName = ""
-
-        guard let cellular = drone.getPeripheral(Peripherals.cellular),
-              drone.isConnected == true else {
-                  updateCellularSubject(with: status)
-                  return
-              }
-
-        // Update the current cellular state.
-        let networkControl = drone.getPeripheral(Peripherals.networkControl)
-        let cellularLink = networkControl?.links.first(where: { $0.type == .cellular })
-        let isDronePaired: Bool = drone.isAlreadyPaired == true
-
-        if cellularLink?.status == .running,
-           isDronePaired {
-            status = .cellularConnected
-            operatorName = cellular.operator
-        } else if cellular.mode.value == .nodata {
-            status = .noData
-        } else if cellular.simStatus == .absent {
-            status = .simNotDetected
-        } else if cellular.simStatus == .unknown {
-            status = .simNotRecognized
-        } else if cellular.simStatus == .initializing {
-            status = .initializing
-        } else if cellular.simStatus == .locked {
-            if cellular.pinRemainingTries == 0 {
-                status = .simBlocked
-            } else {
-                status = .simLocked
-            }
-        } else if cellularLink?.status == .error || cellularLink?.error != nil {
-            status = .connectionFailed
-        } else if cellular.modemStatus != .online {
-            status = .modemStatusOff
-        } else if cellular.registrationStatus == .notRegistered {
-            status = .notRegistered
-        } else if cellular.networkStatus == .error {
-            status = .networkStatusError
-        } else if cellular.networkStatus == .denied {
-            status = .networkStatusDenied
-        } else if cellular.isAvailable {
-            status = .cellularConnecting
-            operatorName = cellular.operator
-        } else if !isDronePaired {
-            status = .userNotPaired
-        } else {
-            status = .noState
-        }
-
-        updateCellularSubject(with: status)
-        updateOperatorName(operatorName: operatorName)
-    }
-
-    /// Updates cellular status.
-    ///
-    /// - Parameters:
-    ///     - cellularStatus: 4G status to update
-    func updateCellularSubject(with cellularStatus: DetailsCellularStatus) {
-        cellularStatusSubject.send(cellularStatus)
-    }
-
-    /// Updates operator name.
-    ///
-    /// - Parameters:
-    ///     - operatorName: name of the operator
-    func updateOperatorName(operatorName: String) {
-        operatorNameSubject.send(operatorName)
-    }
 }
 
 // MARK: - Handling Pairing Process Retries
@@ -773,10 +700,8 @@ extension CellularPairingServiceImpl {
 
 extension CellularPairingServiceImpl {
 
-    var pairingProcessErrorPublisher: AnyPublisher<PairingProcessError?, Never> { pairingProcessErrorSubject.eraseToAnyPublisher() }
+    var pairingProcessErrorPublisher: AnyPublisher<PairingProcessError, Never> { pairingProcessErrorSubject.eraseToAnyPublisher() }
     var pairingProcessStepPublisher: AnyPublisher<PairingProcessStep?, Never> { pairingProcessStepSubject.eraseToAnyPublisher() }
-    var operatorNamePublisher: AnyPublisher<String?, Never> { operatorNameSubject.eraseToAnyPublisher() }
-    var cellularStatusPublisher: AnyPublisher<DetailsCellularStatus, Never> { cellularStatusSubject.eraseToAnyPublisher() }
     var unpairDroneStatePublisher: AnyPublisher<UnpairDroneState, Never> { unpairDroneStateSubject.eraseToAnyPublisher() }
 
     var isWaitingAutoRetry: Bool { isWaitingPairingAutoRetry }

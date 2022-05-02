@@ -41,6 +41,12 @@ public final class ProjectManagerCoordinator: Coordinator {
     private let uiServices: UIServices
     private var defaultSelectedProject: ProjectModel?
 
+    /// Whether project manager has been opened from HUD.
+    /// (HUD and Dashboard navigation stack handling differ.)
+    private var isOpenFromHud: Bool {
+        parentCoordinator is FlightPlanPanelCoordinator
+    }
+
     init(flightPlanServices: FlightPlanServices,
          uiServices: UIServices,
          cloudSynchroWatcher: CloudSynchroWatcher?,
@@ -57,7 +63,8 @@ public final class ProjectManagerCoordinator: Coordinator {
                                                 manager: flightPlanServices.projectManager,
                                                 cloudSynchroWatcher: cloudSynchroWatcher,
                                                 projectManagerUiProvider: uiServices.projectManagerUiProvider,
-                                                flightPlanStateMachine: flightPlanServices.stateMachine)
+                                                flightPlanStateMachine: flightPlanServices.stateMachine,
+                                                canSelectProjectType: !isOpenFromHud)
 
         let viewController = ProjectManagerViewController.instantiate(coordinator: self,
                                                                       viewModel: viewModel,
@@ -74,8 +81,11 @@ public final class ProjectManagerCoordinator: Coordinator {
     ///    - completion: Completion block.
     func dismissProjectManager(animated: Bool = true,
                                completion: (() -> Void)? = nil) {
-        // Update the navigation stack
-        uiServices.navigationStack.removeLast()
+        // Navigation stack is not updated when opening project manager from HUD.
+        // => Update stack only if relevant.
+        if !isOpenFromHud {
+            uiServices.navigationStack.removeLast()
+        }
         parentCoordinator?.dismissChildCoordinator(animated: animated, completion: completion)
     }
 
@@ -114,9 +124,24 @@ public final class ProjectManagerCoordinator: Coordinator {
     /// - Parameters:
     ///    - project: a flightPlan project
     ///    - startEdition: `true` to start edition once opened, `false` otherwise
-    func open(project: ProjectModel, startEdition: Bool) {
+    ///    - isBrandNew: indicates whether a project has just been created or duplicated
+    func open(project: ProjectModel, startEdition: Bool, isBrandNew: Bool) {
         flightPlanServices.projectManager
-            .loadEverythingAndOpen(project: project)
+            .loadEverythingAndOpen(project: project, isBrandNew: isBrandNew)
+
+        if isOpenFromHud {
+            // Project manager has been opened from HUD right panel.
+            // => Only need to dismiss coordinator in order to show HUD.
+            // (No navigation stack operation required.)
+            parentCoordinator?.dismissChildCoordinator {
+                if startEdition {
+                    self.flightPlanServices.projectManager.startEdition()
+                }
+            }
+
+            return
+        }
+
         // Update the navigation stack with the selected project
         uiServices.navigationStack.updateLast(with: .projectManager(selectedProject: project))
         popToRootCoordinatorWithAnimator(coordinator: self,

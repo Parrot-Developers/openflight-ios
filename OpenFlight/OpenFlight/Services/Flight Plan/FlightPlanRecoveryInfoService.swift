@@ -130,33 +130,35 @@ public class FlightPlanRecoveryInfoServiceImpl {
     }
 
     /// Process recovery information provided by flight plan piloting interface.
-    /// For a flight plan not yet completed, we are reading the recovery info.
-    /// Whatever happens, the flight plan will be updated and saved.
-    /// Then recovery info is cleared if piloting interface is not active.
+    /// For a Piloting Interface not active, we are reading the recovery info.
+    /// The flight plan will be updated and saved if his current state is 'not completed'.
+    /// Then recovery info is cleared.
     ///
     /// - Parameters:
     ///    - pilotingItf: flight plan piloting interface
     private func checkRecoveryInfo(pilotingItf: FlightPlanPilotingItf) {
-        guard let recoveryInfo = pilotingItf.recoveryInfo,
-              let flightPlan = flightPlanManager.flightPlan(uuid: recoveryInfo.customId) else {
-                  return
-              }
+        // The Recovery Info is only treated when the Piloting Interface is not active.
+        guard pilotingItf.state != .active else { return }
+        // Ensure Recovery Info is available.
+        guard let recoveryInfo = pilotingItf.recoveryInfo else { return }
+        // Get the local FP from the recovery info's customId (the FP's uuid).
+        guard let flightPlan = flightPlanManager.flightPlan(uuid: recoveryInfo.customId) else { return }
+
         ULog.d(.tag, "checkRecoveryInfo recoveryInfo: \(recoveryInfo)")
-        switch flightPlan.state {
-        case .editable, .flying, .stopped:
-            // Only these states are valid
-            break
-        case .completed, .uploading, .processing, .processed, .unknown:
-            // flight plan is already completed, so clear recovery info.
-            pilotingItf.clearRecoveryInfo()
-            return
+
+        // A Flight Plan is considered as 'not completed' when
+        // it's in a running state (.flying or .stopped) or not yet launched (.editable state).
+        let notCompletedStates: [FlightPlanModel.FlightPlanState] = [.editable, .flying, .stopped]
+        // The Recovery Info is only treated when the local Flight Plan is in a 'not completed' state.
+        if notCompletedStates.contains(where: {$0 == flightPlan.state}) {
+            // The Local FP is updated with the recovery information.
+            // Then we check if the last FP's way point has been reached
+            // to handle, if necessary, the FP as 'finished offline'.
+            updateFlightPlanFromRecoveryInfo(flightPlan, recoveryInfo: recoveryInfo)
         }
-        updateFlightPlanFromRecoveryInfo(flightPlan, recoveryInfo: recoveryInfo)
-        // Only clear recovery info when piloting interface is not active.
-        // Clear will be done on the connection when piloting interface is active if necessary.
-        if pilotingItf.state != .active {
-            pilotingItf.clearRecoveryInfo()
-        }
+
+        // The piloting interface is not active, the recovery info can be cleared.
+        pilotingItf.clearRecoveryInfo()
     }
 
     /// Update flight plan when receiving recovery information.

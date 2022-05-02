@@ -27,14 +27,10 @@
                                 <color key="backgroundColor" name="default_bgcolor"/>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tUd-DT-3qz" userLabel="Navigation bar" customClass="NavigationStackView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="44" width="414" height="21"/>
+                                <rect key="frame" x="0.0" y="44" width="414" height="22.5"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zjh-XT-JbZ">
-                                        <rect key="frame" x="8" y="-9.5" width="40" height="40"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="40" id="aKv-52-UfY"/>
-                                            <constraint firstAttribute="width" secondItem="zjh-XT-JbZ" secondAttribute="height" multiplier="1:1" id="eIp-hq-ojv"/>
-                                        </constraints>
+                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zjh-XT-JbZ" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="8" y="0.5" width="21" height="22"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                         <color key="tintColor" name="default_text_color"/>
                                         <state key="normal" image="ic_back"/>
@@ -43,13 +39,13 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UJg-Vq-7bm" userLabel="Title">
-                                        <rect key="frame" x="186" y="0.0" width="42" height="21"/>
+                                        <rect key="frame" x="184" y="0.0" width="46.5" height="22.5"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icloading" translatesAutoresizingMaskIntoConstraints="NO" id="AaQ-jw-24a">
-                                        <rect key="frame" x="236" y="0.0" width="21" height="21"/>
+                                        <rect key="frame" x="238.5" y="0.0" width="21" height="22.5"/>
                                         <color key="tintColor" name="highlight_color"/>
                                     </imageView>
                                 </subviews>
@@ -65,7 +61,7 @@
                                 </constraints>
                             </view>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsVerticalScrollIndicator="NO" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="X2D-hU-JJS">
-                                <rect key="frame" x="10.5" y="65" width="393" height="831"/>
+                                <rect key="frame" x="10.5" y="66.5" width="393" height="829.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <connections>

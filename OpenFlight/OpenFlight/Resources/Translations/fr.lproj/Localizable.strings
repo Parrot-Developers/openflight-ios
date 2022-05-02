@@ -21,6 +21,7 @@
 "common_delete" = "Supprimer";
 "common_keep" = "Conserver";
 "common_rename" = "Renommer";
+"common_format" = "Formater";
 "common_min" = "Min";
 "common_max" = "Max";
 "common_off" = "Off";
@@ -100,6 +101,7 @@
 "common_share_support" = "Partager avec le support";
 "common_recommended" = "Recommandé";
 "common_required" = "Requise";
+"common_advised" = "Conseillée";
 "common_downloaded" = "Téléchargé";
 "common_or" = "ou";
 "common_app" = "App";
@@ -114,6 +116,7 @@
 "mission_mode_touch_n_fly" = "Touch & Fly";
 "touch_fly_place_waypoint_poi" = "Placez un waypoint ou un POI sur la carte";
 "touch_fly_take_off_the_drone" = "Faites décoller le drone";
+"touch_fly_take_off_in_progress" = "Décollage en cours…";
 "touch_fly_tracking_poi" = "Suivi du POI...";
 "touch_fly_flying_to_waypoint" = "En vol vers le waypoint...";
 "touch_fly_poi_altitude" = "POI Altitude";
@@ -150,8 +153,10 @@
 */
 "photo_settings_format_jpeg_rect" = "JPEG RECT";
 "photo_settings_format_dng_jpeg" = "DNG+JPEG WIDE";
+"photo_settings_format_dng_jpeg_short" = "DNG+WIDE";
 "photo_settings_format_jpeg_wide" = "JPEG WIDE";
 "photo_settings_format_dng_jpeg_rect" = "DNG+JPEG RECT";
+"photo_settings_format_dng_jpeg_rect_short" = "DNG+RECT";
 "video_settings_resolution_1080p" = "1080p";
 "video_settings_resolution_8k" = "8K";
 "video_settings_resolution_6k" = "6K";
@@ -285,12 +290,14 @@
 "alert_geofence_reached" = "Géocage atteinte";
 "alert_camera_error" = "Vérifiez que rien ne gène les mouvements de la caméra";
 "alert_low_and_perturbed_wifi" = "Signal Wi-Fi faible. Fortes interférences.";
-"alert_no_avoidance_sensors_failure" = "Obstacle avoidance disabled - Stereo camera failure";
+"alert_stereo_sensors_not_calibrated" = "Étalonnage des capteurs stéréo requis";
+"alert_no_avoidance_sensors_failure" = "Évitement d'obstacles désactivé - Problème caméra stéréo";
+"alert_no_avoidance_gimbal_failure" = "Évitement d'obstacles désactivé - Problème stabilisation gimbal";
 "alert_no_avoidance_sensors_not_calibrated" = "Évitement d'obstacles désactivé - Étalonnage des capteurs stéréo requis";
 "alert_no_avoidance_too_dark" = "Évitement d'obstacles désactivé - Environnement trop sombre";
 "alert_no_avoidance_no_gps" = "Évitement d'obstacles désactivé - Mauvaise qualité du GPS";
-"alert_deteriorated_avoidance_strong_winds" = "Évitement d'obstacles détérioré – Vents forts";
-"alert_avoidance_deteriorated" = "Évitement d'obstacles détérioré - Faible qualité du GPS";
+"alert_deteriorated_avoidance_strong_winds" = "Évitement d'obstacles dégradé - Vents forts";
+"alert_avoidance_deteriorated" = "Évitement d'obstacles dégradé - Faible qualité du GPS";
 "alert_drone_stuck" = "Évitement d’obstacles – Le drone n'a pas pu trouver un passage";
 "alert_high_deviation" = "Évitement d’obstacles – Forte déviation";
 "alert_obstacle_avoidance_computational_error" = "Évitement d’obstacles désactivé - Erreur interne";
@@ -357,7 +364,7 @@
 "takeoff_alert_modem_updating_description" = "Le drone ne peut pas décoller pendant que le modem 4G est en cours d’initialisation. Veuillez réessayer dans un instant.";
 "takeoff_alert_default_message" = "Décollage indisponible";
 "remote_alert_shutdown_instruction" = "Maintenez le bouton On/Off appuyé pour éteindre la télécommande";
-"remote_alert_shutdown_success" = "La télécommande va s’éteindre";
+"remote_alert_shutdown_success" = "La télécommande est éteinte";
 "mission_alert_exit" = "Veuillez faire atterrir le drone pour arrêter la mission %@";
 "mission_alert_enter" = "Veuillez faire atterrir le drone pour entrer dans la mission %@";
 "alert_delete_flight_log_title" = "Supprimer le log de vol ?";
@@ -369,6 +376,9 @@
 "alert_memory_full_title" = "Mémoire pleine";
 "alert_memory_full_description" = "Il n’y a pas assez d’espace dans la mémoire du drone.\n\nVeuillez supprimer des fichiers pour pouvoir continuer.";
 "ophtalmo_stop_land" = "Faites atterrir votre drone pour arrêter la calibration";
+"alert_oa_drone_stuck_title" = "Evitement d’obstacles";
+"alert_oa_drone_stuck_subtitle" = "Drone immobilisé";
+"alert_oa_drone_stuck_action_text" = "Désactiver l’évitement d’obstacle";
 /**
  * Français localization.
 */
@@ -405,14 +415,15 @@ Voulez-vous continuer ?";
 "flight_plan_info_drone_ready" = "Drone prêt";
 "flight_plan_info_uploading" = "Chargement…";
 "flight_plan_settings_title" = "Paramètres de vol";
-"flight_plan_settings_progressive_race_label" = "Course progressive";
-"flight_plan_settings_progressive_race" = "Course progressive automatique";
-"flight_plan_settings_progressive_race_short" = "Course progressive";
+"flight_plan_settings_progressive_orientation" = "Orientation progressive";
+"flight_plan_settings_progressive_orientation_short" = "Orientation progressive";
 "flight_plan_settings_last_waypoint" = "Dernier waypoint";
 "flight_plan_settings_last_wp" = "Dernier WP";
 "flight_plan_settings_rth_on_last_point_short" = "RTH";
 "flight_plan_settings_rth_on_last_point" = "RTH";
-"flight_plan_settings_avoidance_short" = "Evitement";
+"flight_plan_settings_rth_final" = "RTH final";
+"flight_plan_settings_rth_after_disconnection" = "RTH sur perte de liaison";
+"flight_plan_settings_avoidance_short" = "Evitement d'obstacles";
 "flight_plan_settings_avoidance" = "Evitement d'obstacles";
 "flight_plan_point_settings_title" = "Point";
 "flight_plan_point_settings_type" = "Type";
@@ -451,6 +462,11 @@ Voulez-vous continuer ?";
 "flight_plan_details_incomplete_description" = "Incomplet";
 "flight_plan_details_status_title" = "Statut";
 "drone_navigating_to_flight_plan_starting_point" = "En vol vers le point de départ";
+"flight_plan_execution_name" = "Exécution";
+"flight_plan_duplicated_project_suffix" = "copie";
+"default_flight_plan_project_name" = "FlightPlan";
+"existing_project_name_alert_title" = "Nom de projet existant";
+"existing_project_name_alert_message" = "Veuillez choisir un autre nom.";
 /**
  * Français localization.
 */
@@ -721,6 +737,7 @@ Certains pays peuvent vous demander de renseigner cet identifiant unique ainsi q
 "drone_details_reset_description" = "La réinitialisation du drone effacera la liste des télécommandes associées, remettra les mots de passe et nom du drone par défaut, effacera tous les logs de vol. Etes vous sûr de vouloir continuer ?";
 "drone_details_calibration_ok" = "All ok";
 "drone_details_calibration_required" = "Calibration du drone requise";
+"drone_details_calibration_advised" = "Calibration du drone conseillée";
 "drone_details_calibration_gimbal_required" = "Calibration de la gimbal requise";
 "drone_details_calibration_love_required" = "Calibration des capteurs requise";
 "drone_details_wifi_password" = "Mot de passe Wi-Fi";
@@ -734,7 +751,7 @@ Certains pays peuvent vous demander de renseigner cet identifiant unique ainsi q
 "drone_gimbal_title" = "Gimbal";
 "drone_horizon_calibration" = "Horizon";
 "drone_calibration_required" = "Calibration requise";
-"drone_calibration_recommended" = "Calibration drone recommandée";
+"drone_calibration_advised" = "Calibration conseillée";
 "drone_magnetometer_title" = "Magnétomètre";
 "drone_magnetometer_calibration_required" = "Magnétomètre calibration requise";
 "drone_magnetometer_calibration_message" = "Veuillez reproduire ce mouvement avec votre drone.";
@@ -871,6 +888,7 @@ Certains pays peuvent vous demander de renseigner cet identifiant unique ainsi q
 "gallery_delete_media" = "Supprimer toutes les photos (%d)";
 "gallery_format_sd_card" = "Formater la carte SD";
 "gallery_format_data_erased" = "Toutes les données seront effacées";
+"gallery_format_sd_card_confirmation_desc" = "Êtes-vous sûr de vouloir formater la carte SD ? Toutes les données seront effacées.";
 "gallery_format_quick" = "Rapide";
 "gallery_format_full" = "Complet";
 "gallery_format_recommended" = "Recommandé";
@@ -880,7 +898,6 @@ Certains pays peuvent vous demander de renseigner cet identifiant unique ainsi q
 "gallery_format_resetting" = "Réinitialisation de la mémoire SD";
 "gallery_format_creating_partition" = "Création d'une nouvelle partition";
 "gallery_format_complete" = "Formatage terminé";
-"gallery_format" = "Formater Carte SD";
 "gallery_format_succeeded" = "Formatage réussi";
 "gallery_panorama_downloading_files" = "Téléchargement des fichiers";
 "gallery_panorama_files_download_error" = "Impossible de télécharger les fichiers.";
@@ -895,6 +912,7 @@ Certains pays peuvent vous demander de renseigner cet identifiant unique ainsi q
 "gallery_panorama_sd_copy" = "Copie du panorama vers la carte SD";
 "gallery_panorama_internal_copy" = "Copie du panorama vers la mémoire interne";
 "gallery_panorama_generation_error" = "Impossible de générer le panorama.";
+"gallery_panorama_generation_error_missing_photos" = "Génération du panorama impossible en raison de photos manquantes";
 "gallery_panorama_copy_error" = "Impossible de copier le panorama.";
 "gallery_video_path_component" = "Video";
 "gallery_photo_path_component" = "Photo";
@@ -913,9 +931,11 @@ Certains pays peuvent vous demander de renseigner cet identifiant unique ainsi q
 "gallery_media_video_land_drone" = "Faites atterrir le drone pour visualiser la video";
 "gallery_confirm_delete" = "Êtes-vous sûr de vouloir supprimer ce fichier de la %@ ?";
 "gallery_no_media" = "Aucun média";
-"gallery_playback_not_possible" = "Lecture vidéo impossible quand un enregistrement est en cours";
+"gallery_playback_not_possible_recording" = "Lecture vidéo impossible quand un enregistrement est en cours";
+"gallery_playback_not_possible_download" = "Lecture vidéo impossible quand un téléchargement est en cours";
 "gallery_recording_not_possible_desc" = "L’enregistrement ne peut pas être lancé quand une lecture vidéo est en cours.";
 "gallery_recording_not_possible_title" = "Enregistrement impossible";
+"gallery_preview_not_possible_download" = "Affichage de l’image impossible quand un téléchargement est en cours";
 /**
  * Français localization.
 */
@@ -1055,8 +1075,10 @@ Certains pays peuvent vous demander de renseigner cet identifiant unique ainsi q
 "firmware_mission_update_install_one" = "Installer %@";
 "firmware_mission_update_download_firmware" = "Télécharger %@";
 "firmware_mission_update_number_of_file" = "%d fichier(s)";
+"firmware_mission_update_mission_name" = "Mission %@";
+"firmware_mission_update_ophtalmo" = "Ophtalmo";
 "firmware_mission_update_mission_not_installed" = "Pas installée";
-"firmware_mission_update_updating_mission" = "Mise à jour %@";
+"firmware_mission_update_updating_mission" = "Mise à jour mission %@ %@";
 "firmware_mission_update_downloading_firmware" = "Téléchargement du firmware %@";
 "firmware_mission_update_sending_to_remote_control" = "Envoi du firmware %@ au contrôleur";
 "firmware_mission_update_sending_to_drone" = "Envoi du firmware %@ au drone";

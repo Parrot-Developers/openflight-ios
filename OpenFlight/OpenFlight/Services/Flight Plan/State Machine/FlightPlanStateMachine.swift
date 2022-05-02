@@ -309,6 +309,8 @@ private extension FlightPlanStateMachineImpl {
     }
 
     func propagateUpdatedFlightPlan(_ flightPlan: FlightPlanModel) {
+        ULog.i(.tag, "Propagate updated '\(flightPlan.uuid)' state '\(statePrivate.value)'")
+        ULog.d(.tag, "FP propagated: '\(flightPlan)'")
         switch statePrivate.value {
         case .machineStarted, .initialized:
             break
@@ -419,9 +421,12 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
     }
 
     public func updateSafely(flightPlan: FlightPlanModel, _ updateBlock: (FlightPlanModel) -> Void) -> FlightPlanModel {
+        ULog.d(.tag, "update safely '\(flightPlan.uuid)'")
         guard flightPlan.uuid == currentFlightPlan?.uuid else {
             let flightPlan = manager.flightPlan(uuid: flightPlan.uuid) ?? flightPlan
             updateBlock(flightPlan)
+            // /!\ the FP storing in core data is async.
+            // We can get an old non-updated version.
             return manager.flightPlan(uuid: flightPlan.uuid) ?? flightPlan
         }
         let flightPlan = currentFlightPlan ?? flightPlan

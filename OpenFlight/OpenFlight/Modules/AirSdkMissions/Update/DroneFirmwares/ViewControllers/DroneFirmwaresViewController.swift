@@ -165,7 +165,7 @@ private extension DroneFirmwaresViewController {
         tableView.allowsSelection = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.separatorColor = ColorName.defaultTextColor20.color
+        tableView.separatorStyle = .none
         tableView.register(cellType: DroneFirmwaresTableViewCell.self)
         tableView.reloadData()
     }

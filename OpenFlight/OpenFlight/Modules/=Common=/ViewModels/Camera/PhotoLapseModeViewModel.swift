@@ -28,6 +28,11 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "PhotoLapseModeViewModel")
+}
 
 /// State for `PhotoLapseModeViewModel`.
 final class PhotoLapseState: DeviceConnectionState {
@@ -97,30 +102,71 @@ final class PhotoLapseState: DeviceConnectionState {
 /// View model that manages timelapse and gpslapse photo capture mode.
 final class PhotoLapseModeViewModel: DroneStateViewModel<PhotoLapseState> {
     // MARK: - Private Properties
+    private var mediaListRef: Ref<[MediaItem]>?
     private var photoCaptureRef: Ref<Camera2PhotoCapture>?
     private var photoProgressIndicatorRef: Ref<Camera2PhotoProgressIndicator>?
     private var cameraRef: Ref<MainCamera2>?
-    private var camera: Camera2? {
-        return drone?.currentCamera
-    }
+    private var camera: Camera2? { drone?.currentCamera }
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-        listenCamera(drone: drone)
+    private let activeExecutionWatcher = Services.hub.flightPlan.activeFlightPlanWatcher
+    private var connectedDroneHolder = Services.hub.connectedDroneHolder
+    private var cancellables = Set<AnyCancellable>()
+    private var photoCount: Int = 0
+    private var photoCaptureCount: Int = 0
+
+    // MARK: - Init
+    override init() {
+        super.init()
+
+        connectedDroneHolder.dronePublisher
+            .combineLatest(activeExecutionWatcher.activeFlightPlanPublisher)
+            .sink { [unowned self] drone, activeFlightPlan in
+                guard let drone = drone else {
+                    photoCaptureRef = nil
+                    photoProgressIndicatorRef = nil
+                    cameraRef = nil
+                    return
+                }
+
+                listenMedia(drone: drone, activeFlightPlan: activeFlightPlan)
+            }
+            .store(in: &cancellables)
     }
 }
 
 // MARK: - Private Funcs
 private extension PhotoLapseModeViewModel {
+    /// Starts watcher for media.
+    func listenMedia(drone: Drone, activeFlightPlan: FlightPlanModel?) {
+        mediaListRef = drone.getPeripheral(Peripherals.mediaStore)?.newList { [unowned self] mediaList in
+            guard let activeFlightPlan = activeFlightPlan,
+                  let mediaList = mediaList, !mediaList.isEmpty else {
+                      photoCount = 0
+                      listenCamera(drone: drone)
+                      mediaListRef = nil
+                      return
+                  }
+
+            // retrieve photo count of current flight plan
+            photoCount = mediaList
+                .filter { $0.customId == activeFlightPlan.uuid && ($0.mediaType == .timeLapse || $0.mediaType == .gpsLapse) }
+                .reduce(0, { $0 + $1.resources.count })
+            ULog.d(.tag, "Retrieve \(photoCount) media for activeFlightPlan \(activeFlightPlan.uuid)")
+            listenCamera(drone: drone, adjustPhotoCount: true)
+            mediaListRef = nil
+        }
+    }
+
     /// Starts watcher for camera.
     ///
     /// - Parameters:
     ///   - drone: the current drone
-    func listenCamera(drone: Drone) {
+    ///   - adjustPhotoCount: Tells if the photo count adjustment is needed
+    func listenCamera(drone: Drone, adjustPhotoCount: Bool = false) {
         // reset capture and progress references on drone change
         photoCaptureRef = nil
         photoProgressIndicatorRef = nil
+        photoCaptureCount = 0
 
         cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
             guard let camera = camera else { return }
@@ -129,7 +175,7 @@ private extension PhotoLapseModeViewModel {
             updateSelectedValue(withCamera: camera)
 
             // listen to capture and progress components
-            listenPhotoCapture(camera: camera)
+            listenPhotoCapture(camera: camera, adjustPhotoCount: adjustPhotoCount)
             listenProgressIndicator(camera: camera)
         }
     }
@@ -138,15 +184,38 @@ private extension PhotoLapseModeViewModel {
     ///
     /// - Parameters:
     ///    - camera: the camera
-    func listenPhotoCapture(camera: Camera2) {
+    ///    - adjustPhotoCount: Tells if the photo count adjustment is needed
+    func listenPhotoCapture(camera: Camera2, adjustPhotoCount: Bool) {
         // do not register photo capture observer if not needed
         guard photoCaptureRef?.value == nil else { return }
 
+        var adjustPhotoCount = adjustPhotoCount
         photoCaptureRef = camera.getComponent(Camera2Components.photoCapture) { [unowned self] photoCapture in
             updateMode(withCamera: camera)
-            guard let photoCaptureState = photoCapture?.state,
-                  case .started(_, let photoCount, _) = photoCaptureState else { return }
-            updatePhotoCount(photoCount: photoCount)
+            guard let photoCaptureState = photoCapture?.state else { return }
+            switch photoCaptureState {
+            case .started(_, let captureCount, _):
+                if adjustPhotoCount {
+                    // substract to this photo count the number of current photo capture
+                    // in order to not count them twice when displaying photo count
+                    photoCount -= captureCount
+                    ULog.d(.tag, "Adjust photo count to \(photoCount)")
+                    adjustPhotoCount = false
+                }
+                photoCaptureCount = captureCount
+                ULog.d(.tag, "Photo capture started: photoCount \(photoCount), photoCaptureCount \(photoCaptureCount)")
+                updatePhotoCount(photoCount: photoCount + photoCaptureCount)
+            case .stopped:
+                // save last photo capture count if a flight plan is active.
+                if activeExecutionWatcher.activeFlightPlan != nil {
+                    photoCount += photoCaptureCount
+                }
+                photoCaptureCount = 0
+                ULog.d(.tag, "Photo capture stopped: photoCount \(photoCount), photoCaptureCount \(photoCaptureCount)")
+                updatePhotoCount(photoCount: photoCount + photoCaptureCount)
+            default:
+                break
+            }
         }
     }
 

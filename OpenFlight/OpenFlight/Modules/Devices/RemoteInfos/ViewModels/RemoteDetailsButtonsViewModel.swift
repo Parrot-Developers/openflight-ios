@@ -130,7 +130,7 @@ extension RemoteDetailsButtonsState {
         let titleColor: ColorName = needCalibration ? .white : .defaultTextColor
         let subtitleColor: ColorName = needCalibration ? .white : (isRemoteConnected ? .highlightColor : .defaultTextColor)
 
-        return DeviceDetailsButtonModel(mainImage: Asset.Common.Icons.icRemoteControl.image,
+        return DeviceDetailsButtonModel(mainImage: Asset.Remote.icRemoteController.image,
                                         title: L10n.remoteDetailsCalibration,
                                         subtitle: subtitle,
                                         backgroundColor: backgroundColor,
@@ -147,13 +147,11 @@ extension RemoteDetailsButtonsState {
             let backgroundColor: ColorName = isDroneConnected ? .white : .warningColor
             let titleColor: ColorName = isDroneConnected ? .defaultTextColor : .white
             let subtitleColor: ColorName = isDroneConnected ? .highlightColor : .white
-            let mainImage = isDroneConnected
-                             ? Asset.Remote.icDroneDark.image
-                             : Asset.Remote.icDroneLight.image
-            return DeviceDetailsButtonModel(mainImage: mainImage,
+            return DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDrone.image,
                                             title: L10n.remoteDetailsConnectedDrone,
                                             subtitle: isDroneConnected ? droneName : L10n.pairingLookingForDrone,
                                             backgroundColor: backgroundColor,
+                                            mainImageTintColor: titleColor,
                                             titleColor: titleColor,
                                             subtitleColor: subtitleColor)
         } else {
@@ -182,7 +180,7 @@ extension RemoteDetailsButtonsState {
                                          ? .errorColor
                                          : canShowAvailableUpdate ? .warningColor : .white
 
-        return DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDownload.image,
+        return DeviceDetailsButtonModel(mainImage: Asset.Remote.icRemoteFirmware.image,
                                         title: L10n.remoteDetailsSoftware,
                                         subImage: subImage,
                                         subtitle: subtitle,

@@ -93,6 +93,10 @@ public enum Layout {
     public static func buttonIntrinsicHeight(_ isRegularSizeClass: Bool) -> CGFloat {
         isRegularSizeClass ? buttonIntrinsicHeights.regular : buttonIntrinsicHeights.compact
     }
+    /// Back button intrinsic width.
+    public static func backButtonIntrinsicWidth(_ isRegularSizeClass: Bool) -> CGFloat {
+        isRegularSizeClass ? backButtonIntrinsicWidths.regular : backButtonIntrinsicWidths.compact
+    }
 
     // MARK: - Side Panels
     /// Side panel width.
@@ -287,6 +291,8 @@ private extension Layout {
     // MARK: - Buttons
     /// Button intrinsic heights.
     static let buttonIntrinsicHeights: (compact: CGFloat, regular: CGFloat) = (50, 66)
+    /// Back button intrinsic widths.
+    static let backButtonIntrinsicWidths: (compact: CGFloat, regular: CGFloat) = (40, 50)
 
     // MARK: - Side Panels
     /// Side panel widths.
@@ -306,7 +312,8 @@ private extension Layout {
     /// Left safe area adjustment offset (needed because `leftSafeAreaMargin` is slightly narrower than actual notch).
     static let leftSafeAreaAdjustmentOffset: CGFloat = 4
     /// Safe area corners margin. Used to compensate rounded corners lost space.
-    static let safeAreaCornersMargin: CGFloat = 15
+    /// No margin needed for regular size because of the neglectable relative corners size.
+    static let safeAreaCornersMargins: (CGFloat, CGFloat) = (12, 0)
     /// Main paddings.
     static let tableViewCellContainerLeftPadding: (compact: CGFloat, regular: CGFloat) = (15, 15)
     /// Main spacings.
@@ -380,7 +387,9 @@ private extension Layout {
 
     // MARK: - Definitions
     /// Left safe area corners padding.
-    static var safeAreaCornersPadding: CGFloat { UIDevice.current.hasBottomSafeAreaInset ? safeAreaCornersMargin : 0 }
+    static var safeAreaCornersPaddings: (compact: CGFloat, regular: CGFloat) {
+        UIDevice.current.hasBottomSafeAreaInset ? safeAreaCornersMargins : (0, 0)
+    }
     /// Left safe area min paddings.
     static var leftSafeAreaMinPaddings: (compact: CGFloat, regular: CGFloat) {
         (max(leftSafeAreaPadding + leftSafeAreaAdjustmentOffset, mainPaddings.compact), mainPaddings.regular)
@@ -394,31 +403,35 @@ private extension Layout {
         UIDevice.current.hasBottomSafeAreaInset ? bottomSafeAreaMargins : mainPaddings
     }
     /// HUD top bar inner edges.
-    static let hudTopBarInnerEdges: (compact: NSDirectionalEdgeInsets, regular: NSDirectionalEdgeInsets) =
-    (.init(top: hudTopBarPaddings.compact,
-           leading: safeAreaCornersPadding + mainPaddings.compact,
-           bottom: hudTopBarPaddings.compact,
-           trailing: safeAreaCornersPadding + mainPaddings.compact),
-     .init(top: hudTopBarPaddings.regular,
-           leading: safeAreaCornersPadding + mainPaddings.compact,
-           bottom: hudTopBarPaddings.regular,
-           trailing: safeAreaCornersPadding + mainPaddings.compact))
+    static var hudTopBarInnerEdges: (compact: NSDirectionalEdgeInsets, regular: NSDirectionalEdgeInsets) {
+        (.init(top: hudTopBarPaddings.compact,
+               leading: safeAreaCornersPaddings.compact + mainPaddings.compact,
+               bottom: hudTopBarPaddings.compact,
+               trailing: safeAreaCornersPaddings.compact + mainPaddings.compact),
+         .init(top: hudTopBarPaddings.regular,
+               leading: safeAreaCornersPaddings.regular + mainPaddings.regular,
+               bottom: hudTopBarPaddings.regular,
+               trailing: safeAreaCornersPaddings.regular + mainPaddings.regular))
+    }
     /// File navigation bar inner edges.
-    static let fileNavigationBarInnerEdges: (compact: NSDirectionalEdgeInsets, regular: NSDirectionalEdgeInsets) =
-    (.init(top: fileNavigationBarPaddings.compact,
-           leading: safeAreaCornersPadding + mainPaddings.compact,
-           bottom: fileNavigationBarPaddings.compact,
-           trailing: safeAreaCornersPadding + mainPaddings.compact),
-     .init(top: fileNavigationBarPaddings.regular,
-           leading: safeAreaCornersPadding + mainPaddings.compact,
-           bottom: fileNavigationBarPaddings.regular,
-           trailing: safeAreaCornersPadding + mainPaddings.compact))
+    static var fileNavigationBarInnerEdges: (compact: NSDirectionalEdgeInsets, regular: NSDirectionalEdgeInsets) {
+        (.init(top: fileNavigationBarPaddings.compact,
+               leading: safeAreaCornersPaddings.compact + mainPaddings.compact,
+               bottom: fileNavigationBarPaddings.compact,
+               trailing: safeAreaCornersPaddings.compact + mainPaddings.compact),
+         .init(top: fileNavigationBarPaddings.regular,
+               leading: safeAreaCornersPaddings.regular + mainPaddings.regular,
+               bottom: fileNavigationBarPaddings.regular,
+               trailing: safeAreaCornersPaddings.regular + mainPaddings.regular))
+    }
     /// Right side panel inner edges.
-    static let rightSidePanelInnerEdges: (compact: NSDirectionalEdgeInsets, regular: NSDirectionalEdgeInsets) =
-    mainContainerInnerEdges(screenBorders: [.bottom])
+    static var rightSidePanelInnerEdges: (compact: NSDirectionalEdgeInsets, regular: NSDirectionalEdgeInsets) {
+        mainContainerInnerEdges(screenBorders: [.bottom])
+    }
     /// Left side panel inner edges.
-    static let leftSidePanelInnerEdges: (compact: NSDirectionalEdgeInsets, regular: NSDirectionalEdgeInsets) =
-    mainContainerInnerEdges()
+    static var leftSidePanelInnerEdges: (compact: NSDirectionalEdgeInsets, regular: NSDirectionalEdgeInsets) {
+        mainContainerInnerEdges()
+    }
     /// Main container inner edges.
     static func mainContainerInnerEdges(screenBorders: [NSLayoutConstraint.Attribute] = [.left, .bottom],
                                         hasMinLeftPadding: Bool = false) -> (compact: NSDirectionalEdgeInsets,
@@ -437,15 +450,16 @@ private extension Layout {
                trailing: mainPaddings.regular))
     }
     /// Table view cell container insets.
-    static var tableViewCellContainerInsets: (compact: UIEdgeInsets, regular: UIEdgeInsets) =
-    (.init(top: tableViewCellContainerSpacing.compact,
-           left: tableViewCellContainerLeftPadding.compact,
-           bottom: tableViewCellContainerSpacing.compact,
-           right: tableViewCellContainerSpacing.compact),
-     .init(top: tableViewCellContainerSpacing.regular,
-           left: tableViewCellContainerLeftPadding.regular,
-           bottom: tableViewCellContainerSpacing.regular,
-           right: tableViewCellContainerSpacing.regular))
+    static var tableViewCellContainerInsets: (compact: UIEdgeInsets, regular: UIEdgeInsets) {
+        (.init(top: tableViewCellContainerSpacing.compact,
+               left: tableViewCellContainerLeftPadding.compact,
+               bottom: tableViewCellContainerSpacing.compact,
+               right: tableViewCellContainerSpacing.compact),
+         .init(top: tableViewCellContainerSpacing.regular,
+               left: tableViewCellContainerLeftPadding.regular,
+               bottom: tableViewCellContainerSpacing.regular,
+               right: tableViewCellContainerSpacing.regular))
+    }
     /// File collectionView content insets.
     static func fileCollectionViewContentInsets(screenBorders: [NSLayoutConstraint.Attribute] = [.left, .bottom]) -> (compact: UIEdgeInsets,
                                                                                                                       regular: UIEdgeInsets) {
@@ -472,13 +486,14 @@ private extension Layout {
     }
     /// sidePanelSettingTableViewCell content insets.
     static var sidePanelSettingTableViewCellContentInsets: (compact: UIEdgeInsets,
-                                                            regular: UIEdgeInsets)
-    = (.init(top: mainSpacings.compact,
-             left: sidePanelSettingTableViewCellPaddings.compact,
-             bottom: mainSpacings.compact,
-             right: sidePanelSettingTableViewCellPaddings.compact),
-       .init(top: mainSpacings.regular,
-             left: sidePanelSettingTableViewCellPaddings.regular,
-             bottom: mainSpacings.regular,
-             right: sidePanelSettingTableViewCellPaddings.regular))
+                                                            regular: UIEdgeInsets) {
+        (.init(top: mainSpacings.compact,
+               left: sidePanelSettingTableViewCellPaddings.compact,
+               bottom: mainSpacings.compact,
+               right: sidePanelSettingTableViewCellPaddings.compact),
+         .init(top: mainSpacings.regular,
+               left: sidePanelSettingTableViewCellPaddings.regular,
+               bottom: mainSpacings.regular,
+               right: sidePanelSettingTableViewCellPaddings.regular))
+    }
 }

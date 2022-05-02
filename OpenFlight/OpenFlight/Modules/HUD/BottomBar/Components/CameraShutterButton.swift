@@ -31,6 +31,10 @@ import UIKit
 import Reusable
 import GroundSdk
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "CameraShutterButton")
+}
+
 /// Shutter button for HUD. Displays current recording/photo capture state.
 
 final class CameraShutterButton: UIControl, NibOwnerLoadable {
@@ -141,6 +145,11 @@ private extension CameraShutterButton {
     /// - Parameters:
     ///     - model: current button state
     func updateRecordingMode(model: CameraShutterButtonState) {
+        guard model.enabled else {
+            applyRecordingUnavailableStyle()
+            return
+        }
+
         guard model.isStorageReady else {
             applyRecordingUnavailableStyle(image: model.userStorageState.shutterIcon)
             return
@@ -148,13 +157,6 @@ private extension CameraShutterButton {
 
         guard !model.userStorageState.hasStorageError else {
             applyRecordingUnavailableStyle(image: Asset.BottomBar.ShutterButtonIcons.Error.icSdError.image)
-            return
-        }
-
-        // Applies reset recording style when camera configuration changed.
-        if let countDown = model.timeBeforeRestartRecord {
-            applyRestartRecordingTimerStyle(labelText: String(countDown))
-            updateCircleProgressView(inProgress: countDown != 0, countDown: Float(countDown))
             return
         }
 
@@ -187,6 +189,11 @@ private extension CameraShutterButton {
     /// - Parameters:
     ///     - model: current button state
     func updatePhotoMode(model: CameraShutterButtonState) {
+        guard model.enabled else {
+            applyPhotoCaptureUnavailableStyle()
+            return
+        }
+
         guard model.isStorageReady else {
             applyPhotoCaptureUnavailableStyle(image: model.userStorageState.shutterIcon)
             return
@@ -327,28 +334,6 @@ private extension CameraShutterButton {
                     image: image)
         isBlinking = false
     }
-
-    /// Apply style for restart timer recording mode.
-    ///
-    /// - Parameters:
-    ///     - labelText: shutter button text
-    func applyRestartRecordingTimerStyle(labelText: String?) {
-        updateStyle(innerBackgroundColor: Constants.restartRecordingBackgroundColor,
-                    labelText: labelText)
-        centerLabel.textColor = Constants.countDownRestartRecordingColor
-    }
-
-    /// Update circle progress view for restart recording.
-    ///
-    /// - Parameters:
-    ///     - inProgress: current circle progress view state
-    ///     - countDown: circle progress view animation countDown
-    func updateCircleProgressView(inProgress: Bool, countDown: Float) {
-        let animationStep = Constants.maxAnimationProgress / (Constants.maxCountdown - 1.0)
-        let animationProgress = animationStep * (Constants.maxCountdown - countDown)
-        circleProgressView.isHidden = false
-        circleProgressView.setProgress(animationProgress, duration: 1.0)
-    }
 }
 
 // MARK: CameraShutterButton Photo Capture Style
@@ -412,7 +397,11 @@ private extension CameraShutterButton {
     ///     - state: current timelapse state
     func updateTimeLapseModeProgressView(with state: PhotoLapseState) {
         applyLapseModeInProgressStyle(photosCount: state.photosNumber)
-        guard state.photosNumber > photosCount else { return }
+        guard state.photosNumber > photosCount else {
+            ULog.d(.tag, "State photo number \(state.photosNumber) <= photoCount \(photosCount)")
+            return
+        }
+        ULog.d(.tag, "State photo number \(state.photosNumber) > photoCount \(photosCount)")
         photosCount = state.photosNumber
         shutterButtonProgressView.animateProgress(duration: TimeInterval(state.selectedValue) - Style.mediumAnimationDuration)
     }

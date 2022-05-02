@@ -54,11 +54,14 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     case geofenceDistance
     case obstacleAvoidanceTooDark
     case obstacleAvoidanceSensorsFailure
+    case obstacleAvoidanceGimbalFailure
     case obstacleAvoidanceSensorsNotCalibrated
     case obstacleAvoidanceDeteriorated
     case obstacleAvoidanceStrongWind
     case obstacleAvoidanceComputationalError
     case cameraError
+    case needCalibration
+    case stereoCameraDecalibrated
 
     public var level: HUDAlertLevel {
         return .critical
@@ -74,7 +77,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
              .forceLandingTemperature,
              .wontReachHome:
             return .autoLanding
-        case .takeoffUnavailable:
+        case .takeoffUnavailable,
+             .needCalibration:
             return .takeoff
         case .noGpsTooDark,
              .noGpsTooHigh,
@@ -96,12 +100,14 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return .geofence
         case .obstacleAvoidanceTooDark,
              .obstacleAvoidanceSensorsFailure,
+             .obstacleAvoidanceGimbalFailure,
              .obstacleAvoidanceSensorsNotCalibrated,
              .obstacleAvoidanceStrongWind,
              .obstacleAvoidanceDeteriorated,
              .obstacleAvoidanceComputationalError:
             return .obstacleAvoidance
-        case .cameraError:
+        case .cameraError,
+             .stereoCameraDecalibrated:
             return .componentsCamera
         }
     }
@@ -153,6 +159,8 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return L10n.alertNoAvoidanceTooDark
         case .obstacleAvoidanceSensorsFailure:
             return L10n.alertNoAvoidanceSensorsFailure
+        case .obstacleAvoidanceGimbalFailure:
+            return L10n.alertNoAvoidanceGimbalFailure
         case .obstacleAvoidanceSensorsNotCalibrated:
             return L10n.alertNoAvoidanceSensorsNotCalibrated
         case .obstacleAvoidanceDeteriorated:
@@ -163,6 +171,10 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return L10n.alertObstacleAvoidanceComputationalError
         case .cameraError:
             return L10n.alertCameraError
+        case .needCalibration:
+            return L10n.droneDetailsCalibrationRequired
+        case .stereoCameraDecalibrated:
+            return L10n.alertStereoSensorsNotCalibrated
         }
     }
 

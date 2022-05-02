@@ -90,10 +90,11 @@ private extension GalleryPlayerPagerViewController {
     ///     - index: Media index in the gallery media array
     /// - Returns: UIViewController
     func pageViewController(atIndex index: Int) -> UIViewController? {
-        guard let viewModel = viewModel,
-            let media = viewModel.getMedia(index: index) else {
-                return nil
+
+        guard let viewModel = viewModel else {
+            return nil
         }
+        let media = viewModel.state.value.filteredMedias[index]
 
         switch media.type {
         case .video:
@@ -122,7 +123,7 @@ extension GalleryPlayerPagerViewController: UIPageViewControllerDataSource {
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         guard let swipableVC = viewController as? SwipableViewController,
             let viewModel = viewModel,
-            swipableVC.index + 1 < viewModel.numberOfMedias else {
+              swipableVC.index + 1 < viewModel.numberOfFilteredMedias else {
                 return nil
         }
 

@@ -61,7 +61,6 @@ public final class FlightPlanPanelCoordinator: Coordinator {
     private let services: ServiceHub
     private var splitControls: SplitControls?
     private var rightPanelContainerControls: RightPanelContainerControls?
-    private var managePlansCoordinator: ManagePlansCoordinator?
 
     // MARK: - Public Funcs
     public func start() {
@@ -105,6 +104,7 @@ public extension FlightPlanPanelCoordinator {
             mapViewController.centerMapOnDroneOrUser()
         }
 
+        showHudControls(show: false) // Hide HUD controls in edition mode.
         startFlightPlanEdition(mapViewController: mapViewController)
     }
 
@@ -119,10 +119,6 @@ public extension FlightPlanPanelCoordinator {
     }
 
     func resetPopupConfirmation(_ resetConfirmed: @escaping () -> Void) {
-        guard services.flightPlan.edition.hasChanges else {
-            resetConfirmed()
-            return
-        }
         let cancel = AlertAction(title: L10n.commonNo,
                                  style: .default2)
         let action = AlertAction(title: L10n.commonYes,
@@ -136,46 +132,53 @@ public extension FlightPlanPanelCoordinator {
                                                          validateAction: action)
         presentModal(viewController: controller)
     }
+
+    /// Show HUD controls or map VC navigation bar according to `show` parameter.
+    ///
+    /// - Parameter show: whether HUD controls should be shown
+    func showHudControls(show: Bool) {
+        guard let splitControls = splitControls else { return }
+
+        if show {
+            services.ui.hudTopBarService.allowTopBarDisplay()
+        } else {
+            services.ui.hudTopBarService.forbidTopBarDisplay()
+        }
+        splitControls.mapViewController?.navBarView.isHidden = show
+        splitControls.hideCameraSliders(hide: !show)
+        splitControls.hideBottomBar(hide: !show)
+    }
 }
 
 // MARK: - FlightPlanManagerCoordinator
 extension FlightPlanPanelCoordinator: FlightPlanManagerCoordinator {
     public func startManagePlans() {
-        guard let fpProvider = services.currentMissionManager.mode.flightPlanProvider,
-              let stateMachine = services.currentMissionManager.mode.stateMachine else { return }
-        let viewModel = ManagePlansViewModel(
-            delegate: self,
-            flightPlanProvider: fpProvider,
-            manager: services.flightPlan.projectManager,
-            stateMachine: stateMachine,
-            currentMission: services.currentMissionManager
-        )
-        let flightPlanListviewModel = FlightPlansListViewModel(manager: services.flightPlan.projectManager,
-                                                               flightPlanTypeStore: services.flightPlan.typeStore,
-                                                               navigationStack: services.ui.navigationStack,
-                                                               cloudSynchroWatcher: services.cloudSynchroWatcher)
-        viewModel.setupFlightPlanListviewModel(viewModel: flightPlanListviewModel)
-        let coordinator = ManagePlansCoordinator()
-        coordinator.parentCoordinator = self
-        coordinator.start(viewModel: viewModel)
-        guard let viewController = coordinator.navigationController else { return }
-        managePlansCoordinator = coordinator
-
-        // Add right presentation animation.
-        // This could be improved by writing a custom modal presentation.
-        applyMoveInTransition(with: .fromRight, to: navigationController)
-        presentModal(viewController: viewController, animated: false)
-        services.ui.uiComponentsDisplayReporter.modalIsPresented()
+        let selectedProject = services.flightPlan.projectManager.currentProject
+        let projectManagerCoordinator = ProjectManagerCoordinator(flightPlanServices: services.flightPlan,
+                                                                  uiServices: services.ui,
+                                                                  cloudSynchroWatcher: services.cloudSynchroWatcher,
+                                                                  defaultSelectedProject: selectedProject)
+        projectManagerCoordinator.parentCoordinator = self
+        projectManagerCoordinator.start()
+        present(childCoordinator: projectManagerCoordinator, completion: {})
     }
 
     public func startFlightPlanHistory(projectModel: ProjectModel) {
+        guard let splitControls = splitControls,
+              let mapViewController = splitControls.mapViewController else { return }
+
+        // FP history panel uses map VC navigation bar instead of HUD top bar.
         services.ui.hudTopBarService.forbidTopBarDisplay()
-        let viewController = ExecutionsListViewController.instantiate(
+        showNavBar(show: true)
+
+        let viewController = mapViewController.executionsListProvider(
             delegate: self,
             flightPlanHandler: services.flightPlan.manager,
             projectManager: services.flightPlan.projectManager,
             projectModel: projectModel,
-            flightService: services.flight.service)
+            flightService: services.flight.service,
+            flightPlanRepo: services.repos.flightPlan,
+            topBarService: services.ui.hudTopBarService)
         navigationController?.pushViewController(viewController, animated: true)
     }
 }
@@ -189,11 +192,16 @@ private extension FlightPlanPanelCoordinator {
     func startFlightPlanEdition(mapViewController: MapViewController) {
         let viewController = mapViewController
             .editionProvider(panelCoordinator: self,
-                             flightPlanServices: services.flightPlan)
+                             flightPlanServices: services.flightPlan,
+                             navigationStack: services.ui.navigationStack)
         navigationController?.pushViewController(viewController, animated: true)
-        navigationController?.transitionCoordinator?.animate(alongsideTransition: { (_) in
-            mapViewController.flightPlanEditionViewControllerBackButton.isHidden = false
-        }, completion: nil)
+    }
+
+    /// Shows map view controller navigation bar if needed.
+    ///
+    /// - Parameter show: whether the navigation bar needs to be shown
+    private func showNavBar(show: Bool) {
+        splitControls?.mapViewController?.navBarView.isHidden = !show
     }
 }
 
@@ -232,7 +240,6 @@ extension FlightPlanPanelCoordinator: ManagePlansViewModelDelegate {
     func endManagePlans(editionPreference: ManagePlansViewModel.EndManageEditionPreference, shouldCenter: Bool) {
         applyTransition(type: .reveal, direction: .fromLeft, to: navigationController)
         dismiss(animated: false) { [weak self] in
-            self?.managePlansCoordinator = nil
             switch editionPreference {
             case .start:
                 self?.startFlightPlanEdition()
@@ -264,6 +271,7 @@ extension FlightPlanPanelCoordinator: ExecutionsListDelegate {
     }
 
     public func backDisplay() {
+        showNavBar(show: false)
         back()
     }
 }

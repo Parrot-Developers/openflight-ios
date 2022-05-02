@@ -45,8 +45,8 @@ open class GutmaWatcherImpl {
         static let lastFlightObservationDelay: TimeInterval = 15.0
     }
 
-    private let userInfo: UserInformation
-    private let service: FlightService
+    private let userService: UserService!
+    private let service: FlightService!
 
     private var cancellables = Set<AnyCancellable>()
     private var watchLastFlight = false
@@ -57,8 +57,8 @@ open class GutmaWatcherImpl {
 
     private var flightEndedSubject = PassthroughSubject<FlightModel, Never>()
 
-    init(userInfo: UserInformation, service: FlightService, currentDroneHolder: CurrentDroneHolder) {
-        self.userInfo = userInfo
+    init(userService: UserService, service: FlightService, currentDroneHolder: CurrentDroneHolder) {
+        self.userService = userService
         self.service = service
         currentDroneHolder.dronePublisher
             .sink { [unowned self] in listenFlyingIndicators(drone: $0) }
@@ -112,7 +112,7 @@ open class GutmaWatcherImpl {
             ULog.e(.tag, "Failed to parse gutma file at \(gutmaUrl)")
             return nil
         }
-        return gutma.toFlight(apcId: userInfo.apcId, gutmaFile: data)
+        return gutma.toFlight(apcId: userService.currentUser.apcId, gutmaFile: data)
     }
 }
 

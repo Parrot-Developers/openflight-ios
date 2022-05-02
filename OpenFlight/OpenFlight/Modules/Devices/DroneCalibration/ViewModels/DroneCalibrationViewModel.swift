@@ -207,9 +207,10 @@ private extension DroneCalibrationViewModel {
         switch magnetometer.calibrationState {
         case .calibrated:
             magnetometerState = .calibrated
-        case .required,
-             .recommended:
+        case .required:
             magnetometerState = .needed
+        case .recommended:
+            magnetometerState = .recommended
         }
     }
 }

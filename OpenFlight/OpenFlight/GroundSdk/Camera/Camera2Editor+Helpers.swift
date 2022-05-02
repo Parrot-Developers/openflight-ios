@@ -200,6 +200,12 @@ public extension Camera2Editor {
             autoComplete()
         }
 
+        // always override zoomMaxSpeed
+        applyValueNotForced(Camera2Params.zoomMaxSpeed, Constants.defaults.zoomMaxSpeed)
+        if self[Camera2Params.zoomMaxSpeed]?.value != Constants.defaults.zoomMaxSpeed {
+            ULog.e(.tag, "Failed to override zoomMaxSpeed \(String(describing: Constants.defaults.zoomMaxSpeed))")
+        }
+
         // notify camera configuration watcher that the configuration will be applied
         let cameraConfigWatcher = Services.hub.drone.cameraConfigWatcher
         cameraConfigWatcher.willApplyConfig(config: self)

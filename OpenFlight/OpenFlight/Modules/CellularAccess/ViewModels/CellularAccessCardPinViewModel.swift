@@ -85,14 +85,20 @@ final class CellularAccessCardPinViewModel {
     // MARK: - Private Properties
     private var cellularRef: Ref<Cellular>?
     private var cancellables = Set<AnyCancellable>()
+    private var detailsCellularIsSource: Bool
 
     // TODO - Wrong injection
     private let currentDroneHolder = Services.hub.currentDroneHolder
     private unowned let pinCodeService = Services.hub.drone.pinCodeService
 
+    private weak var coordinator: Coordinator?
+
     // MARK: - Init
 
-    init() {
+    init(coordinator: Coordinator, detailsCellularIsSource: Bool = false) {
+        self.coordinator = coordinator
+        self.detailsCellularIsSource = detailsCellularIsSource
+
         currentDroneHolder.dronePublisher
             .sink { [unowned self] drone in
                 listenCellular(drone: drone)
@@ -117,6 +123,16 @@ final class CellularAccessCardPinViewModel {
     func dismissCellularModal() {
         updateLoaderState(shouldShow: false)
         pinCodeService.resetPinCodeRequested()
+    }
+
+    func dismissPinCodeView(animated: Bool) {
+        coordinator?.dismiss(animated: animated) {
+            if self.detailsCellularIsSource {
+                if let coordinator = self.coordinator as? DroneCoordinator {
+                    coordinator.displayDroneDetailsCellular()
+                }
+            }
+        }
     }
 }
 

@@ -24,14 +24,11 @@
                                 <rect key="frame" x="0.0" y="0.0" width="926" height="428"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="x49-H8-wS6" customClass="FileNavigationStackView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="926" height="36"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="926" height="50"/>
                                         <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="a2k-Rf-EC3">
-                                                <rect key="frame" x="0.0" y="0.0" width="36" height="36"/>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="a2k-Rf-EC3" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="21" height="50"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" secondItem="a2k-Rf-EC3" secondAttribute="height" multiplier="1:1" id="dWo-e6-mmZ"/>
-                                                </constraints>
                                                 <color key="tintColor" name="default_text_color"/>
                                                 <state key="normal" image="ic_back"/>
                                                 <connections>
@@ -39,11 +36,11 @@
                                                 </connections>
                                             </button>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oFe-uc-meE" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="36" y="0.0" width="297.66666666666669" height="36"/>
+                                                <rect key="frame" x="21" y="0.0" width="312.66666666666669" height="50"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </view>
                                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="1" translatesAutoresizingMaskIntoConstraints="NO" id="R63-xl-7s2">
-                                                <rect key="frame" x="333.66666666666669" y="0.0" width="259.00000000000006" height="37"/>
+                                                <rect key="frame" x="333.66666666666669" y="0.0" width="259.00000000000006" height="51"/>
                                                 <segments>
                                                     <segment title="Completed flights"/>
                                                     <segment title="Plans"/>
@@ -54,13 +51,13 @@
                                                 </connections>
                                             </segmentedControl>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="x1z-Ys-Uqb" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="592.66666666666663" y="0.0" width="333.33333333333337" height="36"/>
+                                                <rect key="frame" x="592.66666666666663" y="0.0" width="333.33333333333337" height="50"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </view>
                                         </subviews>
                                     </stackView>
                                     <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OUg-iQ-Uqx">
-                                        <rect key="frame" x="0.0" y="36" width="926" height="392"/>
+                                        <rect key="frame" x="0.0" y="50" width="926" height="378"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </containerView>
                                 </subviews>
@@ -88,7 +85,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="ic_back" width="21" height="28.333333969116211"/>
+        <image name="ic_back" width="21" height="21"/>
         <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

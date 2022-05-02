@@ -52,6 +52,8 @@ public class MapViewModel {
     private unowned var connectedDroneHolder: ConnectedDroneHolder
     /// Network service
     private let networkService: NetworkService
+    /// FlightPlan Edition Service
+    private let flightPlanEdition: FlightPlanEditionService
     /// Current drone connection state
     private var droneConnectionStateSubject = CurrentValueSubject<Bool, Never>(false)
 
@@ -66,6 +68,9 @@ public class MapViewModel {
     public var networkReachablePublisher: AnyPublisher<Bool, Never> { networkService.networkReachable }
     /// Drone location
     public var droneLocation: OrientedLocation { locationsTracker.droneLocation }
+    /// Return home location
+    public var returnHomeLocation: CLLocationCoordinate2D? { locationsTracker.returnHomeLocation }
+
     // TODO: center button should not be managed by this VM (currently SplitObjects holds the IBOutlet)
     /// Hide center button publisher
     public var hideCenterButtonPublisher: AnyPublisher<Bool, Never> {
@@ -90,6 +95,9 @@ public class MapViewModel {
             return droneLocation.coordinates?.coordinate
         case .user:
             return locationsTracker.userLocation.coordinates?.coordinate
+        case .project:
+            return flightPlanEdition.currentFlightPlanValue?.center ??
+            locationsTracker.userLocation.coordinates?.coordinate
         case .none:
             return nil
         }
@@ -104,24 +112,39 @@ public class MapViewModel {
     ///  - locationsTracker: the locations tracker
     ///  - currentDroneHolder: the current drone holder
     ///  - networkService: the network service
-    init(locationsTracker: LocationsTracker, connectedDroneHolder: ConnectedDroneHolder, networkService: NetworkService) {
+    ///  - flightPlanEdition: the FlightPlan Edition Service
+    init(locationsTracker: LocationsTracker,
+         connectedDroneHolder: ConnectedDroneHolder,
+         networkService: NetworkService,
+         flightPlanEdition: FlightPlanEditionService) {
         self.locationsTracker = locationsTracker
         self.connectedDroneHolder = connectedDroneHolder
         self.networkService = networkService
-        locationsTracker.droneLocationPublisher
-            .combineLatest(locationsTracker.droneGpsFixedPublisher, $alwaysCenterOnDroneLocation, locationsTracker.userLocationPublisher)
-            .sink { [unowned self] in
-                let (droneLocation, droneGpsFixed, alwaysCenterOnDrone, userLocation) = $0
-                centerStateSubject.value = centerState(droneLocation: droneLocation,
-                                                       userLocation: userLocation,
-                                                       droneGpsFixed: droneGpsFixed,
-                                                       alwaysCenterOnDrone: alwaysCenterOnDrone)
-            }
-            .store(in: &cancellables)
+        self.flightPlanEdition = flightPlanEdition
 
         connectedDroneHolder.dronePublisher
             .sink { [unowned self] in
                 droneConnectionStateSubject.value = $0 != nil
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Listen to publishers that may change center map button behaviour
+    /// - Parameters:
+    ///  - currentMapModePublisher: Publisher for the mapMode in MapViewController
+    func listenCenterState(currentMapModePublisher: AnyPublisher<MapMode, Never>) {
+        Publishers.CombineLatest(
+            Publishers.CombineLatest3(locationsTracker.droneLocationPublisher, locationsTracker.droneGpsFixedPublisher, $alwaysCenterOnDroneLocation),
+            Publishers.CombineLatest3(locationsTracker.userLocationPublisher, flightPlanEdition.currentFlightPlanPublisher, currentMapModePublisher)
+        ).sink { [unowned self] in
+                let ((droneLocation, droneGpsFixed, alwaysCenterOnDrone),
+                     (userLocation, currentFlightPlanEdition, currentMapMode)) = $0
+                centerStateSubject.value = centerState(droneLocation: droneLocation,
+                                                       userLocation: userLocation,
+                                                       droneGpsFixed: droneGpsFixed,
+                                                       alwaysCenterOnDrone: alwaysCenterOnDrone,
+                                                       currentFlightPlanEdition: currentFlightPlanEdition,
+                                                       currentMapMode: currentMapMode)
             }
             .store(in: &cancellables)
     }
@@ -132,8 +155,12 @@ private extension MapViewModel {
     func centerState(droneLocation: OrientedLocation,
                      userLocation: OrientedLocation,
                      droneGpsFixed: Bool,
-                     alwaysCenterOnDrone: Bool) -> MapCenterState {
-        if droneLocation.isValid, droneGpsFixed || alwaysCenterOnDrone {
+                     alwaysCenterOnDrone: Bool,
+                     currentFlightPlanEdition: FlightPlanModel?,
+                     currentMapMode: MapMode) -> MapCenterState {
+        if currentMapMode == .flightPlanEdition, currentFlightPlanEdition != nil {
+            return .project
+        } else if droneLocation.isValid, droneGpsFixed || alwaysCenterOnDrone {
             return .drone
         } else if userLocation.isValid {
             return .user

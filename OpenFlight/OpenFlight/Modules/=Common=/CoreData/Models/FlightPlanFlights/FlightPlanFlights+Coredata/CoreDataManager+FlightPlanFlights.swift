@@ -351,7 +351,7 @@ internal extension CoreDataServiceImpl {
     func getAllFPlanFlightsCD(toBeDeleted: Bool?) -> [FlightPlanFlights] {
         let fetchRequest = FlightPlanFlights.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
 
         if let toBeDeleted = toBeDeleted {
             let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))

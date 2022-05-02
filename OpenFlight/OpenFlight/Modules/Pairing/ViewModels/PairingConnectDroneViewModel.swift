@@ -70,6 +70,7 @@ final class PairingConnectDroneViewModel {
     private var networkService: NetworkService = Services.hub.systemServices.networkService
     private var currentDroneHolder: CurrentDroneHolder = Services.hub.currentDroneHolder
     private var currentRemoteControlHolder: CurrentRemoteControlHolder = Services.hub.currentRemoteControlHolder
+    private var pairingService: CellularPairingService = Services.hub.drone.cellularPairingService
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
@@ -119,6 +120,7 @@ final class PairingConnectDroneViewModel {
               droneFinder?.connect(discoveredDrone: drone) == true else {
                   return
               }
+        pairingService.startProcess(with: uid)
         pairingConnectionState = .connecting
         listenDroneConnectionState(uid: uid)
     }

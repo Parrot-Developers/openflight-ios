@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ykg-O9-yb7">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ykg-O9-yb7">
     <device id="retina6_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -22,13 +23,13 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Vu4-oI-srE">
-                                <rect key="frame" x="44" y="0.0" width="808" height="393"/>
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="25" translatesAutoresizingMaskIntoConstraints="NO" id="aW3-Ed-Aa0">
-                                        <rect key="frame" x="0.0" y="62.666666666666657" width="808" height="268"/>
+                                        <rect key="frame" x="0.0" y="69.666666666666686" width="896" height="275"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NX0-MD-fc1" customClass="DroneComponentsStatusView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="289" y="0.0" width="230" height="230"/>
+                                                <rect key="frame" x="333" y="0.0" width="230" height="230"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="230" id="PiO-DX-RZ3">
                                                         <variation key="heightClass=regular-widthClass=regular" constant="432"/>
@@ -36,55 +37,47 @@
                                                     <constraint firstAttribute="width" secondItem="NX0-MD-fc1" secondAttribute="height" multiplier="1:1" id="d0Y-P1-pIp"/>
                                                 </constraints>
                                             </view>
-                                            <stackView opaque="NO" contentMode="center" distribution="equalSpacing" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="9i8-0I-caz">
-                                                <rect key="frame" x="303.66666666666669" y="255" width="200.66666666666669" height="13"/>
+                                            <stackView opaque="NO" contentMode="center" distribution="equalSpacing" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="9i8-0I-caz">
+                                                <rect key="frame" x="352.66666666666669" y="255" width="190.66666666666669" height="20"/>
                                                 <subviews>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="9pS-TM-vjw">
-                                                        <rect key="frame" x="0.0" y="0.0" width="89.333333333333329" height="13"/>
+                                                    <stackView opaque="NO" contentMode="center" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="lhx-tz-ePC">
+                                                        <rect key="frame" x="0.0" y="0.0" width="45.333333333333336" height="20"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBattery" translatesAutoresizingMaskIntoConstraints="NO" id="Nov-35-Xy2" userLabel="battery image view">
+                                                                <rect key="frame" x="0.0" y="3" width="7" height="14"/>
+                                                                <color key="tintColor" name="default_text_color"/>
+                                                            </imageView>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yeR-CQ-ybr" userLabel="battery">
+                                                                <rect key="frame" x="12" y="2.3333333333333144" width="33.333333333333336" height="15"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                                <color key="textColor" name="default_text_color"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="9pS-TM-vjw">
+                                                        <rect key="frame" x="65.333333333333314" y="0.0" width="85.333333333333314" height="20"/>
                                                         <subviews>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" verticalHuggingPriority="251" image="icGpsQuality6" translatesAutoresizingMaskIntoConstraints="NO" id="ISj-kN-eK3" userLabel="GPS image view">
-                                                                <rect key="frame" x="0.0" y="0.0" width="20" height="13"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
                                                                 <color key="tintColor" name="default_text_color"/>
                                                             </imageView>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Oe9-Io-BNT">
-                                                                <rect key="frame" x="27.000000000000004" y="0.0" width="33.333333333333343" height="13"/>
+                                                                <rect key="frame" x="25.000000000000004" y="0.0" width="33.333333333333343" height="20"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                                 <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icSatellite" translatesAutoresizingMaskIntoConstraints="NO" id="QpX-wq-gqv" userLabel="satellite image view">
-                                                                <rect key="frame" x="67.333333333333314" y="0.0" width="22" height="13"/>
+                                                                <rect key="frame" x="63.333333333333314" y="0.0" width="22" height="20"/>
                                                                 <color key="tintColor" name="default_text_color"/>
                                                             </imageView>
                                                         </subviews>
                                                     </stackView>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic4GQuality5" translatesAutoresizingMaskIntoConstraints="NO" id="Cb6-oy-zU4">
-                                                        <rect key="frame" x="104.33333333333331" y="0.0" width="20" height="13"/>
+                                                        <rect key="frame" x="170.66666666666669" y="0.0" width="20" height="20"/>
                                                         <color key="tintColor" name="default_text_color"/>
                                                     </imageView>
-                                                    <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="0Ln-Ri-r1l">
-                                                        <rect key="frame" x="139.33333333333331" y="0.0" width="1" height="13"/>
-                                                        <color key="backgroundColor" name="default_text_color"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="13" id="8Ba-F7-bNt"/>
-                                                            <constraint firstAttribute="width" constant="1" id="uC6-FY-cau"/>
-                                                        </constraints>
-                                                    </view>
-                                                    <stackView opaque="NO" contentMode="center" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="lhx-tz-ePC">
-                                                        <rect key="frame" x="155.33333333333331" y="0.0" width="45.333333333333343" height="13"/>
-                                                        <subviews>
-                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBattery" translatesAutoresizingMaskIntoConstraints="NO" id="Nov-35-Xy2" userLabel="battery image view">
-                                                                <rect key="frame" x="0.0" y="0.0" width="7" height="13"/>
-                                                                <color key="tintColor" name="default_text_color"/>
-                                                            </imageView>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yeR-CQ-ybr" userLabel="battery">
-                                                                <rect key="frame" x="12" y="0.0" width="33.333333333333336" height="13"/>
-                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                                <color key="textColor" name="default_text_color"/>
-                                                                <nil key="highlightedColor"/>
-                                                            </label>
-                                                        </subviews>
-                                                    </stackView>
                                                 </subviews>
                                             </stackView>
                                         </subviews>
@@ -92,6 +85,7 @@
                                 </subviews>
                             </stackView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="h43-A5-jwl"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="Vu4-oI-srE" secondAttribute="bottom" id="5OW-2e-zNI"/>
                             <constraint firstItem="Vu4-oI-srE" firstAttribute="leading" secondItem="ajg-pY-O4f" secondAttribute="leading" id="Lih-AB-GLZ"/>

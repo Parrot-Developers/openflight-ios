@@ -38,6 +38,15 @@ public protocol FlightRepository: AnyObject {
     /// Publisher notify changes
     var flightsDidChangePublisher: AnyPublisher<Void, Never> { get }
 
+    /// Publishes when some flights are added into repository.
+    var flightsAddedPublisher: AnyPublisher<[FlightModel], Never> { get }
+
+    /// Publishes when some flights are deleted into repository.
+    var flightsRemovedPublisher: AnyPublisher<[FlightModel], Never> { get }
+
+    /// Publishes when all flights are removed from repository.
+    var allFlightsRemovedPublisher: AnyPublisher<Void, Never> { get }
+
     // MARK: __ Save Or Update
     /// Save or update Flight into CoreData from FlightModel
     /// - Parameters:
@@ -95,6 +104,10 @@ public protocol FlightRepository: AnyObject {
     /// - Returns:  List of FlightModels
     func getAllFlights() -> [FlightModel]
 
+    /// Get all FlightModels from all Flights in CoreData without gutma file
+    /// - Returns:  List of FlightModels
+    func getAllFlightLites() -> [FlightModel]
+
     /// Get all FlightModels locally modified from Flights in CoreData
     /// - Returns:  List of FlightModels
     func getAllModifiedFlights() -> [FlightModel]
@@ -124,6 +137,12 @@ public protocol FlightRepository: AnyObject {
     /// - Parameter uuid: Flight's UUID to remove
     func deleteOrFlagToDeleteFlight(withUuid uuid: String)
 
+    /// Delete from CoreData the Flight with specified `uuid`.
+    /// - Parameters:
+    ///    - uuid: the  Flight's `uuid`
+    ///    - completion: the completion block with the deletion status (`true` in case of successful deletion)
+    func deleteFlight(withUuid uuid: String, completion: ((_ status: Bool) -> Void)?)
+
     // MARK: __ Related
     /// Get list of FlightPlanModels executed during a specific FlightModel
     /// - Parameter flightModel: the specified FlightModel
@@ -146,6 +165,21 @@ extension CoreDataServiceImpl: FlightRepository {
         return flightsDidChangeSubject.eraseToAnyPublisher()
     }
 
+    /// Publishes when some flights are added into repository.
+    public var flightsAddedPublisher: AnyPublisher<[FlightModel], Never> {
+        return flightsAddedSubject.eraseToAnyPublisher()
+    }
+
+    /// Publishes when some flights are removed from repository.
+    public var flightsRemovedPublisher: AnyPublisher<[FlightModel], Never> {
+        return flightsRemovedSubject.eraseToAnyPublisher()
+    }
+
+    /// Publishes when all flights are removed from repository.
+    public var allFlightsRemovedPublisher: AnyPublisher<Void, Never> {
+        return allFlightsRemovedSubject.eraseToAnyPublisher()
+    }
+
     // MARK: __ Save Or Update
     public func saveOrUpdateFlight(_ flightModel: FlightModel,
                                    byUserUpdate: Bool,
@@ -153,12 +187,14 @@ extension CoreDataServiceImpl: FlightRepository {
                                    withFileUploadNeeded: Bool,
                                    completion: ((_ status: Bool) -> Void)?) {
         var modifDate: Date?
+        var isNewFlight = false
 
         performAndSave({ [unowned self] _ in
             var flightObj: Flight?
             if let existingFlight = getFlightCD(withUuid: flightModel.uuid) {
                 flightObj = existingFlight
             } else if let newFlight = insertNewObject(entityName: Flight.entityName) as? Flight {
+                isNewFlight = true
                 flightObj = newFlight
             }
 
@@ -196,6 +232,11 @@ extension CoreDataServiceImpl: FlightRepository {
                 }
 
                 flightsDidChangeSubject.send()
+
+                // Propagate the flight addition event.
+                if isNewFlight {
+                    flightsAddedSubject.send([flightModel])
+                }
 
                 completion?(true)
             case .failure(let error):
@@ -261,6 +302,10 @@ extension CoreDataServiceImpl: FlightRepository {
         return getAllFlightsCD(toBeDeleted: false).map({ $0.model() })
     }
 
+    public func getAllFlightLites() -> [FlightModel] {
+        return getAllFlightsCD(toBeDeleted: false).map({ $0.modelLite() })
+    }
+
     public func getAllFlightsToBeDeleted() -> [FlightModel] {
         return getAllFlightsCD(toBeDeleted: true).map({ $0.model() })
     }
@@ -281,22 +326,21 @@ extension CoreDataServiceImpl: FlightRepository {
 
     // MARK: __ Delete
     public func deleteAllFlights() {
-        performAndSave({ [unowned self] context in
+        batchDeleteAndSave({ [unowned self] _ in
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Flight.entityName)
-            let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+            let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
             fetchRequest.predicate = apcIdPredicate
 
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
-            do {
-                try context.execute(deleteRequest)
-
+            return fetchRequest
+        }, { [unowned self] result in
+            switch result {
+            case .success:
                 flightsDidChangeSubject.send()
-            } catch let error {
+                // Propagate the flights deletion event.
+                allFlightsRemovedSubject.send()
+            case .failure(let error):
                 ULog.e(.dataModelTag, "An error is occured when batch delete Flight in CoreData : \(error.localizedDescription)")
             }
-
-            return true
         })
     }
 
@@ -310,26 +354,22 @@ extension CoreDataServiceImpl: FlightRepository {
             return
         }
 
-        performAndSave({ context in
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Flight.entityName)
+        var deletedFlights = [FlightModel]()
 
+        batchDeleteAndSave({ [unowned self] _ in
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Flight.entityName)
             let uuidPredicate = NSPredicate(format: "uuid IN %@", uuids)
             fetchRequest.predicate = uuidPredicate
 
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+            deletedFlights = getFlights(withUuids: uuids)
 
-            do {
-                try context.execute(deleteRequest)
-                return true
-            } catch let error {
-                ULog.e(.dataModelTag, "An error is occured when batch delete Flight in CoreData : \(error.localizedDescription)")
-                completion?(false)
-                return false
-            }
+            return fetchRequest
         }, { [unowned self] result in
             switch result {
             case .success:
                 flightsDidChangeSubject.send()
+                // Propagate the flights deletion event.
+                flightsRemovedSubject.send(deletedFlights)
                 completion?(true)
             case .failure(let error):
                 ULog.e(.dataModelTag, "Error deleteFlight with UUIDs error: \(error.localizedDescription)")
@@ -340,6 +380,7 @@ extension CoreDataServiceImpl: FlightRepository {
 
     public func deleteOrFlagToDeleteFlight(withUuid uuid: String) {
         var modifDate: Date?
+        var deletedFlight: FlightModel?
 
         performAndSave({ [unowned self] context in
             guard let flightObject = getFlightCD(withUuid: uuid) else {
@@ -357,6 +398,7 @@ extension CoreDataServiceImpl: FlightRepository {
             flightObject.flightPlanFlights = nil
 
             if flightObject.cloudId == 0 {
+                deletedFlight = flightObject.modelLite()
                 context.delete(flightObject)
             } else {
                 modifDate = Date()
@@ -373,8 +415,37 @@ extension CoreDataServiceImpl: FlightRepository {
                 }
 
                 flightsDidChangeSubject.send()
+                // Propagate the flights deletion event.
+                if let deletedFlight = deletedFlight {
+                    flightsRemovedSubject.send([deletedFlight])
+                }
             case .failure(let error):
                 ULog.e(.dataModelTag, "Error deleteFlight with UUID: \(uuid) - error: \(error.localizedDescription)")
+            }
+        })
+    }
+
+    public func deleteFlight(withUuid uuid: String, completion: ((_ status: Bool) -> Void)?) {
+
+        performAndSave({ [unowned self] context in
+            guard let flight = getFlightCD(withUuid: uuid) else {
+                completion?(false)
+                return false
+            }
+
+            ULog.d(.dataModelTag, "🗺🗑 deleteFlight, uuid: \(uuid)")
+            context.delete(flight)
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                ULog.d(.dataModelTag, "🗺🗑🟢 deleteFlight, uuid: \(uuid)")
+                flightsDidChangeSubject.send()
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag,
+                       "🗺🗑🔴 Error deleteFlight, uuid: \(uuid) - error: \(error.localizedDescription)")
+                completion?(false)
             }
         })
     }
@@ -418,7 +489,7 @@ internal extension CoreDataServiceImpl {
     func getAllFlightsCountCD(toBeDeleted: Bool?) -> Int {
         let fetchRequest = Flight.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
 
         if let toBeDeleted = toBeDeleted {
             let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
@@ -439,7 +510,7 @@ internal extension CoreDataServiceImpl {
     func getAllFlightsCD(toBeDeleted: Bool?) -> [Flight] {
         let fetchRequest = Flight.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
 
         if let toBeDeleted = toBeDeleted {
             let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
@@ -460,7 +531,7 @@ internal extension CoreDataServiceImpl {
     func getAllFlightsToExternalSyncCD() -> [Flight] {
         let fetchRequest = Flight.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
         let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: false))
         let externalSyncPredicate = NSPredicate(format: "externalSynchroStatus == %i", 0)
 

@@ -56,7 +56,7 @@ class ProjectCellModel {
         let lastExecution = projectManager.lastFlightPlan(for: project)
 
         title = project.title ?? lastExecution?.dataSetting?.coordinate?.coordinatesDescription
-        description = project.lastUpdated.shortWithTimeFormattedString(timeStyle: .medium)
+        description = project.lastUpdated.shortWithTimeFormattedString()
 
         thumbnail = lastExecution?.thumbnail?.thumbnailImage ??  Constants.defaultThumbnail
 

@@ -43,7 +43,7 @@ class FlightExecutionDetailsSettingsCell: MainTableViewCell, NibReusable {
     }
 
     private func setupUI() {
-        titleLabel.makeUp(with: .caps, color: .defaultTextColor80)
+        titleLabel.makeUp(with: .caps, color: .disabledTextColor)
     }
 
     override func prepareForReuse() {

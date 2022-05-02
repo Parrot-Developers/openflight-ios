@@ -38,6 +38,15 @@ public protocol ProjectRepository: AnyObject {
     /// Publisher notify changes
     var projectsDidChangePublisher: AnyPublisher<Void, Never> { get }
 
+    /// Publishes when some projects are added into repository.
+    var projectsAddedPublisher: AnyPublisher<[ProjectModel], Never> { get }
+
+    /// Publishes when some projects are removed from repository.
+    var projectsRemovedPublisher: AnyPublisher<[ProjectModel], Never> { get }
+
+    /// Publishes when all projects are removed from repository.
+    var allProjectsRemovedPublisher: AnyPublisher<Void, Never> { get }
+
     // MARK: __ Save or Update
     /// Save or update Project into CoreData from ProjectModel
     /// - Parameters:
@@ -96,7 +105,7 @@ public protocol ProjectRepository: AnyObject {
 
     /// Get ProjectModels with at least one already executed flight plan
     /// - Returns List of ProjectModels ordered by descending last execution date
-    func getExecutedProjects() -> [ProjectModel]
+    func getExecutedProjectsWithFlightPlans() -> [ProjectModel]
 
     /// Get count of all Projects
     /// - Returns: Count of all Projects
@@ -130,6 +139,12 @@ public protocol ProjectRepository: AnyObject {
     /// - Parameter uuid: Project's UUID to search
     func deleteOrFlagToDeleteProject(withUuid uuid: String)
 
+    /// Delete from CoreData the Project with specified `uuid`.
+    /// - Parameters:
+    ///    - uuid: the  Project's `uuid`
+    ///    - completion: the completion block with the deletion status (`true` in case of successful deletion)
+    func deleteProject(withUuid uuid: String, completion: ((_ status: Bool) -> Void)?)
+
     /// Delete Projects from list of UUIDs
     /// - Parameter uuids: List of UUIDs to search
     /// - Note:
@@ -155,12 +170,28 @@ extension CoreDataServiceImpl: ProjectRepository {
         return projectsDidChangeSubject.eraseToAnyPublisher()
     }
 
+    /// Publishes when some projects are added into repository.
+    public var projectsAddedPublisher: AnyPublisher<[ProjectModel], Never> {
+        return projectsAddedSubject.eraseToAnyPublisher()
+    }
+
+    /// Publishes when some projects are removed from repository.
+    public var projectsRemovedPublisher: AnyPublisher<[ProjectModel], Never> {
+        return projectsRemovedSubject.eraseToAnyPublisher()
+    }
+
+    /// Publishes when all projects are removed from repository.
+    public var allProjectsRemovedPublisher: AnyPublisher<Void, Never> {
+        return allProjectsRemovedSubject.eraseToAnyPublisher()
+    }
+
     // MARK: __ Save Or Update
     public func saveOrUpdateProject(_ projectModel: ProjectModel,
                                     byUserUpdate: Bool,
                                     toSynchro: Bool,
                                     completion: ((_ status: Bool) -> Void)?) {
         var modifDate: Date?
+        var isNewProject = false
 
         performAndSave({ [unowned self] _ in
             var projectObj: Project?
@@ -168,6 +199,7 @@ extension CoreDataServiceImpl: ProjectRepository {
                 projectObj = existingProject
             } else if let newProject = insertNewObject(entityName: Project.entityName) as? Project {
                 projectObj = newProject
+                isNewProject = true
             }
 
             guard let project = projectObj else {
@@ -200,6 +232,9 @@ extension CoreDataServiceImpl: ProjectRepository {
                 }
 
                 projectsDidChangeSubject.send()
+
+                // Propagate the project addition event.
+                if isNewProject { projectsAddedSubject.send([projectModel]) }
 
                 completion?(true)
             case .failure(let error):
@@ -272,7 +307,7 @@ extension CoreDataServiceImpl: ProjectRepository {
         return getAllProjectsCD(toBeDeleted: true).map({ $0.model() })
     }
 
-    public func getExecutedProjects() -> [ProjectModel] {
+    public func getExecutedProjectsWithFlightPlans() -> [ProjectModel] {
         return getAllProjectsCD(toBeDeleted: false)
             .filter {
                 $0.flightPlans?.contains(where: {
@@ -289,7 +324,7 @@ extension CoreDataServiceImpl: ProjectRepository {
                 guard let date2 = date2 else { return true }
                 return date1 > date2
             }
-            .map { $0.model() }
+            .map { $0.modelWithFlightPlan() }
     }
 
     public func getAllModifiedProjects() -> [ProjectModel] {
@@ -310,6 +345,7 @@ extension CoreDataServiceImpl: ProjectRepository {
 
     public func getExecutedFlightPlans(ofProject projectModel: ProjectModel) -> [FlightPlanModel] {
         getFlightPlans(ofProject: projectModel)
+            .filter { !$0.isLocalDeleted }
             .filter({ $0.hasReachedFirstWayPoint })
             .sorted {
                 ($0.lastFlightExecutionDate ?? Date.distantPast, $0.lastUpdate, $0.uuid) >
@@ -320,6 +356,7 @@ extension CoreDataServiceImpl: ProjectRepository {
     // MARK: __ Delete
     public func deleteOrFlagToDeleteProject(withUuid uuid: String) {
         var modifDate: Date?
+        var deletedProject: ProjectModel?
 
         performAndSave({ [unowned self] context in
             guard let project = getProjectCD(withUuid: uuid) else {
@@ -334,6 +371,7 @@ extension CoreDataServiceImpl: ProjectRepository {
 
             // delete only if it exists in CoreData
             if project.cloudId == 0 {
+                deletedProject = project.model()
                 context.delete(project)
             } else {
                 modifDate = Date()
@@ -350,8 +388,37 @@ extension CoreDataServiceImpl: ProjectRepository {
                 }
 
                 self.projectsDidChangeSubject.send()
+                // Propagate the projects deletion event.
+                if let deletedProject = deletedProject {
+                    projectsRemovedSubject.send([deletedProject])
+                }
             case .failure(let error):
                 ULog.e(.dataModelTag, "Error deleteAndAddToRemoveProject with UUID: \(uuid) - error: \(error.localizedDescription)")
+            }
+        })
+    }
+
+    public func deleteProject(withUuid uuid: String, completion: ((_ status: Bool) -> Void)?) {
+
+        performAndSave({ [unowned self] context in
+            guard let project = getProjectCD(withUuid: uuid) else {
+                completion?(false)
+                return false
+            }
+
+            ULog.d(.dataModelTag, "🗂🗑 deleteProject, uuid: \(uuid)")
+            context.delete(project)
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                ULog.d(.dataModelTag, "🗂🗑🟢 deleteProject, uuid: \(uuid)")
+                projectsDidChangeSubject.send()
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag,
+                       "🗂🗑🔴 Error deleteProject, uuid: \(uuid) - error: \(error.localizedDescription)")
+                completion?(false)
             }
         })
     }
@@ -366,25 +433,22 @@ extension CoreDataServiceImpl: ProjectRepository {
             return
         }
 
-        performAndSave({ context in
+        var deletedProjects = [ProjectModel]()
+
+        batchDeleteAndSave({ [unowned self] _ in
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Project.entityName)
             let uuidPredicate = NSPredicate(format: "uuid IN %@", uuids)
             fetchRequest.predicate = uuidPredicate
 
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+            deletedProjects = getProjects(withUuids: uuids)
 
-            do {
-                try context.execute(deleteRequest)
-                return true
-            } catch let error {
-                ULog.e(.dataModelTag, "An error is occured when batch delete Project in CoreData : \(error.localizedDescription)")
-                completion?(false)
-                return false
-            }
+            return fetchRequest
         }, { [unowned self] result in
             switch result {
             case .success:
                 projectsDidChangeSubject.send()
+                // Propagate the projects deletion event.
+                projectsRemovedSubject.send(deletedProjects)
                 completion?(true)
             case .failure(let error):
                 ULog.e(.dataModelTag, "Error deleteProject with UUIDs error: \(error.localizedDescription)")
@@ -420,7 +484,7 @@ internal extension CoreDataServiceImpl {
     func getAllProjectsCountCD(toBeDeleted: Bool?) -> Int {
         let fetchRequest = Project.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
 
         if let toBeDeleted = toBeDeleted {
             let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
@@ -441,7 +505,7 @@ internal extension CoreDataServiceImpl {
     func getAllProjectsCD(toBeDeleted: Bool?) -> [Project] {
         let fetchRequest = Project.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
 
         if let toBeDeleted = toBeDeleted {
             let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
@@ -464,7 +528,7 @@ internal extension CoreDataServiceImpl {
 
         var subPredicateList: [NSPredicate] = []
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
         subPredicateList.append(apcIdPredicate)
 
         let typePredicate = NSPredicate(format: "type == %@", type)

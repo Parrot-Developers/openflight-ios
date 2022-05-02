@@ -290,6 +290,12 @@ public enum Asset {
         icHandLaunch,
       ]
     }
+    public enum ObstacleAvoidance {
+      public static let icOAAlert = ImageAsset(name: "icOAAlert")
+      public static let allValues: [ImageAsset] = [
+        icOAAlert,
+      ]
+    }
     public enum Rth {
       public static let icRTHAlertPanel = ImageAsset(name: "icRTHAlertPanel")
       public static let icRthBig = ImageAsset(name: "icRthBig")
@@ -823,6 +829,7 @@ public enum Asset {
     public static let icDownloadFromServer = ImageAsset(name: "icDownloadFromServer")
     public static let icDroneDetailsAvailable = ImageAsset(name: "icDroneDetailsAvailable")
     public static let icDroneDetailsUnavailable = ImageAsset(name: "icDroneDetailsUnavailable")
+    public static let icDroneFirmware = ImageAsset(name: "icDroneFirmware")
     public static let icDroneMotorError = ImageAsset(name: "icDroneMotorError")
     public static let icDroneMotorOk = ImageAsset(name: "icDroneMotorOk")
     public static let icDroneMotorWarning = ImageAsset(name: "icDroneMotorWarning")
@@ -838,6 +845,7 @@ public enum Asset {
     public static let icGimbalOk = ImageAsset(name: "icGimbalOk")
     public static let icGimbalWarning = ImageAsset(name: "icGimbalWarning")
     public static let icLoveCamera = ImageAsset(name: "icLoveCamera")
+    public static let icPoi = ImageAsset(name: "icPoi")
     public static let icSatellite = ImageAsset(name: "icSatellite")
     public static let icStereoVisionArrow = ImageAsset(name: "icStereoVisionArrow")
     public static let icStereoVisionBoard = ImageAsset(name: "icStereoVisionBoard")
@@ -859,6 +867,7 @@ public enum Asset {
       icDownloadFromServer,
       icDroneDetailsAvailable,
       icDroneDetailsUnavailable,
+      icDroneFirmware,
       icDroneMotorError,
       icDroneMotorOk,
       icDroneMotorWarning,
@@ -874,6 +883,7 @@ public enum Asset {
       icGimbalOk,
       icGimbalWarning,
       icLoveCamera,
+      icPoi,
       icSatellite,
       icStereoVisionArrow,
       icStereoVisionBoard,
@@ -964,7 +974,7 @@ public enum Asset {
     public static let icDng = ImageAsset(name: "icDng")
     public static let icGPSLapse = ImageAsset(name: "icGPSLapse")
     public static let icInternalChip = ImageAsset(name: "icInternalChip")
-    public static let icPano360 = ImageAsset(name: "icPano360")
+    public static let icPano360D = ImageAsset(name: "icPano360D")
     public static let icPanoH = ImageAsset(name: "icPanoH")
     public static let icPanoV = ImageAsset(name: "icPanoV")
     public static let icTimelapse = ImageAsset(name: "icTimelapse")
@@ -985,7 +995,7 @@ public enum Asset {
       icDng,
       icGPSLapse,
       icInternalChip,
-      icPano360,
+      icPano360D,
       icPanoH,
       icPanoV,
       icTimelapse,
@@ -1070,12 +1080,28 @@ public enum Asset {
     public static let centerOnUser = ImageAsset(name: "centerOnUser")
     public static let mapDrone = ImageAsset(name: "mapDrone")
     public static let mapDroneDisconnected = ImageAsset(name: "mapDroneDisconnected")
+    public static let poiBlue = ImageAsset(name: "poi_blue")
+    public static let poiGreen = ImageAsset(name: "poi_green")
+    public static let poiLightBlue = ImageAsset(name: "poi_light_blue")
+    public static let poiOrange = ImageAsset(name: "poi_orange")
+    public static let poiPink = ImageAsset(name: "poi_pink")
+    public static let poiPurple = ImageAsset(name: "poi_purple")
+    public static let poiSelected = ImageAsset(name: "poi_selected")
+    public static let poiYellow = ImageAsset(name: "poi_yellow")
     public static let user = ImageAsset(name: "user")
     public static let allValues: [ImageAsset] = [
       centerOnDrone,
       centerOnUser,
       mapDrone,
       mapDroneDisconnected,
+      poiBlue,
+      poiGreen,
+      poiLightBlue,
+      poiOrange,
+      poiPink,
+      poiPurple,
+      poiSelected,
+      poiYellow,
       user,
     ]
   }
@@ -1108,25 +1134,37 @@ public enum Asset {
     public static let poi = ImageAsset(name: "POI")
     public static let time = ImageAsset(name: "Time")
     public static let battery = ImageAsset(name: "battery")
+    public static let cameraTiltDown = ImageAsset(name: "cameraTiltDown")
+    public static let cameraTiltUp = ImageAsset(name: "cameraTiltUp")
     public static let cloudNotStored = ImageAsset(name: "cloudNotStored")
     public static let distance = ImageAsset(name: "distance")
     public static let folder = ImageAsset(name: "folder")
     public static let history = ImageAsset(name: "history")
+    public static let icCamera = ImageAsset(name: "icCamera")
+    public static let icPhoto = ImageAsset(name: "icPhoto")
     public static let mapPlaceHolder = ImageAsset(name: "mapPlaceHolder")
     public static let mapRth = ImageAsset(name: "mapRth")
+    public static let photo = ImageAsset(name: "photo")
     public static let projectPlaceHolder = ImageAsset(name: "projectPlaceHolder")
+    public static let video = ImageAsset(name: "video")
     public static let allValues: [ImageAsset] = [
       calendar,
       poi,
       time,
       battery,
+      cameraTiltDown,
+      cameraTiltUp,
       cloudNotStored,
       distance,
       folder,
       history,
+      icCamera,
+      icPhoto,
       mapPlaceHolder,
       mapRth,
+      photo,
       projectPlaceHolder,
+      video,
     ]
   }
   public enum ObstacleAvoidance {
@@ -1280,6 +1318,8 @@ public enum Asset {
     public static let icRemoteBig = ImageAsset(name: "icRemoteBig")
     public static let icRemoteBigConnected = ImageAsset(name: "icRemoteBigConnected")
     public static let icRemoteBigDisconnected = ImageAsset(name: "icRemoteBigDisconnected")
+    public static let icRemoteController = ImageAsset(name: "icRemoteController")
+    public static let icRemoteFirmware = ImageAsset(name: "icRemoteFirmware")
     public static let icRemoteUpdate = ImageAsset(name: "icRemoteUpdate")
     public static let icSdCardUsb = ImageAsset(name: "icSdCardUsb")
     public static let allValues: [ImageAsset] = [
@@ -1303,6 +1343,8 @@ public enum Asset {
       icRemoteBig,
       icRemoteBigConnected,
       icRemoteBigDisconnected,
+      icRemoteController,
+      icRemoteFirmware,
       icRemoteUpdate,
       icSdCardUsb,
     ]

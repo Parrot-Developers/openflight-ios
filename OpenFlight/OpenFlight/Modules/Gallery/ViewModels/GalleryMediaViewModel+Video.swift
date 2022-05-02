@@ -120,7 +120,7 @@ extension GalleryMediaViewModel: GalleryVideoCompatible {
         return getCurrentViewModel()?.videoPlay() ?? false
     }
 
-    func videoPause() -> Bool {
+    @discardableResult func videoPause() -> Bool {
         return getCurrentViewModel()?.videoPause() ?? false
     }
 

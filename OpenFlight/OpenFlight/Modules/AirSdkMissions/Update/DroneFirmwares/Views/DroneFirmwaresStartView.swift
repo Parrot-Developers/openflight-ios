@@ -120,8 +120,12 @@ private extension DroneFirmwaresStartView {
             }
         case let .firmware(firmware):
             updateUI(for: firmware, droneIsConnected: droneIsConnected)
-        case .upToDateAirSdkMission:
-            showUpToDate()
+        case let .upToDateAirSdkMission(mission, _):
+            if mission.isBuiltIn {
+                hideAll()
+            } else {
+                showUpToDate()
+            }
         case let .airSdkMission(mission, _, _):
             startUpdateButton.setup(title: L10n.firmwareMissionUpdateInstallOne(mission.missionVersion),
                                     style: .secondary1)
@@ -161,5 +165,12 @@ private extension DroneFirmwaresStartView {
         startUpdateButton.isHidden = true
         upToDateLabel.isHidden = false
         upToDateImageView.isHidden = false
+    }
+
+    /// Hides all views.
+    func hideAll() {
+        startUpdateButton.isHidden = true
+        upToDateLabel.isHidden = true
+        upToDateImageView.isHidden = true
     }
 }

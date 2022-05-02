@@ -36,26 +36,11 @@ public extension UIImageView {
     /// Load image from cache repository if it exist, if not, load image from URL.
     ///
     /// - Parameters:
-    ///    - urlStr: image URL to download
-    func load(from urlStr: String) {
-        if let image = CacheUtils.shared.image(forKey: urlStr) {
+    ///    - key: key of cache to load image
+    func load(from key: String) {
+        if let image = CacheUtils.shared.image(forKey: key) {
             self.image = image
             return
-        }
-
-        guard !urlStr.isEmpty, let url = URL(string: urlStr) else {
-            return
-        }
-
-        DispatchQueue.global().async { [weak self] in
-            if let data = try? Data(contentsOf: url) {
-                if let image = UIImage(data: data) {
-                    CacheUtils.shared.cacheImage(image, forKey: urlStr)
-                    DispatchQueue.main.async {
-                        self?.image = image
-                    }
-                }
-            }
         }
     }
 }

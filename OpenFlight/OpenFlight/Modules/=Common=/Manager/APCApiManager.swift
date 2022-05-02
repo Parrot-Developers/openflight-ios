@@ -60,16 +60,6 @@ private extension APCApiManager {
 
 // MARK: - Internal Funcs
 extension APCApiManager {
-    /// Returns a custom URLSession to communicate with APC API.
-    func authSession() -> URLSession {
-        let token = Services.hub.userInformation.token
-        let config = URLSessionConfiguration.default
-        config.httpAdditionalHeaders = [RequestHeaderFields.authorization: AuthenticationUtils.bearer(token: token),
-                                        RequestHeaderFields.contentType: RequestHeaderFields.appJson,
-                                        RequestHeaderFields.xApiKey: ServicesConstants.academySecretKey]
-        config.addUserAgentHeader()
-        return URLSession(configuration: config)
-    }
 
     /// Create a temporary APC account.
     ///

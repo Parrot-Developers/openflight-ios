@@ -43,8 +43,6 @@ class ParrotDebugViewController: UIViewController {
     @IBOutlet private weak var recordDisparitySwitch: UISwitch!
     @IBOutlet private weak var sendDebugTagButton: UIButton!
     @IBOutlet private weak var sendDebugTagTextField: POFTextField!
-    // Allows to enable/disable the Flight Plan's thumbnail Cloud synchronization
-    @IBOutlet private weak var thumbnailSyncSwitch: UISwitch!
 
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
@@ -103,7 +101,6 @@ class ParrotDebugViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated)
 
-        thumbnailSyncSwitch.isOn = Defaults.isThumbnailSyncEnabled
         switchLog.isOn = ParrotDebug.activeLogFileName != nil
         loadFileList()
         displayInformations()
@@ -191,10 +188,6 @@ private extension ParrotDebugViewController {
 
         // Send debug tag
         devToolBox.sendDebugTag(tag: tagValue)
-    }
-
-    @IBAction func thumbnailSyncSwitchChanged(_ sender: UISwitch) {
-        Defaults.isThumbnailSyncEnabled = sender.isOn
     }
 }
 

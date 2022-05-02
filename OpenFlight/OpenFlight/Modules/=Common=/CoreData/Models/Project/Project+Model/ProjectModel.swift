@@ -29,6 +29,16 @@
 
 import Foundation
 
+public enum ProjectType: String {
+    case classic
+    case pgy
+
+    public init?(rawString: String?) {
+        guard let rawValue = rawString else { return nil }
+        self.init(rawValue: rawValue)
+    }
+}
+
 public struct ProjectModel {
     // MARK: __ User's ID
     public var apcId: String
@@ -37,11 +47,15 @@ public struct ProjectModel {
     public var cloudId: Int
     public var uuid: String
     public var title: String?
-    public var type: String
+    public var type: ProjectType
     public var latestCloudModificationDate: Date?
 
     // MARK: __ Local
     public var lastUpdated: Date
+    public var lastOpened: Date?
+
+    // MARK: __ Relationship
+    public var flightPlans: [FlightPlanModel]?
 
     // MARK: __ Synchronization
     ///  Boolean to know if it delete locally but needs to be deleted on server
@@ -57,7 +71,7 @@ public struct ProjectModel {
 
     // MARK: __ Easy access
     public var isSimpleFlightPlan: Bool {
-        self.type == FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType
+        self.type == ProjectType.classic
     }
 
     // MARK: - Public init
@@ -65,9 +79,11 @@ public struct ProjectModel {
                 cloudId: Int,
                 uuid: String,
                 title: String?,
-                type: String,
+                type: ProjectType,
+                flightPlans: [FlightPlanModel]?,
                 latestCloudModificationDate: Date?,
                 lastUpdated: Date,
+                lastOpened: Date?,
                 isLocalDeleted: Bool,
                 synchroStatus: SynchroStatus?,
                 synchroError: SynchroError?,
@@ -83,6 +99,10 @@ public struct ProjectModel {
 
         self.lastUpdated = lastUpdated
 
+        self.lastOpened = lastOpened
+
+        self.flightPlans = flightPlans
+
         self.isLocalDeleted = isLocalDeleted
         self.latestSynchroStatusDate = latestSynchroStatusDate
         self.synchroStatus = synchroStatus
@@ -92,14 +112,16 @@ public struct ProjectModel {
 }
 
 extension ProjectModel {
-    public init(apcId: String, uuid: String, title: String?, type: String) {
+    public init(apcId: String, uuid: String, title: String?, type: ProjectType) {
         self.init(apcId: apcId,
                   cloudId: 0,
                   uuid: uuid,
                   title: title,
                   type: type,
+                  flightPlans: nil,
                   latestCloudModificationDate: nil,
                   lastUpdated: Date(),
+                  lastOpened: nil,
                   isLocalDeleted: false,
                   synchroStatus: .notSync,
                   synchroError: .noError,
@@ -111,15 +133,17 @@ extension ProjectModel {
                 cloudId: Int,
                 uuid: String,
                 title: String?,
-                type: String,
+                type: ProjectType,
                 latestCloudModificationDate: Date?) {
         self.init(apcId: apcId,
                   cloudId: cloudId,
                   uuid: uuid,
                   title: title,
                   type: type,
+                  flightPlans: nil,
                   latestCloudModificationDate: latestCloudModificationDate,
                   lastUpdated: latestCloudModificationDate ?? Date(),
+                  lastOpened: nil,
                   isLocalDeleted: false,
                   synchroStatus: .synced,
                   synchroError: .noError,
@@ -129,16 +153,22 @@ extension ProjectModel {
 
     public init(duplicateProject project: ProjectModel, withApcId: String, uuid: String, title: String?) {
         self.init(apcId: withApcId,
-                  cloudId: project.cloudId,
+                  cloudId: 0,
                   uuid: uuid,
                   title: title,
                   type: project.type,
+                  flightPlans: nil,
                   latestCloudModificationDate: Date(),
                   lastUpdated: Date(),
+                  lastOpened: nil,
                   isLocalDeleted: project.isLocalDeleted,
                   synchroStatus: .notSync,
                   synchroError: .noError,
                   latestSynchroStatusDate: nil,
                   latestLocalModificationDate: nil)
+    }
+
+    public func hasExecutedProject() -> Bool {
+        flightPlans?.contains(where: { $0.hasReachedFirstWayPoint }) == true
     }
 }

@@ -192,7 +192,7 @@ public class FlightPlanRunManagerImpl {
 
     // MARK: SDK properties
     /// Latest mission item executed.
-    private var latestItemExecuted: Int?
+    public var latestItemExecuted: Int?
     /// First resource identifier of media captured after the latest reached waypoint.
     private var recoveryResourceId: String?
     /// MAVLink commands.
@@ -204,7 +204,7 @@ public class FlightPlanRunManagerImpl {
     /// Informs when drone's navigating to Flight Plan's starting position.
     private var navigatingToStartingPointSubject = CurrentValueSubject<Bool, Never>(false)
 
-    private var startAvailability: FlightPlanStartAvailability = .available
+    private var startAvailability: FlightPlanStartAvailability = .available(false)
 
     private var connectionStateRef: Ref<DeviceState>?
 
@@ -410,7 +410,9 @@ private extension FlightPlanRunManagerImpl {
             latestItemExecuted = largestMissionItem
         }
         if case let .playing(droneConnected, flightPlan, _) = stateSubject.value {
-            updateState(.playing(droneConnected: droneConnected, flightPlan: flightPlan, rth: isInRth()))
+            var newFlight = flightPlan
+            newFlight.lastMissionItemExecuted = Int64(latestItemExecuted ?? 0)
+            updateState(.playing(droneConnected: droneConnected, flightPlan: newFlight, rth: isInRth()))
         }
     }
 
@@ -529,16 +531,36 @@ private extension FlightPlanRunManagerImpl {
 
     /// Check if flightplan media configuration has finished and activate flightplans
     func checkFpConfig() {
-        if let camera = currentDroneHolder.drone.getPeripheral(Peripherals.mainCamera2),
-           camera.config.updating {
+        // If camera is not available, continue waiting...
+        guard let camera = currentDroneHolder.drone.getPeripheral(Peripherals.mainCamera2) else {
+            ULog.i(.tag, "checkFpConfig: mainCamera2 is unavailable")
             return
+        }
+
+        // If drone is currently updating the camera config, continue waiting...
+        guard !camera.config.updating else {
+            ULog.i(.tag, "checkFpConfig: mainCamera2 is updating config")
+            return
+        }
+
+        // If camera's media meta data component is not available, continue waiting...
+        guard let mediaMetadata = camera.mediaMetadata else {
+            ULog.i(.tag, "checkFpConfig: mainCamera2's mediaMetadata is unavailable")
+            return
+        }
+
+        // If drone is currently updating the camera's media meta data, continue waiting...
+        guard !mediaMetadata.updating else {
+            ULog.i(.tag, "checkFpConfig: mainCamera2's mediaMetadata is updating")
+            return
+        }
+
+        // Activate Piloting Interface.
+        stopFpConfigTimer()
+        if fpConfigTimerRestart {
+            doActivate()
         } else {
-            stopFpConfigTimer()
-            if fpConfigTimerRestart {
-                doActivate()
-            } else {
-                doResume()
-            }
+            doResume()
         }
     }
 
@@ -634,26 +656,26 @@ private extension FlightPlanRunManagerImpl {
         let latestMissionItemExecuted = Int(flightPlan.lastMissionItemExecuted)
         if latestMissionItemExecuted > 0,
            interface.activateAtMissionItemSupported {
-//            if let recoveryResourceId = flightPlan.recoveryResourceId {
-//                // Clean resources.
-//                ULog.i(.tag, "Clean resources before activation '\(flightPlan.uuid)' with:"
-//                       + " resourceId(\(recoveryResourceId))")
-//                _ = interface.cleanBeforeRecovery(customId: flightPlan.uuid,
-//                                                  resourceId: recoveryResourceId) { [weak self] result in
-//                    ULog.i(.tag, "Clean resources for '\(flightPlan.uuid)' result: \(result.description)")
-//                    if result == .canceled {
-//                        self?.activeFlightPlanWatcher.flightPlanActivationFailed(flightPlan)
-//                    } else {
-//                        // Resume flight plan at missionItem.
-//                        self?.activate(pilotingInterface: interface, flightPlan: flightPlan,
-//                                       interpreter: interpreter, missionItem: latestMissionItemExecuted, restart: true)
-//                    }
-//                }
-//            } else {
+            if let recoveryResourceId = flightPlan.recoveryResourceId, !recoveryResourceId.isEmpty {
+                // Clean resources.
+                ULog.i(.tag, "Clean resources before activation '\(flightPlan.uuid)' with:"
+                       + " resourceId(\(recoveryResourceId))")
+                _ = interface.cleanBeforeRecovery(customId: flightPlan.uuid,
+                                                  resourceId: recoveryResourceId) { [weak self] result in
+                    ULog.i(.tag, "Clean resources for '\(flightPlan.uuid)' result: \(result.description)")
+                    if result == .canceled {
+                        self?.activeFlightPlanWatcher.flightPlanActivationFailed(flightPlan)
+                    } else {
+                        // Resume flight plan at missionItem.
+                        self?.activate(pilotingInterface: interface, flightPlan: flightPlan,
+                                       interpreter: interpreter, missionItem: latestMissionItemExecuted, restart: true)
+                    }
+                }
+            } else {
                 // Resume flight plan at missionItem.
                 activate(pilotingInterface: interface, flightPlan: flightPlan,
                          interpreter: interpreter, missionItem: latestMissionItemExecuted, restart: true)
-//            }
+            }
         } else {
             // Start flight plan from its begining.
             activate(pilotingInterface: interface, flightPlan: flightPlan, interpreter: interpreter,
@@ -674,9 +696,13 @@ private extension FlightPlanRunManagerImpl {
         ULog.i(.tag, "Activate '\(flightPlan.uuid)' with:"
                + " missionItem(\(missionItem))"
                + " activateAtMissionItemSupported(\(pilotingInterface.activateAtMissionItemSupported))")
+        let disconnectionPolicy: FlightPlanDisconnectionPolicy = flightPlan.dataSetting?.disconnectionRth == false
+            ? .continue
+            : .returnToHome
         let result = pilotingInterface.activate(restart: restart,
                                                 interpreter: interpreter,
-                                                missionItem: UInt(missionItem))
+                                                missionItem: UInt(missionItem),
+                                                disconnectionPolicy: disconnectionPolicy)
         if !result {
             ULog.e(.tag, "Failed to activate '\(flightPlan.uuid)'")
             activeFlightPlanWatcher.flightPlanActivationFailed(flightPlan)

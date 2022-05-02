@@ -27,36 +27,33 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
+import ArcGIS
 
-/// Coordinator for Manage Plans view.
-final class ManagePlansCoordinator: Coordinator {
-    // MARK: - Public Properties
-    public var navigationController: NavigationController?
-    public var childCoordinators = [Coordinator]()
-    public weak var parentCoordinator: Coordinator?
+/// Graphic class for an entire Flight Plan's course.
+public final class FlightPlanCourseGraphic: FlightPlanGraphic {
 
-    // MARK: - Public Funcs
-    func start() {
-        assert(false) // Forbidden start
+    private(set) var wayPoints: [WayPoint]?
+
+    // MARK: - Private Enums
+    private enum Constants {
+        static let defaultColor: UIColor = ColorName.blueDodger.color
+        static let lineWidth: CGFloat = 5.0
     }
 
-    func start(viewModel: ManagePlansViewModel) {
-        let viewController = ManagePlansViewController.instantiate(viewModel: viewModel, coordinator: self)
-        viewController.modalPresentationStyle = .fullScreen
-        navigationController = NavigationController(rootViewController: viewController)
-        navigationController?.isNavigationBarHidden = true
-    }
+    // MARK: - Init
+    /// Init.
+    ///
+    /// - Parameters:
+    ///    - wayPoints: Flight Plan's waypoints
+    public init(wayPoints: [WayPoint]) {
+        let polyline = AGSPolyline(points: wayPoints.map { $0.agsPoint })
+        let symbol = AGSSimpleLineSymbol(style: .solid,
+                                         color: Constants.defaultColor,
+                                         width: Constants.lineWidth)
+        self.wayPoints = wayPoints
 
-    /// Show the user's account view.
-    func startAccountView() {
-        guard let currentAccount = AccountManager.shared.currentAccount,
-              let loginCoordinator = currentAccount.destinationCoordinator else {
-                  return
-              }
-
-        loginCoordinator.parentCoordinator = self
-        currentAccount.startMyFlightsAccountView()
-        present(childCoordinator: loginCoordinator)
+        super.init(geometry: polyline,
+                   symbol: symbol,
+                   attributes: nil)
     }
 }

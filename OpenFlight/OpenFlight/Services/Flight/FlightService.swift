@@ -35,33 +35,63 @@ import Combine
 /// Summary about all flights
 public struct AllFlightsSummary {
     /// Total number of flights
-    public let numberOfFlights: Int
+    public var numberOfFlights: Int
+    public var totalDuration: Double
+    public var totalDistance: Double
     /// Total flights duration.
-    public let totalFlightsDuration: String
+    public var totalFlightsDuration: String {
+        totalDuration.formattedHmsString ?? Style.dash
+    }
     /// Total flights distance.
-    public let totalFlightsDistance: String
+    public var totalFlightsDistance: String {
+        UnitHelper.stringDistanceWithDouble(totalDistance)
+    }
 
     /// Init
     public init(numberOfFlights: Int = 0,
                 totalDuration: Double = 0,
                 totalDistance: Double = 0) {
         self.numberOfFlights = numberOfFlights
-        self.totalFlightsDuration = totalDuration.formattedHmsString ?? Style.dash
-        self.totalFlightsDistance = UnitHelper.stringDistanceWithDouble(totalDistance)
+        self.totalDuration = totalDuration
+        self.totalDistance = totalDistance
     }
 
     /// `AllFlightsSummary`'s default values
     public static let defaultValues = AllFlightsSummary()
+
+    private func summaryForFlights(_ flights: [FlightModel]) -> (numberOfFlights: Int, totalDuration: Double, totalDistance: Double) {
+        (flights.count,
+         Double(flights.reduce(0) { $0 + $1.duration }),
+         Double(flights.reduce(0) { $0 + $1.distance }))
+    }
+
+    public mutating func addFlights(_ flights: [FlightModel]) {
+        let summary = summaryForFlights(flights)
+        numberOfFlights += summary.numberOfFlights
+        totalDuration += Double(summary.totalDuration)
+        totalDistance += Double(summary.totalDistance)
+    }
+
+    public mutating func removeFlights(_ flights: [FlightModel]) {
+        let summary = summaryForFlights(flights)
+        numberOfFlights -= summary.numberOfFlights
+        totalDuration -= Double(summary.totalDuration)
+        totalDistance -= Double(summary.totalDistance)
+    }
+
+    public mutating func removeAllFlights() {
+        numberOfFlights = 0
+        totalDuration = 0
+        totalDistance = 0
+    }
 }
 
 public protocol FlightService: AnyObject {
 
-    var lastFlight: AnyPublisher<FlightModel?, Never> { get }
-    var allFlights: AnyPublisher<[FlightModel], Never> { get }
     var allFlightsSummary: AnyPublisher<AllFlightsSummary, Never> { get }
-    var allFlightsCount: Int { get }
-    var flightsDidChange: AnyPublisher<Void, Never> { get }
-    func updateFlights()
+    var flightsDidChangePublisher: AnyPublisher<Void, Never> { get }
+    func getAllFlights() -> [FlightModel]
+    func getAllFlightsCount() -> Int
     func update(flight: FlightModel, title: String) -> FlightModel
     func delete(flight: FlightModel)
     func save(gutmaOutput: [Gutma.Model])
@@ -78,33 +108,62 @@ open class FlightServiceImpl {
     private let repo: FlightRepository
     private let fpFlightRepo: FlightPlanFlightsRepository
     private let thumbnailRepo: ThumbnailRepository
-    private var userInformation: UserInformation
+    private var userService: UserService
     private var thumbnailsRequests = [String: [((UIImage?) -> Void)]]()
+    private var flightsDidChangeSubject = PassthroughSubject<Void, Never>()
+    private var allFlightSummarySubject = CurrentValueSubject<AllFlightsSummary, Never>(AllFlightsSummary())
     private var allFlightsSubject = CurrentValueSubject<[FlightModel], Never>([])
-    private var cancellable = Set<AnyCancellable>()
+    private var cancellables = Set<AnyCancellable>()
     private var gutmaCache = NSCache<NSString, Gutma>()
     private let flightPlanRunManager: FlightPlanRunManager
 
     init(repo: FlightRepository,
          fpFlightRepo: FlightPlanFlightsRepository,
          thumbnailRepo: ThumbnailRepository,
-         userInformation: UserInformation,
+         userService: UserService,
          cloudSynchroWatcher: CloudSynchroWatcher?,
          flightPlanRunManager: FlightPlanRunManager) {
         self.repo = repo
         self.fpFlightRepo = fpFlightRepo
         self.thumbnailRepo = thumbnailRepo
-        self.userInformation = userInformation
+        self.userService = userService
         self.flightPlanRunManager = flightPlanRunManager
-        updateFlights()
-        cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { isSynchronizingData in
-            if !isSynchronizingData {
-                self.updateFlights()
+
+        refreshAllFlightsSummary()
+
+        userService.userEventPublisher
+            .sink { [unowned self] _ in
+                refreshAllFlightsSummary()
             }
-        }.store(in: &cancellable)
-        repo.flightsDidChangePublisher.sink {
-            self.updateFlights()
-        }.store(in: &cancellable)
+            .store(in: &cancellables)
+
+        cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { [unowned self] isSynchronizingData in
+            if !isSynchronizingData {
+                flightsDidChangeSubject.send()
+                refreshAllFlightsSummary()
+            }
+        }.store(in: &cancellables)
+
+        repo.flightsDidChangePublisher
+            .debounce(for: .seconds(1), scheduler: DispatchQueue.main)
+            .sink { [unowned self] in
+                flightsDidChangeSubject.send()
+            }.store(in: &cancellables)
+
+        repo.flightsAddedPublisher
+            .sink { [unowned self] flightsAdded in
+                allFlightSummarySubject.value.addFlights(flightsAdded)
+            }.store(in: &cancellables)
+
+        repo.flightsRemovedPublisher
+            .sink { [unowned self] flightsRemoved in
+                allFlightSummarySubject.value.removeFlights(flightsRemoved)
+            }.store(in: &cancellables)
+
+        repo.allFlightsRemovedPublisher
+            .sink { [unowned self] in
+                allFlightSummarySubject.value.removeAllFlights()
+            }.store(in: &cancellables)
     }
 }
 
@@ -127,10 +186,11 @@ private extension FlightServiceImpl {
         mapSnapshotterOptions.mapType = .satellite
         mapSnapshotterOptions.size = Constants.thumbnailSize
 
+        let currentUser = userService.currentUser
         let snapShotter = MKMapSnapshotter(options: mapSnapshotterOptions)
         snapShotter.start(with: DispatchQueue.main) { [unowned self] (snapshot: MKMapSnapshotter.Snapshot?, _) in
             let image = snapshot?.image
-            let thumbnail = ThumbnailModel(apcId: userInformation.apcId,
+            let thumbnail = ThumbnailModel(apcId: currentUser.apcId,
                                            uuid: UUID().uuidString,
                                            flightUuid: uuid,
                                            thumbnailImage: image)
@@ -164,40 +224,46 @@ private extension FlightServiceImpl {
             return ""
         }
     }
+
+    func summary(for flights: [FlightModel]) -> AllFlightsSummary {
+        let numberOfFlights = flights.count
+        let duration = Double(flights.reduce(0) { $0 + $1.duration })
+        let distance = Double(flights.reduce(0) { $0 + $1.distance })
+        return AllFlightsSummary(numberOfFlights: numberOfFlights,
+                                 totalDuration: duration,
+                                 totalDistance: distance)
+    }
 }
 
 extension FlightServiceImpl: FlightService {
-    public func updateFlights() {
-        allFlightsSubject.value = repo.getAllFlights()
-    }
-
-    public var allFlightsCount: Int {
-        allFlightsSubject.value.count
-    }
-
-    public var lastFlight: AnyPublisher<FlightModel?, Never> {
-        allFlights.map { $0.first }.eraseToAnyPublisher()
+    public var flightsDidChangePublisher: AnyPublisher<Void, Never> {
+        flightsDidChangeSubject.eraseToAnyPublisher()
     }
 
     public var allFlightsSummary: AnyPublisher<AllFlightsSummary, Never> {
-        allFlights
-            .map { flights in
-                let numberOfFlights = flights.count
-                let duration = Double(flights.reduce(0) { $0 + $1.duration })
-                let distance = Double(flights.reduce(0) { $0 + $1.distance })
-                return AllFlightsSummary(numberOfFlights: numberOfFlights,
-                                         totalDuration: duration,
-                                         totalDistance: distance)
-            }
-            .eraseToAnyPublisher()
+        allFlightSummarySubject.eraseToAnyPublisher()
     }
 
-    public var allFlights: AnyPublisher<[FlightModel], Never> {
-        allFlightsSubject.eraseToAnyPublisher()
+    public func getAllFlights() -> [FlightModel] {
+        repo.getAllFlights()
     }
 
-    public var flightsDidChange: AnyPublisher<Void, Never> {
-        repo.flightsDidChangePublisher.eraseToAnyPublisher()
+    public func getAllFlightsCount() -> Int {
+        repo.getAllFlightsCount()
+    }
+
+    public func refreshAllFlightsSummary() {
+        let allFlight = repo.getAllFlightLites()
+        var duration: Double = 0
+        var distance: Double = 0
+        allFlight.forEach({
+            duration += $0.duration
+            distance += $0.distance
+        })
+
+        allFlightSummarySubject.value = AllFlightsSummary(numberOfFlights: allFlight.count,
+                                                          totalDuration: duration,
+                                                          totalDistance: distance)
     }
 
     public func update(flight: FlightModel, title: String) -> FlightModel {
@@ -207,18 +273,14 @@ extension FlightServiceImpl: FlightService {
                                 byUserUpdate: true,
                                 toSynchro: true,
                                 withFileUploadNeeded: false)
-        updateFlights()
         return flight
     }
 
     public func delete(flight: FlightModel) {
         repo.deleteOrFlagToDeleteFlight(withUuid: flight.uuid)
-        updateFlights()
     }
 
     public func save(gutmaOutput: [Gutma.Model]) {
-        var shouldUpdateFlights = true
-
         for gutma in gutmaOutput {
             // Flights are never updated once created
             if repo.getFlight(withUuid: gutma.flight.uuid) == nil {
@@ -234,14 +296,7 @@ extension FlightServiceImpl: FlightService {
                         fpFlightRepo.saveOrUpdateFPlanFlights(gutma.flightPlanFlights, byUserUpdate: true, toSynchro: true)
                     }
                 }
-            } else {
-                shouldUpdateFlights = false
-                break
             }
-        }
-
-        if shouldUpdateFlights {
-            updateFlights()
         }
     }
 

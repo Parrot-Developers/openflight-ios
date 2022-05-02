@@ -62,6 +62,34 @@ public class Flight: NSManagedObject {
                            externalSynchroDate: externalSynchroDate)
     }
 
+    public func modelLite() -> FlightModel {
+        return FlightModel(apcId: apcId,
+                           cloudId: Int(cloudId),
+                           uuid: uuid,
+                           title: title,
+                           version: version,
+                           startTime: startTime,
+                           latestCloudModificationDate: latestCloudModificationDate,
+                           photoCount: photoCount,
+                           videoCount: videoCount,
+                           startLatitude: startLatitude,
+                           startLongitude: startLongitude,
+                           batteryConsumption: batteryConsumption,
+                           distance: distance,
+                           duration: duration,
+                           gutmaFile: nil,
+                           parrotCloudUploadUrl: parrotCloudUploadUrl,
+                           isLocalDeleted: isLocalDeleted,
+                           synchroStatus: SynchroStatus(status: synchroStatus),
+                           synchroError: SynchroError(error: synchroError),
+                           latestSynchroStatusDate: latestSynchroStatusDate,
+                           latestLocalModificationDate: latestLocalModificationDate,
+                           fileSynchroStatus: fileSynchroStatus,
+                           fileSynchroDate: fileSynchroDate,
+                           externalSynchroStatus: externalSynchroStatus,
+                           externalSynchroDate: externalSynchroDate)
+    }
+
     /// Update from flightModel
     /// - Parameters
     ///     - flightModel: specified FlightModel

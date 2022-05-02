@@ -134,7 +134,7 @@ extension GalleryMediaType: CaseIterable {
         case .panoVertical:
             return Asset.Gallery.icPanoV.image
         case .pano360:
-            return Asset.Gallery.icPano360.image
+            return Asset.Gallery.icPano360D.image
         case .panoWide:
             return Asset.Gallery.icWide.image
         }

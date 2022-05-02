@@ -57,6 +57,7 @@ class EditionSettingsViewModel {
 
     // MARK: - Private Properties
     private var fpSettings: [FlightPlanSetting]?
+    private var editionService: FlightPlanEditionService?
     private(set) var settingsCategoryFilter: FlightPlanSettingCategory?
     var dataSource: [Setting] {
         let settings = self.fpSettings ?? self.settingsProvider?.settings ?? []
@@ -86,6 +87,11 @@ class EditionSettingsViewModel {
             .flatMap { $0 }
             .dropLast() // remove final separator
         return Array(finalSettings)
+    }
+
+    // Init
+    init(editionService: FlightPlanEditionService?) {
+        self.editionService = editionService
     }
 
     /// Refreshes view data.
@@ -126,6 +132,11 @@ class EditionSettingsViewModel {
 
         viewState = .reload
         refreshContent(categoryFilter: settingsCategoryFilter)
+
+        // Update the editionService's modifiedFlightPlan to handle changes.
+        if let savedFlightPlan = savedFlightPlan {
+            editionService?.updateModifiedFlightPlan(with: savedFlightPlan)
+        }
     }
 
     /// Refreshes view data.

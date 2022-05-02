@@ -44,8 +44,7 @@ final class CellularAccessCardPinViewController: UIViewController {
     @IBOutlet private weak var loadingImageView: UIImageView!
 
     // MARK: - Private Properties
-    private weak var coordinator: Coordinator?
-    private let viewModel = CellularAccessCardPinViewModel()
+    private var viewModel: CellularAccessCardPinViewModel!
     private var pinCode: String = ""
     private var cancellables = Set<AnyCancellable>()
 
@@ -60,9 +59,9 @@ final class CellularAccessCardPinViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: Coordinator) -> CellularAccessCardPinViewController {
+    static func instantiate(viewModel: CellularAccessCardPinViewModel) -> CellularAccessCardPinViewController {
         let viewController = StoryboardScene.CellularAccessCardPin.initialScene.instantiate()
-        viewController.coordinator = coordinator
+        viewController.viewModel = viewModel
 
         return viewController
     }
@@ -133,7 +132,7 @@ private extension CellularAccessCardPinViewController {
         LogEvent.log(.simpleButton( LogEvent.LogKeyCellularAccessCardPin.close))
         view.backgroundColor = .clear
         viewModel.dismissCellularModal()
-        coordinator?.dismiss()
+        viewModel.dismissPinCodeView(animated: false)
     }
 }
 
@@ -166,9 +165,9 @@ private extension CellularAccessCardPinViewController {
             .removeDuplicates()
             .sink { [unowned self] connectionState in
                 if connectionState == CellularConnectionState.none {
-                    coordinator?.dismiss(animated: true, completion: nil)
+                    viewModel.dismissPinCodeView(animated: true)
                 } else if connectionState == .ready {
-                    coordinator?.dismiss {}
+                    viewModel.dismissPinCodeView(animated: true)
                 } else {
                     descriptionLabel.textColor = connectionState.descriptionColor
                     descriptionLabel.isHidden = connectionState.isDescriptionHidden

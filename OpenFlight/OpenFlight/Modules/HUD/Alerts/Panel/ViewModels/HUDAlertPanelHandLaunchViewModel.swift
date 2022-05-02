@@ -46,6 +46,7 @@ public final class HUDAlertPanelHandLaunchState: DeviceConnectionState, AlertPan
             return nil
         }
     }
+    public var titleImage: UIImage?
     public var subtitleColor: UIColor? {
         switch state {
         case .started:

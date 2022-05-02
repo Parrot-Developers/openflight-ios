@@ -44,9 +44,11 @@ public class ProjectManagerViewModel {
 
     let manager: ProjectManager
     let cloudSynchroWatcher: CloudSynchroWatcher?
+    /// Whether project type selection is enabled in manager.
+    let canSelectProjectType: Bool
 
     // MARK: - Private properties
-    private let coordinator: ProjectManagerCoordinator?
+    private weak var coordinator: ProjectManagerCoordinator?
     private let projectManagerUiProvider: ProjectManagerUiProvider!
     private let flightPlanStateMachine: FlightPlanStateMachine?
     private var isSynchronizingSubject = CurrentValueSubject<Bool, Never>(false)
@@ -60,12 +62,14 @@ public class ProjectManagerViewModel {
          manager: ProjectManager,
          cloudSynchroWatcher: CloudSynchroWatcher?,
          projectManagerUiProvider: ProjectManagerUiProvider,
-         flightPlanStateMachine: FlightPlanStateMachine?) {
+         flightPlanStateMachine: FlightPlanStateMachine?,
+         canSelectProjectType: Bool) {
         self.manager = manager
         self.cloudSynchroWatcher = cloudSynchroWatcher
         self.coordinator = coordinator
         self.projectManagerUiProvider = projectManagerUiProvider
         self.flightPlanStateMachine = flightPlanStateMachine
+        self.canSelectProjectType = canSelectProjectType
 
         listenDataSynchronization()
         listenFlightPlanStateMachine()
@@ -122,24 +126,27 @@ extension ProjectManagerViewModel {
 extension ProjectManagerViewModel {
 
     func openProject(_ project: ProjectModel) {
-        coordinator?.open(project: project, startEdition: false)
+        coordinator?.open(project: project, startEdition: false, isBrandNew: false)
     }
 
-    func renameProject(_ project: ProjectModel, with title: String?) {
-        manager.rename(project, title: title)
-        projectDidUpdateSubject.value = project
+    func renameProject(_ project: ProjectModel, with title: String) {
+            manager.rename(project, title: title)
+            projectDidUpdateSubject.value = project
     }
 
     func duplicateProject(_ project: ProjectModel) {
         let duplicatedProject = manager.duplicate(project: project)
         projectAddedSubject.value = manager.currentProject
-        coordinator?.open(project: duplicatedProject, startEdition: false)
+        coordinator?.open(project: duplicatedProject, startEdition: false, isBrandNew: true)
    }
 
     func createNewProject(for flightPlanProvider: FlightPlanProvider) {
-        let project = manager.newProject(flightPlanProvider: flightPlanProvider)
-        projectAddedSubject.value = project
-        coordinator?.open(project: project, startEdition: true)
+        manager.newProject(flightPlanProvider: flightPlanProvider) { [weak self] project in
+            guard let self = self,
+                  let project = project else { return }
+            self.projectAddedSubject.value = project
+            self.coordinator?.open(project: project, startEdition: true, isBrandNew: true)
+        }
     }
 
     func showDeletionConfirmation(for project: ProjectModel) {

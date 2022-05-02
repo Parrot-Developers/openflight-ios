@@ -285,9 +285,11 @@ private extension CameraWidgetViewModel {
                             isPhotoMode: false,
                             isPhotoSignatureEnabled: false)
         case .photo:
-            guard let photoFormat = camera.photoFormatMode else { return }
-
-            newState.update(with: photoFormat.title,
+            guard let photoFormat = camera.photoFormatMode,
+                  let resolution = camera.config[Camera2Params.photoResolution]?.value
+            else { return }
+            newState.update(with: resolution.title,
+                            labelCameraSpecificProperty2: photoFormat.shortTitle,
                             labelShutterSpeed: shutterSpeed?.shortTitle ?? L10n.unitSecond.dashPrefixed,
                             labelExposureCompensation: evCompensation.title,
                             exposureTextColor: exposureTextColor,

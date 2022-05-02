@@ -43,6 +43,7 @@ public final class MyFlightsCoordinator: Coordinator {
     private let drone: CurrentDroneHolder
     private var defaultSelectedProject: ProjectModel?
     private var defaultSelectedFlight: FlightModel?
+    private var defaultSelectedHeaderUuid: String?
 
     public init(flightServices: FlightServices,
                 flightPlanServices: FlightPlanServices,
@@ -50,11 +51,13 @@ public final class MyFlightsCoordinator: Coordinator {
                 repos: Repositories,
                 drone: CurrentDroneHolder,
                 defaultSelectedProject: ProjectModel? = nil,
-                defaultSelectedFlight: FlightModel? = nil) {
+                defaultSelectedFlight: FlightModel? = nil,
+                defaultSelectedHeaderUuid: String? = nil) {
         self.flightServices = flightServices
         self.flightPlanServices = flightPlanServices
         self.defaultSelectedProject = defaultSelectedProject
         self.defaultSelectedFlight = defaultSelectedFlight
+        self.defaultSelectedHeaderUuid = defaultSelectedHeaderUuid
         self.uiServices = uiServices
         self.repos = repos
         self.drone = drone
@@ -64,7 +67,8 @@ public final class MyFlightsCoordinator: Coordinator {
     public func start() {
         let viewController = MyFlightsViewController.instantiate(coordinator: self,
                                                                  defaultSelectedProject: defaultSelectedProject,
-                                                                 defaultSelectedFlight: defaultSelectedFlight)
+                                                                 defaultSelectedFlight: defaultSelectedFlight,
+                                                                 defaultSelectedHeaderUuid: defaultSelectedHeaderUuid)
         viewController.modalPresentationStyle = .fullScreen
         navigationController = NavigationController(rootViewController: viewController)
         navigationController?.isNavigationBarHidden = true
@@ -158,7 +162,7 @@ public final class MyFlightsCoordinator: Coordinator {
 extension MyFlightsCoordinator {
     func resetNavigationStack(selectedPanel: MyFlightsPanelType) {
         uiServices.navigationStack.updateLast(with: selectedPanel == .plans ?
-                                                .myFlightsExecutedProjects(selectedProject: nil) :
+                                                .myFlightsExecutedProjects(selectedProject: nil, selectedHeaderUuid: defaultSelectedHeaderUuid) :
                                                     .myFlights(selectedFlight: nil))
     }
 }

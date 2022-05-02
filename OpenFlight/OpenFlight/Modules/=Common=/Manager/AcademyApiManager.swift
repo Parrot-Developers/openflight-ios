@@ -179,16 +179,22 @@ public class AcademyApiServiceImpl: AcademyApiService {
 
     private let academyErrorSubject = CurrentValueSubject<Error?, Never>(nil)
 
+    private let userService: UserService!
+    public let academySession: AcademySessionProvider
+
     /// Queue to synchronize API calls
     private(set) var requestQueue: ApiRequestQueue
 
-    private(set) var userInformation: UserInformation
+    /// Returns a custom URLSession to communicate with Academy API.
+    private var authSession: URLSession? { academySession.authCustomSession }
 
     // MARK: - Init
-    public init (requestQueue: ApiRequestQueue,
-                 userInformation: UserInformation) {
+    public init(requestQueue: ApiRequestQueue,
+                academySession: AcademySessionProvider,
+                userService: UserService) {
         self.requestQueue = requestQueue
-        self.userInformation = userInformation
+        self.userService = userService
+        self.academySession = academySession
         self.academyErrorSubject.value = academyError
     }
 }
@@ -248,24 +254,6 @@ public extension AcademyApiServiceImpl {
 
 // MARK: - Private Funcs
 private extension AcademyApiServiceImpl {
-    /// Returns a custom URLSession to communicate with Academy API.
-    func authSession() -> URLSession? {
-        let token: String
-        if !userInformation.token.isEmpty {
-            token = userInformation.token
-        } else if !SecureKeyStorage.current.temporaryToken.isEmpty {
-            token = SecureKeyStorage.current.temporaryToken
-        } else {
-            return nil
-        }
-
-        let config = URLSessionConfiguration.default
-        config.httpAdditionalHeaders = [RequestHeaderFields.authorization: AuthenticationUtils.bearer(token: token),
-                                        RequestHeaderFields.contentType: RequestHeaderFields.appJson,
-                                        RequestHeaderFields.xApiKey: ServicesConstants.academySecretKey]
-        config.addUserAgentHeader()
-        return URLSession(configuration: config)
-    }
 
     /// If should manage access denied error from Academy
     /// - Parameters :
@@ -481,7 +469,7 @@ public extension AcademyApiServiceImpl {
     }
 
     func getPairedDroneList(completion: @escaping (Result<[AcademyPairedDrone], Error>) -> Void) {
-        guard let session = self.authSession() else {
+        guard let session = authSession else {
             completion(.failure(AcademyApiManagerError.authenticationError))
             return
         }
@@ -511,7 +499,7 @@ public extension AcademyApiServiceImpl {
 public extension AcademyApiServiceImpl {
 
     func performChallengeRequest(action: PairingAction, completion: @escaping ((String?, Error?) -> Void)) {
-        guard let session = self.authSession() else {
+        guard let session = authSession else {
             completion(nil, AcademyApiManagerError.cancelled)
             return
         }
@@ -542,7 +530,7 @@ public extension AcademyApiServiceImpl {
     }
 
     func performAssociationRequest(token: String, completion: @escaping ((Result<Bool, Error>) -> Void)) {
-        guard let session = self.authSession() else {
+        guard let session = authSession else {
             completion(.failure(AcademyApiManagerError.authenticationError))
             return
         }
@@ -569,7 +557,7 @@ public extension AcademyApiServiceImpl {
     }
 
     func unpairDrone(commonName: String, completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
-        guard let session = self.authSession() else {
+        guard let session = authSession else {
             completion(nil, AcademyApiManagerError.cancelled)
             return
         }
@@ -589,7 +577,7 @@ public extension AcademyApiServiceImpl {
     }
 
     func unpairAllUsers(token: String, completion: @escaping (_ data: Data?, _ error: Error?) -> Void) {
-        guard let session = self.authSession() else {
+        guard let session = authSession else {
             completion(nil, AcademyApiManagerError.cancelled)
             return
         }
@@ -625,7 +613,7 @@ public extension AcademyApiServiceImpl {
 
     func pairedUsersCount(commonName: String,
                           completion: @escaping (_ usersCount: Int?, _ error: Error?) -> Void) {
-        guard let session = self.authSession() else {
+        guard let session = authSession else {
             completion(nil, AcademyApiManagerError.cancelled)
             return
         }

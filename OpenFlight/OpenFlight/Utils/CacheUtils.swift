@@ -1,4 +1,4 @@
-//    Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2022 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,6 +29,11 @@
 
 import Foundation
 import UIKit
+import SdkCore
+
+extension ULogTag {
+    static let cacheUtils = ULogTag(name: "cacheUtils")
+}
 
 // MARK: - CacheUtils
 /// Utilities to help with image cache.
@@ -38,28 +43,21 @@ final public class CacheUtils {
     public static let shared = CacheUtils()
 
     // MARK: - Private Properties
-    private let imageCacheSyncronizeQueue = DispatchQueue(label: "imageCacheSyncronizeQueue")
-    private var imageCacheValues = [String: UIImage]()
-    private var imageCache: [String: UIImage] {
-        get {
-            return imageCacheSyncronizeQueue.sync {
-                imageCacheValues
-            }
-        }
-        set(newValue) {
-            imageCacheSyncronizeQueue.sync {
-                self.imageCacheValues = newValue
-            }
-        }
-    }
+    private var imageCache = [String: UIImage]()
+    private let cacheDirectory: URL?
     private enum Constants {
         static let cacheDirectory = "Images"
-        static let cacheSubDirectory = "imageCache"
+        static let maxFileNameLength = 64
     }
 
     // MARK: - Init
     init() {
-        loadDictionary()
+        cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
+            .appendingPathComponent(Constants.cacheDirectory)
+        if let cacheDirectory = self.cacheDirectory,
+           !FileManager.default.fileExists(atPath: cacheDirectory.path) {
+            try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil)
+        }
     }
 
     // MARK: - Public Funcs
@@ -70,7 +68,19 @@ final public class CacheUtils {
     ///   - key: key where the image will be cached.
     public func cacheImage(_ image: UIImage, forKey key: String) {
         imageCache[key] = image
-        writeDictionary()
+        DispatchQueue.global().async { [weak self] in
+            guard let self = self,
+                  let imageUrl = self.fileUrl(key: key),
+                  let imageData = image.pngData() else { return }
+            do {
+                if FileManager.default.fileExists(atPath: imageUrl.path) {
+                    try FileManager.default.removeItem(at: imageUrl)
+                }
+                try imageData.write(to: imageUrl)
+            } catch {
+                ULog.e(.cacheUtils, "Unable to write \(imageData.count) bytes in \(imageUrl.absoluteString) : \(error.localizedDescription)")
+            }
+        }
     }
 
     ///  Returns an image for a specific key.
@@ -78,7 +88,15 @@ final public class CacheUtils {
     /// - Parameters:
     ///   - key: key where the image is cached.
     public func image(forKey key: String) -> UIImage? {
-        return imageCache[key]
+        if let cachedImage = imageCache[key] {
+            return cachedImage
+        }
+        if let imageUrl = fileUrl(key: key),
+           let savedImage = UIImage(contentsOfFile: imageUrl.path) {
+            imageCache[key] = savedImage
+            return savedImage
+        }
+        return nil
     }
 
     ///  Remove the cache for a specific key.
@@ -87,40 +105,20 @@ final public class CacheUtils {
     ///   - key: key where the image is cached.
     public func removeCache(forKey key: String) {
         imageCache[key] = nil
-        writeDictionary()
-    }
-}
-
-// MARK: - Private Computed Properties
-private extension CacheUtils {
-    var cacheImageURL: URL? {
-        guard let cacheDirectoryURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else { return nil }
-        let imageCacheDirectoryURL = cacheDirectoryURL.appendingPathComponent(Constants.cacheDirectory)
-        try? FileManager.default.createDirectory(at: imageCacheDirectoryURL, withIntermediateDirectories: false, attributes: nil)
-        return imageCacheDirectoryURL.appendingPathComponent(Constants.cacheSubDirectory)
+        if let imageUrl = fileUrl(key: key),
+           FileManager.default.fileExists(atPath: imageUrl.path) {
+            try? FileManager.default.removeItem(at: imageUrl)
+        }
     }
 }
 
 // MARK: - Private Funcs
 private extension CacheUtils {
 
-    /// Write image in cache folder.
-    func writeDictionary() {
-        guard let cacheFileURL = cacheImageURL else { return }
-        let dict = NSDictionary(dictionary: imageCache.mapValues {value in
-            return NSData(data: value.pngData() ?? Data())
-        })
-        dict.write(to: cacheFileURL, atomically: true)
-    }
-
-    /// Load image from cache folder.
-    func loadDictionary() {
-        guard let cacheFileURL = cacheImageURL else { return }
-        let dict = NSDictionary(contentsOf: cacheFileURL)
-        dict?.forEach { if let key = $0.key as? String,
-            let value = $0.value as? NSData {
-            imageCache[key] = UIImage(data: value as Data)
-            }
-        }
+    func fileUrl(key: String) -> URL? {
+        let fileName = key.replacingOccurrences(of: "[^0-9a-zA-Z_]", with: "", options: .regularExpression)
+            .prefix(Constants.maxFileNameLength)
+        guard !fileName.isEmpty else { return nil }
+        return cacheDirectory?.appendingPathComponent(fileName+".png")
     }
 }

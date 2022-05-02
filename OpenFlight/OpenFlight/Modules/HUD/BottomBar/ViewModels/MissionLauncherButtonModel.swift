@@ -72,10 +72,3 @@ class MissionLauncherButtonModel {
             .store(in: &cancellables)
     }
 }
-
-/// `Deselectable` conformance for use by `BottomBarViewController`
-extension MissionLauncherButtonModel: Deselectable {
-    func deselect() {
-        coordinator?.hideMissionLauncher()
-    }
-}

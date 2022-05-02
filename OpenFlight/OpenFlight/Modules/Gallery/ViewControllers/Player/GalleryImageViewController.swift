@@ -50,7 +50,7 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
 
     // Convenience Computed Properties
     private var media: GalleryMedia? {
-        viewModel?.getMedia(index: index)
+        viewModel?.getFilteredMedia(index: index)
     }
     private var hasAdditionalPanoramaGenerationImage: Bool {
         media?.canGeneratePanorama ?? false
@@ -69,7 +69,7 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
     private var currentZoomableCell: GalleryMediaFullScreenCollectionViewCell? {
         guard let cell = itemsCollectionView.visibleCells.first as? GalleryMediaFullScreenCollectionViewCell,
               let model = cell.model,
-              !model.hasGeneratePanoramaButton else {
+              model.panoramaGenerationState == .none else {
             return nil
         }
         return cell
@@ -110,6 +110,15 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
         setupDefaultImageIndex()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        // Video player is only stopped at image media appear and `GalleryMediaPlayerViewController`
+        // deinit in order to avoid any race condition when sliding through medias.
+        // => Stop potential video media.
+        viewModel?.videoStop()
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         // Reset VM loading state, as next VC may not be a `GalleryImageViewController`.
@@ -141,9 +150,15 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
         itemsCollectionView.reloadData()
         fetchImage(at: urlIndex(visibleIndex ?? imageIndex))
 
+        guard let viewModel = viewModel,
+              let media = media,
+              let mediaIndex = viewModel.getMediaIndex(media) else {
+                  return
+              }
+
         // Content is reloaded based on current state => do not reset VM urls.
-        viewModel?.mediaBrowsingViewModel.didDisplayMedia(media,
-                                                          index: index,
+        viewModel.mediaBrowsingViewModel.didDisplayMedia(media,
+                                                          index: mediaIndex,
                                                           count: resourcesCount,
                                                           resetUrls: false)
     }
@@ -217,12 +232,16 @@ private extension GalleryImageViewController {
 
     /// Shows panorama generation view.
     func generatePanorama() {
-        guard let viewModel = viewModel  else { return }
+        guard let viewModel = viewModel,
+              let media = media,
+              let mediaIndex = viewModel.getMediaIndex(media) else {
+                  return
+              }
 
         let galleryPanoramaViewModel = GalleryPanoramaViewModel(galleryMediaViewModel: viewModel,
                                                                 coordinator: coordinator,
-                                                                mediaIndex: index)
-        coordinator?.showPanoramaGenerationScreen(viewModel: galleryPanoramaViewModel, index: index)
+                                                                mediaIndex: mediaIndex)
+        coordinator?.showPanoramaGenerationScreen(viewModel: galleryPanoramaViewModel, index: mediaIndex)
     }
 
     /// Shows immersive panorama view.
@@ -242,7 +261,13 @@ private extension GalleryImageViewController {
 private extension GalleryImageViewController {
     /// Updates view model with media info and fetches image.
     func displayMedia() {
-        viewModel?.mediaBrowsingViewModel.didDisplayMedia(media, index: index, count: resourcesCount)
+        guard let viewModel = viewModel,
+              let media = media,
+              let mediaIndex = viewModel.getMediaIndex(media) else {
+                  return
+              }
+
+        viewModel.mediaBrowsingViewModel.didDisplayMedia(media, index: mediaIndex, count: resourcesCount)
         fetchImage(at: urlIndex(imageIndex))
     }
 
@@ -324,7 +349,8 @@ extension GalleryImageViewController: UICollectionViewDataSource, UICollectionVi
 
         cell.delegate = self
         cell.model = GalleryMediaFullScreenCellModel(url: viewModel?.mediaBrowsingViewModel.mediaUrls[urlIndex],
-                                                     hasGeneratePanoramaButton: hasAdditionalPanoramaGenerationImage && indexPath.item == 0,
+                                                     isAdditionalPanoramaCell: hasAdditionalPanoramaGenerationImage && indexPath.item == 0,
+                                                     panoramaGenerationState: media?.panoramaGenerationState ?? .none,
                                                      hasShowImmersivePanoramaButton: (media?.canShowImmersivePanorama ?? false) && indexPath.item == 0)
 
         return cell

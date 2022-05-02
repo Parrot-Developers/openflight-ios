@@ -152,6 +152,7 @@ private extension FlightDetailsViewController {
         rightTableView.delegate = self
         rightTableView.dataSource = self
         registerTableViewCellTypes()
+        backButton.addShadow()
     }
 
     func registerTableViewCellTypes() {
@@ -203,14 +204,17 @@ private extension FlightDetailsViewController {
         case .details(let viewModel):
             if let mapViewController = mapController as? MapViewController {
                 mapViewController.displayFlightCourse(flightsPoints: [viewModel.flightPoints],
-                                                      hasAsmlAltitude: viewModel.hasAsmlAltitude)
+                                                      hasAsmlAltitude: viewModel.hasAsmlAltitude,
+                                                      adjustViewPoint: true)
             }
         case .execution(let viewModel):
             if let mapViewController = mapController as? MapViewController {
                 mapViewController.flightPlan = viewModel.flightPlan
-                mapViewController.displayFlightPlan(viewModel.flightPlan)
+                mapViewController.displayFlightPlan(viewModel.flightPlan, shouldReloadCamera: true)
                 mapViewController.displayFlightCourse(flightsPoints: viewModel.flightsPoints,
-                                                      hasAsmlAltitude: viewModel.hasAsmlAltitude)
+                                                      hasAsmlAltitude: viewModel.hasAsmlAltitude,
+                                                      trajectoryState: viewModel.flightPlan.state.trajectoryState,
+                                                      adjustViewPoint: false)
             }
         case .none:
             break

@@ -36,8 +36,10 @@ final class FlightDetailsInfoCell: MainTableViewCell, NibReusable {
     @IBOutlet private weak var tagHeaderView: FlightTagHeaderView!
     @IBOutlet private weak var nameLabel: UILabel!
     @IBOutlet private weak var nameTextField: UITextField!
-    @IBOutlet private weak var dateView: FlightDetailsIconLabelView!
+    @IBOutlet private weak var dateLabel: UILabel!
     @IBOutlet private weak var summaryView: FlightDetailsSummaryView!
+    @IBOutlet private weak var separatorView: UIView!
+    @IBOutlet private weak var executionNameLabel: UILabel!
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -57,8 +59,10 @@ final class FlightDetailsInfoCell: MainTableViewCell, NibReusable {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        nameLabel.makeUp(with: .title, color: .defaultTextColor)
-        nameTextField.makeUp(style: .title, textColor: .defaultTextColor, bgColor: .defaultBgcolor)
+        nameLabel.makeUp(with: .current, color: .defaultTextColor80)
+        nameTextField.makeUp(style: .current, textColor: .defaultTextColor80, bgColor: .clear)
+        executionNameLabel.makeUp(with: .current, color: .defaultTextColor80)
+        separatorView.backgroundColor = ColorName.separator.color
     }
 
     override func prepareForReuse() {
@@ -72,22 +76,34 @@ private struct FlightSummaryProvider: FlightDetailsSummaryViewProvider {
     let duration: Double
     let batteryConsumption: Int
     let distance: Double
+    let photoCount: Int
+    let videoCount: Int
 
     init(flight: FlightModel) {
         duration = flight.duration
         batteryConsumption = Int(flight.batteryConsumption)
         distance = flight.distance
+        photoCount = Int(flight.photoCount)
+        videoCount = Int(flight.videoCount)
     }
 
     init (flights: [FlightModel]) {
-        let sum = flights.reduce((duration: 0.0, battery: 0, distance: 0.0)) { sum, flight in
+        let sum = flights.reduce((duration: 0.0,
+                                  battery: 0,
+                                  distance: 0.0,
+                                  photoCount: 0,
+                                  videoCount: 0)) { sum, flight in
             return (duration: sum.duration + flight.duration,
                     battery: sum.battery + Int(flight.batteryConsumption),
-                    distance: sum.distance + flight.distance)
+                    distance: sum.distance + flight.distance,
+                    photoCount: sum.photoCount + Int(flight.photoCount),
+                    videoCount: sum.videoCount + Int(flight.videoCount))
         }
         duration = sum.duration
         batteryConsumption = sum.battery
         distance = sum.distance
+        photoCount = sum.photoCount
+        videoCount = sum.videoCount
     }
 }
 
@@ -100,13 +116,15 @@ extension FlightDetailsInfoCell {
 
         nameLabel.attributedText = nil
         nameLabel.text = provider.title
+        executionNameLabel.text = provider.flightPlan.customTitle
         tagHeaderView.text = provider.executionTitle
         tagHeaderView.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                          radius: Style.smallCornerRadius)
 
-        dateView.label.text = provider.date.formattedString(dateStyle: .medium, timeStyle: .short)
-        dateView.icon.image = Asset.MyFlights.calendar.image
-        dateView.isHidden = provider.date == Date.distantPast
+        dateLabel.text = provider.date.formattedString(dateStyle: .medium,
+                                                       timeStyle: .short,
+                                                       showTimePrefix: false)
+        dateLabel.isHidden = provider.date == Date.distantPast
 
         if !provider.flights.isEmpty {
             summaryView.fill(provider: provider.summaryProvider)
@@ -128,11 +146,15 @@ extension FlightDetailsInfoCell {
         isEditingName = false
 
         // Date
-        dateView.label.text = model.flight.startTime?.formattedString(dateStyle: .medium, timeStyle: .short)
-        dateView.icon.image = Asset.MyFlights.calendar.image
+        dateLabel.text = model.flight.startTime?.formattedString(dateStyle: .medium,
+                                                                 timeStyle: .short,
+                                                                 showTimePrefix: false)
 
         // Summary
         summaryView.fill(provider: FlightSummaryProvider(flight: model.flight))
+
+        // Execution Name
+        executionNameLabel.isHidden = true
 
         // Add Subscribers
         listenNameTextFieldSubscribers()

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -23,10 +23,10 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="q9l-Z6-2zv">
-                        <rect key="frame" x="16" y="0.0" width="442" height="56"/>
+                        <rect key="frame" x="16" y="0.0" width="442" height="72"/>
                         <subviews>
                             <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rcV-EJ-kEr">
-                                <rect key="frame" x="0.0" y="0.0" width="50" height="56"/>
+                                <rect key="frame" x="0.0" y="0.0" width="50" height="72"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tbw-F1-SEw">
                                         <rect key="frame" x="0.0" y="8" width="50" height="15"/>
@@ -47,16 +47,16 @@
                                     <constraint firstItem="Wda-vh-11P" firstAttribute="leading" secondItem="rcV-EJ-kEr" secondAttribute="leading" id="K6E-oo-VTr"/>
                                     <constraint firstAttribute="trailing" secondItem="Tbw-F1-SEw" secondAttribute="trailing" id="Sbi-kn-v8V"/>
                                     <constraint firstItem="Tbw-F1-SEw" firstAttribute="leading" secondItem="rcV-EJ-kEr" secondAttribute="leading" id="SpL-2p-aBS"/>
-                                    <constraint firstAttribute="width" priority="750" constant="50" id="dnn-VO-PWm"/>
+                                    <constraint firstAttribute="width" constant="50" id="dnn-VO-PWm"/>
                                     <constraint firstItem="Tbw-F1-SEw" firstAttribute="top" secondItem="rcV-EJ-kEr" secondAttribute="top" constant="8" id="m8c-nW-gEN"/>
                                     <constraint firstItem="Wda-vh-11P" firstAttribute="top" secondItem="Tbw-F1-SEw" secondAttribute="bottom" constant="4" id="tYh-A3-qf3"/>
                                 </constraints>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="UMw-H5-R3i">
-                                <rect key="frame" x="58" y="0.0" width="384" height="56"/>
+                                <rect key="frame" x="58" y="0.0" width="384" height="72"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="W30-xE-Xge">
-                                        <rect key="frame" x="0.0" y="0.0" width="384" height="56"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="384" height="72"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBaseAvatar" translatesAutoresizingMaskIntoConstraints="NO" id="UVu-g0-3yV">
                                                 <rect key="frame" x="0.0" y="0.0" width="56" height="56"/>
@@ -66,55 +66,61 @@
                                                 </constraints>
                                             </imageView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="9lf-Wf-e8Y">
-                                                <rect key="frame" x="64" y="8" width="136" height="40"/>
+                                                <rect key="frame" x="64" y="8" width="45.5" height="56"/>
                                                 <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="acQ-sZ-lMo">
-                                                        <rect key="frame" x="0.0" y="0.0" width="136" height="18"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" horizontalCompressionResistancePriority="751" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="acQ-sZ-lMo">
+                                                        <rect key="frame" x="0.0" y="0.0" width="45.5" height="26"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                                         <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
+                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="20"/>
+                                                        </variation>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xfY-d0-hbO">
-                                                        <rect key="frame" x="0.0" y="22" width="136" height="18"/>
+                                                    <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Location" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xfY-d0-hbO">
+                                                        <rect key="frame" x="0.0" y="30" width="45.5" height="26"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                         <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                 </subviews>
                                             </stackView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="1OY-iX-uZe">
-                                                <rect key="frame" x="208" y="20.5" width="160" height="15"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="18" translatesAutoresizingMaskIntoConstraints="NO" id="1OY-iX-uZe">
+                                                <rect key="frame" x="117.5" y="26" width="250.5" height="20"/>
                                                 <subviews>
+                                                    <view contentMode="scaleToFill" horizontalHuggingPriority="245" translatesAutoresizingMaskIntoConstraints="NO" id="RxO-51-BLj">
+                                                        <rect key="frame" x="0.0" y="0.0" width="52.5" height="20"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    </view>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="dIF-PJ-AWd">
-                                                        <rect key="frame" x="0.0" y="1.5" width="48" height="12"/>
+                                                        <rect key="frame" x="70.5" y="0.0" width="31" height="20"/>
                                                         <subviews>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I1R-yy-eql">
-                                                                <rect key="frame" x="0.0" y="0.0" width="32" height="12"/>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" text="0" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I1R-yy-eql">
+                                                                <rect key="frame" x="0.0" y="0.0" width="7" height="20"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                                 <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
-                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icPhotoMini" translatesAutoresizingMaskIntoConstraints="NO" id="jY5-DQ-kK6">
-                                                                <rect key="frame" x="36" y="0.0" width="12" height="12"/>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icPhoto" translatesAutoresizingMaskIntoConstraints="NO" id="jY5-DQ-kK6">
+                                                                <rect key="frame" x="11" y="0.0" width="20" height="20"/>
                                                                 <color key="tintColor" name="default_text_color"/>
                                                                 <constraints>
-                                                                    <constraint firstAttribute="height" constant="12" id="pZa-L1-3Lj"/>
                                                                     <constraint firstAttribute="width" secondItem="jY5-DQ-kK6" secondAttribute="height" multiplier="1:1" id="qLe-RW-7UX"/>
                                                                 </constraints>
                                                             </imageView>
                                                         </subviews>
                                                     </stackView>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="soZ-Lc-pS4">
-                                                        <rect key="frame" x="56" y="0.0" width="29" height="15"/>
+                                                        <rect key="frame" x="119.5" y="0.0" width="31" height="20"/>
                                                         <subviews>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Nf-G6-e6D">
-                                                                <rect key="frame" x="0.0" y="0.0" width="10" height="15"/>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" text="0" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Nf-G6-e6D">
+                                                                <rect key="frame" x="0.0" y="0.0" width="7" height="20"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                                 <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
-                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icVideoMini" translatesAutoresizingMaskIntoConstraints="NO" id="dIe-y1-VPr">
-                                                                <rect key="frame" x="14" y="0.0" width="15" height="15"/>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icCamera" translatesAutoresizingMaskIntoConstraints="NO" id="dIe-y1-VPr">
+                                                                <rect key="frame" x="11" y="0.0" width="20" height="20"/>
                                                                 <color key="tintColor" name="default_text_color"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" secondItem="dIe-y1-VPr" secondAttribute="height" multiplier="1:1" id="hX9-1t-ayO"/>
@@ -122,26 +128,44 @@
                                                             </imageView>
                                                         </subviews>
                                                     </stackView>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00:00:00" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b7I-Kq-aGB">
-                                                        <rect key="frame" x="93" y="1" width="50" height="13"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" constant="50" id="M9y-5t-de0"/>
-                                                        </constraints>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="default_text_color"/>
-                                                        <nil key="highlightedColor"/>
-                                                    </label>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRightArrow" translatesAutoresizingMaskIntoConstraints="NO" id="ABU-CD-2G8">
-                                                        <rect key="frame" x="151" y="3" width="9" height="9"/>
-                                                        <color key="tintColor" name="default_text_color"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" secondItem="ABU-CD-2G8" secondAttribute="height" multiplier="1:1" id="kb2-vA-BgF"/>
-                                                        </constraints>
-                                                    </imageView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="GFI-VO-cWN">
+                                                        <rect key="frame" x="168.5" y="0.0" width="55" height="20"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Time" translatesAutoresizingMaskIntoConstraints="NO" id="UrP-Gm-bkk">
+                                                                <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" secondItem="UrP-Gm-bkk" secondAttribute="height" multiplier="1:1" id="OYK-0e-pgw"/>
+                                                                </constraints>
+                                                            </imageView>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" text="00:00" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b7I-Kq-aGB">
+                                                                <rect key="frame" x="20" y="0.0" width="35" height="20"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="35" id="piV-Ah-nD9">
+                                                                        <variation key="heightClass=regular-widthClass=regular" constant="45"/>
+                                                                    </constraint>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <color key="textColor" name="default_text_color"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="VqF-Lg-Dhx">
+                                                        <rect key="frame" x="241.5" y="0.0" width="9" height="20"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icRightArrow" translatesAutoresizingMaskIntoConstraints="NO" id="ABU-CD-2G8">
+                                                                <rect key="frame" x="0.0" y="5.5" width="9" height="9"/>
+                                                                <color key="tintColor" name="default_text_color"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" secondItem="ABU-CD-2G8" secondAttribute="height" multiplier="1:1" id="kb2-vA-BgF"/>
+                                                                    <constraint firstAttribute="height" constant="9" id="v80-kT-YAs"/>
+                                                                </constraints>
+                                                            </imageView>
+                                                        </subviews>
+                                                    </stackView>
                                                 </subviews>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" constant="160" id="4Tw-D2-czU"/>
-                                                    <constraint firstItem="soZ-Lc-pS4" firstAttribute="leading" secondItem="1OY-iX-uZe" secondAttribute="leading" constant="56" id="tYU-jo-ewp"/>
+                                                    <constraint firstAttribute="height" constant="20" id="txX-WW-Kg7"/>
                                                 </constraints>
                                             </stackView>
                                         </subviews>
@@ -177,24 +201,27 @@
             <connections>
                 <outlet property="bgView" destination="W30-xE-Xge" id="qnZ-jL-UUA"/>
                 <outlet property="cellStackView" destination="q9l-Z6-2zv" id="rCf-5v-2hU"/>
-                <outlet property="dateLabel" destination="xfY-d0-hbO" id="96Z-vW-62g"/>
+                <outlet property="dateLabel" destination="acQ-sZ-lMo" id="PSf-gF-4s3"/>
                 <outlet property="dateView" destination="rcV-EJ-kEr" id="qdJ-Sm-dHb"/>
                 <outlet property="durationLabel" destination="b7I-Kq-aGB" id="cz8-qp-2e6"/>
-                <outlet property="locationLabel" destination="acQ-sZ-lMo" id="sBH-34-VQ9"/>
+                <outlet property="locationLabel" destination="xfY-d0-hbO" id="8TS-B6-AKj"/>
                 <outlet property="mapImage" destination="UVu-g0-3yV" id="kwI-gu-MjF"/>
                 <outlet property="monthLabel" destination="Tbw-F1-SEw" id="HhG-TV-lQT"/>
                 <outlet property="photoLabel" destination="I1R-yy-eql" id="TUV-t7-1y5"/>
+                <outlet property="photoStackView" destination="dIF-PJ-AWd" id="PqY-Sz-vSL"/>
                 <outlet property="videoLabel" destination="5Nf-G6-e6D" id="b7N-HB-q6a"/>
+                <outlet property="videoStackView" destination="soZ-Lc-pS4" id="apu-EH-Maf"/>
                 <outlet property="yearLabel" destination="Wda-vh-11P" id="Jpl-KH-1Le"/>
             </connections>
             <point key="canvasLocation" x="256" y="184.40779610194903"/>
         </tableViewCell>
     </objects>
     <resources>
+        <image name="Time" width="22" height="22"/>
         <image name="icBaseAvatar" width="110" height="110"/>
-        <image name="icPhotoMini" width="11" height="9"/>
+        <image name="icCamera" width="18" height="18"/>
+        <image name="icPhoto" width="15" height="15"/>
         <image name="icRightArrow" width="9" height="16"/>
-        <image name="icVideoMini" width="15" height="15"/>
         <namedColor name="default_text_color">
             <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

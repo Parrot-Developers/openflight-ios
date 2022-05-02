@@ -40,12 +40,19 @@ public protocol HudTopBarService: AnyObject {
     var isBackButtonDisplayed: Bool { get }
     var isBackButtonDisplayedPublisher: AnyPublisher<Bool, Never> { get }
 
+    /// Method to call when a back action is needed.
+    func goBack()
+
+    /// A back button action is asked.
+    /// Published when `goBack()` is called.
+    var goBackPublisher: AnyPublisher<Void, Never> { get }
 }
 
 open class HudTopBarServiceImpl {
 
     private let status = CurrentValueSubject<Bool, Never>(true)
     private let navigationStackService: NavigationStackService
+    private let goBackSubject = PassthroughSubject<Void, Never>()
 
     init(navigationStackService: NavigationStackService) {
         self.navigationStackService = navigationStackService
@@ -72,5 +79,11 @@ extension HudTopBarServiceImpl: HudTopBarService {
     public var isBackButtonDisplayedPublisher: AnyPublisher<Bool, Never> {
         navigationStackService.startedToNavigatePublisher
             .eraseToAnyPublisher()
+    }
+
+    public func goBack() { goBackSubject.send() }
+
+    public var goBackPublisher: AnyPublisher<Void, Never> {
+        goBackSubject.eraseToAnyPublisher()
     }
 }

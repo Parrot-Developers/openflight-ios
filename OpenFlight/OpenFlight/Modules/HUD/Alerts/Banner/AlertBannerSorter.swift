@@ -47,12 +47,16 @@ open class AlertBannerSorter {
         // Auto landing    Force Landing Low battery    Auto Landing
         .wontReachHome,
         //        RTH    Very Low Battery will RTH    Can’t reach Home
+        .needCalibration,
+        // Takeoff    Default takeoff issue    Magneto calibration needs to be done
         .takeoffUnavailable,
         // Takeoff    Default takeoff issue    Take off is unavailable
         .obstacleAvoidanceComputationalError,
         // Obstacle avoidance    Computational error    Obstacle avoidance disabled - Internal error
         .obstacleAvoidanceSensorsFailure,
         // Obstacle avoidance    Stereo images unavailable + OA activated    Obstacle avoidance disabled - Stereo camera failure.
+        .obstacleAvoidanceGimbalFailure,
+        // Obstacle avoidance    Gimbal stabilization failure + OA activated    Obstacle avoidance disabled - Gimbal failure.
         .obstacleAvoidanceTooDark,
         // Obstacle avoidance    Too dark + OA activated    Obstacle avoidance disabled - Environment too dark
         .obstacleAvoidanceSensorsNotCalibrated,
@@ -63,6 +67,8 @@ open class AlertBannerSorter {
         // Obstacle avoidance    Strong wind + OA activated    Obstacle avoidance deteriorated – Strong winds
         .cameraError,
         // Components_Camera    Camera critical alert    Check that nothing is blocking the camera.
+        .stereoCameraDecalibrated,
+        // Stereo camera sensors    Stereo camera calibration required
         .noGpsTooDark,
         // Conditions    No GPS + Too dark    Flight quality is not optimal – environment is too dark.
         .noGpsTooHigh,
@@ -71,6 +77,8 @@ open class AlertBannerSorter {
         // Conditions    No GPS    Poor GPS quality - autonomous flights are unavailable.
         .headingLockedKoPerturbationMagnetic,
         // Conditions    Heading Locked KO    Magnetic perturbations - autonomous flights are unavailable.
+        .headingLockedKoEarthMagnetic,
+        // Conditions    Heading Locked KO    Earth magnetic field too low - autonomous flights are unavailable.
         .noGpsLapse,
         // Conditions    No GPS - GPS lapse    Flight quality is not optimal - GPS lapse is unavailable.
         .tooMuchWind,

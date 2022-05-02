@@ -44,18 +44,23 @@ final class ProjectNameTextField: UITextField {
 
 protocol ProjectNameMenuTableViewCellProvider: ProjectMenuTableViewCellProvider {
     var title: String { get set }
+    // Informs whether the title must be displayed in edition mode (i.e. keyboard shown).
+    var isTitleEditionNeeded: Bool { get }
 }
 
 /// Project Menu TableView Cell.
 final class ProjectNameMenuTableViewCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
+    @IBOutlet private weak var projectNameContainer: UIView!
     @IBOutlet private weak var projectNameTextField: UITextField!
     @IBOutlet private weak var projectTitleLabel: UILabel!
-    @IBOutlet private weak var projectNameUnderline: UIView!
     private var provider: ProjectNameMenuTableViewCellProvider?
 
     private var cancellables = Set<AnyCancellable>()
 
+    enum Constants {
+        static let textFieldMaximumLength: Int = 32
+    }
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -71,19 +76,35 @@ final class ProjectNameMenuTableViewCell: MainTableViewCell, NibReusable {
         projectTitleLabel.makeUp(with: .caps, color: .disabledTextColor)
         projectTitleLabel.text = L10n.flightPlanProjectName.uppercased()
 
-        projectNameTextField.makeUp(style: .largeMedium, textColor: .defaultTextColor, bgColor: .defaultBgcolor)
+        projectNameTextField.makeUp(style: .current, textColor: .defaultTextColor, bgColor: .clear)
 
         projectNameTextField.clearButtonMode = .whileEditing
         projectNameTextField.tintColor = ColorName.defaultTextColor.color
         projectNameTextField.rightView = UIImageView(image: Asset.Common.Icons.iconEdit.image)
         projectNameTextField.rightViewMode = .unlessEditing
-        projectNameUnderline.backgroundColor = ColorName.separator.color
+        projectNameTextField.enablesReturnKeyAutomatically = true
+
+        projectNameContainer.backgroundColor = ColorName.whiteAlbescent.color
+        projectNameContainer.layer.cornerRadius = Style.mediumCornerRadius
     }
 
     private func listenNameTextFieldSubscribers() {
         projectNameTextField.returnPressedPublisher
-            .sink { [unowned self] in
-                provider?.title = projectNameTextField.text ?? ""
+            .sink { [weak self] in
+                guard let self = self else { return }
+                // Prevent to update the title with empty text (should be handled by `enablesReturnKeyAutomatically`).
+                guard let title = self.projectNameTextField.text,
+                      !title.isEmpty else { return }
+                self.provider?.title = title
+            }
+            .store(in: &cancellables)
+
+        projectNameTextField.editingChangedPublisher
+            .sink { [weak self] in
+                guard let self = self else { return }
+                if $0.count > Constants.textFieldMaximumLength {
+                    self.projectNameTextField.text = String($0.prefix(Constants.textFieldMaximumLength))
+                }
             }
             .store(in: &cancellables)
     }
@@ -98,6 +119,8 @@ extension ProjectNameMenuTableViewCell {
     func setup(with provider: ProjectNameMenuTableViewCellProvider) {
         self.provider = provider
         projectNameTextField.text = provider.title
+        // Display, if needed (e.g. project creation), the keyboard letting user to edit the title.
+        if provider.isTitleEditionNeeded { projectNameTextField.becomeFirstResponder() }
 
         listenNameTextFieldSubscribers()
     }

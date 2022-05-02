@@ -61,6 +61,7 @@ public final class FlightPlanExecutionDetailsCoordinator: Coordinator {
     public func start() {
         let viewModel = FlightPlanExecutionViewModel(flightPlan: flightPlan,
                                                      flightRepository: repos.flight,
+                                                     flightPlanRepository: repos.flightPlan,
                                                      coordinator: self,
                                                      flightPlanExecutionDetailsSettingsProvider: uiServices.flightPlanExecutionDetailsSettingsProvider,
                                                      flightPlanUiStateProvider: uiServices.flightPlanUiStateProvider,
@@ -103,7 +104,10 @@ public final class FlightPlanExecutionDetailsCoordinator: Coordinator {
     /// - Parameters:
     ///    - flightPlan: Flight Plan
     public func open(flightPlan: FlightPlanModel) {
-        flightPlanServices.projectManager.loadEverythingAndOpen(flightPlan: flightPlan, autoStart: true)
+        flightPlanServices.projectManager
+            .loadEverythingAndOpen(flightPlan: flightPlan,
+                                   autoStart: true,
+                                   isBrandNew: false)
         popToRootCoordinatorWithAnimator(coordinator: self,
                                          transitionType: .reveal,
                                          transitionSubtype: .fromTop)

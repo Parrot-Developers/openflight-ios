@@ -19,84 +19,96 @@
             <objects>
                 <viewController storyboardIdentifier="TopBarViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="HUDTopBarViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Wf3-fd-o0X">
-                        <rect key="frame" x="0.0" y="0.0" width="667" height="60"/>
+                        <rect key="frame" x="0.0" y="0.0" width="835" height="60"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="gVC-ma-Rb5">
-                                <rect key="frame" x="0.0" y="0.0" width="667" height="40"/>
+                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="835" placeholderIntrinsicHeight="40" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6bV-CQ-z3t" customClass="HudTopBarGradientView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="835" height="40"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="center" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="250" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WUk-QM-rzn" userLabel="A1 Dashboard Button" customClass="InsetHitAreaButton" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="21" height="40"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="21" id="YDZ-aG-dZZ"/>
-                                        </constraints>
-                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <state key="normal" image="ic_back"/>
-                                        <connections>
-                                            <action selector="dashboardButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="wt2-G1-2xe"/>
-                                        </connections>
-                                    </button>
-                                    <containerView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eA4-Co-nMk" userLabel="Telemetry Bar View Controller">
-                                        <rect key="frame" x="24" y="0.0" width="250" height="40"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="250" id="NMb-1B-086"/>
-                                        </constraints>
-                                        <connections>
-                                            <segue destination="cxA-op-ycB" kind="embed" id="47e-VD-6ng"/>
-                                        </connections>
-                                    </containerView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="tLd-wK-NPi" userLabel="Center Flexible Area">
-                                        <rect key="frame" x="277" y="0.0" width="113" height="40"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gVC-ma-Rb5">
+                                        <rect key="frame" x="0.0" y="0.0" width="835" height="40"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="50" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="m0L-SB-2Mn" customClass="HUDRadarView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="113" height="20"/>
+                                            <button opaque="NO" contentMode="center" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="250" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WUk-QM-rzn" userLabel="A1 Dashboard Button" customClass="InsetHitAreaButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="40" height="40"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                            </view>
-                                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="60" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="oTg-ki-LOv" customClass="DroneActionView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="20" width="113" height="20"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="40" id="YDZ-aG-dZZ"/>
+                                                </constraints>
+                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <state key="normal" image="ic_back"/>
+                                                <connections>
+                                                    <action selector="dashboardButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="wt2-G1-2xe"/>
+                                                </connections>
+                                            </button>
+                                            <containerView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eA4-Co-nMk" userLabel="Telemetry Bar View Controller">
+                                                <rect key="frame" x="40" y="0.0" width="250" height="40"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                            </view>
+                                                <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="250" id="NMb-1B-086"/>
+                                                </constraints>
+                                                <connections>
+                                                    <segue destination="cxA-op-ycB" kind="embed" id="47e-VD-6ng"/>
+                                                </connections>
+                                            </containerView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="tLd-wK-NPi" userLabel="Center Flexible Area">
+                                                <rect key="frame" x="290" y="0.0" width="255" height="40"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" placeholderIntrinsicWidth="50" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="m0L-SB-2Mn" customClass="HUDRadarView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="255" height="20"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" placeholderIntrinsicWidth="60" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="oTg-ki-LOv" customClass="DroneActionView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="20" width="255" height="20"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    </view>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="80" id="HDF-Kv-SmR"/>
+                                                </constraints>
+                                            </stackView>
+                                            <containerView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="czj-WK-gcZ">
+                                                <rect key="frame" x="545" y="0.0" width="250" height="40"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <connections>
+                                                    <segue destination="vQP-Lo-ABa" kind="embed" id="6xs-bn-OZG"/>
+                                                </connections>
+                                            </containerView>
+                                            <button opaque="NO" contentMode="center" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Sv-Vx-Tdn" userLabel="A3 Settings Button" customClass="InsetHitAreaButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="795" y="0.0" width="40" height="40"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <state key="normal" image="icSettings"/>
+                                                <connections>
+                                                    <action selector="settingsButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="gE0-xa-upK"/>
+                                                </connections>
+                                            </button>
                                         </subviews>
                                         <constraints>
-                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="80" id="HDF-Kv-SmR"/>
+                                            <constraint firstItem="9Sv-Vx-Tdn" firstAttribute="width" secondItem="WUk-QM-rzn" secondAttribute="width" id="BYn-nY-2RQ"/>
+                                            <constraint firstAttribute="height" constant="40" id="Cm1-CO-R7q"/>
+                                            <constraint firstItem="czj-WK-gcZ" firstAttribute="width" secondItem="eA4-Co-nMk" secondAttribute="width" id="xDf-Jj-MgE"/>
                                         </constraints>
                                     </stackView>
-                                    <containerView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="czj-WK-gcZ">
-                                        <rect key="frame" x="393" y="0.0" width="250" height="40"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <connections>
-                                            <segue destination="vQP-Lo-ABa" kind="embed" id="6xs-bn-OZG"/>
-                                        </connections>
-                                    </containerView>
-                                    <button opaque="NO" contentMode="center" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Sv-Vx-Tdn" userLabel="A3 Settings Button" customClass="InsetHitAreaButton" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="646" y="0.0" width="21" height="40"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <state key="normal" image="icSettings"/>
-                                        <connections>
-                                            <action selector="settingsButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="gE0-xa-upK"/>
-                                        </connections>
-                                    </button>
                                 </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="Cm1-CO-R7q"/>
-                                    <constraint firstItem="czj-WK-gcZ" firstAttribute="width" secondItem="eA4-Co-nMk" secondAttribute="width" id="xDf-Jj-MgE"/>
+                                    <constraint firstAttribute="trailing" secondItem="gVC-ma-Rb5" secondAttribute="trailing" id="IMz-gQ-MRS"/>
+                                    <constraint firstItem="gVC-ma-Rb5" firstAttribute="leading" secondItem="6bV-CQ-z3t" secondAttribute="leading" id="cgf-cx-zcq"/>
+                                    <constraint firstItem="gVC-ma-Rb5" firstAttribute="top" secondItem="6bV-CQ-z3t" secondAttribute="top" id="h4O-qa-yCV"/>
                                 </constraints>
-                            </stackView>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="wPN-D3-v7G"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="tLd-wK-NPi" firstAttribute="centerX" secondItem="wPN-D3-v7G" secondAttribute="centerX" id="esd-TA-mVh"/>
-                            <constraint firstItem="gVC-ma-Rb5" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="qxj-ep-gTw"/>
-                            <constraint firstAttribute="trailing" secondItem="gVC-ma-Rb5" secondAttribute="trailing" id="sM7-Sv-AVc"/>
-                            <constraint firstItem="gVC-ma-Rb5" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="zkP-D4-9Vn"/>
+                            <constraint firstItem="6bV-CQ-z3t" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="BYR-o8-lZI"/>
+                            <constraint firstItem="6bV-CQ-z3t" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="err-9J-opu"/>
+                            <constraint firstItem="6bV-CQ-z3t" firstAttribute="trailing" secondItem="Wf3-fd-o0X" secondAttribute="trailing" id="wfV-wE-qy4"/>
                         </constraints>
                     </view>
-                    <size key="freeformSize" width="667" height="60"/>
+                    <size key="freeformSize" width="835" height="60"/>
                     <connections>
+                        <outlet property="backButtonWidthConstraint" destination="YDZ-aG-dZZ" id="Kg1-5q-OWn"/>
                         <outlet property="dashboardButton" destination="WUk-QM-rzn" id="uHA-hm-IbX"/>
                         <outlet property="droneActionView" destination="oTg-ki-LOv" id="FR6-Jg-CUG"/>
                         <outlet property="hudHeightConstraint" destination="Cm1-CO-R7q" id="B4H-5B-0PA"/>
@@ -110,7 +122,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-718.83802816901414" y="211.875"/>
+            <point key="canvasLocation" x="-682.3572474377745" y="211.5234375"/>
         </scene>
         <!--Telemetry Bar View Controller-->
         <scene sceneID="BPT-aN-d1L">
@@ -158,6 +170,9 @@
                                     <view contentMode="scaleToFill" placeholderIntrinsicWidth="40" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="CXm-gG-DxE" userLabel="ObstacleAvoidanceItemView" customClass="TelemetryItemView" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="206" y="0.0" width="40" height="40"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <connections>
+                                            <action selector="obstacleAvoidanceItemTouchedUpInside:" destination="cxA-op-ycB" eventType="touchUpInside" id="lJn-XP-ZY4"/>
+                                        </connections>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QZQ-UQ-Pqd">
                                         <rect key="frame" x="250" y="0.0" width="0.0" height="40"/>
@@ -316,18 +331,25 @@
                                     <constraint firstAttribute="height" constant="20" id="gtW-Ld-vpl"/>
                                 </constraints>
                             </stackView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kDr-SX-47Y" customClass="HighlightableUIControl" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="-2" width="88" height="44"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kDr-SX-47Y" userLabel="ControllerInfo Control" customClass="HighlightableUIControl" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.5" y="-2" width="86.5" height="44"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <connections>
                                     <action selector="controllerInfoTouchedUpInside:" destination="vQP-Lo-ABa" eventType="touchUpInside" id="W7D-lo-HlT"/>
                                 </connections>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eJK-hh-iJL" customClass="HighlightableUIControl" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="89" y="-2" width="87.5" height="44"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eJK-hh-iJL" userLabel="DroneInfo Control" customClass="HighlightableUIControl" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="89" y="-2" width="86.5" height="44"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <connections>
                                     <action selector="droneInfoTouchedUpInside" destination="vQP-Lo-ABa" eventType="touchUpInside" id="sws-D3-r3m"/>
+                                </connections>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DO6-p0-iYZ" userLabel="DroneCellularWifi Control" customClass="HighlightableUIControl" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="177.5" y="-2" width="72" height="44"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <action selector="droneCellularWifiTouchedUpInside:" destination="vQP-Lo-ABa" eventType="touchUpInside" id="T5I-FF-gAg"/>
                                 </connections>
                             </view>
                         </subviews>
@@ -336,29 +358,33 @@
                         <constraints>
                             <constraint firstItem="cf5-pz-qmg" firstAttribute="trailing" secondItem="Mzq-S5-lzZ" secondAttribute="trailing" constant="3" id="0DF-Z8-9CJ"/>
                             <constraint firstItem="kDr-SX-47Y" firstAttribute="top" secondItem="3oz-q9-1ME" secondAttribute="top" constant="-12" id="1q5-QD-hTH"/>
+                            <constraint firstItem="DO6-p0-iYZ" firstAttribute="top" secondItem="CPd-Dr-vFp" secondAttribute="top" constant="-12" id="1xo-9z-UbK"/>
                             <constraint firstItem="kDr-SX-47Y" firstAttribute="leading" secondItem="3oz-q9-1ME" secondAttribute="leading" constant="-12" id="34U-fi-MS5"/>
                             <constraint firstItem="cf5-pz-qmg" firstAttribute="leading" secondItem="Mzq-S5-lzZ" secondAttribute="leading" constant="-3" id="5bo-8z-h4p"/>
                             <constraint firstItem="EWi-Aw-xP9" firstAttribute="trailing" secondItem="0S3-UC-rcO" secondAttribute="trailing" constant="3" id="61b-Jf-fMc"/>
+                            <constraint firstItem="eJK-hh-iJL" firstAttribute="leading" secondItem="Mzq-S5-lzZ" secondAttribute="leading" constant="-12" id="8Bm-zD-g2h"/>
                             <constraint firstItem="kDr-SX-47Y" firstAttribute="bottom" secondItem="3oz-q9-1ME" secondAttribute="bottom" constant="12" id="B6q-6P-O7Q"/>
                             <constraint firstItem="Yae-Al-Zrg" firstAttribute="top" secondItem="En6-r2-73e" secondAttribute="top" constant="-3" id="JaH-S3-od6"/>
                             <constraint firstItem="eJK-hh-iJL" firstAttribute="bottom" secondItem="Mzq-S5-lzZ" secondAttribute="bottom" constant="12" id="Lu2-iY-Sna"/>
                             <constraint firstItem="cf5-pz-qmg" firstAttribute="top" secondItem="Mzq-S5-lzZ" secondAttribute="top" constant="-3" id="LvU-LU-nyI"/>
                             <constraint firstItem="Yae-Al-Zrg" firstAttribute="trailing" secondItem="En6-r2-73e" secondAttribute="trailing" constant="3" id="OhI-vB-EnV"/>
-                            <constraint firstItem="eJK-hh-iJL" firstAttribute="leading" secondItem="Mzq-S5-lzZ" secondAttribute="leading" constant="-12" id="Omg-ZX-pLy"/>
                             <constraint firstItem="eJK-hh-iJL" firstAttribute="top" secondItem="Mzq-S5-lzZ" secondAttribute="top" constant="-12" id="WZ1-pF-YmZ"/>
                             <constraint firstItem="EWi-Aw-xP9" firstAttribute="leading" secondItem="0S3-UC-rcO" secondAttribute="leading" constant="-3" id="WZK-1T-BIa"/>
                             <constraint firstItem="kDr-SX-47Y" firstAttribute="trailing" secondItem="Oej-5q-FyF" secondAttribute="trailing" constant="12" id="Wi0-6R-ljc"/>
+                            <constraint firstItem="eJK-hh-iJL" firstAttribute="trailing" secondItem="Xdu-cd-Pd1" secondAttribute="trailing" constant="12" id="Xge-OF-DIg"/>
                             <constraint firstItem="EWi-Aw-xP9" firstAttribute="top" secondItem="0S3-UC-rcO" secondAttribute="top" constant="-3" id="ZbR-iK-qMI"/>
                             <constraint firstItem="jL0-kC-2oH" firstAttribute="leading" secondItem="3oz-q9-1ME" secondAttribute="leading" constant="-3" id="ZvF-Pa-J9S"/>
                             <constraint firstItem="EWi-Aw-xP9" firstAttribute="bottom" secondItem="0S3-UC-rcO" secondAttribute="bottom" constant="3" id="aYX-92-e1p"/>
+                            <constraint firstItem="DO6-p0-iYZ" firstAttribute="trailing" secondItem="owR-lS-KyB" secondAttribute="trailing" constant="12" id="aoS-tm-DfC"/>
                             <constraint firstItem="Yae-Al-Zrg" firstAttribute="bottom" secondItem="En6-r2-73e" secondAttribute="bottom" constant="3" id="b3X-vh-9sw"/>
                             <constraint firstItem="CPd-Dr-vFp" firstAttribute="centerY" secondItem="izN-RM-A5z" secondAttribute="centerY" id="cJ4-Kd-1Py"/>
+                            <constraint firstItem="DO6-p0-iYZ" firstAttribute="leading" secondItem="owR-lS-KyB" secondAttribute="leading" constant="-12" id="eDS-JT-rWa"/>
                             <constraint firstAttribute="trailing" secondItem="CPd-Dr-vFp" secondAttribute="trailing" id="hHs-VM-j7X"/>
                             <constraint firstItem="jL0-kC-2oH" firstAttribute="trailing" secondItem="3oz-q9-1ME" secondAttribute="trailing" constant="3" id="jBa-YD-vpN"/>
+                            <constraint firstItem="DO6-p0-iYZ" firstAttribute="bottom" secondItem="CPd-Dr-vFp" secondAttribute="bottom" constant="12" id="kTr-8g-T0A"/>
                             <constraint firstItem="cf5-pz-qmg" firstAttribute="bottom" secondItem="Mzq-S5-lzZ" secondAttribute="bottom" constant="3" id="lBr-Fe-eSZ"/>
                             <constraint firstItem="Yae-Al-Zrg" firstAttribute="leading" secondItem="En6-r2-73e" secondAttribute="leading" constant="-3" id="n3h-rY-esU"/>
                             <constraint firstItem="jL0-kC-2oH" firstAttribute="top" secondItem="3oz-q9-1ME" secondAttribute="top" constant="-3" id="qQe-W4-oeF"/>
-                            <constraint firstItem="eJK-hh-iJL" firstAttribute="trailing" secondItem="Xdu-cd-Pd1" secondAttribute="trailing" constant="12" id="vp7-Ye-26k"/>
                             <constraint firstItem="CPd-Dr-vFp" firstAttribute="leading" secondItem="izN-RM-A5z" secondAttribute="leading" id="xXv-6V-E7V"/>
                             <constraint firstItem="jL0-kC-2oH" firstAttribute="bottom" secondItem="3oz-q9-1ME" secondAttribute="bottom" constant="3" id="ze8-g9-IzP"/>
                         </constraints>
@@ -380,9 +406,14 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4qO-7C-8gc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-628" y="377"/>
+            <point key="canvasLocation" x="-559" y="377"/>
         </scene>
     </scenes>
+    <designables>
+        <designable name="6bV-CQ-z3t">
+            <size key="intrinsicContentSize" width="835" height="40"/>
+        </designable>
+    </designables>
     <resources>
         <image name="ic4GOffline" width="20" height="20"/>
         <image name="icDroneBattery" width="20" height="20"/>

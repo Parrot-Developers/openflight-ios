@@ -182,28 +182,7 @@
                                                             <color key="titleShadowColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         </state>
                                                         <connections>
-                                                            <action selector="deleteButtonAction:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="VVU-F8-qzL"/>
-                                                        </connections>
-                                                    </button>
-                                                </subviews>
-                                            </stackView>
-                                            <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="BE9-cc-5kx" userLabel="S/H containerButtonsProgressView" customClass="MainStackView" customModule="OpenFlight">
-                                                <rect key="frame" x="0.0" y="0.0" width="300" height="70"/>
-                                                <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oa1-HR-WIP" userLabel="trackingButton" customClass="ActionButton" customModule="OpenFlight">
-                                                        <rect key="frame" x="0.0" y="0.0" width="300" height="70"/>
-                                                        <color key="backgroundColor" name="white_90"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                        <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <inset key="titleEdgeInsets" minX="0.0" minY="3" maxX="0.0" maxY="0.0"/>
-                                                        <state key="normal" title="  00:00" image="Pause">
-                                                            <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        </state>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="25"/>
-                                                        </variation>
-                                                        <connections>
-                                                            <action selector="trackingButton:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="FaA-iu-3Cm"/>
+                                                            <action selector="stopButtonAction:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="clz-Di-tIE"/>
                                                         </connections>
                                                     </button>
                                                 </subviews>
@@ -215,15 +194,11 @@
                                             <constraint firstAttribute="trailing" secondItem="YPu-2o-C5H" secondAttribute="trailing" id="8jy-dz-e7w"/>
                                             <constraint firstItem="WCh-uQ-pEP" firstAttribute="centerX" secondItem="YWW-M3-Rc2" secondAttribute="centerX" id="Db0-c2-UhH"/>
                                             <constraint firstAttribute="bottom" secondItem="YPu-2o-C5H" secondAttribute="bottom" id="JeK-se-fAH"/>
-                                            <constraint firstAttribute="trailing" secondItem="BE9-cc-5kx" secondAttribute="trailing" id="M1k-gV-lTJ"/>
                                             <constraint firstItem="YPu-2o-C5H" firstAttribute="leading" secondItem="YWW-M3-Rc2" secondAttribute="leading" id="OPg-3M-5vn"/>
-                                            <constraint firstItem="BE9-cc-5kx" firstAttribute="leading" secondItem="YWW-M3-Rc2" secondAttribute="leading" id="QZl-vN-M0S"/>
-                                            <constraint firstItem="BE9-cc-5kx" firstAttribute="top" secondItem="YWW-M3-Rc2" secondAttribute="top" id="TzE-ox-Rgu"/>
                                             <constraint firstItem="WCh-uQ-pEP" firstAttribute="top" secondItem="YWW-M3-Rc2" secondAttribute="top" id="cBv-pe-2iv"/>
                                             <constraint firstAttribute="height" constant="70" id="joi-ZW-8Oq"/>
                                             <constraint firstItem="WCh-uQ-pEP" firstAttribute="centerY" secondItem="YWW-M3-Rc2" secondAttribute="centerY" id="kYX-bq-fLl"/>
                                             <constraint firstAttribute="bottom" secondItem="WCh-uQ-pEP" secondAttribute="bottom" id="tf4-X3-Tib"/>
-                                            <constraint firstAttribute="bottom" secondItem="BE9-cc-5kx" secondAttribute="bottom" id="vJZ-nY-sWP"/>
                                         </constraints>
                                     </view>
                                 </subviews>
@@ -259,7 +234,6 @@
                         <outlet property="buttonsStackView" destination="DSW-vG-4S5" id="Diz-bm-eRh"/>
                         <outlet property="constraintButtonStackView" destination="joi-ZW-8Oq" id="ZJM-1C-DpD"/>
                         <outlet property="constraintTop" destination="cpU-dd-mbH" id="T0N-ih-Fr1"/>
-                        <outlet property="containerButtonsProgressView" destination="BE9-cc-5kx" id="ko3-50-GKU"/>
                         <outlet property="containerButtonsStop" destination="WCh-uQ-pEP" id="noN-JC-mld"/>
                         <outlet property="containerProgressView" destination="lDt-O0-fgT" id="qBg-fl-ovJ"/>
                         <outlet property="containerStream" destination="2ok-tB-1yp" id="fJV-kQ-0Xa"/>
@@ -275,7 +249,6 @@
                         <outlet property="spacingProgressButtons" destination="mzY-Nz-CMU" id="s3q-BS-y78"/>
                         <outlet property="stopButtonPOI" destination="BZL-qK-0rb" id="UJ5-HQ-BoN"/>
                         <outlet property="tableView" destination="uOG-Ek-aUP" id="wIN-a7-6zP"/>
-                        <outlet property="trackingButton" destination="oa1-HR-WIP" id="pDF-uc-7CJ"/>
                         <outlet property="trailingMessageLabel" destination="GH3-0N-zKK" id="YwJ-rh-VKj"/>
                         <outlet property="trailingProgressBar" destination="GYO-aS-SUI" id="igm-Ah-9si"/>
                         <outlet property="viewLoading" destination="0D8-t0-VrB" id="yxI-xn-iSM"/>
@@ -290,7 +263,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="Pause" width="13" height="17"/>
         <image name="Stop" width="16" height="16"/>
         <image name="play" width="16" height="22"/>
         <namedColor name="default_bgcolor">
@@ -301,9 +273,6 @@
         </namedColor>
         <namedColor name="suva_grey">
             <color red="0.54117647058823526" green="0.54117647058823526" blue="0.54117647058823526" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="white_90">
-            <color red="1" green="1" blue="1" alpha="0.89999997615814209" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

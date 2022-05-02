@@ -35,7 +35,7 @@ enum RthPreset {
     static let rthType: ReturnHomeTarget = .takeOffPosition
     static let maxAltitude: Double = 150.0
     static let minAltitude: Double = 20.0
-    static let defaultAltitude: Double = 60.0
+    static let defaultAltitude: Double = 50.0
     static let defaultHoveringAltitude: Double = 2.0
     static let defaultEndingBehavior: ReturnHomeEndingBehavior = .hovering
 }

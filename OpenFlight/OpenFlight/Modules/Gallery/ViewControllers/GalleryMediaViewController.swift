@@ -72,7 +72,7 @@ final class GalleryMediaViewController: UIViewController {
     private enum Constants {
         static let nbColumnsLandscape: CGFloat = 4.0
         static let itemSpacing: CGFloat = 2.0
-        static let cellWidthRatio: CGFloat = 1.0
+        static let itemTitleHeight: CGFloat = 37.0
         static let headerHeight: CGFloat = 26.0
         static let longPressDuration: TimeInterval = 0.5
         static let collectionViewInsets: UIEdgeInsets = .init(top: 0, left: 0, bottom: 12, right: 0)
@@ -135,6 +135,7 @@ private extension GalleryMediaViewController {
                             ofKind: UICollectionView.elementKindSectionHeader)
         collection.dataSource = self
         collection.delegate = self
+        collection.collectionViewLayout = GalleryMediaFlowLayout()
         collection.backgroundColor = .clear
         collection.contentInsetAdjustmentBehavior = .always
         let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(longPress:)))
@@ -331,8 +332,8 @@ extension GalleryMediaViewController: UICollectionViewDelegate {
             }
 
             collectionView.reloadData()
-        } else if let index = viewModel.getMediaIndex(media) {
-            self.coordinator?.showMediaPlayer(viewModel: viewModel, index: index)
+        } else if let index = viewModel.state.value.filteredMedias.firstIndex(of: media) {
+            coordinator?.showMediaPlayer(viewModel: viewModel, index: index)
         }
     }
 }
@@ -345,15 +346,31 @@ extension GalleryMediaViewController: UICollectionViewDelegateFlowLayout {
         // Remove left and right insets
         var collectionViewWidth = collectionView.frame.width
         // Handle safe area screens.
-        collectionViewWidth -= UIApplication.shared.windows.first?.safeAreaInsets.left ?? 0.0
+        collectionViewWidth -= collectionView.adjustedContentInset.left + collectionView.adjustedContentInset.right
         // Compute width.
 
         let width = collectionViewWidth / Constants.nbColumnsLandscape - Constants.itemSpacing
 
         // Prevent from issue when rotate.
         guard width >= 0.0 else { return CGSize() }
+        var height = width
+        if dataSource[indexPath.section].medias[indexPath.row].cellTitle?.isEmpty == false {
+            height += Constants.itemTitleHeight
+        }
 
-        return CGSize(width: width, height: width * Constants.cellWidthRatio)
+        return CGSize(width: width, height: height)
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return Constants.itemSpacing
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return Constants.itemSpacing
     }
 
     func collectionView(_ collectionView: UICollectionView,
@@ -366,6 +383,34 @@ extension GalleryMediaViewController: UICollectionViewDelegateFlowLayout {
                         layout collectionViewLayout: UICollectionViewLayout,
                         referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: collectionView.frame.width, height: Constants.headerHeight)
+    }
+
+    private class GalleryMediaFlowLayout: UICollectionViewFlowLayout {
+
+        // Align on top rows that contains items with title and others without title
+        override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+            guard let attributes = super.layoutAttributesForElements(in: rect) else {
+                return nil
+            }
+            let cells = attributes.filter { $0.representedElementCategory == .cell && $0.representedElementKind == nil }
+            var alignedRows = [IndexPath]() // Section and literal row (not item)
+            for attribute in cells {
+                let rowIndex = IndexPath(row: row(of: attribute.indexPath),
+                                         section: attribute.indexPath.section)
+                if alignedRows.contains(rowIndex) {
+                    continue
+                }
+                let sameRow = cells.filter { $0.indexPath.section == rowIndex.section && row(of: $0.indexPath) == rowIndex.row }
+                let minY = sameRow.map { $0.frame.minY }.min() ?? 0
+                sameRow.forEach {$0.frame.origin.y = minY }
+                alignedRows.append(rowIndex)
+            }
+            return attributes
+        }
+
+        private func row(of indexPath: IndexPath) -> Int {
+            return Int(floor(CGFloat(indexPath.row) / Constants.nbColumnsLandscape))
+        }
     }
 }
 

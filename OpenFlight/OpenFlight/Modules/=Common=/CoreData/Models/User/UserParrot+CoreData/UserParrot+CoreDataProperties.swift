@@ -57,6 +57,13 @@ extension UserParrot {
     @NSManaged public var avatar: String?
     @NSManaged public var isSynchronizeFlightDataExtended: Bool
     @NSManaged public var isSynchronizeMedia: Bool
+    @NSManaged public var isLocalDeleted: Bool
+    @NSManaged public var latestCloudAvatarModificationDate: Date?
+    @NSManaged public var synchroStatus: Int16
+    @NSManaged public var latestSynchroStatusDate: Date?
+    @NSManaged public var latestCloudModificationDate: Date?
+    @NSManaged public var latestLocalModificationDate: Date?
+    @NSManaged public var synchroError: Int16
 
     // MARK: - Relationship
 

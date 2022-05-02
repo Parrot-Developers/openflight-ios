@@ -427,20 +427,22 @@ private extension GalleryInternalMediaViewModel {
         guard let mediaItem = mediaItems.first else { return nil }
 
         let downloadState: GalleryMediaDownloadState
-        if downloadingItem?.uid == mediaItem.uid, downloadStatus == .running {
+
+        if mediaItems.contains(where: { $0.uid == downloadingItem?.uid }), downloadStatus == .running {
             downloadState = .downloading
-        } else if mediaItem.isDownloaded {
+        } else if mediaItems.allSatisfy({ $0.isDownloaded }) {
             downloadState = .downloaded
         } else {
             downloadState = .toDownload
         }
 
         return GalleryMedia(uid: mediaItem.uid,
+                            customTitle: mediaItem.customTitle,
                             source: .droneInternal,
                             mediaItems: mediaItems,
                             type: mediaItem.mediaType,
                             downloadState: downloadState,
-                            size: self.size(for: mediaItem),
+                            size: size(for: mediaItems),
                             date: mediaItem.creationDate,
                             url: nil)
     }
@@ -452,7 +454,17 @@ private extension GalleryInternalMediaViewModel {
     ///
     /// - Returns: Value for size of all MediaItem resources.
     func size(for mediaItem: MediaItem) -> UInt64 {
-        return mediaItem.downloadableResources.reduce(0) { $0 + $1.size }
+        mediaItem.downloadableResources.reduce(0) { $0 + $1.size }
+    }
+
+    /// Returns Size for an array of MediaItem.
+    ///
+    /// - Parameters:
+    ///    - mediaItems: the array of MediaItem object
+    ///
+    /// - Returns: Value for size of all MediaItem resources.
+    func size(for mediaItems: [MediaItem]) -> UInt64 {
+        mediaItems.reduce(0) { $0 + size(for: $1) }
     }
 
     /// Update state regarding download status.

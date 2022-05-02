@@ -145,38 +145,65 @@ public protocol FlightPlanEditionService {
     /// - Parameters:
     ///     - mavlinkData: Mavlink data
     ///     - type: Flight Plan type
-    ///     - settings: Flight plan settings
+    ///     - disablePhotoSignatureSetting: whether to disable photo signatures setting
+    ///     - gsdSetting: the gsd key and value setting
     func updateFlightPlan(withMavlinkData mavlinkData: Data,
                           type: FlightPlanType,
-                          settings: [FlightPlanLightSetting])
+                          disablePhotoSignatureSetting: Bool,
+
+                          gsdSetting: (key: String, value: Int))
 
     func updateProjectManager(_ projectManager: ProjectManager)
 
     var hasChanges: Bool { get }
+
+    /// Update the `modifiedFlightPlan`.
+    ///
+    /// - Parameters:
+    ///    - flightPlan: the new Flight Plan state.
+    ///
+    /// - Note:
+    ///  This method must be called to keep track of current user changes.
+    ///  `modifiedFlightPlan` is used to know if there are some pending changes
+    ///  which will be lost when user taps the back button.
+    func updateModifiedFlightPlan(with flightPlan: FlightPlanModel?)
 }
 
 public class FlightPlanEditionServiceImpl {
 
     private var undoStack: [String] = []
     private let requester: FlightPlanThumbnailRequester = FlightPlanThumbnailRequester()
-    private let repo: FlightPlanRepository
-    private let typeStore: FlightPlanTypeStore
-    private let currentMissionManager: CurrentMissionManager
-    private let currentUser: UserInformation
+    private let repo: FlightPlanRepository!
+    private let flightPlanManager: FlightPlanManager!
+    private let typeStore: FlightPlanTypeStore!
+    private let currentMissionManager: CurrentMissionManager!
+    private let userService: UserService!
     private var projectManager: ProjectManager?
 
-    public private(set) var hasChanges: Bool = true
     public var settingsChanged: [FlightPlanLightSetting] = []
+
+    /// The initial state of the FP at the start of the edition.
+    private var initialFlightPlan: FlightPlanModel?
+    /// The current modified FP. Updated by each user changes.
+    private var modifiedFlightPlan: FlightPlanModel?
+
     private var currentFlightPlanSubject = CurrentValueSubject<FlightPlanModel?, Never>(nil)
     private var currentFlightPlan: FlightPlanModel? {
         get {
             currentFlightPlanSubject.value
         }
         set {
-            let oldValue = currentFlightPlanSubject.value
+            // Get, if exists, the current edited FP's uuid.
+            let currentFlightPlanUuid = currentFlightPlanSubject.value?.uuid
+            // Update the current FP with the new one.
             currentFlightPlanSubject.send(newValue)
-            if currentFlightPlan?.uuid != oldValue?.uuid {
+            // If it's not the same FP than the previous.
+            if newValue?.uuid != currentFlightPlanUuid {
+                // Reset the undo stack.
                 resetUndoStack()
+                // Save his initial states.
+                updateInitialFlightPlan(with: newValue)
+                updateModifiedFlightPlan(with: newValue)
             }
         }
     }
@@ -184,13 +211,15 @@ public class FlightPlanEditionServiceImpl {
     @Published public var wayPointOrientationEdition = false
 
     init(flightPlanRepo: FlightPlanRepository,
+         flightPlanManager: FlightPlanManager,
          typeStore: FlightPlanTypeStore,
          currentMissionManager: CurrentMissionManager,
-         currentUser: UserInformation) {
+         userService: UserService) {
         repo = flightPlanRepo
+        self.flightPlanManager = flightPlanManager
         self.typeStore = typeStore
         self.currentMissionManager = currentMissionManager
-        self.currentUser = currentUser
+        self.userService = userService
     }
 }
 
@@ -444,7 +473,7 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
         requester.requestThumbnail(flightPlan: flightPlan,
                                    thumbnailSize: FlightPlanThumbnailRequesterConstants.thumbnailSize) { [unowned self] thumbnailImage in
             let uuid = flightPlan.thumbnailUuid ?? UUID().uuidString
-            let thumbnail = ThumbnailModel(apcId: currentUser.apcId,
+            let thumbnail = ThumbnailModel(apcId: userService.currentUser.apcId,
                                            uuid: uuid,
                                            flightUuid: nil,
                                            thumbnailImage: thumbnailImage)
@@ -511,10 +540,18 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
                                         byUserUpdate: true,
                                         toSynchro: true,
                                         withFileUploadNeeded: false)
-            if let project = projectManager?.project(for: flightPlan),
-               project.title != flightPlan.customTitle {
-                projectManager?.rename(project, title: flightPlan.customTitle)
+            if let projectManager = projectManager, let project = projectManager.project(for: flightPlan) {
+                var project = project
+                project = projectManager.setAsLastUsed(project)
+
+                if project.title != flightPlan.customTitle {
+                    try? projectManager.rename(project, title: flightPlan.customTitle)
+                }
             }
+            // Save the FP initial states.
+            // This step will allow to have up to date values when re-entering the edition mode.
+            updateInitialFlightPlan(with: flightPlan)
+            updateModifiedFlightPlan(with: flightPlan)
             ULog.i(.tag, "Ended edition of flightPlan '\(flightPlan.uuid)'")
             completion()
             resetUndoStack()
@@ -529,7 +566,9 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
 
     public func updateFlightPlan(withMavlinkData mavlinkData: Data,
                                  type: FlightPlanType,
-                                 settings: [FlightPlanLightSetting]) {
+                                 disablePhotoSignatureSetting: Bool,
+                                 gsdSetting: (key: String, value: Int)) {
+
         guard let currentFP = currentFlightPlan,
               let flightPlan = type.mavLinkType
                 .generateFlightPlanFromMavlink(url: nil,
@@ -538,6 +577,16 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
               flightPlan.state == .editable else {
                   return
               }
+        flightPlan.dataSetting?.disablePhotoSignature = disablePhotoSignatureSetting
+        // update the GSD settings
+        if let dataSetting = flightPlan.dataSetting,
+           let currentGsdSettingIndex = dataSetting.settings
+            .firstIndex(where: { $0.key == gsdSetting.key }) {
+            var currentGsdSetting = dataSetting.settings[currentGsdSettingIndex]
+            currentGsdSetting.currentValue = gsdSetting.value
+            dataSetting.settings[currentGsdSettingIndex] = currentGsdSetting
+        }
+
         if currentFP.type != flightPlan.type {
             ULog.w(.tag, "Unexpected flightPlan type '\(flightPlan.type)' current '\(currentFP.type)'")
         }
@@ -562,6 +611,45 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
 
     public func updateProjectManager(_ projectManager: ProjectManager) {
         self.projectManager = projectManager
+    }
+
+    /// Whether the current editing flight plan has changes.
+    public var hasChanges: Bool {
+        // Ensure the updated FP exists, else inform there is no changes.
+        guard let modifiedFlightPlan = modifiedFlightPlan else { return false }
+        // Get the initial FP state.
+        // If not set (should not occurs), treat as 'FP changed'.
+        guard let initialFlightPlan = initialFlightPlan else { return true }
+        // Compare both FPs.
+        return !initialFlightPlan.hasSameSettings(than: modifiedFlightPlan)
+    }
+
+    /// Update the `modifiedFlightPlan`.
+    public func updateModifiedFlightPlan(with flightPlan: FlightPlanModel?) {
+        updateFlightPlan(&modifiedFlightPlan, with: flightPlan)
+    }
+
+    /// Update the `initialFlightPlan`.
+    private func updateInitialFlightPlan(with flightPlan: FlightPlanModel?) {
+        updateFlightPlan(&initialFlightPlan, with: flightPlan)
+    }
+
+    /// Update a  Flight Plan with a copy of another one.
+    ///
+    /// - Parameters:
+    ///    - flightPlan: The Flight Plan to update.
+    ///    - updatedFlightPlan: The Flight Plan to copy.
+    ///
+    /// - Note:
+    ///     `newFlightPlan(basedOn:save:)` is used to prevent keeping the same reference of FP properties like `DataSettings`.
+    ///     `DataSettings` is a class, this means affecting FPb to FPa then modifying FPb data settings will modify FPa datasettings.
+    private func updateFlightPlan(_ flightPlan: inout FlightPlanModel?, with updatedFlightPlan: FlightPlanModel?) {
+        guard let updatedFlightPlan = updatedFlightPlan else {
+            flightPlan = nil
+            return
+        }
+        flightPlan = flightPlanManager.newFlightPlan(basedOn: updatedFlightPlan,
+                                                     save: false)
     }
 }
 

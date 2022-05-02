@@ -180,5 +180,7 @@ extension ActiveFlightPlanExecutionWatcherImpl: ActiveFlightPlanExecutionWatcher
     public func flightPlanDidStop(_ flightPlan: FlightPlanModel) {
         ULog.i(.tag, "Flight plan did finish '\(flightPlan.uuid)'")
         activeFlightPlanUuidSubject.value = nil
+        // The 'activating FP' must also be resetted to prevent to be stuck in activating state.
+        activatingFlightPlanUuidSubject.value = nil
     }
 }

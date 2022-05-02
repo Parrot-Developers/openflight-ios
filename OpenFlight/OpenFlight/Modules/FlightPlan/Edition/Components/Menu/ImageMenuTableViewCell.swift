@@ -63,7 +63,7 @@ final class ImageMenuTableViewCell: MainTableViewCell, NibReusable {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        imageLabel.makeUp(and: .defaultTextColor)
+        imageLabel.makeUp(with: .current, color: .defaultTextColor)
         imageLabel.text = Style.dash
     }
 }

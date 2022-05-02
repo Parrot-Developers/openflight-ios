@@ -56,12 +56,15 @@ public enum TouchAndFlyBlocker: Equatable {
 
     /// Drone is not flying.
     case droneNotFlying
+
+    /// Drone is taking off.
+    case droneTakingOff
 }
 
 public enum TouchAndFlyRunningState: Equatable {
     case noTarget(droneConnected: Bool)
     case running
-    case ready(paused: Bool)
+    case ready
     case blocked(TouchAndFlyBlocker)
 }
 
@@ -117,11 +120,13 @@ public protocol TouchAndFlyService: AnyObject {
 
     var target: TouchAndFlyTarget { get }
 
-    func moveTarget(to location: CLLocationCoordinate2D)
-
     func setWayPoint(_ location: CLLocationCoordinate2D)
 
+    func moveWayPoint(to location: CLLocationCoordinate2D)
+
     func setPoi(_ location: CLLocationCoordinate2D)
+
+    func movePoi(to location: CLLocationCoordinate2D)
 
     func setWayPoint(speed: Double)
 
@@ -132,8 +137,6 @@ public protocol TouchAndFlyService: AnyObject {
     func start()
 
     func stop()
-
-    func pause()
 }
 
 class TouchAndFlyServiceImpl {
@@ -142,7 +145,8 @@ class TouchAndFlyServiceImpl {
         static let defaultHorizontalSpeed = 5.0
         static let defaultVerticalSpeed = 2.0
         static let defaultYawRotationSpeed = 20.0
-        static let defaultAltitude = 20.0
+        static let defaultWayPointAltitude = 20.0
+        static let defaultPoiAltitude = 0.0
     }
 
     typealias PoiItfState = (blocker: TouchAndFlyBlocker?, inProgress: Bool)
@@ -153,15 +157,14 @@ class TouchAndFlyServiceImpl {
     private var cancellables = Set<AnyCancellable>()
     private var guidedPilotingItfRef: Ref<GuidedPilotingItf>?
     private var poiPilotingItfRef: Ref<PointOfInterestPilotingItf>?
+    private var rthPilotingItfRef: Ref<ReturnHomePilotingItf>?
     private var altimeterInstrumentRef: Ref<Altimeter>?
     private var flyingInstrumentRef: Ref<FlyingIndicators>?
-    private let isPausedSubject = CurrentValueSubject<Bool, Never>(false)
     private let runningStateSubject = CurrentValueSubject<TouchAndFlyRunningState, Never>(.noTarget(droneConnected: false))
     private let wayPointSubject = CurrentValueSubject<CLLocationCoordinate2D?, Never>(nil)
     private let poiSubject = CurrentValueSubject<CLLocationCoordinate2D?, Never>(nil)
     private let wayPointSpeedSubject = CurrentValueSubject<Double, Never>(Constants.defaultHorizontalSpeed)
     private let altitudeSubject = CurrentValueSubject<Double?, Never>(nil)
-
     private let poiItfState = CurrentValueSubject<PoiItfState, Never>((blocker: nil, inProgress: false))
     private let guidingItfState = CurrentValueSubject<GuidingItfState, Never>((blocker: nil, inProgress: false))
 
@@ -170,6 +173,8 @@ class TouchAndFlyServiceImpl {
     private let executionTimer = Timer.publish(every: 1, on: .main, in: .default)
         .autoconnect()
         .eraseToAnyPublisher()
+
+    private var oldFlyingState: FlyingIndicatorsFlyingState?
 
     init(connectedDroneHolder: ConnectedDroneHolder,
          locationsTracker: LocationsTracker,
@@ -207,6 +212,7 @@ private extension TouchAndFlyServiceImpl {
             poiPilotingItfRef = nil
             altimeterInstrumentRef = nil
             flyingInstrumentRef = nil
+            rthPilotingItfRef = nil
             guidingItfState.value = (blocker: .droneNotConnected, inProgress: false)
             poiItfState.value = (blocker: .droneNotConnected, inProgress: false)
             return
@@ -215,6 +221,7 @@ private extension TouchAndFlyServiceImpl {
         listenFlyingIndicators(drone: drone)
         listenGuidedPilotingItf(drone: drone)
         listenPoiPilotingItf(drone: drone)
+        listenRth(drone: drone)
     }
 
     func listenAltimeter(drone: Drone) {
@@ -224,41 +231,75 @@ private extension TouchAndFlyServiceImpl {
     }
 
     func listenFlyingIndicators(drone: Drone) {
-        flyingInstrumentRef = drone.getInstrument(Instruments.flyingIndicators) { _ in
-            // Nothing to do, just stocking the reference
+        flyingInstrumentRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] itf in
+            guard let self = self, let itf = itf, let rth = self.rthPilotingItfRef else { return }
+
+            if itf.flyingState.isFlyingOrWaiting, self.oldFlyingState == .takingOff, rth.value?.state != .active {
+                // Update guiding interface state, as `guidedPilotingItfRef` is not updated when takeOff is completed.
+                let blocker = self.guidedPilotingItfRef?.value?.unavailabilityReasons?.first.map(TouchAndFlyBlocker.from)
+                self.guidingItfState.value = (blocker: blocker, inProgress: false)
+
+                if self.wayPointSubject.value != nil {
+                    self.startWayPoint()
+                } else if self.poiSubject.value != nil {
+                    self.start()
+                }
+            }
+            self.oldFlyingState = itf.flyingState
         }
     }
 
     func listenGuidedPilotingItf(drone: Drone) {
         guidedPilotingItfRef = drone.getPilotingItf(PilotingItfs.guided) { [unowned self] itf in
             guard let itf = itf else {
-
                 guidingItfState.value = (blocker: .droneNotConnected, inProgress: false)
                 return
             }
-            if let info = itf.latestFinishedFlightInfo {
+
+            let blocker = itf.unavailabilityReasons?.first.map(TouchAndFlyBlocker.from)
+
+            guard itf.state != .unavailable else {
+                // Clear target info if guided interface is unavailable.
+                // (During RTH or landing for example.)
+                clear()
+                guidingItfState.value = (blocker: blocker, inProgress: false)
+                return
+            }
+
+            if let info = itf.latestFinishedFlightInfo, isDroneFlyingOrWaiting {
+                // `latestFinishedFlightInfo` remains available even after landing. This can lead
+                // a new WP set before takeOff to be erased at takeOff because it would be
+                // mistaken with a reached target point.
+                // => Ensure drone is actually flying before removing active WP.
                 ULog.i(.tag, "Fight did finish with success: \(info.wasSuccessful)")
+                wayPointSubject.value = nil
             }
 
             var inProgress = false
             if let directive = itf.currentDirective as? LocationDirective {
                 inProgress = true
                 // Ensure we hold the right values for the current piloting
-                poiSubject.value = nil
                 wayPointSubject.value = CLLocationCoordinate2D(latitude: directive.latitude, longitude: directive.longitude)
+                guidingStartCoordinates.value = locationsTracker.droneLocation.coordinates?.coordinate
                 wayPointSpeedSubject.value = directive.speed?.horizontalSpeed ?? wayPointSpeed
                 altitudeSubject.value = directive.altitude
             }
 
-            let blocker = itf.unavailabilityReasons?.first.map(TouchAndFlyBlocker.from)
-
-            guidingItfState.value = (blocker: blocker, inProgress: inProgress)
+            guidingItfState.value = (blocker: self.isDroneTakingOff ? .droneTakingOff : blocker, inProgress: inProgress)
         }
     }
 
     /// Starts watcher for point of interest piloting interface.
     func listenPoiPilotingItf(drone: Drone) {
         poiPilotingItfRef = drone.getPilotingItf(PilotingItfs.pointOfInterest) { [unowned self] itf in
+            if case .wayPoint = target {
+                // Currently watching a WP => reset `poiItfState` in order to ensure it's not
+                // in running state (can occur if POI tracking has not been stopped by user before
+                // new WP creation).
+                poiItfState.value = (blocker: nil, inProgress: false)
+                return
+            }
+
             guard let itf = itf else {
                 poiItfState.value = (blocker: .droneNotConnected, inProgress: false)
                 return
@@ -266,8 +307,21 @@ private extension TouchAndFlyServiceImpl {
 
             let inProgress = itf.state == .active && itf.currentPointOfInterest != nil
             let blocker = itf.availabilityIssues?.first.map(TouchAndFlyBlocker.from)
-
             poiItfState.value = (blocker: blocker, inProgress: inProgress)
+
+            guard let poi = itf.currentPointOfInterest else { return }
+            poiSubject.value = CLLocationCoordinate2D(latitude: poi.latitude, longitude: poi.longitude)
+        }
+    }
+
+    func listenRth(drone: Drone) {
+        rthPilotingItfRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] itf in
+            guard let itf = itf, let self = self else { return }
+
+            if itf.state == .active {
+                self.clear()
+            }
+
         }
     }
 
@@ -283,13 +337,6 @@ private extension TouchAndFlyServiceImpl {
 
     func bindState(connectedDroneHolder: ConnectedDroneHolder) {
         targetPublisher
-            .sink { [unowned self] _ in
-            updateRunningState(connectedDroneHolder: connectedDroneHolder)
-        }
-        .store(in: &cancellables)
-
-        isPausedSubject
-            .removeDuplicates()
             .sink { [unowned self] _ in
             updateRunningState(connectedDroneHolder: connectedDroneHolder)
         }
@@ -319,7 +366,6 @@ private extension TouchAndFlyServiceImpl {
     /// - Parameters:
     ///   - connectedDroneHolder: the connected drone's holder
     private func updateRunningState(connectedDroneHolder: ConnectedDroneHolder) {
-        let oldRunningState = runningState
         let isDroneConnected = connectedDroneHolder.drone?.state.connectionState == .connected
 
         if guidingItfState.value.inProgress || poiItfState.value.inProgress {
@@ -328,42 +374,48 @@ private extension TouchAndFlyServiceImpl {
             if let blocker = poiItfState.value.blocker {
                 runningStateSubject.value = .blocked(blocker)
             } else {
-                runningStateSubject.value = .ready(paused: isPausedSubject.value)
+                runningStateSubject.value = .ready
             }
         } else if wayPointSubject.value != nil {
             if let blocker = guidingItfState.value.blocker {
                 runningStateSubject.value = .blocked(blocker)
             } else {
-                runningStateSubject.value = .ready(paused: isPausedSubject.value)
+                runningStateSubject.value = .ready
             }
         } else {
             runningStateSubject.value = .noTarget(droneConnected: isDroneConnected)
         }
-        if oldRunningState == .running {
-            switch runningStateSubject.value {
-            case .noTarget, .blocked:
-                clear()
-            case .running:
-                break
-            case .ready(paused: let paused):
-                if !paused {
-                    clear()
-                }
-            }
+    }
+
+    func watchWayPoint() {
+        switch target {
+        case .wayPoint(let location, _, _):
+            _ = guidedPilotingItfRef?.value?.deactivate()
+            poiPilotingItfRef?.value?.start(latitude: location.latitude,
+                                            longitude: location.longitude,
+                                            altitude: droneAltitude,
+                                            mode: .freeGimbal)
+        default:
+            break
         }
     }
 
     func executeTarget() {
-
         ULog.i(.tag, "Executing target \(target)")
         // We may be here after a change of target, thus we have to deactivate the unused itf
         switch target {
         case .none:
             return
-
         case .wayPoint(let location, let altitude, let speed):
             guidingStartCoordinates.value = locationsTracker.droneLocation.coordinates?.coordinate
             guidingStartDate.value = Date()
+
+            var orientation: OrientationDirective = .toTarget
+            if let droneLocation = locationsTracker.droneLocation.coordinates {
+                orientation = .headingStart(
+                    getHeading(targetLocation: location, droneLocation: droneLocation.coordinate))
+            }
+
             _ = poiPilotingItfRef?.value?.deactivate()
             let speedObject = GuidedPilotingSpeed(horizontalSpeed: speed,
                                                   verticalSpeed: Constants.defaultVerticalSpeed,
@@ -371,7 +423,7 @@ private extension TouchAndFlyServiceImpl {
             let locationDirective = LocationDirective(latitude: location.latitude,
                                                       longitude: location.longitude,
                                                       altitude: altitude,
-                                                      orientation: .toTarget,
+                                                      orientation: orientation,
                                                       speed: speedObject)
             guidedPilotingItfRef?.value?.move(directive: locationDirective)
 
@@ -385,6 +437,16 @@ private extension TouchAndFlyServiceImpl {
         let loc1 = CLLocation(latitude: point1.latitude, longitude: point1.longitude)
         let loc2 = CLLocation(latitude: point2.latitude, longitude: point2.longitude)
         return loc1.distance(from: loc2)
+    }
+
+    func getHeading(targetLocation: CLLocationCoordinate2D,
+                    droneLocation: CLLocationCoordinate2D) -> Double {
+        let longitudeDelta = (targetLocation.longitude - droneLocation.longitude).toRadians()
+        let targetLatitude = targetLocation.latitude.toRadians()
+        let droneLatitude = droneLocation.latitude.toRadians()
+        let xDelta = cos(targetLatitude) * sin(longitudeDelta)
+        let yDelta = cos(droneLatitude) * sin(targetLatitude) - sin(droneLatitude) * cos(targetLatitude) * cos(longitudeDelta)
+        return atan2(xDelta, yDelta).toDegrees()
     }
 }
 
@@ -404,6 +466,7 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
 
     var guidingProgressPublisher: AnyPublisher<Double?, Never> {
         locationsTracker.droneLocationPublisher
+            .removeDuplicates()
             .combineLatest(runningStateSubject, targetPublisher, guidingStartCoordinates)
             .map { [unowned self] (droneLocation, runningState, target, startCoordinates) -> Double? in
                 guard let startCoordinates = startCoordinates,
@@ -436,10 +499,7 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
         wayPointSubject
             .removeDuplicates()
             .combineLatest(poiSubject, altitudeSubject, wayPointSpeedSubject)
-            .map { [unowned self] (wayPoint, poi, altitude, speed) in
-                return target(wayPoint: wayPoint, poi: poi, altitude: calculateAltitude(),
-                       wayPointSpeed: speed)
-            }
+            .map { [unowned self] _ in target }
             .eraseToAnyPublisher()
     }
 
@@ -453,46 +513,86 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
 
     var altitude: Double? { altitudeSubject.value }
 
+    /// The active target defined by current WP (location, dynamic altitude and speed) or POI parameters.
     var target: TouchAndFlyTarget {
-        return target(wayPoint: wayPoint, poi: poi, altitude: calculateAltitude(), wayPointSpeed: wayPointSpeed)
+        target(wayPoint: wayPoint,
+               poi: poi,
+               altitude: targetAltitude,
+               wayPointSpeed: wayPointSpeed)
     }
 
-    private func calculateAltitude() -> Double {
-        if flyingInstrumentRef?.value?.flyingState == .flying
-            || flyingInstrumentRef?.value?.flyingState == .waiting {
-            let altitudeDrone = altimeterInstrumentRef?.value?.groundRelativeAltitude ?? Constants.defaultAltitude
-            return altitude ?? round(altitudeDrone)
-        }
-        return  altitude ?? Constants.defaultAltitude
+    /// The current drone altitude if available (default WP altitude otherwise).
+    private var droneAltitude: Double {
+        round(altimeterInstrumentRef?.value?.takeoffRelativeAltitude ?? Constants.defaultWayPointAltitude)
     }
 
-    func moveTarget(to location: CLLocationCoordinate2D) {
-        switch target {
-        case .none:
-            break
-        case .poi:
-            setPoi(location)
-        case .wayPoint:
-            setWayPoint(location)
-        }
+    /// The waypoint target altitude for flying state.
+    /// User defined settings takes precedence if defined (after a user interaction).
+    /// Current drone's altitude (if available) will be returned otherwise, as `altitude` value is reset
+    /// to `nil` as soon as a WP is set on map.
+    private var targetAltitude: Double {
+        altitude ?? droneAltitude
     }
 
-    func setWayPoint(_ location: CLLocationCoordinate2D) {
-        let wasRunning = runningState == .running
+    /// Whether drone is in flying (or waiting) state.
+    private var isDroneFlyingOrWaiting: Bool { flyingInstrumentRef?.value?.flyingState.isFlyingOrWaiting == true }
+    private var isDroneTakingOff: Bool { flyingInstrumentRef?.value?.flyingState == .takingOff }
+
+    /// Sets WP location to new value and starts WP.
+    ///
+    /// - Parameter location: the WP location
+    func moveWayPoint(to location: CLLocationCoordinate2D) {
         poiSubject.value = nil
         wayPointSubject.value = location
-        if wasRunning {
+        startWayPoint()
+    }
+
+    /// Sets WP location to new value and update altitude.
+    ///
+    /// - Parameter location: the WP location
+    func setWayPoint(_ location: CLLocationCoordinate2D) {
+        if isDroneFlyingOrWaiting {
+            // Altitude needs to be dynamically updated in order to match drone's value when flying.
+            // => Reset `altitudeSubject` value to `nil` in order to get live update.
+            altitudeSubject.value = nil
+        } else {
+            // Drone is landed => use default WP altitude value.
+            altitudeSubject.value = Constants.defaultWayPointAltitude
+        }
+        moveWayPoint(to: location)
+    }
+
+    private func startWayPoint() {
+        let isIdle = runningState != .running
+        let isPoiInProgress = poiItfState.value.inProgress
+
+        if isIdle || isPoiInProgress {
+            // Watch WP at `start` if state is idle, or if POI interface is still
+            // in progress (we do not want to directly fly to WP if it's created
+            // while POI tracking is still active).
+            watchWayPoint()
+        } else {
             executeTarget()
         }
     }
 
-    func setPoi(_ location: CLLocationCoordinate2D) {
-        let wasRunning = runningState == .running
+    /// Sets POI location to new value and execute target.
+    ///
+    /// - Parameter location: the POI location
+    func movePoi(to location: CLLocationCoordinate2D) {
         wayPointSubject.value = nil
         poiSubject.value = location
-        if wasRunning {
-            executeTarget()
-        }
+        executeTarget()
+    }
+
+    /// Sets POI location to new value and update altitude.
+    ///
+    /// - Parameter location: the POI location
+    func setPoi(_ location: CLLocationCoordinate2D) {
+        // Unconditionally use default altitude when setting a POI.
+        // Value can be modified by user via setting ruler.
+        altitudeSubject.value = Constants.defaultPoiAltitude
+        movePoi(to: location)
     }
 
     func setWayPoint(speed: Double) {
@@ -513,49 +613,24 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
     }
 
     func clear() {
-        ULog.i(.tag, "COMMAND Clear")
-        isPausedSubject.value = false
-        switch runningState {
-        case .noTarget:
-            guidingStartDate.value = nil
-            guidingStartCoordinates.value = nil
-            return
-        case .running:
-            // Don't clear until it's finished
-            return
-        case .ready, .blocked:
-            guidingStartDate.value = nil
-            guidingStartCoordinates.value = nil
-            wayPointSubject.value = nil
-            poiSubject.value = nil
-        }
+        wayPointSubject.value = nil
+        altitudeSubject.value = nil
+        poiSubject.value = nil
+        guidingStartDate.value = nil
+        guidingStartCoordinates.value = nil
     }
 
     func start() {
         ULog.i(.tag, "COMMAND Start")
-        isPausedSubject.value = false
         executeTarget()
     }
 
     func stop() {
         ULog.i(.tag, "COMMAND Stop")
-        isPausedSubject.value = false
+        clear()
         _ = poiPilotingItfRef?.value?.deactivate()
         _ = guidedPilotingItfRef?.value?.deactivate()
     }
-
-    func pause() {
-        ULog.i(.tag, "COMMAND Pause")
-        switch runningState {
-        case .running:
-            isPausedSubject.value = true
-            _ = guidedPilotingItfRef?.value?.deactivate()
-            _ = poiPilotingItfRef?.value?.deactivate()
-        default:
-            return
-        }
-    }
-
 }
 
 private extension TouchAndFlyBlocker {

@@ -89,17 +89,9 @@ public class FlightPlanEstimationsModel: Equatable {
 final class FlightPlanPanelEstimationView: UIView, NibOwnerLoadable {
     // MARK: - Outlets
     @IBOutlet weak var timeImage: UIImageView!
-    @IBOutlet weak var timeLabel: UILabel! {
-        didSet {
-            timeLabel.makeUp(and: .defaultTextColor)
-        }
-    }
+    @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var mediaImage: UIImageView!
-    @IBOutlet weak var mediaLabel: UILabel! {
-        didSet {
-            mediaLabel.makeUp(and: .defaultTextColor)
-        }
-    }
+    @IBOutlet weak var mediaLabel: UILabel!
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
@@ -132,7 +124,9 @@ private extension FlightPlanPanelEstimationView {
         self.loadNibContent()
         timeImage.image = Asset.Common.Icons.icFlightPlanTimer.image
             .withRenderingMode(.alwaysTemplate)
+        timeLabel.makeUp(with: .current, color: .defaultTextColor)
         mediaImage.image = Asset.MyFlights.distance.image
             .withRenderingMode(.alwaysTemplate)
+        mediaLabel.makeUp(with: .current, color: .defaultTextColor)
     }
 }

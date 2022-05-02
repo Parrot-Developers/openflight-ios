@@ -32,6 +32,8 @@ public class FlightPlanSetting: FlightPlanSettingType {
     // MARK: - Public Properties
     public var title: String
     public var shortTitle: String?
+    public var leftIconImage: UIImage?
+    public var rightIconImage: UIImage?
     public var allValues: [Int]
     public var valueDescriptions: [String]?
     public var valueImages: [UIImage]?
@@ -63,6 +65,8 @@ public class FlightPlanSetting: FlightPlanSettingType {
     ///    - category: setting category
     init(title: String,
          shortTitle: String?,
+         leftIconImage: UIImage?,
+         rightIconImage: UIImage?,
          allValues: [Int],
          valueDescriptions: [String]?,
          valueImages: [UIImage]?,
@@ -76,6 +80,8 @@ public class FlightPlanSetting: FlightPlanSettingType {
          category: FlightPlanSettingCategory) {
         self.title = title
         self.shortTitle = shortTitle
+        self.leftIconImage = leftIconImage
+        self.rightIconImage = rightIconImage
         self.allValues = allValues
         self.valueDescriptions = valueDescriptions
         self.valueImages = valueImages

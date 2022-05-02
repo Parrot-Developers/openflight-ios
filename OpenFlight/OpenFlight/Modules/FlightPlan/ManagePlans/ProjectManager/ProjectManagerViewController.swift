@@ -34,20 +34,21 @@ import Combine
 class ProjectManagerViewController: UIViewController {
     // MARK: - Outlets
     /// Top Bar
+    @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var segmentedControl: UISegmentedControl!
     @IBOutlet private weak var topBar: UIStackView!
 
     /// Right pane
+    @IBOutlet weak var projectNameContainer: UIView!
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var openButton: ActionButton!
     @IBOutlet weak var duplicateButton: ActionButton!
     @IBOutlet weak var deleteButton: ActionButton!
     @IBOutlet weak var newButton: ActionButton!
-    @IBOutlet weak var textFieldUnderline: UIView!
 
     // MARK: - Private Properties
     private var viewAccount: MyFlightsAccountView?
-    private var coordinator: ProjectManagerCoordinator?
+    private weak var coordinator: ProjectManagerCoordinator?
     private var viewModel: ProjectManagerViewModel!
     private(set) weak var projectsListViewController: ProjectsListViewController?
     private var selectedType: ProjectManagerUiParameters.ProjectType? {
@@ -65,7 +66,7 @@ class ProjectManagerViewController: UIViewController {
     private enum Constants {
         static let heightAccountView: CGFloat = 40
         static let trailingAccountView: CGFloat = -20
-        static let textFieldMaximumLength: Int = 50
+        static let textFieldMaximumLength: Int = 32
    }
 
     // MARK: - Setup
@@ -156,6 +157,7 @@ private extension ProjectManagerViewController {
     func initUI() {
         /// Top Bar
         setupSegmentedControl()
+        setupTitle()
         setupAccountView()
 
         /// Right pane
@@ -165,7 +167,6 @@ private extension ProjectManagerViewController {
         duplicateButton.setup(title: L10n.flightPlanDuplicate, style: .default1)
         deleteButton.setup(title: L10n.commonDelete, style: .destructive)
         openButton.setup(title: L10n.flightPlanOpenLabel, style: .validate)
-        textFieldUnderline.backgroundColor = ColorName.separator.color
     }
 
     /// Setup account view.
@@ -188,6 +189,9 @@ private extension ProjectManagerViewController {
 
     /// Setup segmented control.
     func setupSegmentedControl() {
+        // Display segmented control only if project type selection is enabled.
+        segmentedControl.isHidden = !viewModel.canSelectProjectType
+
         segmentedControl.removeAllSegments()
         for projectType in viewModel.projectTypes {
             segmentedControl.insertSegment(withTitle: projectType.title?.capitalized,
@@ -198,13 +202,23 @@ private extension ProjectManagerViewController {
         segmentedControl.customMakeup()
     }
 
+    /// Sets up top bar title.
+    func setupTitle() {
+        // Display title label only if project type selection is disabled.
+        titleLabel.isHidden = viewModel.canSelectProjectType
+        titleLabel.text = L10n.flightPlanProjects
+        titleLabel.makeUp(with: .big, color: .defaultTextColor)
+    }
+
     /// Setup Project name text field.
     func setupTextField() {
-        nameTextField.makeUp(style: .largeMedium)
+        nameTextField.makeUp(style: .current, textColor: .defaultTextColor, bgColor: .clear)
         nameTextField.returnKeyType = .done
-        nameTextField.textColor = ColorName.defaultTextColor.color
-        nameTextField.backgroundColor = .clear
+        nameTextField.rightView = UIImageView(image: Asset.Common.Icons.iconEdit.image)
+        nameTextField.rightViewMode = .unlessEditing
+        nameTextField.clearButtonMode = .whileEditing
         nameTextField.text = nil
+        nameTextField.enablesReturnKeyAutomatically = true
         nameTextField.editingChangedPublisher
             .sink { [unowned self] in
                 if $0.count > Constants.textFieldMaximumLength {
@@ -219,10 +233,7 @@ private extension ProjectManagerViewController {
             .store(in: &cancellables)
         nameTextField.returnPressedPublisher
             .sink { [unowned self] in
-                nameTextField.resignFirstResponder()
-                guard let selectedProject = selectedProject else { return }
-                viewModel.renameProject(selectedProject,
-                                                with: nameTextField.text)
+                handleProjectNameModification()
             }
             .store(in: &cancellables)
 
@@ -231,6 +242,8 @@ private extension ProjectManagerViewController {
                 nameTextField.becomeFirstResponder()
             }
             .store(in: &cancellables)
+        projectNameContainer.layer.cornerRadius = Style.mediumCornerRadius
+        projectNameContainer.backgroundColor = ColorName.whiteAlbescent.color
     }
 
     private func bindViewModel() {
@@ -241,9 +254,9 @@ private extension ProjectManagerViewController {
                 deleteButton.isEnabled =  selectedProject != nil
                 openButton.isEnabled =  selectedProject != nil
                 nameTextField.isEnabled =  selectedProject != nil
-                nameTextField.text = selectedProject != nil ? selectedProject?.title : nil
+                nameTextField.text = selectedProject?.title
                 nameTextField.alpha =  selectedProject != nil ? 1 : 0
-                textFieldUnderline.alpha = nameTextField.alpha
+                projectNameContainer.backgroundColor = selectedProject != nil ? ColorName.whiteAlbescent.color: .clear
                 if let selectedProject = selectedProject {
                     deleteButton.isEnabled =  viewModel?.canDeleteProject(selectedProject) ?? true
                 }
@@ -272,15 +285,21 @@ private extension ProjectManagerViewController {
                 // Prevent to save changes when top bar (back button) is tapped
                 guard topBar
                         .hitTest($0.location(in: view),
-                                     with: nil) == nil
+                                 with: nil) == nil
                 else { return }
-                // Hides the keyboard
-                view.endEditing(true)
-                // Save the current changes
-                guard let selectedProject = selectedProject else { return }
-                viewModel.renameProject(selectedProject,
-                                                with: nameTextField.text)
+                handleProjectNameModification()
             }
+    }
+
+    /// Handle the Project's name modification.
+    private func handleProjectNameModification() {
+        // Ensure the name is not empty and a selected project exists.
+        guard let name = nameTextField.text, !name.isEmpty else { return }
+        guard let selectedProject = selectedProject else { return }
+        // Rename the selected project.
+        viewModel.renameProject(selectedProject, with: name)
+        // Dismiss the keyboard.
+        nameTextField.resignFirstResponder()
     }
 
     /// Disable action buttons and cells while keyboard is presented.

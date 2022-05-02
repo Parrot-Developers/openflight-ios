@@ -289,7 +289,7 @@ extension CoreDataServiceImpl: PgyProjectRepository {
 internal extension CoreDataServiceImpl {
     func getAllPgyProjectsCountCD(toBeDeleted: Bool?) -> Int {
         let fetchRequest: NSFetchRequest<PgyProject> = PgyProject.fetchRequest()
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
 
         if let toBeDeleted = toBeDeleted {
             let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
@@ -309,7 +309,7 @@ internal extension CoreDataServiceImpl {
 
     func getAllPgyProjectsCD(toBeDeleted: Bool?) -> [PgyProject] {
         let fetchRequest: NSFetchRequest<PgyProject> = PgyProject.fetchRequest()
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
 
         if let toBeDeleted = toBeDeleted {
             let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))

@@ -170,3 +170,13 @@ enum PanoramaMediaType: String, CaseIterable {
         }
     }
 }
+
+/// A panorama generation state.
+enum PanoramaGenerationState: Int {
+    /// The panorama has already been generated, or media is not of panorama type.
+    case none
+    /// The panorama needs to be generated.
+    case toGenerate
+    /// Panorama can't be generated because of missing resources.
+    case missingResources
+}

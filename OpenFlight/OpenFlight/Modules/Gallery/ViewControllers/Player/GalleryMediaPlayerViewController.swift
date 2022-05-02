@@ -51,9 +51,6 @@ final class GalleryMediaPlayerViewController: UIViewController {
     @IBOutlet private weak var loadingView: GalleryLoadingView!
     @IBOutlet private weak var pageControl: UIPageControl!
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
-    @IBOutlet private weak var streamBusyIcon: UIImageView!
-    @IBOutlet private weak var streamBusyView: UIView!
-    @IBOutlet private weak var streamBusyLabel: UILabel!
 
     // Bottom Toolbar
     @IBOutlet private weak var bottomBarView: UIView!
@@ -115,6 +112,11 @@ final class GalleryMediaPlayerViewController: UIViewController {
 
     // MARK: - Deinit
     deinit {
+        // Video player is only stopped at image media appear and `GalleryMediaPlayerViewController`
+        // deinit in order to avoid any race condition when sliding through medias.
+        // => Stop potential video media.
+        viewModel?.videoStop()
+
         viewModel?.unregisterListener(mediaListener)
     }
 
@@ -169,13 +171,6 @@ final class GalleryMediaPlayerViewController: UIViewController {
             }
             .store(in: &cancellables)
 
-        // Stream busy info update.
-        viewModel?.mediaBrowsingViewModel.$isCameraRecording
-            .sink { [weak self] isCameraRecording in
-                self?.updateStreamBusyLabel(isCameraRecording: isCameraRecording)
-            }
-            .store(in: &cancellables)
-
         viewModel?.mediaBrowsingViewModel.$isCameraRecordRequested
             .sink { [weak self] isCameraRecordRequested in
                 guard isCameraRecordRequested else { return }
@@ -198,7 +193,6 @@ final class GalleryMediaPlayerViewController: UIViewController {
                 self?.mediaIndex = index
                 self?.updateMediaToolbar()
                 self?.resetAutoHideControlsTimer()
-                self?.updateStreamBusyLabel()
             }
             .store(in: &cancellables)
 
@@ -274,10 +268,6 @@ private extension GalleryMediaPlayerViewController {
         mediaTitleView.style = .light
         updateVideoMuteButtonState()
 
-        streamBusyView.applyCornerRadius(Style.largeCornerRadius)
-        streamBusyLabel.font = FontStyle.readingText.font(isRegularSizeClass)
-        streamBusyLabel.text = L10n.galleryPlaybackNotPossible
-
         // Bottom Toolbar
         updateBottomBarProgress()
 
@@ -330,11 +320,6 @@ private extension GalleryMediaPlayerViewController {
         topToolbarView.showFromEdge(.top, show: show)
         showPageControl(show)
         showBottomBar(show)
-    }
-
-    func updateStreamBusyLabel(isCameraRecording: Bool? = nil) {
-        let isCameraRecording = isCameraRecording ?? viewModel?.mediaBrowsingViewModel.isCameraRecording ?? false
-        streamBusyView.animateIsHidden(!isCameraRecording || !isVideo)
     }
 
     /// Updates media tool bar state (title, icons) according to media info.
@@ -405,6 +390,9 @@ private extension GalleryMediaPlayerViewController {
         viewModel?.mediaBrowsingViewModel.didInteractForControlsDisplay()
         if viewModel?.mediaBrowsingViewModel.areControlsShown == true {
             resetAutoHideControlsTimer()
+        }
+        if viewModel?.getVideoState() == .playing {
+            viewModel?.videoPause()
         }
     }
 
@@ -672,7 +660,7 @@ private extension GalleryMediaPlayerViewController {
 
     /// Shows an alert when trying to record while video is playing.
     func showRecordErrorAlert() {
-        guard isVideo else { return }
+        guard isVideo, viewModel?.downloadStatus != .running else { return }
 
         let okAction = AlertAction(title: L10n.ok,
                                    style: .action1)

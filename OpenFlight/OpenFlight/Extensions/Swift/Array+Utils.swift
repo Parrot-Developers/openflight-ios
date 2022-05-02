@@ -62,6 +62,31 @@ public extension Array where Element == Int {
     func stepFiltered(with step: Element) -> [Element] {
         return self.filter { $0 % step == 0 }
     }
+
+    /// Filters array with an exponential step.
+    ///
+    /// - Returns: Array of Element filtered with the an exponential step.
+    func stepExponentiallyFiltered() -> [Element] {
+        return self.filter {
+            guard $0 != 0 else { return true }
+            let value = Int(log10(abs(Double($0))))
+            let step = Int(pow(10.0, Double(value)))
+            return $0 % step == 0
+        }
+    }
+}
+
+/// Utility extension for `Array` where elements are Double.
+public extension Array where Element == Double {
+    /// Returns the index of the closest element to a specific value.
+    ///
+    /// - Parameter value: the value to compare to
+    /// - Returns: the index of the closest element
+    func closestIndex(of value: Element) -> Int? {
+        let distArray = map { abs($0 - value) }
+        guard let minDist = distArray.min() else { return nil }
+        return distArray.firstIndex(of: minDist)
+    }
 }
 
 /// Utility extension for `Array`.

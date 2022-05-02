@@ -90,6 +90,7 @@ final class MyFlightsViewController: UIViewController {
     }
     private var defaultSelectedProject: ProjectModel?
     private var defaultSelectedFlight: FlightModel?
+    private var defaultSelectedHeaderUuid: String?
 
     // MARK: - Private Enums
     private enum Constants {
@@ -100,11 +101,13 @@ final class MyFlightsViewController: UIViewController {
     // MARK: - Setup
     static func instantiate(coordinator: MyFlightsCoordinator,
                             defaultSelectedProject: ProjectModel?,
-                            defaultSelectedFlight: FlightModel?) -> MyFlightsViewController {
+                            defaultSelectedFlight: FlightModel?,
+                            defaultSelectedHeaderUuid: String?) -> MyFlightsViewController {
         let viewController = StoryboardScene.MyFlightsViewController.initialScene.instantiate()
         viewController.coordinator = coordinator
         viewController.defaultSelectedProject = defaultSelectedProject
         viewController.defaultSelectedFlight = defaultSelectedFlight
+        viewController.defaultSelectedHeaderUuid = defaultSelectedHeaderUuid
 
         return viewController
     }
@@ -244,7 +247,8 @@ private extension MyFlightsViewController {
                 newViewController.setupViewModel(with: FlightPlansListViewModel(manager: Services.hub.flightPlan.projectManager,
                                                                                 flightPlanTypeStore: Services.hub.flightPlan.typeStore,
                                                                                 navigationStack: Services.hub.ui.navigationStack,
-                                                                                cloudSynchroWatcher: Services.hub.cloudSynchroWatcher),
+                                                                                cloudSynchroWatcher: Services.hub.cloudSynchroWatcher,
+                                                                                selectedHeaderUuid: defaultSelectedHeaderUuid),
                                                  delegate: self)
                 self.flightPlanViewController = newViewController
                 controller = newViewController

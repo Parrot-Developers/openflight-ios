@@ -86,11 +86,14 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     ///     - project: project model
     ///     - isSelected: Whether cell is selected.
     func configureCell(project: ProjectModel, isSelected: Bool) {
-        // TODO: wrong injection
-        let projectManager = Services.hub.flightPlan.projectManager
-        let lastFlightPlan = projectManager.lastFlightPlan(for: project)
+        let lastFlightPlan = project.flightPlans?.first
+
         titleLabel.text = project.title ?? lastFlightPlan?.dataSetting?.coordinate?.coordinatesDescription
-        dateLabel.text = project.lastUpdated.shortWithTimeFormattedString(timeStyle: .medium)
+        var date: Date? = project.lastUpdated
+        if let lastFlightExecutionDate = lastFlightPlan?.lastFlightExecutionDate {
+            date = lastFlightExecutionDate
+        }
+        dateLabel.text = date?.shortWithTimeFormattedString()
 
         backgroundImageView.image = lastFlightPlan?.thumbnail?.thumbnailImage ?? UIImage(asset: Asset.MyFlights.projectPlaceHolder)
 
@@ -104,7 +107,7 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
             typeImage.isHidden = true
         }
 
-        projectExecutedIcon.isHidden = projectManager.executedFlightPlans(for: project).isEmpty
+        projectExecutedIcon.isHidden = !project.hasExecutedProject()
 
         gradientView.backgroundColor = isSelected ? ColorName.white50.color : .clear
         selectedView.isHidden = !isSelected

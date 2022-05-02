@@ -48,9 +48,6 @@ struct AirSdkMissionToUpdateData: Equatable, Decodable {
     let missionFilePath: String
     let minTargetVersion: String
     let maxTargetVersion: String
-    var missionNameAndVersion: String {
-        return missionName + " " + missionVersion
-    }
     var missionName: String {
         return airsdkMissionsManager.getMissionToLoadAtStart()
             .first(where: { $0.missionUID == missionUID })?
@@ -135,6 +132,12 @@ struct AirSdkMissionBasicInformation: Equatable {
             .first(where: { $0.missionUID == missionUID })?
             .name
         return missionName ?? airsdkMissionsManager.getMissionName(uid: missionUID)
+    }
+
+    var isBuiltIn: Bool {
+        return airsdkMissionsManager.getMissionToLoadAtStart()
+            .first(where: { $0.missionUID == missionUID })?
+            .isBuiltIn == true
     }
 
     var isCompatible: Bool {

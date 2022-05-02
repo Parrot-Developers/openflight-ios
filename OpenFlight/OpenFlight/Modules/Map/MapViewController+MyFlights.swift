@@ -46,8 +46,12 @@ internal extension MapViewController {
     /// - Parameters:
     ///    - flightsPoints: flights trajectories
     ///    - hasAsmlAltitude: `true` if flights points have altitudes in ASML
+    ///    - trajectoryState: the state of the trajectory
+    ///    - adjustViewPoint: `true` to adjust map view point to display flight course
     func displayFlightCourse(flightsPoints: [[TrajectoryPoint]],
-                             hasAsmlAltitude: Bool) {
+                             hasAsmlAltitude: Bool,
+                             trajectoryState: TrajectoryState = .none,
+                             adjustViewPoint: Bool) {
         removeGraphicOverlay(forKey: Constants.overlayKey)
 
         guard let firstPoint = flightsPoints.first?.first else { return }
@@ -60,7 +64,7 @@ internal extension MapViewController {
         flightsPoints.forEach { flightPoints in
             let agsPoints = flightPoints.map { $0.point }
             let polyline = AGSPolyline(points: agsPoints)
-            let polylineSymbol = AGSSimpleLineSymbol(style: .solid, color: Constants.lineColor, width: Constants.lineWidth)
+            let polylineSymbol = AGSSimpleLineSymbol(style: .solid, color: trajectoryState.color, width: Constants.lineWidth)
             let polylineGraphic = AGSGraphic(geometry: polyline, symbol: polylineSymbol, attributes: nil)
             customOverlay.graphics.add(polylineGraphic)
         }
@@ -72,16 +76,18 @@ internal extension MapViewController {
             customOverlay.graphics.add(homePoint)
         }
 
-        let allPoints = flightsPoints.reduce([]) { $0 + $1.map {$0.point} }
-        let polyline = AGSPolyline(points: allPoints)
-        let bufferedExtent = polyline.envelopeWithMargin()
-        let viewPoint = AGSViewpoint(targetExtent: bufferedExtent)
-        updateViewPoint(viewPoint)
+        if adjustViewPoint {
+            let allPoints = flightsPoints.reduce([]) { $0 + $1.map {$0.point} }
+            let polyline = AGSPolyline(points: allPoints)
+            let bufferedExtent = polyline.envelopeWithMargin()
+            let viewPoint = AGSViewpoint(targetExtent: bufferedExtent)
+            updateViewPoint(viewPoint)
+        }
 
         // wait for elevation data to be ready before applying an altitude offset
         elevationLoadedCancellable = viewModel.elevationSource.$elevationLoaded
-            .filter { $0 }
             .removeDuplicates()
+            .filter { $0 }
             .sink { [unowned self] _ in
                 adjustAltitude(overlay: customOverlay,
                                firstPoint: firstPoint.point,

@@ -49,8 +49,8 @@ final class CameraShutterButtonState: DeviceConnectionState {
     fileprivate(set) weak var panoramaModeState: PanoramaModeState?
     /// Current state for timelapse and gpslapse mode.
     fileprivate(set) weak var lapseModeState: PhotoLapseState?
-    /// Time before restart record.
-    fileprivate(set) var timeBeforeRestartRecord: Int?
+    /// Whether shutter button is enabled.
+    fileprivate(set) var enabled = true
 
     // MARK: - Public Properties
     /// Returns if storage is ready.
@@ -76,7 +76,6 @@ final class CameraShutterButtonState: DeviceConnectionState {
     ///    - recordingTimeState: current recording time state
     ///    - panoramaModeState: current state for panorama mode
     ///    - lapseModeState: current state for lapse capture mode
-    ///    - timeBeforeRestartRecord: time before restart record
     init(connectionState: DeviceState.ConnectionState,
          cameraMode: Camera2Mode,
          cameraCaptureMode: CameraCaptureMode,
@@ -86,7 +85,7 @@ final class CameraShutterButtonState: DeviceConnectionState {
          recordingTimeState: RecordingTimeState,
          panoramaModeState: PanoramaModeState?,
          lapseModeState: PhotoLapseState?,
-         timeBeforeRestartRecord: Int?) {
+         enabled: Bool) {
         super.init(connectionState: connectionState)
 
         self.cameraMode = cameraMode
@@ -97,7 +96,7 @@ final class CameraShutterButtonState: DeviceConnectionState {
         self.recordingTimeState = recordingTimeState
         self.panoramaModeState = panoramaModeState
         self.lapseModeState = lapseModeState
-        self.timeBeforeRestartRecord = timeBeforeRestartRecord
+        self.enabled = enabled
     }
 
     // MARK: - Override Funcs
@@ -113,7 +112,7 @@ final class CameraShutterButtonState: DeviceConnectionState {
             && recordingTimeState == other.recordingTimeState
             && panoramaModeState == other.panoramaModeState
             && lapseModeState == other.lapseModeState
-            && timeBeforeRestartRecord == other.timeBeforeRestartRecord
+            && enabled == other.enabled
     }
 
     override func copy() -> CameraShutterButtonState {
@@ -126,13 +125,12 @@ final class CameraShutterButtonState: DeviceConnectionState {
                                             recordingTimeState: recordingTimeState,
                                             panoramaModeState: panoramaModeState,
                                             lapseModeState: lapseModeState,
-                                            timeBeforeRestartRecord: timeBeforeRestartRecord)
+                                            enabled: enabled)
         return copy
     }
 }
 
 /// View model for `CameraShutterButton`, notifies on recording/photo capture changes and handles user action.
-
 final class CameraShutterButtonViewModel: DroneStateViewModel<CameraShutterButtonState> {
     // MARK: - Public Properties
     public var hideBottomBarEventPublisher: AnyPublisher<Bool, Never> {
@@ -143,7 +141,6 @@ final class CameraShutterButtonViewModel: DroneStateViewModel<CameraShutterButto
     private var hideBottomBarEventSubject = CurrentValueSubject<Bool, Never>(false)
     private var cameraRef: Ref<MainCamera2>?
     private var photoCaptureRef: Ref<Camera2PhotoCapture>?
-    private var recordingRef: Ref<Camera2Recording>?
     private let cameraCaptureModeViewModel = CameraCaptureModeViewModel(
         panoramaService: Services.hub.panoramaService, currentMissionManager: Services.hub.currentMissionManager)
     private let panoramaModeViewModel = PanoramaModeViewModel()
@@ -215,69 +212,21 @@ private extension CameraShutterButtonViewModel {
             }
 
             listenPhotoCapture(camera)
-            listenCameraConfiguration(camera)
             let copy = state.value.copy()
             copy.cameraMode = cameraMode
             state.set(copy)
+            udpateEnabledState()
         }
-    }
-
-    /// Starts watcher for camera configuration.
-    func listenCameraConfiguration(_ camera: MainCamera2) {
-        recordingRef = camera.getComponent(Camera2Components.recording) { [unowned self] recording in
-            guard let recordingState = recording?.state else { return }
-
-            let copy = state.value.copy()
-            // Reset timer before restart record
-            if case .stopping(reason: .configurationChange, _) = recordingState {
-                copy.timeBeforeRestartRecord = Constants.timerBeforeRestartRecord
-            }
-
-            state.set(copy)
-            // Prevents for multiple copy call
-            if state.value.timeBeforeRestartRecord != nil,
-               case .stopping(reason: .configurationChange, _) = recordingState {
-                restartRecording()
-            }
-        }
-    }
-
-    /// Restart recording when camera configuration changes.
-    func restartRecording() {
-        countDownTimer = Timer.scheduledTimer(withTimeInterval: Constants.countDownInterval, repeats: true) { [weak self] _ in
-            if let countDown = self?.state.value.timeBeforeRestartRecord {
-                let interval = Int(Constants.countDownInterval)
-                if countDown > interval {
-                    let copy = self?.state.value.copy()
-                    copy?.timeBeforeRestartRecord = countDown - interval
-                    self?.state.set(copy)
-                } else {
-                    self?.cancelRestartRecording()
-                    self?.recordingRef?.value?.start()
-                }
-            }
-        }
-    }
-
-    /// Cancels previously restart recording.
-    func cancelRestartRecording() {
-        countDownTimer?.invalidate()
-        countDownTimer = nil
-        let copy = state.value.copy()
-        copy.timeBeforeRestartRecord = nil
-        state.set(copy)
     }
 
     /// Starts watcher for photo capture.
     func listenPhotoCapture(_ camera: MainCamera2) {
         photoCaptureRef = camera.getComponent(Camera2Components.photoCapture) { [unowned self] photo in
-            guard let cameraMode = camera.mode,
-                  let photoState = photo?.state else {
+            guard let photoState = photo?.state else {
                 return
             }
 
             let copy = state.value.copy()
-            copy.cameraMode = cameraMode
             copy.photoFunctionState = photoState
             state.set(copy)
         }
@@ -389,6 +338,27 @@ private extension CameraShutterButtonViewModel {
             copy.cameraCaptureSubMode = captureState.subMode
             state.set(copy)
         }
+        udpateEnabledState()
+    }
+
+    /// Updates enabled state.
+    ///
+    /// Shutter button is disabled if current capture mode is not a supported capture mode,
+    /// or if there is no current supported photo mode (recording or photo).
+    func udpateEnabledState() {
+        let captureState = cameraCaptureModeViewModel.state.value
+        let copy = state.value.copy()
+        if let mode = captureState.mode as? CameraCaptureMode,
+           // when `supportedModes` is nil, all capture modes are supported
+           !(captureState.supportedModes?.customContains(mode) ?? true) {
+            copy.enabled = false
+        } else if let camera = drone?.currentCamera,
+             let modeParam = camera.config[Camera2Params.mode] {
+            copy.enabled = !modeParam.currentSupportedValues.isEmpty
+        } else {
+            copy.enabled = false
+        }
+        state.set(copy)
     }
 }
 

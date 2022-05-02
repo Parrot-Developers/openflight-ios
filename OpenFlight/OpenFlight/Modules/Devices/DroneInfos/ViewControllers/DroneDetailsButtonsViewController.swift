@@ -116,11 +116,11 @@ private extension DroneDetailsButtonsViewController {
 
     /// Sets up initial view display.
     func initUI() {
-        mapButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.MyFlights.poi.image,
+        mapButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.icPoi.image,
                                                        title: L10n.droneDetailsLastKnownPosition)
         calibrationButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDrone.image,
                                                                title: L10n.remoteDetailsCalibration)
-        firmwareUpdateButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDownload.image,
+        firmwareUpdateButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.icDroneFirmware.image,
                                                                   title: L10n.remoteDetailsSoftware)
         cellularAccessButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconCellularDatas.image,
                                                                   title: L10n.droneDetailsCellularAccess,

@@ -35,16 +35,14 @@ public class DashboardMyFlightsCellModel {
     public let service: FlightService
     public let cloudSynchroWatcher: CloudSynchroWatcher?
 
-    public var lastFlight: AnyPublisher<FlightModel?, Never> { service.lastFlight }
     private var isSynchronizingSubject = CurrentValueSubject<Bool, Never>(false)
-    private var summarySubject = PassthroughSubject<AllFlightsSummary, Never>()
+    private var summarySubject = CurrentValueSubject<AllFlightsSummary, Never>(AllFlightsSummary.defaultValues)
     private var cancellable = Set<AnyCancellable>()
 
     init(service: FlightService,
          cloudSynchroWatcher: CloudSynchroWatcher?) {
         self.service = service
         self.cloudSynchroWatcher = cloudSynchroWatcher
-        self.service.updateFlights()
         cloudSynchroWatcher?.isSynchronizingDataPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] isSynch in
@@ -58,14 +56,10 @@ public class DashboardMyFlightsCellModel {
             }.store(in: &cancellable)
     }
 
-    func reloadAllFlights() {
-        service.updateFlights()
-    }
-
     var isSynchronizingData: AnyPublisher<Bool, Never> {
         isSynchronizingSubject.eraseToAnyPublisher()
     }
 
-    public var summary: AnyPublisher<AllFlightsSummary, Never> { summarySubject.eraseToAnyPublisher()  }
+    public var summary: AnyPublisher<AllFlightsSummary, Never> { service.allFlightsSummary  }
 
 }

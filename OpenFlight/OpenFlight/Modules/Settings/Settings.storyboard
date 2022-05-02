@@ -23,11 +23,8 @@
                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8dr-vG-7ST" customClass="FileNavigationStackView" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="844" height="56"/>
                                         <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="O1Y-1Q-Gey">
+                                            <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="O1Y-1Q-Gey" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="0.0" width="56" height="56"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" secondItem="O1Y-1Q-Gey" secondAttribute="height" multiplier="1:1" id="leg-dj-4oV"/>
-                                                </constraints>
                                                 <color key="tintColor" name="default_text_color"/>
                                                 <state key="normal" image="ic_back"/>
                                                 <connections>
@@ -94,6 +91,7 @@
                                 </subviews>
                             </stackView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="RpJ-ME-c2m"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="4jY-r9-LTO" secondAttribute="trailing" id="9UW-7h-MLQ"/>

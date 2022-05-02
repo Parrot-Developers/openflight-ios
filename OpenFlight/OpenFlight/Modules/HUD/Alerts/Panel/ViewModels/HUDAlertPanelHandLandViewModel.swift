@@ -38,6 +38,7 @@ public final class HUDAlertPanelHandLandState: DeviceConnectionState, AlertPanel
     public var subtitle: String? {
         return L10n.alertHandLandLanding
     }
+    public var titleImage: UIImage?
     public var subtitleColor: UIColor? {
         return ColorName.highlightColor.color
     }

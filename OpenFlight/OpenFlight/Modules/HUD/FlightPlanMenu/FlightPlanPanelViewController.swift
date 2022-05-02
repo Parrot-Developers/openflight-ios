@@ -39,6 +39,7 @@ final class FlightPlanPanelViewController: UIViewController {
     @IBOutlet private weak var projectButtonHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var projectNameLabel: UILabel!
     @IBOutlet private weak var projectTitleLabel: UILabel!
+    @IBOutlet private weak var executionNameLabel: UILabel!
     @IBOutlet private weak var folderButton: ActionButton!
     @IBOutlet private weak var noFlightPlanContainer: UIView!
     @IBOutlet private weak var noFlightPlanLabel: UILabel!
@@ -105,6 +106,7 @@ final class FlightPlanPanelViewController: UIViewController {
         super.viewDidLoad()
         initView()
         bindViewModel()
+        listenToActionWidgets()
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         gestureView.addGestureRecognizer(tap)
     }
@@ -175,6 +177,15 @@ final class FlightPlanPanelViewController: UIViewController {
 
 // MARK: - Internal Funcs
 extension FlightPlanPanelViewController {
+    /// Listens to action widgets and hide controls if needed.
+    func listenToActionWidgets() {
+        Services.hub.ui.uiComponentsDisplayReporter.isActionWidgetShownPublisher.sink { [weak self] isWidgetShown in
+            // Buttons stack view needs to be hidden if an action widget is displayed.
+            self?.buttonsStackView.animateScaleAndAlpha(show: !isWidgetShown)
+        }
+        .store(in: &cancellables)
+    }
+
     /// Starts streaming component.
     func startStream() {
         guard cameraStreamingViewController == nil else { return }
@@ -213,7 +224,7 @@ extension FlightPlanPanelViewController {
 
     /// Show the map in container
     func showMiniMap() {
-        let mapViewControllerVC = MapViewController.instantiate()
+        let mapViewControllerVC = MapViewController.instantiate(isMiniMap: true)
         self.addChild(mapViewControllerVC)
         cameraStreamingContainerView.addWithConstraints(subview: mapViewControllerVC.view)
         mapViewControllerVC.didMove(toParent: self)
@@ -290,6 +301,8 @@ private extension FlightPlanPanelViewController {
         projectNameLabel.makeUp(with: .current, color: .defaultTextColor)
         projectNameLabel.lineBreakMode = .byTruncatingTail
 
+        executionNameLabel.makeUp(with: .current, color: .defaultTextColor)
+
         projectStackView.tapGesturePublisher
             .sink { [unowned self] _ in
                 flightPlanPanelViewModel.projectTouchUpInside()
@@ -346,6 +359,13 @@ private extension FlightPlanPanelViewController {
             })
             .store(in: &cancellables)
 
+        flightPlanPanelViewModel.$titleExecution
+            .sink { [weak self] title in
+                guard let self = self else { return }
+                self.executionNameLabel.text = title
+            }
+            .store(in: &cancellables)
+
         flightPlanPanelViewModel.$viewState
             .sink { [weak self] viewState in
                 guard let self = self else { return }
@@ -392,6 +412,7 @@ private extension FlightPlanPanelViewController {
         stopLeadingSpacer.isHiddenInStackView = true
         stopTrailingSpacer.isHiddenInStackView = true
         buttonsStackView.distribution = .fill
+        updateHeader(viewState: viewState)
 
         let isCreationState = viewState == .creation
         noFlightPlanContainer.isHiddenInStackView = !isCreationState
@@ -414,10 +435,28 @@ private extension FlightPlanPanelViewController {
             stopLeadingSpacer.isHiddenInStackView = false
             stopTrailingSpacer.isHiddenInStackView = false
             stopButton.isHiddenInStackView = false
+            executionNameLabel.isHiddenInStackView = false
 
         case .paused, .resumable:
             playButton.isHiddenInStackView = false
             stopButton.isHiddenInStackView = false
         }
+    }
+
+    /// Updates the header panel according to view model's state.
+    ///
+    /// - Parameter viewState: the state of the view model
+    private func updateHeader(viewState: FlightPlanPanelViewModel.ViewState) {
+        var inProgress = false
+        switch viewState {
+        case .playing, .rth, .navigatingToStartingPoint:
+            inProgress = true
+        default:
+            break
+        }
+
+        folderButton.isHiddenInStackView = inProgress
+        executionNameLabel.isHiddenInStackView = !inProgress
+        projectNameLabel.numberOfLines = (!inProgress).toInt + 1
     }
 }

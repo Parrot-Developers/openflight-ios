@@ -45,8 +45,8 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
         case notDisconnected
         /// Calibration required state.
         case calibrationRequired
-        /// Calibration needed state.
-        case calibrationNeeded
+        /// Calibration recommended state.
+        case calibrationIsRecommended
         /// Update available state.
         case updateAvailable
         /// Update required state.
@@ -54,7 +54,7 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
 
         fileprivate var backgroundColor: Color {
             switch self {
-            case .calibrationNeeded,
+            case .calibrationIsRecommended,
                  .updateAvailable:
                 return ColorName.warningColor.color
             case .calibrationRequired,
@@ -72,7 +72,7 @@ final class DeviceStateButton: UIButton, NibOwnerLoadable {
             case .updateAvailable,
                  .updateRequired,
                  .calibrationRequired,
-                 .calibrationNeeded:
+                 .calibrationIsRecommended:
                 return .white
             default:
                 return ColorName.defaultTextColor.color

@@ -110,6 +110,33 @@ public protocol FlightPlanManager {
     /// Get the last flight date of a flight plan if any
     /// - Parameter flightPlan: flight plan
     func lastFlightDate(_ flightPlan: FlightPlanModel) -> Date?
+
+    /// Get the first FlightPlan's Flight date.
+    /// - Parameter flightPlanModel: the Flight Plan
+    /// - Returns: the `Date` if exists or `nil`
+    func firstFlightDate(of flightPlan: FlightPlanModel) -> Date?
+
+    /// Returns the formatted start date of the first FlightPlan's Flight.
+    ///
+    /// - Parameters:
+    ///  - flightPlan: the Flight Plan
+    ///  - isShort: whether the formatted string should be short
+    /// - Returns: formatted date or dash if formatting failed
+    ///
+    /// - Description:
+    /// Following scenarios are possible:
+    ///   • An execution is linked to one Flight.
+    ///     (when only one FP is executed between the take-off and the landing).
+    ///   • Several executions are linked to the same Flight.
+    ///     (when several FPs are executed between the take-off and the landing).
+    ///   • An execution is linked to several Flights.
+    ///     (when FP is paused then resumed with landing between them).
+    /// Note: An execution is an FP which is not in editable mode.
+    ///
+    /// This method searches for the first FlightPlan's Flight and gets its start date (representing the Drone's take-off date).
+    ///  If not found, we fallback into the execution's date which represents the moment when the FP has ben launched.
+    func firstFlightFormattedDate(of flightPlan: FlightPlanModel,
+                                  isShort: Bool) -> String
 }
 
 private extension ULogTag {
@@ -117,17 +144,17 @@ private extension ULogTag {
 }
 
 public class FlightPlanManagerImpl: FlightPlanManager {
-    private let persistenceFlightPlan: FlightPlanRepository
-    private let currentUser: UserInformation
-    private let filesManager: FlightPlanFilesManager
-    private let pgyProjectRepo: PgyProjectRepository
+    private let persistenceFlightPlan: FlightPlanRepository!
+    private let userService: UserService!
+    private let filesManager: FlightPlanFilesManager!
+    private let pgyProjectRepo: PgyProjectRepository!
 
     public init(persistenceFlightPlan: FlightPlanRepository,
-                currentUser: UserInformation,
+                userService: UserService,
                 filesManager: FlightPlanFilesManager,
                 pgyProjectRepo: PgyProjectRepository) {
         self.persistenceFlightPlan = persistenceFlightPlan
-        self.currentUser = currentUser
+        self.userService = userService
         self.filesManager = filesManager
         self.pgyProjectRepo = pgyProjectRepo
     }
@@ -168,13 +195,14 @@ public class FlightPlanManagerImpl: FlightPlanManager {
         newFlightPlan.fileSynchroDate = nil
         newFlightPlan.synchroError = nil
         let thumbnailUUID = UUID().uuidString
-        newFlightPlan.thumbnail = ThumbnailModel(apcId: currentUser.apcId,
+        newFlightPlan.thumbnail = ThumbnailModel(apcId: userService.currentUser.apcId,
                                                  uuid: thumbnailUUID,
                                                  flightUuid: nil,
                                                  thumbnailImage: flightPlan.thumbnail?.thumbnailImage)
         newFlightPlan.thumbnailUuid = thumbnailUUID
         newFlightPlan.flightPlanFlights = []
         newFlightPlan.dataSetting?.notPropagatedSettings = [:]
+        newFlightPlan.dataSetting?.pgyProjectId = 0
 
         if save {
             persist(newFlightPlan,
@@ -223,7 +251,6 @@ public class FlightPlanManagerImpl: FlightPlanManager {
         return newStateFlightPlan
     }
 
-
     public func update(flightplan: FlightPlanModel, with customTitle: String) -> FlightPlanModel {
         var newFlightPlan = flightplan
         newFlightPlan.customTitle = customTitle
@@ -259,5 +286,23 @@ public class FlightPlanManagerImpl: FlightPlanManager {
 
     public func lastFlightDate(_ flightPlan: FlightPlanModel) -> Date? {
         persistenceFlightPlan.getLastFlightDateOfFlightPlan(flightPlan)
+    }
+
+    public func firstFlightDate(of flightPlan: FlightPlanModel) -> Date? {
+        persistenceFlightPlan.firstFlightDate(of: flightPlan)
+    }
+
+    public func firstFlightFormattedDate(of flightPlan: FlightPlanModel,
+                                         isShort: Bool) -> String {
+        // If not found, return the execution date.
+        guard let flightDate = firstFlightDate(of: flightPlan) else {
+            return flightPlan.formattedDate(isShort: isShort)
+        }
+        // Format the date.
+        let formattedDate = isShort
+        ? flightDate.shortFormattedString
+        : flightDate.shortWithTimeFormattedString(showTimePrefix: false)
+        // Return Dash if date can't be formatted.
+        return formattedDate ?? Style.dash
     }
 }

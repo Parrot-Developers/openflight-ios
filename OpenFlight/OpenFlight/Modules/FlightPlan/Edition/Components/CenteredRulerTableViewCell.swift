@@ -33,7 +33,10 @@ import Reusable
 /// Cell which displays a centered ruler.
 public class CenteredRulerTableViewCell: SidePanelSettingTableViewCell, NibReusable, EditionSettingsCellModel {
     // MARK: - Outlets
+    @IBOutlet private weak var titleView: UIView!
     @IBOutlet private(set) weak var titleLabel: UILabel!
+    @IBOutlet private weak var leftIconView: UIImageView!
+    @IBOutlet private weak var rightIconView: UIImageView!
     @IBOutlet private(set) weak var settingValueRulerViewContainer: UIView!
     @IBOutlet private weak var disableView: UIView!
 
@@ -53,6 +56,8 @@ public class CenteredRulerTableViewCell: SidePanelSettingTableViewCell, NibReusa
     public override func prepareForReuse() {
         super.prepareForReuse()
         titleLabel.text = nil
+        leftIconView.image = nil
+        rightIconView.image = nil
         settingValueRulerViewContainer.removeSubViews()
         initView()
     }
@@ -60,6 +65,8 @@ public class CenteredRulerTableViewCell: SidePanelSettingTableViewCell, NibReusa
     // MARK: - Internal Funcs
     public func fill(with settingType: FlightPlanSettingType?) {
         titleLabel.text = settingType?.title.uppercased()
+        leftIconView.image = settingType?.leftIconImage
+        rightIconView.image = settingType?.rightIconImage
         self.settingType = settingType
         setupRulerModel()
     }
@@ -76,6 +83,8 @@ public class CenteredRulerTableViewCell: SidePanelSettingTableViewCell, NibReusa
         ruler.delegate = self
         centeredRulerBarView = ruler
         settingValueRulerViewContainer.addWithConstraints(subview: ruler)
+        let titleViewMargin = Layout.mainPadding(isRegularSizeClass)
+        titleView.layoutMargins = .init(top: 0, left: titleViewMargin, bottom: 0, right: titleViewMargin)
     }
 
     /// Set ruler bar model displaying custom values.

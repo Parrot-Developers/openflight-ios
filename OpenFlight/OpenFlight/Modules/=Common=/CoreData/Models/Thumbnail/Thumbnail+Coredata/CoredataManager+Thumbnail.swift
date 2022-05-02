@@ -96,6 +96,12 @@ public protocol ThumbnailRepository: AnyObject {
     /// - Parameters uuid: Thumbnail's UUID to delete
     func deleteOrFlagToDeleteThumbnail(withUuid uuid: String)
 
+    /// Delete from CoreData the Thumbnail with specified `uuid`.
+    /// - Parameters:
+    ///    - uuid: the  Thumbnail's `uuid`
+    ///    - completion: the completion block with the deletion status (`true` in case of successful deletion)
+    func deleteThumbnail(withUuid uuid: String, completion: ((_ status: Bool) -> Void)?)
+
     /// Delete Thumbnail in CoreData with a specified list of uuids
     /// - Parameters:
     ///    - uuids: List of serials to search
@@ -253,6 +259,31 @@ extension CoreDataServiceImpl: ThumbnailRepository {
         })
     }
 
+    public func deleteThumbnail(withUuid uuid: String, completion: ((_ status: Bool) -> Void)?) {
+
+        performAndSave({ [unowned self] context in
+            guard let thumbnail = getThumbnailCD(withUuid: uuid) else {
+                completion?(false)
+                return false
+            }
+
+            ULog.d(.dataModelTag, "🌉🗑 deleteThumbnail, uuid: \(uuid)")
+            context.delete(thumbnail)
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                ULog.d(.dataModelTag, "🌉🗑🟢 deleteThumbnail, uuid: \(uuid)")
+                thumbnailsDidChangeSubject.send()
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag,
+                       "🌉🗑🔴 Error deleteThumbnail, uuid: \(uuid) - error: \(error.localizedDescription)")
+                completion?(false)
+            }
+        })
+    }
+
     public func deleteThumbnails(withUuids uuids: [String]) {
         deleteThumbnails(withUuids: uuids, completion: nil)
     }
@@ -264,21 +295,12 @@ extension CoreDataServiceImpl: ThumbnailRepository {
             return
         }
 
-        performAndSave({ context in
+        batchDeleteAndSave({ _ in
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Thumbnail.entityName)
             let uuidPredicate = NSPredicate(format: "uuid IN %@", uuids)
             fetchRequest.predicate = uuidPredicate
 
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
-            do {
-                try context.execute(deleteRequest)
-                return true
-            } catch let error {
-                ULog.e(.dataModelTag, "An error is occured when batch delete Thumbnail in CoreData : \(error.localizedDescription)")
-                completion?(false)
-                return false
-            }
+            return fetchRequest
         }, { [unowned self] result in
             switch result {
             case .success:
@@ -318,7 +340,7 @@ internal extension CoreDataServiceImpl {
     func getAllThumbnailsCountCD(toBeDeleted: Bool?) -> Int {
         let fetchRequest = Thumbnail.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
 
         if let toBeDeleted = toBeDeleted {
             let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
@@ -336,7 +358,7 @@ internal extension CoreDataServiceImpl {
     func getAllThumbnailsCD(toBeDeleted: Bool?) -> [Thumbnail] {
         let fetchRequest = Thumbnail.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
 
         if let toBeDeleted = toBeDeleted {
             let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))

@@ -22,7 +22,7 @@ internal enum L10n {
   internal static func alertAutolandingRemainingTime(_ p1: Int) -> String {
     return L10n.tr("Localizable", "alert_autolanding_remaining_time", p1)
   }
-  /// Obstacle avoidance deteriorated - Poor GPS quality
+  /// Obstacle avoidance degraded - Poor GPS quality
   internal static let alertAvoidanceDeteriorated = L10n.tr("Localizable", "alert_avoidance_deteriorated")
   /// Check that nothing is blocking the camera
   internal static let alertCameraError = L10n.tr("Localizable", "alert_camera_error")
@@ -36,7 +36,7 @@ internal enum L10n {
   internal static let alertDeleteProjectMessage = L10n.tr("Localizable", "alert_delete_project_message")
   /// Delete project?
   internal static let alertDeleteProjectTitle = L10n.tr("Localizable", "alert_delete_project_title")
-  /// Obstacle avoidance deteriorated – Strong winds
+  /// Obstacle avoidance degraded - Strong winds
   internal static let alertDeterioratedAvoidanceStrongWinds = L10n.tr("Localizable", "alert_deteriorated_avoidance_strong_winds")
   /// Drone above maximum altitude
   internal static let alertDroneAboveMaxAltitude = L10n.tr("Localizable", "alert_drone_above_max_altitude")
@@ -86,6 +86,8 @@ internal enum L10n {
   internal static let alertMotorCutoutPowerSupply = L10n.tr("Localizable", "alert_motor_cutout_power_supply")
   /// Motors overheating issue
   internal static let alertMotorCutoutTemperature = L10n.tr("Localizable", "alert_motor_cutout_temperature")
+  /// Obstacle avoidance disabled – Gimbal failure
+  internal static let alertNoAvoidanceGimbalFailure = L10n.tr("Localizable", "alert_no_avoidance_gimbal_failure")
   /// Obstacle avoidance disabled - Poor GPS quality
   internal static let alertNoAvoidanceNoGps = L10n.tr("Localizable", "alert_no_avoidance_no_gps")
   /// Obstacle avoidance disabled - Stereo camera failure
@@ -106,6 +108,12 @@ internal enum L10n {
   internal static let alertNoSdcardErrorDesc = L10n.tr("Localizable", "alert_no_sdcard_error_desc")
   /// No SD card
   internal static let alertNoSdcardErrorTitle = L10n.tr("Localizable", "alert_no_sdcard_error_title")
+  /// Disable obstacle avoidance
+  internal static let alertOaDroneStuckActionText = L10n.tr("Localizable", "alert_oa_drone_stuck_action_text")
+  /// Drone blocked
+  internal static let alertOaDroneStuckSubtitle = L10n.tr("Localizable", "alert_oa_drone_stuck_subtitle")
+  /// Obstacle avoidance
+  internal static let alertOaDroneStuckTitle = L10n.tr("Localizable", "alert_oa_drone_stuck_title")
   /// Obstacle avoidance - Drone blind in this direction
   internal static let alertObstacleAvoidanceBlindDirection = L10n.tr("Localizable", "alert_obstacle_avoidance_blind_direction")
   /// Obstacle avoidance disabled – Internal error
@@ -154,6 +162,8 @@ internal enum L10n {
   internal static let alertSelectSubject = L10n.tr("Localizable", "alert_select_subject")
   /// Calibrate sensors for a better experience.
   internal static let alertSensorCalibrationRecommended = L10n.tr("Localizable", "alert_sensor_calibration_recommended")
+  /// Stereo sensors calibration required
+  internal static let alertStereoSensorsNotCalibrated = L10n.tr("Localizable", "alert_stereo_sensors_not_calibrated")
   /// Strong vibrations detected . Check that propellers are tightly screwed.
   internal static let alertStrongImuVibrations = L10n.tr("Localizable", "alert_strong_imu_vibrations")
   /// Take off
@@ -381,6 +391,8 @@ internal enum L10n {
   internal static let commonAction = L10n.tr("Localizable", "common_action")
   /// Active
   internal static let commonActive = L10n.tr("Localizable", "common_active")
+  /// Advised
+  internal static let commonAdvised = L10n.tr("Localizable", "common_advised")
   /// App
   internal static let commonApp = L10n.tr("Localizable", "common_app")
   /// Auto
@@ -441,6 +453,8 @@ internal enum L10n {
   internal static let commonFly = L10n.tr("Localizable", "common_fly")
   /// Forget
   internal static let commonForget = L10n.tr("Localizable", "common_forget")
+  /// Format
+  internal static let commonFormat = L10n.tr("Localizable", "common_format")
   /// free
   internal static let commonFree = L10n.tr("Localizable", "common_free")
   /// Go
@@ -729,6 +743,8 @@ internal enum L10n {
   internal static let debugLogStreamRecord = L10n.tr("Localizable", "debug_log_stream_record")
   /// Stream Record Enabled
   internal static let debugLogStreamRecordEnabled = L10n.tr("Localizable", "debug_log_stream_record_enabled")
+  /// FlightPlan
+  internal static let defaultFlightPlanProjectName = L10n.tr("Localizable", "default_flight_plan_project_name")
   /// Software version
   internal static let deviceDetailsSoftwareVersion = L10n.tr("Localizable", "device_details_software_version")
   /// It seems that the internet connection has been interrupted. Please verify that you have internet access.
@@ -847,6 +863,8 @@ internal enum L10n {
   internal static func drone4gUserAccessSingular(_ p1: Int) -> String {
     return L10n.tr("Localizable", "drone_4g_user_access_singular", p1)
   }
+  /// Calibration advised
+  internal static let droneCalibrationAdvised = L10n.tr("Localizable", "drone_calibration_advised")
   /// Drone calibration
   internal static let droneCalibrationDrone = L10n.tr("Localizable", "drone_calibration_drone")
   /// Calibration failed
@@ -877,8 +895,6 @@ internal enum L10n {
   internal static let droneCalibrationPitchLabel = L10n.tr("Localizable", "drone_calibration_pitch_label")
   /// Your drone is ready to fly.
   internal static let droneCalibrationReadyToFly = L10n.tr("Localizable", "drone_calibration_ready_to_fly")
-  /// Drone calibration recommended
-  internal static let droneCalibrationRecommended = L10n.tr("Localizable", "drone_calibration_recommended")
   /// Try again
   internal static let droneCalibrationRedo = L10n.tr("Localizable", "drone_calibration_redo")
   /// Calibration required
@@ -891,6 +907,8 @@ internal enum L10n {
   internal static let droneCalibrationYawInstruction = L10n.tr("Localizable", "drone_calibration_yaw_instruction")
   /// Z Axis (Yaw)
   internal static let droneCalibrationYawLabel = L10n.tr("Localizable", "drone_calibration_yaw_label")
+  /// Drone calibration advised
+  internal static let droneDetailsCalibrationAdvised = L10n.tr("Localizable", "drone_details_calibration_advised")
   /// Gimbal calibration recommended
   internal static let droneDetailsCalibrationGimbalRecommended = L10n.tr("Localizable", "drone_details_calibration_gimbal_recommended")
   /// Gimbal calibration required
@@ -967,6 +985,10 @@ internal enum L10n {
   internal static let droneUpdateInternetUnreachableDescription = L10n.tr("Localizable", "drone_update_internet_unreachable_description")
   /// Error
   internal static let error = L10n.tr("Localizable", "error")
+  /// Please choose another name.
+  internal static let existingProjectNameAlertMessage = L10n.tr("Localizable", "existing_project_name_alert_message")
+  /// Existing Project Name
+  internal static let existingProjectNameAlertTitle = L10n.tr("Localizable", "existing_project_name_alert_title")
   /// Your controller is currently being updated, this operation can not be cancelled. You can leave the screen, the drone will finish updating.
   internal static let firmwareAndMissionQuitRebootControllerMessage = L10n.tr("Localizable", "firmware_and_mission_quit_reboot_controller_message")
   /// Your drone is currently being updated, this operation can not be cancelled. You can leave the screen, the drone will finish updating.
@@ -1071,6 +1093,10 @@ internal enum L10n {
   internal static func firmwareMissionUpdateInsufficientBatteryDescription(_ p1: Any) -> String {
     return L10n.tr("Localizable", "firmware_mission_update_insufficient_battery_description", String(describing: p1))
   }
+  /// %@ mission
+  internal static func firmwareMissionUpdateMissionName(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "firmware_mission_update_mission_name", String(describing: p1))
+  }
   /// Not installed
   internal static let firmwareMissionUpdateMissionNotInstalled = L10n.tr("Localizable", "firmware_mission_update_mission_not_installed")
   /// Upload missions
@@ -1097,6 +1123,8 @@ internal enum L10n {
   internal static let firmwareMissionUpdateOperationFailedNeverStarted = L10n.tr("Localizable", "firmware_mission_update_operation_failed_never_started")
   /// unknown reason
   internal static let firmwareMissionUpdateOperationFailedUnknownReason = L10n.tr("Localizable", "firmware_mission_update_operation_failed_unknown_reason")
+  /// Ophtalmo
+  internal static let firmwareMissionUpdateOphtalmo = L10n.tr("Localizable", "firmware_mission_update_ophtalmo")
   /// Some installations failed:
   internal static let firmwareMissionUpdateProcessesFailed = L10n.tr("Localizable", "firmware_mission_update_processes_failed")
   /// Installation successfully executed
@@ -1127,9 +1155,9 @@ internal enum L10n {
   }
   /// Up to date
   internal static let firmwareMissionUpdateUpToDate = L10n.tr("Localizable", "firmware_mission_update_up_to_date")
-  /// Updating %@
-  internal static func firmwareMissionUpdateUpdatingMission(_ p1: Any) -> String {
-    return L10n.tr("Localizable", "firmware_mission_update_updating_mission", String(describing: p1))
+  /// Updating %@ mission %@
+  internal static func firmwareMissionUpdateUpdatingMission(_ p1: Any, _ p2: Any) -> String {
+    return L10n.tr("Localizable", "firmware_mission_update_updating_mission", String(describing: p1), String(describing: p2))
   }
   /// Battery used
   internal static let flightInfoBatteryUsed = L10n.tr("Localizable", "flight_info_battery_used")
@@ -1198,6 +1226,8 @@ internal enum L10n {
   internal static let flightPlanDiscardChangesTitle = L10n.tr("Localizable", "flight_plan_discard_changes_title")
   /// Duplicate
   internal static let flightPlanDuplicate = L10n.tr("Localizable", "flight_plan_duplicate")
+  /// copy
+  internal static let flightPlanDuplicatedProjectSuffix = L10n.tr("Localizable", "flight_plan_duplicated_project_suffix")
   /// Connect to Parrot Cloud to sync all your projects
   internal static let flightPlanEmptyListDesc = L10n.tr("Localizable", "flight_plan_empty_list_desc")
   /// No project for the moment
@@ -1212,6 +1242,8 @@ internal enum L10n {
   internal static func flightPlanExecutedFlightSingular(_ p1: Int) -> String {
     return L10n.tr("Localizable", "flight_plan_executed_flight_singular", p1)
   }
+  /// Execution
+  internal static let flightPlanExecutionName = L10n.tr("Localizable", "flight_plan_execution_name")
   /// %d executions
   internal static func flightPlanExecutionPlural(_ p1: Int) -> String {
     return L10n.tr("Localizable", "flight_plan_execution_plural", p1)
@@ -1289,7 +1321,7 @@ internal enum L10n {
   internal static let flightPlanSettingBuildingHeightTitle = L10n.tr("Localizable", "flight_plan_setting_building_height_title")
   /// Obstacle avoidance
   internal static let flightPlanSettingsAvoidance = L10n.tr("Localizable", "flight_plan_settings_avoidance")
-  /// Avoidance
+  /// Obstacle avoidance
   internal static let flightPlanSettingsAvoidanceShort = L10n.tr("Localizable", "flight_plan_settings_avoidance_short")
   /// Exposure
   internal static let flightPlanSettingsExposure = L10n.tr("Localizable", "flight_plan_settings_exposure")
@@ -1301,14 +1333,16 @@ internal enum L10n {
   internal static let flightPlanSettingsLastWaypoint = L10n.tr("Localizable", "flight_plan_settings_last_waypoint")
   /// Last WP
   internal static let flightPlanSettingsLastWp = L10n.tr("Localizable", "flight_plan_settings_last_wp")
-  /// Automatic progressive race
-  internal static let flightPlanSettingsProgressiveRace = L10n.tr("Localizable", "flight_plan_settings_progressive_race")
-  /// Progressive race
-  internal static let flightPlanSettingsProgressiveRaceLabel = L10n.tr("Localizable", "flight_plan_settings_progressive_race_label")
-  /// Progressive race
-  internal static let flightPlanSettingsProgressiveRaceShort = L10n.tr("Localizable", "flight_plan_settings_progressive_race_short")
+  /// Progressive orientation
+  internal static let flightPlanSettingsProgressiveOrientation = L10n.tr("Localizable", "flight_plan_settings_progressive_orientation")
+  /// Progressive orientation
+  internal static let flightPlanSettingsProgressiveOrientationShort = L10n.tr("Localizable", "flight_plan_settings_progressive_orientation_short")
   /// Resolution
   internal static let flightPlanSettingsResolution = L10n.tr("Localizable", "flight_plan_settings_resolution")
+  /// RTH on data link loss
+  internal static let flightPlanSettingsRthAfterDisconnection = L10n.tr("Localizable", "flight_plan_settings_rth_after_disconnection")
+  /// Final RTH
+  internal static let flightPlanSettingsRthFinal = L10n.tr("Localizable", "flight_plan_settings_rth_final")
   /// RTH
   internal static let flightPlanSettingsRthOnLastPoint = L10n.tr("Localizable", "flight_plan_settings_rth_on_last_point")
   /// RTH
@@ -1345,8 +1379,6 @@ internal enum L10n {
   internal static let galleryDownloadKeep = L10n.tr("Localizable", "gallery_download_keep")
   /// Do you want to keep original files?
   internal static let galleryDownloadKeepPlural = L10n.tr("Localizable", "gallery_download_keep_plural")
-  /// Format SD Card
-  internal static let galleryFormat = L10n.tr("Localizable", "gallery_format")
   /// Formatting complete
   internal static let galleryFormatComplete = L10n.tr("Localizable", "gallery_format_complete")
   /// Creating new partition
@@ -1367,6 +1399,9 @@ internal enum L10n {
   internal static let galleryFormatResetting = L10n.tr("Localizable", "gallery_format_resetting")
   /// Format SD Card
   internal static let galleryFormatSdCard = L10n.tr("Localizable", "gallery_format_sd_card")
+  /// Are you sure you want to format the SD card?
+  /// All data will be erased.
+  internal static let galleryFormatSdCardConfirmationDesc = L10n.tr("Localizable", "gallery_format_sd_card_confirmation_desc")
   /// Format succeeded
   internal static let galleryFormatSucceeded = L10n.tr("Localizable", "gallery_format_succeeded")
   /// In case of writing problems
@@ -1411,6 +1446,8 @@ internal enum L10n {
   internal static let galleryPanoramaGeneratingVertical = L10n.tr("Localizable", "gallery_panorama_generating_vertical")
   /// Unable to generate panorama.
   internal static let galleryPanoramaGenerationError = L10n.tr("Localizable", "gallery_panorama_generation_error")
+  /// Panorama cannot be generated because of missing images
+  internal static let galleryPanoramaGenerationErrorMissingPhotos = L10n.tr("Localizable", "gallery_panorama_generation_error_missing_photos")
   /// Copying panorama to internal memory
   internal static let galleryPanoramaInternalCopy = L10n.tr("Localizable", "gallery_panorama_internal_copy")
   /// Not available for your device
@@ -1419,8 +1456,12 @@ internal enum L10n {
   internal static let galleryPanoramaSdCopy = L10n.tr("Localizable", "gallery_panorama_sd_copy")
   /// Photo
   internal static let galleryPhotoPathComponent = L10n.tr("Localizable", "gallery_photo_path_component")
+  /// Video playback not possible while download is in progress
+  internal static let galleryPlaybackNotPossibleDownload = L10n.tr("Localizable", "gallery_playback_not_possible_download")
   /// Video playback not possible while recording is in progress
-  internal static let galleryPlaybackNotPossible = L10n.tr("Localizable", "gallery_playback_not_possible")
+  internal static let galleryPlaybackNotPossibleRecording = L10n.tr("Localizable", "gallery_playback_not_possible_recording")
+  /// Image display not possible while download is in progress
+  internal static let galleryPreviewNotPossibleDownload = L10n.tr("Localizable", "gallery_preview_not_possible_download")
   /// Recording not possible while video playback is in progress.
   internal static let galleryRecordingNotPossibleDesc = L10n.tr("Localizable", "gallery_recording_not_possible_desc")
   /// Recording not possible
@@ -1681,6 +1722,10 @@ internal enum L10n {
   internal static let photoSettingsFormatDngJpeg = L10n.tr("Localizable", "photo_settings_format_dng_jpeg")
   /// DNG+JPEG RECT
   internal static let photoSettingsFormatDngJpegRect = L10n.tr("Localizable", "photo_settings_format_dng_jpeg_rect")
+  /// DNG+RECT
+  internal static let photoSettingsFormatDngJpegRectShort = L10n.tr("Localizable", "photo_settings_format_dng_jpeg_rect_short")
+  /// DNG+WIDE
+  internal static let photoSettingsFormatDngJpegShort = L10n.tr("Localizable", "photo_settings_format_dng_jpeg_short")
   /// JPEG RECT
   internal static let photoSettingsFormatJpegRect = L10n.tr("Localizable", "photo_settings_format_jpeg_rect")
   /// JPEG WIDE
@@ -1709,7 +1754,7 @@ internal enum L10n {
   internal static let rebootMessageDrone = L10n.tr("Localizable", "reboot_message_drone")
   /// Press and hold the On / Off button to turn off the remote control
   internal static let remoteAlertShutdownInstruction = L10n.tr("Localizable", "remote_alert_shutdown_instruction")
-  /// The remote will turn off
+  /// The remote control is switched off
   internal static let remoteAlertShutdownSuccess = L10n.tr("Localizable", "remote_alert_shutdown_success")
   /// Calibrate
   internal static let remoteCalibrationCalibrate = L10n.tr("Localizable", "remote_calibration_calibrate")
@@ -2155,6 +2200,8 @@ internal enum L10n {
   internal static let touchFlyPlaceWaypointPoi = L10n.tr("Localizable", "touch_fly_place_waypoint_poi")
   /// POI Altitude
   internal static let touchFlyPoiAltitude = L10n.tr("Localizable", "touch_fly_poi_altitude")
+  /// Take-off in progress…
+  internal static let touchFlyTakeOffInProgress = L10n.tr("Localizable", "touch_fly_take_off_in_progress")
   /// Take off the drone
   internal static let touchFlyTakeOffTheDrone = L10n.tr("Localizable", "touch_fly_take_off_the_drone")
   /// Tracking POI...

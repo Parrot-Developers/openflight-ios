@@ -76,7 +76,7 @@ private extension ReturnHomeBottomBarView {
     }
     /// bind the viewmodel
     func bindViewModel() {
-        viewModel.$rthPreferredTarget
+        viewModel.$rthTarget
             .sink { [unowned self] rthValue in
                 // update model of returnHomeBottomBarView
                 barButtonView.model = BottomBarButtonState(

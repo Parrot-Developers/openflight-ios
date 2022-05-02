@@ -81,8 +81,8 @@ private extension ModesChoiceTableViewCell {
     /// Inits the view.
     func initView() {
         backgroundColor = .clear
-        modeLabel.makeUp(and: .highlightColor)
-        titleLabel.makeUp(with: .small, and: .disabledTextColor)
+        modeLabel.makeUp(with: .current, color: .highlightColor)
+        titleLabel.makeUp(with: .caps, color: .disabledTextColor)
         titleLabel.text = L10n.commonMode.uppercased()
         modesBackgroundView.layer.cornerRadius = Style.largeCornerRadius
     }

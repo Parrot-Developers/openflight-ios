@@ -63,13 +63,16 @@ public class FlightPlanEditionViewController: UIViewController {
                                    flightPlanServices: FlightPlanServices,
                                    mapViewController: MapViewController?,
                                    flightPlanProvider: FlightPlanProvider?,
+                                   navigationStack: NavigationStackService,
                                    backButtonPublisher: AnyPublisher<Void, Never>) -> FlightPlanEditionViewController {
         let viewController = StoryboardScene.FlightPlanEdition.initialScene.instantiate()
         viewController.viewModel = FlightPlanEditionViewModel(
             settingsProvider: flightPlanProvider?.settingsProvider,
             edition: flightPlanServices.edition,
             projectManager: flightPlanServices.projectManager,
-            topBarService: Services.hub.ui.hudTopBarService)
+            topBarService: Services.hub.ui.hudTopBarService,
+            navigationStack: navigationStack,
+            panelCoordinator: panelCoordinator)
         viewController.panelCoordinator = panelCoordinator
         viewController.mapViewController = mapViewController
         viewController.mapViewController?.setMapMode(.flightPlanEdition)
@@ -114,14 +117,15 @@ public class FlightPlanEditionViewController: UIViewController {
             }
             .store(in: &cancellables)
 
-        backButtonPublisher?.sink { [unowned self] in
-            reset()
-        }.store(in: &cancellables)
+        // Listen to back button publisher.
+        backButtonPublisher?.sink { [weak self] in
+            self?.reset()
+        }
+        .store(in: &cancellables)
     }
 
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        Services.hub.ui.hudTopBarService.forbidTopBarDisplay()
         LogEvent.log(.screen(LogEvent.Screen.flightPlanEditor))
     }
 
@@ -184,16 +188,30 @@ public class FlightPlanEditionViewController: UIViewController {
 
     private func exitEdition() {
         navigationController?.popViewController(animated: true)
-        mapViewController?.splitControls?.hideBottomBar(hide: false)
-        mapViewController?.splitControls?.hideCameraSliders(hide: false)
-        mapViewController?.flightPlanEditionViewControllerBackButton.isHidden = true
+        panelCoordinator?.showHudControls(show: true)
     }
 
     private func reset() {
-        panelCoordinator?.resetPopupConfirmation { [unowned self] in
-            viewModel.reset()
-            exitEdition()
+        // The block called when the editing mode is leaved.
+        let leaveEditingMode = { [weak self] in
+            guard let self = self else { return }
+            // Restore the previous Flight Plan settings.
+            self.viewModel.reset()
+            // Exit the edition mode.
+            self.exitEdition()
         }
+
+        // Check if FP has been edited.
+        guard viewModel.hasChanges else {
+            // No change made, just leave the editing mode.
+            leaveEditingMode()
+            return
+        }
+
+        // User attempts to leave the view with pending changes.
+        // A confirmation popup is shown informing about modification lost.
+        // If user confirms is choice, the completion is called and editing mode is leaved.
+        panelCoordinator?.resetPopupConfirmation { leaveEditingMode() }
     }
 }
 

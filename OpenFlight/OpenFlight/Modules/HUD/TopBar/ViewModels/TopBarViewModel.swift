@@ -71,4 +71,6 @@ open class TopBarViewModel {
 
     public var showTopBarPublisher: AnyPublisher<Bool, Never> { service.showTopBarPublisher }
 
+    /// Informs when view must be leaved.
+    open var goBackPublisher: AnyPublisher<Void, Never> { service.goBackPublisher }
 }

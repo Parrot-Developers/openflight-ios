@@ -33,9 +33,15 @@ class FlightPlanEditionMenuViewModel {
 
     @Published private(set) var viewState: ViewState?
     private var editionService: FlightPlanEditionService
+    private var panelCoordinator: FlightPlanPanelCoordinator?
+    private var projectManager: ProjectManager
 
-    init(editionService: FlightPlanEditionService) {
+    init(editionService: FlightPlanEditionService,
+         panelCoordinator: FlightPlanPanelCoordinator?,
+         projectManager: ProjectManager) {
         self.editionService = editionService
+        self.panelCoordinator = panelCoordinator
+        self.projectManager = projectManager
     }
 
     enum ViewState {
@@ -53,7 +59,9 @@ class FlightPlanEditionMenuViewModel {
 
     func projectNameCellProvider(forFlightPlan flightPlan: FlightPlanModel?) -> ProjectNameMenuTableViewCellProvider {
         ProjectNameCellProvider(flightPlan: flightPlan,
-                                editionService: editionService)
+                                editionService: editionService,
+                                panelCoordinator: panelCoordinator,
+                                projectManager: projectManager)
     }
 }
 
@@ -66,6 +74,11 @@ private struct ProjectNameCellProvider: ProjectNameMenuTableViewCellProvider, Pr
 
     var flightPlan: FlightPlanModel?
     var editionService: FlightPlanEditionService
+    var panelCoordinator: FlightPlanPanelCoordinator?
+    var projectManager: ProjectManager
+
+    // When it's a project creation, prompt user to edit the title at the opening.
+    var isTitleEditionNeeded: Bool { projectManager.isCurrentProjectBranNew }
 
     var title: String {
         get {
@@ -82,7 +95,24 @@ private struct ProjectNameCellProvider: ProjectNameMenuTableViewCellProvider, Pr
     }
 
     func update(title: String, ofFlightPlan flightPlan: FlightPlanModel?) {
-        guard let flightPlan = flightPlan else { return }
-        editionService.rename(flightPlan, title: title)
+        // Ensure the FP exist and the title is not empty.
+        guard let flightPlan = flightPlan,
+              !title.isEmpty
+        else { return }
+        let newTitle: String
+        // Check if the title has been modified.
+        if flightPlan.customTitle != title {
+            // Generate an unique title.
+            // If the new title is already used by another project,
+            // use the same rule than for a project creation (adding ' ({index})' suffix).
+            newTitle = projectManager.renamedProjectTitle(for: title,
+                                                             of: projectManager.project(for: flightPlan))
+        } else {
+            // No change has been done. But we must update the name handled
+            // in `editionService` to continue edition process (behavior to be improved).
+            newTitle = title
+        }
+        // Store the new name.
+        editionService.rename(flightPlan, title: newTitle)
     }
 }

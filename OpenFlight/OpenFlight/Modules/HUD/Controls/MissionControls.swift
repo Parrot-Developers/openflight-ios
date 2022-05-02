@@ -38,6 +38,8 @@ final class MissionControls: NSObject {
             missionLauncherView.backgroundColor = .clear
         }
     }
+    @IBOutlet private weak var leadingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var widthConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
     private var missionLauncherDisplayed: Bool = false {
@@ -51,20 +53,30 @@ final class MissionControls: NSObject {
             }
         }
     }
+    private var panelWidth: CGFloat {
+        Layout.leftSidePanelWidth(missionLauncherView.isRegularSizeClass)
+    }
 
     // MARK: - Internal Funcs
     /// Show mission launcher view controller with given viewModel.
     func showMissionLauncher(completion: ((Bool) -> Void)? = nil) {
         missionLauncherDisplayed = true
-        guard missionLauncherView.isHidden == true else { return }
-        missionLauncherView.animateIsHiddenInStackView(false, withAlpha: nil, duration: Style.fastAnimationDuration, completion: completion)
+        updateConstraints()
     }
 
     /// Hides mission launcher view controller.
     func hideMissionLauncher() {
-        guard missionLauncherView.isHidden == false else { return }
-        missionLauncherView.animateIsHiddenInStackView(true, withAlpha: nil, duration: Style.fastAnimationDuration) { _ in
-            self.missionLauncherDisplayed = false
-        }
+        missionLauncherDisplayed = false
+        updateConstraints()
+    }
+
+    /// Updates panel constraint for showing/hiding.
+    ///
+    /// - Parameter animated: whether changes need to be animated
+    func updateConstraints(animated: Bool = true) {
+        widthConstraint.constant = panelWidth
+        leadingConstraint.constant = missionLauncherDisplayed ? 0 : -panelWidth
+        guard animated else { return }
+        UIView.animate { self.missionLauncherView.superview?.layoutIfNeeded() }
     }
 }

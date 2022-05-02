@@ -60,7 +60,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
 
     // MARK: - Private Properties
     /// Returns all Flight Plan's graphics.
-    private var flightPlanGraphics: [FlightPlanGraphic] {
+    public var flightPlanGraphics: [FlightPlanGraphic] {
         return graphics.compactMap { $0 as? FlightPlanGraphic }
     }
     /// Returns all Flight Plan's waypoint to point of interest graphics.
@@ -72,7 +72,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
         return graphics.compactMap { $0 as? FlightPlanWayPointLineGraphic }
     }
     /// Returns all Flight Plan's waypoint graphics.
-    private var wayPoints: [FlightPlanWayPointGraphic] {
+    public var wayPoints: [FlightPlanWayPointGraphic] {
         return graphics.compactMap { $0 as? FlightPlanWayPointGraphic }
     }
     /// Returns all Flight Plan's point of interest graphics.

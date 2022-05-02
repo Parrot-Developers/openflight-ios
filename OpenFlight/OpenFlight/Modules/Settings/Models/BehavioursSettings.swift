@@ -67,7 +67,7 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
     }
 
     static var preset: SettingsBehavioursMode {
-        return SettingsBehavioursMode.video
+        return SettingsBehavioursMode.sport
     }
 
     static var current: SettingsBehavioursMode {

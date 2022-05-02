@@ -141,3 +141,34 @@ class LDGradientView: UIView {
     }
 
 }
+
+/// A `LDGradientView` used for HUD top bars background.
+class HudTopBarGradientView: LDGradientView {
+    override var intrinsicContentSize: CGSize {
+        .init(width: super.intrinsicContentSize.width,
+              height: Layout.hudTopBarHeight(isRegularSizeClass) + Layout.mainSpacing(isRegularSizeClass))
+    }
+
+    // MARK: - Init
+
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        commonInit()
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        commonInit()
+    }
+
+    private enum Constants {
+        static let startColor = UIColor.black.withAlphaComponent(0.7)
+        static let endColor = UIColor.clear
+    }
+
+    private func commonInit() {
+        startColor = Constants.startColor
+        endColor = Constants.endColor
+        backgroundColor = .clear
+    }
+}

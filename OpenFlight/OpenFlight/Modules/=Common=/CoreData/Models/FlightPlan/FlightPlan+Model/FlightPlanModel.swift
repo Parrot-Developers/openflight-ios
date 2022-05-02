@@ -174,7 +174,6 @@ public struct FlightPlanModel {
         self.pgyProjectId = pgyProjectId ?? 0
         self.uploadAttemptCount = uploadAttemptCount ?? 0
         self.lastUploadAttempt = lastUploadAttempt
-        self.recoveryResourceId = dataSetting?.recoveryResourceId
     }
 
     /// Update the polygon points for the current flight plan.
@@ -223,16 +222,16 @@ extension FlightPlanModel {
         }
     }
 
-    /// Returns fomatted date.
+    /// Returns formatted date.
     ///
     /// - Parameters:
     ///     - isShort: result string should be short
-    /// - Returns: fomatted execution date or dash if formatting failed.
-    public func fomattedDate(isShort: Bool) -> String {
-        let fomattedDate = isShort ?
-            self.flightPlanFlights?.first?.dateExecutionFlight.shortFormattedString(timeStyle: .short) :
-            self.flightPlanFlights?.first?.dateExecutionFlight.shortWithTimeFormattedString(timeStyle: .short)
-        return fomattedDate ?? Style.dash
+    /// - Returns: formatted execution date or dash if formatting failed
+    public func formattedDate(isShort: Bool) -> String {
+        let formattedDate = isShort ?
+            self.flightPlanFlights?.first?.dateExecutionFlight.shortFormattedString:
+            self.flightPlanFlights?.first?.dateExecutionFlight.shortWithTimeFormattedString(showTimePrefix: false)
+        return formattedDate ?? Style.dash
     }
 
     /// Tells if flight Plan should be cleared.
@@ -247,6 +246,18 @@ extension FlightPlanModel {
 
     var points: [CLLocationCoordinate2D] {
         dataSetting?.wayPoints.compactMap({ $0.coordinate }) ?? []
+    }
+
+    var center: CLLocationCoordinate2D? {
+        let points = self.points
+        guard !points.isEmpty else { return nil }
+        var lat = 0.0
+        var lng = 0.0
+        for point in points {
+            lat += point.latitude
+            lng += point.longitude
+        }
+        return CLLocationCoordinate2D(latitude: lat / Double(points.count), longitude: lng / Double(points.count))
     }
 
     var isEmpty: Bool {
@@ -304,5 +315,21 @@ extension FlightPlanModel {
 
     var lastFlightExecutionDate: Date? {
         return self.flightPlanFlights?.compactMap { $0.dateExecutionFlight }.max()
+    }
+
+    // MARK: Edition mode
+    /// Indicates if a Flight Plan has the same settings than the one passed in parameters.
+    ///
+    /// - Parameters:
+    ///  - flightPlan: The flight plan to compare.
+    ///
+    /// - Returns: `true` if settings (Custom Title and Data Settings) are identicals, `false` in other cases.
+    func hasSameSettings(than flightPlan: FlightPlanModel) -> Bool {
+        // Checking title.
+        guard customTitle == flightPlan.customTitle else { return false }
+        // Checking Data Settings.
+        guard dataSetting?.toJSONString() == flightPlan.dataSetting?.toJSONString() else { return false }
+        // Both FPs' title and DataSettings are the same.
+        return true
     }
 }

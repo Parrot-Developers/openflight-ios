@@ -115,18 +115,23 @@ final class HUDIndicatorViewModel: DroneStateViewModel<HUDIndicatorState> {
     private var splitModeObserver: Any?
     private var bottomBarModeObserver: Any?
     private var cancellables = Set<AnyCancellable>()
+    private var hasAlreadyDisplayed: Bool = false
 
     // MARK: - Init
     /// Init.
     ///
     /// - Parameters:
     ///    - indicatorVisibilityDidChange: called when indicator visibility changes
-    init(indicatorVisibilityDidChange: ((Bool) -> Void)? = nil) {
+    override init() {
         super.init()
-        state.valueChanged = { [weak self] _ in
-            self?.updateIndicatorVisibility()
+        state.valueChanged = { [weak self] state in
+            guard let self = self else { return }
+            if state.isConnected() {
+                self.hasAlreadyDisplayed = true
+            }
+            self.updateIndicatorVisibility()
         }
-        state.value.shouldHideIndicator.valueChanged = indicatorVisibilityDidChange
+
         listenSplitModeChanges()
         listenBottomBarModeChanges()
         listenMissionMenuDisplayedChanges()
@@ -219,9 +224,9 @@ private extension HUDIndicatorViewModel {
         let shouldHideIndicator = state.value.currentSplitScreenMode == .secondary
             || state.value.currentBottomBarMode != .closed
             || state.value.missionMenuDisplayed
-            || state.value.isConnected()
             || state.value.forceHideIndicator
             || state.value.isJoysticksVisible
+            || hasAlreadyDisplayed
         state.value.shouldHideIndicator.set(shouldHideIndicator)
     }
 }

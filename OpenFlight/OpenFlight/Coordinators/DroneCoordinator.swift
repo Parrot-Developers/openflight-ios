@@ -75,8 +75,8 @@ extension DroneCoordinator {
                                                      cellularPairingService: services.drone.cellularPairingService,
                                                      connectedRemoteControlHolder: services.connectedRemoteControlHolder,
                                                      connectedDroneHolder: services.connectedDroneHolder,
-                                                     networkService: services.systemServices.networkService
-        )
+                                                     networkService: services.systemServices.networkService,
+                                                     cellularService: services.drone.cellularService)
         let viewController = DroneDetailsCellularViewController.instantiate(viewModel: viewModel)
         presentModal(viewController: viewController)
     }
@@ -102,7 +102,8 @@ extension DroneCoordinator {
 
     /// Displays cellular pin code modal.
     func displayCellularPinCode() {
-        presentModal(viewController: CellularAccessCardPinViewController.instantiate(coordinator: self))
+        let viewModel = CellularAccessCardPinViewModel(coordinator: self, detailsCellularIsSource: true)
+        presentModal(viewController: CellularAccessCardPinViewController.instantiate(viewModel: viewModel))
     }
 
     /// Displays cellular debug logs.

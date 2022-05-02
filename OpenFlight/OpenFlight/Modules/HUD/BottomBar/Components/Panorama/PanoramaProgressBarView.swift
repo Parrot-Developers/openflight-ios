@@ -39,12 +39,7 @@ final class PanoramaProgressBarView: UIView, NibOwnerLoadable {
     @IBOutlet private weak var panoramaTypeImage: UIImageView!
     @IBOutlet private weak var panoramaTypeLabel: UILabel!
     @IBOutlet private weak var progressLabel: UILabel!
-    @IBOutlet private weak var stopView: StopView! {
-        didSet {
-            stopView.delegate = self
-            stopView.style = .panorama
-        }
-    }
+    @IBOutlet private weak var stopButton: ActionButton!
 
     // MARK: - Private Properties
     private let panoramaModeViewModel = PanoramaModeViewModel()
@@ -58,6 +53,10 @@ final class PanoramaProgressBarView: UIView, NibOwnerLoadable {
     override init(frame: CGRect) {
         super.init(frame: frame)
         commonInitPanoramaProgressBarView()
+    }
+
+    @IBAction func stopButtonTouchedUpInside(_ sender: Any) {
+        panoramaModeViewModel.cancelPanoramaPhotoCapture()
     }
 }
 
@@ -74,9 +73,10 @@ private extension PanoramaProgressBarView {
         panoramaTypeImage.tintColor = ColorName.defaultTextColor.color
         panoramaTypeLabel.textColor = ColorName.defaultTextColor.color
         progressLabel.textColor = ColorName.disabledTextColor.color
-        progressBarContainer.layer.cornerRadius = Style.largeCornerRadius
         progressView.tintColor = ColorName.highlightColor.color
         progressView.setProgress(0, animated: false)
+        backgroundColor = ColorName.whiteAlbescent.color
+        applyCornerRadius(Style.largeFitCornerRadius)
     }
 
     /// Starts watcher for panorama mode.
@@ -98,17 +98,11 @@ private extension PanoramaProgressBarView {
         // TODO: Replace by image count when it will be ready on GSDK.
         progressLabel.text = "\(state.progress) %"
         progressLabel.animateIsHiddenInStackView(state.progress < 0)
+        stopButton.isEnabled = state.progress >= 0
 
         guard state.inProgress else { return }
 
         let progressValue = Float(state.progress) / Float(Values.oneHundred)
         progressView.setProgress(progressValue, animated: state.progress > 0)
-    }
-}
-
-// MARK: - StopViewDelegate
-extension PanoramaProgressBarView: StopViewDelegate {
-    func didClickOnStop() {
-        panoramaModeViewModel.cancelPanoramaPhotoCapture()
     }
 }

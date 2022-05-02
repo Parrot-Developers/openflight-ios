@@ -270,7 +270,8 @@ extension HUDCoordinator {
 
     /// Displays cellular pin code modal.
     func displayCellularPinCode() {
-        presentModal(viewController: CellularAccessCardPinViewController.instantiate(coordinator: self))
+        let viewModel = CellularAccessCardPinViewModel(coordinator: self)
+        presentModal(viewController: CellularAccessCardPinViewController.instantiate(viewModel: viewModel))
     }
 
     func showMissionLauncher() {

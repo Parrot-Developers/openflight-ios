@@ -119,6 +119,10 @@ class ZoomServiceImpl {
         lossyZoomAllowedPublisher.combineLatest(maxLosslessZoomPublisher, maxLossyZoomPublisher)
             .sink { [unowned self] (lossyAllowed, maxLossless, maxLossy) in
                 maxZoomSubject.value = lossyAllowed ? maxLossy : maxLossless
+                // if setting toggled to lossless and current zoom too high, set zoom to max lossless
+                if !lossyAllowed {
+                    checkMaxZoom()
+                }
             }
             .store(in: &cancellables)
 

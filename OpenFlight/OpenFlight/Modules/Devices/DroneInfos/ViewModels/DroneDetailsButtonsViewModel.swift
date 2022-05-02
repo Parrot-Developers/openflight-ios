@@ -45,6 +45,8 @@ final class DroneDetailsButtonsViewModel {
     @Published private(set) var isGimbalFrontStereoCalibrationNeeded: Bool = false
     /// Whether magnetometer calibration is needed.
     @Published private(set) var isMagnetometerCalibrationNeeded: Bool = false
+    /// Whether magnetometer calibration is recommended.
+    @Published private(set) var isMagnetometerCalibrationRecommended: Bool = false
     /// Whether a stereo vision sensor calibration is needed.
     @Published private(set) var isStereoVisionSensorCalibrationNeeded: Bool = false
     /// Drone's last known position.
@@ -66,7 +68,8 @@ final class DroneDetailsButtonsViewModel {
     private var connectionStateRef: Ref<DeviceState>?
     private var cancellables = Set<AnyCancellable>()
     private var currentDrone = Services.hub.currentDroneHolder
-    private var pairingService = Services.hub.drone.cellularPairingService
+    private var cellularService = Services.hub.drone.cellularService
+
     // MARK: - Init
 
     init() {
@@ -82,8 +85,10 @@ final class DroneDetailsButtonsViewModel {
             }
             .store(in: &cancellables)
 
-        pairingService.cellularStatusPublisher
-            .sink { [unowned self] cellularStatus in updateCellularState(cellularStatus: cellularStatus) }
+        cellularService.cellularStatusPublisher
+            .sink { [unowned self] cellularStatus in
+                updateCellularState(cellularStatus: cellularStatus)
+            }
             .store(in: &cancellables)
 
         updateCellularState(cellularStatus: cellularStatus)
@@ -95,11 +100,12 @@ final class DroneDetailsButtonsViewModel {
     var calibrationSubtitle: AnyPublisher<String?, Never> {
         $connectionState
             .combineLatest($isGimbalCalibrationNeeded,
-                           $isMagnetometerCalibrationNeeded)
+                           $isMagnetometerCalibrationNeeded,
+                           $isMagnetometerCalibrationRecommended)
             .combineLatest($isGimbalFrontStereoCalibrationNeeded,
                            $isStereoVisionSensorCalibrationNeeded)
             .map { (arg0, isGimbalFrontNeeded, isStereoNeeded) in
-                let (connectionState, isGimbalNeeded, isMagnetometerNeeded) = arg0
+                let (connectionState, isGimbalNeeded, isMagnetometerNeeded, isMagnetometerRecommended) = arg0
                 if connectionState != .connected {
                     return Style.dash
                 } else if isMagnetometerNeeded {
@@ -108,6 +114,8 @@ final class DroneDetailsButtonsViewModel {
                     return L10n.droneDetailsCalibrationLoveRequired
                 } else if isGimbalFrontNeeded || isGimbalNeeded {
                     return L10n.droneDetailsCalibrationGimbalRequired
+                } else if isMagnetometerRecommended {
+                    return L10n.droneDetailsCalibrationAdvised
                 } else {
                     return L10n.droneDetailsCalibrationOk
                 }
@@ -122,6 +130,12 @@ final class DroneDetailsButtonsViewModel {
                            $isGimbalFrontStereoCalibrationNeeded,
                            $isGimbalCalibrationNeeded)
             .map { $0 || $1 || $2 || $3 }
+            .eraseToAnyPublisher()
+    }
+
+    /// Tells if a calibration is recommended.
+    var isCalibrationRecommended: AnyPublisher<Bool, Never> {
+        $isMagnetometerCalibrationRecommended
             .eraseToAnyPublisher()
     }
 
@@ -150,11 +164,12 @@ final class DroneDetailsButtonsViewModel {
     /// Title color for calibration.
     var calibrationTitleColor: AnyPublisher<ColorName?, Never> {
         $connectionState
-            .combineLatest(isCalibrationNeeded)
-            .map { [unowned self] (connectionState, isCalibrationNeeded) in
+            .combineLatest(isCalibrationNeeded,
+                           isCalibrationRecommended)
+            .map { [unowned self] (connectionState, isCalibrationNeeded, isCalibrationRecommended) in
                 if connectionState != .connected {
                     return .defaultTextColor
-                } else if isCalibrationNeeded {
+                } else if isCalibrationNeeded || isCalibrationRecommended {
                     return .white
                 } else {
                     return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.titleColor ?? .defaultTextColor
@@ -166,12 +181,15 @@ final class DroneDetailsButtonsViewModel {
     /// Background for calibration cell.
     var calibrationBackgroundColor: AnyPublisher<ColorName?, Never> {
         $connectionState
-            .combineLatest(isCalibrationNeeded)
-            .map { [unowned self] (connectionState, isCalibrationNeeded) in
+            .combineLatest(isCalibrationNeeded,
+                           isCalibrationRecommended)
+            .map { [unowned self] (connectionState, isCalibrationNeeded, isCalibrationRecommended) in
                 if connectionState != .connected {
                     return .white
                 } else if isCalibrationNeeded {
                     return .errorColor
+                } else if isCalibrationRecommended {
+                    return .warningColor
                 } else {
                     return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.backgroundColor ?? .white
                 }
@@ -182,11 +200,12 @@ final class DroneDetailsButtonsViewModel {
     /// Color for calibration text cell.
     var calibrationSubtitleColor: AnyPublisher<ColorName?, Never> {
         $connectionState
-            .combineLatest(isCalibrationNeeded)
-            .map { [unowned self] (connectionState, isCalibrationNeeded) in
+            .combineLatest(isCalibrationNeeded,
+                           isCalibrationRecommended)
+            .map { [unowned self] (connectionState, isCalibrationNeeded, isCalibrationRecommended) in
                 if connectionState != .connected {
                     return .defaultTextColor
-                } else if isCalibrationNeeded {
+                } else if isCalibrationNeeded || isCalibrationRecommended {
                     return .white
                 } else {
                     return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.subtitleColor ?? .highlightColor
@@ -321,13 +340,8 @@ private extension DroneDetailsButtonsViewModel {
 
     /// Updates magnetometer calibration state.
     func updateMagnetometerCalibrationState(magnetometer: MagnetometerWith3StepCalibration?) {
-        switch magnetometer?.calibrationState {
-        case .required,
-             .recommended:
-            isMagnetometerCalibrationNeeded = true
-        default:
-            isMagnetometerCalibrationNeeded = false
-        }
+        isMagnetometerCalibrationNeeded = magnetometer?.calibrationState == .required
+        isMagnetometerCalibrationRecommended = magnetometer?.calibrationState == .recommended
     }
 
     /// Updates cellular state.

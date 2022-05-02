@@ -33,6 +33,8 @@ protocol FlightDetailsSummaryViewProvider {
     var duration: Double { get }
     var batteryConsumption: Int { get }
     var distance: Double { get }
+    var photoCount: Int { get }
+    var videoCount: Int { get }
 }
 
 final class FlightDetailsSummaryView: UIView, NibOwnerLoadable {
@@ -42,6 +44,10 @@ final class FlightDetailsSummaryView: UIView, NibOwnerLoadable {
     @IBOutlet private(set) weak var batteryLabel: UILabel!
     @IBOutlet private(set) weak var distanceIcon: UIImageView!
     @IBOutlet private(set) weak var distanceLabel: UILabel!
+    @IBOutlet private(set) weak var photoIcon: UIImageView!
+    @IBOutlet private(set) weak var photoLabel: UILabel!
+    @IBOutlet private(set) weak var videoIcon: UIImageView!
+    @IBOutlet private(set) weak var videoLabel: UILabel!
 
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
@@ -62,12 +68,16 @@ final class FlightDetailsSummaryView: UIView, NibOwnerLoadable {
         configurelabel(timeLabel, and: timeIcon, with: Asset.MyFlights.time.image)
         configurelabel(batteryLabel, and: batteryIcon, with: Asset.MyFlights.battery.image)
         configurelabel(distanceLabel, and: distanceIcon, with: Asset.MyFlights.distance.image)
+        configurelabel(photoLabel, and: photoIcon, with: Asset.MyFlights.photo.image)
+        configurelabel(videoLabel, and: videoIcon, with: Asset.MyFlights.video.image)
      }
 
     func fill(provider: FlightDetailsSummaryViewProvider) {
         timeLabel.text = provider.duration.formattedString
         batteryLabel.text = Double(provider.batteryConsumption).asPercent()
         distanceLabel.text = UnitHelper.stringDistanceWithDouble(provider.distance)
+        photoLabel.text = String(provider.photoCount)
+        videoLabel.text = String(provider.videoCount)
     }
 }
 

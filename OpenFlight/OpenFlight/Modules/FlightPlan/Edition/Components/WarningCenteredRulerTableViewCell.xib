@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -19,14 +20,36 @@
                     <stackView opaque="NO" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="85X-GB-rOP" customClass="SidePanelSettingCellContainerStackView" customModule="OpenFlight" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="89"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="68O-gY-PYI">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="20.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GSy-Cx-6Cm" userLabel="titleView">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="21"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="trash.slash.circle.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="YeH-eG-bSm" userLabel="leftIcon">
+                                        <rect key="frame" x="8" y="1" width="20" height="19"/>
+                                        <color key="tintColor" name="default_text_color"/>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jKr-8u-Mvm">
+                                        <rect key="frame" x="139.5" y="0.5" width="41.5" height="20.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="folder.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="VpV-YY-I07" userLabel="rightIcon">
+                                        <rect key="frame" x="289" y="1.5" width="23" height="17.5"/>
+                                        <color key="tintColor" name="default_text_color"/>
+                                    </imageView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="VpV-YY-I07" firstAttribute="centerY" secondItem="GSy-Cx-6Cm" secondAttribute="centerY" id="GrO-VQ-e1f"/>
+                                    <constraint firstItem="jKr-8u-Mvm" firstAttribute="centerY" secondItem="GSy-Cx-6Cm" secondAttribute="centerY" id="Nqe-sF-tTV"/>
+                                    <constraint firstItem="YeH-eG-bSm" firstAttribute="leading" secondItem="GSy-Cx-6Cm" secondAttribute="leadingMargin" id="QOM-Da-GtK"/>
+                                    <constraint firstAttribute="trailingMargin" secondItem="VpV-YY-I07" secondAttribute="trailing" id="ubf-wO-7tc"/>
+                                    <constraint firstItem="jKr-8u-Mvm" firstAttribute="centerX" secondItem="GSy-Cx-6Cm" secondAttribute="centerX" id="vOh-vz-8z9"/>
+                                    <constraint firstAttribute="height" constant="21" id="wRM-UL-khU"/>
+                                    <constraint firstItem="YeH-eG-bSm" firstAttribute="centerY" secondItem="GSy-Cx-6Cm" secondAttribute="centerY" id="xCP-wo-de5"/>
+                                </constraints>
+                            </view>
                             <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b6R-nR-BTH">
-                                <rect key="frame" x="0.0" y="32.5" width="320" height="56.5"/>
+                                <rect key="frame" x="0.0" y="33" width="320" height="56"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                         </subviews>
@@ -58,10 +81,20 @@
             </constraints>
             <connections>
                 <outlet property="disableView" destination="QvG-Sz-iUY" id="OoB-hO-D7h"/>
+                <outlet property="leftIconView" destination="YeH-eG-bSm" id="qYE-Pq-ozK"/>
+                <outlet property="rightIconView" destination="VpV-YY-I07" id="3ip-YK-DRo"/>
                 <outlet property="settingValueRulerViewContainer" destination="b6R-nR-BTH" id="8vz-bc-3Rg"/>
-                <outlet property="titleLabel" destination="68O-gY-PYI" id="oiQ-nH-16C"/>
+                <outlet property="titleLabel" destination="jKr-8u-Mvm" id="GWn-KU-5Gy"/>
+                <outlet property="titleView" destination="GSy-Cx-6Cm" id="Op3-ND-4Sx"/>
             </connections>
             <point key="canvasLocation" x="139" y="155"/>
         </tableViewCell>
     </objects>
+    <resources>
+        <image name="folder.fill" catalog="system" width="128" height="97"/>
+        <image name="trash.slash.circle.fill" catalog="system" width="128" height="121"/>
+        <namedColor name="default_text_color">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
 </document>

@@ -70,9 +70,10 @@ enum GalleryMediaDownloadState: CaseIterable {
         case .toDownload:
             return .white
         case .downloading,
-             .downloaded,
-             .error:
+             .downloaded:
             return ColorName.highlightColor.color
+        case .error:
+            return ColorName.errorColor.color
         }
     }
 
@@ -107,6 +108,7 @@ enum GalleryMediaDownloadState: CaseIterable {
 struct GalleryMedia: Equatable {
     // MARK: - Internal Properties
     var uid: String
+    var customTitle: String?
     var source: GallerySourceType
     var mediaItems: [MediaItem]?
     var type: GalleryMediaType
@@ -202,6 +204,21 @@ struct GalleryMedia: Equatable {
         }
     }
 
+    /// The panorama generationState.
+    var panoramaGenerationState: PanoramaGenerationState {
+        switch source {
+        case .droneSdCard,
+             .droneInternal:
+            return panoramaGenerationState(canGenerate: canGenerateDronePanorama,
+                                           hasExpectedCount: hasDronePanoramaExpectedCount)
+        case .mobileDevice:
+            return panoramaGenerationState(canGenerate: canGenerateDevicePanorama,
+                                           hasExpectedCount: hasDevicePanoramaExpectedCount)
+        case .unknown:
+            return .none
+        }
+    }
+
     var displayTitle: String? {
         let customTitle = mainMediaItem?.customTitle?
             .replacingOccurrences(of: "(", with: "")
@@ -210,6 +227,13 @@ struct GalleryMedia: Equatable {
         return customTitle?.isEmpty ?? true
             ? date.formattedString(dateStyle: .long, timeStyle: .short)
             : customTitle
+    }
+
+    var cellTitle: String? {
+        guard var title = customTitle,
+              let range = title.range(of: " - ", options: [.backwards], range: nil, locale: nil) else { return nil }
+        title = title.replacingCharacters(in: range, with: "\n")
+        return title
     }
 
     // MARK: - Private
@@ -223,6 +247,12 @@ struct GalleryMedia: Equatable {
         return resources.first(where: { $0.type == .panorama }) == nil
     }
 
+    /// Whether a panorama media on drone's memory has expected resources count for generation.
+    private var hasDronePanoramaExpectedCount: Bool {
+        guard type.toPanoramaType != nil, let resources = mediaResources else { return false }
+        return resources.count == mainMediaItem?.expectedCount ?? 0
+    }
+
     /// Whether a panorama can be generated for the device media.
     /// `false` if not a panorama media type or if panorama has already been generated, `true` else.
     private var canGenerateDevicePanorama: Bool {
@@ -231,6 +261,27 @@ struct GalleryMedia: Equatable {
         // Check whether a .panorama resource already exists.
         return !urls.contains(where: { $0.lastPathComponent.contains(panoramaType.rawValue) })
             && mediaResources?.first(where: { $0.type == .panorama }) == nil
+    }
+
+    /// Whether a panorama media on device's memory has expected resources count for generation.
+    private var hasDevicePanoramaExpectedCount: Bool {
+        guard type.toPanoramaType != nil, let urls = urls else { return false }
+
+        // Return `true` if `expectedCount` is `nil` in order to ensure panoramas that were downloaded on device before
+        // `expectedCount` support in `AssetUtils.mediaResourcesInfo` still can be generated.
+        guard let expectedCount = mainMediaItem?.expectedCount else { return true }
+
+        return urls.count == expectedCount
+    }
+
+    /// The panorama generation state according to generation capability and expected resources count.
+    ///
+    /// - Parameters:
+    ///    - canGenerate: whether media type is panorama and has not already been generated
+    ///    - hasExpectedCount: the expected resources count for the panorama generation
+    private func panoramaGenerationState(canGenerate: Bool, hasExpectedCount: Bool) -> PanoramaGenerationState {
+        guard canGenerate else { return .none }
+        return hasExpectedCount ? .toGenerate : .missingResources
     }
 
     /// Returns sorted resources array (has no effect if initial array does not contain any .panorama resource).

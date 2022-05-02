@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zxS-jz-EQH">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zxS-jz-EQH">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -19,38 +19,39 @@
             <objects>
                 <viewController id="zxS-jz-EQH" customClass="CameraSlidersViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="BQq-ZJ-0gu">
-                        <rect key="frame" x="0.0" y="0.0" width="31" height="150"/>
+                        <rect key="frame" x="0.0" y="0.0" width="51" height="153"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mNG-Lo-JAx">
-                                <rect key="frame" x="0.0" y="0.0" width="31" height="150"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="mNG-Lo-JAx">
+                                <rect key="frame" x="0.0" y="0.0" width="51" height="153"/>
                                 <subviews>
                                     <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eJK-Rl-2sY" customClass="ZoomSliderView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="33" height="150"/>
+                                        <rect key="frame" x="10" y="-13.5" width="31" height="180"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="33" id="568-TB-2wm"/>
+                                            <constraint firstAttribute="width" constant="31" id="568-TB-2wm"/>
+                                            <constraint firstAttribute="height" constant="180" id="arX-cj-U0k"/>
                                         </constraints>
                                     </view>
                                     <view hidden="YES" alpha="0.0" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mbl-yM-FB7" userLabel="TiltSliderContainerView">
-                                        <rect key="frame" x="0.0" y="0.0" width="40" height="150"/>
+                                        <rect key="frame" x="0.0" y="1.5" width="45" height="150"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="C8E-rq-ddM">
-                                                <rect key="frame" x="0.0" y="0.0" width="120" height="150"/>
+                                                <rect key="frame" x="10" y="0.0" width="100" height="150"/>
                                                 <subviews>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="s61-IX-cxD" userLabel="TiltSliderView" customClass="TiltSliderView" customModule="OpenFlight" customModuleProvider="target">
                                                         <rect key="frame" x="0.0" y="0.0" width="50" height="150"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="50" id="QwC-Q7-In4"/>
+                                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="31" id="QwC-Q7-In4"/>
                                                             <constraint firstAttribute="height" priority="750" constant="150" id="sho-ZJ-cwg"/>
                                                         </constraints>
                                                     </view>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="f2E-vA-VM1" userLabel="ContainerMaxTiltView">
-                                                        <rect key="frame" x="50" y="0.0" width="70" height="150"/>
+                                                        <rect key="frame" x="50" y="0.0" width="50" height="150"/>
                                                         <subviews>
                                                             <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Max tilt" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PDV-ei-r2q" userLabel="maxTiltSliderLabel" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="140" width="70" height="30"/>
+                                                                <rect key="frame" x="0.0" y="140" width="50" height="30"/>
                                                                 <color key="backgroundColor" name="white_90"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="30" id="Vhf-xM-8t2"/>
@@ -81,16 +82,17 @@
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="40" id="Ge6-KZ-xUM"/>
+                                            <constraint firstAttribute="height" constant="150" id="GO2-Oz-sAI"/>
+                                            <constraint firstAttribute="width" constant="45" id="Ge6-KZ-xUM"/>
                                             <constraint firstItem="C8E-rq-ddM" firstAttribute="top" secondItem="Mbl-yM-FB7" secondAttribute="top" id="aGP-yf-tsv"/>
-                                            <constraint firstItem="C8E-rq-ddM" firstAttribute="leading" secondItem="Mbl-yM-FB7" secondAttribute="leading" id="rvG-rl-hPx"/>
+                                            <constraint firstItem="C8E-rq-ddM" firstAttribute="leading" secondItem="Mbl-yM-FB7" secondAttribute="leading" constant="10" id="rvG-rl-hPx"/>
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="isA-wO-5rC">
-                                        <rect key="frame" x="0.0" y="0.0" width="31" height="150"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="51" height="153"/>
                                         <subviews>
                                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Zoom max reached" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qKA-eY-Yh4" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="38" y="59.5" width="113" height="31"/>
+                                                <rect key="frame" x="48" y="-13.5" width="113" height="31"/>
                                                 <color key="backgroundColor" name="white_90"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="31" id="Ctw-z2-ZQH"/>
@@ -114,7 +116,7 @@
                                                 </userDefinedRuntimeAttributes>
                                             </label>
                                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Max Tilt" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ydd-Y8-qtH" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="38" y="73.5" width="46" height="31"/>
+                                                <rect key="frame" x="48" y="149" width="46" height="31"/>
                                                 <color key="backgroundColor" name="white_90"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="31" id="R73-a7-w7k"/>
@@ -139,7 +141,7 @@
                                                 </userDefinedRuntimeAttributes>
                                             </label>
                                             <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="10" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LMP-tc-3wq" userLabel="Info Tilt Label">
-                                                <rect key="frame" x="40" y="112.5" width="31" height="31"/>
+                                                <rect key="frame" x="48" y="112" width="31" height="31"/>
                                                 <color key="backgroundColor" name="white_90"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" secondItem="LMP-tc-3wq" secondAttribute="height" id="bj8-IR-XHV"/>
@@ -148,82 +150,123 @@
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="xwO-H2-OhT">
-                                                <rect key="frame" x="0.0" y="8.5" width="31" height="133"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="xwO-H2-OhT">
+                                                <rect key="frame" x="0.0" y="0.0" width="51" height="153"/>
                                                 <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="e40-LM-tfB">
-                                                        <rect key="frame" x="0.0" y="0.0" width="31" height="31"/>
-                                                        <color key="backgroundColor" name="white_90"/>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J4w-8c-R7m" userLabel="Joysticks Button Container">
+                                                        <rect key="frame" x="0.0" y="0.0" width="51" height="51"/>
+                                                        <subviews>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="e40-LM-tfB" customClass="InsetHitAreaButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="10" y="10" width="31" height="31"/>
+                                                                <color key="backgroundColor" name="white_90"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" secondItem="e40-LM-tfB" secondAttribute="height" multiplier="1:1" id="AX3-qK-yeq"/>
+                                                                    <constraint firstAttribute="height" constant="31" id="WYo-VC-oJV"/>
+                                                                    <constraint firstAttribute="width" constant="31" id="sGw-L8-mA4"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <state key="normal">
+                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                </state>
+                                                                <connections>
+                                                                    <action selector="joysticksButtonTouchedUpInside:" destination="zxS-jz-EQH" eventType="touchUpInside" id="gXe-tu-yty"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="31" id="WYo-VC-oJV"/>
+                                                            <constraint firstItem="e40-LM-tfB" firstAttribute="top" secondItem="J4w-8c-R7m" secondAttribute="top" constant="10" id="40R-5Y-owK"/>
+                                                            <constraint firstItem="e40-LM-tfB" firstAttribute="leading" secondItem="J4w-8c-R7m" secondAttribute="leading" constant="10" id="V3Y-4z-bM5"/>
+                                                            <constraint firstAttribute="trailing" secondItem="e40-LM-tfB" secondAttribute="trailing" constant="10" id="bPA-7k-zAa"/>
+                                                            <constraint firstAttribute="bottom" secondItem="e40-LM-tfB" secondAttribute="bottom" constant="10" id="zXR-w1-SBB"/>
                                                         </constraints>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <state key="normal">
-                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        </state>
-                                                        <connections>
-                                                            <action selector="joysticksButtonTouchedUpInside:" destination="zxS-jz-EQH" eventType="touchUpInside" id="gXe-tu-yty"/>
-                                                        </connections>
-                                                    </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cs1-aQ-xCZ">
-                                                        <rect key="frame" x="0.0" y="51" width="31" height="31"/>
-                                                        <color key="backgroundColor" name="white_90"/>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="k0I-nu-z0z" userLabel="Zoom Button Container">
+                                                        <rect key="frame" x="0.0" y="51" width="51" height="51"/>
+                                                        <subviews>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cs1-aQ-xCZ" customClass="InsetHitAreaButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="10" y="10" width="31" height="31"/>
+                                                                <color key="backgroundColor" name="white_90"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" constant="31" id="Nj3-0A-qS1"/>
+                                                                    <constraint firstAttribute="width" secondItem="cs1-aQ-xCZ" secondAttribute="height" multiplier="1:1" id="x4D-Oc-oV6"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <state key="normal" title="1×">
+                                                                    <color key="titleColor" name="default_text_color"/>
+                                                                </state>
+                                                                <connections>
+                                                                    <action selector="zoomButtonTouchedUpInside:" destination="zxS-jz-EQH" eventType="touchUpInside" id="iqV-s8-dSX"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="31" id="GhV-RV-3sZ"/>
+                                                            <constraint firstAttribute="trailing" secondItem="cs1-aQ-xCZ" secondAttribute="trailing" constant="10" id="Hat-bC-DtV"/>
+                                                            <constraint firstItem="cs1-aQ-xCZ" firstAttribute="top" secondItem="k0I-nu-z0z" secondAttribute="top" constant="10" id="Qdl-Qo-MRm"/>
+                                                            <constraint firstItem="cs1-aQ-xCZ" firstAttribute="leading" secondItem="k0I-nu-z0z" secondAttribute="leading" constant="10" id="VFo-46-Kuv"/>
+                                                            <constraint firstAttribute="bottom" secondItem="cs1-aQ-xCZ" secondAttribute="bottom" constant="10" id="yQS-gT-UmV"/>
                                                         </constraints>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <state key="normal" title="1×">
-                                                            <color key="titleColor" name="default_text_color"/>
-                                                        </state>
-                                                        <connections>
-                                                            <action selector="zoomButtonTouchedUpInside:" destination="zxS-jz-EQH" eventType="touchUpInside" id="iqV-s8-dSX"/>
-                                                        </connections>
-                                                    </button>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hIo-6M-owq" customClass="TiltButton" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="102" width="31" height="31"/>
-                                                        <color key="backgroundColor" name="white_90"/>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TJa-Rk-Jq7" userLabel="Tilt Button Container">
+                                                        <rect key="frame" x="0.0" y="102" width="51" height="51"/>
+                                                        <subviews>
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hIo-6M-owq" customClass="TiltButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="10" y="10" width="31" height="31"/>
+                                                                <color key="backgroundColor" name="white_90"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="31" id="kHB-iB-ong"/>
+                                                                </constraints>
+                                                                <connections>
+                                                                    <action selector="tiltButtonTouchedUpInside:" destination="zxS-jz-EQH" eventType="touchUpInside" id="rDL-NO-dpo"/>
+                                                                </connections>
+                                                            </view>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="31" id="kHB-iB-ong"/>
+                                                            <constraint firstAttribute="bottom" secondItem="hIo-6M-owq" secondAttribute="bottom" constant="10" id="3aj-iQ-IiJ"/>
+                                                            <constraint firstItem="hIo-6M-owq" firstAttribute="top" secondItem="TJa-Rk-Jq7" secondAttribute="top" constant="10" id="Kej-eQ-H10"/>
+                                                            <constraint firstItem="hIo-6M-owq" firstAttribute="leading" secondItem="TJa-Rk-Jq7" secondAttribute="leading" constant="10" id="Ynb-cs-MCj"/>
+                                                            <constraint firstAttribute="trailing" secondItem="hIo-6M-owq" secondAttribute="trailing" constant="10" id="tic-3a-iRS"/>
                                                         </constraints>
-                                                        <connections>
-                                                            <action selector="tiltButtonTouchedUpInside:" destination="zxS-jz-EQH" eventType="touchUpInside" id="rDL-NO-dpo"/>
-                                                        </connections>
                                                     </view>
                                                 </subviews>
                                             </stackView>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstItem="hIo-6M-owq" firstAttribute="trailing" secondItem="Ydd-Y8-qtH" secondAttribute="leading" constant="-7" id="30T-E8-Rp6"/>
-                                            <constraint firstItem="LMP-tc-3wq" firstAttribute="top" secondItem="hIo-6M-owq" secondAttribute="top" constant="2" id="34V-Bi-InR"/>
                                             <constraint firstItem="xwO-H2-OhT" firstAttribute="centerY" secondItem="isA-wO-5rC" secondAttribute="centerY" id="5Ip-wL-bxE"/>
                                             <constraint firstItem="xwO-H2-OhT" firstAttribute="top" relation="greaterThanOrEqual" secondItem="isA-wO-5rC" secondAttribute="top" id="626-Y3-AA0"/>
-                                            <constraint firstItem="cs1-aQ-xCZ" firstAttribute="trailing" secondItem="qKA-eY-Yh4" secondAttribute="leading" constant="-7" id="6vd-8I-Dt4"/>
                                             <constraint firstItem="qKA-eY-Yh4" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" constant="9" id="9SN-hX-w34"/>
                                             <constraint firstItem="qKA-eY-Yh4" firstAttribute="top" secondItem="isA-wO-5rC" secondAttribute="top" constant="2" id="9TG-1R-UY1"/>
+                                            <constraint firstItem="hIo-6M-owq" firstAttribute="top" secondItem="Ydd-Y8-qtH" secondAttribute="top" constant="-37" id="CVK-4v-eoz"/>
                                             <constraint firstAttribute="trailing" secondItem="xwO-H2-OhT" secondAttribute="trailing" id="P7q-Uj-tYa"/>
                                             <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="xwO-H2-OhT" secondAttribute="bottom" id="VKP-SH-7an"/>
-                                            <constraint firstItem="Ydd-Y8-qtH" firstAttribute="top" secondItem="hIo-6M-owq" secondAttribute="top" constant="-37" id="dbP-dq-kmM"/>
-                                            <constraint firstAttribute="width" constant="31" id="hjP-K1-IYL"/>
+                                            <constraint firstItem="qKA-eY-Yh4" firstAttribute="leading" secondItem="cs1-aQ-xCZ" secondAttribute="trailing" constant="7" id="VbW-jg-nmU"/>
+                                            <constraint firstItem="Ydd-Y8-qtH" firstAttribute="leading" secondItem="hIo-6M-owq" secondAttribute="trailing" constant="7" id="VvG-0K-QXg"/>
+                                            <constraint firstItem="LMP-tc-3wq" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" priority="750" constant="10" id="cLc-h6-faD"/>
+                                            <constraint firstItem="qKA-eY-Yh4" firstAttribute="centerY" secondItem="cs1-aQ-xCZ" secondAttribute="centerY" id="fvp-od-s37"/>
+                                            <constraint firstAttribute="width" constant="51" id="hjP-K1-IYL"/>
                                             <constraint firstItem="Ydd-Y8-qtH" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" id="icQ-k3-Oho"/>
-                                            <constraint firstItem="LMP-tc-3wq" firstAttribute="width" secondItem="hIo-6M-owq" secondAttribute="width" id="j9O-VV-Stm"/>
                                             <constraint firstItem="xwO-H2-OhT" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" id="k2k-P0-65u"/>
-                                            <constraint firstItem="hIo-6M-owq" firstAttribute="bottom" secondItem="Ydd-Y8-qtH" secondAttribute="top" priority="750" constant="-10" id="lvu-o9-bIZ"/>
-                                            <constraint firstItem="cs1-aQ-xCZ" firstAttribute="top" secondItem="qKA-eY-Yh4" secondAttribute="top" id="rZM-fm-qNJ"/>
-                                            <constraint firstItem="Ydd-Y8-qtH" firstAttribute="bottom" secondItem="hIo-6M-owq" secondAttribute="top" priority="750" constant="-10" id="uwZ-oZ-rIq"/>
-                                            <constraint firstItem="LMP-tc-3wq" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" constant="40" id="wze-8E-Nws"/>
+                                            <constraint firstItem="hIo-6M-owq" firstAttribute="width" secondItem="LMP-tc-3wq" secondAttribute="width" id="nMB-YH-cTK"/>
+                                            <constraint firstItem="hIo-6M-owq" firstAttribute="top" secondItem="LMP-tc-3wq" secondAttribute="top" id="tFp-Dw-KXM"/>
+                                            <constraint firstItem="LMP-tc-3wq" firstAttribute="leading" secondItem="isA-wO-5rC" secondAttribute="leading" constant="48" id="wze-8E-Nws"/>
                                         </constraints>
                                         <variation key="default">
                                             <mask key="constraints">
                                                 <exclude reference="9SN-hX-w34"/>
                                                 <exclude reference="9TG-1R-UY1"/>
+                                                <exclude reference="fvp-od-s37"/>
                                                 <exclude reference="icQ-k3-Oho"/>
-                                                <exclude reference="uwZ-oZ-rIq"/>
-                                                <exclude reference="lvu-o9-bIZ"/>
                                             </mask>
                                         </variation>
                                     </view>
                                 </subviews>
+                                <constraints>
+                                    <constraint firstItem="eJK-Rl-2sY" firstAttribute="leading" secondItem="mNG-Lo-JAx" secondAttribute="leading" constant="10" id="ar0-Zl-onn"/>
+                                    <constraint firstItem="qKA-eY-Yh4" firstAttribute="top" secondItem="eJK-Rl-2sY" secondAttribute="top" id="cjy-xp-ED6"/>
+                                </constraints>
                             </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="1jJ-rj-rYb"/>
@@ -235,10 +278,11 @@
                             <constraint firstAttribute="bottom" secondItem="mNG-Lo-JAx" secondAttribute="bottom" id="z2v-ph-ixn"/>
                         </constraints>
                     </view>
-                    <size key="freeformSize" width="31" height="150"/>
+                    <size key="freeformSize" width="51" height="153"/>
                     <connections>
                         <outlet property="infoTiltLabel" destination="LMP-tc-3wq" id="C9Z-5u-19W"/>
                         <outlet property="joysticksButton" destination="e40-LM-tfB" id="RnC-lf-jJF"/>
+                        <outlet property="joysticksButtonContainer" destination="J4w-8c-R7m" id="RN6-yh-HlY"/>
                         <outlet property="leadingInfoTiltLabelConstraint" destination="wze-8E-Nws" id="2Eb-6h-6gE"/>
                         <outlet property="maxTiltRemoteLabel" destination="Ydd-Y8-qtH" id="thn-4y-4KQ"/>
                         <outlet property="maxTiltSliderLabel" destination="PDV-ei-r2q" id="I8K-q8-2qS"/>
@@ -246,14 +290,16 @@
                         <outlet property="maxTiltSliderLabelUpConstraint" destination="M40-xv-Tca" id="QcZ-uh-Qx2"/>
                         <outlet property="overzoomLabel" destination="qKA-eY-Yh4" id="SJp-Pg-VJ0"/>
                         <outlet property="tiltButton" destination="hIo-6M-owq" id="smE-I4-wr2"/>
+                        <outlet property="tiltButtonContainer" destination="TJa-Rk-Jq7" id="vzI-RO-qgK"/>
                         <outlet property="tiltSliderContainerView" destination="Mbl-yM-FB7" id="w5f-c8-sjC"/>
                         <outlet property="tiltSliderView" destination="s61-IX-cxD" id="BlF-Md-fnh"/>
                         <outlet property="zoomButton" destination="cs1-aQ-xCZ" id="Ivx-bZ-NX2"/>
+                        <outlet property="zoomButtonContainer" destination="k0I-nu-z0z" id="Y2n-xo-wgb"/>
                         <outlet property="zoomSliderView" destination="eJK-Rl-2sY" id="GNk-7T-crk"/>
                         <outletCollection property="overzoomLabelOpenConstraints" destination="9SN-hX-w34" collectionClass="NSMutableArray" id="KwV-J3-3Mc"/>
                         <outletCollection property="overzoomLabelOpenConstraints" destination="9TG-1R-UY1" collectionClass="NSMutableArray" id="WdQ-P3-mHb"/>
-                        <outletCollection property="overzoomLabelClosedConstraints" destination="6vd-8I-Dt4" collectionClass="NSMutableArray" id="kqg-Ae-759"/>
-                        <outletCollection property="overzoomLabelClosedConstraints" destination="rZM-fm-qNJ" collectionClass="NSMutableArray" id="9Pr-jH-YrQ"/>
+                        <outletCollection property="overzoomLabelOpenConstraints" destination="cjy-xp-ED6" collectionClass="NSMutableArray" id="Hpu-jG-s3r"/>
+                        <outletCollection property="overzoomLabelClosedConstraints" destination="fvp-od-s37" collectionClass="NSMutableArray" id="bW0-gC-3k5"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="OUf-o0-KZb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

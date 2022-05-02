@@ -226,6 +226,7 @@ final class GallerySDMediaViewModel: DroneStateViewModel<GallerySDMediaState> {
     // MARK: - Private Properties
     private var sdCardRef: Ref<RemovableUserStorage>?
     private var mediaListRef: Ref<[MediaItem]>?
+    private var flyingIndicatorRef: Ref<FlyingIndicators>?
     private var sdMediaListener: Set<GallerySdMediaListener> = []
 
     // MARK: - Internal Properties
@@ -320,6 +321,7 @@ extension GallerySDMediaViewModel {
     func setupDroneListeners(drone: Drone) {
         updateDroneUid(drone: drone)
         listenSDCard(drone: drone)
+        listenFlyingIndicator(drone: drone)
         loadMediaStore(drone: drone)
         loadMedia(drone: drone)
     }
@@ -392,22 +394,39 @@ private extension GallerySDMediaViewModel {
     func listenSDCard(drone: Drone) {
         sdCardRef = drone.getPeripheral(Peripherals.removableUserStorage) { [weak self] storage in
             guard let storage = storage,
-                  let copy = self?.state.value.copy() else {
+                  let self = self else {
                 return
             }
 
             // Turn storage in mega bytes.
+            let copy = self.state.value.copy()
             copy.availableSpace = Double(storage.availableSpace) / Double(StorageUtils.Constants.bytesPerGigabyte)
             copy.physicalStorageState = storage.physicalState
             copy.fileSystemStorageState = storage.fileSystemState
-            copy.canFormat = storage.canFormat
             copy.formattingProgress = storage.formattingState?.progress
             copy.formattingStep = storage.formattingState?.step
             if let capacity = storage.mediaInfo?.capacity {
                 copy.capacity = Double(capacity) / Double(StorageUtils.Constants.bytesPerGigabyte)
             }
-            self?.state.set(copy)
+            self.state.set(copy)
+
+            // Updates canFormat state
+            self.updateCanFormatState(drone: drone)
         }
+    }
+
+    /// Starts watcher for flying indicator
+    func listenFlyingIndicator(drone: Drone) {
+        flyingIndicatorRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
+            self?.updateCanFormatState(drone: drone)
+        }
+    }
+
+    /// Updates canFormat state
+    func updateCanFormatState(drone: Drone) {
+        let copy = state.value.copy()
+        copy.canFormat = sdCardRef?.value?.canFormat == true && drone.isConnected && !drone.isFlying
+        state.set(copy)
     }
 
     /// Load MediaStore from drone.
@@ -499,20 +518,22 @@ private extension GallerySDMediaViewModel {
         guard let mediaItem = mediaItems.first else { return nil }
 
         let downloadState: GalleryMediaDownloadState
-        if downloadingItem?.uid == mediaItem.uid, downloadStatus == .running {
+
+        if mediaItems.contains(where: { $0.uid == downloadingItem?.uid }), downloadStatus == .running {
             downloadState = .downloading
-        } else if mediaItem.isDownloaded {
+        } else if mediaItems.allSatisfy({ $0.isDownloaded }) {
             downloadState = .downloaded
         } else {
             downloadState = .toDownload
         }
 
         return GalleryMedia(uid: mediaItem.uid,
+                            customTitle: mediaItem.customTitle,
                             source: source,
                             mediaItems: mediaItems,
                             type: mediaItem.mediaType,
                             downloadState: downloadState,
-                            size: self.size(for: mediaItem),
+                            size: size(for: mediaItems),
                             date: mediaItem.creationDate,
                             url: nil)
     }
@@ -524,7 +545,17 @@ private extension GallerySDMediaViewModel {
     ///
     /// - Returns: Value for size of all MediaItem resources.
     func size(for mediaItem: MediaItem) -> UInt64 {
-        return mediaItem.downloadableResources.reduce(0) { $0 + $1.size }
+        mediaItem.downloadableResources.reduce(0) { $0 + $1.size }
+    }
+
+    /// Returns Size for an array of MediaItem.
+    ///
+    /// - Parameters:
+    ///    - mediaItems: the array of MediaItem object
+    ///
+    /// - Returns: Value for size of all MediaItem resources.
+    func size(for mediaItems: [MediaItem]) -> UInt64 {
+        mediaItems.reduce(0) { $0 + size(for: $1) }
     }
 
     /// Update state regarding download status.

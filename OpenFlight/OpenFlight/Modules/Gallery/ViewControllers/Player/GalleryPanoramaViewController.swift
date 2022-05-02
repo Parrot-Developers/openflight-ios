@@ -35,9 +35,9 @@ import OpenFlightCore
 
 final class GalleryPanoramaViewController: UIViewController {
     // MARK: - Outlets
+    @IBOutlet weak private var topBarView: HudTopBarGradientView!
     @IBOutlet weak private var panoramaView: PhotoPanoView!
     @IBOutlet weak private var gyroscopeButton: UIButton!
-    @IBOutlet weak private var exitButton: UIButton!
 
     // MARK: - Internal properties
     var panoramaUrl: URL?
@@ -142,7 +142,6 @@ private extension GalleryPanoramaViewController {
     /// Sets up all the UI for the view controller.
     func setupUI() {
         gyroscopeButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
-        exitButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
     }
 
     /// Init gestures.
@@ -269,9 +268,7 @@ private extension GalleryPanoramaViewController {
     }
 
     func showControls(_ show: Bool) {
-        exitButton.showFromEdge(.bottom,
-                                 offset: view.safeAreaInsets.bottom + 30,
-                                 show: show)
+        topBarView.showFromEdge(.top, show: show)
         gyroscopeButton.showFromEdge(.bottom,
                                  offset: view.safeAreaInsets.bottom + 30,
                                  show: show)

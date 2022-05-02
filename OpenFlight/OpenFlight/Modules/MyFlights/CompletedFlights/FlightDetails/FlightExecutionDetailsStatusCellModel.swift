@@ -60,11 +60,11 @@ class FlightExecutionDetailsStatusCellModel {
 
     private let flightPlan: FlightPlanModel!
     private let flightPlanUiStateProvider: FlightPlanUiStateProvider!
-    unowned let coordinator: FlightPlanExecutionDetailsCoordinator
+    weak var coordinator: FlightPlanExecutionDetailsCoordinator?
 
     init(flightPlan: FlightPlanModel,
          flightPlanUiStateProvider: FlightPlanUiStateProvider,
-         coordinator: FlightPlanExecutionDetailsCoordinator) {
+         coordinator: FlightPlanExecutionDetailsCoordinator?) {
         self.flightPlan = flightPlan
         self.flightPlanUiStateProvider = flightPlanUiStateProvider
         self.coordinator = coordinator

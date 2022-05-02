@@ -36,6 +36,7 @@ final class FlightPlanExecutionCell: MainTableViewCell, NibReusable {
     @IBOutlet private weak var topConstraint: NSLayoutConstraint!
     @IBOutlet private weak var bottomConstraint: NSLayoutConstraint!
     @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet private weak var dateLabel: UILabel!
     @IBOutlet private weak var statusLabel: UILabel!
     @IBOutlet private weak var disclosureIndicator: UIImageView!
     @IBOutlet private weak var extraIcon: UIImageView!
@@ -72,8 +73,9 @@ final class FlightPlanExecutionCell: MainTableViewCell, NibReusable {
         cellBackgroundView.backgroundColor = ColorName.white.color
 
         titleLabel.makeUp(with: .large, and: .defaultTextColor)
+        dateLabel.makeUp(with: .large, and: .disabledTextColor)
         statusLabel.makeUp(with: .small, and: .highlightColor)
-        disclosureIndicator.tintColor = ColorName.greySilver.color
+        disclosureIndicator.tintColor = ColorName.disabledTextColor.color
 
         // Disable the default selection style
         selectionStyle = .none
@@ -87,7 +89,13 @@ final class FlightPlanExecutionCell: MainTableViewCell, NibReusable {
     }
 
     func fill(execution: FlightPlanModel) {
-        titleLabel.text = execution.fomattedDate(isShort: false)
+        titleLabel.text = execution.customTitle
+        // TODO: Inject correclty after a refactor.
+        dateLabel.text = Services.hub
+            .flightPlan
+            .manager
+            .firstFlightFormattedDate(of: execution,
+                                      isShort: false)
 
         Services.hub.ui.flightPlanUiStateProvider.uiStatePublisher(for: execution)
             .sink { [unowned self] stateUiParameters in

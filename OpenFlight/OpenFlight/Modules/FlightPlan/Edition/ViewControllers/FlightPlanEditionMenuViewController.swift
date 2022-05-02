@@ -229,7 +229,7 @@ private extension FlightPlanEditionMenuViewController {
         Layout.buttonIntrinsicHeight(isRegularSizeClass)
         tableView.makeUp(backgroundColor: .clear)
 
-        undoButton.setup(title: L10n.commonUndo, style: .default1)
+        undoButton.setup(image: Asset.Common.Icons.icUndo.image, style: .default2)
         doneButton.setup(title: L10n.commonDone, style: .validate)
 
         buttonsStackView.screenBorders = [.bottom, .right]
@@ -238,7 +238,6 @@ private extension FlightPlanEditionMenuViewController {
             topbar?.set(title: type.title)
         }
 
-        topbar?.set(backbuttonVisibility: false)
         // Keeps the topBar shadow above the tableView
         stackView.bringSubviewToFront(topBarContainer)
         topBarContainer.isHidden = true

@@ -37,6 +37,8 @@ protocol HUDControlsInfoViewControllerNavigation: AnyObject {
     func openRemoteControlInfos()
     /// Called when drone information screen should be opened.
     func openDroneInfos()
+    /// Called when network settings should be opened.
+    func openNetworkSettings()
 }
 
 final class HUDControlsInfoViewController: UIViewController {
@@ -99,6 +101,10 @@ private extension HUDControlsInfoViewController {
     @IBAction func droneInfoTouchedUpInside() {
         LogEvent.log(.simpleButton(LogEvent.LogKeyHUDTopBarButton.droneDetails))
         navigationDelegate?.openDroneInfos()
+    }
+
+    @IBAction func droneCellularWifiTouchedUpInside(_ sender: Any) {
+        navigationDelegate?.openNetworkSettings()
     }
 }
 
@@ -178,7 +184,7 @@ private extension HUDControlsInfoViewController {
         droneInfosViewModel.$currentLink
             .sink { [unowned self] currentLink in
                 configureWifiView(wifiStrength: droneInfosViewModel.wifiStrength ?? .offline, currentLink: currentLink)
-                configureCellularView(cellularStrength: droneInfosViewModel.cellularStrength)
+                configureCellularView(cellularStrength: droneInfosViewModel.cellularStrength, currentLink: currentLink)
             }
             .store(in: &cancellables)
     }

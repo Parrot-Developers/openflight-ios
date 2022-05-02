@@ -123,15 +123,23 @@
 		3B3AD66B273F9E1400401F84 /* Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3AD669273F9E1400401F84 /* Layout.swift */; };
 		3B3AD66D274001CE00401F84 /* LayoutHelpersViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3AD66C274001CE00401F84 /* LayoutHelpersViews.swift */; };
 		3B3AD66E274001CE00401F84 /* LayoutHelpersViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3AD66C274001CE00401F84 /* LayoutHelpersViews.swift */; };
+		3B41238A27C7B0DB00F8D346 /* ActionWidgetContainer.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B41238927C7B0DB00F8D346 /* ActionWidgetContainer.storyboard */; };
+		3B41238B27C7B0DB00F8D346 /* ActionWidgetContainer.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B41238927C7B0DB00F8D346 /* ActionWidgetContainer.storyboard */; };
 		3B414B01273A549D008F3F9A /* NavigationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B414B00273A549D008F3F9A /* NavigationViews.swift */; };
 		3B414B02273A5517008F3F9A /* NavigationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B414B00273A549D008F3F9A /* NavigationViews.swift */; };
 		3B45C44C274898B5007B67C3 /* TableViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B45C44B274898B5007B67C3 /* TableViews.swift */; };
 		3B45C44D274898B5007B67C3 /* TableViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B45C44B274898B5007B67C3 /* TableViews.swift */; };
+		3B49161B27C7AD8E00C2EB6B /* ActionWidgetContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B49161A27C7AD8D00C2EB6B /* ActionWidgetContainerViewController.swift */; };
+		3B49161C27C7AD8E00C2EB6B /* ActionWidgetContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B49161A27C7AD8D00C2EB6B /* ActionWidgetContainerViewController.swift */; };
 		3B4CA0792755425500A48735 /* Rajdhani-SemiBold-Ext.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B4CA0782755425500A48735 /* Rajdhani-SemiBold-Ext.ttf */; };
 		3B4CA07A2755425500A48735 /* Rajdhani-SemiBold-Ext.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B4CA0782755425500A48735 /* Rajdhani-SemiBold-Ext.ttf */; };
 		3B660403270CAF7900A41969 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B660402270CAF7900A41969 /* ActionButton.swift */; };
 		3B660404270CAF7900A41969 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B660402270CAF7900A41969 /* ActionButton.swift */; };
 		3B68CC212741291500841C7E /* LayoutGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B68CC202741291500841C7E /* LayoutGridView.swift */; };
+		3B701A8927BA433C000D97DC /* MainBannerInfoView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3B701A8827BA433B000D97DC /* MainBannerInfoView.xib */; };
+		3B701A8A27BA433C000D97DC /* MainBannerInfoView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3B701A8827BA433B000D97DC /* MainBannerInfoView.xib */; };
+		3B701A8C27BA4356000D97DC /* MainBannerInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B701A8B27BA4356000D97DC /* MainBannerInfoView.swift */; };
+		3B701A8D27BA4356000D97DC /* MainBannerInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B701A8B27BA4356000D97DC /* MainBannerInfoView.swift */; };
 		3B7DC14A270F5DA90098470A /* GalleryMediaFullScreenCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7DC149270F5DA90098470A /* GalleryMediaFullScreenCollectionViewCell.swift */; };
 		3B7DC14B270F5DA90098470A /* GalleryMediaFullScreenCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7DC149270F5DA90098470A /* GalleryMediaFullScreenCollectionViewCell.swift */; };
 		3B7DC14D270F5DBB0098470A /* GalleryMediaFullScreenCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3B7DC14C270F5DBB0098470A /* GalleryMediaFullScreenCollectionViewCell.xib */; };
@@ -148,6 +156,10 @@
 		3BA2C23E2739CE5E0033EAC2 /* LayoutGridManager.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3BA2C23D2739CE5E0033EAC2 /* LayoutGridManager.storyboard */; };
 		3BA2C23F2739CE5E0033EAC2 /* LayoutGridManager.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3BA2C23D2739CE5E0033EAC2 /* LayoutGridManager.storyboard */; };
 		3BBFBD93274255AE009B35C5 /* LayoutGridView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3BBFBD92274255AE009B35C5 /* LayoutGridView.xib */; };
+		3BDAD86727CCF9E200DBDC35 /* RthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAD86627CCF9E200DBDC35 /* RthService.swift */; };
+		3BDAD86827CCF9E200DBDC35 /* RthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAD86627CCF9E200DBDC35 /* RthService.swift */; };
+		3BDAD86A27CD083600DBDC35 /* ActionWidgetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAD86927CD083600DBDC35 /* ActionWidgetViewModel.swift */; };
+		3BDAD86B27CD083600DBDC35 /* ActionWidgetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAD86927CD083600DBDC35 /* ActionWidgetViewModel.swift */; };
 		3BDF916127677AD70069BE11 /* CameraPhotoCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDF916027677AD70069BE11 /* CameraPhotoCaptureService.swift */; };
 		3BDF916227677AD70069BE11 /* CameraPhotoCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDF916027677AD70069BE11 /* CameraPhotoCaptureService.swift */; };
 		3BE4ECD7270B77380031DA87 /* GalleryMediaTitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE4ECD6270B77380031DA87 /* GalleryMediaTitleView.swift */; };
@@ -292,6 +304,8 @@
 		4B07ED7F2684CC5D00D9DFBE /* Color.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4B07ED7E2684CC5D00D9DFBE /* Color.xcassets */; };
 		4B07ED802684CC5D00D9DFBE /* Color.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4B07ED7E2684CC5D00D9DFBE /* Color.xcassets */; };
 		4B1891C22758F4EE0014E94D /* NSManagedObject+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1891C12758F4EE0014E94D /* NSManagedObject+Utils.swift */; };
+		4B3614B827C39AFB005900DD /* AcademySessionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3614B727C39AFA005900DD /* AcademySessionProvider.swift */; };
+		4B3614B927C39AFB005900DD /* AcademySessionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3614B727C39AFA005900DD /* AcademySessionProvider.swift */; };
 		4B4341F2267737BF006ECE0E /* DroneCalibrationInstructionItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B4341F0267737BF006ECE0E /* DroneCalibrationInstructionItemView.swift */; };
 		4B4341F3267737BF006ECE0E /* DroneCalibrationInstructionItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B4341F0267737BF006ECE0E /* DroneCalibrationInstructionItemView.swift */; };
 		4B4341F5267737BF006ECE0E /* DroneCalibrationInstructionItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4B4341F1267737BF006ECE0E /* DroneCalibrationInstructionItemView.xib */; };
@@ -314,6 +328,10 @@
 		4BB9250227627CB1007ED166 /* SynchroUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB9250127627CB1007ED166 /* SynchroUtils.swift */; };
 		4BC15B132696FBE20065F5FE /* VariableAssetsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC15B122696FBE20065F5FE /* VariableAssetsService.swift */; };
 		4BC15B142696FBE20065F5FE /* VariableAssetsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC15B122696FBE20065F5FE /* VariableAssetsService.swift */; };
+		4BC8987427BAA99900D04F04 /* UserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC8987327BAA99900D04F04 /* UserService.swift */; };
+		4BC8987527BAA99900D04F04 /* UserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC8987327BAA99900D04F04 /* UserService.swift */; };
+		4BC8987727BAAB2400D04F04 /* User+UserStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC8987627BAAB2400D04F04 /* User+UserStatus.swift */; };
+		4BC8987827BAAB2400D04F04 /* User+UserStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC8987627BAAB2400D04F04 /* User+UserStatus.swift */; };
 		4CB19A891B2F6252D7385446 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151EA513B86AAF7E57CB3A0E /* Colors.swift */; };
 		5933565842DBA5BAE728C54F /* Pods_OpenFlightTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 167C98E28C574D9037B1A869 /* Pods_OpenFlightTests.framework */; };
 		62526C1026E0CE0400CC12B0 /* ApiRequestQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62526C0F26E0CE0400CC12B0 /* ApiRequestQueue.swift */; };
@@ -574,6 +592,8 @@
 		6C311C0C26F4F76700068DEC /* DroneDetailCellularViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C311C0A26F4F76700068DEC /* DroneDetailCellularViewModel.swift */; };
 		6C34B12E26CFC82600EFC42F /* CellularPairingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C34B12D26CFC82600EFC42F /* CellularPairingService.swift */; };
 		6C34B12F26CFC82600EFC42F /* CellularPairingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C34B12D26CFC82600EFC42F /* CellularPairingService.swift */; };
+		6C5BC0C327C7892100C59737 /* CellularService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5BC0C227C7892100C59737 /* CellularService.swift */; };
+		6C5BC0C427C7892100C59737 /* CellularService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5BC0C227C7892100C59737 /* CellularService.swift */; };
 		6C6995FB26D40440000CF22E /* CellularPairingAvailabilityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C6995FA26D40440000CF22E /* CellularPairingAvailabilityService.swift */; };
 		6C6995FC26D40440000CF22E /* CellularPairingAvailabilityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C6995FA26D40440000CF22E /* CellularPairingAvailabilityService.swift */; };
 		6C7DCFFF26F4EA8000061572 /* DroneDetailsCellularViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7DCFFE26F4EA8000061572 /* DroneDetailsCellularViewController.swift */; };
@@ -614,6 +634,10 @@
 		70D84B2C26F87E470001BD87 /* HUDCriticalAlert.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E426A75C2547041000E8BA19 /* HUDCriticalAlert.storyboard */; };
 		70DA644424B76CA5007EC020 /* OGSpeedometer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70DA644324B76CA5007EC020 /* OGSpeedometer.swift */; };
 		70DA644524B76CA5007EC020 /* OGSpeedometer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70DA644324B76CA5007EC020 /* OGSpeedometer.swift */; };
+		7A2CA11E27CCB6AA00FA4146 /* String+Regex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A2CA11D27CCB6AA00FA4146 /* String+Regex.swift */; };
+		7A2CA11F27CCB6AA00FA4146 /* String+Regex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A2CA11D27CCB6AA00FA4146 /* String+Regex.swift */; };
+		7A2CA12427D2317B00FA4146 /* HUDAlertPanelObstacleAvoidanceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A2CA12327D2317A00FA4146 /* HUDAlertPanelObstacleAvoidanceViewModel.swift */; };
+		7A2CA12527D2317B00FA4146 /* HUDAlertPanelObstacleAvoidanceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A2CA12327D2317A00FA4146 /* HUDAlertPanelObstacleAvoidanceViewModel.swift */; };
 		7A4DA0BC270F49E00005B2CB /* FlightExecutionDetailsStatusCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A4DA0BB270F49E00005B2CB /* FlightExecutionDetailsStatusCellModel.swift */; };
 		7A4DA0BD270F49E00005B2CB /* FlightExecutionDetailsStatusCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A4DA0BB270F49E00005B2CB /* FlightExecutionDetailsStatusCellModel.swift */; };
 		7A4DA0C62715D7B30005B2CB /* DashboardProjectManagerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A4DA0C42715D7B30005B2CB /* DashboardProjectManagerCell.swift */; };
@@ -642,8 +666,6 @@
 		7A4DA0EB2716F0460005B2CB /* ProjectCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A4DA0E92716F0460005B2CB /* ProjectCellModel.swift */; };
 		7A4DA0ED27177C0A0005B2CB /* ProjectManagerUiProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A4DA0EC27177C090005B2CB /* ProjectManagerUiProvider.swift */; };
 		7A4DA0EE27177C0B0005B2CB /* ProjectManagerUiProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A4DA0EC27177C090005B2CB /* ProjectManagerUiProvider.swift */; };
-		7A6A9EF4275668C800DB7B12 /* ManagePlansCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6A9EF3275668C700DB7B12 /* ManagePlansCoordinator.swift */; };
-		7A6A9EF5275668C900DB7B12 /* ManagePlansCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6A9EF3275668C700DB7B12 /* ManagePlansCoordinator.swift */; };
 		7A805CE92772FFA200A1D8AE /* SynchroUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB9250127627CB1007ED166 /* SynchroUtils.swift */; };
 		7A805CEA2772FFFD00A1D8AE /* NSPredicate+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A87FBF42763B4C600E02C7B /* NSPredicate+Utils.swift */; };
 		7A805CEB2773000200A1D8AE /* Result+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A87FC062765E93F00E02C7B /* Result+Utils.swift */; };
@@ -885,6 +907,8 @@
 		9BACF2482566812D00B82D20 /* ParrotLogEvent+HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BACF2462566812D00B82D20 /* ParrotLogEvent+HUD.swift */; };
 		9BACF24C2566817100B82D20 /* ParrotLogEvent+Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BACF24B2566817100B82D20 /* ParrotLogEvent+Screens.swift */; };
 		9BACF24D2566817100B82D20 /* ParrotLogEvent+Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BACF24B2566817100B82D20 /* ParrotLogEvent+Screens.swift */; };
+		9BB1CF9927DF8B1200581C1A /* MapToolBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB1CF9827DF8B1200581C1A /* MapToolBox.swift */; };
+		9BB1CF9A27DF956900581C1A /* MapToolBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB1CF9827DF8B1200581C1A /* MapToolBox.swift */; };
 		9BB2F381252DC6A900B46239 /* GalleryPanoramaGenerationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB2F380252DC6A900B46239 /* GalleryPanoramaGenerationViewController.swift */; };
 		9BB2F382252DC6A900B46239 /* GalleryPanoramaGenerationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB2F380252DC6A900B46239 /* GalleryPanoramaGenerationViewController.swift */; };
 		9BB4B4BC274CD46300709849 /* TouchAndFlyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB4B4BB274CD46200709849 /* TouchAndFlyService.swift */; };
@@ -927,6 +951,8 @@
 		9BE35E9A2739184B007184E3 /* FlightPlanLocationGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BE35E992739184B007184E3 /* FlightPlanLocationGraphic.swift */; };
 		9BE9FB2026D78FD3009CD109 /* FlightPlanOriginGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BE9FB1F26D78FD3009CD109 /* FlightPlanOriginGraphic.swift */; };
 		9BEAF83B252B4B6B0013B44D /* anafi2_app_defaults.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9BEAF83A252B4B6A0013B44D /* anafi2_app_defaults.plist */; };
+		9BEB371C27E88E21002589D8 /* FlightPlanCourseGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEB371B27E88E21002589D8 /* FlightPlanCourseGraphic.swift */; };
+		9BEB371D27E88E8E002589D8 /* FlightPlanCourseGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEB371B27E88E21002589D8 /* FlightPlanCourseGraphic.swift */; };
 		9BF567B22746B31200210808 /* FlightPlanTopBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF567B12746B31200210808 /* FlightPlanTopBarViewController.swift */; };
 		9D1BE556274FC0E0008209B4 /* UpdatingTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D1BE555274FC0DF008209B4 /* UpdatingTableView.swift */; };
 		9D1BE557274FC0E0008209B4 /* UpdatingTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D1BE555274FC0DF008209B4 /* UpdatingTableView.swift */; };
@@ -1353,8 +1379,6 @@
 		E3024D242406BF8F003A2B87 /* FlightPlanCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = FB95257223CDEBF400171F3D /* FlightPlanCollectionViewCell.xib */; };
 		E3024D252406BF8F003A2B87 /* FlightPlansList.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB95258923CE1C4E00171F3D /* FlightPlansList.storyboard */; };
 		E3024D262406BF8F003A2B87 /* FlightPlansListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB95258A23CE1C4E00171F3D /* FlightPlansListViewController.swift */; };
-		E3024D272406BF8F003A2B87 /* ManagePlans.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB37BC7823C750E40026B055 /* ManagePlans.storyboard */; };
-		E3024D282406BF8F003A2B87 /* ManagePlansViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB37BC7923C750E40026B055 /* ManagePlansViewController.swift */; };
 		E3024D2F2406BF8F003A2B87 /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CFB360D23AA2D610014D1E0 /* Action.swift */; };
 		E3024D322406BF8F003A2B87 /* PoiPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CFB360A23AA28C20014D1E0 /* PoiPoint.swift */; };
 		E3024D332406BF8F003A2B87 /* PoiPoint+ArcGIS.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C9FFF23D5DE88007063C6 /* PoiPoint+ArcGIS.swift */; };
@@ -1650,8 +1674,6 @@
 		E43032DB23A7ED1500A0012A /* RemoteDetailsInformationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43032DA23A7ED1500A0012A /* RemoteDetailsInformationsViewModel.swift */; };
 		E43080F9238ED8E400EB2D68 /* PairingRemoteNotRecognizedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43080F7238ED8E400EB2D68 /* PairingRemoteNotRecognizedViewController.swift */; };
 		E43080FD238FB7A600EB2D68 /* PairingWhereIsWifiViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43080FB238FB7A600EB2D68 /* PairingWhereIsWifiViewController.swift */; };
-		E438D0B5256563F80048A2AA /* UserInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E438D0B4256563F80048A2AA /* UserInformation.swift */; };
-		E438D0B6256563F80048A2AA /* UserInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E438D0B4256563F80048A2AA /* UserInformation.swift */; };
 		E4393A5123A7D139000DC184 /* RemoteDetailsButtonsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4393A5023A7D139000DC184 /* RemoteDetailsButtonsViewModel.swift */; };
 		E43AA4EB25D2743200AC8E3E /* HUDCellularIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43AA4E925D2743200AC8E3E /* HUDCellularIndicatorView.swift */; };
 		E43AA4EC25D2743200AC8E3E /* HUDCellularIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43AA4E925D2743200AC8E3E /* HUDCellularIndicatorView.swift */; };
@@ -2102,8 +2124,6 @@
 		FB3600D3247F98DA00E8D7CF /* DeviceDetailsButtonView.xib in Resources */ = {isa = PBXBuildFile; fileRef = FB3600CF247F98DA00E8D7CF /* DeviceDetailsButtonView.xib */; };
 		FB3600D6247FDFC800E8D7CF /* DroneDetailsButtonsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3600D5247FDFC800E8D7CF /* DroneDetailsButtonsViewModel.swift */; };
 		FB3600D7247FDFC800E8D7CF /* DroneDetailsButtonsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3600D5247FDFC800E8D7CF /* DroneDetailsButtonsViewModel.swift */; };
-		FB37BC7A23C750E40026B055 /* ManagePlans.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB37BC7823C750E40026B055 /* ManagePlans.storyboard */; };
-		FB37BC7B23C750E40026B055 /* ManagePlansViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB37BC7923C750E40026B055 /* ManagePlansViewController.swift */; };
 		FB38487A23967EDA0048D8CB /* ImagingBarState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB38487923967EDA0048D8CB /* ImagingBarState.swift */; };
 		FB44D77523F162B600C311D1 /* HUDAlertPanelHandLaunchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB44D77423F162B600C311D1 /* HUDAlertPanelHandLaunchViewModel.swift */; };
 		FB44D77723F178AA00C311D1 /* HUDAlertPanelViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB44D77623F178AA00C311D1 /* HUDAlertPanelViewModel.swift */; };
@@ -2432,11 +2452,15 @@
 		3B3AD666273F9CDD00401F84 /* CollectionViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViews.swift; sourceTree = "<group>"; };
 		3B3AD669273F9E1400401F84 /* Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layout.swift; sourceTree = "<group>"; };
 		3B3AD66C274001CE00401F84 /* LayoutHelpersViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutHelpersViews.swift; sourceTree = "<group>"; };
+		3B41238927C7B0DB00F8D346 /* ActionWidgetContainer.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ActionWidgetContainer.storyboard; sourceTree = "<group>"; };
 		3B414B00273A549D008F3F9A /* NavigationViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationViews.swift; sourceTree = "<group>"; };
 		3B45C44B274898B5007B67C3 /* TableViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViews.swift; sourceTree = "<group>"; };
+		3B49161A27C7AD8D00C2EB6B /* ActionWidgetContainerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionWidgetContainerViewController.swift; sourceTree = "<group>"; };
 		3B4CA0782755425500A48735 /* Rajdhani-SemiBold-Ext.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Rajdhani-SemiBold-Ext.ttf"; sourceTree = "<group>"; };
 		3B660402270CAF7900A41969 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
 		3B68CC202741291500841C7E /* LayoutGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutGridView.swift; sourceTree = "<group>"; };
+		3B701A8827BA433B000D97DC /* MainBannerInfoView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainBannerInfoView.xib; sourceTree = "<group>"; };
+		3B701A8B27BA4356000D97DC /* MainBannerInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainBannerInfoView.swift; sourceTree = "<group>"; };
 		3B7DC149270F5DA90098470A /* GalleryMediaFullScreenCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryMediaFullScreenCollectionViewCell.swift; sourceTree = "<group>"; };
 		3B7DC14C270F5DBB0098470A /* GalleryMediaFullScreenCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GalleryMediaFullScreenCollectionViewCell.xib; sourceTree = "<group>"; };
 		3B850801273B04C400F0ABEC /* MainContainerViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainContainerViews.swift; sourceTree = "<group>"; };
@@ -2445,6 +2469,8 @@
 		3BA2C23A2739CDD40033EAC2 /* LayoutGridManagerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutGridManagerViewController.swift; sourceTree = "<group>"; };
 		3BA2C23D2739CE5E0033EAC2 /* LayoutGridManager.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LayoutGridManager.storyboard; sourceTree = "<group>"; };
 		3BBFBD92274255AE009B35C5 /* LayoutGridView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LayoutGridView.xib; sourceTree = "<group>"; };
+		3BDAD86627CCF9E200DBDC35 /* RthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RthService.swift; sourceTree = "<group>"; };
+		3BDAD86927CD083600DBDC35 /* ActionWidgetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionWidgetViewModel.swift; sourceTree = "<group>"; };
 		3BDF916027677AD70069BE11 /* CameraPhotoCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPhotoCaptureService.swift; sourceTree = "<group>"; };
 		3BE4ECD6270B77380031DA87 /* GalleryMediaTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryMediaTitleView.swift; sourceTree = "<group>"; };
 		3BE4ECD9270B77630031DA87 /* GalleryMediaTitleView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GalleryMediaTitleView.xib; sourceTree = "<group>"; };
@@ -2527,8 +2553,11 @@
 		4B0759A427107FDE00B9C469 /* POFTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POFTextField.swift; sourceTree = "<group>"; };
 		4B07ED7E2684CC5D00D9DFBE /* Color.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Color.xcassets; sourceTree = "<group>"; };
 		4B1891C12758F4EE0014E94D /* NSManagedObject+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSManagedObject+Utils.swift"; sourceTree = "<group>"; };
+		4B1B4A4D27ECB382000F269D /* ModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ModelV14.xcdatamodel; sourceTree = "<group>"; };
+		4B3614B727C39AFA005900DD /* AcademySessionProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcademySessionProvider.swift; sourceTree = "<group>"; };
 		4B4341F0267737BF006ECE0E /* DroneCalibrationInstructionItemView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DroneCalibrationInstructionItemView.swift; sourceTree = "<group>"; };
 		4B4341F1267737BF006ECE0E /* DroneCalibrationInstructionItemView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DroneCalibrationInstructionItemView.xib; sourceTree = "<group>"; };
+		4B4C798427FC65C700938301 /* ModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ModelV15.xcdatamodel; sourceTree = "<group>"; };
 		4B87E49F274F9A0F00953055 /* LoaderButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoaderButton.swift; sourceTree = "<group>"; };
 		4B98B0EB268B7FFF00E7D950 /* LDGradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LDGradientView.swift; sourceTree = "<group>"; };
 		4BA2DAF52732893300C70ED4 /* LiveTelemetryWatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LiveTelemetryWatcher.swift; sourceTree = "<group>"; };
@@ -2539,6 +2568,8 @@
 		4BB9250127627CB1007ED166 /* SynchroUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchroUtils.swift; sourceTree = "<group>"; };
 		4BC15B122696FBE20065F5FE /* VariableAssetsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableAssetsService.swift; sourceTree = "<group>"; };
 		4BC360F1275F7942005ACD39 /* ModelV12.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ModelV12.xcdatamodel; sourceTree = "<group>"; };
+		4BC8987327BAA99900D04F04 /* UserService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserService.swift; sourceTree = "<group>"; };
+		4BC8987627BAAB2400D04F04 /* User+UserStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "User+UserStatus.swift"; sourceTree = "<group>"; };
 		4BE8B0C227A2D1F6001CE66B /* ModelV13.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ModelV13.xcdatamodel; sourceTree = "<group>"; };
 		556BD70B2A7312804E2DA8E8 /* Pods_OpenFlight.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OpenFlight.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		62526C0F26E0CE0400CC12B0 /* ApiRequestQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiRequestQueue.swift; sourceTree = "<group>"; };
@@ -2723,6 +2754,7 @@
 		6C19560526EA32510054099C /* AirSdkMissionsListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirSdkMissionsListener.swift; sourceTree = "<group>"; };
 		6C311C0A26F4F76700068DEC /* DroneDetailCellularViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneDetailCellularViewModel.swift; sourceTree = "<group>"; };
 		6C34B12D26CFC82600EFC42F /* CellularPairingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellularPairingService.swift; sourceTree = "<group>"; };
+		6C5BC0C227C7892100C59737 /* CellularService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellularService.swift; sourceTree = "<group>"; };
 		6C6995FA26D40440000CF22E /* CellularPairingAvailabilityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellularPairingAvailabilityService.swift; sourceTree = "<group>"; };
 		6C7DCFFE26F4EA8000061572 /* DroneDetailsCellularViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneDetailsCellularViewController.swift; sourceTree = "<group>"; };
 		6C80B2F7270D941E00CB4484 /* OphtalmoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OphtalmoService.swift; sourceTree = "<group>"; };
@@ -2740,6 +2772,8 @@
 		70DA644324B76CA5007EC020 /* OGSpeedometer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OGSpeedometer.swift; sourceTree = "<group>"; };
 		70DD46D125BEB28D00EC0AAD /* config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = config.xcconfig; sourceTree = "<group>"; };
 		79D5F0A6967947466EFC07E0 /* AppCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
+		7A2CA11D27CCB6AA00FA4146 /* String+Regex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Regex.swift"; sourceTree = "<group>"; };
+		7A2CA12327D2317A00FA4146 /* HUDAlertPanelObstacleAvoidanceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDAlertPanelObstacleAvoidanceViewModel.swift; sourceTree = "<group>"; };
 		7A4DA0BB270F49E00005B2CB /* FlightExecutionDetailsStatusCellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightExecutionDetailsStatusCellModel.swift; sourceTree = "<group>"; };
 		7A4DA0C42715D7B30005B2CB /* DashboardProjectManagerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardProjectManagerCell.swift; sourceTree = "<group>"; };
 		7A4DA0C52715D7B30005B2CB /* DashboardProjectManagerCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DashboardProjectManagerCell.xib; sourceTree = "<group>"; };
@@ -2754,7 +2788,6 @@
 		7A4DA0E42716EA260005B2CB /* ProjectCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProjectCell.xib; sourceTree = "<group>"; };
 		7A4DA0E92716F0460005B2CB /* ProjectCellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectCellModel.swift; sourceTree = "<group>"; };
 		7A4DA0EC27177C090005B2CB /* ProjectManagerUiProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectManagerUiProvider.swift; sourceTree = "<group>"; };
-		7A6A9EF3275668C700DB7B12 /* ManagePlansCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagePlansCoordinator.swift; sourceTree = "<group>"; };
 		7A87FBF42763B4C600E02C7B /* NSPredicate+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSPredicate+Utils.swift"; sourceTree = "<group>"; };
 		7A87FC062765E93F00E02C7B /* Result+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Result+Utils.swift"; sourceTree = "<group>"; };
 		7A87FC17276A1CEB00E02C7B /* Subscribers+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Subscribers+Utils.swift"; sourceTree = "<group>"; };
@@ -2906,6 +2939,7 @@
 		9BACF23F2566809D00B82D20 /* ParrotLogEvent+Devices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ParrotLogEvent+Devices.swift"; sourceTree = "<group>"; };
 		9BACF2462566812D00B82D20 /* ParrotLogEvent+HUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ParrotLogEvent+HUD.swift"; sourceTree = "<group>"; };
 		9BACF24B2566817100B82D20 /* ParrotLogEvent+Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ParrotLogEvent+Screens.swift"; sourceTree = "<group>"; };
+		9BB1CF9827DF8B1200581C1A /* MapToolBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapToolBox.swift; sourceTree = "<group>"; };
 		9BB2F380252DC6A900B46239 /* GalleryPanoramaGenerationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryPanoramaGenerationViewController.swift; sourceTree = "<group>"; };
 		9BB4B4BB274CD46200709849 /* TouchAndFlyService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchAndFlyService.swift; sourceTree = "<group>"; };
 		9BB4B4BE274CD4C300709849 /* FlightPlanGraphicsOverlay+TouchAndFly.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "FlightPlanGraphicsOverlay+TouchAndFly.swift"; sourceTree = "<group>"; };
@@ -2929,6 +2963,7 @@
 		9BE35E992739184B007184E3 /* FlightPlanLocationGraphic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPlanLocationGraphic.swift; sourceTree = "<group>"; };
 		9BE9FB1F26D78FD3009CD109 /* FlightPlanOriginGraphic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPlanOriginGraphic.swift; sourceTree = "<group>"; };
 		9BEAF83A252B4B6A0013B44D /* anafi2_app_defaults.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = anafi2_app_defaults.plist; sourceTree = "<group>"; };
+		9BEB371B27E88E21002589D8 /* FlightPlanCourseGraphic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlightPlanCourseGraphic.swift; sourceTree = "<group>"; };
 		9BF567B12746B31200210808 /* FlightPlanTopBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPlanTopBarViewController.swift; sourceTree = "<group>"; };
 		9D1BE555274FC0DF008209B4 /* UpdatingTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatingTableView.swift; sourceTree = "<group>"; };
 		9D312FE6278C8BAE00F6E95D /* CriticalAlertService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CriticalAlertService.swift; sourceTree = "<group>"; };
@@ -3113,7 +3148,6 @@
 		E43032DA23A7ED1500A0012A /* RemoteDetailsInformationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteDetailsInformationsViewModel.swift; sourceTree = "<group>"; };
 		E43080F7238ED8E400EB2D68 /* PairingRemoteNotRecognizedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingRemoteNotRecognizedViewController.swift; sourceTree = "<group>"; };
 		E43080FB238FB7A600EB2D68 /* PairingWhereIsWifiViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingWhereIsWifiViewController.swift; sourceTree = "<group>"; };
-		E438D0B4256563F80048A2AA /* UserInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInformation.swift; sourceTree = "<group>"; };
 		E4393A5023A7D139000DC184 /* RemoteDetailsButtonsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteDetailsButtonsViewModel.swift; sourceTree = "<group>"; };
 		E43AA4E925D2743200AC8E3E /* HUDCellularIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDCellularIndicatorView.swift; sourceTree = "<group>"; };
 		E43AA4EA25D2743200AC8E3E /* HUDCellularIndicatorView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HUDCellularIndicatorView.xib; sourceTree = "<group>"; };
@@ -3400,8 +3434,6 @@
 		FB3600CE247F98DA00E8D7CF /* DeviceDetailsButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDetailsButtonView.swift; sourceTree = "<group>"; };
 		FB3600CF247F98DA00E8D7CF /* DeviceDetailsButtonView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DeviceDetailsButtonView.xib; sourceTree = "<group>"; };
 		FB3600D5247FDFC800E8D7CF /* DroneDetailsButtonsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneDetailsButtonsViewModel.swift; sourceTree = "<group>"; };
-		FB37BC7823C750E40026B055 /* ManagePlans.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ManagePlans.storyboard; sourceTree = "<group>"; };
-		FB37BC7923C750E40026B055 /* ManagePlansViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagePlansViewController.swift; sourceTree = "<group>"; };
 		FB38487923967EDA0048D8CB /* ImagingBarState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagingBarState.swift; sourceTree = "<group>"; };
 		FB44D77423F162B600C311D1 /* HUDAlertPanelHandLaunchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDAlertPanelHandLaunchViewModel.swift; sourceTree = "<group>"; };
 		FB44D77623F178AA00C311D1 /* HUDAlertPanelViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDAlertPanelViewModel.swift; sourceTree = "<group>"; };
@@ -3662,7 +3694,6 @@
 				2D722A2A26EBB044004B8310 /* FlightPlanEditionMenuCoordinator.swift */,
 				2D740F7B26EBB83500A456FE /* EditionSettingsCoordinator.swift */,
 				840A95DE2625CEC800E7A552 /* FlightPlanPanelCoordinator.swift */,
-				7A6A9EF3275668C700DB7B12 /* ManagePlansCoordinator.swift */,
 				6AC34E4E242A196A00A9C40B /* GalleryCoordinator.swift */,
 				E34F8A992359FC0500F711D9 /* HUDCoordinator.swift */,
 				E4D5A512237D6DCB000470D5 /* PairingCoordinator.swift */,
@@ -3707,6 +3738,15 @@
 				7ABBEB06270F0838001C806C /* FlightExecutionDetailsStatusCell.xib */,
 			);
 			path = FlightDetails;
+			sourceTree = "<group>";
+		};
+		3B701A8E27BA46F4000D97DC /* MainBanner */ = {
+			isa = PBXGroup;
+			children = (
+				3B701A8827BA433B000D97DC /* MainBannerInfoView.xib */,
+				3B701A8B27BA4356000D97DC /* MainBannerInfoView.swift */,
+			);
+			path = MainBanner;
 			sourceTree = "<group>";
 		};
 		3C2D70E424A1F213003CB44D /* Panorama */ = {
@@ -3840,6 +3880,7 @@
 		43A0124F266E3F6D00BA1932 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				4BC8987227BAA97800D04F04 /* User */,
 				43D02496266FB24700AE5FDB /* Drone */,
 				43D25C0726D79FF800871062 /* Flight */,
 				434262BB267C76F3003333DD /* Flight Plan */,
@@ -3883,6 +3924,8 @@
 				3BFBD23F276D0B4D00BB9994 /* RemovableUserStorageService.swift */,
 				685456AE27A92C3C0042A392 /* TimelapseRestartService.swift */,
 				436EE851268B21E900E2C239 /* ZoomService.swift */,
+				6C5BC0C227C7892100C59737 /* CellularService.swift */,
+				3BDAD86627CCF9E200DBDC35 /* RthService.swift */,
 			);
 			path = Drone;
 			sourceTree = "<group>";
@@ -3925,6 +3968,15 @@
 				4B07ED7E2684CC5D00D9DFBE /* Color.xcassets */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		4BC8987227BAA97800D04F04 /* User */ = {
+			isa = PBXGroup;
+			children = (
+				4BC8987327BAA99900D04F04 /* UserService.swift */,
+				4BC8987627BAAB2400D04F04 /* User+UserStatus.swift */,
+			);
+			path = User;
 			sourceTree = "<group>";
 		};
 		4F122B6CAECCF00716080E39 /* Frameworks */ = {
@@ -4454,6 +4506,8 @@
 				7CEC5F772375CA350056A0BD /* BottomBarViewController.swift */,
 				7CC58A60237C0EF300F286B5 /* BottomBarLevelViewController.swift */,
 				FBC1B1DF2396657100BB3E8E /* BottomBarLevelTwoViewController.swift */,
+				3B41238927C7B0DB00F8D346 /* ActionWidgetContainer.storyboard */,
+				3B49161A27C7AD8D00C2EB6B /* ActionWidgetContainerViewController.swift */,
 			);
 			path = BottomBar;
 			sourceTree = "<group>";
@@ -4470,6 +4524,7 @@
 				8431A4A9247C23FC00370DD4 /* HUDTargetTrackableMode.swift */,
 				434262D82680DA70003333DD /* MissionLauncherButtonModel.swift */,
 				E4F2F787252F03A800172A28 /* ReturnHomeBottomBarViewModel.swift */,
+				3BDAD86927CD083600DBDC35 /* ActionWidgetViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -5122,6 +5177,7 @@
 				E416E77F237C37C100C61FBB /* Indicator */,
 				E4C4225E243755A100474216 /* Joysticks */,
 				7CAFA03D238EB4FA00CC07B0 /* Missions */,
+				3B701A8E27BA46F4000D97DC /* MainBanner */,
 				FBCA4A90240D3CDE005D54DE /* TopBanner */,
 				FB49BB4E235F007F00D15F0E /* TopBar */,
 			);
@@ -5525,6 +5581,7 @@
 				43053EA726EB53EF0078D180 /* MapViewController+AGSGeoViewTouchDelegate.swift */,
 				E37480912385A019009DCA03 /* MapViewController+FlightPlan.swift */,
 				6A8DCD6723CCC74300B4FBD1 /* MapViewController+MyFlights.swift */,
+				9BB1CF9827DF8B1200581C1A /* MapToolBox.swift */,
 				9BB4B4E2274CD58400709849 /* MapViewController+TouchAndFly.swift */,
 				E374808E2385A019009DCA03 /* Models */,
 				E3024C202399048A004A73E4 /* ViewModels */,
@@ -5622,7 +5679,6 @@
 				3B18AD5E2783377D00D50ADA /* Animator.swift */,
 				3BF90683270CBA0F00EFD6F2 /* ActionButtonModel.swift */,
 				E4AD57532566D24300DC05C3 /* APIResponse.swift */,
-				E438D0B4256563F80048A2AA /* UserInformation.swift */,
 				E470CEA12567ED6800C185A5 /* SecureKeyStorage.swift */,
 			);
 			path = Models;
@@ -5632,6 +5688,7 @@
 			isa = PBXGroup;
 			children = (
 				E43DF5D825654FD300BDEF40 /* APCApiManager.swift */,
+				4B3614B727C39AFA005900DD /* AcademySessionProvider.swift */,
 				E43DF5E02565500600BDEF40 /* AcademyApiManager.swift */,
 				E1E05E1A268350B800E221E1 /* JsonDecoder+Extension.swift */,
 				62526C0F26E0CE0400CC12B0 /* ApiRequestQueue.swift */,
@@ -5754,8 +5811,9 @@
 			children = (
 				E468A1A3242E31D500C22310 /* HUDAlertPanelReturnHomeViewModel.swift */,
 				FB44D77423F162B600C311D1 /* HUDAlertPanelHandLaunchViewModel.swift */,
-				FB44D77623F178AA00C311D1 /* HUDAlertPanelViewModel.swift */,
 				E44A4BFA241BB4980033F302 /* HUDAlertPanelHandLandViewModel.swift */,
+				7A2CA12327D2317A00FA4146 /* HUDAlertPanelObstacleAvoidanceViewModel.swift */,
+				FB44D77623F178AA00C311D1 /* HUDAlertPanelViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -6581,8 +6639,6 @@
 			children = (
 				7A4DA0CD27161E4F0005B2CB /* ProjectManager */,
 				FB95258823CE19E300171F3D /* FlightPlansList */,
-				FB37BC7823C750E40026B055 /* ManagePlans.storyboard */,
-				FB37BC7923C750E40026B055 /* ManagePlansViewController.swift */,
 				68790385266920BB006DA545 /* ManagePlansViewModel.swift */,
 			);
 			path = ManagePlans;
@@ -6691,6 +6747,7 @@
 				849A77E525023F4E008F26DE /* Set+Utils.swift */,
 				FB757CE123A0F20F00763FD2 /* String+Utils.swift */,
 				84C8278D23D9A122002E52CD /* String+Validation.swift */,
+				7A2CA11D27CCB6AA00FA4146 /* String+Regex.swift */,
 			);
 			path = Swift;
 			sourceTree = "<group>";
@@ -6791,6 +6848,7 @@
 				FB2E3A02241262A8003EFEDD /* FlightPlanWayPointArrowGraphic.swift */,
 				9BE9FB1F26D78FD3009CD109 /* FlightPlanOriginGraphic.swift */,
 				FB66493023FFF518005036F4 /* FlightPlanWayPointGraphic.swift */,
+				9BEB371B27E88E21002589D8 /* FlightPlanCourseGraphic.swift */,
 				FB66493423FFF609005036F4 /* FlightPlanWayPointLineGraphic.swift */,
 				FB6F15F724041A9900B37142 /* FlightPlanWayPointToPoiPointLineGraphic.swift */,
 			);
@@ -7408,6 +7466,7 @@
 				9B203269257596AB00A12924 /* RemoteShutdownAlertViewController.storyboard in Resources */,
 				7A4DA0DE271673330005B2CB /* ProjectsList.storyboard in Resources */,
 				AF3FE6F326CAF438008DC117 /* FlightPlanPanelImageRateView.xib in Resources */,
+				3B701A8927BA433C000D97DC /* MainBannerInfoView.xib in Resources */,
 				EB671D942590E978000B778B /* AirSdkMissionsUpdating.storyboard in Resources */,
 				E49F4ECB23BE473300737D2D /* RemoteImageView.xib in Resources */,
 				9BA516DF252CBEBA00F140C4 /* anafi2_app_defaults.plist in Resources */,
@@ -7427,6 +7486,7 @@
 				2D772E3126FB904A00CD0ACD /* FlightPlanListExecutionHeaderCell.xib in Resources */,
 				3BA2C23E2739CE5E0033EAC2 /* LayoutGridManager.storyboard in Resources */,
 				7C4496EC2375ABDF00BB4E1E /* CameraWidgetView.xib in Resources */,
+				3B41238A27C7B0DB00F8D346 /* ActionWidgetContainer.storyboard in Resources */,
 				2DFD87B026FA1B820008C9CB /* FlightDetailsViewController.storyboard in Resources */,
 				FB7FC8FE238E899600111361 /* CameraShutterButton.xib in Resources */,
 				2D312FFE2785FD61000D1D6E /* ProjectNameMenuTableViewCell.xib in Resources */,
@@ -7457,7 +7517,6 @@
 				E42AC25C261CB7DE00A77201 /* SettingsCellularDataCell.xib in Resources */,
 				3C2D70E624A24BEE003CB44D /* GalleryPanorama.storyboard in Resources */,
 				E376C03E23603E02003C5914 /* Rajdhani-Regular.ttf in Resources */,
-				FB37BC7A23C750E40026B055 /* ManagePlans.storyboard in Resources */,
 				84F3FB74244742580073F77A /* DroneCalibrationInstructionsView.xib in Resources */,
 				E3DDBB81244DF20600BDE3F8 /* Occupancy.storyboard in Resources */,
 				F801C3242641AF890008D224 /* roll.json in Resources */,
@@ -7743,6 +7802,7 @@
 				9BE15CFD25E7D65300E1DDC8 /* MagnetometerCalibrationModel.swift in Sources */,
 				13AD867A25EF7EA200A13ABC /* GalleryInternalMediaViewModel.swift in Sources */,
 				FBE6A3D323EC618800EED434 /* HUDAlertBannerAutoLandingViewModel.swift in Sources */,
+				4BC8987727BAAB2400D04F04 /* User+UserStatus.swift in Sources */,
 				84AB351A25384D3A002FEAE2 /* Camera2PhotoResolution+BarItemMode.swift in Sources */,
 				4BA2DAF62732893300C70ED4 /* LiveTelemetryWatcher.swift in Sources */,
 				E49F4ECA23BE473300737D2D /* RemoteImageView.swift in Sources */,
@@ -7855,6 +7915,7 @@
 				7AAA2729270DD90600958867 /* FlightDetailsActionCellModel.swift in Sources */,
 				FBE6A3C123E98E6700EED434 /* MotorError+Utils.swift in Sources */,
 				FB6F15F824041A9900B37142 /* FlightPlanWayPointToPoiPointLineGraphic.swift in Sources */,
+				4B3614B827C39AFB005900DD /* AcademySessionProvider.swift in Sources */,
 				7A805CEB2773000200A1D8AE /* Result+Utils.swift in Sources */,
 				FB4BA8662370560E00AEE0FC /* Radio+Utils.swift in Sources */,
 				E4CD6066260A2A6B00D8320D /* LeftSliderViewModel.swift in Sources */,
@@ -7881,6 +7942,7 @@
 				AF416FCA267FD36E0063603C /* FlightPlanListHeaderViewController.swift in Sources */,
 				6C34B12E26CFC82600EFC42F /* CellularPairingService.swift in Sources */,
 				84B25ADA23EACF7200CE3764 /* UIImageView+Utils.swift in Sources */,
+				3BDAD86A27CD083600DBDC35 /* ActionWidgetViewModel.swift in Sources */,
 				9BB2F381252DC6A900B46239 /* GalleryPanoramaGenerationViewController.swift in Sources */,
 				E4AC48CA24B3300600E234E7 /* PinNumberCollectionViewCell.swift in Sources */,
 				FBBE5A82258776E20088AEA5 /* AGSGraphicsOverlay+Utils.swift in Sources */,
@@ -7904,7 +7966,6 @@
 				E455D52723B0C2CC00D53020 /* RemoteCalibrationViewModel.swift in Sources */,
 				FBE6A3BF23E98A4500EED434 /* Alarm+Utils.swift in Sources */,
 				FB9525A123D09E7400171F3D /* WayPoint+ArcGIS.swift in Sources */,
-				7A6A9EF4275668C800DB7B12 /* ManagePlansCoordinator.swift in Sources */,
 				7AB70AC127026DF8007E5040 /* TapGesturePublisher.swift in Sources */,
 				FB6F15FA2404275500B37142 /* FlightPlanGraphicsOverlay.swift in Sources */,
 				FB25CE692362FFA3003A376F /* HighlightableUIControl.swift in Sources */,
@@ -7949,7 +8010,6 @@
 				FB4BA8682370624D00AEE0FC /* BatteryInfo+Utils.swift in Sources */,
 				E453059A24A1D8D8006A5F28 /* EditionSettingsViewController.swift in Sources */,
 				FB7722A125AC4DCE0021CE34 /* FlightPlanPanelEstimationView.swift in Sources */,
-				FB37BC7B23C750E40026B055 /* ManagePlansViewController.swift in Sources */,
 				EB400024258B78A500C59C17 /* AirSdkMissionsToUploadFinder.swift in Sources */,
 				7A4DA0BC270F49E00005B2CB /* FlightExecutionDetailsStatusCellModel.swift in Sources */,
 				FB49BB76235F05D100D15F0E /* RemoteControl+Utils.swift in Sources */,
@@ -7974,6 +8034,7 @@
 				E467100724EA7C8A003F5178 /* Camera2ShutterSpeed+BarItemMode.swift in Sources */,
 				7A4DA0D527164C6C0005B2CB /* ProjectManagerViewModel.swift in Sources */,
 				7C4496F12375B34D00BB4E1E /* Camera2+Utils.swift in Sources */,
+				7A2CA11E27CCB6AA00FA4146 /* String+Regex.swift in Sources */,
 				E452907323A7875000B5B72A /* DeviceButtonView.swift in Sources */,
 				FBDFDB4B238C257F00E05F67 /* CameraShutterButtonViewModel.swift in Sources */,
 				A3808E422585064D005DA709 /* CorrectionRulerView.swift in Sources */,
@@ -7999,6 +8060,7 @@
 				E46657CA2396A56200BAED0B /* PairingConnectDroneRefreshView.swift in Sources */,
 				7CEC5F782375CA350056A0BD /* BottomBarViewController.swift in Sources */,
 				EB3634FE257F944C0094D769 /* AirSdkMissionMessageToSend.swift in Sources */,
+				7A2CA12427D2317B00FA4146 /* HUDAlertPanelObstacleAvoidanceViewModel.swift in Sources */,
 				E46657C723956E1A00BAED0B /* RemoteConnectDroneModel.swift in Sources */,
 				FB3600D6247FDFC800E8D7CF /* DroneDetailsButtonsViewModel.swift in Sources */,
 				A3C4762F258D245B004FE614 /* VideoControls.swift in Sources */,
@@ -8063,6 +8125,7 @@
 				F8CC96AF26528B4600BBDD1D /* OnboardingTermsOfUseViewController.swift in Sources */,
 				E374809D2387D54A009DCA03 /* MapViewController.swift in Sources */,
 				AFF38B6E26ADB75200701B4F /* EstimationMenuTableViewCell.swift in Sources */,
+				4BC8987427BAA99900D04F04 /* UserService.swift in Sources */,
 				FBCE8F2B25DFFF23003DEA7F /* AGSGeometryEngine+Utils.swift in Sources */,
 				FB85544D238ED63400FA7061 /* ImagingSettingsBarViewController.swift in Sources */,
 				E3F74273243F460100921711 /* MediaVideoBottomBarView.swift in Sources */,
@@ -8092,6 +8155,7 @@
 				84F3FB71244742580073F77A /* DroneCalibrationInstructionsView.swift in Sources */,
 				E197EFCE266CFA3600FC1A15 /* CoreDataManager+Project.swift in Sources */,
 				A3C47623258D23F5004FE614 /* LockAETargetZoneViewController.swift in Sources */,
+				9BB1CF9A27DF956900581C1A /* MapToolBox.swift in Sources */,
 				6A89919423AA6498000F83C0 /* FlightsViewController.swift in Sources */,
 				84BCB4F4244712D700179179 /* MagnetometerCalibrationProcessViewModel.swift in Sources */,
 				FB49BB63235F022E00D15F0E /* TelemetryItemView.swift in Sources */,
@@ -8147,6 +8211,7 @@
 				4BB5F9E827AAE93A0024C922 /* PairingConnectDroneDetailViewModel.swift in Sources */,
 				2D42F48126FB7C4800933440 /* FlightPlanDashboardListViewController.swift in Sources */,
 				E3EE46942625EF0F00CB69A0 /* DevToolboxCell.swift in Sources */,
+				3B701A8C27BA4356000D97DC /* MainBannerInfoView.swift in Sources */,
 				3B3AD667273F9CDD00401F84 /* CollectionViews.swift in Sources */,
 				43D25C0A26D79FF800871062 /* FlightService.swift in Sources */,
 				70639D002628B91700B20641 /* DashboardFooterViewModel.swift in Sources */,
@@ -8187,7 +8252,6 @@
 				E490D2B2260B3F1200A272F2 /* RearRightButtonViewModel.swift in Sources */,
 				FB8DC755235F425F005C6378 /* Drone+Geofence.swift in Sources */,
 				9B13E306256C064200BFEB23 /* ParrotLogEvent+Panel.swift in Sources */,
-				E438D0B5256563F80048A2AA /* UserInformation.swift in Sources */,
 				FB1833542399058C008363AA /* ImagingBarEvCompensationBarView.swift in Sources */,
 				FB53F76F25794B8600D92E20 /* PoiPointRelatedGraphic.swift in Sources */,
 				E40BF68824B88BCF0083651E /* UICollectionViewDelegateFlowLayout+Utils.swift in Sources */,
@@ -8227,6 +8291,7 @@
 				FBDE6AD626400905009FABD9 /* EditableAGSGraphic.swift in Sources */,
 				E1D075F6267A55E30053F02F /* Project+CoreDataProperties.swift in Sources */,
 				709A115C24B5EC1500DC052D /* TransactionHistory.swift in Sources */,
+				3B49161B27C7AD8E00C2EB6B /* ActionWidgetContainerViewController.swift in Sources */,
 				FB79ACF42521D2E100FA6EA7 /* ObstacleAvoidanceSetting.swift in Sources */,
 				7AB70AC527026DF8007E5040 /* UITextField+Publisher.swift in Sources */,
 				9D6A8758279ACA56001B0729 /* UpdateService.swift in Sources */,
@@ -8265,6 +8330,7 @@
 				9BE2001925DEA10F007E7AB8 /* ParrotLogEvent+Common.swift in Sources */,
 				E4CEA19B2461B1E5007E1DF3 /* PhotoLapseModeViewModel.swift in Sources */,
 				FB3600D0247F98DA00E8D7CF /* DeviceDetailsButtonView.swift in Sources */,
+				3BDAD86727CCF9E200DBDC35 /* RthService.swift in Sources */,
 				E46657C323956A5400BAED0B /* PairingConnectDroneViewModel.swift in Sources */,
 				E332AFF324057A1C00ED246E /* MissionsStore.swift in Sources */,
 				EB1AA15125767A7400F3A141 /* HelloWorldMessageToDisplay.swift in Sources */,
@@ -8379,6 +8445,7 @@
 				E43AA4EB25D2743200AC8E3E /* HUDCellularIndicatorView.swift in Sources */,
 				E3996A37241A673900F22F22 /* BottomBarEnums.swift in Sources */,
 				FB85544F238ED6FA00FA7061 /* UIViewController+Children.swift in Sources */,
+				6C5BC0C327C7892100C59737 /* CellularService.swift in Sources */,
 				4CB19A891B2F6252D7385446 /* Colors.swift in Sources */,
 				FBDD9E6025E90759006E8281 /* FlightPlanUnavailabilityReason+Utils.swift in Sources */,
 				7C53ED8A23C4C002001ABF35 /* SecretView.swift in Sources */,
@@ -8513,6 +8580,7 @@
 				6A0460D3243495F200F4B828 /* DownloadButton.swift in Sources */,
 				FB12CA802386944D000E91C6 /* BehaviourModeViewModel.swift in Sources */,
 				84F3FB692447412D0073F77A /* DroneCalibrationAxesView.swift in Sources */,
+				9BEB371D27E88E8E002589D8 /* FlightPlanCourseGraphic.swift in Sources */,
 				FB7DE415245976D20008A1E3 /* GlobalUserStorageViewModel.swift in Sources */,
 				43D25C0226D79FC000871062 /* FlightsViewModel.swift in Sources */,
 				FB9F6960239E676800FCA02A /* ImagingBarAutomatableRulerBarView.swift in Sources */,
@@ -9126,6 +9194,8 @@
 		6A6E379223D09F2400872C2D /* Model.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				4B4C798427FC65C700938301 /* ModelV15.xcdatamodel */,
+				4B1B4A4D27ECB382000F269D /* ModelV14.xcdatamodel */,
 				4BE8B0C227A2D1F6001CE66B /* ModelV13.xcdatamodel */,
 				4BC360F1275F7942005ACD39 /* ModelV12.xcdatamodel */,
 				E14B4F9A26658FD600823551 /* ModelV11.xcdatamodel */,
@@ -9140,7 +9210,7 @@
 				6A3CCB2823E1D0D100D3DF19 /* ModelV2.xcdatamodel */,
 				6A6E379323D09F2400872C2D /* Model.xcdatamodel */,
 			);
-			currentVersion = 4BE8B0C227A2D1F6001CE66B /* ModelV13.xcdatamodel */;
+			currentVersion = 4B4C798427FC65C700938301 /* ModelV15.xcdatamodel */;
 			path = Model.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

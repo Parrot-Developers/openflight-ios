@@ -33,7 +33,7 @@ import CoreLocation
 // MARK: - Public Enums
 /// Mode for `MapViewController`
 public enum MapMode: Equatable {
-    case standard(force2D: Bool)
+    case standard
     case droneDetails
     case myFlights
     case flightPlan
@@ -75,12 +75,23 @@ extension MapMode {
             return true
         }
     }
+
+    /// Whether auto scroll on user or drone location is supported in this mode.
+    var autoScrollSupported: Bool {
+        switch self {
+        case .flightPlanEdition:
+            return false
+        default:
+            return true
+        }
+    }
 }
 
 /// State for center location.
 public enum MapCenterState {
     case drone
     case user
+    case project
     case none
 
     /// Image for center button.
@@ -88,7 +99,7 @@ public enum MapCenterState {
         switch self {
         case .drone:
             return Asset.Map.centerOnDrone.image
-        case .user:
+        case .user, .project:
             return Asset.Map.centerOnUser.image
         case .none:
             return nil

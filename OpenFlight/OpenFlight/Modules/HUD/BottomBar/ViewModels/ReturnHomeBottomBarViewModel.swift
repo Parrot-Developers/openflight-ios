@@ -37,7 +37,7 @@ private extension ULogTag {
 final class ReturnHomeBottomBarViewModel {
 
     /// Current target to RTH
-    @Published private(set) var rthPreferredTarget: String?
+    @Published private(set) var rthTarget: String?
 
     // MARK: - Private Properties
     private let currentDrone = Services.hub.currentDroneHolder
@@ -51,8 +51,8 @@ final class ReturnHomeBottomBarViewModel {
         currentDrone.dronePublisher
             .combineLatest(currentMissionManager.modePublisher)
             .sink { [unowned self] (drone, missionMode) in
-                returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { rth in
-                    rthPreferredTarget = missionMode.rthTitle(rth?.preferredTarget.target) // default
+                returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] rth in
+                    self?.rthTarget = missionMode.rthTitle(rth?.currentTarget)
                 }
             }
             .store(in: &cancellables)

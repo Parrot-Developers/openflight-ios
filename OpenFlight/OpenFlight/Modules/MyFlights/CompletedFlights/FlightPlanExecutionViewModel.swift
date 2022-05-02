@@ -55,24 +55,27 @@ open class FlightPlanExecutionViewModel {
     }
 
     let flightPlan: FlightPlanModel
-    private unowned let coordinator: FlightPlanExecutionDetailsCoordinator
+    private weak var coordinator: FlightPlanExecutionDetailsCoordinator?
     private let flightPlanExecutionDetailsSettingsProvider: FlightPlanExecutionDetailsSettingsProvider
-    private unowned let flightRepository: FlightRepository
+    private weak var flightRepository: FlightRepository?
+    private weak var flightPlanRepository: FlightPlanRepository?
     private let flightPlanUiStateProvider: FlightPlanUiStateProvider
     private let flightService: FlightService
     private let navigationStack: NavigationStackService
 
     init(flightPlan: FlightPlanModel,
          flightRepository: FlightRepository,
+         flightPlanRepository: FlightPlanRepository,
          coordinator: FlightPlanExecutionDetailsCoordinator,
          flightPlanExecutionDetailsSettingsProvider: FlightPlanExecutionDetailsSettingsProvider,
          flightPlanUiStateProvider: FlightPlanUiStateProvider,
          flightService: FlightService,
          navigationStack: NavigationStackService) {
-        self.flightPlan = flightPlan
+        self.flightPlan = flightPlanRepository.getFlightPlan(withUuid: flightPlan.uuid) ?? flightPlan
         self.coordinator = coordinator
         self.flightPlanExecutionDetailsSettingsProvider = flightPlanExecutionDetailsSettingsProvider
         self.flightRepository = flightRepository
+        self.flightPlanRepository = flightPlanRepository
         self.flightPlanUiStateProvider = flightPlanUiStateProvider
         self.flightService = flightService
         self.navigationStack = navigationStack
@@ -80,14 +83,14 @@ open class FlightPlanExecutionViewModel {
 
     /// Back button tapped.
     func didTapBack() {
-        coordinator.dismissDetails()
+        coordinator?.dismissDetails()
     }
 
     /// Ask confirmation to delete flight.
     func askForDeletion() {
-        coordinator.showDeleteFlightPopupConfirmation(didTapDelete: { [unowned self] in
+        coordinator?.showDeleteFlightPopupConfirmation(didTapDelete: { [unowned self] in
             Services.hub.flightPlan.manager.delete(flightPlan: flightPlan)
-            coordinator.dismissDetails()
+            coordinator?.dismissDetails()
         })
      }
 
@@ -100,7 +103,7 @@ open class FlightPlanExecutionViewModel {
 
     var executionInfoProvider: FlightPlanExecutionInfoCellProvider {
         let flightUuids = flightPlan.flightPlanFlights?.map({ $0.flightUuid }) ?? []
-        let flights = flightRepository.getFlights(withUuids: flightUuids)
+        let flights = flightRepository?.getFlights(withUuids: flightUuids) ?? []
         let project = Services.hub.flightPlan.projectManager.project(for: flightPlan)
 
         let title = project?.title ?? Style.dash
@@ -130,9 +133,10 @@ open class FlightPlanExecutionViewModel {
     }
 
     var statusCellModel: FlightExecutionDetailsStatusCellModel {
-       FlightExecutionDetailsStatusCellModel(flightPlan: flightPlan,
-                                              flightPlanUiStateProvider: flightPlanUiStateProvider,
-                                              coordinator: coordinator)
+        let flightPlan = flightPlanRepository?.getFlightPlan(withUuid: self.flightPlan.uuid) ?? flightPlan
+        return FlightExecutionDetailsStatusCellModel(flightPlan: flightPlan,
+                                                     flightPlanUiStateProvider: flightPlanUiStateProvider,
+                                                     coordinator: coordinator)
     }
 
     var flightPlanUiStateProviderPublisher: AnyPublisher<FlightPlanStateUiParameters, Never> {
@@ -143,7 +147,12 @@ open class FlightPlanExecutionViewModel {
 
     /// Flights trajectories points.
     public var flightsPoints: [[TrajectoryPoint]] {
-        let flightUuids = flightPlan.flightPlanFlights?.map({ $0.flightUuid }) ?? []
+        guard let flightRepository = flightRepository,
+              let flightPlanAndFlightLinks = flightPlan.flightPlanFlights
+        else { return [] }
+
+        let flightUuids = flightPlanAndFlightLinks.map({ $0.flightUuid })
+
         return flightRepository.getFlights(withUuids: flightUuids)
             .compactMap { flightService.gutma(flight: $0) }
             .map { gutma in
@@ -154,7 +163,7 @@ open class FlightPlanExecutionViewModel {
     /// Whether trajectory points altitudes are in ASML.
     public var hasAsmlAltitude: Bool {
         if let flightPlanFlight = flightPlan.flightPlanFlights?.first,
-           let flight = flightRepository.getFlight(withUuid: flightPlanFlight.flightUuid),
+           let flight = flightRepository?.getFlight(withUuid: flightPlanFlight.flightUuid),
            let gutma = flightService.gutma(flight: flight) {
             return gutma.hasAsmlAltitude
         } else {
@@ -176,18 +185,28 @@ private struct FlightPlanExecutionInfoCellProviderImpl: FlightPlanExecutionInfoC
         // An execution can span multiple flights. The (duration,power,distance)
         // related to an execution thus constists of the sum of sub-executions
         // in all flights related with the execution.
-        let sum = flights.reduce((duration: 0.0, battery: 0.0, distance: 0.0)) { sum, flight in
+        let sum = flights.reduce((duration: 0.0,
+                                  battery: 0.0,
+                                  distance: 0.0,
+                                  photoCount: 0,
+                                  videoCount: 0)) { sum, flight in
             let gutma = flightService.gutma(flight: flight)
             let duration = gutma?.flightPlanDuration(flightPlan) ?? 0
             let battery = gutma?.flightPlanBatteryConsumption(flightPlan) ?? 0
             let distance = gutma?.flightPlanDistance(flightPlan) ?? 0
+            let photoCount = gutma?.flightPlanPhotoCount(flightPlan) ?? 0
+            let videoCount = gutma?.flightPlanVideoCount(flightPlan) ?? 0
             return (duration: sum.duration + duration,
                     battery: sum.battery + battery,
-                    distance: sum.distance + distance)
+                    distance: sum.distance + distance,
+                    photoCount: sum.photoCount + photoCount,
+                    videoCount: sum.videoCount + videoCount)
         }
         return FlightExecutionSummaryProvider(duration: sum.duration,
                                               batteryConsumption: Int(sum.battery),
-                                              distance: sum.distance)
+                                              distance: sum.distance,
+                                              photoCount: Int(sum.photoCount),
+                                              videoCount: Int(sum.videoCount))
     }
 }
 
@@ -195,6 +214,8 @@ private struct FlightExecutionSummaryProvider: FlightDetailsSummaryViewProvider 
     let duration: Double
     let batteryConsumption: Int
     let distance: Double
+    let photoCount: Int
+    let videoCount: Int
 }
 
 private struct CellProviderImpl: FlightExecutionDetailsSettingsCellProvider {

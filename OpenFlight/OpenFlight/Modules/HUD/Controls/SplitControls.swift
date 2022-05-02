@@ -45,10 +45,9 @@ public class SplitControls: NSObject, DelayedTaskProvider {
     @IBOutlet private weak var splitTouchView: UIView!
     @IBOutlet private weak var cameraSlidersHUD: UIView!
     @IBOutlet private weak var bottomBarContainerHUD: UIView!
-    @IBOutlet private weak var centerMapButton: UIButton! {
+    @IBOutlet private weak var centerMapButton: InsetHitAreaButton! {
         didSet {
             centerMapButton.setImage(Asset.Map.centerOnUser.image, for: .normal)
-            centerMapButton.applyHUDRoundButtonStyle()
         }
     }
     @IBOutlet private weak var splitViewConstraint: NSLayoutConstraint!
@@ -81,12 +80,6 @@ public class SplitControls: NSObject, DelayedTaskProvider {
     @IBOutlet private var secondaryViewTopToSuperviewIpadConstraint: NSLayoutConstraint! {
         didSet {
             secondaryViewTopToSuperviewIpadConstraint.isActive = false
-        }
-    }
-
-    @IBOutlet private var streamMiniatureTrailingAlertView: NSLayoutConstraint! {
-        didSet {
-            streamMiniatureTrailingAlertView.isActive = false
         }
     }
 
@@ -212,6 +205,11 @@ public class SplitControls: NSObject, DelayedTaskProvider {
     private let viewModel = SplitControlsViewModel()
     public var forceStream: Bool = false
 
+    /// Whether to disabled user interaction for the map
+    private var mapDisabledUserInteractionSubject = CurrentValueSubject<Bool, Never>(false)
+    /// Publisher to know if user interaction for the map is disabled.
+    public var mapDisabledUserInteractionPublisher: AnyPublisher<Bool, Never> { mapDisabledUserInteractionSubject.eraseToAnyPublisher() }
+
     private unowned var currentMissionManager: CurrentMissionManager!
     private var preferredSplitPosition: CGFloat?
     private var defaultSplitPosition: CGFloat {
@@ -282,7 +280,6 @@ public class SplitControls: NSObject, DelayedTaskProvider {
         guard let currentMode = viewModel.mode else {
             return
         }
-        streamMiniatureTrailingAlertView.isActive = false
         streamTrailingToSuperviewConstraint.isActive = false
         if currentMode == .secondary {
             secondaryViewToSplitViewConstraint.isActive = false
@@ -293,6 +290,7 @@ public class SplitControls: NSObject, DelayedTaskProvider {
         }
         viewModel.setMode(currentMissionManager.mode.preferredSplitMode)
         updateSplitModeLayout(currentMode, animated: false)
+        centerMapButton.applyHUDRoundButtonStyle()
     }
 
     /// Sets up initial split screen position.
@@ -472,7 +470,7 @@ private extension SplitControls {
     func switchToSplitScreenFromSecondaryTap(animated: Bool = true) {
         viewModel.setMode(.splited)
         secondaryViewButton.isUserInteractionEnabled = false
-        mapViewController?.disableUserInteraction(false)
+        mapDisabledUserInteractionSubject.value = false
         displayMapOr3DasChild()
 
         if animated {
@@ -512,8 +510,7 @@ private extension SplitControls {
         view.insertSubview(streamContainerView, aboveSubview: secondaryContainerView)
         cameraStreamingViewController?.removeBorder()
         streamButton.isUserInteractionEnabled = false
-        mapViewController?.disableUserInteraction(false)
-
+        mapDisabledUserInteractionSubject.value = false
         if animated {
             UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: { [weak self] in
                 // Moves stream from miniature to splited position.
@@ -571,7 +568,7 @@ private extension SplitControls {
         viewModel.setMode(.secondary)
         view.insertSubview(streamContainerView, aboveSubview: secondaryContainerView)
         streamButton.isUserInteractionEnabled = true
-        mapViewController?.disableUserInteraction(false)
+        mapDisabledUserInteractionSubject.value = false
         cameraStreamingViewController?.mode = .preview
 
         UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: { [weak self] in
@@ -600,7 +597,7 @@ private extension SplitControls {
         viewModel.setMode(.secondary)
         view.insertSubview(streamContainerView, aboveSubview: secondaryContainerView)
         streamButton.isUserInteractionEnabled = true
-        mapViewController?.disableUserInteraction(false)
+        mapDisabledUserInteractionSubject.value = false
         cameraStreamingViewController?.mode = .preview
 
         secondaryViewToSplitViewConstraint.isActive = false
@@ -618,7 +615,7 @@ private extension SplitControls {
         viewModel.setMode(.stream)
         view.insertSubview(aeLockContainerView, aboveSubview: streamContainerView)
         view.insertSubview(secondaryContainerView, aboveSubview: streamContainerView)
-        mapViewController?.disableUserInteraction(true)
+        mapDisabledUserInteractionSubject.value = true
         secondaryViewButton.isUserInteractionEnabled = true
         displayMapOr3DasChild()
 
@@ -646,7 +643,7 @@ private extension SplitControls {
         viewModel.setMode(.stream)
         view.insertSubview(aeLockContainerView, aboveSubview: streamContainerView)
         view.insertSubview(secondaryContainerView, aboveSubview: streamContainerView)
-        mapViewController?.disableUserInteraction(true)
+        mapDisabledUserInteractionSubject.value = true
         secondaryViewButton.isUserInteractionEnabled = true
         displayMapOr3DasChild()
 
@@ -665,7 +662,7 @@ private extension SplitControls {
         viewModel.setMode(.stream)
         cameraStreamingViewController?.removeBorder()
         streamButton.isUserInteractionEnabled = false
-        mapViewController?.disableUserInteraction(true)
+        mapDisabledUserInteractionSubject.value = true
 
         if animated {
             UIView.animate(withDuration: Constants.defaultAnimationDuration, animations: { [weak self] in
@@ -714,7 +711,7 @@ private extension SplitControls {
     func switchFromStreamingToSecondaryFullScreen(animated: Bool = true) {
         viewModel.setMode(.secondary)
         secondaryViewButton.isUserInteractionEnabled = false
-        mapViewController?.disableUserInteraction(false)
+        mapDisabledUserInteractionSubject.value = false
         cameraStreamingViewController?.mode = .preview
 
         if animated {
@@ -847,7 +844,7 @@ extension SplitControls {
     /// - Parameters:
     ///     - hide: state of display of bottom bar
     public func hideBottomBar(hide: Bool) {
-        bottomBarContainerHUD.isHidden = hide
+        bottomBarContainerHUD.showFromEdge(.bottom, show: !hide, fadeFrom: 1)
     }
 
     /// Change display of camera sliders in HUD
@@ -855,7 +852,7 @@ extension SplitControls {
     /// - Parameters:
     ///     - hide: state of display of camera sliders
     public func hideCameraSliders(hide: Bool) {
-        cameraSlidersHUD.isHidden = hide
+        cameraSlidersHUD.showFromEdge(.left, show: !hide, fadeFrom: 1)
     }
 
     /// Update the right pannel with Map or 3D View

@@ -47,6 +47,8 @@ public protocol LocationsTracker: AnyObject {
     var userLocation: OrientedLocation { get }
     /// Drone location
     var droneLocation: OrientedLocation { get }
+    /// Return home location
+    var returnHomeLocation: CLLocationCoordinate2D? { get }
 }
 
 /// Private UserDefaults keys
@@ -73,6 +75,7 @@ class LocationsTrackerImpl {
     private var droneGimbalRef: Ref<Gimbal>?
     private var userLocationRef: Ref<UserLocation>?
     private var userHeadingRef: Ref<UserHeading>?
+    private var returnHomeRef: Ref<ReturnHomePilotingItf>?
     private var remoteControlCompassRef: Ref<Compass>?
     private var oldLandscapeInterfaceOrientation: UIInterfaceOrientation = .landscapeLeft
     private var takeOffAltitude: Double?
@@ -86,6 +89,9 @@ class LocationsTrackerImpl {
     }
     /// Current drone location
     private var droneLocationSubject = CurrentValueSubject<Location3D?, Never>(nil)
+    /// Current return home location
+    private var returnHomeLocationSubject = CurrentValueSubject<CLLocationCoordinate2D?, Never>(nil)
+
     /// Current user device heading from GroundSdk
     private var rawUserDeviceHeadingSubject = CurrentValueSubject<Double, Never>(0.0)
     /// Device's orientation
@@ -162,6 +168,7 @@ class LocationsTrackerImpl {
                 listenGPS(drone: drone)
                 listenGimbal(drone: drone)
                 listenAltimeter(drone: drone)
+                listenRth(drone: drone)
             }
             .store(in: &cancellables)
     }
@@ -268,10 +275,23 @@ private extension LocationsTrackerImpl {
             rawUserDeviceHeadingSubject.value = remoteControlHeading > 180 ? remoteControlHeading - 360 : remoteControlHeading
         }
     }
+
+    /// Starts watcher for return home
+    func listenRth(drone: Drone) {
+        returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] returnHome in
+            guard let returnHomeLocation = returnHome?.homeLocation else { return }
+            self.returnHomeLocationSubject.value = returnHomeLocation.coordinate
+        }
+    }
 }
 
 /// `LocationsTracker` conformance
 extension LocationsTrackerImpl: LocationsTracker {
+
+    var returnHomeLocation: CLLocationCoordinate2D? {
+        return returnHomeLocationSubject.value
+    }
+
 
     var userLocation: OrientedLocation {
         if let location = userLocationSubject.value {

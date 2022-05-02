@@ -125,6 +125,11 @@ public protocol FlightPlanRepository: AnyObject {
     ///     - Date if found
     func getLastFlightDateOfFlightPlan(_ flightPlanModel: FlightPlanModel) -> Date?
 
+    /// Get the first FlightPlan's Flight date.
+    /// - Parameter flightPlanModel: the Flight Plan
+    /// - Returns: the `Date` if exists, `nil` otherwise
+    func firstFlightDate(of flightPlanModel: FlightPlanModel) -> Date?
+
     /// Get count of all FlightPlans
     /// - Returns: Count of all FlightPlans
     func getAllFlightPlansCount() -> Int
@@ -148,13 +153,11 @@ public protocol FlightPlanRepository: AnyObject {
     /// - Parameter uuid: FlightPlan's UUID to remove
     func deleteOrFlagToDeleteFlightPlan(withUuid uuid: String)
 
-    /// Delete FlightPlan in CoreData with UUID and relation of thumnail, projects and flightplanflights
-    /// - Parameter uuid: FlightPlan UUID to search
-    func deleteFlightPlanAndRelation(withUuid uuid: String)
-
-    /// Delete FlightPlan in CoreData with UUID and relation of thumnail, projects and flightplanflights
-    /// - Parameter uuid: FlightPlan UUID to search
-    func deleteFlightPlanAndSyncRelation(withUuid uuid: String)
+    /// Delete from CoreData the FlightPlan with specified `uuid`.
+    /// - Parameters:
+    ///    - uuid: the  FlightPlan's `uuid`
+    ///    - completion: the completion block with the deletion status (`true` in case of successful deletion)
+    func deleteFlightPlan(withUuid uuid: String, completion: ((_ status: Bool) -> Void)?)
 
     /// Delete FlightPlans in CoreData with UUIDs
     /// - Parameter uuids: List of  UUIDs to search
@@ -250,7 +253,7 @@ extension CoreDataServiceImpl: FlightPlanRepository {
                 if let thumbnailModifDate = thumbnailModifDate, toSynchro {
                     latestThumbnailLocalModificationDate.send(thumbnailModifDate)
                 }
-
+                ULog.i(.dataModelTag, "🗺⬇️🟢 saveOrUpdateFlightPlan \(flightPlanModel.uuid) - Flight Plan stored Locally")
                 flightPlansDidChangeSubject.send()
                 completion?(true)
             case .failure(let error):
@@ -348,6 +351,19 @@ extension CoreDataServiceImpl: FlightPlanRepository {
         return flightPlan.flightPlanFlights?.compactMap { $0.ofFlight?.startTime }.max() ?? flightPlan.lastUpdate
     }
 
+    public func firstFlightDate(of flightPlanModel: FlightPlanModel) -> Date? {
+        // Get the FP Core Data Object.
+        guard let flightPlanObject = getFlightPlanCD(withUuid: flightPlanModel.uuid)
+        else { return nil }
+        // Returns the first FlightPlan's Flight date.
+        // 1 - Get all FP <-> Flight links.
+        // 2 - Map them to the Flight's start date.
+        // 3 - Get the oldest date.
+        return flightPlanObject.flightPlanFlights?
+            .compactMap { $0.ofFlight?.startTime }
+            .min()
+    }
+
     public func getAllFlightPlansCount() -> Int {
         return getAllFlightPlansCountCD(toBeDeleted: false)
     }
@@ -387,6 +403,7 @@ extension CoreDataServiceImpl: FlightPlanRepository {
                 updatePgyProjectToBeDeleted(withProjectId: relatedPgyProject.pgyProjectId)
             }
 
+            ULog.d(.dataModelTag, "🗺🗑 deleteOrFlagToDeleteFlightPlan, uuid: \(uuid)")
             if flightPlan.cloudId == 0 {
                 context.delete(flightPlan)
             } else {
@@ -403,60 +420,37 @@ extension CoreDataServiceImpl: FlightPlanRepository {
                     latestFlightPlanLocalModificationDate.send(modifDate)
                 }
 
+                ULog.d(.dataModelTag, "🗺🗑🟢 deleteOrFlagToDeleteFlightPlan, uuid: \(uuid)")
                 flightPlansDidChangeSubject.send()
             case .failure(let error):
                 ULog.e(.dataModelTag,
-                       "Error deleteOrFlagToDeleteFlightPlan(fromFlightPlanModel:) with UUID: \(uuid) - error: \(error.localizedDescription)")
+                       "🗺🗑🔴 Error deleteOrFlagToDeleteFlightPlan(fromFlightPlanModel:) with UUID: \(uuid) - error: \(error.localizedDescription)")
             }
         })
     }
 
-    public func deleteFlightPlanAndRelation(withUuid uuid: String) {
-        performAndSave({ [unowned self] _ in
+    public func deleteFlightPlan(withUuid uuid: String, completion: ((_ status: Bool) -> Void)?) {
+
+        performAndSave({ [unowned self] context in
             guard let flightPlan = getFlightPlanCD(withUuid: uuid) else {
+                completion?(false)
                 return false
             }
 
-            if let relatedthumbnail = flightPlan.thumbnail {
-                deleteOrFlagToDeleteThumbnail(withUuid: relatedthumbnail.uuid)
-                flightPlan.thumbnail = nil
-                flightPlan.thumbnailUuid = nil
+            ULog.d(.dataModelTag, "🗺🗑 deleteFlightPlan, uuid: \(uuid)")
+            context.delete(flightPlan)
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                ULog.d(.dataModelTag, "🗺🗑🟢 deleteFlightPlan, uuid: \(uuid)")
+                flightPlansDidChangeSubject.send()
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag,
+                       "🗺🗑🔴 Error deleteFlightPlan, uuid: \(uuid) - error: \(error.localizedDescription)")
+                completion?(false)
             }
-
-            deleteOrFlagToDeleteFPlanFlights(withFlightPlanUuid: flightPlan.uuid)
-            flightPlan.flightPlanFlights = nil
-
-            if let relatedPgyProject = getPgyProject(withProjectId: flightPlan.pgyProjectId) {
-                updatePgyProjectToBeDeleted(withProjectId: relatedPgyProject.pgyProjectId)
-            }
-
-            deleteFlightPlansCD([flightPlan])
-
-            return false
-        })
-    }
-
-    public func deleteFlightPlanAndSyncRelation(withUuid uuid: String) {
-        performAndSave({ [unowned self] _ in
-            guard let flightPlan = getFlightPlanCD(withUuid: uuid) else {
-                return false
-            }
-
-            if let relatedThumbnail = flightPlan.thumbnail {
-                deleteThumbnails(withUuids: [relatedThumbnail.model().uuid])
-                flightPlan.thumbnail = nil
-                flightPlan.thumbnailUuid = nil
-            }
-
-            deleteOrFlagToDeleteFPlanFlights(withFlightPlanUuid: flightPlan.uuid)
-            flightPlan.flightPlanFlights = nil
-
-            if let relatedPgyProject = getPgyProject(withProjectId: flightPlan.pgyProjectId) {
-                deletePgyProject(withProjectId: relatedPgyProject.pgyProjectId, updateRelatedFlightPlan: false)
-            }
-            deleteFlightPlansCD([flightPlan])
-
-            return false
         })
     }
 
@@ -470,25 +464,18 @@ extension CoreDataServiceImpl: FlightPlanRepository {
             return
         }
 
-        performAndSave({ context in
+        batchDeleteAndSave({ _ in
+            ULog.i(.dataModelTag, "Deleting FlightPlans... uuids: (\(uuids.joined(separator: ",")))")
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: FlightPlan.entityName)
             let uuidPredicate = NSPredicate(format: "uuid IN %@", uuids)
             fetchRequest.predicate = uuidPredicate
 
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
-            do {
-                try context.execute(deleteRequest)
-                return true
-            } catch let error {
-                ULog.e(.dataModelTag, "An error is occured when batch delete FlightPlan in CoreData : \(error.localizedDescription)")
-                completion?(false)
-                return false
-            }
+            return fetchRequest
         }, { [unowned self] result in
             switch result {
             case .success:
                 flightPlansDidChangeSubject.send()
+                ULog.i(.dataModelTag, "FlightPlans Deleted. uuids: (\(uuids.joined(separator: ",")))")
                 completion?(true)
             case .failure(let error):
                 ULog.e(.dataModelTag, "Error deleteFlightPlan with UUIDs error: \(error.localizedDescription)")
@@ -525,7 +512,7 @@ internal extension CoreDataServiceImpl {
     func getAllFlightPlansCountCD(toBeDeleted: Bool?) -> Int {
         let fetchRequest = FlightPlan.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
 
         if let toBeDeleted = toBeDeleted {
             let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
@@ -546,7 +533,7 @@ internal extension CoreDataServiceImpl {
     func getAllFlightPlansCD(toBeDeleted: Bool?) -> [FlightPlan] {
         let fetchRequest = FlightPlan.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
 
         if let toBeDeleted = toBeDeleted {
             let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))

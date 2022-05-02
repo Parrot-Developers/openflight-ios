@@ -44,8 +44,10 @@ protocol GalleryMediaFullScreenCellDelegate: AnyObject {
 struct GalleryMediaFullScreenCellModel {
     /// The url of the media to display.
     var url: URL?
-    /// Whether media to display has a `Generate Panorama` button.
-    var hasGeneratePanoramaButton = false
+    /// Whether the cell is an additional panorama cell (used for generation).
+    var isAdditionalPanoramaCell = false
+    /// The panorama generation state.
+    var panoramaGenerationState: PanoramaGenerationState
     /// Whether media to display can show an immersive panorama.
     var hasShowImmersivePanoramaButton = false
 }
@@ -66,6 +68,7 @@ final class GalleryMediaFullScreenCollectionViewCell: UICollectionViewCell, NibR
     @IBOutlet private weak var zoomableImageWidthConstraint: NSLayoutConstraint!
     @IBOutlet private weak var zoomableImageHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var generatePanoramaButton: ActionButton!
+    @IBOutlet private weak var expectedResourcesErrorInfoView: MainBannerInfoView!
     @IBOutlet private weak var showImmersivePanoramaButton: UIButton!
 
     // MARK: - Private Enums
@@ -77,7 +80,7 @@ final class GalleryMediaFullScreenCollectionViewCell: UICollectionViewCell, NibR
     // MARK: - Private Properties
     private var previousUrl: String?
     private var canGeneratePanorama: Bool {
-        model?.hasGeneratePanoramaButton == true && !isLoading
+        model?.isAdditionalPanoramaCell == true && !isLoading
     }
     private var canShowImmersivePanorama: Bool {
         model?.hasShowImmersivePanoramaButton == true && !isLoading
@@ -138,7 +141,7 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
 
     /// Sets up UI.
     func setupView() {
-        let zoomable = model?.hasGeneratePanoramaButton != true
+        let zoomable = model?.isAdditionalPanoramaCell != true
         scrollView.minimumZoomScale = Constants.minZoom
         scrollView.maximumZoomScale = zoomable ? Constants.maxZoom : Constants.minZoom
         scrollView.contentInsetAdjustmentBehavior = .never
@@ -149,6 +152,9 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
         showImmersivePanoramaButton.cornerRadiusedWith(backgroundColor: .white, radius: Style.largeCornerRadius)
 
         isLoading = imageView.image == nil
+        expectedResourcesErrorInfoView.model = .init(icon: Asset.Gallery.mediaCorrupted.image,
+                                                     iconTintColor: ColorName.errorColor.color,
+                                                     title: L10n.galleryPanoramaGenerationErrorMissingPhotos)
         updateState()
     }
 
@@ -174,7 +180,9 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
 
     /// Updates buttons state according to model.
     func updateState() {
-        generatePanoramaButton.isHidden = !canGeneratePanorama
+        let shouldShowPanoramaGenerationError = canGeneratePanorama && model?.panoramaGenerationState == .missingResources
+        expectedResourcesErrorInfoView.isHidden = !shouldShowPanoramaGenerationError
+        generatePanoramaButton.isHidden = !canGeneratePanorama || model?.panoramaGenerationState != .toGenerate
         imageView.contentMode = canGeneratePanorama ? .scaleAspectFill : .scaleAspectFit
 
         showImmersivePanoramaButton.isHidden = !canShowImmersivePanorama

@@ -41,7 +41,7 @@ public extension MapViewController {
     private enum Constants {
         static let overlayKey: String = "flightPlanOverlayKey"
         static let flightPlanEnvelopeMarginFactor: Double = 1.4
-        static let sceneViewIdentifyTolerance: Double = 0.0
+        static let sceneViewIdentifyTolerance: Double = 22
         static let sceneViewIdentifyMaxResults: Int = 5
         static let defaultPointAltitude: Double = 5.0
         static let defaultWayPointYaw: Double = 0.0
@@ -55,6 +55,7 @@ public extension MapViewController {
     ///     - state: Mission Mode State
     func setupFlightPlanListener(for state: MissionProviderState) {
         flightEditionService = Services.hub.flightPlan.edition
+        flightPlanManager = Services.hub.flightPlan.run
         if state.mode?.flightPlanProvider != nil {
             // Reset registration.
             editionCancellable = flightEditionService?.currentFlightPlanPublisher
@@ -92,17 +93,16 @@ public extension MapViewController {
         // Create new overlays.
         let graphics = provider?.graphicsWithFlightPlan(flightPlan, mapMode: currentMapMode) ?? []
         let newOverlay = FlightPlanGraphicsOverlay(graphics: graphics)
-        // Add overlays to scene.
-        addGraphicOverlay(newOverlay, forKey: Constants.overlayKey, at: 0)
+        // Add overlays to scene only if not in miniature mode.
+        if !isMiniMap {
+            addGraphicOverlay(newOverlay, forKey: Constants.overlayKey, at: 0)
+        }
         // Update type of map to get altitude.
         updateElevationVisibility()
 
         // Move user and drone graphic if necessary in flight plan overlay
         insertUserGraphic()
         insertDroneGraphic()
-        if shouldReloadCamera {
-            reloadCamera(flightPlan: flightPlan)
-        }
 
         // update heading correction of flight plan origin graphic
         graphics.compactMap { $0 as? FlightPlanOriginGraphic }.first.map {
@@ -110,98 +110,57 @@ public extension MapViewController {
             $0.update(magicNumber: headingFactor)
         }
 
-        // get first waypoint
-        guard let firstWayPoint = flightPlan.dataSetting?.wayPoints.first?.agsPoint else { return }
-
         // wait for elevation data to be ready before applying an altitude offset
-        viewModel.elevationSource.$elevationLoaded
-            .filter { $0 }
+        // and update the map view point; the cancellable is stored in a dedicated
+        // variable in order to cancel any pending adjustments
+        adjustAltitudeAndCameraCancellable = viewModel.elevationSource.$elevationLoaded
             .removeDuplicates()
-            .sink { [unowned self] _ in
-                adjustAltitude(overlay: newOverlay, firstWayPoint: firstWayPoint)
+            .filter { $0 }
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.adjustAltitudeAndCamera(overlay: newOverlay,
+                                             flightPlan: flightPlan,
+                                             shouldReloadCamera: shouldReloadCamera)
             }
-            .store(in: &cancellables)
     }
 
-    /// Applies an altitude offset to graphics overlay, corresponding to altitude in AMSL of first waypoint.
+    /// Applies an altitude offset to graphics overlay, corresponding to altitude in AMSL of first waypoint and ajdusts map view point.
     ///
     /// Flight plan's altitudes are relative to first waypoint altitude.
     /// The flight plan overlay is drawn in absolute mode.
     /// So we apply first waypoint altitude as overlay altitude offset.
     ///
     /// - Parameters:
-    ///   - overlay: graphics overlay that handles flight plan display
-    ///   - firstWayPoint: first flight plan waypoint
-    func adjustAltitude(overlay: AGSGraphicsOverlay, firstWayPoint: AGSPoint) {
-        sceneView.scene?.baseSurface?.elevation(for: firstWayPoint) { elevation, error in
+    ///    - overlay: graphics overlay that handles flight plan display
+    ///    - flightPlan: displayed flight plan
+    ///    - shouldReloadCamera: whether scene's camera should be reloaded
+    func adjustAltitudeAndCamera(overlay: AGSGraphicsOverlay,
+                                 flightPlan: FlightPlanModel,
+                                 shouldReloadCamera: Bool) {
+        // get first waypoint
+        guard let firstWayPoint = flightPlan.dataSetting?.wayPoints.first?.agsPoint else { return }
+
+        sceneView.scene?.baseSurface?.elevation(for: firstWayPoint) { [weak self] elevation, error in
             guard error == nil else { return }
             overlay.sceneProperties?.altitudeOffset = elevation
+            if shouldReloadCamera {
+                self?.reloadCamera(flightPlan: flightPlan, altitudeOffset: elevation)
+            }
         }
     }
 
-    func reloadCamera(flightPlan: FlightPlanModel) {
+    func reloadCamera(flightPlan: FlightPlanModel, altitudeOffset: Double) {
         guard let dataSetting = flightPlan.dataSetting
             else { return }
-        let bufferedExtent = dataSetting.polyline
-            .envelopeWithMargin(Constants.flightPlanEnvelopeMarginFactor)
-        // Move view point of scene.
-        let viewPoint = AGSViewpoint(targetExtent: bufferedExtent)
 
-        // Get coordinate to calculate zoom
-        if let surface = sceneView.scene?.baseSurface {
-            surface.elevation(for: AGSPoint(clLocationCoordinate2D: viewPoint.targetGeometry.envelopeWithMargin().center.toCLLocationCoordinate2D()),
-                completion: { [weak self] altitude, error in
-
-                self?.errorMapAltitude = error != nil
-                self?.currentMapAltitude = (error == nil ? altitude : 100.0) + dataSetting.maxAltitude
-
-                let realAltitude = self?.currentMapAltitude ?? 0.0
-                let bufferedExtent = dataSetting.polyline.envelopeWithMargin(self?.getMargin(realAltitude) ?? Constants.flightPlanEnvelopeMarginFactor)
-                // Move view point of scene.
-                let newViewPoint = AGSViewpoint(targetExtent: bufferedExtent)
-                // Update graphics for current camera.
-                self?.updateViewPoint(newViewPoint, animated: false)
-                self?.updateElevationVisibility()
-                self?.flightPlanOverlay?.update(heading: self?.flightPlanOverlay?.cameraHeading ?? 0)
-                // insert user and drone locations graphics to flight plan overlay
-                self?.insertUserGraphic()
-                self?.insertDroneGraphic()
-            })
-        } else {
-            // Update graphics for current camera.
-            updateViewPoint(viewPoint, animated: false)
-            updateElevationVisibility()
-            flightPlanOverlay?.update(heading: flightPlanOverlay?.cameraHeading ?? 0)
-            // insert user and drone locations graphics to flight plan overlay
-            insertUserGraphic()
-            insertDroneGraphic()
-        }
-    }
-
-    /// Get margin to display flight plan.
-    ///
-    /// - Parameters:
-    ///    - altitude: flight plan altitude
-    func getMargin(_ altitude: Double) -> Double {
-        let base = Constants.flightPlanEnvelopeMarginFactor
-        var coeff = 0.5
-        switch altitude {
-        case ..<500:
-            coeff = 0.5
-        case 500..<1000:
-            coeff = 0.45
-        case 1000..<1500:
-            coeff = 0.3
-        case 1500..<2000:
-            coeff = 0.2
-        case 2000..<2500:
-            coeff = 0.15
-        case 2500..<3000:
-            coeff = 0.1
-        default:
-            coeff = 0.05
-        }
-        return base + altitude / Constants.altitudeDivider * coeff
+        let viewPoint = viewPoint(polyline: dataSetting.polyline,
+                                  altitudeOffset: shouldDisplayMapIn2D ? nil : altitudeOffset)
+        updateViewPoint(viewPoint, animated: false)
+        updateElevationVisibility()
+        flightPlanOverlay?.update(heading: flightPlanOverlay?.cameraHeading ?? 0)
+        // insert user and drone locations graphics to flight plan overlay
+        insertUserGraphic()
+        insertDroneGraphic()
     }
 
     /// Remove currently loaded flight plan from display.
@@ -425,7 +384,7 @@ private extension MapViewController {
         sceneView?.scene?.baseSurface?.isEnabled = false
     }
 
-    /// Enables elevation and displays flight plan in `relative` mode.
+    /// Enables elevation and displays flight plan in `absolute` mode.
     func enableElevation() {
         flightPlanOverlay?.sceneProperties?.surfacePlacement = .absolute
         sceneView?.scene?.baseSurface?.isEnabled = true

@@ -86,6 +86,7 @@ final class MediaVideoBottomBarView: UIView, NibOwnerLoadable {
         durationLabel.text = duration.formattedString
         positionLabel.text = position.formattedString
         slider.setValue(Float(position), animated: true)
+        showFromEdge(.bottom, show: duration != 0, fadeFrom: 1) // hide bar if duration is 0
     }
 
     func updateSliderStyle() {

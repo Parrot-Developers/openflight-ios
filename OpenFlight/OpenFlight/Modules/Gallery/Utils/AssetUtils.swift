@@ -48,9 +48,16 @@ final class AssetUtils {
 
     /// A struct used to associate some media information with its local URL.
     struct MediaItemResourceInfo: Codable {
+        /// The media ID.
         var mediaId: String
+        /// The media custom ID (for resources grouping).
         var customId: String?
+        /// The media customtitle (project and execution names).
+        var customTitle: String?
+        /// Whether the media is a panorama.
         var isPanorama: Bool = false
+        /// The expected resources count for media (if available).
+        var expectedCount: UInt64?
     }
 
     // MARK: - Private Properties
@@ -177,7 +184,9 @@ extension AssetUtils {
         }
         let mediaInfo = AssetUtils.MediaItemResourceInfo(mediaId: media.uid,
                                                          customId: media.customId,
-                                                         isPanorama: resource.type == .panorama)
+                                                         customTitle: media.customTitle,
+                                                         isPanorama: resource.type == .panorama,
+                                                         expectedCount: media.expectedCount)
         mediaResourcesInfo[mediaRelativeUrl] = mediaInfo
         saveMediaResourcesInfo()
     }
@@ -454,6 +463,18 @@ private extension AssetUtils {
         return uid
     }
 
+    /// Returns the Title of the media containing the resource stored at a specified URL.
+    ///
+    /// - Parameters:
+    ///     - url: The URL of the resource.
+    /// - Returns: The Title of the media containing the resource if found.
+    func mediaTitleFromUrl(_ url: URL?) -> String? {
+        guard let mediaRelativeUrl = url?.mediaRelativeUrl else {
+            return nil
+        }
+        return mediaResourcesInfo[mediaRelativeUrl]?.customTitle
+    }
+
     /// Indicates whether a panorama resource is locally stored at a specified URL.
     ///
     /// - Parameters:
@@ -462,6 +483,16 @@ private extension AssetUtils {
     func isPanoramaResourceFromUrl(_ url: URL) -> Bool {
         guard let mediaRelativeUrl = url.mediaRelativeUrl else { return false }
         return mediaResourcesInfo[mediaRelativeUrl]?.isPanorama ?? false
+    }
+
+    /// The resources expected count of the media containing the resource stored at a specified URL.
+    ///
+    /// - Parameters:
+    ///    - url: the URL of the resource
+    /// - Returns: the expected resources count (if available)
+    func resourcesExpectedCount(_ url: URL) -> UInt64? {
+        guard let mediaRelativeUrl = url.mediaRelativeUrl else { return nil }
+        return mediaResourcesInfo[mediaRelativeUrl]?.expectedCount
     }
 
     /// Returns the UID of the media containing the resource stored at a specified URL in legacy cases.
@@ -531,18 +562,27 @@ private extension AssetUtils {
             ULog.e(.tag, error.localizedDescription)
         }
 
-        var mediaItems: [MediaItem]?
+        let resourceType: MediaItem.ResourceType
         if let panoResourceIndex = sortedUrls.firstIndex(where: { isPanoramaResourceFromUrl($0) }) {
             // A panorama resource is locally stored for current mediaItem.
-            // => Need to create a mock panorama item in order to be able to correctly display resources
-            // in gallery.
-            mediaItems = [mockPanoMediaItem()]
+            // => Ensure it's located in first position of the resources list.
             let panoUrl = sortedUrls[panoResourceIndex]
             sortedUrls.remove(at: panoResourceIndex)
             sortedUrls.insert(panoUrl, at: 0)
+            resourceType = .panorama
+        } else {
+            resourceType = .photo
+        }
+        var mediaItems: [MediaItem]?
+        if let expectedCountUrl = sortedUrls.first(where: { resourcesExpectedCount($0) != nil }) {
+            // Some expectedCount information has been found for current media.
+            // => Need to create a mock media item in order to be able to correctly display
+            // panorama availability and resources in gallery.
+            mediaItems = [mockMediaItem(type: resourceType, expectedCount: resourcesExpectedCount(expectedCountUrl))]
         }
 
         let galleryMedia = GalleryMedia(uid: mediaUidFromUrl(mainMediaUrl, urls: urls),
+                                        customTitle: mediaTitleFromUrl(mainMediaUrl),
                                         source: .mobileDevice,
                                         mediaItems: mediaItems,
                                         type: mediaType,
@@ -556,23 +596,27 @@ private extension AssetUtils {
 }
 
 private extension AssetUtils {
-    /// Creates a mock media item containing only 1 panorama resource.
+    /// Creates a mock media item containing only 1 resource.
     /// Useful for local gallery medias. Fullscreen gallery needs indeed to be aware of the type of the displayed resources
     /// in order to know whether a panorama needs to be displayed/generated. However local medias are directly handled
-    /// via their URLs only => if a panorama has been uploaded to the drone's memory, then the .pano type information is
-    /// lost as upload process creates its own resource UID (without any pano information in its name). Therefore a mock
-    /// pano resource is used for specific panorama cases (only used for resource.type check, no change for regular cases).
+    /// via their URLs only => if a panorama has been uploaded to the drone's memory, then the .pano type information and
+    /// the expected resources count are lost as upload process creates its own resource UID (without any pano information
+    /// in its name). Therefore a mock resource is used for specific panorama cases (and may also be used in the future
+    /// for non-panorama types with expected resources count).
     ///
-    /// - Returns: The mock media item with 1 mock panorama resource.
-    func mockPanoMediaItem() -> MediaItem {
-        let mockPanoResource = MediaItemResourceCore(uid: "",
-                                                     type: .panorama,
-                                                     format: .jpg,
-                                                     size: 0,
-                                                     streamUrl: nil,
-                                                     location: nil,
-                                                     creationDate: Date(),
-                                                     storage: nil)
+    /// - Parameters:
+    ///    - type: the type of the mock media item to create (should only be .panorama for now)
+    ///    - expectedCount: the expected resources count for the media
+    /// - Returns: the mock media item with 1 mock resource
+    func mockMediaItem(type: MediaItem.ResourceType, expectedCount: UInt64?) -> MediaItem {
+        let mockResource = MediaItemResourceCore(uid: "",
+                                                 type: type,
+                                                 format: .jpg,
+                                                 size: 0,
+                                                 streamUrl: nil,
+                                                 location: nil,
+                                                 creationDate: Date(),
+                                                 storage: nil)
         return MediaItemCore(uid: "",
                              name: "",
                              type: .photo,
@@ -580,9 +624,9 @@ private extension AssetUtils {
                              customId: nil,
                              customTitle: "",
                              creationDate: Date(),
-                             expectedCount: nil,
+                             expectedCount: expectedCount,
                              photoMode: .single,
                              panoramaType: nil,
-                             resources: [mockPanoResource])
+                             resources: [mockResource])
     }
 }

@@ -54,6 +54,10 @@
                         <action selector="generateButtonTouchedUpInside:" destination="iN0-l3-epB" eventType="touchUpInside" id="4fa-iH-Hdd"/>
                     </connections>
                 </view>
+                <view contentMode="scaleToFill" placeholderIntrinsicWidth="240" placeholderIntrinsicHeight="25" translatesAutoresizingMaskIntoConstraints="NO" id="SDb-aj-pkh" customClass="MainBannerInfoView" customModule="OpenFlight" customModuleProvider="target">
+                    <rect key="frame" x="251" y="243" width="240" height="25"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                </view>
                 <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BC1-Cu-4Za">
                     <rect key="frame" x="662" y="441" width="50" height="50"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -70,6 +74,7 @@
             </subviews>
             <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
+                <constraint firstItem="SDb-aj-pkh" firstAttribute="leadingMargin" relation="greaterThanOrEqual" secondItem="iN0-l3-epB" secondAttribute="leading" id="5nE-VV-7fr"/>
                 <constraint firstAttribute="bottom" secondItem="BC1-Cu-4Za" secondAttribute="bottom" constant="20" id="8y2-U9-aRW"/>
                 <constraint firstItem="LyU-An-W8O" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="93o-G4-mhm"/>
                 <constraint firstAttribute="trailing" secondItem="BC1-Cu-4Za" secondAttribute="trailing" constant="30" id="Cgl-Ng-keS"/>
@@ -78,11 +83,15 @@
                 <constraint firstItem="HXO-Ke-dc7" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="c03-ts-51t"/>
                 <constraint firstItem="HXO-Ke-dc7" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="cYX-aX-4bH"/>
                 <constraint firstItem="cvS-pM-bhZ" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="ePa-Gi-I8I"/>
+                <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="SDb-aj-pkh" secondAttribute="trailing" id="f0I-br-FET"/>
+                <constraint firstItem="SDb-aj-pkh" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="hmK-9R-9A6"/>
+                <constraint firstItem="SDb-aj-pkh" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="nsq-8T-34A"/>
                 <constraint firstItem="cvS-pM-bhZ" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="qnb-8a-cqR"/>
                 <constraint firstAttribute="trailing" secondItem="LyU-An-W8O" secondAttribute="trailing" id="sgy-qV-boz"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <connections>
+                <outlet property="expectedResourcesErrorInfoView" destination="SDb-aj-pkh" id="wvD-WS-diW"/>
                 <outlet property="generatePanoramaButton" destination="HXO-Ke-dc7" id="1Nu-LF-7kr"/>
                 <outlet property="imageView" destination="SjW-Fk-0sq" id="KLn-oP-nyU"/>
                 <outlet property="loadingImageView" destination="cvS-pM-bhZ" id="ero-Cc-Mht"/>

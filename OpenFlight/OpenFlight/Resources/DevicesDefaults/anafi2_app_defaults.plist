@@ -52,7 +52,7 @@
 				<key>endingHoveringAltitude</key>
 				<integer>2</integer>
 				<key>minAltitude</key>
-				<integer>60</integer>
+				<integer>50</integer>
 			</dict>
 			<key>ManualCopter</key>
 			<dict>

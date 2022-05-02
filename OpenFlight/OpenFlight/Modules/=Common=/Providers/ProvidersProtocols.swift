@@ -85,13 +85,15 @@ public struct CustomFlightPlanProgress {
 /// FlightPlanProvider protocol, dedicated to provide Flight Plan specific content.
 public protocol FlightPlanProvider {
     /// Project type
-    var projectType: String { get }
+    var projectType: ProjectType { get }
     /// Project title.
     var projectTitle: String { get }
     /// New button title.
     var newButtonTitle: String { get }
     /// Create first title.
     var createFirstTitle: String { get }
+    /// Default project name.
+    var defaultProjectName: String { get }
     /// Flight Plan type.
     var typeKey: String { get }
     /// Predicate to filter stored Flight Plan, if needed.
@@ -192,6 +194,10 @@ public protocol FlightPlanSettingType {
     var title: String { get }
     /// Provides flight plan setting short title.
     var shortTitle: String? { get }
+    /// Provides flight plan setting left icon.
+    var leftIconImage: UIImage? { get }
+    /// Provides flight plan setting right icon.
+    var rightIconImage: UIImage? { get }
     /// Provides all flight plan setting values.
     var allValues: [Int] { get }
     /// Provides custom descriptions for values.
@@ -227,10 +233,18 @@ extension FlightPlanSettingType {
         return nil
     }
 
+    public var leftIconImage: UIImage? {
+        return nil
+    }
+
+    public var rightIconImage: UIImage? {
+        return nil
+    }
+
     var currentValueDescription: String? {
         switch self.type {
         case .choice:
-            return currentValue == 0 ? L10n.commonYes : L10n.commonNo
+            return currentValue == 1 ? L10n.commonNo : L10n.commonYes 
         case .centeredRuler:
             guard let value = currentValue else { return nil }
 
@@ -269,6 +283,8 @@ extension FlightPlanSettingType {
     public func toFlightPlanSetting() -> FlightPlanSetting {
         return FlightPlanSetting(title: title,
                                  shortTitle: shortTitle,
+                                 leftIconImage: leftIconImage,
+                                 rightIconImage: rightIconImage,
                                  allValues: allValues,
                                  valueDescriptions: valueDescriptions,
                                  valueImages: valueImages,
@@ -519,7 +535,7 @@ public struct MissionMode: Equatable {
     public init(configurator: MissionModeConfigurator,
                 flightPlanProvider: FlightPlanProvider? = nil,
                 missionActivationModel: MissionActivationModel = DefaultMissionActivationModel(),
-                mapMode: MapMode = .standard(force2D: false),
+                mapMode: MapMode = .standard,
                 customMapProvider: (() -> UIViewController)? = nil,
                 entryCoordinatorProvider: (() -> Coordinator)? = nil,
                 bottomBarLeftStack: (() -> [UIView])?,

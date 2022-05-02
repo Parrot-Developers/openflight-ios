@@ -171,11 +171,14 @@ private extension FlightPlanCameraSettingsHandlerImpl {
             ULog.d(.tag, "handleActivatingFlightPlan: Do nothing. Current state \(state)")
             return
         case .noActiveFlightPlan:
+            // Flight Plan activation is performed in two steps (OA config is handled by ObstacleAvoidanceMonitor).
+            // 1 - Configure Media Meta Data.
+            // 2 - Configure Camera.
+            setMediaMetadata(flightPlan)
             saveCameraSettings()
             if let dataSetting = flightPlan.dataSetting {
                 sendFlightPlanCameraSettingsToDrone(dataSetting)
             }
-            setMediaMetadata(flightPlan)
             updateState(with: .activatingFlightPlan)
         }
     }
@@ -193,7 +196,7 @@ private extension FlightPlanCameraSettingsHandlerImpl {
         // Sets the custom Id and the custom title of the drone media metadata for the flight plan execution.
         // To get media title + index that belong to the flight plan execution.
         mediaMetadata.customId = flightPlan.uuid
-        mediaMetadata.customTitle = flightPlan.customTitle
+        mediaMetadata.customTitle = projectManager.mediaTag(for: flightPlan) ?? flightPlan.customTitle
         ULog.i(.tag, "setMediaMetadata: customId = \(mediaMetadata.customId), customTitle = \(mediaMetadata.customTitle)")
     }
 
@@ -299,9 +302,7 @@ private extension FlightPlanCameraSettingsHandlerImpl {
         ULog.d(.tag, "setCameraSettings \(settings)")
         // Edit camera configuration from scratch.
         let editor = camera.config.edit(fromScratch: true)
-        if shouldChangeCameraMode {
-            editor.applyValueNotForced(Camera2Params.mode, settings.cameraMode)
-        }
+        editor.applyValueNotForced(Camera2Params.mode, settings.cameraMode)
         editor.applyValueNotForced(Camera2Params.photoMode, settings.photoMode)
         editor.applyValueNotForced(Camera2Params.videoRecordingFramerate, settings.framerate)
         editor.applyValueNotForced(Camera2Params.videoRecordingResolution, settings.resolution)
@@ -315,6 +316,14 @@ private extension FlightPlanCameraSettingsHandlerImpl {
         // last parameter applied is photo signature, in order to set signature mode only if
         // compatible with previously applied parameters
         editor.applyValueNotForced(Camera2Params.photoDigitalSignature, settings.photoSignature)
+
+        // reset camera mode if it should not be sent to drone,
+        // we do it after the configuration of camera parameters because camera mode was necessary to
+        // compute available values for these parameters
+        if !shouldChangeCameraMode {
+            editor[Camera2Params.mode]?.value = nil
+        }
+
         // Apply camera configuration.
         // Empty configuration fields will be filled with current configuration values when available.
         editor.saveSettings(currentConfig: camera.config, saveParams: false)

@@ -49,6 +49,9 @@ public protocol CoreDataService: AnyObject {
     /// Batch delete all stored data of users
     func deleteUsersData()
 
+    /// Batch delete all stored  data of other users with apcId
+    func deleteAllOtherUsersData(withApcId apcId: String)
+
     var latestFlightLocalModificationDatePublisher: AnyPublisher<Date, Never> { get }
 
     var latestFlightPlanLocalModificationDatePublisher: AnyPublisher<Date, Never> { get }
@@ -67,20 +70,37 @@ public protocol CoreDataService: AnyObject {
 public class CoreDataServiceImpl: CoreDataService {
 
     // MARK: - Public Properties
+    private let backgroundContext: NSManagedObjectContext
     /// Returns current Managed Object Context.
     public var currentContext: NSManagedObjectContext?
     /// Returns current PersistentContainer.
     private let persistentContainer: NSPersistentContainer
-    /// User information service
-    public var userInformation: UserInformation
     /// Returns array of `ProjectModel` subject
     public var projects = CurrentValueSubject<[ProjectModel], Never>([])
 
     /// Returns if Flights core data changed
     public var flightsDidChangeSubject = CurrentValueSubject<Void, Never>(())
 
+    /// Indicates when some flights are added into core data.
+    public var flightsAddedSubject = CurrentValueSubject<[FlightModel], Never>([])
+
+    /// Indicates when some flights are removed from core data.
+    public var flightsRemovedSubject = CurrentValueSubject<[FlightModel], Never>([])
+
+    /// Indicates when all flights are removed from core data.
+    public var allFlightsRemovedSubject = PassthroughSubject<Void, Never>()
+
     /// Returns if Project core data changed
     public var projectsDidChangeSubject = CurrentValueSubject<Void, Never>(())
+
+    /// Indicates when some Projects are added into core data.
+    public var projectsAddedSubject = CurrentValueSubject<[ProjectModel], Never>([])
+
+    /// Indicates when some Projects are removed from core data.
+    public var projectsRemovedSubject = CurrentValueSubject<[ProjectModel], Never>([])
+
+    /// Indicates when all projects are removed from core data.
+    public var allProjectsRemovedSubject = PassthroughSubject<Void, Never>()
 
     /// Returns if PgyProject core data changed
     public var pgyProjectsDidChangeSubject = CurrentValueSubject<Void, Never>(())
@@ -124,11 +144,38 @@ public class CoreDataServiceImpl: CoreDataService {
         latestThumbnailLocalModificationDate.eraseToAnyPublisher()
     }
 
-    public init(with persistentContainer: NSPersistentContainer, userInformation: UserInformation) {
-        self.userInformation = userInformation
+    internal var userService: UserService!
+
+    public init(with persistentContainer: NSPersistentContainer,
+                and userService: UserService) {
         self.persistentContainer = persistentContainer
-        currentContext = persistentContainer.viewContext
+        self.userService = userService
+
+        backgroundContext = persistentContainer.newBackgroundContext()
+
+        currentContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        currentContext?.parent = backgroundContext
         currentContext?.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+
+        NotificationCenter.default.addObserver(forName: UIApplication.willTerminateNotification, object: nil, queue: nil) { [weak self] _ in
+            self?.saveChangesOnBG()
+        }
+
+        NotificationCenter.default.addObserver(forName: .NSManagedObjectContextDidSave, object: currentContext, queue: nil) { [weak self] _ in
+            self?.saveChangesOnBG()
+        }
+    }
+
+    private func saveChangesOnBG() {
+        backgroundContext.perform {
+            do {
+                if self.backgroundContext.hasChanges {
+                    try self.backgroundContext.save()
+                }
+            } catch let error {
+                ULog.i(.dataModelTag, "Error in CoreDataServices with error: \(error.localizedDescription)")
+            }
+        }
     }
 }
 
@@ -148,6 +195,18 @@ extension CoreDataServiceImpl {
         entityNames.forEach { entityName in
             deleteAllData(ofEntityName: entityName)
         }
+    }
+
+    public func deleteAllOtherUsersData(withApcId apcId: String) {
+        deleteAllOtherUsersExceptAnonymous(fromApcId: apcId)
+        persistentContainer.managedObjectModel.entities
+            .compactMap { $0.name }
+            .filter { $0 != UserParrot.entityName}
+            .forEach { [weak self] in
+                self?.deleteAllUsersDataForEntityName(entityName: $0,
+                                                      withApcId: apcId)
+
+            }
     }
 }
 
@@ -191,6 +250,7 @@ internal extension CoreDataServiceImpl {
             if task(context) {
                 context.perform {
                     guard context.hasChanges else {
+                        ULog.w(.dataModelTag, "Trying to save context without any changes.")
                         completion?(.success())
                         return
                     }
@@ -203,6 +263,44 @@ internal extension CoreDataServiceImpl {
                         completion?(.failure(error))
                     }
                 }
+            }
+        }
+    }
+
+    func batchDeleteAndSave(_ task: @escaping ((_ context: NSManagedObjectContext) -> NSFetchRequest<NSFetchRequestResult>?), _ completion: ((Result<Void, Error>) -> Void)? = nil) {
+        guard let context = currentContext else {
+            ULog.e(.dataModelTag, "Error saveContext: No current context found !")
+            completion?(.failure(CoreDataError.unknownContext))
+            return
+        }
+
+        context.performAndWait {
+            let request = task(context)
+
+            guard let request = request else {
+                completion?(.failure(CoreDataError.unableToDeleteObject))
+                return
+            }
+
+            request.resultType = .managedObjectIDResultType
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
+
+            do {
+                let deleteResult = try context.execute(deleteRequest) as? NSBatchDeleteResult
+
+                // Extract the IDs of the deleted managed objectss from the request's result.
+                if let objectIDs = deleteResult?.result as? [NSManagedObjectID] {
+                    // Merge the deletions into the app's managed object context.
+                    NSManagedObjectContext.mergeChanges(
+                        fromRemoteContextSave: [NSDeletedObjectsKey: objectIDs],
+                        into: [context]
+                    )
+                }
+
+                completion?(.success())
+            } catch let error {
+                ULog.e(.dataModelTag, "batchDelete failed in CoreData : \(error.localizedDescription)")
+                completion?(.failure(error))
             }
         }
     }
@@ -326,8 +424,26 @@ internal extension CoreDataServiceImpl {
         saveContext { [weak self] result in
             switch result {
             case .success:
-                if T.self is Flight.Type { self?.flightsDidChangeSubject.send() }
-                if T.self is Project.Type { self?.projectsDidChangeSubject.send() }
+                if T.self is Flight.Type {
+                    guard let self = self else { return }
+                    self.flightsDidChangeSubject.send()
+                    let flights = objects.compactMap { $0 as? Flight }
+                    let uuids = flights.compactMap(\.uuid)
+                    let flightModels = flights.compactMap { $0.modelLite() }
+                    if !uuids.isEmpty {
+                        self.flightsRemovedSubject.send(flightModels)
+                    }
+                }
+                if T.self is Project.Type {
+                    guard let self = self else { return }
+                    self.projectsDidChangeSubject.send()
+                    let projects = objects.compactMap { $0 as? Project }
+                    let uuids = projects.compactMap(\.uuid)
+                    let projectModels = projects.compactMap { $0.model() }
+                    if !uuids.isEmpty {
+                        self.projectsRemovedSubject.send(projectModels)
+                    }
+                }
                 if T.self is PgyProject.Type { self?.pgyProjectsDidChangeSubject.send() }
                 if T.self is FlightPlan.Type { self?.flightPlansDidChangeSubject.send() }
                 if T.self is Thumbnail.Type { self?.thumbnailsDidChangeSubject.send() }
@@ -338,6 +454,51 @@ internal extension CoreDataServiceImpl {
 
             completion?(result)
         }
+    }
+
+    @discardableResult
+    private func deleteAllUsersDataForEntityName(entityName: String,
+                                                 withApcId apcId: String) -> Error? {
+        guard let _ = currentContext else { return CoreDataError.unknownContext }
+        var deleteError: Error?
+
+        batchDeleteAndSave({ context in
+            let apcIdPredicate = NSPredicate(format: "apcId != %@", apcId)
+            let anonymousPredicate = NSPredicate(format: "apcId != %@", User.anonymousId)
+            let subPredicateList: [NSPredicate] = [apcIdPredicate, anonymousPredicate]
+            let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+            fetchRequest.predicate = compoundPredicates
+
+            return fetchRequest
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                switch entityName {
+                case Flight.entityName:
+                    flightsDidChangeSubject.send()
+                    allFlightsRemovedSubject.send()
+                case Project.entityName:
+                    projectsDidChangeSubject.send()
+                    allProjectsRemovedSubject.send()
+                case PgyProject.entityName:
+                    pgyProjectsDidChangeSubject.send()
+                case FlightPlan.entityName:
+                    flightPlansDidChangeSubject.send()
+                case Thumbnail.entityName:
+                    thumbnailsDidChangeSubject.send()
+                case DronesData.entityName:
+                    dronesDidChangeSubject.send()
+                default:
+                    break
+                }
+            case .failure(let error):
+                ULog.e(.dataModelTag, "An error is occured when batch delete entity \(entityName) in CoreData : \(error.localizedDescription)")
+                deleteError = error
+            }
+        })
+
+        return deleteError
     }
 
     @discardableResult
@@ -356,22 +517,22 @@ internal extension CoreDataServiceImpl {
 
     @discardableResult
     func deleteAllData(ofEntityName entityName: String) -> Error? {
-        guard let context = currentContext else { return CoreDataError.unknownContext }
-
         var deleteError: Error?
-        let deleteFetch = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: deleteFetch)
 
-        context.performAndWait {
-            do {
-                try context.execute(deleteRequest)
-                try context.save()
+        batchDeleteAndSave({ context in
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
 
+            return fetchRequest
+        }, { [unowned self] result in
+            switch result {
+            case .success:
                 switch entityName {
                 case Flight.entityName:
                     flightsDidChangeSubject.send()
+                    allFlightsRemovedSubject.send()
                 case Project.entityName:
                     projectsDidChangeSubject.send()
+                    allProjectsRemovedSubject.send()
                 case PgyProject.entityName:
                     pgyProjectsDidChangeSubject.send()
                 case FlightPlan.entityName:
@@ -383,11 +544,11 @@ internal extension CoreDataServiceImpl {
                 default:
                     break
                 }
-            } catch let error {
+            case .failure(let error):
                 ULog.e(.dataModelTag, "An error is occured when batch delete entity in CoreData : \(error.localizedDescription)")
                 deleteError = error
             }
-        }
+        })
 
         return deleteError
     }
@@ -403,7 +564,9 @@ internal extension CoreDataServiceImpl {
             completion()
             return
         }
-        guard userInformation.apcId != User.anonymousId else {
+
+        let currentUser = userService.currentUser
+        guard currentUser.isConnected else {
             ULog.e(.dataModelTag, "User must be logged in")
             completion()
             return
@@ -420,7 +583,7 @@ internal extension CoreDataServiceImpl {
                 if let requestResult = try currentContext.fetch(request) as? [NSManagedObject] {
                     if !requestResult.isEmpty {
                         requestResult.forEach { managedObject in
-                            managedObject.setValue(userInformation.apcId, forKey: "apcId")
+                            managedObject.setValue(currentUser.apcId, forKey: "apcId")
                             managedObject.setValue(0, forKey: "synchroStatus")
                             managedObject.setValue(Date(), forKey: "latestLocalModificationDate")
                         }
@@ -454,7 +617,7 @@ internal extension CoreDataServiceImpl {
             completion()
             return
         }
-        let apcId = userInformation.apcId
+        let apcId = userService.currentUser.apcId
         let entity = NSEntityDescription.entity(forEntityName: entityName, in: currentContext)
         let request = NSFetchRequest<NSFetchRequestResult>()
         request.entity = entity
@@ -467,6 +630,14 @@ internal extension CoreDataServiceImpl {
                     if !requestResult.isEmpty {
                         requestResult.forEach { managedObject in
                             managedObject.setValue(User.anonymousId, forKey: "apcId")
+                            managedObject.setValue(0, forKey: "cloudId")
+                            managedObject.setValue(nil, forKey: "latestCloudModificationDate")
+                            managedObject.setValue(0, forKey: "synchroStatus")
+                            managedObject.setValue(0, forKey: "synchroError")
+                            managedObject.setValue(nil, forKey: "latestSynchroStatusDate")
+                            managedObject.setValue(Date(), forKey: "latestLocalModificationDate")
+                            managedObject.setValue(0, forKey: "fileSynchroStatus")
+                            managedObject.setValue(nil, forKey: "fileSynchroDate")
                         }
                     } else {
                         ULog.i(.dataModelTag, "No data found in: \(entityName) for user apcId: \(apcId)")

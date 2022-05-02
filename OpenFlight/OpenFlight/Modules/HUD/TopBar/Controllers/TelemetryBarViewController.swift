@@ -36,6 +36,8 @@ protocol TelemetryBarViewControllerNavigation: AnyObject {
     func openBehaviourSettings()
     /// Called when geofence settings should be opened.
     func openGeofenceSettings()
+    /// Called when quick settings should be opened.
+    func openQuickSettings()
 }
 
 /// View controller for telemetry part of top bar.
@@ -54,10 +56,10 @@ final class TelemetryBarViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
     private var telemetryViewModel: TelemetryViewModel?
     private var defaultSpeedLabel: String {
-        return String(format: "00 %@", UnitHelper.stringSpeedUnit().uppercased())
+        return String(format: "- %@", UnitHelper.stringSpeedUnit().uppercased())
     }
     private var defaultDistanceLabel: String {
-        return String(format: "00 %@", UnitHelper.stringDistanceUnit().uppercased())
+        return String(format: "- %@", UnitHelper.stringDistanceUnit().uppercased())
     }
     // TODO: wrong injection
     private var obstacleAvoidanceViewModel = ObstacleAvoidanceViewModel(connectedDroneHolder: Services.hub.connectedDroneHolder)
@@ -91,6 +93,11 @@ private extension TelemetryBarViewController {
     /// Called when user taps the distance item.
     @IBAction func distanceItemTouchedUpInside(_ sender: Any) {
         navigationDelegate?.openGeofenceSettings()
+    }
+
+    /// Called when user taps the obstacle avoidance item.
+    @IBAction func obstacleAvoidanceItemTouchedUpInside(_ sender: Any) {
+        navigationDelegate?.openQuickSettings()
     }
 }
 
@@ -175,7 +182,7 @@ private extension TelemetryBarViewController {
     /// Called when current speed changes.
     func onSpeedChanged(_ speed: TelemetryValueModel) {
         if let speedValue = speed.currentValue {
-            speedItemView.model?.label = UnitHelper.stringSpeedWithDouble(speedValue).uppercased()
+            speedItemView.model?.label = UnitHelper.stringSpeedWithDouble(speedValue, minimumFractionDigits: 1).uppercased()
         } else {
             speedItemView.model?.label = defaultSpeedLabel
         }

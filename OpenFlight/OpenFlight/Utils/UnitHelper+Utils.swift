@@ -290,12 +290,20 @@ public final class UnitHelper: NSObject {
     /// - Parameters:
     ///    - speed: speed in meter per second (Double)
     ///    - spacing: boolean to add or remove spacing between value and unit
+    ///    - minimumFractionDigits: the minimum number of decimals (if not `nil`)
+    ///    - maximumFractionDigits: the maximum number of decimals (1 by default)
     /// - Returns: a string containing the value and the unit, seperated by a whitespace
-    static func stringSpeedWithDouble(_ speed: Double, spacing: Bool = true) -> String {
+    static func stringSpeedWithDouble(_ speed: Double,
+                                      spacing: Bool = true,
+                                      minimumFractionDigits: Int? = nil,
+                                      maximumFractionDigits: Int = 1) -> String {
         let numberFormatter = NumberFormatter()
         numberFormatter.locale = Locale.current
         numberFormatter.numberStyle = .decimal
-        numberFormatter.maximumFractionDigits = 1
+        if let minimumFractionDigits = minimumFractionDigits {
+            numberFormatter.minimumFractionDigits = minimumFractionDigits
+        }
+        numberFormatter.maximumFractionDigits = maximumFractionDigits
         let formattedValue = numberFormatter.string(from: NSNumber(value: doubleSpeedWithDouble(speed))) ?? Style.dash
         return String(format: spacing ? "%@ %@" : "%@%@",
                       formattedValue,

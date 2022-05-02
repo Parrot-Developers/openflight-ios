@@ -31,20 +31,52 @@ import Foundation
 import CoreLocation
 import Combine
 
-public enum DisplayOnMap {
+public enum DisplayOnMap: Equatable {
     case nothing
     case waypoint(location: CLLocationCoordinate2D, altitude: Double, speed: Double)
     case poi(location: CLLocationCoordinate2D, altitude: Double)
+
+    public static func == (lhs: DisplayOnMap, rhs: DisplayOnMap) -> Bool {
+        switch (lhs, rhs) {
+        case (.waypoint(let locationLhs, let altitudeLhs, let speedLhs), .waypoint(let locationRhs, let altitudeRhs, let speedRhs)):
+            return locationLhs == locationRhs && altitudeLhs == altitudeRhs && speedLhs == speedRhs
+        case (.poi(let locationLhs, let altitudeLhs), .poi(let locationRhs, let altitudeRhs)):
+            return locationLhs == locationRhs && altitudeLhs == altitudeRhs
+        case (.nothing, .nothing):
+            return true
+        default:
+            return false
+        }
+    }
+}
+
+public enum ButtonsDisplay: Equatable {
+    case standard(playEnabled: Bool, deleteEnabled: Bool) // disable
+    case runningWaypoint(duration: TimeInterval)
+    case runningPoi
+
+    public static func == (lhs: ButtonsDisplay, rhs: ButtonsDisplay) -> Bool {
+        switch (lhs, rhs) {
+        case (.standard(let playEnabledLhs, let deleteEnabledLhs), .standard(let playEnabledRhs, let deleteEnabledRhs)):
+            return playEnabledLhs == playEnabledRhs && deleteEnabledLhs == deleteEnabledRhs
+        case (.runningWaypoint(let durationLhs), .runningWaypoint(let durationRhs)):
+            return durationLhs == durationRhs
+        case (.runningPoi, .runningPoi):
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 protocol TouchAndFlyPanelViewModel: AnyObject {
     // Display on map publisher
     var displayOnMapPublisher: AnyPublisher<DisplayOnMap, Never> { get }
+    var buttonsDisplayPublisher: AnyPublisher<ButtonsDisplay, Never> { get }
 }
 
 class TouchAndFlyPanelViewModelImpl {
     // MARK: - PUBLIC / exposed ( OUT )
-    @Published private(set) var buttonsDisplay = ButtonsDisplay.standard(playEnabled: false, deleteEnabled: false)
     @Published private(set) var infoStatusDrone = MessageDrone(message: "", color: .black)
     @Published private(set) var progressViewDisplay = ProgressViewDisplay.standard
 
@@ -53,11 +85,14 @@ class TouchAndFlyPanelViewModelImpl {
         displayOnMap.eraseToAnyPublisher()
     }
 
+    var buttonsDisplay = CurrentValueSubject<ButtonsDisplay, Never>(ButtonsDisplay.standard(playEnabled: false,
+                                                                                            deleteEnabled: false))
+    var buttonsDisplayPublisher: AnyPublisher<ButtonsDisplay, Never> {
+        buttonsDisplay.eraseToAnyPublisher()
+    }
+
     var progressValue: AnyPublisher<Double?, Never> {
         return service.guidingProgressPublisher
-    }
-    var progressTimer: AnyPublisher<Double?, Never> {
-        return service.guidingTimePublisher
     }
 
     // MARK: Internal - Private Properties
@@ -98,7 +133,7 @@ class TouchAndFlyPanelViewModelImpl {
             .removeDuplicates()
             .combineLatest(service.targetPublisher)
             .sink { [unowned self] runningState, target in
-                setButtonsDisplay(runnningState: runningState, target: target)
+                setButtonsDisplay(runningState: runningState, target: target)
                 setProgressView(runningState: runningState, target: target)
             }
             .store(in: &cancellables)
@@ -108,6 +143,7 @@ class TouchAndFlyPanelViewModelImpl {
                 setMessageDrone(runningState: runningState)
             }
             .store(in: &cancellables)
+
     }
 
     private func listenTarget() {
@@ -132,28 +168,25 @@ class TouchAndFlyPanelViewModelImpl {
         service.stop()
     }
 
-    func pause() {
-        service.pause()
-    }
-
     // Setting functions
-    private func setButtonsDisplay(runnningState: TouchAndFlyRunningState, target: TouchAndFlyTarget) {
-        switch runnningState {
+    private func setButtonsDisplay(runningState: TouchAndFlyRunningState, target: TouchAndFlyTarget) {
+        // check if it is waypoint case !
+        switch runningState {
         case .noTarget:
-            buttonsDisplay = .standard(playEnabled: false, deleteEnabled: false)
+            buttonsDisplay.value = .standard(playEnabled: false, deleteEnabled: false)
         case .running:
             switch target {
             case .none:
                 break
             case .wayPoint:
-                buttonsDisplay = .runningWaypoint(duration: 0)
+                buttonsDisplay.value = .runningWaypoint(duration: 0)
             case .poi:
-                buttonsDisplay = .runningPoi
+                buttonsDisplay.value = .runningPoi
             }
         case .ready:
-            buttonsDisplay = .standard(playEnabled: true, deleteEnabled: true)
+            buttonsDisplay.value = .standard(playEnabled: true, deleteEnabled: true)
         case .blocked:
-            buttonsDisplay = .standard(playEnabled: false, deleteEnabled: true)
+            buttonsDisplay.value = .standard(playEnabled: false, deleteEnabled: true)
         }
     }
 
@@ -199,6 +232,8 @@ class TouchAndFlyPanelViewModelImpl {
                 infoStatusDrone.message = L10n.alertDroneTooCloseGround
             case .droneNotFlying:
                 infoStatusDrone.message = L10n.touchFlyTakeOffTheDrone
+            case .droneTakingOff:
+                infoStatusDrone.message = L10n.touchFlyTakeOffInProgress
             }
         }
     }
@@ -275,11 +310,6 @@ extension TouchAndFlyPanelViewModelImpl {
 
 // Support Models
 extension TouchAndFlyPanelViewModelImpl {
-    enum ButtonsDisplay {
-        case standard(playEnabled: Bool, deleteEnabled: Bool) // disable
-        case runningWaypoint(duration: TimeInterval)
-        case runningPoi
-    }
 
     enum ProgressViewDisplay {
         case standard // disable
@@ -299,7 +329,10 @@ final class WayPointAltitudeTouchAndFlySettingType: FlightPlanSettingType {
         return L10n.touchFlyWpAltitude
     }
     var allValues: [Int] {
-        return Array(-120...500).stepFiltered(with: Int(step))
+        return Array(-150 ..< -100).stepFiltered(with: Int(step / divider))
+             + Array(-100 ..< 100)
+             + Array(100 ..< 200).stepFiltered(with: Int(step / divider))
+             + Array(200 ... 500).stepFiltered(with: Int(step))
     }
     var valueDescriptions: [String]?
     var valueImages: [UIImage]?
@@ -314,10 +347,10 @@ final class WayPointAltitudeTouchAndFlySettingType: FlightPlanSettingType {
         return .distance
     }
     var step: Double {
-        return 1.0
+        return 10.0
     }
     var divider: Double {
-        return 1.0
+        return 2.0
     }
     var isDisabled: Bool
     var category: FlightPlanSettingCategory {
@@ -339,7 +372,10 @@ final class PoiAltitudeTouchAndFlySettingType: FlightPlanSettingType {
         return L10n.touchFlyPoiAltitude
     }
     var allValues: [Int] {
-        return Array(-120...500).stepFiltered(with: Int(step))
+        return Array(-150 ..< -100).stepFiltered(with: Int(step / divider))
+             + Array(-100 ..< 100)
+             + Array(100 ..< 200).stepFiltered(with: Int(step / divider))
+             + Array(200 ... 500).stepFiltered(with: Int(step))
     }
     var valueDescriptions: [String]?
     var valueImages: [UIImage]?
@@ -354,10 +390,10 @@ final class PoiAltitudeTouchAndFlySettingType: FlightPlanSettingType {
         return .distance
     }
     var step: Double {
-        return 1.0
+        return 10.0
     }
     var divider: Double {
-        return 1.0
+        return 2.0
     }
     var isDisabled: Bool
     var category: FlightPlanSettingCategory {

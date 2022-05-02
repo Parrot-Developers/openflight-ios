@@ -5,6 +5,7 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -38,19 +39,24 @@
                                 <color key="textColor" name="default_text_color"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" minimumFontSize="13" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="QSI-Im-WI7" userLabel="name" customClass="ProjectNameTextField" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="25" width="342" height="20"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="trk-oU-Hr8">
+                                <rect key="frame" x="0.0" y="25" width="342" height="31"/>
+                                <subviews>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" minimumFontSize="13" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="QSI-Im-WI7" userLabel="name" customClass="ProjectNameTextField" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="10" y="8" width="322" height="15"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="15" id="Lqe-oA-lcK"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="done" enablesReturnKeyAutomatically="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                    </textField>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="15" id="Lqe-oA-lcK"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
-                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="done" enablesReturnKeyAutomatically="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
-                            </textField>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="upw-gl-N0h" userLabel="line">
-                                <rect key="frame" x="0.0" y="55" width="342" height="1"/>
-                                <color key="backgroundColor" name="default_text_color"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="1" id="D6r-5R-lOM"/>
+                                    <constraint firstAttribute="trailing" secondItem="QSI-Im-WI7" secondAttribute="trailing" constant="10" id="26R-Pc-bXa"/>
+                                    <constraint firstItem="QSI-Im-WI7" firstAttribute="leading" secondItem="trk-oU-Hr8" secondAttribute="leading" constant="10" id="6mJ-JW-qDH"/>
+                                    <constraint firstAttribute="bottom" secondItem="QSI-Im-WI7" secondAttribute="bottom" constant="8" id="Q9J-o4-9U8"/>
+                                    <constraint firstItem="QSI-Im-WI7" firstAttribute="top" secondItem="trk-oU-Hr8" secondAttribute="top" constant="8" id="b4E-wl-v3m"/>
                                 </constraints>
                             </view>
                         </subviews>
@@ -67,8 +73,8 @@
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
+                <outlet property="projectNameContainer" destination="trk-oU-Hr8" id="9hN-sY-X1w"/>
                 <outlet property="projectNameTextField" destination="QSI-Im-WI7" id="Mtg-oW-6Ov"/>
-                <outlet property="projectNameUnderline" destination="upw-gl-N0h" id="uw1-cN-RXi"/>
                 <outlet property="projectTitleLabel" destination="ok5-Pv-RTg" id="Z5o-EW-jhi"/>
             </connections>
             <point key="canvasLocation" x="24" y="108.84557721139431"/>
@@ -78,5 +84,8 @@
         <namedColor name="default_text_color">
             <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
     </resources>
 </document>

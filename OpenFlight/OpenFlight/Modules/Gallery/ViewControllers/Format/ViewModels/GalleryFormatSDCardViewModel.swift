@@ -121,12 +121,8 @@ extension GalleryFormatSDCardViewModel {
     ///
     /// - Parameter drone: The current drone
     func listenFlyingState(drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicator in
-            if flyingIndicator?.flyingState == .flying || flyingIndicator?.flyingState == .waiting {
-                self?.isFlying = true
-            } else {
-                self?.isFlying = false
-            }
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
+            self?.isFlying = drone.isFlying
         }
     }
 

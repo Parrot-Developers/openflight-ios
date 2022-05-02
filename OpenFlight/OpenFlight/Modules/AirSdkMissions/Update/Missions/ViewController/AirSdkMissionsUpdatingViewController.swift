@@ -43,7 +43,7 @@ final class AirSdkMissionsUpdatingViewController: UIViewController {
     // MARK: - Private Properties
     private weak var coordinator: DroneFirmwaresCoordinator?
     private var dataSource = AirSdkMissionsUpdatingDataSource(manualRebootState: .waiting)
-    private var manualRebootStarted: Bool = false
+    private var rebootState: RebootState = .none
     private var processIsFinished: Bool = false
     private var updateOngoing: Bool = false
     private var isUpdateCancelledAlertShown: Bool = false
@@ -55,6 +55,12 @@ final class AirSdkMissionsUpdatingViewController: UIViewController {
         static let minProgress: Float = 0.0
         static let tableViewHeight: CGFloat = 50.0
         static let rebootDuration: TimeInterval = 35.0
+    }
+
+    enum RebootState {
+        case none
+        case requested
+        case ongoing
     }
 
     // MARK: - Setup
@@ -171,7 +177,7 @@ private extension AirSdkMissionsUpdatingViewController {
                 tableView.reloadData()
                 ULog.d(.missionUpdateTag, "Missions Updates need no reboot")
                 displayFinalUI()
-            } else if missionsUpdaterManager.missionsUpdateProcessNeedAReboot() && !manualRebootStarted {
+            } else if missionsUpdaterManager.missionsUpdateProcessNeedAReboot() && rebootState == .none {
                 triggerManualReboot()
             }
         }
@@ -184,24 +190,32 @@ private extension AirSdkMissionsUpdatingViewController {
         dataSource = AirSdkMissionsUpdatingDataSource(manualRebootState: .ongoing)
         tableView.reloadData()
         progressView.setFakeRebootProgress(duration: Constants.rebootDuration)
-        manualRebootStarted = true
+        rebootState = .requested
     }
 
     /// This is the last step of the processes.
     func listenToDroneReconnection() {
         droneStateViewModel.state.valueChanged = { [weak self] state in
             guard let strongSelf = self,
-                  state.connectionState == .connected,
                   !strongSelf.processIsFinished
             else {
                 return
             }
 
-            if strongSelf.manualRebootStarted {
-                ULog.d(.missionUpdateTag, "Missions Update drone reconnected")
-                strongSelf.dataSource = AirSdkMissionsUpdatingDataSource(manualRebootState: .succeeded)
-                strongSelf.tableView.reloadData()
-                strongSelf.displayFinalUI()
+            switch strongSelf.rebootState {
+            case .none:
+                break
+            case .requested:
+                if state.connectionState == .disconnected {
+                    strongSelf.rebootState = .ongoing
+                }
+            case .ongoing:
+                if state.connectionState == .connected {
+                    ULog.d(.missionUpdateTag, "Missions Update drone reconnected")
+                    strongSelf.dataSource = AirSdkMissionsUpdatingDataSource(manualRebootState: .succeeded)
+                    strongSelf.tableView.reloadData()
+                    strongSelf.displayFinalUI()
+                }
             }
         }
     }
@@ -218,7 +232,7 @@ private extension AirSdkMissionsUpdatingViewController {
 
     /// Cancel operation in progress.
     func cancelProcesses() -> Bool {
-        guard !manualRebootStarted else { return false }
+        guard rebootState == .none else { return false }
 
         let cancelSucceeded = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
         self.cancelButton.isHidden = cancelSucceeded

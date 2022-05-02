@@ -36,6 +36,8 @@ public protocol AlertPanelState {
     var title: String? { get }
     /// Alert subtitle.
     var subtitle: String? { get }
+    /// Alert title image
+    var titleImage: UIImage? { get }
     /// Alert subtitle color. Used for animation color too.
     var subtitleColor: UIColor? { get }
     /// Main image of the panel.

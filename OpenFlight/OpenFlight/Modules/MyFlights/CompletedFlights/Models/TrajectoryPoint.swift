@@ -29,10 +29,42 @@
 
 import ArcGIS
 
+public enum TrajectoryState {
+    case none
+    case interrupted
+    case completed
+
+    var color: UIColor {
+        switch self {
+        case .none:
+            return ColorName.white.color
+        case .interrupted:
+            return ColorName.warningColor.color
+        case .completed:
+            return ColorName.flightCompletedColor.color
+        }
+    }
+}
+
 /// Point of a flight trajectory.
-public struct TrajectoryPoint {
+public struct TrajectoryPoint: Equatable {
     /// Point coordinates.
     public var point: AGSPoint
     /// Whether point is the first flight point.
     public var isFirstPoint: Bool
+}
+
+/// Extension of FlightPlanState
+extension FlightPlanModel.FlightPlanState {
+
+    public var trajectoryState: TrajectoryState {
+        switch self {
+        case .editable, .unknown:
+            return .none
+        case .stopped, .flying:
+            return .interrupted
+        default:
+            return .completed
+        }
+    }
 }

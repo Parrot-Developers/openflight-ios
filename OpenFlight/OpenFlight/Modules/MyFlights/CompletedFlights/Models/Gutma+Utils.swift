@@ -65,6 +65,9 @@ extension Gutma {
         if let dateString = exchange?.message?.flightLogging?.loggingStartDtg {
             let formatter = DateFormatter()
             formatter.dateFormat = GutmaConstants.dateFormatFile
+            // Handle both 24-h and 12-h format.
+            formatter.timeZone = TimeZone(abbreviation: "UTC")
+            formatter.locale = Locale(identifier: "en_US_POSIX")
             return formatter.date(from: dateString)
         }
         return nil
@@ -256,6 +259,26 @@ extension Gutma {
     /// `nil` otherwise.
     func flightPlanDistance(_ flightPlan: FlightPlanModel) -> Double? {
         exchange?.message?.flightLogging?.flightPlanDistance(flightPlan)
+    }
+
+    /// Calculates the number of photos taken during a FP execution.
+    ///
+    /// - Parameters:
+    ///   - flightPlan: the flight plan
+    /// - Returns: the total number of photos,
+    /// `nil` otherwise.
+    func flightPlanPhotoCount(_ flightPlan: FlightPlanModel) -> Int? {
+        exchange?.message?.flightLogging?.flightPlanPhotoCount(flightPlan)
+    }
+
+    /// Calculates the number of videos taken during a FP execution.
+    ///
+    /// - Parameters:
+    ///   - flightPlan: the flight plan
+    /// - Returns: the total number of videos,
+    /// `nil` otherwise.
+    func flightPlanVideoCount(_ flightPlan: FlightPlanModel) -> Int? {
+        exchange?.message?.flightLogging?.flightPlanVideoCount(flightPlan)
     }
 }
 
@@ -564,6 +587,42 @@ private extension Gutma.FlightLogging {
             return sum + calculateDistance(ofItems: items)
         })
     }
+
+    /// Calculates the number of photos taken during a FP execution.
+    ///
+    /// - Parameters:
+    ///   - flightPlan: the flight plan
+    /// - Returns: the total number of photos,
+    /// `nil` otherwise.
+    func flightPlanPhotoCount(_ flightPlan: FlightPlanModel) -> Int {
+        let starts = flightPlanStartTimestamps(flightPlan)
+        let ends = flightPlanEndTimestamps(flightPlan)
+        guard !starts.isEmpty, !ends.isEmpty, starts.count == ends.count else {
+            return 0
+        }
+        return zip(starts, ends).reduce(0, { sum, pair in
+            let photoCount = photoCountInRange(start: pair.0, end: pair.1)
+            return sum + photoCount
+        })
+    }
+
+    /// Calculates the number of videos taken during a FP execution.
+    ///
+    /// - Parameters:
+    ///   - flightPlan: the flight plan
+    /// - Returns: the total number of videos,
+    /// `nil` otherwise.
+    func flightPlanVideoCount(_ flightPlan: FlightPlanModel) -> Int {
+        let starts = flightPlanStartTimestamps(flightPlan)
+        let ends = flightPlanEndTimestamps(flightPlan)
+        guard !starts.isEmpty, !ends.isEmpty, starts.count == ends.count else {
+            return 0
+        }
+        return zip(starts, ends).reduce(0, { sum, pair in
+            let videoCount = videoCountInRange(start: pair.0, end: pair.1)
+            return sum + videoCount
+        })
+    }
 }
 
 // MARK: - Private items helpers
@@ -660,6 +719,70 @@ private extension Gutma.FlightLogging {
               }
         let itemsOfTimestampRange = items[firstItemIndex..<lastItemIndex]
         return Array(itemsOfTimestampRange)
+    }
+
+    /// Calculates the number of photos taken in a range of time.
+    ///
+    /// - Parameters:
+    ///   - start: the execution start time.
+    ///   - end: the execution end time.
+    /// - Returns: the total number of photos taken
+    func photoCountInRange(start: Double, end: Double) -> Int {
+        guard let events = events else { return 0 }
+        let photosInRange = events.filter { event in
+            guard event.eventInfo == GutmaConstants.eventInfoPhoto,
+                let eventTimestamp = event.eventTimestamp,
+                let timestamp = Double(eventTimestamp),
+                start <= timestamp,
+                timestamp <= end
+            else { return false }
+            return true
+        }
+        return photosInRange.count
+    }
+
+    /// Calculates the number of videos taken in a range of time.
+    ///
+    /// - Parameters:
+    ///   - start: the execution start time.
+    ///   - end: the execution end time.
+    /// - Returns: the total number of videos taken
+    func videoCountInRange(start: Double, end: Double) -> Int {
+        guard let events = events else { return 0 }
+
+        var counter: Int = 0
+        var videoStart: Double = 0.0
+        var recording = false
+
+        let videoEvents = events.filter {
+            $0.eventInfo == GutmaConstants.eventInfoVideo
+            && ($0.mediaEvent == GutmaConstants.eventMediaTypeStarted
+                || $0.mediaEvent == GutmaConstants.eventMediaTypeSaved)
+        }
+
+        for (index, event) in videoEvents.enumerated() {
+            guard let eventTimestamp = event.eventTimestamp,
+                  let timestamp = Double(eventTimestamp)
+            else { continue }
+            if event.mediaEvent == GutmaConstants.eventMediaTypeStarted {
+                videoStart = timestamp
+                recording = true
+            } else if event.mediaEvent == GutmaConstants.eventMediaTypeSaved {
+                let videoRange = videoStart...timestamp
+                let missionRange = start...end
+                if (videoRange.contains(start) && videoRange.contains(end))
+                    || missionRange.contains(videoStart)
+                    || missionRange.contains(timestamp) {
+                    counter += 1
+                }
+                recording = false
+                videoStart = timestamp
+            }
+            if index == videoEvents.count-1  && recording && videoStart < end {
+                counter += 1
+            }
+        }
+        return counter
     }
 
     /// Flight logging keys.

@@ -254,8 +254,16 @@ extension FlightPlanDataSetting {
     ///
     /// - Parameters:
     ///    - lastPointRth: whether drone should land on last waypoint
-    func setLastPointRth(_ lastPointRth: Bool) {
+    public func setLastPointRth(_ lastPointRth: Bool) {
         self.lastPointRth = lastPointRth
+    }
+
+    /// Sets up return to home on disconnection.
+    ///
+    /// - Parameters:
+    ///    - disconnectionRth: whether drone should return to home on disconnection
+    public func setDisconnectionRth(_ disconnectionRth: Bool) {
+        self.disconnectionRth = disconnectionRth
     }
 
     /// Adds a waypoint at the end of the Flight Plan.

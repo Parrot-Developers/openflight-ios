@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "icPano360.png",
+      "filename" : "icRemoteController.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "icPano360@2x.png",
+      "filename" : "icRemoteController@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "icPano360@3x.png",
+      "filename" : "icRemoteController@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
@@ -19,5 +19,8 @@
   "info" : {
     "author" : "xcode",
     "version" : 1
+  },
+  "properties" : {
+    "template-rendering-intent" : "template"
   }
 }

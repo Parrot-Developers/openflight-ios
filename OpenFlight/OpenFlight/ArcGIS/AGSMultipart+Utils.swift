@@ -34,12 +34,18 @@ extension AGSGeometry {
     /// Makes envelope from multipart geometry with margins.
     ///
     /// - Parameters:
-    ///     - marginFactor: factor of self's max dimention to add, as a margin
+    ///    - marginFactor: factor of self's max dimention to add, as a margin
+    ///    - altitudeOffset: altitude offset to apply to envelope, in meters
     ///
     /// - Returns: AGSEnvelope.
-    func envelopeWithMargin(_ marginFactor: Double = ArcGISStyle.envelopMarginFactor) -> AGSEnvelope {
+    func envelopeWithMargin(_ marginFactor: Double = ArcGISStyle.envelopeMarginFactor,
+                            altitudeOffset: Double? = nil) -> AGSEnvelope {
         let envelopeBuilder = AGSEnvelopeBuilder(envelope: extent)
         envelopeBuilder.expand(byFactor: marginFactor)
+        if let altitudeOffset = altitudeOffset {
+            // apply altitude offset
+            envelopeBuilder.setZMin(envelopeBuilder.zMin + altitudeOffset, zMax: envelopeBuilder.zMax + altitudeOffset)
+        }
         var envelope = envelopeBuilder.extent
         if envelope.width < ArcGISStyle.minEnvelopeWidth || envelope.height < ArcGISStyle.minEnvelopeWidth {
             // minimal envelope, workaround for display issue with small flights

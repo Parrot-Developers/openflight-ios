@@ -78,17 +78,25 @@ final class FlightPlanDashboardListViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.allProjectsPublisher
-            .sink { [unowned self] allFlightPlans in
+            .sink { [weak self] allFlightPlans in
+                guard let self = self else { return }
+
+                self.collectionView?.reloadData()
+
                 // Keep current selection if project still exist
-                if let project = selectedProject?.project,
+                if let project = self.selectedProject?.project,
                    let projectIndex = allFlightPlans.firstIndex(where: { $0.uuid == project.uuid }) {
-                    didSelectProject(allFlightPlans[projectIndex], at: projectIndex)
+                    self.didSelectProject(allFlightPlans[projectIndex], at: projectIndex)
+
+                    self.collectionView.scrollToItem(at: IndexPath(row: projectIndex, section: 0),
+                                                     at: .centeredVertically,
+                                                     animated: true)
                 } else {
-                    didDeselectProject()
+                    self.didDeselectProject()
                 }
-                collectionView?.reloadData()
-                emptyLabelContainer.isHidden = viewModel.projectsCount() > 0
-                emptyExecutionLabel.isHidden = selectedProject?.executions.count ?? 0 > 0
+
+                self.emptyLabelContainer.isHidden = self.viewModel.projectsCount() > 0
+                self.emptyExecutionLabel.isHidden = self.selectedProject?.executions.count ?? 0 > 0
             }
             .store(in: &cancellables)
 
@@ -141,6 +149,10 @@ final class FlightPlanDashboardListViewController: UIViewController {
         super.viewWillAppear(animated)
 
         collectionView.reloadData()
+        // If a prject was already selected, refresh his execution list.
+        if let selectedProject = selectedProject {
+            didSelectProject(selectedProject.project, at: selectedProject.index)
+        }
         LogEvent.log(.screen(LogEvent.Screen.flightPlanList))
     }
 

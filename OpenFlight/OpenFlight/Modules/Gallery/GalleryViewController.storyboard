@@ -29,11 +29,8 @@
                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bwe-oQ-jp6" customClass="FileNavigationStackView" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="926" height="36"/>
                                         <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2WV-VS-3cb">
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2WV-VS-3cb" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="0.0" width="36" height="36"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" secondItem="2WV-VS-3cb" secondAttribute="height" multiplier="1:1" id="tdN-Io-hKG"/>
-                                                </constraints>
                                                 <color key="tintColor" name="default_text_color"/>
                                                 <state key="normal" image="ic_back"/>
                                                 <connections>
@@ -279,7 +276,7 @@
     </scenes>
     <resources>
         <image name="icSdCardErrorSmall" width="9" height="13"/>
-        <image name="ic_back" width="21" height="21"/>
+        <image name="ic_back" width="21" height="28.333333969116211"/>
         <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

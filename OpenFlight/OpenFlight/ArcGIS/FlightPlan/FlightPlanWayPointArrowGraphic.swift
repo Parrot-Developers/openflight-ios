@@ -48,7 +48,7 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
 
     // MARK: - Private Enums
     private enum Constants {
-        static let selectedColor: UIColor = ColorName.highlightColor.color
+        static let selectedColor: UIColor = ColorName.greenSpring.color
         static let arrowSizeHeight: CGFloat = 15.0
         static let arrowSizeWidth: CGFloat = 20.0
         static let outlineWidth: CGFloat = 2.0

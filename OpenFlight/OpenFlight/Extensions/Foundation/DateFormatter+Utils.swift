@@ -71,6 +71,7 @@ extension DateFormatter {
     public static let apiDateFormatter: DateFormatter = {
         let dateFormatter = DateFormatter.customFormat(DateFormatter.Constants.classicDateFormat)
         dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         return dateFormatter
     }()
 }

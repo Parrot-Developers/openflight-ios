@@ -46,6 +46,9 @@ public protocol PanoramaService: AnyObject {
     /// Whether a panorama is ongoing.
     var panoramaOngoing: Bool { get }
 
+    /// Publisher for ongoing panorama.
+    var panoramaOngoingPublisher: AnyPublisher<Bool, Never> { get }
+
     /// Publisher for panorama alerts.
     var alertsPublisher: AnyPublisher<[HUDAlertType], Never> { get }
 
@@ -75,10 +78,14 @@ public class PanoramaServiceImpl {
     private var panoramaModeActiveSubject = CurrentValueSubject<Bool, Never>(false)
     /// Panorama alerts subject.
     private var alertsSubject = PassthroughSubject<[HUDAlertType], Never>()
+    /// Ongoing panorama subject.
+    private var panoramaOngoingSubject = CurrentValueSubject<Bool, Never>(false)
     /// Alerts reset task.
     private var alertsReset: AnyCancellable?
     /// Reference to drone flying indicators instrument.
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    /// Reference to animation piloting interface.
+    private var animationPilotingItfRef: Ref<AnimationPilotingItf>?
     /// Combine cancellables.
     private var cancellables = Set<AnyCancellable>()
 
@@ -102,6 +109,10 @@ extension PanoramaServiceImpl: PanoramaService {
 
     public var panoramaModeActivePublisher: AnyPublisher<Bool, Never> {
         panoramaModeActiveSubject.eraseToAnyPublisher()
+    }
+
+    public var panoramaOngoingPublisher: AnyPublisher<Bool, Never> {
+        panoramaOngoingSubject.eraseToAnyPublisher()
     }
 
     public var panoramaModeActiveValue: Bool {
@@ -177,6 +188,7 @@ private extension PanoramaServiceImpl {
     func listen(dronePublisher: AnyPublisher<Drone, Never>) {
         dronePublisher.sink { [unowned self] drone in
             listenFlyingIndicators(drone: drone)
+            listenAnimationPilotingItf(drone: drone)
         }
         .store(in: &cancellables)
     }
@@ -190,6 +202,16 @@ private extension PanoramaServiceImpl {
                 // reset take off required alert
                 alertsSubject.send([])
             }
+        }
+    }
+
+    /// Listens to animation piloting interface.
+    ///
+    /// - Parameter drone: the current drone
+    func listenAnimationPilotingItf(drone: Drone) {
+        animationPilotingItfRef = drone.getPilotingItf(PilotingItfs.animation) { [weak self] animationItf in
+            guard let self = self else { return }
+            self.panoramaOngoingSubject.value = animationItf?.animation?.status != nil
         }
     }
 }

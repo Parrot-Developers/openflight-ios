@@ -146,22 +146,25 @@ extension TouchAndFlyUiServiceImpl {
         guard shouldHandleGesture(), !handleTapIdentifyResult(identifyResult: identifyResult) else { return }
         let location = mapPoint.toCLLocationCoordinate2D()
 
-        switch service.runningState {
-        case .noTarget, .ready, .blocked:
+        if case .wayPoint = service.target {
+            // There is already a WP on map => move it.
+            service.moveWayPoint(to: location)
+        } else {
+            // No active WP on map => create new WP.
             service.setWayPoint(location)
-        case .running:
-            service.moveTarget(to: location)
         }
     }
 
     func handleCustomMapLongPress(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?) {
         guard shouldHandleGesture(), !handleTapIdentifyResult(identifyResult: identifyResult) else { return }
         let location = mapPoint.toCLLocationCoordinate2D()
-        switch service.runningState {
-        case .noTarget, .ready, .blocked:
+
+        if case .poi = service.target {
+            // There is already a POI on map => move it.
+            service.movePoi(to: location)
+        } else {
+            // No active POI on map => create new POI.
             service.setPoi(location)
-        case .running:
-            service.moveTarget(to: location)
         }
     }
 
@@ -187,9 +190,9 @@ extension TouchAndFlyUiServiceImpl {
         case .none:
             break
         case .wayPoint(location: let location, _, _):
-            service.setWayPoint(location)
+            service.moveWayPoint(to: location)
         case .poi(location: let location, _):
-            service.setPoi(location)
+            service.movePoi(to: location)
         }
     }
 }

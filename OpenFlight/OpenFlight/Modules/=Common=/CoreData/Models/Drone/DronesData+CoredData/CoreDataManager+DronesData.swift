@@ -198,7 +198,7 @@ internal extension CoreDataServiceImpl {
     func getAllDronesCountCD(toBeDeleted: Bool?) -> Int {
         let fetchRequest = DronesData.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
         fetchRequest.predicate = apcIdPredicate
 
         return fetchCount(request: fetchRequest)
@@ -207,7 +207,7 @@ internal extension CoreDataServiceImpl {
     func getAllDronesDatasCD() -> [DronesData] {
         let fetchRequest = DronesData.fetchRequest()
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userInformation.apcId)
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
         fetchRequest.predicate = apcIdPredicate
 
         return fetch(request: fetchRequest)

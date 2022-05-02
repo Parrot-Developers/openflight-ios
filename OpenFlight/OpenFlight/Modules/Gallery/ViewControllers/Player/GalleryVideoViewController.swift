@@ -43,6 +43,7 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
     @IBOutlet private weak var streamView: StreamView!
     @IBOutlet private weak var videoView: MediaVideoView!
     @IBOutlet private weak var playButton: UIButton!
+    @IBOutlet private weak var bannerInfoView: MainBannerInfoView!
 
     // MARK: - Internal Properties
     private(set) var index: Int = 0
@@ -52,6 +53,10 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
     private var timer: Timer?
     private var mediaListener: GalleryMediaListener?
     private var videoGravity = AVLayerVideoGravity.resizeAspect
+    // Convenience Computed Properties
+    private var media: GalleryMedia? {
+        viewModel?.getFilteredMedia(index: index)
+    }
 
     // MARK: - Private Enums
     private enum Constants {
@@ -84,6 +89,7 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
     // MARK: - Deinit
     deinit {
         viewModel?.unregisterListener(mediaListener)
+        resetResources()
     }
 
     // MARK: - Override Funcs
@@ -95,23 +101,24 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
         observeViewModel()
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-
-        stop()
-    }
-
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
         setupPreviewImage()
-        stop()
-        viewModel?.mediaBrowsingViewModel.didDisplayMedia(index: index, count: 1)
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        stop() // reset state before starting new stream
+
+        guard let viewModel = viewModel,
+              let media = media,
+              let mediaIndex = viewModel.getMediaIndex(media) else {
+                  return
+              }
+
+        viewModel.mediaBrowsingViewModel.didDisplayMedia(index: mediaIndex, count: 1)
         start {
             self.viewModel?.videoPlay()
         }
@@ -149,17 +156,15 @@ private extension GalleryVideoViewController {
     @IBAction func playButtonTouchedUpInside(_ sender: AnyObject) {
         guard let viewModel = viewModel else { return }
 
-        if !viewModel.videoIsPlaying(),
-           viewModel.getVideoDuration() != 0,
-           viewModel.getVideoPosition() == viewModel.getVideoDuration() {
-            // We should reset video position to the beginning
-            stop()
-            start(completion: {
-                viewModel.videoTogglePlayingStatus()
-            })
-        } else {
-            viewModel.videoTogglePlayingStatus()
+        if viewModel.videoShouldReset() {
+            // Play tap detected, but no existing player ref found.
+            // (May occur after interrupting events like media download or video recording.)
+            // => Start new player.
+            start { [weak self] in self?.viewModel?.videoPlay() }
+            return
         }
+
+        viewModel.videoTogglePlayingStatus()
     }
 }
 
@@ -167,13 +172,14 @@ private extension GalleryVideoViewController {
 private extension GalleryVideoViewController {
     func setupPreviewImage() {
         guard let viewModel = viewModel,
-              let media = viewModel.getMedia(index: index) else {
+              let media = media else {
                   return
               }
 
         let thumbnailViewModel = GalleryMediaThumbnailViewModel(media: media,
                                                                 mediaStore: viewModel.mediaStore,
                                                                 index: viewModel.getMediaImageDefaultIndex(media))
+
         thumbnailViewModel.getThumbnail { [weak self] image in
             self?.showPreviewImage(true)
             self?.previewImageView.image = image
@@ -185,7 +191,8 @@ private extension GalleryVideoViewController {
     }
 
     func showControls(_ show: Bool) {
-        playButton.animateIsHidden(!show)
+        let shouldShowPlayButton = show && bannerInfoView.isHidden
+        playButton.animateIsHidden(!shouldShowPlayButton)
     }
 
     /// Init media player view model.
@@ -196,18 +203,41 @@ private extension GalleryVideoViewController {
             showPreviewImage(viewModel.getVideoPosition() == 0)
         })
 
-        viewModel.$downloadStatus
-            .sink { [unowned self] status in
-                if status == .running {
-                    stop()
-                    activityIndicator.startAnimating()
-                } else {
-                    start()
-                    activityIndicator.stopAnimating()
-                }
-                updatePlayButton()
+        // Listen to media download status and camera recording updates
+        // in order to be able to display error banner in case a download is in progress.
+        viewModel.$downloadStatus.removeDuplicates()
+            .combineLatest(viewModel.mediaBrowsingViewModel.$isCameraRecording.removeDuplicates())
+            .sink { [weak self] (status, isCameraRecording) in
+                guard let self = self else { return }
+                self.updateBannerInfoView(isCameraRecording: isCameraRecording,
+                                          downloadStatus: status)
+                self.updatePlayButton()
             }
             .store(in: &cancellables)
+    }
+
+    /// Updates banner info view according to recording and download states.
+    ///
+    /// - Parameters:
+    ///    - isCameraRecording: `true` is a camera stream record is on-going, `false` otherwise
+    ///    - downloadStatus: the current download status
+    func updateBannerInfoView(isCameraRecording: Bool? = nil, downloadStatus: MediaTaskStatus?) {
+        let isCameraRecording = isCameraRecording ?? viewModel?.mediaBrowsingViewModel.isCameraRecording ?? false
+        let isDownloadInProgress = downloadStatus == .running || downloadStatus == .fileDownloaded
+
+        if isCameraRecording {
+            bannerInfoView.model = .init(icon: Asset.BottomBar.CameraModes.icCameraModeVideo.image,
+                                         title: L10n.galleryPlaybackNotPossibleRecording)
+        } else if isDownloadInProgress {
+            stop()
+            bannerInfoView.model = .init(icon: Asset.BottomBar.CameraModes.icCameraModeVideo.image,
+                                         title: L10n.galleryPlaybackNotPossibleDownload)
+        }
+
+        // Update UI according to error state.
+        let shouldShowErrorInfoView = isDownloadInProgress || isCameraRecording
+        bannerInfoView.animateIsHidden(!shouldShowErrorInfoView)
+        playButton.animateIsHidden(shouldShowErrorInfoView)
     }
 
     func updateMuteState(_ isMuted: Bool) {
@@ -232,7 +262,7 @@ private extension GalleryVideoViewController {
 
         playButton.setImage(image, for: .normal)
 
-        if !viewModel.videoIsPlaying() && viewModel.getVideoPosition() == viewModel.getVideoDuration() {
+        if viewModel.getVideoPosition() == viewModel.getVideoDuration() {
             // Show controls when video has reached end.
             viewModel.mediaBrowsingViewModel.didInteractForControlsDisplay(true)
         }
@@ -246,7 +276,14 @@ private extension GalleryVideoViewController {
         streamView.isHidden = false
         streamView.renderingPaddingFill = .none
         videoView.isHidden = true
-        viewModel?.videoSetStream(index: self.index) { replay in
+
+        guard let viewModel = viewModel,
+              let media = media,
+              let mediaIndex = viewModel.getMediaIndex(media) else {
+                  return
+              }
+
+        viewModel.videoSetStream(index: mediaIndex) { replay in
             self.startReplay(replay)
             self.scheduledTimerWithTimeInterval()
             if let completion = completion {
@@ -297,7 +334,7 @@ private extension GalleryVideoViewController {
     func start(completion: (() -> Void)? = nil) {
         guard let viewModel = viewModel,
               viewModel.videoShouldReset(),
-              let currentMedia = viewModel.getMedia(index: index),
+              let currentMedia = media,
         !Platform.isSimulator else {
             completion?()
             return
@@ -316,6 +353,10 @@ private extension GalleryVideoViewController {
     func stop() {
         viewModel?.mediaBrowsingViewModel.didInteractForControlsDisplay(true)
         viewModel?.videoStop()
+        resetResources()
+    }
+
+    func resetResources() {
         streamView.setStream(stream: nil)
         timer?.invalidate()
         timer = nil

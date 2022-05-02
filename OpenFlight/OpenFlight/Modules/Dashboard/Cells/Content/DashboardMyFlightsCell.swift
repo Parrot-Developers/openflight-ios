@@ -80,8 +80,6 @@ final class DashboardMyFlightsCell: UICollectionViewCell, NibReusable {
         viewModel.isSynchronizingData
             .sink { [weak self] isSync in
                 guard let self = self else { return }
-                // The cell needs to be updated at every synchronizing state changes
-                viewModel.reloadAllFlights()
 
                 isSync ? self.syncLoaderImageView.startRotate() : self.syncLoaderImageView.stopRotate()
                 self.syncLoaderImageView.isHidden = !isSync

@@ -171,7 +171,7 @@ class SideNavigationBarView: UIView {
 
 /// A UIButton with an inset hit area.
 /// Useful for small navigation bar buttons.
-class InsetHitAreaButton: UIButton {
+public class InsetHitAreaButton: UIButton {
     var hitAreaInsets: UIEdgeInsets = .init(top: Constants.defaultInsetValue,
                                             left: Constants.defaultInsetValue,
                                             bottom: Constants.defaultInsetValue,
@@ -181,7 +181,30 @@ class InsetHitAreaButton: UIButton {
         static let defaultInsetValue: CGFloat = -20
     }
 
-    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+    override public func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
         bounds.inset(by: hitAreaInsets).contains(point)
+    }
+}
+
+/// A generic class for a navigation back button.
+public class MainBackButton: InsetHitAreaButton {
+    public override var intrinsicContentSize: CGSize {
+        .init(width: Layout.backButtonIntrinsicWidth(isRegularSizeClass),
+              height: super.intrinsicContentSize.width)
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupView()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupView()
+    }
+
+    private func setupView() {
+        setImage(Asset.Common.Icons.icBack.image, for: .normal)
+        setTitle(nil, for: .normal)
     }
 }

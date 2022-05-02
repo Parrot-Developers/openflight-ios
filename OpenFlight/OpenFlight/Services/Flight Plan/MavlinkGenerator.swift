@@ -166,14 +166,6 @@ private extension MavlinkGeneratorImpl {
             commands.append($0.mavlinkCommand)
         }
 
-        // Video recording should start before traveling to the first waypoint.
-        // Any other capture mode starts after reaching it.
-        if flightPlan.dataSetting?.captureModeEnum == .video,
-           let captureCommand = flightPlan.dataSetting?.startCaptureCommand {
-            commands.append(captureCommand)
-            didAddStartCaptureCommand = true
-        }
-
         flightPlan.dataSetting?.wayPoints.forEach {
             let speed = $0.speedMavlinkCommand.speed
             if speed != currentSpeed {

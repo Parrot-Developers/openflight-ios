@@ -33,13 +33,16 @@ import Combine
 /// View controller that manages gimbal tilt and zoom components.
 final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Outlets
+    @IBOutlet private weak var tiltButtonContainer: UIView!
     @IBOutlet private weak var tiltButton: TiltButton!
     @IBOutlet private weak var tiltSliderView: TiltSliderView!
     @IBOutlet private weak var tiltSliderContainerView: UIView!
-    @IBOutlet private weak var zoomButton: UIButton!
+    @IBOutlet private weak var zoomButtonContainer: UIView!
+    @IBOutlet private weak var zoomButton: InsetHitAreaButton!
     @IBOutlet private weak var zoomSliderView: ZoomSliderView!
     @IBOutlet private weak var overzoomLabel: UILabel!
-    @IBOutlet private weak var joysticksButton: UIButton!
+    @IBOutlet private weak var joysticksButtonContainer: UIView!
+    @IBOutlet private weak var joysticksButton: InsetHitAreaButton!
     @IBOutlet private weak var infoTiltLabel: PaddingLabel!
 
     @IBOutlet private var overzoomLabelOpenConstraints: [NSLayoutConstraint]!
@@ -49,6 +52,7 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
     @IBOutlet weak var maxTiltSliderLabel: UILabel!
     @IBOutlet private weak var maxTiltRemoteLabel: UILabel!
     @IBOutlet weak var leadingInfoTiltLabelConstraint: NSLayoutConstraint!
+
     // MARK: - Internal Properties
     var delayedTaskComponents = DelayedTaskComponents()
     var viewModel: CameraSlidersViewModel!
@@ -132,7 +136,7 @@ private extension CameraSlidersViewController {
 
     func listenJoysticksButton() {
         viewModel.$showJoysticksButton.sink { [unowned self] in
-            joysticksButton.isHidden = !$0
+            joysticksButtonContainer.isHidden = !$0
         }
         .store(in: &cancellables)
         viewModel.$joysticksButtonImage.sink { [unowned self] in
@@ -147,7 +151,7 @@ private extension CameraSlidersViewController {
             .sink { [unowned self] in zoomButton.isEnabled = $0 }
             .store(in: &cancellables)
         viewModel.zoomButtonHidden
-            .sink { [unowned self] in zoomButton.isHidden = $0 }
+            .sink { [unowned self] in zoomButtonContainer.isHidden = $0 }
             .store(in: &cancellables)
         viewModel.$zoomButtonTitle
             .sink { [unowned self] in
@@ -204,7 +208,7 @@ private extension CameraSlidersViewController {
             }
             .store(in: &cancellables)
         viewModel.gimbalTiltButtonHidden
-            .sink { [unowned self] in tiltButton.isHidden = $0 }
+            .sink { [unowned self] in tiltButtonContainer.isHidden = $0 }
             .store(in: &cancellables)
         // Slider
         viewModel.$showGimbalTiltSlider
@@ -272,26 +276,26 @@ private extension CameraSlidersViewController {
 
     /// Shows the tilt slider view.
     func showTiltSliderView() {
-        animate(viewToShow: tiltSliderContainerView, viewToHide: zoomButton)
+        animate(viewToShow: tiltSliderContainerView, viewToHide: zoomButtonContainer)
     }
 
     /// Hides the tilt slider view.
     func hideTiltSliderView() {
-        animate(viewToShow: zoomButton, viewToHide: tiltSliderContainerView)
+        animate(viewToShow: zoomButtonContainer, viewToHide: tiltSliderContainerView)
         leadingInfoTiltLabelConstraint.isActive = true
     }
 
     /// Shows the zoom slider view.
     func showZoomSliderView() {
         animate(viewToShow: zoomSliderView,
-                viewToHide: tiltButton,
+                viewToHide: tiltButtonContainer,
                 constraintsToRemove: overzoomLabelClosedConstraints,
                 constraintsToActivate: overzoomLabelOpenConstraints)
     }
 
     /// Hides the zoom slider view.
     func hideZoomSliderView() {
-        animate(viewToShow: tiltButton,
+        animate(viewToShow: tiltButtonContainer,
                 viewToHide: zoomSliderView,
                 constraintsToRemove: overzoomLabelOpenConstraints,
                 constraintsToActivate: overzoomLabelClosedConstraints)

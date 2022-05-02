@@ -54,6 +54,8 @@ public protocol AirSdkMissionSignature {
     var serviceUidCommand: UInt { get }
     /// The mission service unique id event.
     var serviceUidEvent: UInt { get }
+    /// Whether the mission is built in the firmware.
+    var isBuiltIn: Bool { get }
 }
 
 /// All OpenFlight signatures.
@@ -79,6 +81,9 @@ public struct DefaultMissionSignature: AirSdkMissionSignature {
 
     /// The mission service unique id event.
     public var serviceUidEvent: UInt = 0
+
+    /// Whether the mission is built in the firmware.
+    public var isBuiltIn: Bool = true
 }
 
 /// Default AirSdk mission activation model.
@@ -130,7 +135,7 @@ public struct OphtalmoMissionSignature: AirSdkMissionSignature {
     fileprivate init() {}
 
     /// The mission name.
-    public let name: String = "Ophtalmo" // TODO: add resource
+    public let name: String = L10n.firmwareMissionUpdateOphtalmo
 
     /// The mission UID.
     public let missionUID: String = "com.parrot.missions.ophtalmo"
@@ -144,6 +149,9 @@ public struct OphtalmoMissionSignature: AirSdkMissionSignature {
     public var serviceUidEvent: UInt {
         return "parrot.missions.ophtalmo.airsdk.messages.Event".serviceId
     }
+
+    /// Whether the mission is built in the firmware.
+    public var isBuiltIn: Bool = true
 }
 
 // MARK: - HelloWorld mission
@@ -166,4 +174,7 @@ public struct HelloWorldMissionSignature: AirSdkMissionSignature {
     public var serviceUidEvent: UInt {
         return "parrot.missions.samples.hello.airsdk.messages.Event".serviceId
     }
+
+    /// Whether the mission is built in the firmware.
+    public var isBuiltIn: Bool = false
 }

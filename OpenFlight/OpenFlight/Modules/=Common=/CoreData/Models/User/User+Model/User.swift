@@ -39,7 +39,6 @@ public struct User {
         static let syncWithCloudDefault          = true
         static let userInfoChangedDefault        = false
         static let agreementChangedDefault       = false
-        static let newsletterOptionDefault       = false
         static let shareDataOptionDefault        = false
         static let tempApcUserDefault            = false
         static let langDefault                   = "en"
@@ -55,6 +54,7 @@ public struct User {
     public var apcId: String
     public var apcToken: String?
     public var avatar: String?
+    public var latestCloudAvatarModificationDate: Date?
     public var tmpApcUser: Bool
     public var userInfoChanged: Bool
     public var syncWithCloud: Bool
@@ -62,6 +62,19 @@ public struct User {
     public var isSynchronizeFlightDataExtended: Bool
     public var freemiumProjectCounter: Int16
     public var pilotNumber: String?
+    // MARK: __ Synchronization
+    ///  Boolean to know if is deleted locally but needs to be deleted on server
+    public var isLocalDeleted: Bool
+    ///  Synchro status
+    public var synchroStatus: SynchroStatus?
+    ///  Synchro error
+    public var synchroError: SynchroError?
+    ///  Date of last tried synchro
+    public var latestSynchroStatusDate: Date?
+    ///  Date of local modification
+    public var latestLocalModificationDate: Date?
+    ///  Date of lastest modification on server
+    public var latestCloudModificationDate: Date?
 
     // MARK: - Public init
 
@@ -74,6 +87,7 @@ public struct User {
                 apcId: String,
                 apcToken: String?,
                 avatar: String?,
+                latestCloudAvatarModificationDate: Date?,
                 pilotNumber: String?,
                 tmpApcUser: Bool?,
                 userInfoChanged: Bool?,
@@ -98,6 +112,12 @@ public struct User {
         self.agreementChanged = agreementChanged ?? DefaultValues.agreementChangedDefault
         self.isSynchronizeFlightDataExtended = isSynchronizeFlightDataExtended ?? DefaultValues.shareDataOptionDefault
         self.freemiumProjectCounter = Int16(freemiumProjectCounter ?? DefaultValues.freemiumProjectCounterDefault)
+        /// Synchronization
+        self.isLocalDeleted = false
+        self.synchroStatus = .synced
+        self.synchroError = .noError
+        self.latestSynchroStatusDate = nil
+        self.latestLocalModificationDate = nil
     }
 
     public static func createAnonymous(withToken: String?) -> User {
@@ -110,6 +130,7 @@ public struct User {
                     apcId: anonymousId,
                     apcToken: withToken,
                     avatar: nil,
+                    latestCloudAvatarModificationDate: nil,
                     pilotNumber: nil,
                     tmpApcUser: true,
                     userInfoChanged: nil,
@@ -117,5 +138,13 @@ public struct User {
                     agreementChanged: nil,
                     isSynchronizeFlightDataExtended: true,
                     freemiumProjectCounter: nil)
+    }
+
+    public func getAvatarCacheKey() -> String {
+        var timestampStr = ""
+        if let latestCloudAvatarModificationDate = latestCloudAvatarModificationDate {
+            timestampStr = "\(latestCloudAvatarModificationDate.timeIntervalSince1970)"
+        }
+        return "\(apcId)_\(timestampStr)"
     }
 }

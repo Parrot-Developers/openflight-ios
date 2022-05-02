@@ -134,7 +134,9 @@ private extension PanoramaModeViewModel {
             isCurrentPanoramaModeAvailable = animationItf?.isPanoramaPhotoCaptureAvailable(PanoramaMode.current) == true
             let copy = state.value.copy()
             copy.inProgress = animationItf?.animation?.status != nil
-            copy.progress = animationItf?.animation?.progress ?? -1
+            // Reset progress if animation is aborting in order to reflect interaction and avoid stuck progress visual feedback.
+            let isAborting = animationItf?.animation?.status == .aborting
+            copy.progress = isAborting ? -1 : animationItf?.animation?.progress ?? -1
             copy.available = isCurrentPanoramaModeAvailable == true
             state.set(copy)
         }

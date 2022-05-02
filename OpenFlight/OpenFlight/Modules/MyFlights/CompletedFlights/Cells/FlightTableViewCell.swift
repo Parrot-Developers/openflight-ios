@@ -48,7 +48,9 @@ final class FlightTableViewCell: MainTableViewCell, NibReusable {
     @IBOutlet private weak var dateLabel: UILabel!
     @IBOutlet private weak var locationLabel: UILabel!
     @IBOutlet private weak var durationLabel: UILabel!
+    @IBOutlet private weak var photoStackView: UIStackView!
     @IBOutlet private weak var photoLabel: UILabel!
+    @IBOutlet private weak var videoStackView: UIStackView!
     @IBOutlet private weak var videoLabel: UILabel!
 
     private var cancellables = Set<AnyCancellable>()
@@ -69,6 +71,12 @@ final class FlightTableViewCell: MainTableViewCell, NibReusable {
         // Add left screen borders for devices with notch
         screenBorders = [.left]
 
+        // Style
+        locationLabel.makeUp(with: .current, color: .defaultTextColor80)
+        photoLabel.makeUp(with: .current, color: .defaultTextColor)
+        videoLabel.makeUp(with: .current, color: .defaultTextColor)
+        durationLabel.makeUp(with: .current, color: .defaultTextColor)
+
         // Setup date section display.
         dateView.isHidden = !(UIApplication.isLandscape || showDate)
         dateView.alpha = showDate ? 1.0 : 0.0
@@ -79,10 +87,15 @@ final class FlightTableViewCell: MainTableViewCell, NibReusable {
             monthLabel.text = date?.month.capitalized
             yearLabel.text = date?.year
         }
-        dateLabel.text = viewModel.flight.formattedDate
-        durationLabel.text = viewModel.flight.longFormattedDuration
-        photoLabel.text = viewModel.flight.photoCount == 0 ? Style.dash : viewModel.flight.photoCount.description
-        videoLabel.text = viewModel.flight.videoCount == 0 ? Style.dash : viewModel.flight.videoCount.description
+        dateLabel.text = viewModel.flight.shortFormattedDate
+        durationLabel.text = viewModel.flight.shortFormattedDuration
+
+        photoLabel.text = viewModel.flight.photoCount.description
+        photoStackView.isHidden = viewModel.flight.photoCount == 0
+
+        videoLabel.text = viewModel.flight.videoCount.description
+        videoStackView.isHidden = viewModel.flight.videoCount == 0
+
         viewModel.$name
             .sink { [weak self] in
                 self?.locationLabel.text = $0

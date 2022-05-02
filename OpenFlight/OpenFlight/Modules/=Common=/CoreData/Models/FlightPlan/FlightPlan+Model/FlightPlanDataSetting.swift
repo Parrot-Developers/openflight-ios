@@ -74,8 +74,9 @@ public final class FlightPlanDataSetting: Codable {
     public var pois: [PoiPoint]
     public var wayPoints: [WayPoint]
     public var isBuckled: Bool?
-    public var shouldContinue: Bool? = false
-    public var lastPointRth: Bool? = true
+    public var shouldContinue: Bool = false
+    public var lastPointRth: Bool = true
+    public var disconnectionRth: Bool = true
     public var captureMode: String?
     public var captureSettings: [String: String]?
     public var disablePhotoSignature: Bool = false
@@ -198,6 +199,7 @@ public final class FlightPlanDataSetting: Codable {
         case pois = "poi"
         case shouldContinue = "continue"
         case lastPointRth = "RTH"
+        case disconnectionRth
         case captureMode
         case captureSettings
         case freeSettings
@@ -284,7 +286,7 @@ public final class FlightPlanDataSetting: Codable {
         // Allow non-containing fpExecutions files for old format support.
 
         // Optional properties.
-        self.shouldContinue = try? container.decode(Bool.self, forKey: .shouldContinue)
+        self.shouldContinue = (try? container.decode(Bool.self, forKey: .shouldContinue)) ?? false
         self.longitude = try? container.decode(Double.self, forKey: .longitude)
         self.latitude = try? container.decode(Double.self, forKey: .latitude)
         self.droneLatitude = try? container.decode(Double.self, forKey: .droneLatitude)
@@ -299,7 +301,8 @@ public final class FlightPlanDataSetting: Codable {
         self.captureSettings = try? container.decode([String: String].self, forKey: .captureSettings)
         self.freeSettings = (try? container.decode([String: String].self, forKey: .freeSettings)) ?? [:]
         self.notPropagatedSettings  = (try? container.decode([String: String].self, forKey: .notPropagatedSettings)) ?? [:]
-        self.lastPointRth = try? container.decode(Bool.self, forKey: .lastPointRth)
+        self.lastPointRth = (try? container.decode(Bool.self, forKey: .lastPointRth)) ?? true
+        self.disconnectionRth = (try? container.decode(Bool.self, forKey: .disconnectionRth)) ?? true
         self.pgyProjectId = try? container.decode(Int64.self, forKey: .pgyProjectId)
         self.uploadAttemptCount = try? container.decode(Int16.self, forKey: .uploadAttemptCount)
         self.lastUploadAttempt = try? container.decode(Date.self, forKey: .lastUploadAttempt)
@@ -337,6 +340,7 @@ public final class FlightPlanDataSetting: Codable {
         try container.encode(freeSettings, forKey: .freeSettings)
         try container.encode(notPropagatedSettings, forKey: .notPropagatedSettings)
         try container.encode(lastPointRth, forKey: .lastPointRth)
+        try container.encode(disconnectionRth, forKey: .disconnectionRth)
         try container.encode(takeoffActions, forKey: .takeoffActions)
         try container.encode(pois, forKey: .pois)
         try container.encode(wayPoints, forKey: .wayPoints)
@@ -364,6 +368,7 @@ public final class FlightPlanDataSetting: Codable {
         copy.isBuckled = isBuckled
         copy.shouldContinue = shouldContinue
         copy.lastPointRth = lastPointRth
+        copy.disconnectionRth = disconnectionRth
         copy.captureMode = captureMode
         copy.captureSettings = captureSettings
         copy.captureModeEnum = captureModeEnum
@@ -404,5 +409,13 @@ public extension FlightPlanDataSetting {
             let json = jsonString.data(using: .utf8),
             let result = try? JSONDecoder().decode(Self.self, from: json) else { return nil }
         return result
+    }
+}
+
+/// Log helper
+/// Displays the number of way points and pois in the Logs.
+extension FlightPlanDataSetting: CustomStringConvertible {
+    public var description: String {
+        return "WP: \(wayPoints.count), POIs: \(pois.count)"
     }
 }

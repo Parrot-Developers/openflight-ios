@@ -34,7 +34,8 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     // MARK: - Public Properties
     /// Associated waypoint.
     private(set) var wayPoint: WayPoint?
-
+    /// 3D location of waypoint
+    private(set) var location: Location3D?
     // MARK: - Private Properties
     private var mainLabel: AGSPictureMarkerSymbol?
     private var subLabel: AGSPictureMarkerSymbol?
@@ -58,7 +59,7 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     // MARK: - Private Constants
     private enum Constants {
         static let defaultColor: UIColor = ColorName.black.color
-        static let selectedColor: UIColor = ColorName.highlightColor.color
+        static let selectedColor: UIColor = ColorName.greenSpring.color
         static let secondaryColor: UIColor = ColorName.white.color
         static let customSecondaryColor: UIColor = ColorName.highlightColor.color
         static let largeCircleSize: CGFloat = 42.0
@@ -130,7 +131,7 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
         largeCircle.outline = AGSSimpleLineSymbol(style: .solid,
                                                   color: Constants.customSecondaryColor,
                                                   width: Constants.largeCircleOutlineWidth)
-
+        self.location = location
         var array = [AGSSymbol]()
         array.append(largeCircle)
         let symbol = AGSCompositeSymbol(symbols: array)

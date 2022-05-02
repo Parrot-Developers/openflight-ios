@@ -64,6 +64,7 @@ final class EditionSettingsViewController: UIViewController {
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var deleteButton: ActionButton!
     @IBOutlet private weak var undoButton: ActionButton!
+    @IBOutlet private weak var buttonSpacerView: HSpacerView!
     @IBOutlet private weak var buttonsStackView: MainContainerStackView!
     @IBOutlet private weak var bottomGradientView: BottomGradientView!
 
@@ -138,9 +139,9 @@ private extension EditionSettingsViewController {
         tableView.makeUp(backgroundColor: .clear)
 
         deleteButton.setup(title: L10n.commonDelete, style: .destructive)
-        deleteButton.isHidden = true
+        setDeleteButtonVisibility(false)
 
-        undoButton.setup(title: L10n.commonUndo, style: .default1)
+        undoButton.setup(image: Asset.Common.Icons.icUndo.image, style: .default2)
 
         buttonsStackView.screenBorders = [.bottom, .right]
 
@@ -162,7 +163,7 @@ private extension EditionSettingsViewController {
                     self.undoButton.isHidden = categoryFilter == .common || categoryFilter == .image
                     self.updateUndoButton()
                 case let .selectedGraphic(selectedGraphic):
-                    self.deleteButton.isHidden = selectedGraphic?.deletable != true
+                    setDeleteButtonVisibility(selectedGraphic?.deletable == true)
                 case .reload:
                     updateTopBarTitle()
                     self.tableView.reloadData()
@@ -175,6 +176,11 @@ private extension EditionSettingsViewController {
     /// Updates undo button.
     func updateUndoButton() {
         undoButton.isEnabled = delegate.map({ $0.canUndo() }) ?? false
+    }
+
+    func setDeleteButtonVisibility(_ show: Bool) {
+        deleteButton.isHidden = !show
+        buttonSpacerView.isHidden = show
     }
 
     @objc func backAction() {

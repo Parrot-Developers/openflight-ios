@@ -44,23 +44,11 @@
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="j78-w4-CCO" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
-                                <subviews>
-                                    <view contentMode="scaleToFill" placeholderIntrinsicWidth="896" placeholderIntrinsicHeight="50" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nMb-g3-P03" customClass="PanoramaProgressBarView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </view>
-                                </subviews>
-                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="sRw-mD-gHB"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="j78-w4-CCO" firstAttribute="leading" secondItem="tCH-hA-9A2" secondAttribute="leading" id="4Iq-FW-K6e"/>
                             <constraint firstAttribute="trailing" secondItem="wKU-bT-8CJ" secondAttribute="trailing" id="C66-Ab-eAs"/>
-                            <constraint firstItem="j78-w4-CCO" firstAttribute="trailing" secondItem="tCH-hA-9A2" secondAttribute="trailing" id="Pw5-PO-1PH"/>
-                            <constraint firstAttribute="bottom" secondItem="j78-w4-CCO" secondAttribute="bottom" id="THl-uU-JUP"/>
                             <constraint firstItem="wKU-bT-8CJ" firstAttribute="top" secondItem="tCH-hA-9A2" secondAttribute="top" id="TP1-kp-KdA"/>
                             <constraint firstAttribute="bottom" secondItem="wKU-bT-8CJ" secondAttribute="bottom" id="UrR-FD-yNg"/>
                             <constraint firstItem="wKU-bT-8CJ" firstAttribute="leading" secondItem="tCH-hA-9A2" secondAttribute="leading" id="eJa-77-KHy"/>
@@ -71,7 +59,6 @@
                         <outlet property="containerStackView" destination="wKU-bT-8CJ" id="OKi-lR-lz9"/>
                         <outlet property="levelOneContainerView" destination="Pw9-fP-TRP" id="Ifv-X6-qeU"/>
                         <outlet property="levelTwoContainerView" destination="v83-y1-tAc" id="JR8-oU-3oC"/>
-                        <outlet property="panoramaProgressBarContainer" destination="j78-w4-CCO" id="zOc-xE-S4d"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Fvi-aB-L93" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -154,101 +141,82 @@
                         <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" distribution="equalSpacing" translatesAutoresizingMaskIntoConstraints="NO" id="wVp-Fw-sWz">
+                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="y1v-VI-HpP" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="y1v-VI-HpP" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="302" height="50"/>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3sY-Wu-zmw" customClass="MissionLauncherButton" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <connections>
+                                            <action selector="missionLauncherButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="fd0-Te-RTi"/>
+                                        </connections>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="50" placeholderIntrinsicHeight="50" insetsLayoutMarginsFromSafeArea="NO" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="le1-h8-uYT" userLabel="Behavior Stack View">
+                                        <rect key="frame" x="60" y="0.0" width="50" height="50"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="MBD-AG-375">
+                                        <rect key="frame" x="120" y="0.0" width="656" height="50"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3sY-Wu-zmw" customClass="MissionLauncherButton" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <connections>
-                                                    <action selector="missionLauncherButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="fd0-Te-RTi"/>
-                                                </connections>
-                                            </view>
-                                            <stackView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="50" placeholderIntrinsicHeight="50" insetsLayoutMarginsFromSafeArea="NO" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="le1-h8-uYT" userLabel="Behavior Stack View">
-                                                <rect key="frame" x="60" y="0.0" width="50" height="50"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                            </stackView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="MBD-AG-375">
-                                                <rect key="frame" x="120" y="0.0" width="122" height="50"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4uF-C9-wIe">
+                                                <rect key="frame" x="0.0" y="0.0" width="122" height="50"/>
                                                 <subviews>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4uF-C9-wIe">
-                                                        <rect key="frame" x="0.0" y="0.0" width="122" height="50"/>
-                                                        <subviews>
-                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Whv-gc-ugc" customClass="BarButtonView" customModule="OpenFlight" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="0.0" width="61" height="50"/>
-                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                <connections>
-                                                                    <action selector="cameraModeTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="Cci-y7-jgV"/>
-                                                                </connections>
-                                                            </view>
-                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mlh-JI-FAA" customClass="CameraWidgetView" customModule="OpenFlight" customModuleProvider="target">
-                                                                <rect key="frame" x="61" y="0.0" width="61" height="50"/>
-                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                <connections>
-                                                                    <action selector="cameraWidgetTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="swH-lg-Rcd"/>
-                                                                </connections>
-                                                            </view>
-                                                        </subviews>
-                                                    </stackView>
-                                                </subviews>
-                                            </stackView>
-                                            <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qnh-0R-mgj">
-                                                <rect key="frame" x="252" y="0.0" width="50" height="50"/>
-                                                <subviews>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Moq-UE-Mq3" customClass="CameraShutterButton" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Whv-gc-ugc" customClass="BarButtonView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="61" height="50"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" secondItem="Moq-UE-Mq3" secondAttribute="height" multiplier="1:1" id="ke8-tI-ZFD"/>
-                                                        </constraints>
                                                         <connections>
-                                                            <action selector="cameraShutterButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="LZs-XZ-g0o"/>
+                                                            <action selector="cameraModeTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="Cci-y7-jgV"/>
+                                                        </connections>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mlh-JI-FAA" customClass="CameraWidgetView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="61" y="0.0" width="61" height="50"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <connections>
+                                                            <action selector="cameraWidgetTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="swH-lg-Rcd"/>
                                                         </connections>
                                                     </view>
                                                 </subviews>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstItem="Moq-UE-Mq3" firstAttribute="leading" secondItem="qnh-0R-mgj" secondAttribute="leading" id="8t9-JY-cL7"/>
-                                                    <constraint firstAttribute="trailing" secondItem="Moq-UE-Mq3" secondAttribute="trailing" id="8tD-wB-f1h"/>
-                                                    <constraint firstAttribute="bottom" secondItem="Moq-UE-Mq3" secondAttribute="bottom" id="L0S-KY-ztu"/>
-                                                    <constraint firstItem="Moq-UE-Mq3" firstAttribute="top" secondItem="qnh-0R-mgj" secondAttribute="top" id="YqM-9z-5ON"/>
-                                                </constraints>
-                                            </view>
+                                            </stackView>
                                         </subviews>
-                                        <constraints>
-                                            <constraint firstItem="3sY-Wu-zmw" firstAttribute="width" secondItem="3sY-Wu-zmw" secondAttribute="height" multiplier="1:1" id="VMo-mU-kTQ"/>
-                                        </constraints>
                                     </stackView>
-                                    <view contentMode="scaleToFill" horizontalHuggingPriority="249" horizontalCompressionResistancePriority="1000" placeholderIntrinsicWidth="50" placeholderIntrinsicHeight="50" translatesAutoresizingMaskIntoConstraints="NO" id="LY8-wO-9Cy" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="574" y="0.0" width="50" height="50"/>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                    </view>
-                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GPb-Mg-O7g" userLabel="Sub Behavior Stack View" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="896" y="0.0" width="0.0" height="50"/>
+                                    <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qnh-0R-mgj">
+                                        <rect key="frame" x="786" y="0.0" width="50" height="50"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vsn-hy-RTG">
-                                                <rect key="frame" x="0.0" y="0.0" width="0.0" height="50"/>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Moq-UE-Mq3" customClass="CameraShutterButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" id="Ooq-ym-WvC"/>
+                                                    <constraint firstAttribute="width" secondItem="Moq-UE-Mq3" secondAttribute="height" multiplier="1:1" id="ke8-tI-ZFD"/>
                                                 </constraints>
+                                                <connections>
+                                                    <action selector="cameraShutterButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="LZs-XZ-g0o"/>
+                                                </connections>
                                             </view>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </stackView>
+                                        <constraints>
+                                            <constraint firstItem="Moq-UE-Mq3" firstAttribute="leading" secondItem="qnh-0R-mgj" secondAttribute="leading" id="8t9-JY-cL7"/>
+                                            <constraint firstAttribute="trailing" secondItem="Moq-UE-Mq3" secondAttribute="trailing" id="8tD-wB-f1h"/>
+                                            <constraint firstAttribute="bottom" secondItem="Moq-UE-Mq3" secondAttribute="bottom" id="L0S-KY-ztu"/>
+                                            <constraint firstItem="Moq-UE-Mq3" firstAttribute="top" secondItem="qnh-0R-mgj" secondAttribute="top" id="YqM-9z-5ON"/>
+                                        </constraints>
+                                    </view>
+                                    <view contentMode="scaleToFill" horizontalHuggingPriority="249" horizontalCompressionResistancePriority="1000" placeholderIntrinsicWidth="50" placeholderIntrinsicHeight="50" translatesAutoresizingMaskIntoConstraints="NO" id="LY8-wO-9Cy" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="846" y="0.0" width="50" height="50"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    </view>
                                 </subviews>
+                                <constraints>
+                                    <constraint firstItem="3sY-Wu-zmw" firstAttribute="width" secondItem="3sY-Wu-zmw" secondAttribute="height" multiplier="1:1" id="VMo-mU-kTQ"/>
+                                </constraints>
                             </stackView>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="fgm-fM-175"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstAttribute="bottom" secondItem="wVp-Fw-sWz" secondAttribute="bottom" id="6kg-ZB-Lwq"/>
-                            <constraint firstItem="wVp-Fw-sWz" firstAttribute="top" secondItem="hkh-iB-fhd" secondAttribute="top" id="9wL-FP-ceG"/>
-                            <constraint firstAttribute="trailing" secondItem="wVp-Fw-sWz" secondAttribute="trailing" id="PA5-qF-kLw"/>
-                            <constraint firstItem="wVp-Fw-sWz" firstAttribute="leading" secondItem="hkh-iB-fhd" secondAttribute="leading" id="a2F-4s-ctk"/>
+                            <constraint firstAttribute="bottom" secondItem="y1v-VI-HpP" secondAttribute="bottom" id="0ns-oC-Zgf"/>
+                            <constraint firstItem="y1v-VI-HpP" firstAttribute="leading" secondItem="hkh-iB-fhd" secondAttribute="leading" id="RmP-zE-td3"/>
+                            <constraint firstAttribute="trailing" secondItem="y1v-VI-HpP" secondAttribute="trailing" id="gnM-In-V4x"/>
+                            <constraint firstItem="y1v-VI-HpP" firstAttribute="top" secondItem="hkh-iB-fhd" secondAttribute="top" id="wmP-69-5jH"/>
                         </constraints>
                     </view>
                     <size key="freeformSize" width="896" height="50"/>
@@ -262,7 +230,6 @@
                         <outlet property="missionLauncherButton" destination="3sY-Wu-zmw" id="KQY-O6-wGZ"/>
                         <outlet property="rightStackView" destination="4uF-C9-wIe" id="Y3S-7E-2AH"/>
                         <outlet property="shutterButtonView" destination="qnh-0R-mgj" id="ksa-NK-XU6"/>
-                        <outlet property="subBehaviorStackView" destination="GPb-Mg-O7g" id="W9n-f8-enZ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="BUM-j6-kqg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

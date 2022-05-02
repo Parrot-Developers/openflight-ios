@@ -22,18 +22,29 @@
                                 <rect key="frame" x="0.0" y="0.0" width="696" height="414"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jcr-Ix-v88">
-                                <rect key="frame" x="0.0" y="8" width="40" height="40"/>
+                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="696" placeholderIntrinsicHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="bcL-bd-3Em" customClass="HudTopBarGradientView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="696" height="22"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="e5Y-qW-AaG" customClass="SideNavigationBarStackView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="21" height="22"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jcr-Ix-v88" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="21" height="22"/>
+                                                <color key="tintColor" name="default_text_color"/>
+                                                <state key="normal" image="ic_back"/>
+                                                <connections>
+                                                    <action selector="backButtonTouchedUpInside:" destination="SNC-vW-uNS" eventType="touchUpInside" id="Zk3-2d-raV"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="90a-hv-DH9"/>
-                                    <constraint firstAttribute="width" secondItem="jcr-Ix-v88" secondAttribute="height" multiplier="1:1" id="GgD-cX-40C"/>
+                                    <constraint firstItem="e5Y-qW-AaG" firstAttribute="top" secondItem="bcL-bd-3Em" secondAttribute="top" id="SCA-Hh-sc7"/>
+                                    <constraint firstItem="e5Y-qW-AaG" firstAttribute="leading" secondItem="bcL-bd-3Em" secondAttribute="leading" id="VTu-1j-YhM"/>
                                 </constraints>
-                                <color key="tintColor" name="default_text_color"/>
-                                <state key="normal" image="ic_back"/>
-                                <connections>
-                                    <action selector="backButtonTouchedUpInside:" destination="SNC-vW-uNS" eventType="touchUpInside" id="Zk3-2d-raV"/>
-                                </connections>
-                            </button>
+                            </view>
                             <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="vfG-Fe-nN5">
                                 <rect key="frame" x="696" y="0.0" width="200" height="414"/>
                                 <subviews>
@@ -50,12 +61,13 @@
                         <viewLayoutGuide key="safeArea" id="RX1-ln-e3K"/>
                         <color key="backgroundColor" name="default_bgcolor"/>
                         <constraints>
-                            <constraint firstItem="jcr-Ix-v88" firstAttribute="leading" secondItem="RX1-ln-e3K" secondAttribute="leading" id="4QT-Np-Lft"/>
-                            <constraint firstItem="jcr-Ix-v88" firstAttribute="top" secondItem="03P-Fz-FgH" secondAttribute="top" constant="8" id="5xv-v7-zcc"/>
                             <constraint firstAttribute="bottom" secondItem="vfG-Fe-nN5" secondAttribute="bottom" id="FbW-wf-hc6"/>
+                            <constraint firstItem="bcL-bd-3Em" firstAttribute="top" secondItem="03P-Fz-FgH" secondAttribute="top" id="KsE-sQ-ue2"/>
                             <constraint firstItem="vfG-Fe-nN5" firstAttribute="top" secondItem="03P-Fz-FgH" secondAttribute="top" id="PrT-Lm-rMp"/>
                             <constraint firstAttribute="bottom" secondItem="iBZ-wI-qYN" secondAttribute="bottom" id="SO1-av-Sgi"/>
+                            <constraint firstItem="bcL-bd-3Em" firstAttribute="leading" secondItem="03P-Fz-FgH" secondAttribute="leading" id="VK2-dw-DL4"/>
                             <constraint firstItem="vfG-Fe-nN5" firstAttribute="trailing" secondItem="03P-Fz-FgH" secondAttribute="trailing" id="f6g-dc-l0P"/>
+                            <constraint firstItem="vfG-Fe-nN5" firstAttribute="leading" secondItem="bcL-bd-3Em" secondAttribute="trailing" id="g7v-dv-xhC"/>
                             <constraint firstItem="iBZ-wI-qYN" firstAttribute="top" secondItem="03P-Fz-FgH" secondAttribute="top" id="qga-Iu-c7h"/>
                             <constraint firstItem="vfG-Fe-nN5" firstAttribute="leading" secondItem="iBZ-wI-qYN" secondAttribute="trailing" id="qpZ-vF-ZGw"/>
                             <constraint firstItem="iBZ-wI-qYN" firstAttribute="leading" secondItem="03P-Fz-FgH" secondAttribute="leading" id="sfB-YQ-aw1"/>
@@ -73,8 +85,13 @@
             <point key="canvasLocation" x="270.31484257871068" y="203.19999999999999"/>
         </scene>
     </scenes>
+    <designables>
+        <designable name="bcL-bd-3Em">
+            <size key="intrinsicContentSize" width="696" height="22"/>
+        </designable>
+    </designables>
     <resources>
-        <image name="ic_back" width="21" height="28.333333969116211"/>
+        <image name="ic_back" width="21" height="21"/>
         <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

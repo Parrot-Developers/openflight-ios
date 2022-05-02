@@ -32,6 +32,7 @@
 enum DroneMagnetometerCalibrationState {
     case calibrated
     case needed
+    case recommended
 
     /// String describing magnetometer calibration state.
     var description: String {
@@ -40,21 +41,42 @@ enum DroneMagnetometerCalibrationState {
             return ""
         case .needed:
             return L10n.commonRequired
+        case .recommended:
+            return L10n.commonAdvised
         }
     }
 
     /// Color for magnetometer calibration subtext cell.
     var subtextColor: ColorName {
-        return self == .needed ? .white : .defaultTextColor
+        switch self {
+        case .needed,
+             .recommended:
+            return .white
+        default:
+            return .defaultTextColor
+        }
     }
 
     /// Background color for magnetometer calibration cell.
     var backgroundColor: ColorName {
-        return self == .needed ? .errorColor : .white
+        switch self {
+        case .needed:
+            return .errorColor
+         case .recommended:
+            return .warningColor
+        default:
+            return .white
+        }
     }
 
     /// User interaction state for calibration view.
     var isUserInteractionEnabled: Bool {
-        return self == .needed
+        switch self {
+        case .needed,
+             .recommended:
+            return true
+        default:
+            return false
+        }
     }
 }

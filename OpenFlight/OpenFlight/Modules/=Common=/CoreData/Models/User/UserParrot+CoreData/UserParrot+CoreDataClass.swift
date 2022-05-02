@@ -43,6 +43,7 @@ public class UserParrot: NSManagedObject {
                     apcId: apcId,
                     apcToken: apcToken,
                     avatar: avatar,
+                    latestCloudAvatarModificationDate: latestCloudAvatarModificationDate,
                     pilotNumber: pilotNumber,
                     tmpApcUser: tmpApcUser,
                     userInfoChanged: userInfoChanged,
@@ -62,6 +63,7 @@ public class UserParrot: NSManagedObject {
         apcId = user.apcId
         apcToken = user.apcToken
         avatar = user.avatar
+        latestCloudAvatarModificationDate = user.latestCloudAvatarModificationDate
         tmpApcUser = user.tmpApcUser
         userInfoChanged = user.userInfoChanged
         syncWithCloud = user.syncWithCloud
@@ -69,5 +71,12 @@ public class UserParrot: NSManagedObject {
         isSynchronizeFlightDataExtended = user.isSynchronizeFlightDataExtended
         freemiumProjectCounter = user.freemiumProjectCounter
         pilotNumber = user.pilotNumber
+        // synchronization
+        isLocalDeleted = user.isLocalDeleted
+        latestSynchroStatusDate = user.latestSynchroStatusDate
+        latestCloudModificationDate = user.latestCloudModificationDate
+        latestLocalModificationDate = user.latestLocalModificationDate
+        synchroStatus = user.synchroStatus?.rawValue ?? 0
+        synchroError = user.synchroError?.rawValue ?? 0
     }
 }

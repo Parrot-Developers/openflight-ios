@@ -155,6 +155,8 @@ class FlightPlanEditionViewModel {
     private var edition: FlightPlanEditionService!
     private var projectManager: ProjectManager!
     private let topBarService: HudTopBarService
+    private let navigationStack: NavigationStackService
+    private weak var panelCoordinator: FlightPlanPanelCoordinator?
     private var settingsDisplayed: Bool = false
     private var flightPlanEditionMenuViewModel: FlightPlanEditionMenuViewModel?
     private(set) var editionSettingsViewModel: EditionSettingsViewModel?
@@ -191,14 +193,21 @@ class FlightPlanEditionViewModel {
         return (hasWaPoints || hasTakeOfAction || hasPois )
     }
 
+    /// Whether the current Flight Plan has been edited from his initial state.
+    var hasChanges: Bool { edition.hasChanges }
+
     init(settingsProvider: FlightPlanSettingsProvider?,
          edition: FlightPlanEditionService,
          projectManager: ProjectManager,
-         topBarService: HudTopBarService) {
+         topBarService: HudTopBarService,
+         navigationStack: NavigationStackService,
+         panelCoordinator: FlightPlanPanelCoordinator) {
         self.globalSettingsProvider = settingsProvider
         self.edition = edition
         self.projectManager = projectManager
         self.topBarService = topBarService
+        self.navigationStack = navigationStack
+        self.panelCoordinator = panelCoordinator
         edition.currentFlightPlanPublisher
             .compactMap({ $0 })
             .sink(receiveValue: { [unowned self] flightPlan in
@@ -230,7 +239,7 @@ class FlightPlanEditionViewModel {
 extension FlightPlanEditionViewModel {
 
     func updateSettingViewModel() -> EditionSettingsViewModel? {
-        editionSettingsViewModel = EditionSettingsViewModel()
+        editionSettingsViewModel = EditionSettingsViewModel(editionService: edition)
         return editionSettingsViewModel
     }
 
@@ -320,7 +329,9 @@ extension FlightPlanEditionViewModel {
 
     func updateEditionMenuViewModel() -> FlightPlanEditionMenuViewModel? {
         if flightPlanEditionMenuViewModel == nil {
-            flightPlanEditionMenuViewModel = FlightPlanEditionMenuViewModel(editionService: edition)
+            flightPlanEditionMenuViewModel = FlightPlanEditionMenuViewModel(editionService: edition,
+                                                                            panelCoordinator: panelCoordinator,
+                                                                            projectManager: projectManager)
         }
         flightPlanEditionMenuViewModel?.updateModel(currentFlightPlanModel())
         return flightPlanEditionMenuViewModel
@@ -356,16 +367,44 @@ extension FlightPlanEditionViewModel {
         edition.resetUndoStack()
     }
 
+    /// Restore the previous Flight Plan settings.
     public func reset() {
-        // reload last state of flightPlan that contains no modifications.
-        if let project = projectManager.currentProject,
-           let flightPlan = projectManager.lastFlightPlan(for: project) {
+        // Ensure there is a project to reset.
+        guard let project = projectManager.currentProject else {
+            // Restore map back to its original container.
+            mapDelegate?.restoreMapToOriginalContainer()
+            return
+        }
+        // Check if the project freshly created.
+        if projectManager.isCurrentProjectBranNew {
+            // User leave the edition of a new project without editing it: remove it.
+            projectManager.delete(project: project)
+            // Return to the previous view if needed.
+            returnToPreviousView()
+        } else if let flightPlan = projectManager.lastFlightPlan(for: project) {
+            // reload last state of flightPlan that contains no modifications.
             edition.setupFlightPlan(flightPlan)
             edition.resetUndoStack()
             mapDelegate?.displayFlightPlan(flightPlan, shouldReloadCamera: false)
         }
-        // Restore map back to its original container, then dismiss.
+        // Restore map back to its original container.
         mapDelegate?.restoreMapToOriginalContainer()
+    }
+
+    /// Allows to return in the needed state after a cancelled edition.
+    /// In some cases (e.g. cancelling a project creation), exiting the edition mode is not sufficient, we need to return to previous view.
+    public func returnToPreviousView() {
+        // Ensure there the navigation stack is not empty.
+        // If the creation has been initiated via the HUD, we don't want to leave it.
+        guard !navigationStack.stack.isEmpty else {
+            // If there is no selected project, this means it was a "First creation". Just stay in HUD.
+            guard projectManager.currentProject != nil else { return }
+            // In oter cases, we come from the HUD's project manager: Re-open it.
+            panelCoordinator?.startManagePlans()
+            return
+        }
+        // Ask the HUD's top bar to leave the view.
+        topBarService.goBack()
     }
 
     public func didTapDeleteButton() {
@@ -473,14 +512,16 @@ extension FlightPlanEditionViewModel {
     /// End flight plan edition.
     func endEdition() {
         // Update flight plan informations.
+        projectManager.isCurrentProjectBranNew = false
         edition?.updatePolygonPoints(points: mapDelegate?.polygonPointsValue ?? [])
         refreshMenuViewModel()
         if settingsDisplayed {
             editionSettingsViewModel?.refreshContent()
         }
-        edition?.endEdition { [weak self] in
+        let mapDelegate = self.mapDelegate
+        edition?.endEdition {
             // Restore map back to its original container, then dismiss.
-            self?.mapDelegate?.restoreMapToOriginalContainer()
+            mapDelegate?.restoreMapToOriginalContainer()
         }
     }
 

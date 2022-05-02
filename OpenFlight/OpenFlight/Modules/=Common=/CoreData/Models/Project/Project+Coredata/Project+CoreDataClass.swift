@@ -43,9 +43,11 @@ public class Project: NSManagedObject {
                             cloudId: Int(cloudId),
                             uuid: uuid,
                             title: title,
-                            type: type,
+                            type: ProjectType(rawString: type) ?? .classic,
+                            flightPlans: nil,
                             latestCloudModificationDate: latestCloudModificationDate,
                             lastUpdated: lastUpdated,
+                            lastOpened: lastOpened,
                             isLocalDeleted: isLocalDeleted,
                             synchroStatus: SynchroStatus(status: synchroStatus),
                             synchroError: SynchroError(rawValue: synchroError),
@@ -53,15 +55,31 @@ public class Project: NSManagedObject {
                             latestLocalModificationDate: latestLocalModificationDate)
     }
 
+    func modelWithFlightPlan() -> ProjectModel {
+        var project = model()
+
+        var flightPlanModels: [FlightPlanModel] = []
+
+        if let flightPlans = flightPlans {
+            flightPlanModels = flightPlans
+                .sorted(by: { $0.lastUpdate > $1.lastUpdate })
+                .compactMap({ $0.model() })
+        }
+
+        project.flightPlans = flightPlanModels
+        return project
+    }
+
     func update(fromProjectModel projectModel: ProjectModel) {
         apcId = projectModel.apcId
         cloudId = Int64(projectModel.cloudId)
         uuid = projectModel.uuid
         title = projectModel.title
-        type = projectModel.type
+        type = projectModel.type.rawValue
         latestCloudModificationDate = projectModel.latestCloudModificationDate
 
         lastUpdated = projectModel.lastUpdated
+        lastOpened = projectModel.lastOpened
 
         isLocalDeleted = projectModel.isLocalDeleted
         latestSynchroStatusDate = projectModel.latestSynchroStatusDate

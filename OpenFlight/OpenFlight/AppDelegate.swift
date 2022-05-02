@@ -116,19 +116,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                      options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         guard services.flightPlan.filesManager.isMavlinkUrl(url) else { return false }
 
-        guard let project = services.flightPlan.projectManager.newProjectFromMavlinkFile(url) else { return false }
-        services.flightPlan.projectManager.loadEverythingAndOpen(project: project)
+        services.flightPlan.projectManager.newProjectFromMavlinkFile(url) { [unowned self] project in
+            if let project = project {
+                services.flightPlan.projectManager.loadEverythingAndOpen(project: project)
+            }
+        }
 
         return true
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
         grabberViewModel.ungrabAll()
-        do {
-            try persistentContainer.viewContext.save()
-        } catch let error as NSError {
-            ULog.e(.appDelegate, "Error: \(error), \(error.userInfo)")
-        }
     }
 
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {

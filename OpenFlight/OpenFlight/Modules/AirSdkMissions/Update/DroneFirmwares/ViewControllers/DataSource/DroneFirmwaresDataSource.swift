@@ -88,12 +88,27 @@ final class DroneFirmwaresDataSource {
             }
         }
 
-        temporaryElements.insert(
-            .firmwareAndAirSdkMissions(firmware: firmwareToUpdateData,
-                                       missions: temporaryAllPotentialMissionsToUpdate),
-            at: 0)
-
+        temporaryElements.append(.firmwareAndAirSdkMissions(firmware: firmwareToUpdateData,
+                                                            missions: temporaryAllPotentialMissionsToUpdate))
         temporaryElements.sort { $0 < $1 }
+
+        // Search last built-in mission, which will allow drawing element tree properly
+        var index = temporaryElements.count - 1
+        elementLoop: while index >= 0 {
+            let element = temporaryElements[index]
+            switch element {
+            case let .upToDateAirSdkMission(mission, _):
+                if mission.isBuiltIn {
+                    temporaryElements[index] = .upToDateAirSdkMission(mission, isLastBuiltIn: true)
+                    break elementLoop
+                } else {
+                    fallthrough
+                }
+            default:
+                index -= 1
+            }
+        }
+
         elements = temporaryElements
         allPotentialMissionsToUpdate = temporaryAllPotentialMissionsToUpdate
         firmwareUpdateNeeded = !firmwareToUpdateData.allOperationsNeeded.isEmpty

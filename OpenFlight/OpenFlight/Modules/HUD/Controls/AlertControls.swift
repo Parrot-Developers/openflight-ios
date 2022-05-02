@@ -53,6 +53,8 @@ enum AlertPanelMode {
 final class AlertControls: NSObject {
     // MARK: - Outlets
     @IBOutlet private weak var alertPanelView: UIView!
+    @IBOutlet private weak var trailingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var widthConstraint: NSLayoutConstraint!
 
     // MARK: - Private Properties
     private var alertPanelMode: AlertPanelMode = .preset {
@@ -64,33 +66,32 @@ final class AlertControls: NSObject {
             }
         }
     }
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let animationDuration: TimeInterval = 0.1
+    private var panelWidth: CGFloat {
+        Layout.sidePanelWidth(alertPanelView.isRegularSizeClass)
     }
 }
 
 // MARK: - HUDAlertPanelDelegate
 extension AlertControls: HUDAlertPanelDelegate {
     func showAlertPanel() {
+        guard alertPanelMode == .closed else { return }
         alertPanelMode = .opened
-        guard alertPanelView.isHidden else {
-            return
-        }
-        UIView.animate(withDuration: Constants.animationDuration, animations: {
-            self.alertPanelView.isHidden = false
-        })
+        updateConstraints()
     }
 
     func hideAlertPanel() {
-        guard !alertPanelView.isHidden else {
-            return
-        }
-        UIView.animate(withDuration: Constants.animationDuration, animations: {
-            self.alertPanelView.isHidden = true
-        }, completion: { _ in
-            self.alertPanelMode = .closed
-        })
+        guard alertPanelMode == .opened else { return }
+        alertPanelMode = .closed
+        updateConstraints()
+    }
+
+    /// Updates panel constraint for showing/hiding.
+    ///
+    /// - Parameter animated: whether changes need to be animated
+    func updateConstraints(animated: Bool = true) {
+        widthConstraint.constant = panelWidth
+        trailingConstraint.constant = alertPanelMode == .opened ? 0 : -panelWidth
+        guard animated else { return }
+        UIView.animate { self.alertPanelView.superview?.layoutIfNeeded() }
     }
 }

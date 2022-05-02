@@ -54,6 +54,7 @@ final class DroneDetailCellularViewModel {
     private var connectedRemoteControlHolder: ConnectedRemoteControlHolder
     private var connectedDroneHolder: ConnectedDroneHolder
     private unowned let networkService: NetworkService
+    private var cellularService: CellularService
     private var networkControlRef: Ref<NetworkControl>?
     private var remoteCellularLinkStatus: Ref<CellularLinkStatus>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
@@ -66,13 +67,15 @@ final class DroneDetailCellularViewModel {
          cellularPairingService: CellularPairingService,
          connectedRemoteControlHolder: ConnectedRemoteControlHolder,
          connectedDroneHolder: ConnectedDroneHolder,
-         networkService: NetworkService) {
+         networkService: NetworkService,
+         cellularService: CellularService) {
         self.coordinator = coordinator
         self.currentDroneHolder = currentDroneHolder
         self.cellularPairingService = cellularPairingService
         self.connectedRemoteControlHolder = connectedRemoteControlHolder
         self.connectedDroneHolder = connectedDroneHolder
         self.networkService = networkService
+        self.cellularService = cellularService
 
         connectedDroneHolder.dronePublisher
             .sink { [unowned self] drone in
@@ -91,7 +94,7 @@ final class DroneDetailCellularViewModel {
     // MARK: - AnyPublisher
 
     var cellularStatusString: AnyPublisher<String?, Never> {
-        cellularPairingService.cellularStatusPublisher
+        cellularService.cellularStatusPublisher
             .combineLatest(remoteControl,
                            networkService.networkReachable.removeDuplicates(),
                            drone)
@@ -106,7 +109,7 @@ final class DroneDetailCellularViewModel {
     }
 
     var cellularStatusColor: AnyPublisher<ColorName, Never> {
-        cellularPairingService.cellularStatusPublisher
+        cellularService.cellularStatusPublisher
             .map { (cellularStatus) in
                 return cellularStatus.detailsTextColor
             }
@@ -116,17 +119,19 @@ final class DroneDetailCellularViewModel {
 
     /// Publishes the cellular status of the drone
     var cellularStatus: AnyPublisher<DetailsCellularStatus, Never> {
-        cellularPairingService.cellularStatusPublisher
+        cellularService.cellularStatusPublisher
             .map { return $0 }
             .eraseToAnyPublisher()
     }
 
     /// Publishes the operator name
     var operatorName: AnyPublisher<String?, Never> {
-        cellularPairingService.operatorNamePublisher
+        cellularService.operatorNamePublisher
             .combineLatest(connectedRemoteControlHolder.remoteControlPublisher, $remoteCellularStatus, $networkLinkStatus)
-            .map { (operatorName, connectedRemote, remoteCellularStatus, networkLinkStatus) in
-                if connectedRemote == nil || remoteCellularStatus?.status != .running || networkLinkStatus?.status != .running {
+            .combineLatest(networkService.networkReachable.removeDuplicates(), drone.removeDuplicates())
+            .map { (arg0, reachable, drone) in
+                let (operatorName, connectedRemote, remoteCellularStatus, networkLinkStatus) = arg0
+                if connectedRemote == nil || drone == nil || remoteCellularStatus?.status != .running || networkLinkStatus?.status != .running || !reachable {
                     return nil
                 }
 
@@ -137,7 +142,7 @@ final class DroneDetailCellularViewModel {
 
     /// Publishes if pin button is enabled
     var isEnterPinEnabled: AnyPublisher<Bool, Never> {
-        cellularPairingService.cellularStatusPublisher
+        cellularService.cellularStatusPublisher
             .map { cellularStatus in
                 return cellularStatus.shouldShowPinAction
             }
@@ -256,12 +261,12 @@ final class DroneDetailCellularViewModel {
         remoteControl
             .combineLatest(networkService.networkReachable.removeDuplicates(), $remoteCellularStatus, $networkLinkStatus)
             .map { (remoteControl, reachable, remoteCellularStatus, networkLinkStatus) in
-                if networkLinkStatus?.status == .running {
-                    return Asset.CellularPairing.ic4GTopLeftBranchOk.image
-                }
-
                 if remoteControl == nil || !reachable || remoteCellularStatus?.status != .running {
                     return Asset.CellularPairing.ic4GTopLeftBranchKo.image
+                }
+
+                if networkLinkStatus?.status == .running {
+                    return Asset.CellularPairing.ic4GTopLeftBranchOk.image
                 }
 
                 return Asset.CellularPairing.ic4GTopLeftBranchOk.image
@@ -369,8 +374,10 @@ final class DroneDetailCellularViewModel {
     /// Publishes the image for the top right branch image
     var topRightBranchImage: AnyPublisher<UIImage, Never> {
         drone
-            .combineLatest(cellularStatus, $networkLinkStatus)
-            .map { (drone, cellularStatus, networkLinkStatus) in
+            .combineLatest(cellularStatus, $networkLinkStatus, $remoteCellularStatus)
+            .combineLatest(networkService.networkReachable.removeDuplicates())
+            .map { (arg0, reachable) in
+                let (drone, cellularStatus, networkLinkStatus, remoteCellularLinkStatus) = arg0
                 if drone == nil {
                     return Asset.CellularPairing.ic4GTopRightBranch.image
                 }
@@ -382,7 +389,11 @@ final class DroneDetailCellularViewModel {
                     return Asset.CellularPairing.ic4GTopRightBranchKo.image
                 }
 
-                if networkLinkStatus?.status != .running {
+                if !reachable {
+                    return Asset.CellularPairing.ic4GTopRightBranchKo.image
+                }
+
+                if networkLinkStatus?.status != .running || remoteCellularLinkStatus?.status != .running {
                     return Asset.CellularPairing.ic4GTopRightBranchKo.image
                 }
 

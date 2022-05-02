@@ -27,12 +27,8 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ml3-2R-7ii" customClass="FileNavigationView" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="1080" height="50"/>
                                         <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Qk6-ck-Ngf" customClass="NavBarButton" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="8" y="3" width="44" height="44"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" secondItem="Qk6-ck-Ngf" secondAttribute="height" id="IE1-LI-Y0X"/>
-                                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="44" id="pNX-9j-zT7"/>
-                                                </constraints>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Qk6-ck-Ngf" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="8" y="28" width="21" height="14"/>
                                                 <color key="tintColor" name="default_text_color"/>
                                                 <state key="normal" image="ic_back"/>
                                                 <connections>
@@ -50,11 +46,10 @@
                                         </subviews>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
-                                            <constraint firstItem="Qk6-ck-Ngf" firstAttribute="top" secondItem="Ml3-2R-7ii" secondAttribute="top" priority="750" id="0Wd-up-fqg"/>
-                                            <constraint firstAttribute="bottom" secondItem="Qk6-ck-Ngf" secondAttribute="bottom" priority="750" id="Ehw-WR-R9Z"/>
+                                            <constraint firstItem="Qk6-ck-Ngf" firstAttribute="top" secondItem="Ml3-2R-7ii" secondAttribute="topMargin" id="0Wd-up-fqg"/>
+                                            <constraint firstAttribute="bottomMargin" secondItem="Qk6-ck-Ngf" secondAttribute="bottom" id="Ehw-WR-R9Z"/>
                                             <constraint firstItem="qUR-Q1-SN1" firstAttribute="centerX" secondItem="Ml3-2R-7ii" secondAttribute="centerX" id="EjM-kZ-kgk"/>
                                             <constraint firstItem="qUR-Q1-SN1" firstAttribute="top" secondItem="Ml3-2R-7ii" secondAttribute="topMargin" id="J8F-Rl-tRV"/>
-                                            <constraint firstItem="Qk6-ck-Ngf" firstAttribute="centerY" secondItem="Ml3-2R-7ii" secondAttribute="centerY" id="awC-yj-vbu"/>
                                             <constraint firstAttribute="bottomMargin" secondItem="qUR-Q1-SN1" secondAttribute="bottom" id="gHc-sH-Gyz"/>
                                             <constraint firstItem="Qk6-ck-Ngf" firstAttribute="leading" secondItem="Ml3-2R-7ii" secondAttribute="leadingMargin" id="zg3-jo-trE"/>
                                         </constraints>
